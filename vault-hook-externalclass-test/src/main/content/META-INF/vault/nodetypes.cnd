@@ -1,0 +1,11 @@
+<'rep'='internal'>
+<'nt'='http://www.jcp.org/jcr/nt/1.0'>
+
+[rep:Configurations]
+  + * (nt:configuration) = nt:configuration abort
+  + * (rep:Configurations) = rep:Configurations abort
+
+[rep:Activities]
+  + * (nt:activity) = nt:activity protected abort
+  + * (rep:Activities) = rep:Activities protected abort
+

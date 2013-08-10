@@ -1,0 +1,61 @@
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.0.0
+
+Introduction
+------------
+
+The FileVault introduces a JCR repository to filesystem mapping. The mapping is exposed by and API and used by the
+_CRX Content Packaging_  that allows to create portable packages of repository content.
+The Vault Command Line Interface aka _vlt_ that provides a subversion like utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.0.0
+-------------------------------------
+
+New features
+
+Version 3.0.0 is the initial version of this contribution to the Apache Jackrabbit project.
+
+For more detailed information about all the changes in this and other
+FileVault releases, please see the FileVault issue tracker at
+
+    https://issues.apache.org/jira/browse/JCR
+
+Release Contents
+----------------
+
+This release consists of a single source archive packaged as a zip file.
+The archive can be unpacked with the jar tool from your JDK installation.
+See the README.txt file for instructions on how to build this release.
+
+The source archive is accompanied by SHA1 and MD5 checksums and a PGP
+signature that you can use to verify the authenticity of your download.
+The public key used for the PGP signature can be found at
+https://svn.apache.org/repos/asf/jackrabbit/dist/KEYS.
+
+About Apache Jackrabbit
+-----------------------
+
+Apache Jackrabbit is a fully conforming implementation of the Content
+Repository for Java Technology API (JCR). A content repository is a
+hierarchical content store with support for structured and unstructured
+content, full text search, versioning, transactions, observation, and
+more.
+
+For more information, visit http://jackrabbit.apache.org/
+
+About The Apache Software Foundation
+------------------------------------
+
+Established in 1999, The Apache Software Foundation provides organizational,
+legal, and financial support for more than 100 freely-available,
+collaboratively-developed Open Source projects. The pragmatic Apache License
+enables individual and commercial users to easily deploy Apache software;
+the Foundation's intellectual property framework limits the legal exposure
+of its 2,500+ contributors.
+
+For more information, visit http://www.apache.org/
+
+Trademarks
+----------
+
+Apache Jackrabbit, Jackrabbit, Apache, the Apache feather logo, and the Apache
+Jackrabbit project logo are trademarks of The Apache Software Foundation.

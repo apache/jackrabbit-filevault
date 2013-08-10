@@ -1,0 +1,90 @@
+A - delete both
+B
+E
+F
+
+A
+B
+C
+D
+D2
+E
+F
+
+A - mod and insert
+B
+C
+D1
+F
+G
+
+this is the first line.
+
+import org.apache.jackrabbit.jcrfs.util.FileUtil;
+import org.apache.commons.io.FileUtils;
+new line on server.
+
+import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.LinkedList;
+import java.util.Vector;
+import java.util.Enumeration;
+import java.util.List;
+same mod
+
+import javax.sound.midi.Batch;
+
+A - delete left and right (left inclusive)
+B
+G
+
+A - delete left and right (right inclusive)
+B
+E
+F
+G
+
+A - delete left and right, insert same
+B
+B'
+B''
+G
+
+A - delete left, modify right
+B
+C2
+D2
+E
+F
+G
+
+A - insert left, modify right
+B
+C
+D2
+E
+F
+G
+
+A - modify same
+B
+C1
+C2
+G
+
+intermediate right.
+
+A - delete same, insert different
+B
+C2
+G
+
+A - delete overlapping
+B
+C
+G
+
+
+last change!
+and this ist the last line

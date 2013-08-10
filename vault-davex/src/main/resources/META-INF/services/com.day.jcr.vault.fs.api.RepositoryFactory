@@ -1,0 +1,4 @@
+#
+# registers the DAV Ex Repository Factory
+#
+org.apache.jackrabbit.vault.davex.DAVExRepositoryFactory

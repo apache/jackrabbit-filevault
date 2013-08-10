@@ -1,0 +1,14 @@
+{
+    "cmd":"create",
+    "id":"copy-geometrixx",
+    "src":"http://admin:admin@localhost:4503/crx/-/jcr:root/content/geometrixx",
+    "dst":"/tmp/test_geo",
+    "batchsize": 2048,
+    "update": true,
+    "onlyNewer": true,
+    "recursive": true,
+    "throttle": 1,
+    "excludes": [
+        "/content/geometrixx/en/tools(/.*)?"
+    ]
+}

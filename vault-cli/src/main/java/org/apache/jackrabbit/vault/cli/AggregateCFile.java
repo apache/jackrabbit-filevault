@@ -1,0 +1,89 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.jackrabbit.vault.cli;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.List;
+
+import javax.jcr.RepositoryException;
+
+import org.apache.jackrabbit.vault.fs.api.Aggregate;
+import org.apache.jackrabbit.vault.util.console.ConsoleFile;
+
+/**
+ * <code>JcrCWO</code>...
+ *
+ */
+public class AggregateCFile implements ConsoleFile {
+
+    private final Aggregate aggregate;
+
+    public AggregateCFile(Aggregate file) {
+        this.aggregate = file;
+    }
+
+    public Object unwrap() {
+        return aggregate;
+    }
+
+    public String getPath() {
+        return aggregate.getPath();
+    }
+
+    public ConsoleFile getFile(String path, boolean mustExist)
+            throws IOException {
+        try {
+            Aggregate node = aggregate.getManager().getRoot();
+            if (!path.equals("/")) {
+                node = this.aggregate.getAggregate(path);
+                if (node == null) {
+                    throw new FileNotFoundException(path);
+                }
+            }
+            return new AggregateCFile(node);
+        } catch (RepositoryException e) {
+            throw new IOException("Error while retrieving file: " + e.toString());
+        }
+    }
+
+    public ConsoleFile[] listFiles() throws IOException {
+        try {
+            List<? extends Aggregate> files = aggregate.getLeaves();
+            if (files == null || files.isEmpty()) {
+                return ConsoleFile.EMPTY_ARRAY;
+            }
+            AggregateCFile[] ret = new AggregateCFile[files.size()];
+            int i=0;
+            for (Aggregate node: files) {
+                ret[i++] = new AggregateCFile(node);
+            }
+            return ret;
+        } catch (RepositoryException e) {
+            throw new IOException(e.toString());
+        }
+    }
+
+    public boolean allowsChildren() {
+        return aggregate.allowsChildren();
+    }
+
+    public String getName() {
+        return aggregate.getRelPath();
+    }
+}

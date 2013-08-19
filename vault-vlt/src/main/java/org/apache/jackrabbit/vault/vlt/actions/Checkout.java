@@ -71,6 +71,8 @@ public class Checkout extends AbstractAction {
             String path = ctx.getExportRoot().getJcrRoot().getPath();
             if (force) {
                 ctx.printMessage("Checkout " + mountPoint.resolve(remoteDir) + " with local files using root at " + path);
+                // ensure we use the calculated jcr_root
+                localDir = ctx.getExportRoot().getJcrRoot();
             } else {
                 throw ctx.error(localDir.getPath(),
                         "there seems to be already a checkout at " + path + ". " +

@@ -53,16 +53,11 @@ public class DiffWriter extends Writer {
      */
     private String lineSeparator = LS_NATIVE;
 
-    /**
-     * {@inheritDoc}
-     */
     public DiffWriter(Writer out) {
         this.out = out;
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @param lineSeparator the line seperator to use for {@link #writeNewLine()}
      */
     public DiffWriter(Writer out, String lineSeparator) {

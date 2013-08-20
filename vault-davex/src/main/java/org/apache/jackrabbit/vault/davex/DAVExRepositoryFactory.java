@@ -65,6 +65,11 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
      */
     public static final String PARAM_JCR_REMOTING_SPILOG = "jcr.remoting.spilog";
 
+    /**
+     * Name of the system property that controls the referer header.
+     */
+    public static final String PARAM_JCR_REMOTING_REFERER = "jcr.remoting.referer";
+
     private static final Set<String> SCHEMES = new HashSet<String>();
     static {
         SCHEMES.add("http");
@@ -111,7 +116,9 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
 
             // set default params for httpclient that will be used in jackrabbit's webdav client
             // this is to provide a referer header for all POST and PUT requests.
-            DefaultHttpParams.setHttpParamsFactory(new MyHttpParamsFactory());
+            DefaultHttpParams.setHttpParamsFactory(new MyHttpParamsFactory(
+                    System.getProperty(PARAM_JCR_REMOTING_REFERER, "http://localhost/")
+            ));
 
             System.out.printf("Connecting via JCR remoting to %s%n", address.getSpecificURI().toString());
             return new RepositoryFactoryImpl().getRepository(parameters);
@@ -148,10 +155,12 @@ class MyHttpParamsFactory implements HttpParamsFactory {
 
     private final HttpParams params;
 
-    MyHttpParamsFactory() {
+    MyHttpParamsFactory(String referer) {
         params = new DefaultHttpParamsFactory().getDefaultParams();
         List<Header> headers = new ArrayList<Header>();
-        headers.add(new Header("Referer", "about:blank"));
+        if (referer != null && referer.length() > 0) {
+            headers.add(new Header("Referer", referer));
+        }
         params.setParameter(HostParams.DEFAULT_HEADERS, headers);
     }
 

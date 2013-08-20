@@ -50,7 +50,9 @@ public class XDavEx extends ExtendedOption {
     }
 
     public String getExample() {
-        return "-Xdavex:depth=2,spilog=my.log";
+        return "Set depth to 2 and specify a log: -Xdavex:depth=2,spilog=my.log\n" +
+               "     Set an empty referer header: -Xdavex:referer=,depth=2\n" +
+               "   Set a specific referer header: -Xdavex:referer=http://my.server.com";
     }
 
     public boolean hasName(String s) {
@@ -76,8 +78,14 @@ public class XDavEx extends ExtendedOption {
                                 .withMaximum(1)
                                 .create())
                         .withOption(new ArgumentBuilder()
-                                .withName("depth")
+                                .withName("depth=<n>")
                                 .withDescription("retrieval depth. default 4")
+                                .withMinimum(1)
+                                .withMaximum(1)
+                                .create())
+                        .withOption(new ArgumentBuilder()
+                                .withName("referer=<header>")
+                                .withDescription("HTTP Referer header to use for the requests. default is http://localhost/")
                                 .withMinimum(1)
                                 .withMaximum(1)
                                 .create())

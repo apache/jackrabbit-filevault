@@ -43,7 +43,7 @@ abstract public class ExtendedOption implements CliCommand {
     public void process(String args) {
         // currently just split the args
         for (String nvp: Text.explode(args, ',')) {
-            String[] nv = Text.explode(nvp, '=');
+            String[] nv = Text.explode(nvp, '=', true);
             String name = nv[0].trim();
             String value = nv.length > 1 ? nv[1].trim() : "true";
             System.setProperty(getSystemPrefix() + name, value);

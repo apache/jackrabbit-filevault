@@ -17,9 +17,13 @@
 
 package org.apache.jackrabbit.vault.util;
 
+import javax.jcr.Property;
 import javax.jcr.PropertyType;
+import javax.jcr.Value;
+import javax.jcr.nodetype.PropertyDefinition;
 
 import org.apache.jackrabbit.util.Text;
+import org.mockito.Mockito;
 
 import junit.framework.TestCase;
 
@@ -110,6 +114,54 @@ public class DocViewPropertyTest extends TestCase {
     public void testParseMVStringEmpty() {
         DocViewProperty p = DocViewProperty.parse("foo", "[]");
         assertEquals(p, true, PropertyType.UNDEFINED);
+    }
+
+    /**
+     * Special test for mv properties with 1 empty string value (JCR-3661)
+     * @throws Exception
+     */
+    public void testEmptyMVString() throws Exception {
+        Property p = Mockito.mock(Property.class);
+        Value value = Mockito.mock(Value.class);
+
+        Mockito.when(value.getString()).thenReturn("");
+        Value[] values = new Value[]{value};
+        PropertyDefinition pd = Mockito.mock(PropertyDefinition.class);
+        Mockito.when(pd.isMultiple()).thenReturn(true);
+
+        Mockito.when(p.getType()).thenReturn(PropertyType.STRING);
+        Mockito.when(p.getName()).thenReturn("foo");
+        Mockito.when(p.getValues()).thenReturn(values);
+        Mockito.when(p.getDefinition()).thenReturn(pd);
+
+        String result = DocViewProperty.format(p);
+        assertEquals("formatted property", "[\\0]", result);
+
+        // now round trip back
+        DocViewProperty dp = DocViewProperty.parse("foo", result);
+        assertEquals(dp, true, PropertyType.UNDEFINED, "");
+    }
+
+    public void testEmptyMVBoolean() throws Exception {
+        Property p = Mockito.mock(Property.class);
+        Value value = Mockito.mock(Value.class);
+
+        Mockito.when(value.getString()).thenReturn("false");
+        Value[] values = new Value[]{value};
+        PropertyDefinition pd = Mockito.mock(PropertyDefinition.class);
+        Mockito.when(pd.isMultiple()).thenReturn(true);
+
+        Mockito.when(p.getType()).thenReturn(PropertyType.BOOLEAN);
+        Mockito.when(p.getName()).thenReturn("foo");
+        Mockito.when(p.getValues()).thenReturn(values);
+        Mockito.when(p.getDefinition()).thenReturn(pd);
+
+        String result = DocViewProperty.format(p);
+        assertEquals("formatted property", "{Boolean}[false]", result);
+
+        // now round trip back
+        DocViewProperty dp = DocViewProperty.parse("foo", result);
+        assertEquals(dp, true, PropertyType.BOOLEAN, "false");
     }
 
     public void testEscape() {

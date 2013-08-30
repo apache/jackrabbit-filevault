@@ -174,6 +174,12 @@ public class DocViewProperty {
                         state = 'u';
                         unicode = 0;
                         unicodePos = 0;
+                    } else if (c == '0') {
+                        // special case to treat empty values. see JCR-3661
+                        state = 'v';
+                        if (vals == null) {
+                            vals = new LinkedList<String>();
+                        }
                     } else {
                         state = 'v';
                         tmp.append(c);
@@ -247,14 +253,19 @@ public class DocViewProperty {
                         attrValue.append(',');
                     }
                     String strValue = ValueHelper.serialize(values[i], false);
-                    switch (prop.getType()) {
-                        case PropertyType.STRING:
-                        case PropertyType.NAME:
-                        case PropertyType.PATH:
-                            escape(attrValue, strValue, true);
-                            break;
-                        default:
-                            attrValue.append(strValue);
+                    if (values.length == 1 && strValue.length() == 0) {
+                        // special case for empty string MV value (JCR-3661)
+                        attrValue.append("\\0");
+                    } else {
+                        switch (prop.getType()) {
+                            case PropertyType.STRING:
+                            case PropertyType.NAME:
+                            case PropertyType.PATH:
+                                escape(attrValue, strValue, true);
+                                break;
+                            default:
+                                attrValue.append(strValue);
+                        }
                     }
                 }
                 attrValue.append(']');

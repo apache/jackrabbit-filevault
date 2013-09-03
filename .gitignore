@@ -7,3 +7,5 @@ target/
 *.iws
 console.properties
 .idea/
+bin/
+derby.log

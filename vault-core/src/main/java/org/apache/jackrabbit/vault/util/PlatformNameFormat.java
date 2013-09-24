@@ -18,15 +18,18 @@
 package org.apache.jackrabbit.vault.util;
 
 /**
- * Implements a repository to platform name formatter. Illegal characters a
+ * Implements a repository to platform name formatter. 
+ * 
+ * <p>Illegal characters a
  * generally escaped using the url escaping format, i.e. replacing the char
  * by a '%' hex(char) sequence. special treatment is used for the ':' char
  * since it's used quite often as namespace prefix separator. the
  * PREFIX ':' NAME sequence is replaced by '_' PREFIX '_' NAME. item names
  * that would generate the same pattern are escaped with an extra leading '_'.
- *
- * examples:
- *
+ * 
+ * <p>Examples:
+ * 
+ * <pre>
  * +-------------------+----------------------+----+----+
  * | repository name   | platform name        | pp | sp |
  * +-------------------+----------------------+----+----+
@@ -42,7 +45,8 @@ package org.apache.jackrabbit.vault.util;
  * | _cq:test.jpg      | __cq%3atest.jpg      |  3 |  0 |
  * | cq_:test.jpg      | cq_%3atest.jpg       |  3 |  2 |
  * +-------------------+----------------------+----+----+
- *
+ * </pre>
+ * 
  * note for the 2nd set of examples the cases are very rare and justify the
  * ugly '%' escaping.
  *

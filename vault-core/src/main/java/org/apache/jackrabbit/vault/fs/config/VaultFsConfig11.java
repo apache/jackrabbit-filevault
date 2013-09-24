@@ -52,17 +52,6 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
     public VaultFsConfig11() {
         helper.getDefaultPackages().put("include", "org.apache.jackrabbit.vault.fs.filter");
         helper.getDefaultPackages().put("exclude", "org.apache.jackrabbit.vault.fs.filter");
-
-        // add renamed classes from prior versions
-        Map<String, String> m = helper.getMappings();
-        m.put("org.apache.jackrabbit.vault.fs.imprt.FolderArtifactHandler", "org.apache.jackrabbit.vault.fs.impl.io.FileArtifactHandler");
-        m.put("org.apache.jackrabbit.vault.fs.imprt.FileArtifactHandler", "org.apache.jackrabbit.vault.fs.impl.io.FileArtifactHandler");
-        m.put("org.apache.jackrabbit.vault.fs.imprt.GenericArtifactHandler", "org.apache.jackrabbit.vault.fs.impl.io.GenericArtifactHandler");
-        m.put("org.apache.jackrabbit.vault.fs.imprt.NodeTypeArtifactHandler", "org.apache.jackrabbit.vault.fs.impl.io.NodeTypeArtifactHandler");
-
-
-        m.put("org.apache.jackrabbit.vault.fs.filter.ItemFilter", "org.apache.jackrabbit.vault.fs.api.ItemFilter");
-        m.put("org.apache.jackrabbit.vault.fs.filter.PathFilter", "org.apache.jackrabbit.vault.fs.api.PathFilter");
     }
 
     protected void process(Element elem) throws ConfigurationException {
@@ -72,7 +61,7 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
                     if (agg.getNodeName().equals("aggregate")) {
                         processAggregate(agg);
                     } else {
-                        log.warn("Unkown element name in config: " + agg.getNodeName());
+                        log.warn("Unknown element name in config: " + agg.getNodeName());
                     }
                 }
 
@@ -81,12 +70,12 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
                     if (handler.getNodeName().equals("handler")) {
                         processHandler(handler);
                     } else {
-                        log.warn("Unkown element name in config: " + handler.getNodeName());
+                        log.warn("Unknown element name in config: " + handler.getNodeName());
                     }
                 }
 
             } else {
-                log.warn("Unkown element name in config: " + child.getNodeName());
+                log.warn("Unknown element name in config: " + child.getNodeName());
             }
         }
     }

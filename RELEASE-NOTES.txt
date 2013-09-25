@@ -10,7 +10,7 @@ The Vault Command Line Interface aka _vlt_ that provides a subversion like utili
 Changes in Jackrabbit FileVault 3.0.0
 -------------------------------------
 
-New features
+New features:
 
 Version 3.0.0 is the initial version of this contribution to the Apache Jackrabbit project.
 
@@ -18,6 +18,22 @@ For more detailed information about all the changes in this and other
 FileVault releases, please see the FileVault issue tracker at
 
     https://issues.apache.org/jira/browse/JCR
+
+Bug Fixes:
+
+[JCR-3661] jcrvlt: String[]{""} not packaged correctly
+
+Improvements:
+
+[JCR-3612] Contribute Adobe's FileVault to ASF
+[JCR-3649] FileVault: fix usage of @inheritDoc in constructor documentation
+[JCR-3666] FileVault: VaultFsConfig11 references incorrect classes from prior versions
+[JCR-3664] FileVault: fix javadoc for PlatformNameFormatter
+[JCR-3663] FileVault: tweak gitignore file
+[JCR-3648] FileVault: remove dependecyManagement entry for concurrent:concurrent
+[JCR-3670] FileVault: Remove CQ/CRX/day/adobe references
+[JCR-3647] FileVault: update maven-scr-plugin and maven-bundle-plugin versions
+
 
 Release Contents
 ----------------

@@ -31,7 +31,6 @@ Improvements:
 [JCR-3664] FileVault: fix javadoc for PlatformNameFormatter
 [JCR-3663] FileVault: tweak gitignore file
 [JCR-3648] FileVault: remove dependecyManagement entry for concurrent:concurrent
-[JCR-3670] FileVault: Remove CQ/CRX/day/adobe references
 [JCR-3647] FileVault: update maven-scr-plugin and maven-bundle-plugin versions
 
 

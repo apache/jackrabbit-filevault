@@ -117,22 +117,22 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.0.1-SNAPSHOT</version>
+            <version>3.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-vlt</artifactId>
-            <version>3.0.1-SNAPSHOT</version>
+            <version>3.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-sync</artifactId>
-            <version>3.0.1-SNAPSHOT</version>
+            <version>3.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-davex</artifactId>
-            <version>3.0.1-SNAPSHOT</version>
+            <version>3.0.0-SNAPSHOT</version>
         </dependency>
 
         <!-- CLI Stuff -->

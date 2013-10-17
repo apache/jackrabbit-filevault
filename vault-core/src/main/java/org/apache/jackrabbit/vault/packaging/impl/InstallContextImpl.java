@@ -24,6 +24,7 @@ import javax.jcr.Session;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
+import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 
 /**

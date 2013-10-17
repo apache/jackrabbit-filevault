@@ -37,6 +37,8 @@ import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
+import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
+import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
@@ -292,7 +294,9 @@ public class ZipVaultPackage implements VaultPackage {
             throw new IllegalStateException("Package not valid.");
         }
         // try to find any hooks
-        InstallHookProcessor hooks = new InstallHookProcessor();
+        InstallHookProcessor hooks = opts instanceof InstallHookProcessorFactory ?
+                ((InstallHookProcessorFactory) opts).createInstallHookProcessor()
+                : new InstallHookProcessorImpl();
         if (!opts.isDryRun()) {
             hooks.registerHooks(archive, opts.getHookClassLoader());
         }

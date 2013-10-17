@@ -25,18 +25,11 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Option that control the package import.
  */
 public class ImportOptions {
-
-    /**
-     * default logger
-     */
-    private static final Logger log = LoggerFactory.getLogger(ImportOptions.class);
 
     private boolean strict;
 
@@ -68,6 +61,11 @@ public class ImportOptions {
         // default constructor.
     }
 
+    /**
+     * @deprecated use {@link #copy()} instead.
+     * @param base base options
+     */
+    @Deprecated
     public ImportOptions(ImportOptions base) {
         if (base != null) {
             strict = base.strict;
@@ -84,6 +82,24 @@ public class ImportOptions {
             filter = base.filter;
             hookClassLoader = base.hookClassLoader;
         }
+    }
+
+    public ImportOptions copy() {
+        ImportOptions ret = new ImportOptions();
+        ret.strict = strict;
+        ret.listener = listener;
+        ret.patchParentPath = patchParentPath;
+        ret.patchDirectory = patchDirectory;
+        ret.patchKeepInRepo = patchKeepInRepo;
+        ret.nonRecursive = nonRecursive;
+        ret.dryRun = dryRun;
+        ret.autoSave = autoSave;
+        ret.acHandling = acHandling;
+        ret.importMode = importMode;
+        ret.cndPattern = cndPattern;
+        ret.filter = filter;
+        ret.hookClassLoader = hookClassLoader;
+        return ret;
     }
 
     public boolean isStrict() {

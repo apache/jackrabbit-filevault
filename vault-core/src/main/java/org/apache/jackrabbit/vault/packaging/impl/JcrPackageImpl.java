@@ -328,7 +328,7 @@ public class JcrPackageImpl implements JcrPackage {
             throws RepositoryException, PackageException, IOException {
         getPackage();
         // get a copy of the import options (bug 35164)
-        ImportOptions opts = new ImportOptions(options);
+        ImportOptions opts = options.copy();
         // check for disable intermediate saves (GRANITE-1047)
         if ( this.getDefinition().getBoolean(JcrPackageDefinition.PN_DISABLE_INTERMEDIATE_SAVE) ) {
             // MAX_VALUE disables saving completely, therefore we have to use a lower value!

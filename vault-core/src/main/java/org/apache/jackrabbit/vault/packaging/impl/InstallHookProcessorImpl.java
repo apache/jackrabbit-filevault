@@ -35,6 +35,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.InstallHook;
+import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Constants;
@@ -45,12 +46,12 @@ import org.slf4j.LoggerFactory;
 /**
  * processor for install hooks
  */
-public class InstallHookProcessor {
+public class InstallHookProcessorImpl implements InstallHookProcessor {
 
     /**
      * default logger
      */
-    private static final Logger log = LoggerFactory.getLogger(InstallHookProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(InstallHookProcessorImpl.class);
 
     private final TreeMap<String, Hook> hooks = new TreeMap<String, Hook>();
 
@@ -141,7 +142,7 @@ public class InstallHookProcessor {
         return !hooks.isEmpty();
     }
     
-    public boolean execute(InstallContextImpl context) {
+    public boolean execute(InstallContext context) {
         for (Hook hook : hooks.values()) {
             try {
                 hook.getHook().execute(context);
@@ -149,7 +150,7 @@ public class InstallHookProcessor {
                 // abort processing only for prepare phase
                 if (context.getPhase() == InstallContext.Phase.PREPARE) {
                     log.warn("Hook " + hook.name +" threw package exception. Prepare aborted.", e);
-                    context.setPhase(InstallContext.Phase.PREPARE_FAILED);
+                    ((InstallContextImpl) context).setPhase(InstallContext.Phase.PREPARE_FAILED);
                     execute(context);
                     return false;
                 }

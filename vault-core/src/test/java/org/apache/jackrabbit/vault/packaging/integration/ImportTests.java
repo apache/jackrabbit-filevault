@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import java.io.IOException;
 
 import javax.jcr.Node;
+import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -191,6 +192,33 @@ public class ImportTests extends IntegrationTestBase {
         Node tags = admin.getNode("/etc/tags");
         int numNodes = countNodes(tags);
         assertEquals("Number of tags installed", 487, numNodes);
+
+    }
+
+    @Test
+    public void testSNSImport() throws IOException, RepositoryException, ConfigurationException {
+        ZipArchive archive = new ZipArchive(getTempFile("testpackages/test_sns.zip"));
+        archive.open(true);
+        Node rootNode = admin.getRootNode();
+        ImportOptions opts = getDefaultOptions();
+        Importer importer = new Importer(opts);
+        importer.run(archive, rootNode);
+
+        assertNodeExists("/tmp/testroot");
+        assertNodeExists("/tmp/testroot/foo");
+        assertProperty("/tmp/testroot/foo/name", "foo1");
+
+        // only check for SNS nodes if SNS supported
+        if (admin.getRepository().getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED).getBoolean()) {
+            assertNodeExists("/tmp/testroot/foo[2]");
+            assertNodeExists("/tmp/testroot/foo[3]");
+            assertProperty("/tmp/testroot/foo[2]/name", "foo2");
+            assertProperty("/tmp/testroot/foo[3]/name", "foo3");
+        } else {
+            // otherwise nodes must not exist
+            assertNodeMissing("/tmp/testroot/foo[2]");
+            assertNodeMissing("/tmp/testroot/foo[3]");
+        }
 
     }
 

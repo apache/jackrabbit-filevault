@@ -24,6 +24,7 @@ import java.io.InputStream;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
@@ -32,6 +33,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.core.RepositoryImpl;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
+import org.apache.jackrabbit.oak.jcr.Jcr;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
@@ -59,7 +61,7 @@ public class IntegrationTestBase  {
 
     private static final String REPO_HOME = "target/repository";
 
-    protected static RepositoryImpl repository;
+    protected static Repository repository;
 
     protected Session admin;
 
@@ -67,17 +69,24 @@ public class IntegrationTestBase  {
 
     @BeforeClass
     public static void initRepository() throws RepositoryException {
-        InputStream in = IntegrationTestBase.class.getResourceAsStream("repository.xml");
-        RepositoryConfig cfg = RepositoryConfig.create(in, REPO_HOME);
-        repository = RepositoryImpl.create(cfg);
+        if (Boolean.getBoolean("oak")) {
+            repository = new Jcr().createRepository();
+        } else {
+            InputStream in = IntegrationTestBase.class.getResourceAsStream("repository.xml");
+            RepositoryConfig cfg = RepositoryConfig.create(in, REPO_HOME);
+            repository = RepositoryImpl.create(cfg);
+        }
+        log.info("repository created: {} {}",
+                repository.getDescriptor(Repository.REP_NAME_DESC),
+                repository.getDescriptor(Repository.REP_VERSION_DESC));
     }
 
     @AfterClass
     public static void shutdownRepository() {
-        if (repository != null) {
-            repository.shutdown();
-            repository = null;
+        if (repository instanceof RepositoryImpl) {
+            ((RepositoryImpl) repository).shutdown();
         }
+        repository = null;
     }
 
     @Before

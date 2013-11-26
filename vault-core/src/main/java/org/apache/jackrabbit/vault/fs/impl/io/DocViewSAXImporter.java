@@ -37,6 +37,7 @@ import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
+import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
@@ -211,6 +212,11 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
     private AccessControlHandling aclHandling = AccessControlHandling.IGNORE;
 
     /**
+     * flag indicating if SNS are supported by the underlying repository
+     */
+    private final boolean snsSupported;
+
+    /**
      * Creates a new importer that will receive SAX events and imports the
      * items below the given root.
      *
@@ -231,6 +237,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         this.rootNodeName = rootNodeName;
         this.aclManagement = ServiceProviderFactory.getProvider().getACLManagement();
         this.userManagement = ServiceProviderFactory.getProvider().getUserManagement();
+        this.snsSupported = session.getRepository().
+                getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED).getBoolean();
 
         String rootPath = parentNode.getPath();
         if (!rootPath.equals("/")) {
@@ -558,8 +566,21 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         String label = ISO9075.decode(qName);
         String name = label;
         log.debug("-> element {}", label);
+        boolean snsNode = false;
         int idx = name.lastIndexOf('[');
         if (idx > 0) {
+            if (!snsSupported) {
+                int idx2 = name.indexOf(']', idx);
+                if (idx2 > 0) {
+                    try {
+                        if (Integer.valueOf(name.substring(idx+1, idx2)) > 1) {
+                            snsNode = true;
+                        }
+                    } catch (NumberFormatException e) {
+                        // ignore
+                    }
+                }
+            }
             name = name.substring(0, idx);
         }
         try {
@@ -578,6 +599,10 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 if (attributes.getLength() == 0) {
                     // only ordering node. skip
                     log.debug("Skipping empty node {}", node.getPath() + "/" + name);
+                    stack = stack.push(null);
+                } else if (snsNode) {
+                    // skip SNS nodes with index > 1
+                    log.warn("Skipping unsupported SNS node with index > 1. Some content will be missing after import: {}", node.getPath() + "/" + label);
                     stack = stack.push(null);
                 } else {
                     try {

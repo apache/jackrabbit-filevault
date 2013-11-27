@@ -47,7 +47,7 @@ public class TestGroupMergePackage extends IntegrationTestBase {
         removeAuthorizable(mgr, "test-user-a");
         removeAuthorizable(mgr, "test-user-b");
         removeAuthorizable(mgr, "test-user-c");
-
+        admin.save();
         super.tearDown();
     }
 

@@ -110,30 +110,7 @@
                     </instructions>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <executions>
-                    <!-- run tests 2 second time on jackrabbit oak -->
-                    <execution>
-                        <id>oak</id>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <argLine>-Doak=true</argLine>
-                            <excludes>
-                                <exclude>**/TestGroupMergePackage.java</exclude>
-                                <exclude>**/TestACLAndMerge.java</exclude>
-                                <exclude>**/JcrPackageManagerImplTest.java</exclude>
-                                <exclude>**/AdminPermissionCheckerTest.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
-
     </build>
 
     <!-- ====================================================================== -->
@@ -221,11 +198,34 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.jackrabbit</groupId>
-            <artifactId>oak-run</artifactId>
-            <version>0.13-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
+
+    <!-- ====================================================================== -->
+    <!-- P R O F I L E S                                                        -->
+    <!-- ====================================================================== -->
+    <profiles>
+        <profile>
+            <id>oak</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.jackrabbit</groupId>
+                    <artifactId>oak-run</artifactId>
+                    <version>0.13-SNAPSHOT</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Doak=true</argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

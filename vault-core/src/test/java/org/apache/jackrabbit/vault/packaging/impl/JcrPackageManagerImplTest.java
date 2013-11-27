@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.impl;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.jcr.GuestCredentials;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -49,7 +50,7 @@ public class JcrPackageManagerImplTest extends IntegrationTestBase {
         String path = "/etc/packages";
         try {
             jcrPackageManager.mkdir(path, true);
-            fail("this should've thrown RepositoryException as the session always tells nodes don't exist");
+            fail("this should have thrown RepositoryException as the session always tells nodes don't exist");
         }
         catch (RepositoryException e) {
             // everything it's ok
@@ -59,7 +60,7 @@ public class JcrPackageManagerImplTest extends IntegrationTestBase {
 
     @Test
     public void testMkDirWithAnonymousSession() throws Exception {
-        Session session = repository.login(new SimpleCredentials("anonymous", "anonymous".toCharArray()));
+        Session session = repository.login(new GuestCredentials());
         JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(session);
         jcrPackageManager.mkdir("/something/that/is/not/going/to/be/found/anywhere/in/this/repository/even/if/searching/in/very/long/paths/like/this", false);
         jcrPackageManager.mkdir("/something/that/is/not/going/to/be/found/anywhere/in/this/repository/even/if/searching/in/very/long/paths/like/this", false);
@@ -83,6 +84,9 @@ public class JcrPackageManagerImplTest extends IntegrationTestBase {
             NodeIterator nodes = currentNode.getNodes();
             while (nodes.hasNext()) {
                 Node node = nodes.nextNode();
+                if (node.getName().equals("jcr:system")) {
+                    continue;
+                }
                 String nodePath = node.getPath();
                 if (visitedPaths.contains(nodePath)) {
                     continue;

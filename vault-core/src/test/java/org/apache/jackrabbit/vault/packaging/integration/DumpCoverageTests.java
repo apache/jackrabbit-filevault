@@ -18,6 +18,8 @@
 package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -129,6 +131,8 @@ public class DumpCoverageTests extends IntegrationTestBase {
     }
 
     public static void checkResults(String msg, String[] expected, List<String> result) {
+        Arrays.sort(expected);
+        Collections.sort(result);
         String left = Text.implode(expected, "\n");
         String right = Text.implode(result.toArray(new String[result.size()]), "\n");
         assertEquals(msg, left, right);

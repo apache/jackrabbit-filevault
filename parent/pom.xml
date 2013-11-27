@@ -304,6 +304,22 @@
     <!-- P R O F I L E S                                                        -->
     <!-- ====================================================================== -->
     <profiles>
+        <profile>
+            <id>oak</id>
+            <properties>
+                <jackrabbit.version>2.7.2</jackrabbit.version>
+                <oak.version>0.13-SNAPSHOT</oak.version>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.jackrabbit</groupId>
+                        <artifactId>oak-run</artifactId>
+                        <version>${oak.version}</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
     </profiles>
 
 </project>

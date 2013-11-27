@@ -17,12 +17,16 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
+import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
+import org.junit.After;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -33,24 +37,39 @@ import static org.junit.Assert.assertTrue;
  */
 public class AdminPermissionCheckerTest extends IntegrationTestBase {
 
+    private static final String TEST_USER = "testUser";
+
     @Test
     public void testAdminUser() throws Exception {
         assertTrue("user admin should have admin permissions", AdminPermissionChecker.hasAdministrativePermissions(admin));
     }
 
+    @After
+    public void after() throws RepositoryException {
+        JackrabbitSession jackrabbitSession = (JackrabbitSession) admin;
+        Authorizable vip = jackrabbitSession.getUserManager().getAuthorizable(TEST_USER);
+        if (vip != null) {
+            vip.remove();
+        }
+        jackrabbitSession.save();
+    }
+
     @Test
     public void testNotAdminUser() throws Exception {
         JackrabbitSession jackrabbitSession = (JackrabbitSession) admin;
-        Authorizable vip = jackrabbitSession.getUserManager().getAuthorizable("who");
+        Authorizable vip = jackrabbitSession.getUserManager().getAuthorizable(TEST_USER);
         if (vip == null) {
-            jackrabbitSession.getUserManager().createUser("who", "who");
+            jackrabbitSession.getUserManager().createUser(TEST_USER, TEST_USER);
         }
-        jackrabbitSession.save();
         admin.save();
-        admin.logout();
-        admin = repository.login(new SimpleCredentials("who", "who".toCharArray()));
-        assertFalse("\"who\" is not admin/system and doesn't belong to administrators thus shouldn't have admin permissions",
-                AdminPermissionChecker.hasAdministrativePermissions(admin));
+        Session session = repository.login(new SimpleCredentials(TEST_USER, TEST_USER.toCharArray()));
+        try {
+            assertFalse(
+                    "\"" + TEST_USER + "\" is not admin/system and doesn't belong to administrators thus shouldn't have admin permissions",
+                    AdminPermissionChecker.hasAdministrativePermissions(session));
+        } finally {
+            session.logout();
+        }
     }
 
     @Test
@@ -61,13 +80,20 @@ public class AdminPermissionCheckerTest extends IntegrationTestBase {
             admins = jackrabbitSession.getUserManager().createGroup("administrators");
         }
         Group adminsGroup = (Group) admins;
-        adminsGroup.addMember(jackrabbitSession.getUserManager().getAuthorizable("anonymous"));
-        jackrabbitSession.save();
+        User testUser = (User) jackrabbitSession.getUserManager().getAuthorizable(TEST_USER);
+        if (testUser == null) {
+            testUser = jackrabbitSession.getUserManager().createUser(TEST_USER, TEST_USER);
+        }
+        adminsGroup.addMember(testUser);
         admin.save();
-        admin.logout();
-        admin = repository.login(new SimpleCredentials("anonymous", "anonymous".toCharArray()));
-        assertTrue("user \"anonymous\" has been added to administrators group thus should have admin permissions",
-                AdminPermissionChecker.hasAdministrativePermissions(admin));
+        Session session = repository.login(new SimpleCredentials(TEST_USER, TEST_USER.toCharArray()));
+        try {
+            assertTrue(
+                    "user \"" + TEST_USER + "\" has been added to administrators group thus should have admin permissions",
+                    AdminPermissionChecker.hasAdministrativePermissions(session));
+        } finally {
+            session.logout();
+        }
     }
 
 

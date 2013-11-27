@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -31,9 +32,19 @@ import javax.jcr.SimpleCredentials;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
 import org.apache.jackrabbit.core.RepositoryImpl;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
+import org.apache.jackrabbit.core.security.principal.EveryonePrincipal;
 import org.apache.jackrabbit.oak.jcr.Jcr;
+import org.apache.jackrabbit.oak.security.SecurityProviderImpl;
+import org.apache.jackrabbit.oak.spi.security.ConfigurationParameters;
+import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants;
+import org.apache.jackrabbit.oak.spi.security.user.UserConfiguration;
+import org.apache.jackrabbit.oak.spi.security.user.UserConstants;
+import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction;
+import org.apache.jackrabbit.oak.spi.xml.ImportBehavior;
+import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
@@ -70,7 +81,23 @@ public class IntegrationTestBase  {
     @BeforeClass
     public static void initRepository() throws RepositoryException {
         if (Boolean.getBoolean("oak")) {
-            repository = new Jcr().createRepository();
+            Properties userProps = new Properties();
+            userProps.put(UserConstants.PARAM_USER_PATH, "/home/users");
+            userProps.put(UserConstants.PARAM_GROUP_PATH, "/home/groups");
+            userProps.put(AccessControlAction.USER_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_ALL});
+            userProps.put(AccessControlAction.GROUP_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_READ});
+            userProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
+            Properties securityProps = new Properties();
+            securityProps.put(UserConfiguration.NAME, ConfigurationParameters.of(userProps));
+            repository = new Jcr()
+                    .with(new SecurityProviderImpl(ConfigurationParameters.of(securityProps)))
+                    .createRepository();
+
+            // setup default read ACL for everyone
+            Session admin = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
+            AccessControlUtils.addAccessControlEntry(admin, "/", EveryonePrincipal.getInstance(), new String[]{"jcr:read"}, true);
+            admin.save();
+            admin.logout();
         } else {
             InputStream in = IntegrationTestBase.class.getResourceAsStream("repository.xml");
             RepositoryConfig cfg = RepositoryConfig.create(in, REPO_HOME);

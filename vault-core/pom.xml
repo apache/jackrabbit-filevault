@@ -197,6 +197,12 @@
             <version>${jackrabbit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>oak-run</artifactId>
+            <version>${oak.version}</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
@@ -207,12 +213,6 @@
         <profile>
             <id>oak</id>
             <dependencies>
-                <dependency>
-                    <groupId>org.apache.jackrabbit</groupId>
-                    <artifactId>oak-run</artifactId>
-                    <version>0.13-SNAPSHOT</version>
-                    <scope>test</scope>
-                </dependency>
             </dependencies>
 
             <build>
@@ -220,7 +220,7 @@
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Doak=true</argLine>
+                            <argLine>-Doak=true -Xmx1024m</argLine>
                         </configuration>
                     </plugin>
                 </plugins>

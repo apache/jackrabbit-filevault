@@ -40,6 +40,7 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -270,6 +271,23 @@ public class TestACLAndMerge extends IntegrationTestBase {
                 "expected permission missing",
                 hasPermission("/testroot/secured", true, new String[]{"jcr:all"}, "everyone", restrictions)
         );
+    }
+
+    /**
+     * Installs a package with missing ACL user.
+     */
+    @Test
+    @Ignore("current fails due to changes related to JCRVLT-25")
+    public void testMissingUser() throws RepositoryException, IOException, PackageException {
+        assertNodeMissing("/testroot");
+
+        JcrPackage pack = packMgr.upload(getStream("testpackages/mode_ac_test_lateuser.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        // test if nodes and ACLs of first package exist
+        assertNodeExists("/testroot/node_d");
+        assertPermission("/testroot/secured", true, new String[]{"jcr:all"}, "missinguser", null);
     }
 
     protected void assertPermissionMissing(String path, boolean allow, String[] privs, String name, String globRest)

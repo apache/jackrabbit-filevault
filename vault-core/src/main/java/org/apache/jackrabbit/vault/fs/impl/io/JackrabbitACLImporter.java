@@ -42,7 +42,6 @@ import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -54,7 +53,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
     /**
      * default logger
      */
-    private static final Logger log = LoggerFactory.getLogger(JackrabbitACLImporter.class);
+    private static final Logger log = DocViewSAXImporter.log;
 
     private final Node accessControlledNode;
 
@@ -63,6 +62,8 @@ public class JackrabbitACLImporter implements DocViewAdapter {
     private final AccessControlManager acMgr;
 
     private final PrincipalManager pMgr;
+
+    private final String accessControlledPath;
 
     private Map<String, List<ACE>> aceMap = new HashMap<String, List<ACE>>();
 
@@ -83,8 +84,10 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             throw new RepositoryException("Error while reading access control content: unsupported AccessControlHandling: " + aclHandling);
         }
         this.accessControlledNode = accessControlledNode;
-        this.acMgr = accessControlledNode.getSession().getAccessControlManager();
-        this.pMgr = ((JackrabbitSession) accessControlledNode.getSession()).getPrincipalManager();
+        this.accessControlledPath = accessControlledNode.getPath();
+        final JackrabbitSession session = ((JackrabbitSession) accessControlledNode.getSession());
+        this.acMgr = session.getAccessControlManager();
+        this.pMgr = session.getPrincipalManager();
         this.aclHandling = aclHandling;
         this.states.push(State.INITIAL);
     }
@@ -103,13 +106,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
             case ACL:
                 try {
-                    currentACE = new ACE(node);
-                    List<ACE> list = aceMap.get(currentACE.principalName);
-                    if (list == null) {
-                        list = new ArrayList<ACE>();
-                        aceMap.put(currentACE.principalName, list);
-                    }
-                    list.add(currentACE);
+                    currentACE = addACE(aceMap, new ACE(node));
                     state = State.ACE;
                 } catch (IllegalArgumentException e) {
                     log.error("Error while reading access control content: {}", e);
@@ -131,6 +128,16 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         states.push(state);
     }
 
+    private static ACE addACE(Map<String, List<ACE>> map, ACE ace) {
+        List<ACE> list = map.get(ace.principalName);
+        if (list == null) {
+            list = new ArrayList<ACE>();
+            map.put(ace.principalName, list);
+        }
+        list.add(ace);
+        return ace;
+    }
+
     public void endNode() throws SAXException {
         State state = states.pop();
         if (state == State.ACE) {
@@ -150,13 +157,12 @@ public class JackrabbitACLImporter implements DocViewAdapter {
     }
 
     private void apply() throws RepositoryException {
-        final String path = accessControlledNode.getPath();
         final ValueFactory valueFactory = accessControlledNode.getSession().getValueFactory();
 
         // find principals of existing ACL
         JackrabbitAccessControlList acl = null;
         Set<String> existingPrincipals = new HashSet<String>();
-        for (AccessControlPolicy p: acMgr.getPolicies(path)) {
+        for (AccessControlPolicy p: acMgr.getPolicies(accessControlledPath)) {
             if (p instanceof JackrabbitAccessControlList) {
                 acl = (JackrabbitAccessControlList) p;
                 for (AccessControlEntry ace: acl.getAccessControlEntries()) {
@@ -167,12 +173,12 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
         // remove existing policy for 'overwrite'
         if (aclHandling == AccessControlHandling.OVERWRITE && acl != null) {
-            acMgr.removePolicy(path, acl);
+            acMgr.removePolicy(accessControlledPath, acl);
             acl = null;
         }
 
         if (acl == null) {
-            AccessControlPolicyIterator iter = acMgr.getApplicablePolicies(path);
+            AccessControlPolicyIterator iter = acMgr.getApplicablePolicies(accessControlledPath);
             while (iter.hasNext()) {
                 AccessControlPolicy p = iter.nextAccessControlPolicy();
                 if (p instanceof JackrabbitAccessControlList) {
@@ -182,7 +188,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             }
         }
         if (acl == null) {
-            throw new RepositoryException("not JackrabbitAccessControlList applicable on " + path);
+            throw new RepositoryException("not JackrabbitAccessControlList applicable on " + accessControlledPath);
         }
 
         // apply ACEs of package
@@ -226,7 +232,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
                 acl.addEntry(principal, privileges, ace.allow, svRestrictions, mvRestrictions);
             }
         }
-        acMgr.setPolicy(path, acl);
+        acMgr.setPolicy(accessControlledPath, acl);
     }
 
     private static class ACE {

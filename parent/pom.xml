@@ -41,7 +41,7 @@
 
     <properties>
         <jackrabbit.version>2.7.2</jackrabbit.version>
-        <oak.version>0.15-SNAPSHOT</oak.version>
+        <oak.version>0.16-SNAPSHOT</oak.version>
     </properties>
 
     <!-- ====================================================================== -->

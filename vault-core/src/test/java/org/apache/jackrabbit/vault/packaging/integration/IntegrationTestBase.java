@@ -39,6 +39,7 @@ import org.apache.jackrabbit.core.security.principal.EveryonePrincipal;
 import org.apache.jackrabbit.oak.jcr.Jcr;
 import org.apache.jackrabbit.oak.security.SecurityProviderImpl;
 import org.apache.jackrabbit.oak.spi.security.ConfigurationParameters;
+import org.apache.jackrabbit.oak.spi.security.authorization.AuthorizationConfiguration;
 import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants;
 import org.apache.jackrabbit.oak.spi.security.user.UserConfiguration;
 import org.apache.jackrabbit.oak.spi.security.user.UserConstants;
@@ -87,8 +88,11 @@ public class IntegrationTestBase  {
             userProps.put(AccessControlAction.USER_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_ALL});
             userProps.put(AccessControlAction.GROUP_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_READ});
             userProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
+            Properties authzProps = new Properties();
+            authzProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
             Properties securityProps = new Properties();
             securityProps.put(UserConfiguration.NAME, ConfigurationParameters.of(userProps));
+            securityProps.put(AuthorizationConfiguration.NAME, ConfigurationParameters.of(authzProps));
             repository = new Jcr()
                     .with(new SecurityProviderImpl(ConfigurationParameters.of(securityProps)))
                     .createRepository();

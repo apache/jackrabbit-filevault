@@ -80,7 +80,7 @@ public class IntegrationTestBase  {
 
     @BeforeClass
     public static void initRepository() throws RepositoryException {
-        if (Boolean.getBoolean("oak")) {
+        if (isOak()) {
             Properties userProps = new Properties();
             userProps.put(UserConstants.PARAM_USER_PATH, "/home/users");
             userProps.put(UserConstants.PARAM_GROUP_PATH, "/home/groups");
@@ -126,6 +126,10 @@ public class IntegrationTestBase  {
         clean("/testroot");
 
         packMgr = new JcrPackageManagerImpl(admin);
+    }
+
+    public static boolean isOak() {
+        return Boolean.getBoolean("oak");
     }
 
     public void clean(String path) {

@@ -35,19 +35,64 @@ public enum AccessControlHandling {
     OVERWRITE,
 
     /**
-     * Tries to merge access control provided with the package with the one on
-     * the target.
+     * Merge access control provided with the package with the one in the
+     * content by replacing the access control entries of corresponding
+     * principals (i.e. package first). It never alters access control entries
+     * of principals not present in the package.
+     * <p/>
+     * Example:<br/>
      *
-     * This is currently not fully supported and behaves like {@link #OVERWRITE}
-     * for existing ACLs. ACLs not in the package are retained.
+     * Content ACL:
+     * <pre>
+     *     everyone, deny, jcr:all
+     *     bob, allow, jcr:read
+     *     bob, allow, jcr:write
+     * </pre>
+     *
+     * Package ACL:
+     * <pre>
+     *     bob, deny, jcr:all
+     *     alice, allow, jcr:read
+     * </pre>
+     *
+     * Result ACL:
+     * <pre>
+     *     everyone, deny, jcr:all
+     *     bob, deny, jcr:all
+     *     alice, allow, jcr:read
+     * </pre>
      */
     MERGE,
 
     /**
-     * Tries to merge access control in the content with the one provided by the package.
+     * Merge access control in the content with the one provided with the
+     * package by adding the access control entries of principals not present in the
+     * content (i.e. content first). It never alters access control entries already
+     * existing in the content.
      *
-     * This is currently not fully supported and behaves like {@link #IGNORE}
-     * for existing ACLs. ACLs not in the package are retained.
+     * <p/>
+     * Example:<br/>
+     *
+     * Content ACL:
+     * <pre>
+     *     everyone, deny, jcr:all
+     *     bob, allow, jcr:read
+     *     bob, allow, jcr:write
+     * </pre>
+     *
+     * Package ACL:
+     * <pre>
+     *     bob, deny, jcr:all
+     *     alice, allow, jcr:read
+     * </pre>
+     *
+     * Result ACL:
+     * <pre>
+     *     everyone, deny, jcr:all
+     *     bob, allow, jcr:read
+     *     bob, allow, jcr:write
+     *     alice, allow, jcr:read
+     * </pre>
      */
     MERGE_PRESERVE,
 

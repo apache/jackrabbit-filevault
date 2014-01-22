@@ -46,9 +46,7 @@ import javax.jcr.nodetype.NodeType;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
-import org.apache.jackrabbit.spi.commons.conversion.NamePathResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
-import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.util.ISO9075;
 import org.apache.jackrabbit.vault.fs.PropertyValueArtifact;
@@ -64,6 +62,7 @@ import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
+import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
@@ -588,7 +587,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             Node node = stack.getNode();
             if (node == null) {
                 stack = stack.push(null);
-                SysViewTransformer xform = stack.getTransformer();
+                DocViewAdapter xform = stack.getAdapter();
                 if (xform != null) {
                     DocViewNode ni = new DocViewNode(name, label, attributes, npResolver);
                     xform.startNode(ni);
@@ -608,16 +607,14 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     try {
                         DocViewNode ni = new DocViewNode(name, label, attributes, npResolver);
                         if (aclManagement.isACLNodeType(ni.primary)) {
-                            if (aclHandling == AccessControlHandling.OVERWRITE
-                                    || aclHandling == AccessControlHandling.MERGE
-                                    || aclHandling == AccessControlHandling.MERGE_PRESERVE && !node.hasNode(ni.name)) {
-                                log.debug("ACL element detected. starting sysview transformation {}/{}", node.getPath(), name);
+                            if (aclHandling != AccessControlHandling.CLEAR && aclHandling != AccessControlHandling.IGNORE) {
+                                log.debug("ACL element detected. starting special transformation {}/{}", node.getPath(), name);
                                 if (aclManagement.ensureAccessControllable(node)) {
                                     log.info("Adding ACL element to non ACL parent - adding mixin: {}", node.getPath());
                                 }
                                 stack = stack.push(null);
-                                stack.transformer = new SysViewTransformer(node);
-                                stack.transformer.startNode(ni);
+                                stack.adapter = new JackrabbitACLImporter(node, aclHandling);
+                                stack.adapter.startNode(ni);
                                 importInfo.onCreated(node.getPath() + "/" + ni.name);
                             } else {
                                 stack = stack.push(null);
@@ -650,8 +647,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                             } else {
                                 log.debug("Authorizable element detected. starting sysview transformation {}/{}", node.getPath(), name);
                                 stack = stack.push(null);
-                                stack.transformer = new SysViewTransformer(node);
-                                stack.transformer.startNode(ni);
+                                stack.adapter = new JcrSysViewTransformer(node);
+                                stack.adapter.startNode(ni);
                                 importInfo.onCreated(node.getPath() + "/" + ni.name);
                             }
                         } else {
@@ -1057,14 +1054,14 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             NodeNameList childNames = stack.getChildNames();
             Node node = stack.getNode();
             if (node == null) {
-                SysViewTransformer xform = stack.getTransformer();
-                if (xform != null) {
-                    xform.endNode();
+                DocViewAdapter adapter = stack.getAdapter();
+                if (adapter != null) {
+                    adapter.endNode();
                 }
                 // close transformer if last in stack
-                if (stack.transformer != null) {
-                    stack.transformer.close();
-                    stack.transformer = null;
+                if (stack.adapter != null) {
+                    stack.adapter.close();
+                    stack.adapter = null;
                     log.debug("Sysview transformation complete.");
                 }
             } else {
@@ -1238,9 +1235,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         private boolean isCheckedOut;
 
         /**
-         * sysview handler for special content
+         * adapter for special content
          */
-        private SysViewTransformer transformer;
+        private DocViewAdapter adapter;
 
         public StackElement(DocViewSAXImporter.StackElement parent, Node node) throws RepositoryException {
             this.node = node;
@@ -1297,112 +1294,15 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             return parent;
         }
 
-        public void setTransformer(SysViewTransformer transformer) {
-            this.transformer = transformer;
-        }
-
-        public SysViewTransformer getTransformer() {
-            if (transformer != null) {
-                return transformer;
+        public DocViewAdapter getAdapter() {
+            if (adapter != null) {
+                return adapter;
             }
-            return parent == null ? null : parent.getTransformer();
+            return parent == null ? null : parent.getAdapter();
         }
 
     }
 
-    private static class SysViewTransformer {
-
-        /**
-         * sysview handler for special content
-         */
-        private ContentHandler handler;
-
-        private SysViewTransformer(Node node) throws RepositoryException, SAXException {
-            Session session = node.getSession();
-            handler = session.getImportContentHandler(
-                    node.getPath(),
-                    ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
-            // first define the current namespaces
-            String[] prefixes = session.getNamespacePrefixes();
-            handler.startDocument();
-            for (String prefix: prefixes) {
-                handler.startPrefixMapping(prefix, session.getNamespaceURI(prefix));
-            }
-        }
-
-        public void close() throws SAXException {
-            handler.endDocument();
-        }
-
-        public void startNode(DocViewNode ni) throws SAXException {
-            log.debug("Transforming element to sysview {}", ni.name);
-
-            AttributesImpl attrs = new AttributesImpl();
-
-            attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", ni.name);
-            handler.startElement(Name.NS_SV_URI, "node", "sv:node", attrs);
-
-            // add the properties
-            for (DocViewProperty p: ni.props.values()) {
-                if (p != null && p.values != null) {
-                    attrs = new AttributesImpl();
-                    attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", p.name);
-                    attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", "CDATA", PropertyType.nameFromValue(p.type));
-                    handler.startElement(Name.NS_SV_URI, "property", "sv:property", attrs);
-                    for (String v: p.values) {
-                        handler.startElement(Name.NS_SV_URI, "value", "sv:value", EMPTY_ATTRIBUTES);
-                        handler.characters(v.toCharArray(), 0, v.length());
-                        handler.endElement(Name.NS_SV_URI, "value", "sv:value");
-                    }
-                    handler.endElement(Name.NS_SV_URI, "property", "sv:property");
-                }
-            }
-        }
-
-        public void endNode() throws SAXException {
-            handler.endElement(Name.NS_SV_URI, "node", "sv:node");
-        }
-    }
-
-    /**
-     * <code>DocViewNode</code>...
-     */
-    private static class DocViewNode {
-
-        private final String name;
-        private final String label;
-        private final Map<String, DocViewProperty> props = new HashMap<String, DocViewProperty>();
-        private String uuid = null;
-        private String[] mixins = null;
-        private String primary = null;
-
-        public DocViewNode(String name, String label, Attributes attributes,
-                           NamePathResolver npResolver)
-                throws NamespaceException {
-            this.name = name;
-            this.label = label;
-            for (int i = 0; i < attributes.getLength(); i++) {
-                // ignore non CDATA attributes
-                if (!attributes.getType(i).equals("CDATA")) {
-                    continue;
-                }
-                Name pName = NameFactoryImpl.getInstance().create(
-                        attributes.getURI(i),
-                        ISO9075.decode(attributes.getLocalName(i)));
-                DocViewProperty info = DocViewProperty.parse(
-                        npResolver.getJCRName(pName),
-                        attributes.getValue(i));
-                props.put(info.name, info);
-                if (pName.equals(NameConstants.JCR_UUID)) {
-                    uuid = info.values[0];
-                } else if (pName.equals(NameConstants.JCR_PRIMARYTYPE)) {
-                    primary = info.values[0];
-                } else if (pName.equals(NameConstants.JCR_MIXINTYPES)) {
-                    mixins = info.values;
-                }
-            }
-        }
-    }
 }
 
 

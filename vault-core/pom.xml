@@ -212,9 +212,6 @@
     <profiles>
         <profile>
             <id>oak</id>
-            <dependencies>
-            </dependencies>
-
             <build>
                 <plugins>
                     <plugin>

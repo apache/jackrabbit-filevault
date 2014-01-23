@@ -82,7 +82,11 @@ public class VaultAuthConfig extends AbstractConfig {
     }
 
     public void save() throws IOException {
-        save(new File(getConfigDir(), Constants.AUTH_XML));
+        save(getConfigFile());
+    }
+
+    public File getConfigFile() throws IOException {
+        return new File(getConfigDir(), Constants.AUTH_XML);
     }
 
     public static class RepositoryConfig {
@@ -116,9 +120,9 @@ public class VaultAuthConfig extends AbstractConfig {
                 Node child = nl.item(i);
                 if (child.getNodeType() == Node.ELEMENT_NODE) {
                     if (child.getNodeName().equals(CredentialsConfig.ELEM_CREDETIALS)) {
-                        CredentialsConfig ccfg = CredentialsConfig.load((Element) child);
-                        if (ccfg != null) {
-                            cfg.creds = ccfg;
+                        CredentialsConfig credentialsConfig = CredentialsConfig.load((Element) child);
+                        if (credentialsConfig != null) {
+                            cfg.creds = credentialsConfig;
                         }
                     } else {
                         throw new ConfigurationException("unexpected element: " + child.getLocalName());

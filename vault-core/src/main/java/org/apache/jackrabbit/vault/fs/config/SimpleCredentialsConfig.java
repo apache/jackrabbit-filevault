@@ -17,9 +17,18 @@
 
 package org.apache.jackrabbit.vault.fs.config;
 
+import java.io.ByteArrayOutputStream;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.jcr.Credentials;
 import javax.jcr.SimpleCredentials;
 
+import org.apache.jackrabbit.vault.util.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -32,6 +41,21 @@ import org.xml.sax.helpers.AttributesImpl;
 *
 */
 public class SimpleCredentialsConfig extends CredentialsConfig {
+
+    /**
+     * key length
+     */
+    private final static int KEY_LENGTH = 8;
+
+    /**
+     * encryption prefix
+     */
+    private final static String PREFIX = "{DES}";
+
+    /**
+     * default logger
+     */
+    private static final Logger log = LoggerFactory.getLogger(SimpleCredentialsConfig.class);
 
     private final SimpleCredentials creds;
     public static final String ELEM_USER = "user";
@@ -57,7 +81,7 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
                 if (child.getNodeName().equals(ELEM_USER)) {
                     Element e = (Element) child;
                     String name = e.getAttribute(ATTR_NAME);
-                    String pass = e.getAttribute(ATTR_PASSWORD);
+                    String pass = decrypt(e.getAttribute(ATTR_PASSWORD));
                     return new SimpleCredentialsConfig(
                             new SimpleCredentials(
                                     name,
@@ -72,9 +96,67 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
         if (creds != null) {
             AttributesImpl attrs = new AttributesImpl();
             attrs.addAttribute("", ATTR_NAME, "", "CDATA", creds.getUserID());
-            attrs.addAttribute("", ATTR_PASSWORD, "", "CDATA", new String(creds.getPassword()));
+            attrs.addAttribute("", ATTR_PASSWORD, "", "CDATA", encrypt(new String(creds.getPassword())));
             handler.startElement("", ELEM_USER, "", attrs);
             handler.endElement("", ELEM_USER, "");
         }
     }
+
+    /**
+     * Encrypts the given string in a fairly secure way so that it can be
+     * {@link #decrypt(String) decrypted} again.
+     *
+     * @param s string to encrypt
+     * @return the encrypted string with a "{AES}" prefix.
+     */
+    private static String encrypt(String s) {
+        try {
+            SecretKey key = KeyGenerator.getInstance("DES").generateKey();
+            Cipher cipher = Cipher.getInstance("DES");
+            byte[] keyBytes = key.getEncoded();
+            byte[] data = s.getBytes("utf-8");
+            ByteArrayOutputStream out = new ByteArrayOutputStream(keyBytes.length + data.length);
+            out.write(keyBytes);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            out.write(cipher.update(data));
+            out.write(cipher.doFinal());
+            StringBuilder ret = new StringBuilder(PREFIX);
+            for (byte b: out.toByteArray()) {
+                ret.append(Text.hexTable[b>>4 & 0x0f]).append(Text.hexTable[b&0x0f]);
+            }
+            return ret.toString();
+        } catch (Exception e) {
+            log.warn("Unable to encrypt string: " + e);
+            return null;
+        }
+    }
+
+    /**
+     * Decrypts a string that was previously {@link #encrypt(String)} encrypted}.
+     *
+     * @param s the data to decrypt
+     * @return the string or <code>null</code> if an internal error occurred
+     */
+    private static String decrypt(String s) {
+        if (s == null || !s.startsWith(PREFIX)) {
+            return s;
+        }
+        try {
+            byte[] data = new byte[(s.length() - PREFIX.length())/2];
+            for (int i=PREFIX.length(),b=0; i<s.length(); i+=2, b++) {
+                data[b] = (byte) (Integer.parseInt(s.substring(i, i+2), 16) &0xff);
+            }
+            SecretKeySpec key = new SecretKeySpec(data, 0, KEY_LENGTH, "DES");
+            Cipher cipher = Cipher.getInstance("DES");
+            ByteArrayOutputStream out = new ByteArrayOutputStream(data.length);
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            out.write(cipher.update(data, KEY_LENGTH, data.length - KEY_LENGTH));
+            out.write(cipher.doFinal());
+            return out.toString("utf-8");
+        } catch (Exception e) {
+            log.warn("Unable to decrypt data: " + e);
+            return null;
+        }
+    }
+
 }

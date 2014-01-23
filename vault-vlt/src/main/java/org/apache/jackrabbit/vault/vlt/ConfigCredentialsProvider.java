@@ -32,14 +32,19 @@ import org.slf4j.LoggerFactory;
  * <code>CredentialsProvider</code>...
  *
  */
-public class ConfigCredentialsProvider extends DefaultCredentialsProvider {
+public class ConfigCredentialsProvider implements CredentialsProvider {
 
     protected static Logger log = LoggerFactory.getLogger(ConfigCredentialsProvider.class);
 
     private VaultAuthConfig config;
 
-    public ConfigCredentialsProvider(CredentialsProvider base) {
-        super(base);
+    private Credentials defaultCreds;
+
+    private Credentials credentials;
+
+    private boolean storeEnabled;
+
+    public ConfigCredentialsProvider() {
         config = new VaultAuthConfig();
         try {
             config.load();
@@ -50,21 +55,38 @@ public class ConfigCredentialsProvider extends DefaultCredentialsProvider {
         }
     }
 
+    public void setDefaultCredentials(String userPass) {
+        this.defaultCreds = fromUserPass(userPass);
+    }
+
+    public void setCredentials(String userPass) {
+        this.credentials = fromUserPass(userPass);
+    }
+
+    private static Credentials fromUserPass(String userPass) {
+        if (userPass != null) {
+            int idx = userPass.indexOf(':');
+            if (idx > 0) {
+                return new SimpleCredentials(userPass.substring(0, idx), userPass.substring(idx + 1).toCharArray());
+            } else {
+                return new SimpleCredentials(userPass, new char[0]);
+            }
+        }
+        return null;
+    }
+
     public Credentials getCredentials(RepositoryAddress mountpoint) {
-        // check if temporary creds are set
-        if (super.getCredentials(mountpoint) != null) {
-            return super.getCredentials(mountpoint);
+        if (credentials != null) {
+            return credentials;
         }
         Credentials creds = fetchCredentials(mountpoint);
         return creds == null
-                ? super.getCredentials(mountpoint)
+                ? defaultCreds
                 : creds;
     }
 
     private Credentials fetchCredentials(RepositoryAddress mountpoint) {
-        VaultAuthConfig.RepositoryConfig cfg = config.getRepoConfig(
-                getLookupId(mountpoint)
-        );
+        VaultAuthConfig.RepositoryConfig cfg = config.getRepoConfig(getLookupId(mountpoint));
         if (cfg == null) {
             return null;
         }
@@ -82,15 +104,28 @@ public class ConfigCredentialsProvider extends DefaultCredentialsProvider {
             }
             return;
         }
-        VaultAuthConfig.RepositoryConfig cfg  = new VaultAuthConfig.RepositoryConfig(
-                getLookupId(mountpoint)
-        );
-        cfg.addCredsConfig(new SimpleCredentialsConfig(((SimpleCredentials) creds)));
-        config.addRepositoryConfig(cfg);
-        try {
-            config.save();
-        } catch (IOException e) {
-            log.error("Error while saving auth configuration: {} ", e.toString());
+        Credentials currentCreds = fetchCredentials(mountpoint);
+        if (creds.equals(currentCreds)) {
+            // don't update if already stored
+            return;
         }
+
+        SimpleCredentials simpleCredentials = (SimpleCredentials) creds;
+        if (storeEnabled ||
+                "admin".equals(simpleCredentials.getUserID()) && "admin".equals(new String(simpleCredentials.getPassword()))) {
+            VaultAuthConfig.RepositoryConfig cfg  = new VaultAuthConfig.RepositoryConfig(getLookupId(mountpoint));
+            cfg.addCredsConfig(new SimpleCredentialsConfig(simpleCredentials));
+            config.addRepositoryConfig(cfg);
+            try {
+                config.save();
+                log.warn("Credentials for {} updated in {}.", mountpoint, config.getConfigFile().getPath());
+            } catch (IOException e) {
+                log.error("Error while saving auth configuration: {} ", e.toString());
+            }
+        }
+    }
+
+    public void setStoreEnabled(boolean storeEnabled) {
+        this.storeEnabled = storeEnabled;
     }
 }

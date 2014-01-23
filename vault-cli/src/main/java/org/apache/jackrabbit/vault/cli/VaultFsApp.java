@@ -58,7 +58,7 @@ import org.apache.jackrabbit.vault.util.console.util.CliHelpFormatter;
 import org.apache.jackrabbit.vault.util.console.util.Log4JConfig;
 import org.apache.jackrabbit.vault.util.console.util.PomProperties;
 import org.apache.jackrabbit.vault.vlt.ConfigCredentialsProvider;
-import org.apache.jackrabbit.vault.vlt.DefaultCredentialsProvider;
+import org.apache.jackrabbit.vault.vlt.CredentialsProvider;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.VltDirectory;
 import org.apache.jackrabbit.vault.vlt.meta.MetaDirectory;
@@ -92,8 +92,7 @@ public class VaultFsApp extends AbstractApplication {
 
     private RepositoryProvider repProvider;
 
-    private DefaultCredentialsProvider defCredsProvider;
-
+    private CredentialsProvider credentialsProvider;
     private ConfigCredentialsProvider confCredsProvider;
 
     private Repository rep;
@@ -107,6 +106,7 @@ public class VaultFsApp extends AbstractApplication {
     private Option optCreds;
     //private Option optMountpoint;
     private Option optConfig;
+    private Option optUpdateCreds;
 
     private ExtendedOption[] xOpts = new ExtendedOption[]{
             new XJcrLog(),
@@ -134,10 +134,10 @@ public class VaultFsApp extends AbstractApplication {
         try {
             // hack for setting the default credentials
             if (ctxRepository != null) {
-                defCredsProvider.setDefaultCredentials(getProperty(KEY_DEFAULT_CREDS));
+                confCredsProvider.setDefaultCredentials(getProperty(KEY_DEFAULT_CREDS));
             }
             File cwd = getPlatformFile("", true).getCanonicalFile();
-            return new VltContext(cwd, localFile, repProvider, confCredsProvider);
+            return new VltContext(cwd, localFile, repProvider, credentialsProvider);
         } catch (IOException e) {
             throw new ExecutionException(e);
         } catch (ConfigurationException e) {
@@ -463,8 +463,8 @@ public class VaultFsApp extends AbstractApplication {
 
         // init providers
         repProvider = new RepositoryProvider();
-        defCredsProvider = new DefaultCredentialsProvider();
-        confCredsProvider = new ConfigCredentialsProvider(defCredsProvider);
+        confCredsProvider = new ConfigCredentialsProvider();
+        credentialsProvider = new PasswordPromptingCredentialProvider(confCredsProvider);
 
         // setup default config
         setProperty(KEY_DEFAULT_CREDS, null);
@@ -544,11 +544,16 @@ public class VaultFsApp extends AbstractApplication {
                 .withLongName("credentials")
                 .withDescription("The default credentials to use")
                 .withArgument(new ArgumentBuilder()
-                        .withDescription("Format: <user:pass>. If missing an anoymous login is used")
+                        .withDescription("Format: <user:pass>. If missing an anonymous login is used. " +
+                                "If the password is not specified it is prompted via console.")
                         .withMinimum(0)
                         .withMaximum(1)
                         .create()
                 )
+                .create();
+        optUpdateCreds = new DefaultOptionBuilder()
+                .withLongName("update-credentials")
+                .withDescription("if present the credentials-to-host list is updated in the ~/.vault/auth.xml")
                 .create();
         /*
         optMountpoint = new DefaultOptionBuilder()
@@ -580,6 +585,7 @@ public class VaultFsApp extends AbstractApplication {
         //gbuilder.withOption(optURI);
         //gbuilder.withOption(optWorkspace);
         gbuilder.withOption(optCreds);
+        gbuilder.withOption(optUpdateCreds);
         //gbuilder.withOption(optMountpoint);
         gbuilder.withOption(optConfig);
         return super.addApplicationOptions(gbuilder);
@@ -620,12 +626,43 @@ public class VaultFsApp extends AbstractApplication {
         if (cl.getValue(optCreds) != null) {
             String userPass = (String) cl.getValue(optCreds);
             setProperty(KEY_DEFAULT_CREDS, userPass);
-            confCredsProvider.setDefaultCredentials(userPass);
+            confCredsProvider.setCredentials(userPass);
+            confCredsProvider.setStoreEnabled(cl.hasOption(optUpdateCreds));
         }
         if (cl.getValue(optConfig) != null) {
             setProperty(KEY_DEFAULT_CONFIG_XML, (String) cl.getValue(optConfig));
         }
     }
 
+    private static class PasswordPromptingCredentialProvider implements CredentialsProvider {
+
+        private CredentialsProvider base;
+
+        private PasswordPromptingCredentialProvider(CredentialsProvider base) {
+            this.base = base;
+        }
+
+        public Credentials getCredentials(RepositoryAddress mountpoint) {
+            Credentials creds = base.getCredentials(mountpoint);
+            if (creds instanceof SimpleCredentials) {
+                try {
+                    SimpleCredentials simpleCredentials = (SimpleCredentials) creds;
+                    if (simpleCredentials.getPassword().length == 0) {
+                        System.out.printf("Please enter password for user %s connecting to %s: ",
+                                simpleCredentials.getUserID(), mountpoint);
+                        String password = new jline.ConsoleReader().readLine('*');
+                        creds = new SimpleCredentials(simpleCredentials.getUserID(), password.toCharArray());
+                    }
+                } catch (IOException e) {
+                    log.error("Error while opening console for reading password" + e);
+                }
+            }
+            return creds;
+        }
+
+        public void storeCredentials(RepositoryAddress mountpoint, Credentials creds) {
+            base.storeCredentials(mountpoint, creds);
+        }
+    }
 
 }

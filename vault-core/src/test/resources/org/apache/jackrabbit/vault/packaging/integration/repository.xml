@@ -117,6 +117,7 @@
         <WorkspaceSecurity>
             <AccessControlProvider class="org.apache.jackrabbit.core.security.authorization.acl.ACLProvider">
                 <!-- param name="omit-default-permission" value="true"/-->
+                <param name="allow-unknown-principals" value="true"/>
             </AccessControlProvider>
         </WorkspaceSecurity>
 

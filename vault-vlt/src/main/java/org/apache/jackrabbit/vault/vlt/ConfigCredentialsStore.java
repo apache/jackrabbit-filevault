@@ -32,9 +32,9 @@ import org.slf4j.LoggerFactory;
  * <code>CredentialsProvider</code>...
  *
  */
-public class ConfigCredentialsProvider implements CredentialsProvider {
+public class ConfigCredentialsStore implements CredentialsStore {
 
-    protected static Logger log = LoggerFactory.getLogger(ConfigCredentialsProvider.class);
+    protected static Logger log = LoggerFactory.getLogger(ConfigCredentialsStore.class);
 
     private VaultAuthConfig config;
 
@@ -44,7 +44,7 @@ public class ConfigCredentialsProvider implements CredentialsProvider {
 
     private boolean storeEnabled;
 
-    public ConfigCredentialsProvider() {
+    public ConfigCredentialsStore() {
         config = new VaultAuthConfig();
         try {
             config.load();

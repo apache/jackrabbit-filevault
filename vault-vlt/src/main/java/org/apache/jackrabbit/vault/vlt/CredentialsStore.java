@@ -19,14 +19,13 @@ package org.apache.jackrabbit.vault.vlt;
 import javax.jcr.Credentials;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
+import org.apache.jackrabbit.vault.util.CredentialsProvider;
 
 /**
  * <code>CredentialsProvider</code>...
  *
  */
-public interface CredentialsProvider {
-
-    Credentials getCredentials(RepositoryAddress mountpoint);
+public interface CredentialsStore extends CredentialsProvider {
 
     void storeCredentials(RepositoryAddress mountpoint, Credentials creds);
 

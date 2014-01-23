@@ -59,6 +59,7 @@ public class CmdRcp extends AbstractVaultCommand {
         rcp.setUpdate(cl.hasOption(optUpdate));
         rcp.setOnlyNewer(cl.hasOption(optNewer));
         rcp.setNoOrdering(cl.hasOption(optNoOrdering));
+        rcp.setCredentialsProvider(app.getCredentialsStore());
         DefaultWorkspaceFilter srcFilter = new DefaultWorkspaceFilter();
         PathFilterSet excludes = new PathFilterSet("/");
         for (Object e: cl.getValues(optExclude)) {

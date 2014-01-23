@@ -62,7 +62,7 @@ public class VltContext {
 
     private final RepositoryProvider repProvider;
 
-    private final CredentialsProvider credsProvider;
+    private final CredentialsStore credsProvider;
 
     private final ExportRoot exportRoot;
 
@@ -89,14 +89,14 @@ public class VltContext {
 
     public VltContext(File cwd, File localFile,
             RepositoryProvider repProvider,
-            CredentialsProvider credsProvider)
+            CredentialsStore credsProvider)
                     throws ConfigurationException, IOException {
         this(cwd, localFile, repProvider, credsProvider, System.out);
     }
 
     public VltContext(File cwd, File localFile,
                         RepositoryProvider repProvider,
-                        CredentialsProvider credsProvider,
+                        CredentialsStore credsProvider,
                         PrintStream out)
             throws ConfigurationException, IOException {
         if (!cwd.exists()) {

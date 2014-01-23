@@ -57,8 +57,8 @@ import org.apache.jackrabbit.vault.util.console.commands.CmdConsole;
 import org.apache.jackrabbit.vault.util.console.util.CliHelpFormatter;
 import org.apache.jackrabbit.vault.util.console.util.Log4JConfig;
 import org.apache.jackrabbit.vault.util.console.util.PomProperties;
-import org.apache.jackrabbit.vault.vlt.ConfigCredentialsProvider;
-import org.apache.jackrabbit.vault.vlt.CredentialsProvider;
+import org.apache.jackrabbit.vault.vlt.ConfigCredentialsStore;
+import org.apache.jackrabbit.vault.vlt.CredentialsStore;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.VltDirectory;
 import org.apache.jackrabbit.vault.vlt.meta.MetaDirectory;
@@ -92,8 +92,8 @@ public class VaultFsApp extends AbstractApplication {
 
     private RepositoryProvider repProvider;
 
-    private CredentialsProvider credentialsProvider;
-    private ConfigCredentialsProvider confCredsProvider;
+    private CredentialsStore credentialsStore;
+    private ConfigCredentialsStore confCredsProvider;
 
     private Repository rep;
 
@@ -137,7 +137,7 @@ public class VaultFsApp extends AbstractApplication {
                 confCredsProvider.setDefaultCredentials(getProperty(KEY_DEFAULT_CREDS));
             }
             File cwd = getPlatformFile("", true).getCanonicalFile();
-            return new VltContext(cwd, localFile, repProvider, credentialsProvider);
+            return new VltContext(cwd, localFile, repProvider, credentialsStore);
         } catch (IOException e) {
             throw new ExecutionException(e);
         } catch (ConfigurationException e) {
@@ -463,8 +463,8 @@ public class VaultFsApp extends AbstractApplication {
 
         // init providers
         repProvider = new RepositoryProvider();
-        confCredsProvider = new ConfigCredentialsProvider();
-        credentialsProvider = new PasswordPromptingCredentialProvider(confCredsProvider);
+        confCredsProvider = new ConfigCredentialsStore();
+        credentialsStore = new PasswordPromptingCredentialsStore(confCredsProvider);
 
         // setup default config
         setProperty(KEY_DEFAULT_CREDS, null);
@@ -502,6 +502,10 @@ public class VaultFsApp extends AbstractApplication {
         console = new VaultFsConsole(this);
         ctxPlatform = new PlatformExecutionContext(this, "local", cwd);
         console.addContext(ctxPlatform);
+    }
+
+    public CredentialsStore getCredentialsStore() {
+        return credentialsStore;
     }
 
     /**
@@ -634,11 +638,11 @@ public class VaultFsApp extends AbstractApplication {
         }
     }
 
-    private static class PasswordPromptingCredentialProvider implements CredentialsProvider {
+    private static class PasswordPromptingCredentialsStore implements CredentialsStore {
 
-        private CredentialsProvider base;
+        private CredentialsStore base;
 
-        private PasswordPromptingCredentialProvider(CredentialsProvider base) {
+        private PasswordPromptingCredentialsStore(CredentialsStore base) {
             this.base = base;
         }
 

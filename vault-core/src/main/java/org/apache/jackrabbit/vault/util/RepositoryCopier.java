@@ -92,6 +92,8 @@ public class RepositoryCopier {
 
     private String  cqLastModified;
 
+    private CredentialsProvider credentialsProvider;
+
     private volatile boolean abort;
 
     public void setTracker(ProgressTrackerListener tracker) {
@@ -206,6 +208,9 @@ public class RepositoryCopier {
 
             try {
                 Credentials srcCreds = src.getCredentials();
+                if (srcCreds == null && credentialsProvider != null) {
+                    srcCreds = credentialsProvider.getCredentials(src);
+                }
                 srcSession = srcRepo.login(srcCreds, src.getWorkspace());
             } catch (RepositoryException e) {
                 log.error("Error while logging in src repository {}: {}", src, e.toString());
@@ -214,6 +219,9 @@ public class RepositoryCopier {
 
             try {
                 Credentials dstCreds = dst.getCredentials();
+                if (dstCreds == null && credentialsProvider != null) {
+                    dstCreds = credentialsProvider.getCredentials(src);
+                }
                 dstSession = dstRepo.login(dstCreds, dst.getWorkspace());
             } catch (RepositoryException e) {
                 log.error("Error while logging in dst repository {}: {}", dst, e.toString());
@@ -584,5 +592,13 @@ public class RepositoryCopier {
         if (tracker != null) {
             tracker.onMessage(ProgressTrackerListener.Mode.TEXT, String.format(fmt, args), path);
         }
+    }
+
+    public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
+        this.credentialsProvider = credentialsProvider;
+    }
+
+    public CredentialsProvider getCredentialsProvider() {
+        return credentialsProvider;
     }
 }

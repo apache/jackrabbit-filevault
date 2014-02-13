@@ -170,12 +170,13 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                 if (file.getSerializationType() == SerializationType.GENERIC
                         || file.getSerializationType() == SerializationType.XML_GENERIC) {
                     // case 1: new file
-                    if (!parent.hasNode(file.getRelativePath())) {
-                        importFile(info, parent, file);
+                    final String fileName = file.getRelativePath();
+                    if (!parent.hasNode(fileName)) {
+                        importFile(info, parent, file, fileName, false);
                     } else {
                         // case 2: same structure, new data
                         if (file instanceof ImportArtifact) {
-                            Node fileNode = parent.getNode(file.getRelativePath());
+                            Node fileNode = parent.getNode(fileName);
                             // check import mode, only replace if not MERGE
                             if (wspFilter.getImportMode(fileNode.getPath()) != ImportMode.MERGE) {
                                 if (!fileNode.hasNode(JcrConstants.JCR_CONTENT)) {
@@ -264,13 +265,17 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
         }
         return info;
     }
-
     private Node importFile(ImportInfo info, Node parent, Artifact primary)
             throws RepositoryException, IOException {
         String name = primary.getRelativePath();
+        return importFile(info, parent, primary, name, parent.hasNode(name));
+    }
+
+    private Node importFile(ImportInfo info, Node parent, Artifact primary, String name, boolean exists)
+            throws RepositoryException, IOException {
         Node fileNode;
         Node contentNode;
-        if (parent.hasNode(name)) {
+        if (exists) {
             fileNode = parent.getNode(name);
             if (!fileNode.isNodeType(JcrConstants.NT_FILE)) {
                 parent.refresh(false);

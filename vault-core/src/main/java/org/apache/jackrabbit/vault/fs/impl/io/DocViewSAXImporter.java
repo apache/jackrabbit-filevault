@@ -320,7 +320,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
     @Override
     public void startDocument() throws SAXException {
         try {
-            stack = new StackElement(null, parentNode);
+            stack = new StackElement(parentNode, parentNode.isNew());
         } catch (RepositoryException e) {
             throw new SAXException(e);
         }
@@ -346,12 +346,12 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     for (String propName: blobs.keySet()) {
                         DocViewSAXImporter.BlobInfo info = blobs.get(propName);
                         if (node.hasNode(propName)) {
-                            handleBinNode(node.getNode(propName), info);
+                            handleBinNode(node.getNode(propName), info, true);
                         } else if (info.isFile()) {
                             // special case for not existing files
                             Node fNode = node.addNode(propName, JcrConstants.NT_FILE);
                             importInfo.onCreated(fNode.getPath());
-                            handleBinNode(fNode, info);
+                            handleBinNode(fNode, info, false);
                         } else {
                             if (info.isMulti) {
                                 node.setProperty(propName, info.getValues(session));
@@ -374,7 +374,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                             }
                             Node fNode = node.addNode(propName, JcrConstants.NT_FILE);
                             importInfo.onCreated(fNode.getPath());
-                            handleBinNode(fNode, info);
+                            handleBinNode(fNode, info, false);
                         }
                     }
                 }
@@ -406,18 +406,23 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         return node;
     }
 
-    private void handleBinNode(Node node, DocViewSAXImporter.BlobInfo info)
+    private void handleBinNode(Node node, DocViewSAXImporter.BlobInfo info, boolean checkIfNtFileOk)
             throws RepositoryException, IOException {
         log.debug("handling binary file at {}", node.getPath());
         if (info.isMulti) {
             throw new IllegalStateException("unable to add MV binary to node " + node.getPath());
         }
-        if (node.isNodeType(JcrConstants.NT_FILE)) {
-            if (node.hasNode(JcrConstants.JCR_CONTENT)) {
-                node = node.getNode(JcrConstants.JCR_CONTENT);
-            } else {
-                node = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
+
+        if (checkIfNtFileOk) {
+            if (node.isNodeType(JcrConstants.NT_FILE)) {
+                if (node.hasNode(JcrConstants.JCR_CONTENT)) {
+                    node = node.getNode(JcrConstants.JCR_CONTENT);
+                } else {
+                    node = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
+                }
             }
+        } else {
+            node = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
         }
 
         Artifact a = info.artifacts.get(0);
@@ -586,7 +591,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             stack.addName(label);
             Node node = stack.getNode();
             if (node == null) {
-                stack = stack.push(null);
+                stack = stack.push();
                 DocViewAdapter xform = stack.getAdapter();
                 if (xform != null) {
                     DocViewNode ni = new DocViewNode(name, label, attributes, npResolver);
@@ -598,11 +603,11 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 if (attributes.getLength() == 0) {
                     // only ordering node. skip
                     log.debug("Skipping empty node {}", node.getPath() + "/" + name);
-                    stack = stack.push(null);
+                    stack = stack.push();
                 } else if (snsNode) {
                     // skip SNS nodes with index > 1
                     log.warn("Skipping unsupported SNS node with index > 1. Some content will be missing after import: {}", node.getPath() + "/" + label);
-                    stack = stack.push(null);
+                    stack = stack.push();
                 } else {
                     try {
                         DocViewNode ni = new DocViewNode(name, label, attributes, npResolver);
@@ -612,12 +617,12 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 if (aclManagement.ensureAccessControllable(node)) {
                                     log.info("Adding ACL element to non ACL parent - adding mixin: {}", node.getPath());
                                 }
-                                stack = stack.push(null);
+                                stack = stack.push();
                                 stack.adapter = new JackrabbitACLImporter(node, aclHandling);
                                 stack.adapter.startNode(ni);
                                 importInfo.onCreated(node.getPath() + "/" + ni.name);
                             } else {
-                                stack = stack.push(null);
+                                stack = stack.push();
                             }
                         } else if (userManagement != null && userManagement.isAuthorizableNodeType(ni.primary)) {
                             boolean skip = false;
@@ -642,18 +647,17 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                             }
                             if (skip) {
                                 log.info("Skipping import of existing authorizable '{}' due to MERGE import mode.", id);
-                                stack = stack.push(null);
+                                stack = stack.push();
                                 importInfo.onNop(node.getPath() + "/" + ni.name);
                             } else {
                                 log.debug("Authorizable element detected. starting sysview transformation {}/{}", node.getPath(), name);
-                                stack = stack.push(null);
+                                stack = stack.push();
                                 stack.adapter = new JcrSysViewTransformer(node);
                                 stack.adapter.startNode(ni);
                                 importInfo.onCreated(node.getPath() + "/" + ni.name);
                             }
                         } else {
-                            Node childNode = addNode(ni);
-                            stack = stack.push(childNode);
+                            stack = stack.push(addNode(ni));
                         }
                     } catch (RepositoryException e) {
                         String errPath = node.getPath();
@@ -663,7 +667,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                         errPath += name;
                         log.error("Error during processing of {}: {}", errPath, e.toString());
                         importInfo.onError(errPath, e);
-                        stack = stack.push(null);
+                        stack = stack.push();
                     }
                 }
             }
@@ -672,8 +676,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         }
     }
 
-    private Node addNode(DocViewNode ni)
-            throws RepositoryException, IOException {
+    private StackElement addNode(DocViewNode ni) throws RepositoryException, IOException {
         final Node currentNode = stack.getNode();
 
         // find old node
@@ -683,7 +686,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             // special case for root node update
             node = currentNode;
         } else if (ni.uuid == null) {
-            if (currentNode.hasNode(ni.label)) {
+            if (!stack.isNew && currentNode.hasNode(ni.label)) {
                 node = currentNode.getNode(ni.label);
                 if (ni.primary != null && !node.getPrimaryNodeType().getName().equals(ni.primary)) {
                     // if node type mismatches => replace
@@ -710,7 +713,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 // ignore
             }
             if (node == null) {
-                if (currentNode.hasNode(ni.label)) {
+                if (!stack.isNew && currentNode.hasNode(ni.label)) {
                     node = currentNode.getNode(ni.label);
                     if (ni.primary != null && !node.getPrimaryNodeType().getName().equals(ni.primary)) {
                         // if node type mismatches => replace
@@ -796,7 +799,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 }
             }
             importInfo.onReplaced(node.getPath());
-            return node;
+            return new StackElement(node, false);
         }
 
         // check if new node needs to be checked in
@@ -804,6 +807,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         boolean isCheckedIn = coProp != null && coProp.values[0].equals("false");
 
         // create or update node
+        boolean isNew = false;
         if (node == null) {
             // workaround for bug in jcr2spi if mixins are empty
             if (!ni.props.containsKey(JcrConstants.JCR_MIXINTYPES)) {
@@ -822,6 +826,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 importInfo.registerToVersion(node.getPath());
             }
             importInfo.onCreated(node.getPath());
+            isNew = true;
 
         } else if (isIncluded(node, node.getDepth() - rootDepth)){
             boolean modified = false;
@@ -918,8 +923,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 importInfo.onNop(node.getPath());
             }
         }
-
-        return node;
+        return new StackElement(node, isNew);
     }
 
     private Node createNode(Node currentNode, DocViewNode ni)
@@ -1228,20 +1232,22 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
         private final Node node;
 
-        final DocViewSAXImporter.StackElement parent;
+        private DocViewSAXImporter.StackElement parent;
 
         private final NodeNameList childNames = new NodeNameList();
 
         private boolean isCheckedOut;
+
+        private boolean isNew;
 
         /**
          * adapter for special content
          */
         private DocViewAdapter adapter;
 
-        public StackElement(DocViewSAXImporter.StackElement parent, Node node) throws RepositoryException {
+        public StackElement(Node node, boolean isNew) throws RepositoryException {
             this.node = node;
-            this.parent = parent;
+            this.isNew = isNew;
             isCheckedOut = node == null || !node.isNodeType(JcrConstants.MIX_VERSIONABLE) || node.isCheckedOut();
         }
 
@@ -1280,15 +1286,21 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         }
 
         public void restoreOrder() throws RepositoryException {
-            if (childNames.needsReorder(node)) {
+            if (!isNew && childNames.needsReorder(node)) {
                 ensureCheckedOut();
                 childNames.restoreOrder(node);
             }
         }
 
-        public StackElement push(Node node) throws RepositoryException {
-            return new StackElement(this, node);
+        public StackElement push() throws RepositoryException {
+            return push(new StackElement(null, false));
         }
+
+        public StackElement push(StackElement elem) throws RepositoryException {
+            elem.parent = this;
+            return elem;
+        }
+
 
         public StackElement pop() {
             return parent;

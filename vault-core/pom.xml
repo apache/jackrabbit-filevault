@@ -89,7 +89,6 @@
                         </Private-Package>
                         <Import-Package>
                             org.apache.jackrabbit.*;version=!,
-                            org.apache.jackrabbit.api.security;version=!,
                             org.apache.sling.jcr.api;resolution:=optional,
                             javax.jcr,
                             javax.jcr.lock,

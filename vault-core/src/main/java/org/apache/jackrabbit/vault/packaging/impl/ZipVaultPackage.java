@@ -19,7 +19,6 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.PatternSyntaxException;
@@ -28,19 +27,17 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
-import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
 import org.apache.jackrabbit.vault.packaging.PackageException;
-import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * Implements a vault package that is a zipped representation of a file vault
  * export.
  */
-public class ZipVaultPackage implements VaultPackage {
+public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPackage {
 
     private static final Logger log = LoggerFactory.getLogger(ZipVaultPackage.class);
 
@@ -60,8 +57,6 @@ public class ZipVaultPackage implements VaultPackage {
     private Archive archive;
 
     private boolean isTmpFile;
-
-    private PackageId id;
 
     protected ZipVaultPackage(File file, boolean isTmpFile) throws IOException {
         this(file, isTmpFile, false);
@@ -102,8 +97,8 @@ public class ZipVaultPackage implements VaultPackage {
     public Archive getArchive() {
         if (archive == null) {
             if (file == null) {
-                log.error("Package already closed: " + id);
-                throw new IllegalStateException("Package already closed: " + id);
+                log.error("Package already closed: {}", getId());
+                throw new IllegalStateException("Package already closed: " + getId());
             }
             archive = new ZipArchive(file);
             try {
@@ -114,30 +109,6 @@ public class ZipVaultPackage implements VaultPackage {
             }
         }
         return archive;
-    }
-
-    public PackageId getId() {
-        if (id == null) {
-            String version = getProperty(NAME_VERSION);
-            if (version == null) {
-                log.warn("Package does not specify a version. setting to ''");
-                 version = "";
-            }
-            String group = getProperty(NAME_GROUP);
-            String name = getProperty(NAME_NAME);
-            if (group != null && name != null) {
-                id = new PackageId(group, name, version);
-            } else {
-                // check for legacy packages that only contains a 'path' property
-                String path = getProperty("path");
-                if (path == null || path.length() == 0) {
-                    log.warn("Package does not specify a path. setting to 'unknown'");
-                    path = UNKNOWN_PATH;
-                }
-                id = new PackageId(path, version);
-            }
-        }
-        return id;
     }
 
     /**
@@ -189,93 +160,15 @@ public class ZipVaultPackage implements VaultPackage {
     /**
      * {@inheritDoc}
      */
-    public Calendar getLastModified() {
-        return getDateProperty(NAME_LAST_MODIFIED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public String getLastModifiedBy() {
-        return getProperty(NAME_LAST_MODIFIED_BY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Calendar getCreated() {
-        return getDateProperty(NAME_CREATED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public String getCreatedBy() {
-        return getProperty(NAME_CREATED_BY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Calendar getLastWrapped() {
-        return getDateProperty(NAME_LAST_WRAPPED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public String getLastWrappedBy() {
-        return getProperty(NAME_LAST_WRAPPED_BY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public String getDescription() {
-        return getProperty(NAME_DESCRIPTION);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public AccessControlHandling getACHandling() {
-        String ac = getProperty(NAME_AC_HANDLING);
-        if (ac == null) {
-            return AccessControlHandling.IGNORE;
-        } else {
-            try {
-                return AccessControlHandling.valueOf(ac.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                log.warn("invalid access control handling configured: {}", ac);
-                return AccessControlHandling.IGNORE;
-            }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean requiresRoot() {
-        return "true".equals(getProperty(NAME_REQUIRES_ROOT));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Dependency[] getDependencies() {
-        String deps = getProperty(NAME_DEPENDENCIES);
-        if (deps == null) {
-            return Dependency.EMPTY;
-        } else {
-            return Dependency.parse(deps);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public void extract(Session session, ImportOptions opts) throws RepositoryException, PackageException {
         extract(prepareExtract(session, opts), null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public PackageProperties getProperties() {
+        return this;
     }
 
     /**
@@ -371,25 +264,9 @@ public class ZipVaultPackage implements VaultPackage {
         log.info("Extracting {} completed.", getId());
     }
 
-    private Calendar getDateProperty(String name) {
-        try {
-            String p = getProperty(name);
-            return p == null
-                    ? null
-                    : ISO8601.parse(p);
-        } catch (Exception e) {
-            log.error("Error while converting date property", e);
-            return null;
-        }
-    }
-
-    private String getProperty(String name) {
-        try {
-            Properties props = getMetaInf().getProperties();
-            return props == null ? null : props.getProperty(name);
-        } catch (Exception e) {
-            return null;
-        }
+    @Override
+    protected Properties getPropertiesMap() {
+        return getMetaInf().getProperties();
     }
 
     @Override

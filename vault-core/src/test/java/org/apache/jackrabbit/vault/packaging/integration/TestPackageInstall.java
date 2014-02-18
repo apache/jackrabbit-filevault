@@ -23,7 +23,6 @@ import java.io.IOException;
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.tika.io.IOUtils;
@@ -51,6 +50,19 @@ public class TestPackageInstall extends IntegrationTestBase {
 
         // todo: check definition props
 
+    }
+
+    /**
+     * Installs a package that contains and checks if everything is correct.
+     */
+    @Test
+    public void testUploadWithThumbnail() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_with_thumbnail.zip"), false);
+        assertNotNull(pack);
+        assertNodeExists("/etc/packages/my_packages/tmp.zip");
+
+        // upload already unrwapps it, so check if definition is ok
+        assertNodeExists("/etc/packages/my_packages/tmp.zip/jcr:content/vlt:definition/thumbnail.png");
     }
 
     /**

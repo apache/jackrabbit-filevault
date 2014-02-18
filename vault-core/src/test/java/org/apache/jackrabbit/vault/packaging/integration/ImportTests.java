@@ -26,6 +26,8 @@ import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.fs.io.JcrArchive;
@@ -33,20 +35,14 @@ import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * <code>ImportTests</code>...
  */
 public class ImportTests extends IntegrationTestBase {
-
-    /**
-     * default logger
-     */
-    private static final Logger log = LoggerFactory.getLogger(ImportTests.class);
 
     public static final String TEST_ROOT = "/testroot";
 
@@ -220,6 +216,36 @@ public class ImportTests extends IntegrationTestBase {
             assertNodeMissing("/tmp/testroot/foo[3]");
         }
 
+    }
+
+
+    @Test
+    public void testSubArchiveExtract() throws IOException, RepositoryException, ConfigurationException {
+        ZipArchive archive = new ZipArchive(getTempFile("testpackages/tmp_with_thumbnail.zip"));
+        archive.open(true);
+        Node rootNode = admin.getRootNode();
+        Node tmpNode = rootNode.addNode("tmp");
+        Node fileNode = tmpNode.addNode("package.zip", "nt:file");
+        Node contentNode = fileNode.addNode("jcr:content", "nt:resource");
+        contentNode.setProperty("jcr:data", "");
+        contentNode.setProperty("jcr:lastModified", 0);
+        contentNode.addMixin("vlt:Package");
+        Node defNode = contentNode.addNode("vlt:definition", "vlt:PackageDefinition");
+
+        ImportOptions opts = getDefaultOptions();
+        Archive subArchive =  archive.getSubArchive("META-INF/vault/definition", true);
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet(defNode.getPath()));
+
+        Importer importer = new Importer(opts);
+        importer.getOptions().setAutoSaveThreshold(Integer.MAX_VALUE);
+        importer.getOptions().setFilter(filter);
+        importer.run(subArchive, defNode);
+        admin.save();
+
+        assertFalse("Importer must not have any errors", importer.hasErrors());
+        assertNodeExists("/tmp/package.zip/jcr:content/vlt:definition/thumbnail.png");
     }
 
 

@@ -686,7 +686,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             // special case for root node update
             node = currentNode;
         } else if (ni.uuid == null) {
-            if (!stack.isNew && currentNode.hasNode(ni.label)) {
+            if (stack.checkForNode() && currentNode.hasNode(ni.label)) {
                 node = currentNode.getNode(ni.label);
                 if (ni.primary != null && !node.getPrimaryNodeType().getName().equals(ni.primary)) {
                     // if node type mismatches => replace
@@ -713,7 +713,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 // ignore
             }
             if (node == null) {
-                if (!stack.isNew && currentNode.hasNode(ni.label)) {
+                if (stack.checkForNode() && currentNode.hasNode(ni.label)) {
                     node = currentNode.getNode(ni.label);
                     if (ni.primary != null && !node.getPrimaryNodeType().getName().equals(ni.primary)) {
                         // if node type mismatches => replace
@@ -1278,6 +1278,10 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             return parent == null;
         }
 
+        public boolean checkForNode() {
+            // we should check if child node exist if stack is not new or if it's a root node
+            return !isNew || parent == null;
+        }
         public void addName(String name) {
             childNames.addName(name);
         }
@@ -1286,7 +1290,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         }
 
         public void restoreOrder() throws RepositoryException {
-            if (!isNew && childNames.needsReorder(node)) {
+            if (checkForNode() && childNames.needsReorder(node)) {
                 ensureCheckedOut();
                 childNames.restoreOrder(node);
             }

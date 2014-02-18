@@ -81,6 +81,27 @@ public class TestSubPackages extends IntegrationTestBase {
     }
 
     /**
+     * Installs a package that contains sub packages recursive but has a sub package handling that ignores A
+     */
+    @Test
+    public void testRecursiveAddA() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest_add_a.zip"), false);
+        assertNotNull(pack);
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        opts.setNonRecursive(false);
+        pack.install(opts);
+
+        // check for sub packages
+        assertNodeExists("/etc/packages/my_packages/sub_a.zip");
+        assertNodeExists("/etc/packages/my_packages/sub_b.zip");
+
+        assertNodeMissing("/tmp/a");
+        assertNodeExists("/tmp/b");
+    }
+
+    /**
      * Installs a package that contains sub packages recursive but has a sub package handling that only extracts A
      */
     @Test

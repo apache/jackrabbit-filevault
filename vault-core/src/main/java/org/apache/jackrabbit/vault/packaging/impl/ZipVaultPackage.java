@@ -26,7 +26,6 @@ import java.util.regex.PatternSyntaxException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
@@ -52,11 +51,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
     public static final String UNKNOWN_PATH = "/etc/packages/unknown";
 
-    private File file;
-
     private Archive archive;
-
-    private boolean isTmpFile;
 
     protected ZipVaultPackage(File file, boolean isTmpFile) throws IOException {
         this(file, isTmpFile, false);
@@ -64,14 +59,17 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
     protected ZipVaultPackage(File file, boolean isTmpFile, boolean strict)
             throws IOException {
-        this.file = file;
-        this.isTmpFile = isTmpFile;
+        this(new ZipArchive(file, isTmpFile), strict);
+    }
+
+    protected ZipVaultPackage(Archive archive, boolean strict)
+            throws IOException {
+        this.archive = archive;
         if (strict) {
             try {
-                archive = new ZipArchive(file);
-                archive.open(strict);
+                archive.open(true);
             } catch (IOException e) {
-                log.error("Error while loading package {}.", file.getPath());
+                log.error("Error while loading package {}.", archive);
                 throw e;
             }
         }
@@ -85,10 +83,6 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
             archive.close();
             archive = null;
         }
-        if (file != null && isTmpFile) {
-            FileUtils.deleteQuietly(file);
-        }
-        file = null;
     }
 
     /**
@@ -96,17 +90,14 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      */
     public Archive getArchive() {
         if (archive == null) {
-            if (file == null) {
-                log.error("Package already closed: {}", getId());
-                throw new IllegalStateException("Package already closed: " + getId());
-            }
-            archive = new ZipArchive(file);
-            try {
-                archive.open(false);
-            } catch (IOException e) {
-                log.error("Archive not valid.", e);
-                throw new IllegalStateException("Archive not valid for file " + file, e);
-            }
+            log.error("Package already closed: {}", getId());
+            throw new IllegalStateException("Package already closed: " + getId());
+        }
+        try {
+            archive.open(false);
+        } catch (IOException e) {
+            log.error("Archive not valid.", e);
+            throw new IllegalStateException("Archive not valid.", e);
         }
         return archive;
     }
@@ -126,7 +117,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * {@inheritDoc}
      */
     public boolean isClosed() {
-        return file == null;
+        return archive == null;
     }
 
     /**
@@ -134,7 +125,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @return the file of this package or <code>null</code>.
      */
     public File getFile() {
-        return file;
+        return (archive instanceof ZipArchive) ? ((ZipArchive) archive).getFile() : null;
     }
 
     /**
@@ -152,9 +143,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * {@inheritDoc}
      */
     public long getSize() {
-        return file == null
-                ? -1
-                : file.length();
+        return (archive instanceof ZipArchive) ? ((ZipArchive) archive).getFileSize() : -1;
     }
 
     /**
@@ -177,8 +166,8 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @param session repository session
      * @param opts import options
      *
-     * @throws RepositoryException if a repository error during installation occurs.
-     * @throws PackageException if an error during packaging occurs
+     * @throws javax.jcr.RepositoryException if a repository error during installation occurs.
+     * @throws org.apache.jackrabbit.vault.packaging.PackageException if an error during packaging occurs
      * @throws IllegalStateException if the package is not valid.
      * @return installation context
      */
@@ -225,8 +214,8 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @param ctx install context
      * @param subPackages receives the list of potential sub packages
      *
-     * @throws RepositoryException if a repository error during installation occurs.
-     * @throws PackageException if an error during packaging occurs
+     * @throws javax.jcr.RepositoryException if a repository error during installation occurs.
+     * @throws org.apache.jackrabbit.vault.packaging.PackageException if an error during packaging occurs
      * @throws IllegalStateException if the package is not valid.
      */
     protected void extract(InstallContextImpl ctx,

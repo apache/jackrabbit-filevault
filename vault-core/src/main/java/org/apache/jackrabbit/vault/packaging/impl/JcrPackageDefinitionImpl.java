@@ -206,11 +206,22 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         }
         log.info("unwrapping package {}", pack == null ? "(unknown)" : pack.getId());
         long now = System.currentTimeMillis();
-        if (pack != null && pack.getFile() != null) {
-            MetaInf inf = pack.getMetaInf();
+        unwrap(pack == null ? null : pack.getArchive(), autoSave);
+        if (log.isDebugEnabled()) {
+            log.debug("unwrapping package {} completed in {}ms", getId(), System.currentTimeMillis() - now);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void unwrap(Archive archive, boolean autoSave)
+            throws RepositoryException, IOException {
+        if (archive != null) {
+            MetaInf inf = archive.getMetaInf();
             // explode definition if present
             if (inf.hasDefinition()) {
-                extractDefinition(pack.getArchive(), false);
+                extractDefinition(archive, false);
             }
             if (inf.getFilter() != null) {
                 writeFilter(inf.getFilter(), false);
@@ -223,9 +234,6 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         defNode.setProperty(PN_LAST_UNWRAPPED, Calendar.getInstance());
         if (autoSave) {
             defNode.save();
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("unwrapping package {} completed in {}ms", getId(), System.currentTimeMillis() - now);
         }
     }
 

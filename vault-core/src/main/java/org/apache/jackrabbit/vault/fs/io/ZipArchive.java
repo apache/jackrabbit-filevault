@@ -28,6 +28,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
@@ -59,16 +60,22 @@ public class ZipArchive extends AbstractArchive {
 
     private Archive base;
 
-    private final File zipFile;
+    private File zipFile;
+
+    private final boolean isTempFile;
 
     public ZipArchive(File zipFile) {
-        this.zipFile = zipFile;
+        this(zipFile, false);
     }
 
+    public ZipArchive(File zipFile, boolean isTempFile) {
+        this.zipFile = zipFile;
+        this.isTempFile = isTempFile;
+    }
 
     public void open(boolean strict) throws IOException {
         if (inf != null) {
-            throw new IllegalStateException("already open.");
+            return;
         }
         // first load the meta info and count the entries
         ZipInputStream zin = new ZipInputStream(
@@ -213,6 +220,19 @@ public class ZipArchive extends AbstractArchive {
             base = null;
         }
         inf = null;
+        if (zipFile != null && isTempFile) {
+            FileUtils.deleteQuietly(zipFile);
+        }
+        zipFile = null;
+
+    }
+
+    public File getFile() {
+        return zipFile;
+    }
+
+    public long getFileSize() {
+        return zipFile == null ? -1 : zipFile.length();
     }
 
     @Override

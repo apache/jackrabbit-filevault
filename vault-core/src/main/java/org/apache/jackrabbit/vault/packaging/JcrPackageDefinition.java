@@ -27,6 +27,7 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.apache.jackrabbit.vault.fs.io.Archive;
 
 /**
  * Specifies the interface of a package definition stored in the repository.
@@ -212,7 +213,7 @@ public interface JcrPackageDefinition {
     boolean isModified();
 
     /**
-     * Unwrapps the package definition to the underlying node.
+     * Unwraps the package definition to the underlying node.
      * @param pack the package
      * @param force if <code>true</code> unwrapping is forced
      * @param autoSave if <code>true</code> modifications are saved automatically

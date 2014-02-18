@@ -26,7 +26,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
+import javax.jcr.Binary;
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -37,6 +39,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
@@ -49,6 +53,7 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.Version;
+import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
@@ -169,15 +174,81 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      */
     public JcrPackage upload(InputStream in, boolean replace, boolean strict)
             throws RepositoryException, IOException {
-        File file = File.createTempFile("vault", ".tmp");
-        OutputStream out = FileUtils.openOutputStream(file);
-        try {
-            IOUtils.copy(in, out);
-        } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
+
+        MemoryArchive archive = new MemoryArchive(true);
+        InputStreamPump pump = new InputStreamPump(in , archive);
+
+        // this will cause the input stream to be consumed and the memory archive being initialized.
+        Binary bin = session.getValueFactory().createBinary(pump);
+        if (pump.getError() != null) {
+            Exception error = pump.getError();
+            log.error("Error while reading from input stream.", error);
+            bin.dispose();
+            throw new IOException("Error while reading from input stream", error);
         }
-        return upload(file, true, replace, null, strict);
+
+        if (archive.getJcrRoot() == null) {
+            String msg = "Stream is not a content package. Missing 'jcr_root'.";
+            log.error(msg);
+            bin.dispose();
+            throw new IOException(msg);
+        }
+
+        final MetaInf inf = archive.getMetaInf();
+        PackagePropertiesImpl props = new PackagePropertiesImpl() {
+            @Override
+            protected Properties getPropertiesMap() {
+                return inf.getProperties();
+            }
+        };
+        PackageId pid = props.getId();
+
+        // invalidate pid if path is unknown
+        if (pid == null || pid.getInstallationPath().equals(ZipVaultPackage.UNKNOWN_PATH)) {
+            bin.dispose();
+            throw new IOException("Package does not contain a path specification or valid package id.");
+        }
+
+        // create parent node
+        String path = pid.getInstallationPath() + ".zip";
+        String parentPath = Text.getRelativeParent(path, 1);
+        String name = Text.getName(path);
+        Node parent = mkdir(parentPath, false);
+
+        // remember installation state properties (GRANITE-2018)
+        JcrPackageDefinitionImpl.State state = null;
+
+        if (parent.hasNode(name)) {
+            JcrPackage oldPackage = new JcrPackageImpl(parent.getNode(name));
+            JcrPackageDefinitionImpl oldDef = (JcrPackageDefinitionImpl) oldPackage.getDefinition();
+            if (oldDef != null) {
+                state = oldDef.getState();
+            }
+
+            if (replace) {
+                parent.getNode(name).remove();
+            } else {
+                throw new ItemExistsException("Package already exists: " + path);
+            }
+        }
+        JcrPackage jcrPack = null;
+        try {
+            jcrPack = JcrPackageImpl.createNew(parent, pid, bin, archive);
+            if (jcrPack != null) {
+                JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
+                if (state != null) {
+                    def.setState(state);
+                }
+            }
+            return jcrPack;
+        } finally {
+            bin.dispose();
+            if (jcrPack == null) {
+                session.refresh(false);
+            } else {
+                session.save();
+            }
+        }
     }
 
     /**

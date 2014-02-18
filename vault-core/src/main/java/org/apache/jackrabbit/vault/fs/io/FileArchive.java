@@ -47,6 +47,9 @@ public class FileArchive extends AbstractArchive {
     }
 
     public void open(boolean strict) throws IOException {
+        if (jcrRoot != null) {
+            return;
+        }
         eRoot = ExportRoot.findRoot(file);
         if (!eRoot.isValid()) {
             throw new IOException("No " + Constants.ROOT_DIR + " found.");

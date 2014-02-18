@@ -27,6 +27,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
@@ -39,6 +40,7 @@ import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.packaging.CyclicDependencyException;
 import org.apache.jackrabbit.vault.packaging.DependencyUtil;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
@@ -222,6 +224,36 @@ public class JcrPackageImpl implements JcrPackage {
         }
         return new JcrPackageImpl(node, (ZipVaultPackage) pack);
     }
+    /**
+     * Creates a new jcr vault package.
+     *
+     * @param parent the parent node
+     * @param pid the package id of the new package.
+     * @param bin the binary containing the zip
+     * @param archive the archive with the meta data
+     * @return the created jcr vault package.
+     * @throws RepositoryException if an repository error occurs
+     * @throws IOException if an I/O error occurs
+     *
+     * @since 3.1
+     */
+    public static JcrPackage createNew(Node parent, PackageId pid, Binary bin, MemoryArchive archive)
+            throws RepositoryException, IOException {
+        Node node = parent.addNode(Text.getName(pid.getInstallationPath() + ".zip"), JcrConstants.NT_FILE);
+        Node content = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
+        content.addMixin(NT_VLT_PACKAGE);
+        Node defNode = content.addNode(NN_VLT_DEFINITION);
+        JcrPackageDefinitionImpl def = new JcrPackageDefinitionImpl(defNode);
+        def.set(JcrPackageDefinition.PN_NAME, pid.getName(), false);
+        def.set(JcrPackageDefinition.PN_GROUP, pid.getGroup(), false);
+        def.set(JcrPackageDefinition.PN_VERSION, pid.getVersionString(), false);
+        def.touch(null, false);
+        content.setProperty(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance());
+        content.setProperty(JcrConstants.JCR_MIMETYPE, MIME_TYPE);
+        content.setProperty(JcrConstants.JCR_DATA, bin);
+        def.unwrap(archive, false);
+        return new JcrPackageImpl(node);
+    }
 
     /**
      * {@inheritDoc}
@@ -286,15 +318,33 @@ public class JcrPackageImpl implements JcrPackage {
      */
     public VaultPackage getPackage() throws RepositoryException, IOException {
         if (pack == null) {
-            File tmpFile = File.createTempFile("vaultpack", ".zip");
-            FileOutputStream out = FileUtils.openOutputStream(tmpFile);
-            // stay jcr 1.0 compatible
-            //noinspection deprecation
-            InputStream in = getData().getStream();
-            IOUtils.copy(in, out);
-            in.close();
-            out.close();
-            pack = new ZipVaultPackage(tmpFile, true);
+            long size = getSize();
+            if (size >= 0 && size < 1024*1024) {
+                MemoryArchive archive = new MemoryArchive(false);
+                InputStream in = getData().getStream();
+                try {
+                    archive.run(in);
+                } catch (Exception e) {
+                    throw new IOException("Error while reading stream", e);
+                } finally {
+                    in.close();
+                }
+                pack = new ZipVaultPackage(archive, true);
+            } else {
+                File tmpFile = File.createTempFile("vaultpack", ".zip");
+                FileOutputStream out = FileUtils.openOutputStream(tmpFile);
+                Binary bin = getData().getBinary();
+                InputStream in = null;
+                try {
+                    in = bin.getStream();
+                    IOUtils.copy(in, out);
+                } finally {
+                    IOUtils.closeQuietly(in);
+                    IOUtils.closeQuietly(out);
+                    bin.dispose();
+                }
+                pack = new ZipVaultPackage(tmpFile, true);
+            }
         }
         return pack;
     }

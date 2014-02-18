@@ -74,6 +74,9 @@ public class JcrArchive extends AbstractArchive {
     }
 
     public void open(boolean strict) throws IOException {
+        if (jcrRoot != null) {
+            return;
+        }
         try {
             if (archiveRoot.hasNode(Constants.ROOT_DIR)) {
                 jcrRoot = new JcrEntry(archiveRoot.getNode(Constants.ROOT_DIR), Constants.ROOT_DIR, true);

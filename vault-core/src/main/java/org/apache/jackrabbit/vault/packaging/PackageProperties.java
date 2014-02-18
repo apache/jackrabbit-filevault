@@ -123,6 +123,12 @@ public interface PackageProperties {
     String NAME_DISABLE_INTERMEDIATE_SAVE = "noIntermediateSaves";
 
     /**
+     * Name of the flag that configures the sub package handling
+     * @since 3.1
+     */
+    String NAME_SUB_PACKAGE_HANDLING = "subPackageHandling";
+
+    /**
      * the prefix for an install hook property. eg:
      * 'installhook.test1.class = ....'
      */
@@ -197,6 +203,12 @@ public interface PackageProperties {
      * @return the access control handling.
      */
     AccessControlHandling getACHandling();
+
+    /**
+     * Returns the sub package handling configuration
+     * @return the sub package handling configuration.
+     */
+    SubPackageHandling getSubPackageHandling();
 
     /**
      * Returns the date property with the given name or {@code null} if it does not exist or if the value cannot be

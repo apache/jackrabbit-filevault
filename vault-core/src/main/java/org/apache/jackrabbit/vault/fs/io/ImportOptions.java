@@ -152,10 +152,20 @@ public class ImportOptions {
         this.acHandling = acHandling;
     }
 
+    /**
+     * Defines the package installation should recursively install sub packages. Note that if this flag is enabled,
+     * the {@link org.apache.jackrabbit.vault.packaging.SubPackageHandling} configuration has no effect, as sub packages
+     * are not evaluated at all.
+     *
+     * @return {@code true} if package installation should not install sub packages.
+     */
     public boolean isNonRecursive() {
         return nonRecursive;
     }
 
+    /**
+     * @see #isNonRecursive()
+     */
     public void setNonRecursive(boolean nonRecursive) {
         this.nonRecursive = nonRecursive;
     }

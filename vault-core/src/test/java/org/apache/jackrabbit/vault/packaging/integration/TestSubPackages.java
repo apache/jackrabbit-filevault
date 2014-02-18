@@ -51,9 +51,60 @@ public class TestSubPackages extends IntegrationTestBase {
         assertNodeExists("/etc/packages/my_packages/sub_a.zip");
         assertNodeExists("/etc/packages/my_packages/sub_b.zip");
 
+        // check for snapshots
+        assertNodeMissing("/etc/packages/my_packages/.snapshot/sub_a.zip");
+        assertNodeMissing("/etc/packages/my_packages/.snapshot/sub_b.zip");
+
         assertNodeMissing("/tmp/a");
         assertNodeMissing("/tmp/b");
     }
+
+    /**
+     * Installs a package that contains sub packages recursive but has a sub package handling that ignores A
+     */
+    @Test
+    public void testRecursiveIgnoreA() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest_ignore_a.zip"), false);
+        assertNotNull(pack);
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        opts.setNonRecursive(false);
+        pack.install(opts);
+
+        // check for sub packages
+        assertNodeExists("/etc/packages/my_packages/sub_a.zip"); // todo: ignore should ignore A completely
+        assertNodeExists("/etc/packages/my_packages/sub_b.zip");
+
+        assertNodeMissing("/tmp/a");
+        assertNodeExists("/tmp/b");
+    }
+
+    /**
+     * Installs a package that contains sub packages recursive but has a sub package handling that only extracts A
+     */
+    @Test
+    public void testRecursiveExtractA() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest_extract_a.zip"), false);
+        assertNotNull(pack);
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        opts.setNonRecursive(false);
+        pack.install(opts);
+
+        // check for sub packages
+        assertNodeExists("/etc/packages/my_packages/sub_a.zip");
+        assertNodeExists("/etc/packages/my_packages/sub_b.zip");
+
+        // check for snapshots
+        assertNodeMissing("/etc/packages/my_packages/.snapshot/sub_a.zip");
+        assertNodeExists("/etc/packages/my_packages/.snapshot/sub_b.zip");
+
+        assertNodeExists("/tmp/a");
+        assertNodeExists("/tmp/b");
+    }
+
 
     /**
      * Installs a package that contains sub packages recursive
@@ -71,6 +122,10 @@ public class TestSubPackages extends IntegrationTestBase {
         // check for sub packages
         assertNodeExists("/etc/packages/my_packages/sub_a.zip");
         assertNodeExists("/etc/packages/my_packages/sub_b.zip");
+
+        // check for snapshots
+        assertNodeExists("/etc/packages/my_packages/.snapshot/sub_a.zip");
+        assertNodeExists("/etc/packages/my_packages/.snapshot/sub_b.zip");
 
         assertNodeExists("/tmp/a");
         assertNodeExists("/tmp/b");

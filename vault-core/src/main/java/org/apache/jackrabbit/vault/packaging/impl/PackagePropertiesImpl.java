@@ -25,6 +25,7 @@ import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,6 +128,13 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
                 return AccessControlHandling.IGNORE;
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public SubPackageHandling getSubPackageHandling() {
+        return SubPackageHandling.fromString(getProperty(NAME_SUB_PACKAGE_HANDLING));
     }
 
     /**

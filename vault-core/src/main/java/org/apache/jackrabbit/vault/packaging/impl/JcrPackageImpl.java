@@ -48,6 +48,7 @@ import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
@@ -380,7 +381,7 @@ public class JcrPackageImpl implements JcrPackage {
         // get a copy of the import options (bug 35164)
         ImportOptions opts = options.copy();
         // check for disable intermediate saves (GRANITE-1047)
-        if ( this.getDefinition().getBoolean(JcrPackageDefinition.PN_DISABLE_INTERMEDIATE_SAVE) ) {
+        if (this.getDefinition().getBoolean(JcrPackageDefinition.PN_DISABLE_INTERMEDIATE_SAVE) ) {
             // MAX_VALUE disables saving completely, therefore we have to use a lower value!
             opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
         }
@@ -427,10 +428,21 @@ public class JcrPackageImpl implements JcrPackage {
                     throw e;
                 }
             }
-            String[] subIds = new String[subPacks.size()];
-            int i=0;
+            List<String> subIds = new LinkedList<String>();
+            SubPackageHandling sb = pack.getSubPackageHandling();
             for (JcrPackageImpl p: subPacks) {
-                String msg = "Starting extraction of subpackage " + p.getPackage().getId();
+                boolean skip = false;
+                PackageId id = p.getPackage().getId();
+                SubPackageHandling.Option option = sb.getOption(id);
+                String msg;
+                if (option == SubPackageHandling.Option.ADD || option == SubPackageHandling.Option.IGNORE) {
+                    msg = "skipping installation of subpackage " + id + " due to option " + option;
+                    skip = true;
+                } else if (option == SubPackageHandling.Option.INSTALL) {
+                    msg = "Starting installation of subpackage " + id;
+                } else {
+                    msg = "Starting extraction of subpackage " + id;
+                }
                 if (options.isDryRun()) {
                     msg = "Dry run: " + msg;
                 }
@@ -439,13 +451,19 @@ public class JcrPackageImpl implements JcrPackage {
                 } else {
                     log.info(msg);
                 }
-                p.extract(options, createSnapshot, true);
+                if (!skip) {
+                    if (createSnapshot && option == SubPackageHandling.Option.INSTALL) {
+                        p.extract(options, true, true);
+                        subIds.add(id.toString());
+                    } else {
+                        p.extract(options, false, true);
+                    }
+                }
                 p.close();
-                subIds[i++] = p.getDefinition().getId().toString();
             }
             // register sub packages in snapshot for uninstall
             if (snap != null) {
-                snap.getDefinition().getNode().setProperty(JcrPackageDefinition.PN_SUB_PACKAGES, subIds);
+                snap.getDefinition().getNode().setProperty(JcrPackageDefinition.PN_SUB_PACKAGES, subIds.toArray(new String[subIds.size()]));
                 snap.getDefinition().getNode().save();
             }
         }

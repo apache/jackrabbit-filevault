@@ -59,7 +59,7 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
 
     public MemoryArchive(boolean metaOnly) throws IOException {
         this.cacheMetaOnly = metaOnly;
-        root = new VirtualEntry("", 0, null);
+        root = new VirtualEntry(null, "", 0, null);
         inf = new DefaultMetaInf();
     }
 
@@ -156,6 +156,16 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
         }
         return new VaultInputSource() {
 
+            @Override
+            public String getSystemId() {
+                String systemId = super.getSystemId();
+                if (systemId == null) {
+                    systemId = ve.getPath();
+                    setSystemId(systemId);
+                }
+                return systemId;
+            }
+
             public InputStream getByteStream() {
                 return ve.data == null ? null : new ByteArrayInputStream(ve.data);
             }
@@ -190,6 +200,8 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
 
     private static class VirtualEntry implements Entry {
 
+        private final VirtualEntry parent;
+
         private final String name;
 
         private final long time;
@@ -198,7 +210,8 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
 
         private Map<String, VirtualEntry> children;
 
-        private VirtualEntry(String name, long time, byte[] data) {
+        private VirtualEntry(VirtualEntry parent, String name, long time, byte[] data) {
+            this.parent = parent;
             this.name = name;
             this.time = time;
             this.data = data;
@@ -206,6 +219,14 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
 
         public String getName() {
             return name;
+        }
+
+        public String getPath() {
+            return getPath(new StringBuilder()).toString();
+        }
+
+        private StringBuilder getPath(StringBuilder sb) {
+            return parent == null ? sb : parent.getPath(sb).append('/').append(name);
         }
 
         public boolean isDirectory() {
@@ -227,7 +248,7 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
                     return ret;
                 }
             }
-            VirtualEntry ve = new VirtualEntry(name, time, data);
+            VirtualEntry ve = new VirtualEntry(this, name, time, data);
             if (children == null) {
                 children = new LinkedHashMap<String, VirtualEntry>();
             }

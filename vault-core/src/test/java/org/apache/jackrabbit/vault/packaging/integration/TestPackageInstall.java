@@ -23,12 +23,14 @@ import java.io.IOException;
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.tika.io.IOUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -127,13 +129,34 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testHook() throws RepositoryException, IOException, PackageException {
-        // Disabled for now, since the bundled package contains a hook that still contain classes
-        // compiled the com.day.jcr.vault.*
+        if (admin.nodeExists("/testroot")) {
+            admin.getNode("/testroot").remove();
+        }
+        admin.getRootNode().addNode("testroot", "nt:unstructured").addNode("testnode", "nt:unstructured");
+        admin.save();
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_hook.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+        assertTrue(admin.propertyExists("/testroot/hook-example"));
+    }
 
-//        JcrPackage pack = packMgr.upload(getStream("testpackages/test_hook.zip"), false);
-//        assertNotNull(pack);
-//        pack.install(getDefaultOptions());
-//        assertProperty("/testroot/TestHook", InstallContext.Phase.INSTALLED.toString());
+    /**
+     * Installs a package with an install hook
+     */
+    @Test
+    public void testHookFail() throws RepositoryException, IOException, PackageException {
+        if (admin.nodeExists("/testroot")) {
+            admin.getNode("/testroot").remove();
+        }
+        admin.save();
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_hook.zip"), false);
+        assertNotNull(pack);
+        try {
+            pack.install(getDefaultOptions());
+            fail("installing failing hook should fail");
+        } catch (PackageException e) {
+            // ok
+        }
     }
 
     /**
@@ -157,22 +180,18 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testExternalHook() throws RepositoryException, IOException, PackageException {
-        // Disabled for now, since the bundled package contains a hook that still contain classes
-        // compiled the com.day.jcr.vault.*
+        if (!admin.nodeExists("/testroot")) {
+            admin.getRootNode().addNode("testroot", "nt:unstructured");
+            admin.save();
+        }
 
+        JcrPackage pack = packMgr.upload(getStream("testpackages/external_hook.zip"), false);
+        assertNotNull(pack);
 
-//        if (!admin.nodeExists("/testroot")) {
-//            admin.getRootNode().addNode("testroot", "nt:unstructured");
-//            admin.save();
-//        }
-//
-//        JcrPackage pack = packMgr.upload(getStream("testpackages/external_hook.zip"), false);
-//        assertNotNull(pack);
-//
-//        pack.install(getDefaultOptions());
-//
-//        assertProperty("/testroot/TestHook1", InstallContext.Phase.END.toString());
-//        assertProperty("/testroot/TestHook2", InstallContext.Phase.END.toString());
+        pack.install(getDefaultOptions());
+
+        assertProperty("/testroot/TestHook1", InstallContext.Phase.END.toString());
+        assertProperty("/testroot/TestHook2", InstallContext.Phase.END.toString());
     }
 
     /**

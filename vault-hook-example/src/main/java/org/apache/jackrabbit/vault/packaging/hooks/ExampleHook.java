@@ -60,10 +60,10 @@ public class ExampleHook implements InstallHook {
                     doInstallFailed(ctx);
                     break;
                 case PREPARE:
-                    doPreprare(ctx);
+                    doPrepare(ctx);
                     break;
                 case PREPARE_FAILED:
-                    doPreprareFailed(ctx);
+                    doPrepareFailed(ctx);
                     break;
             }
         } catch (RepositoryException e) {
@@ -71,7 +71,7 @@ public class ExampleHook implements InstallHook {
         }
     }
 
-    private void doPreprare(InstallContext ctx) throws PackageException, RepositoryException {
+    private void doPrepare(InstallContext ctx) throws PackageException, RepositoryException {
         // read the properties from the package
         Properties props = ctx.getPackage().getMetaInf().getProperties();
         String copyFrom = props.getProperty(PROP_COPY_FROM, "");
@@ -92,7 +92,7 @@ public class ExampleHook implements InstallHook {
 
     }
 
-    private void doPreprareFailed(InstallContext ctx) {
+    private void doPrepareFailed(InstallContext ctx) {
         // this is invoked when any of the hooks (including our self) threw a
         // package exception during prepare
     }

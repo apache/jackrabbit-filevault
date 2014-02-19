@@ -80,7 +80,7 @@ public class DefaultMetaInf implements MetaInf {
                 : properties.getProperty(PACKAGE_FORMAT_VERSION);
         if (prop != null) {
             try {
-                return Integer.getInteger(prop);
+                return Integer.parseInt(prop);
             } catch (Exception e) {
                 // ignore
             }

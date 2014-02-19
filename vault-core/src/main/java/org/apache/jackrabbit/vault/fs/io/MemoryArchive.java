@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -234,11 +235,11 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
         }
 
         public Collection<? extends Entry> getChildren() {
-            return children.values();
+            return children == null ? Collections.<Entry>emptyList() : children.values();
         }
 
         public Entry getChild(String name) {
-            return children.get(name);
+            return children == null ? null : children.get(name);
         }
 
         public VirtualEntry add(String name, long time, byte[] data) {

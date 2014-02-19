@@ -319,7 +319,12 @@ public class JcrPackageImpl implements JcrPackage {
      */
     public VaultPackage getPackage() throws RepositoryException, IOException {
         if (pack == null) {
-            long size = getSize();
+            long size = -1;
+            try {
+                size = getData().getLength();
+            } catch (RepositoryException e) {
+                // ignore
+            }
             if (size >= 0 && size < 1024*1024) {
                 MemoryArchive archive = new MemoryArchive(false);
                 InputStream in = getData().getStream();

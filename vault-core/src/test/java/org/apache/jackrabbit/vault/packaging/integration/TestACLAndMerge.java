@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,9 +41,9 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -250,6 +251,53 @@ public class TestACLAndMerge extends IntegrationTestBase {
     }
 
     /**
+     * Installs a package with 3 ACLs and checks if the order of the entries is still correct.
+     */
+    @Test
+    public void testACOrderOverwrite() throws Exception {
+        assertNodeMissing("/testroot");
+        doOrderTest(AccessControlHandling.OVERWRITE);
+    }
+
+    /**
+     * Installs a package with 3 ACLs and checks if the order of the entries is still correct.
+     */
+    @Test
+    public void testACOrderMerge() throws Exception {
+        assertNodeMissing("/testroot");
+        doOrderTest(AccessControlHandling.OVERWRITE);
+        doOrderTest(AccessControlHandling.MERGE);
+    }
+
+    /**
+     * Installs a package with 3 ACLs and checks if the order of the entries is still correct.
+     */
+    @Test
+    public void testACOrderMergePreserve() throws Exception {
+        assertNodeMissing("/testroot");
+        doOrderTest(AccessControlHandling.OVERWRITE);
+        doOrderTest(AccessControlHandling.MERGE_PRESERVE);
+    }
+
+    private void doOrderTest(AccessControlHandling ac) throws Exception {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/mode_ac_test_e.zip"), true);
+        assertNotNull(pack);
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(ac);
+        pack.install(opts);
+
+        // test if nodes and ACLs of first package exist
+        assertNodeExists("/testroot/node_e");
+        int idx0 = hasPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", Collections.<String, String[]>emptyMap());
+        int idx1 = hasPermission("/testroot/secured", true, new String[]{"jcr:all"}, "testuser", Collections.<String, String[]>emptyMap());
+        int idx2 = hasPermission("/testroot/secured", true, new String[]{"jcr:all"}, "testuser1", Collections.<String, String[]>emptyMap());
+
+        assertTrue("All ACEs must exist", idx0 >= 0 && idx1 >= 0 && idx2 >= 0);
+        String result = String.format("%d < %d < %d", idx0, idx1, idx2);
+        assertEquals("ACE order ", "0 < 1 < 2", result);
+    }
+
+    /**
      * Installs a package with oak ACL content.
      */
     @Test
@@ -269,7 +317,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
         restrictions.put("rep:prefixes", new String[]{"rep", "granite"});
         assertTrue(
                 "expected permission missing",
-                hasPermission("/testroot/secured", true, new String[]{"jcr:all"}, "everyone", restrictions)
+                hasPermission("/testroot/secured", true, new String[]{"jcr:all"}, "everyone", restrictions) >= 0
         );
     }
 
@@ -277,7 +325,6 @@ public class TestACLAndMerge extends IntegrationTestBase {
      * Installs a package with missing ACL user.
      */
     @Test
-    @Ignore("current fails due to changes related to JCRVLT-25")
     public void testMissingUser() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
@@ -296,7 +343,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
         if (globRest != null) {
             restrictions.put("rep:glob", new String[]{globRest});
         }
-        if (hasPermission(path, allow, privs, name, restrictions)) {
+        if (hasPermission(path, allow, privs, name, restrictions) >= 0) {
             fail("Expected permission should not exist on path " + path);
         }
     }
@@ -307,20 +354,21 @@ public class TestACLAndMerge extends IntegrationTestBase {
         if (globRest != null) {
             restrictions.put("rep:glob", new String[]{globRest});
         }
-        if (!hasPermission(path, allow, privs, name, restrictions)) {
+        if (hasPermission(path, allow, privs, name, restrictions) < 0) {
             fail("Expected permission missing on path " + path);
         }
     }
 
-    protected boolean hasPermission(String path, boolean allow, String[] privs, String name, Map<String, String[]> restrictions)
+    protected int hasPermission(String path, boolean allow, String[] privs, String name, Map<String, String[]> restrictions)
             throws RepositoryException {
         AccessControlPolicy[] ap = admin.getAccessControlManager().getPolicies(path);
-        boolean found = false;
+        int idx = 0;
         for (AccessControlPolicy p: ap) {
             if (p instanceof JackrabbitAccessControlList) {
                 JackrabbitAccessControlList acl = (JackrabbitAccessControlList) p;
                 for (AccessControlEntry ac: acl.getAccessControlEntries()) {
                     if (ac instanceof JackrabbitAccessControlEntry) {
+                        idx++;
                         JackrabbitAccessControlEntry ace = (JackrabbitAccessControlEntry) ac;
                         if (ace.isAllow() != allow) {
                             continue;
@@ -365,12 +413,11 @@ public class TestACLAndMerge extends IntegrationTestBase {
                         if (!restrictionExpected || !rests.isEmpty()) {
                             continue;
                         }
-                        found = true;
-                        break;
+                        return idx-1;
                     }
                 }
             }
         }
-        return found;
+        return -1;
     }
 }

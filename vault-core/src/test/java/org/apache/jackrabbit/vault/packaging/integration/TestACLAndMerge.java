@@ -29,6 +29,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.security.AccessControlEntry;
 import javax.jcr.security.AccessControlPolicy;
+import javax.jcr.security.AccessControlPolicyIterator;
 import javax.jcr.security.Privilege;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
@@ -36,6 +37,7 @@ import org.apache.jackrabbit.api.security.JackrabbitAccessControlEntry;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.UserManager;
+import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
@@ -337,6 +339,82 @@ public class TestACLAndMerge extends IntegrationTestBase {
         assertPermission("/testroot/secured", true, new String[]{"jcr:all"}, "missinguser", null);
     }
 
+
+    /**
+     * Installs a package with repository level acl and then installs another that removes them again.
+     */
+    @Test
+    public void testRepoACL() throws RepositoryException, IOException, PackageException {
+        removeRepoACL();
+
+        JcrPackage pack = packMgr.upload(getStream("testpackages/repo_policy.zip"), false);
+        assertNotNull(pack);
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
+        pack.install(opts);
+
+        // test if nodes and ACLs of first package exist
+        assertPermission(null, false, new String[]{"jcr:all"}, "everyone", null);
+        assertPermission(null, false, new String[]{"jcr:all"}, "testuser", null);
+
+        pack = packMgr.upload(getStream("testpackages/repo_no_policy.zip"), true);
+        assertNotNull(pack);
+        opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
+        pack.install(opts);
+
+        assertPermissionMissing(null, false, new String[]{"jcr:all"}, "everyone", null);
+        assertPermissionMissing(null, false, new String[]{"jcr:all"}, "testuser", null);
+
+    }
+
+    /**
+     * Installs a package with repository level acl and then installs another that removes them again.
+     */
+    @Test
+    public void testRepoACLMerge() throws RepositoryException, IOException, PackageException {
+        removeRepoACL();
+        addACL(null, true, new String[]{"jcr:all"}, "testuser");
+        assertPermission(null, true, new String[]{"jcr:all"}, "testuser", null);
+        addACL(null, true, new String[]{"jcr:all"}, "testuser1");
+        assertPermission(null, true, new String[]{"jcr:all"}, "testuser1", null);
+
+        JcrPackage pack = packMgr.upload(getStream("testpackages/repo_policy.zip"), false);
+        assertNotNull(pack);
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.MERGE);
+        pack.install(opts);
+
+        // test if nodes and ACLs of first package exist
+        assertPermission(null, false, new String[]{"jcr:all"}, "everyone", null);
+        assertPermission(null, false, new String[]{"jcr:all"}, "testuser", null);
+        assertPermission(null, true, new String[]{"jcr:all"}, "testuser1", null);
+    }
+
+    /**
+     * Installs a package with repository level acl and then installs another that removes them again.
+     */
+    @Test
+    public void testRepoACLMergePreserve() throws RepositoryException, IOException, PackageException {
+        removeRepoACL();
+        addACL(null, true, new String[]{"jcr:all"}, "testuser");
+        assertPermission(null, true, new String[]{"jcr:all"}, "testuser", null);
+        addACL(null, true, new String[]{"jcr:all"}, "testuser1");
+        assertPermission(null, true, new String[]{"jcr:all"}, "testuser1", null);
+
+        JcrPackage pack = packMgr.upload(getStream("testpackages/repo_policy.zip"), false);
+        assertNotNull(pack);
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
+        pack.install(opts);
+
+        // test if nodes and ACLs of first package exist
+        assertPermission(null, false, new String[]{"jcr:all"}, "everyone", null);
+        assertPermission(null, true, new String[]{"jcr:all"}, "testuser", null);
+        assertPermission(null, true, new String[]{"jcr:all"}, "testuser1", null);
+    }
+
+
     protected void assertPermissionMissing(String path, boolean allow, String[] privs, String name, String globRest)
             throws RepositoryException {
         Map<String, String[]> restrictions = new HashMap<String, String[]>();
@@ -419,5 +497,49 @@ public class TestACLAndMerge extends IntegrationTestBase {
             }
         }
         return -1;
+    }
+
+    protected void removeRepoACL() throws RepositoryException {
+        AccessControlPolicy[] ap = admin.getAccessControlManager().getPolicies(null);
+        for (AccessControlPolicy p: ap) {
+            if (p instanceof JackrabbitAccessControlList) {
+                JackrabbitAccessControlList acl = (JackrabbitAccessControlList) p;
+                for (AccessControlEntry ac: acl.getAccessControlEntries()) {
+                    if (ac instanceof JackrabbitAccessControlEntry) {
+                        acl.removeAccessControlEntry(ac);
+                    }
+                }
+            }
+        }
+        admin.save();
+    }
+
+    protected void addACL(String path, boolean allow, String[] privs, String principal) throws RepositoryException {
+        JackrabbitAccessControlList acl = null;
+        for (AccessControlPolicy p: admin.getAccessControlManager().getPolicies(path)) {
+            if (p instanceof JackrabbitAccessControlList) {
+                acl = (JackrabbitAccessControlList) p;
+                break;
+            }
+        }
+        if (acl == null) {
+            AccessControlPolicyIterator iter =  admin.getAccessControlManager().getApplicablePolicies(path);
+            while (iter.hasNext()) {
+                AccessControlPolicy p = iter.nextAccessControlPolicy();
+                if (p instanceof JackrabbitAccessControlList) {
+                    acl = (JackrabbitAccessControlList) p;
+                    break;
+                }
+            }
+        }
+        assertNotNull(acl);
+
+        Privilege[] ps = new Privilege[privs.length];
+        for (int i=0; i<privs.length; i++) {
+            ps[i] = admin.getAccessControlManager().privilegeFromName(privs[i]);
+        }
+        acl.addEntry(new PrincipalImpl(principal), ps, allow);
+        admin.getAccessControlManager().setPolicy(path, acl);
+        admin.save();
     }
 }

@@ -618,9 +618,19 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                     log.info("Adding ACL element to non ACL parent - adding mixin: {}", node.getPath());
                                 }
                                 stack = stack.push();
-                                stack.adapter = new JackrabbitACLImporter(node, aclHandling);
-                                stack.adapter.startNode(ni);
-                                importInfo.onCreated(node.getPath() + "/" + ni.name);
+                                if ("rep:repoPolicy".equals(name)) {
+                                    if (node.getDepth() == 0) {
+                                        stack.adapter = new JackrabbitACLImporter(session, aclHandling);
+                                        stack.adapter.startNode(ni);
+                                        importInfo.onCreated(node.getPath() + "/" + ni.name);
+                                    } else {
+                                        log.info("ignoring invalid location for repository level ACL: {}", node.getPath());
+                                    }
+                                } else {
+                                    stack.adapter = new JackrabbitACLImporter(node, aclHandling);
+                                    stack.adapter.startNode(ni);
+                                    importInfo.onCreated(node.getPath() + "/" + ni.name);
+                                }
                             } else {
                                 stack = stack.push();
                             }

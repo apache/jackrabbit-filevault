@@ -28,6 +28,7 @@ import java.util.Stack;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.security.AccessControlEntry;
@@ -56,7 +57,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
      */
     private static final Logger log = DocViewSAXImporter.log;
 
-    private final Node accessControlledNode;
+    private final JackrabbitSession session;
 
     private final AccessControlHandling aclHandling;
 
@@ -80,18 +81,29 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
     private final Stack<State> states = new Stack<State>();
 
-    public JackrabbitACLImporter(Node accessControlledNode, AccessControlHandling aclHandling) throws RepositoryException {
+    public JackrabbitACLImporter(Node accessControlledNode, AccessControlHandling aclHandling)
+            throws RepositoryException {
+        this(accessControlledNode.getSession(), accessControlledNode.getPath(), aclHandling);
+    }
+
+    public JackrabbitACLImporter(Session session, AccessControlHandling aclHandling)
+            throws RepositoryException {
+        this(session, null, aclHandling);
+    }
+
+    private JackrabbitACLImporter(Session session, String path, AccessControlHandling aclHandling)
+            throws RepositoryException {
         if (aclHandling == AccessControlHandling.CLEAR || aclHandling == AccessControlHandling.IGNORE) {
             throw new RepositoryException("Error while reading access control content: unsupported AccessControlHandling: " + aclHandling);
         }
-        this.accessControlledNode = accessControlledNode;
-        this.accessControlledPath = accessControlledNode.getPath();
-        final JackrabbitSession session = ((JackrabbitSession) accessControlledNode.getSession());
-        this.acMgr = session.getAccessControlManager();
-        this.pMgr = session.getPrincipalManager();
+        this.accessControlledPath = path;
+        this.session = (JackrabbitSession) session;
+        this.acMgr = this.session.getAccessControlManager();
+        this.pMgr = this.session.getPrincipalManager();
         this.aclHandling = aclHandling;
         this.states.push(State.INITIAL);
     }
+
 
     public void startNode(DocViewNode node) throws SAXException {
         State state = states.peek();
@@ -158,7 +170,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
     }
 
     private void apply() throws RepositoryException {
-        final ValueFactory valueFactory = accessControlledNode.getSession().getValueFactory();
+        final ValueFactory valueFactory = session.getValueFactory();
 
         // find principals of existing ACL
         JackrabbitAccessControlList acl = null;
@@ -189,7 +201,8 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             }
         }
         if (acl == null) {
-            throw new RepositoryException("not JackrabbitAccessControlList applicable on " + accessControlledPath);
+            throw new RepositoryException("not JackrabbitAccessControlList applicable on " +
+                    (accessControlledPath == null ? "'root'" : accessControlledPath));
         }
 
         // apply ACEs of package

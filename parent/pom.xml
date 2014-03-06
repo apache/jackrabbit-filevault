@@ -40,7 +40,7 @@
     </description>
 
     <properties>
-        <jackrabbit.version>2.8-SNAPSHOT</jackrabbit.version>
+        <jackrabbit.version>2.7.4</jackrabbit.version>
         <oak.version>0.16-SNAPSHOT</oak.version>
     </properties>
 

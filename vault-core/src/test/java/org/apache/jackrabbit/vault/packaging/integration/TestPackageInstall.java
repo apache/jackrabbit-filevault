@@ -26,9 +26,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.tika.io.IOUtils;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -52,6 +54,36 @@ public class TestPackageInstall extends IntegrationTestBase {
 
         // todo: check definition props
 
+    }
+
+    /**
+     * Tests if unwrapping an already installed package preserves the status
+     */
+    @Test
+    public void testUnwrapPreserveInstall() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), true, true);
+        assertNotNull(pack);
+        assertTrue(pack.isValid());
+        assertNodeExists("/etc/packages/my_packages/tmp.zip");
+        pack.install(getDefaultOptions());
+        assertNodeExists("/tmp/foo");
+
+        long lastUnpacked = pack.getDefinition().getLastUnpacked().getTimeInMillis();
+        assertTrue(lastUnpacked > 0);
+
+        // now upload again, but don't install
+        pack = packMgr.upload(getStream("testpackages/tmp.zip"), true, true);
+        assertNotNull(pack);
+        PackageId pkgId = pack.getDefinition().getId();
+        assertTrue(pack.isValid());
+        assertTrue(pack.isInstalled());
+        assertEquals(lastUnpacked, pack.getDefinition().getLastUnpacked().getTimeInMillis());
+
+        // now re-acquire package and test again
+        pack = packMgr.open(pkgId);
+        assertTrue(pack.isValid());
+        assertTrue(pack.isInstalled());
+        assertEquals(lastUnpacked, pack.getDefinition().getLastUnpacked().getTimeInMillis());
     }
 
     /**

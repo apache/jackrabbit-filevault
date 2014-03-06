@@ -1096,8 +1096,10 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 aclManagement.clearACL(node);
                             }
                         } else {
-                            importInfo.onDeleted(path);
-                            child.remove();
+                            if (wspFilter.getImportMode(path) == ImportMode.REPLACE) {
+                                importInfo.onDeleted(path);
+                                child.remove();
+                            }
                         }
                     } else if (aclHandling == AccessControlHandling.CLEAR
                             && aclManagement.isACLNode(child)

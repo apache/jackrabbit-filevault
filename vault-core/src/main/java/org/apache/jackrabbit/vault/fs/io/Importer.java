@@ -236,7 +236,7 @@ public class Importer {
     /**
      * the checkpoint import info.
      */
-    private ImportInfoImpl cpImportInfo;
+    private ImportInfo cpImportInfo;
 
     /**
      * retry counter for the batch auto recovery
@@ -748,7 +748,7 @@ public class Importer {
 
     private void commit(Session session, TxInfo info, LinkedList<TxInfo> skipList) throws RepositoryException, IOException {
         try {
-            ImportInfoImpl imp = null;
+            ImportInfo imp = null;
             if (skipList.isEmpty()) {
                 if (info == cpTxInfo) {
                     // don't need to import again, just set import info
@@ -904,9 +904,9 @@ public class Importer {
         }
 
         if (imp != null) {
-            for (Map.Entry<String, ImportInfoImpl.Type> entry: imp.getModifications().entrySet()) {
+            for (Map.Entry<String, ImportInfo.Info> entry: imp.getInfos().entrySet()) {
                 String path = entry.getKey();
-                ImportInfoImpl.Type type = entry.getValue();
+                ImportInfo.Type type = entry.getValue().getType();
                 if (type != ImportInfoImpl.Type.DEL) {
                     // mark intermediates as processed
                     TxInfo im = intermediates.remove(path);
@@ -942,7 +942,7 @@ public class Importer {
                         autoSave.markMissing(path);
                         break;
                     case ERR:
-                        Exception error = imp.getError(path);
+                        Exception error = entry.getValue().getError();
                         if (error == null) {
                             track("E", path);
                         } else {
@@ -951,17 +951,31 @@ public class Importer {
                         hasErrors = true;
                         break;
                 }
-            }
-            // see if any child nodes need to be reordered and remember namelist. we can only reorder the children 
-            if (imp.getNameList() != null && imp.getNode() != null && imp.getNameList().needsReorder(imp.getNode())) {
+
+                // see if any child nodes need to be reordered and remember namelist. we can only reorder the children
+                NodeNameList nameList = entry.getValue().getNameList();
                 // only restore order if in filter scope (bug #31906)
                 // or if freshly created (bug #32075)
-                if (filter.contains(info.path) || imp.getModifications().get(info.path) == ImportInfo.Type.CRE) {
-                    assert(info.path.equals(imp.getNode().getPath()));
-                    log.debug("remember to be reordered. path={} node.path={}", info.path, imp.getNode().getPath());
-                    info.nameList = imp.getNameList();
+                if (nameList != null && (filter.contains(path) || type == ImportInfo.Type.CRE)) {
+                    // find tx info
+                    TxInfo subInfo = info.findChild(path);
+                    if (subInfo != null) {
+                        subInfo.nameList = nameList;
+                    }
                 }
             }
+//            // see if any child nodes need to be reordered and remember namelist. we can only reorder the children
+//            ImportInfo.Info impInfo = imp.getInfo(info.path);
+//            if (impInfo != null && impInfo.getNameList() != null) {
+//            //if (imp.getNameList() != null && imp.getNode() != null && imp.getNameList().needsReorder(imp.getNode())) {
+//                // only restore order if in filter scope (bug #31906)
+//                // or if freshly created (bug #32075)
+//                if (filter.contains(info.path) || impInfo.getType() == ImportInfo.Type.CRE) {
+//                    //assert(info.path.equals(imp.getNode().getPath()));
+//                    log.debug("remember to be reordered. path={} node.path={}", info.path, impInfo.getPath());
+//                    info.nameList = impInfo.getNameList();
+//                }
+//            }
             // check if node was remapped. currently we just skip them as it's not clear how the filter should be
             // reapplied or what happens if the remapping links to a tree we already processed.
             // in this case we don't descend in any children and can clear them right away
@@ -1139,6 +1153,24 @@ public class Importer {
             log.debug("discarding {}", path);
             artifacts = null;
             children = null;
+        }
+
+        public TxInfo findChild(String absPath) {
+            if (path.equals(absPath)) {
+                return this;
+            }
+            if (!absPath.startsWith(path + "/")) {
+                return null;
+            }
+            absPath = absPath.substring(path.length());
+            TxInfo root = this;
+            for (String name: Text.explode(absPath, '/')) {
+                root = root.children().get(name);
+                if (root == null) {
+                    break;
+                }
+            }
+            return root;
         }
     }
 

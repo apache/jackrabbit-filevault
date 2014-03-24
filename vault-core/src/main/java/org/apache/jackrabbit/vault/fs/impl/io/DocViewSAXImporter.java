@@ -1067,6 +1067,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             // need to be removed
             NodeNameList childNames = stack.getChildNames();
             Node node = stack.getNode();
+            int numChildren = 0;
             if (node == null) {
                 DocViewAdapter adapter = stack.getAdapter();
                 if (adapter != null) {
@@ -1081,6 +1082,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             } else {
                 NodeIterator iter = node.getNodes();
                 while (iter.hasNext()) {
+                    numChildren++;
                     Node child = iter.nextNode();
                     String path = child.getPath();
                     String label = Text.getName(path);
@@ -1114,10 +1116,13 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 }
             }
             stack = stack.pop();
-            if (stack.isRoot()) {
-                // record child names of root node
-                importInfo.setNameList(childNames);
-                importInfo.setNode(node);
+//            if (stack.isRoot()) {
+//                // record child names of root node
+//                importInfo.setNameList(childNames);
+//                importInfo.setNode(node);
+//            }
+            if (node != null && numChildren == 0 && !childNames.isEmpty()) {
+                importInfo.addNameList(node.getPath(), childNames);
             }
         } catch (RepositoryException e) {
             throw new SAXException(e);

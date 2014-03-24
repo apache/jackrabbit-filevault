@@ -56,6 +56,10 @@ public class NodeNameList {
         return names.size() > 1 && parent.getPrimaryNodeType().hasOrderableChildNodes();
     }
 
+    public boolean isEmpty() {
+        return names.isEmpty();
+    }
+
     public boolean restoreOrder(Node parent) throws RepositoryException {
         // assume needsReorder check is performed
         // quick check if node is checked out

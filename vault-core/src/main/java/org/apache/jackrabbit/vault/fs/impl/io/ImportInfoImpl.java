@@ -49,9 +49,7 @@ public class ImportInfoImpl implements ImportInfo {
      */
     static final Logger log = LoggerFactory.getLogger(ImportInfoImpl.class);
 
-    private final TreeMap<String, Type> mods = new TreeMap<String, Type>(new PathComparator());
-
-    private final Map<String, Exception> errorMap =  new HashMap<String, Exception>();
+    private final TreeMap<String, Info> infos = new TreeMap<String, Info>(new PathComparator());
 
     private Map<String, String> remapped;
 
@@ -60,11 +58,9 @@ public class ImportInfoImpl implements ImportInfo {
      */
     private final Set<String> toVersion = new LinkedHashSet<String>();
 
-    private NodeNameList nameList;
-
-    private Node node;
-
     private int numModified;
+
+    private int numErrors;
 
     private Map<String, String[]> memberships;
 
@@ -82,15 +78,10 @@ public class ImportInfoImpl implements ImportInfo {
     public ImportInfoImpl merge(ImportInfo base) {
         if (base instanceof ImportInfoImpl) {
             ImportInfoImpl baseImpl = (ImportInfoImpl) base;
-            mods.putAll(baseImpl.mods);
-            errorMap.putAll(baseImpl.errorMap);
+            infos.putAll(baseImpl.infos);
             numModified +=baseImpl.numModified;
+            numErrors += baseImpl.numErrors;
             toVersion.addAll(baseImpl.toVersion);
-            // also merge node and name list if not set yet
-            if (node == null) {
-                node = baseImpl.node;
-                nameList = baseImpl.nameList;
-            }
             if (remapped == null) {
                 remapped = baseImpl.remapped;
             } else {
@@ -105,58 +96,64 @@ public class ImportInfoImpl implements ImportInfo {
         return this;
     }
 
+    public TreeMap<String, Info> getInfos() {
+        return infos;
+    }
+
+    public Info getInfo(String path) {
+        return infos.get(path);
+    }
+
+    @Deprecated
     public NodeNameList getNameList() {
-        return nameList;
+        return infos.isEmpty()
+                ? null
+                : infos.firstEntry().getValue().getNameList();
     }
 
-    public void setNameList(NodeNameList nameList) {
-        this.nameList = nameList;
+    private InfoImpl getOrCreateInfo(String path) {
+        InfoImpl info = (InfoImpl) infos.get(path);
+        if (info == null) {
+            info = new InfoImpl(path);
+            infos.put(path, info);
+        }
+        return info;
     }
 
-    /**
-     * Returns the root node of this import.
-     * @return root node if this import or <code>null</code>
-     */
-    public Node getNode() {
-        return node;
-    }
-
-    public void setNode(Node node) {
-        this.node = node;
+    public void addNameList(String path, NodeNameList nameList) {
+        getOrCreateInfo(path).nameList = nameList;
     }
 
     public void onModified(String path) {
-        Type prev = mods.get(path);
+        Type prev = getOrCreateInfo(path).type;
         if (prev == null || prev != Type.CRE) {
-            addMod(path, Type.MOD);
+            addMod(path, Type.MOD, null);
         }
     }
 
     public void onNop(String path) {
-        if (!mods.containsKey(path)) {
-            addMod(path, Type.NOP);
-        }
+        getOrCreateInfo(path);
     }
 
     public void onCreated(String path) {
-        addMod(path, Type.CRE);
+        addMod(path, Type.CRE, null);
     }
 
     public void onDeleted(String path) {
-        addMod(path, Type.DEL);
+        addMod(path, Type.DEL, null);
     }
 
     public void onReplaced(String path) {
-        addMod(path, Type.REP);
+        addMod(path, Type.REP, null);
     }
 
     public void onMissing(String path) {
-        addMod(path, Type.MIS);
+        addMod(path, Type.MIS, null);
     }
 
     public void onError(String path, Exception e) {
-        addMod(path, Type.ERR);
-        errorMap.put(path, e);
+        addMod(path, Type.ERR, e);
+        numErrors++;
     }
 
     public void onRemapped(String oldPath, String newPath) {
@@ -170,23 +167,34 @@ public class ImportInfoImpl implements ImportInfo {
         return remapped == null ? Collections.<String, String>emptyMap() : remapped;
     }
 
-    private void addMod(String path, Type mod) {
-        // don't overwrite errors
-        if (mods.get(path) != Type.ERR) {
-            mods.put(path, mod);
-            if (mod != Type.NOP) {
-                numModified++;
-            }
+    private void addMod(String path, Type mod, Exception e) {
+        InfoImpl info = getOrCreateInfo(path);
+        if (info.type != Type.ERR) {
+            info.type = mod;
+            info.error = e;
+        }
+        if (mod != Type.NOP) {
+            numModified++;
         }
         log.debug("{} {}", mod, path);
     }
 
     public TreeMap<String, Type> getModifications() {
+        TreeMap<String, Type> mods = new TreeMap<String, Type>();
+        for (Map.Entry<String, Info> e: infos.entrySet()) {
+            Type mod = e.getValue().getType();
+            if (mod != null) {
+                mods.put(e.getKey(), mod);
+            }
+        }
         return mods;
     }
 
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+    @Deprecated
     public Exception getError(String path) {
-        return errorMap.get(path);
+        Info info = infos.get(path);
+        return info == null ? null : info.getError();
     }
 
     public Collection<String> getToVersion() {
@@ -225,7 +233,7 @@ public class ImportInfoImpl implements ImportInfo {
     }
 
     public int numErrors() {
-        return errorMap.size();
+        return numErrors;
     }
 
     public void registerMemberships(String id, String[] members) {
@@ -237,5 +245,36 @@ public class ImportInfoImpl implements ImportInfo {
 
     public Map<String, String[]> getMemberships() {
         return memberships == null ? Collections.<String, String[]>emptyMap() : memberships;
+    }
+
+    static final class InfoImpl implements Info {
+
+        private final String path;
+
+        private Type type = Type.NOP;
+
+        private NodeNameList nameList;
+
+        private Exception error;
+
+        InfoImpl(String path) {
+            this.path = path;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public NodeNameList getNameList() {
+            return nameList;
+        }
+
+        public Exception getError() {
+            return error;
+        }
     }
 }

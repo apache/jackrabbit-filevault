@@ -805,7 +805,7 @@ public class Importer {
                 Node node = info.getNode(session);
                 if (node == null) {
                     log.warn("Unable to restore order of {}. Node does not exist.", info.path);
-                } else {
+                } else if (info.nameList.needsReorder(node)) {
                     log.debug("Restoring order of {}.", info.path);
                     info.nameList.restoreOrder(node);
                 }
@@ -952,30 +952,16 @@ public class Importer {
                         break;
                 }
 
-                // see if any child nodes need to be reordered and remember namelist. we can only reorder the children
+                // see if any child nodes need to be reordered and remember namelist.
+                // only restore order if in filter scope if freshly created
                 NodeNameList nameList = entry.getValue().getNameList();
-                // only restore order if in filter scope (bug #31906)
-                // or if freshly created (bug #32075)
                 if (nameList != null && (filter.contains(path) || type == ImportInfo.Type.CRE)) {
-                    // find tx info
                     TxInfo subInfo = info.findChild(path);
                     if (subInfo != null) {
                         subInfo.nameList = nameList;
                     }
                 }
             }
-//            // see if any child nodes need to be reordered and remember namelist. we can only reorder the children
-//            ImportInfo.Info impInfo = imp.getInfo(info.path);
-//            if (impInfo != null && impInfo.getNameList() != null) {
-//            //if (imp.getNameList() != null && imp.getNode() != null && imp.getNameList().needsReorder(imp.getNode())) {
-//                // only restore order if in filter scope (bug #31906)
-//                // or if freshly created (bug #32075)
-//                if (filter.contains(info.path) || impInfo.getType() == ImportInfo.Type.CRE) {
-//                    //assert(info.path.equals(imp.getNode().getPath()));
-//                    log.debug("remember to be reordered. path={} node.path={}", info.path, impInfo.getPath());
-//                    info.nameList = impInfo.getNameList();
-//                }
-//            }
             // check if node was remapped. currently we just skip them as it's not clear how the filter should be
             // reapplied or what happens if the remapping links to a tree we already processed.
             // in this case we don't descend in any children and can clear them right away

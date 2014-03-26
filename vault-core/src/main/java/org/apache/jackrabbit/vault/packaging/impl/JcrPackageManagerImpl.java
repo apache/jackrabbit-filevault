@@ -37,6 +37,8 @@ import javax.jcr.Session;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.spi.commons.conversion.NameParser;
+import org.apache.jackrabbit.spi.commons.conversion.PathParser;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
@@ -208,6 +210,9 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             bin.dispose();
             throw new IOException("Package does not contain a path specification or valid package id.");
         }
+        if (!pid.isValid()) {
+            throw new RepositoryException("Unable to create package. Illegal package name.");
+        }
 
         // create parent node
         String path = pid.getInstallationPath() + ".zip";
@@ -285,6 +290,10 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             }
             pid = new PackageId(nameHint);
         }
+        if (!pid.isValid()) {
+            throw new RepositoryException("Unable to create package. Illegal package name.");
+        }
+
         // create parent node
         String path = pid.getInstallationPath() + ".zip";
         String parentPath = Text.getRelativeParent(path, 1);
@@ -344,6 +353,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             throws RepositoryException, IOException {
         return create(group, name, null);
     }
+
     /**
      * {@inheritDoc}
      */
@@ -353,6 +363,9 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         String ext = Text.getName(name, '.');
         if (ext.equals("zip") || ext.equals("jar")) {
             name = name.substring(0, name.length() - 4);
+        }
+        if (!PackageId.isValid(group, name, version)) {
+            throw new RepositoryException("Unable to create package. Illegal package name.");
         }
         PackageId pid = new PackageId(group, name, version);
         Node folder = mkdir(Text.getRelativeParent(pid.getInstallationPath(), 1), false);
@@ -394,6 +407,10 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         if (pack.getSize() > 0 && !pack.getDefinition().isUnwrapped()) {
             throw new PackageException("Package definition not unwrapped.");
         }
+        if (!PackageId.isValid(group, name, version)) {
+            throw new RepositoryException("Unable to rename package. Illegal package name.");
+        }
+
         JcrPackageDefinition def = pack.getDefinition();
         PackageId id = def.getId();
         PackageId newId = new PackageId(
@@ -734,6 +751,11 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
                 }
                 JcrPackageImpl pack = new JcrPackageImpl(child);
                 if (pack.isValid()) {
+                    // skip packages with illegal names
+                    JcrPackageDefinition jDef = pack.getDefinition();
+                    if (jDef != null && !jDef.getId().isValid()) {
+                        continue;
+                    }
                     if (filter == null || filter.contains(child.getPath())) {
                         if (!built || pack.getSize() > 0) {
                             packages.add(pack);

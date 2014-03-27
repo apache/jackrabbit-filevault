@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.0.0
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.0
 
 Introduction
 ------------
@@ -7,32 +7,54 @@ The FileVault introduces a JCR repository to filesystem mapping. The mapping is 
 _CRX Content Packaging_  that allows to create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like utility to work and develop with repository content.
 
+
+Changes in Jackrabbit FileVault 3.1.0
+-------------------------------------
+
+New Features:
+    * [JCRVLT-25] - Implement AccessControlHandling MERGE and MERGE_PRESERVE
+    * [JCRVLT-30] - Allow package definition to specify recursive install behavior
+
+Bug Fixes:
+    * [JCRVLT-17] - Provide better abstraction for install hook handling
+    * [JCRVLT-22] - Import of SNS content on not supporting repositories
+    * [JCRVLT-23] - Integration tests fail with Jackrabbit Oak
+    * [JCRVLT-24] - Childnode order not respected for detached full coverage sub aggregates
+    * [JCRVLT-26] - File vault stores passwords in clear text in ~/.vault/auth.xml
+    * [JCRVLT-27] - "vlt rcp" requires credentials as URL parameters
+    * [JCRVLT-34] - NPE in MemoryArchive
+    * [JCRVLT-36] - IllegalArgumentException while extracting subpackages
+    * [JCRVLT-37] - Regression: Order of ACE entries is not correct
+    * [JCRVLT-39] - Regression: installing a package with repository ACL fails
+    * [JCRVLT-41] - ImportMode=UPDATE deletes existing nodes
+    * [JCRVLT-42] - Do not allow creation of packages with illegal JCR names
+
+Improvements:
+    * [JCRVLT-28] - Improve package import for subtrees
+    * [JCRVLT-31] - Packages defined by a stream are copied to a file first
+
 Changes in Jackrabbit FileVault 3.0.0
 -------------------------------------
 
 New features:
+    Version 3.0.0 is the initial version of this contribution to the Apache Jackrabbit project.
 
-Version 3.0.0 is the initial version of this contribution to the Apache Jackrabbit project.
+    For more detailed information about all the changes in this and other
+    FileVault releases, please see the FileVault issue tracker at
 
-For more detailed information about all the changes in this and other
-FileVault releases, please see the FileVault issue tracker at
-
-    https://issues.apache.org/jira/browse/JCR
+        https://issues.apache.org/jira/browse/JCR
 
 Bug Fixes:
-
-[JCR-3661] jcrvlt: String[]{""} not packaged correctly
+    * [JCR-3661] jcrvlt: String[]{""} not packaged correctly
 
 Improvements:
-
-[JCR-3612] Contribute Adobe's FileVault to ASF
-[JCR-3649] FileVault: fix usage of @inheritDoc in constructor documentation
-[JCR-3666] FileVault: VaultFsConfig11 references incorrect classes from prior versions
-[JCR-3664] FileVault: fix javadoc for PlatformNameFormatter
-[JCR-3663] FileVault: tweak gitignore file
-[JCR-3648] FileVault: remove dependecyManagement entry for concurrent:concurrent
-[JCR-3647] FileVault: update maven-scr-plugin and maven-bundle-plugin versions
-
+    * [JCR-3612] Contribute Adobe's FileVault to ASF
+    * [JCR-3649] FileVault: fix usage of @inheritDoc in constructor documentation
+    * [JCR-3666] FileVault: VaultFsConfig11 references incorrect classes from prior versions
+    * [JCR-3664] FileVault: fix javadoc for PlatformNameFormatter
+    * [JCR-3663] FileVault: tweak gitignore file
+    * [JCR-3648] FileVault: remove dependecyManagement entry for concurrent:concurrent
+    * [JCR-3647] FileVault: update maven-scr-plugin and maven-bundle-plugin versions
 
 Release Contents
 ----------------

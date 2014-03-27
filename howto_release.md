@@ -15,28 +15,28 @@ https://repository.apache.org/. See [Appendix B](#B) for the required settings.
 
 Release management tasks
 ------------------------
-1. Make sure that an appropriate version for the release is entered in [Jira](3) and that all the related issues have
+1. Make sure that an appropriate version for the release is entered in [Jira][3] and that all the related issues have
    been resolved.
    
 2. Create or update a `RELEASE-NOTES.txt` file in the root folder of the project to be released. When done, commit the
-   file. See previous release notes for examples of what to include. The release note report in [Jira](3) is a useful
+   file. See previous release notes for examples of what to include. The release note report in [Jira][3] is a useful
    source of required information.
    
 3. Build and deploy the release artifacts with Maven.
 
-   The release is built using the Maven release plugin. See the [Releasing a Maven project](4) guide for more
+   The release is built using the Maven release plugin. See the [Releasing a Maven project][4] guide for more
    details. Make sure you have added the pgp key information in you maven settings file, especially if you have 
-   more than one key installed locally. See [Appendix B](B) for the details.
+   more than one key installed locally. See [Appendix B](#B) for the details.
 
    1. Execute `mvn release:prepare`. This will update the POM files and tag the release in svn.
 
    2. Execute `mvn release:perform -Papache-release`. This will build the tagged release and deploy the artifacts to
       a new staging repository on _repository.apache.org_. 
-      After the build, login to [https://repository.apache.org/](2) and you should see it there.
+      After the build, login to [https://repository.apache.org/][2] and you should see it there.
 
       The non-Maven release artifacts are automatically copied to `.../target/checkout/target/$version`
 
-4. Close the [staged repository](2) on _repository.apache.org_.
+4. Close the [staged repository][2] on _repository.apache.org_.
 
 5. Upload the artifacts to https://dist.apache.org/repos/dist/dev/jackrabbit/filevault via SVN
        
@@ -66,9 +66,9 @@ Release management tasks
              https://dist.apache.org/repos/dist/dev/jackrabbit/filevault/$version \
              https://dist.apache.org/repos/dist/release/jackrabbit/filevault/$version
   
-    3. release the [staged repository](2) for synchronization to Maven central.
+    3. release the [staged repository][2] for synchronization to Maven central.
 
-    4. mark the version as released in [Jira](3): 
+    4. mark the version as released in [Jira][3]:
        _Jira Project Home_ -> _Project Summary_ -> _Administer Project_. 
        
        Under Versions, you'll see all the defined project versions. 
@@ -93,11 +93,12 @@ Related Links
 * http://www.apache.org/dev/repository-faq.html
 
   
-[](A) Appendix A: Create and add your key to the Jackrabbit KEYS file
----------------------------------------------------------------------
+<a name="A"></a>
+Appendix A: Create and add your key to the Jackrabbit KEYS file
+---------------------------------------------------------------
 Follow these instructions to generate your code signing key and to add it to the Jackrabbit KEYS file.
 
-1. [Generate a code signing key](0) using your _@apache.org_ address as the email and `CODE SIGNING KEY` as the 
+1. [Generate a code signing key][0] using your _@apache.org_ address as the email and `CODE SIGNING KEY` as the
    comment.
     
 2. The Jackrabbit KEYS file is managed in https://svn.apache.org/repos/asf/jackrabbit/dist/KEYS. To modify the file,
@@ -113,12 +114,13 @@ Follow these instructions to generate your code signing key and to add it to the
     
 5. You are **DONE**, but to see the changes on http://www.apache.org/dist/jackrabbit/KEYS you must wait 2 hours
 
-You should get your key [linked to the Apache web of trust](1). Once other people have signed your key, you can 
+You should get your key [linked to the Apache web of trust][1]. Once other people have signed your key, you can
 update the KEYS file with the signatures you've received.
 
 
-[](B) Appendix B: Maven settings
---------------------------------
+<a name="B"></a>
+Appendix B: Maven settings
+--------------------------
 
     <settings>
     ...

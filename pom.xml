@@ -52,6 +52,7 @@
         <module>vault-diff</module>
         <module>vault-rcp</module>
         <module>vault-davex</module>
+        <module>vault-doc</module>
         <module>vault-vlt</module>
         <module>vault-cli</module>
         <module>vault-hook-example</module>
@@ -75,6 +76,8 @@
                     <excludePackageNames>
                         org.apache.jackrabbit.vault.cli*,org.apache.jackrabbit.vault.davex,*.impl*,org.apache.jackrabbit.vault.util.xml,org.apache.jackrabbit.vault.vlt.actions,org.apache.jackrabbit.vault.vlt.meta.*,org.apache.jackrabbit.vault.packaging.hotfix
                     </excludePackageNames>
+                    <reportOutputDirectory>${basedir}/vault-doc/target/site</reportOutputDirectory>
+                    <additionalparam>-notimestamp</additionalparam>
                 </configuration>
                 <executions>
                     <execution>

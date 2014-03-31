@@ -187,7 +187,7 @@ https://dist.apache.org/repos/dist/dev/jackrabbit/filevault/${project.version}/
 
 The release candidate is a zip archive of the sources in:
 
-https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/${project.version}/
+https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-${project.version}/
 
 The SHA1 checksum of the archive is ${checksum}.
 

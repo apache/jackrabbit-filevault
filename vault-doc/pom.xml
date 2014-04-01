@@ -30,7 +30,7 @@
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
-    <artifactId>org.apache.jackrabbit.vault</artifactId>
+    <artifactId>vault-doc</artifactId>
     <version>3.1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 

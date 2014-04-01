@@ -1116,12 +1116,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 }
             }
             stack = stack.pop();
-//            if (stack.isRoot()) {
-//                // record child names of root node
-//                importInfo.setNameList(childNames);
-//                importInfo.setNode(node);
-//            }
-            if (node != null && numChildren == 0 && !childNames.isEmpty()) {
+            if (node != null && (numChildren == 0 && !childNames.isEmpty() || stack.isRoot())) {
                 importInfo.addNameList(node.getPath(), childNames);
             }
         } catch (RepositoryException e) {

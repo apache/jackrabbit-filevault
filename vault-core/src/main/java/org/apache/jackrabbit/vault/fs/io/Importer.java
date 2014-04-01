@@ -1130,6 +1130,9 @@ public class Importer {
         }
 
         public Node getNode(Session s) throws RepositoryException {
+            if (path.length() == 0) {
+                return s.getRootNode();
+            }
             return s.nodeExists(path)
                     ? s.getNode(path)
                     : null;

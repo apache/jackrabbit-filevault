@@ -20,7 +20,6 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import java.io.File;
 import java.io.IOException;
 
-import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 
@@ -270,6 +269,25 @@ public class TestPackageInstall extends IntegrationTestBase {
             names.append(iter.nextNode().getName()).append(",");
         }
         assertEquals("child order", "a,d,b,c,", names.toString());
+    }
+
+    /**
+     * installs a package that contains a node with childnode ordering and full-coverage sub nodes.
+     * see JCRVLT-44
+     */
+    @Test
+    public void testChildNodeOrder2() throws IOException, RepositoryException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_childnodeorder2.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        assertNodeExists("/tmp/test/en");
+        NodeIterator iter = admin.getNode("/tmp/test/en").getNodes();
+        StringBuilder names = new StringBuilder();
+        while (iter.hasNext()) {
+            names.append(iter.nextNode().getName()).append(",");
+        }
+        assertEquals("child order", "jcr:content,toolbar,products,services,company,events,support,community,blog,", names.toString());
     }
 
     // todo: upload with version

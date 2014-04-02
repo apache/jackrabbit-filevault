@@ -1,16 +1,27 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.0
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.2
 
 Introduction
 ------------
-
 The FileVault introduces a JCR repository to filesystem mapping. The mapping is exposed by and API and used by the
 _CRX Content Packaging_  that allows to create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like utility to work and develop with repository content.
 
 
+Changes in Jackrabbit FileVault 3.1.2
+-------------------------------------
+New Features:
+    * New project documentation on http://jackrabbit.apache.org/filevault/index.html
+
+Bug Fixes:
+    * [JCRVLT-43] - vault-doc has duplicate artifactId
+    * [JCRVLT-44] - Regression: child node order to respected for mixed aggregate parents
+
+Improvements:
+    * [JCRVLT-19] - Document filter.xml format
+
+
 Changes in Jackrabbit FileVault 3.1.0
 -------------------------------------
-
 New Features:
     * [JCRVLT-25] - Implement AccessControlHandling MERGE and MERGE_PRESERVE
     * [JCRVLT-30] - Allow package definition to specify recursive install behavior
@@ -33,9 +44,9 @@ Improvements:
     * [JCRVLT-28] - Improve package import for subtrees
     * [JCRVLT-31] - Packages defined by a stream are copied to a file first
 
+
 Changes in Jackrabbit FileVault 3.0.0
 -------------------------------------
-
 New features:
     Version 3.0.0 is the initial version of this contribution to the Apache Jackrabbit project.
 
@@ -58,7 +69,6 @@ Improvements:
 
 Release Contents
 ----------------
-
 This release consists of a single source archive packaged as a zip file.
 The archive can be unpacked with the jar tool from your JDK installation.
 See the README.txt file for instructions on how to build this release.
@@ -70,7 +80,6 @@ https://svn.apache.org/repos/asf/jackrabbit/dist/KEYS.
 
 About Apache Jackrabbit
 -----------------------
-
 Apache Jackrabbit is a fully conforming implementation of the Content
 Repository for Java Technology API (JCR). A content repository is a
 hierarchical content store with support for structured and unstructured
@@ -81,7 +90,6 @@ For more information, visit http://jackrabbit.apache.org/
 
 About The Apache Software Foundation
 ------------------------------------
-
 Established in 1999, The Apache Software Foundation provides organizational,
 legal, and financial support for more than 100 freely-available,
 collaboratively-developed Open Source projects. The pragmatic Apache License
@@ -93,6 +101,5 @@ For more information, visit http://www.apache.org/
 
 Trademarks
 ----------
-
 Apache Jackrabbit, Jackrabbit, Apache, the Apache feather logo, and the Apache
 Jackrabbit project logo are trademarks of The Apache Software Foundation.

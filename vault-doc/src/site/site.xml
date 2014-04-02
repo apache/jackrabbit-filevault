@@ -35,6 +35,7 @@
       <item href="filter.html" name="Workspace Filter" />
     </menu>
     <menu name="Developing">
+      <item href="dev.html" name="Overview" />
       <item href="apidocs/index.html" name="API docs" />
     </menu>
     <menu name="Links">

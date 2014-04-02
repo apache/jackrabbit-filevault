@@ -22,19 +22,18 @@ Release management tasks
    file. See previous release notes for examples of what to include. The release note report in [Jira][3] is a useful
    source of required information.
    
-3. Build and deploy the release artifacts with Maven.
+3. Build and deploy the release artifacts with Maven (see below).
 
-   The release is built using the Maven release plugin. See the [Releasing a Maven project][4] guide for more
-   details. Make sure you have added the pgp key information in you maven settings file, especially if you have 
-   more than one key installed locally. See [Appendix B](#B) for the details.
-
-   1. Execute `mvn release:prepare`. This will update the POM files and tag the release in svn.
-
-   2. Execute `mvn release:perform -Papache-release`. This will build the tagged release and deploy the artifacts to
-      a new staging repository on _repository.apache.org_. 
-      After the build, login to [https://repository.apache.org/][2] and you should see it there.
-
-      The non-Maven release artifacts are automatically copied to `/.../target/checkout/target/$version`
+    The release is built using the Maven release plugin. See the [Releasing a Maven project][4] guide for more
+    details. Make sure you have added the pgp key information in you maven settings file, especially if you have 
+    more than one key installed locally. See [Appendix B](#B) for the details.
+    
+    1. Execute `mvn release:prepare`. This will update the POM files and tag the release in svn.
+    2. Execute `mvn release:perform -Papache-release`. This will build the tagged release and deploy the artifacts to
+        a new staging repository on _repository.apache.org_. 
+        After the build, login to [https://repository.apache.org/][2] and you should see it there.
+    
+        The non-Maven release artifacts are automatically copied to `/.../target/checkout/target/$version`
 
 4. Close the [staged repository][2] on _repository.apache.org_.
 
@@ -55,30 +54,29 @@ Release management tasks
     4. done 
  
 8. If the vote is successful
-
     1. close the vote by publishing the results
-
     2. copy the release candidate from `dev/jackrabbit` to `release/jackrabbit` in 
-       https://dist.apche.org/repos/dist/, and delete any older releases from the same branch 
-       (they're automatically archived),
 
+        https://dist.apche.org/repos/dist/, and delete any older releases from the same branch 
+        (they're automatically archived),
+        
             svn move -m "Apache Jackrabbit Filevault $version" \
-              https://dist.apache.org/repos/dist/dev/jackrabbit/filevault/$version \
-              https://dist.apache.org/repos/dist/release/jackrabbit/filevault/$version
-  
+                https://dist.apache.org/repos/dist/dev/jackrabbit/filevault/$version \
+                https://dist.apache.org/repos/dist/release/jackrabbit/filevault/$version
+
     3. release the [staged repository][2] for synchronization to Maven central.
 
     4. mark the version as released in [Jira][3]:
-       _Jira Project Home_ -> _Project Summary_ -> _Administer Project_. 
-       
-       Under Versions, you'll see all the defined project versions. 
-       From the settings menu, choose *Release* on the version.
+        _Jira Project Home_ -> _Project Summary_ -> _Administer Project_. 
+        
+        Under Versions, you'll see all the defined project versions. 
+        From the settings menu, choose *Release* on the version.
 
     5. Close all the issues included in the release: 
         _Jira Project Home_ -> _Change Log_ -> Choose the released version. 
         
-       From the issue list you have the option to bulk update all of the included issues. 
-       Just *Transition Issues* from *Resolved* to *Closed* and you are done!
+        From the issue list you have the option to bulk update all of the included issues. 
+        Just *Transition Issues* from *Resolved* to *Closed* and you are done!
 
 9. Update the Jackrabbit web site to point to the new release.
 

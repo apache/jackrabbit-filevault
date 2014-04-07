@@ -207,5 +207,35 @@ public class TestSubPackages extends IntegrationTestBase {
 
     }
 
+    /**
+     * Uninstalls a package that contains sub packages where a snapshot of a sub package was deleted
+     */
+    @Test
+    public void testUninstallMissingSnapshot() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        assertNotNull(pack);
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        opts.setNonRecursive(false);
+        pack.install(opts);
+
+        assertNodeExists("/tmp/a");
+        assertNodeExists("/tmp/b");
+
+        admin.getNode("/etc/packages/my_packages/.snapshot/sub_a.zip").remove();
+        admin.save();
+
+        // uninstall
+        opts.setNonRecursive(false);
+        pack.uninstall(opts);
+
+        assertNodeMissing("/etc/packages/my_packages/sub_a.zip");
+        assertNodeMissing("/etc/packages/my_packages/sub_b.zip");
+        assertNodeExists("/tmp/a");
+        assertNodeMissing("/tmp/b");
+
+    }
+
 
 }

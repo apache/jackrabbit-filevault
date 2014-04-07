@@ -590,7 +590,7 @@ public class JcrPackageImpl implements JcrPackage {
             opts.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, "Uninstalling package from snapshot " + snap.getDefinition().getId(), "");
         }
         Session s = getNode().getSession();
-        // check for recursive unininstall
+        // check for recursive uninstall
         if (!opts.isNonRecursive()) {
             Node defNode = snap.getDefNode();
             LinkedList<PackageId> subPackages = new LinkedList<PackageId>();
@@ -606,7 +606,11 @@ public class JcrPackageImpl implements JcrPackage {
                 for (PackageId id: subPackages) {
                     JcrPackage pack = packMgr.open(id);
                     if (pack != null) {
-                        pack.uninstall(opts);
+                        if (pack.getSnapshot() == null) {
+                            log.warn("Unable to uninstall sub package {}. Snapshot missing.", id);
+                        } else {
+                            pack.uninstall(opts);
+                        }
                     }
                 }
 

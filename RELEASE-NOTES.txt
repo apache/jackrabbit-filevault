@@ -7,7 +7,7 @@ _CRX Content Packaging_  that allows to create portable packages of repository c
 The Vault Command Line Interface aka _vlt_ that provides a subversion like utility to work and develop with repository content.
 
 
-Changes in Jackrabbit FileVault 3.1.2
+Changes in Jackrabbit FileVault 3.1.4
 -------------------------------------
 Bug Fixes:
     * [JCRVLT-45] - Uninstallation of package fails if snapshot of sub-package is missing

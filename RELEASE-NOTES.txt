@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.4
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.6
 
 Introduction
 ------------
@@ -7,9 +7,10 @@ _CRX Content Packaging_  that allows to create portable packages of repository c
 The Vault Command Line Interface aka _vlt_ that provides a subversion like utility to work and develop with repository content.
 
 
-Changes in Jackrabbit FileVault 3.1.4
+Changes in Jackrabbit FileVault 3.1.6
 -------------------------------------
 Bug Fixes:
+    * [JCRVLT-48] - BinMetaDir causes test failures in windows
     * [JCRVLT-45] - Uninstallation of package fails if snapshot of sub-package is missing
 
 

@@ -21,11 +21,11 @@ Latest development
 ------------------
 The latest FileVault source code is available via Subversion at
 
-* https://svn.apache.org/repos/asf/commons/filevault/trunk
+* https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk
 
 or with ViewVC at
 
-* https://svn.apache.org/viewvc/commons/filevault/trunk
+* https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk
 
 or on GitHub at
 
@@ -34,7 +34,7 @@ or on GitHub at
 
 To checkout the main Jackrabbit source tree, run
 
-    svn checkout https://svn.apache.org/repos/asf/commons/filevault/trunk jackrabbit-filevault
+    svn checkout https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk jackrabbit-filevault
     
 or
 

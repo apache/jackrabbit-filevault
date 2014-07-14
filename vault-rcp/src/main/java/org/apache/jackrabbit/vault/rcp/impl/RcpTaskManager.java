@@ -25,9 +25,10 @@ import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
  */
 public interface RcpTaskManager {
 
+    RcpTask getTask(String taskId);
+
     Map<String, RcpTask> getTasks();
 
     RcpTask addTask(RepositoryAddress src, String dst, String id);
-
 
 }

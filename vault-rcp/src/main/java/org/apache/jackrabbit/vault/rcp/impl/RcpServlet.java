@@ -73,16 +73,31 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
+
+        String taskId = request.getRequestPathInfo().getSuffix();
         try {
             JSONWriter w = new JSONWriter(response.getWriter());
             w.setTidy(true);
-            w.object();
-            w.key("tasks").array();
-            for (RcpTask task: taskMgr.getTasks().values()) {
-                task.write(w);
+
+            if (taskId != null) {
+                taskId = taskId.substring(1);
+                RcpTask task = taskMgr.getTask(taskId);
+
+                if (task != null) {
+                    task.write(w);
+                } else {
+                    // return empty object
+                    w.object().endObject();
+                }
+            } else {
+                w.object();
+                w.key("tasks").array();
+                for (RcpTask task: taskMgr.getTasks().values()) {
+                    task.write(w);
+                }
+                w.endArray();
+                w.endObject();
             }
-            w.endArray();
-            w.endObject();
         } catch (JSONException e) {
             throw new IOException(e.toString());
         }

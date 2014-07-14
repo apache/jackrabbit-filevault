@@ -55,6 +55,10 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         log.info("RcpTaskManager deactivated. Stopping running tasks...done.");
     }
 
+    public RcpTask getTask(String taskId) {
+        return tasks.get(taskId);
+    }
+
     public Map<String, RcpTask> getTasks() {
         return Collections.unmodifiableMap(tasks);
     }

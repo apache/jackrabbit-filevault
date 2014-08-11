@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
+import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.VltDirectory;
 import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
@@ -37,5 +38,14 @@ public class Status extends BaseAction {
     public void run(VltDirectory dir, VltFile file, VaultFile remoteFile)
             throws VltException {
         dir.getContext().printStatus(file);
+    }
+
+    @Override
+    public void run(VltContext ctx, VltTree infos) throws VltException {
+        // ensure that all directories where 'vlt st' is applied is controlled (JCRVLT-55)
+        for (VltTree.Info i: infos.infos()) {
+            i.dir.assertControlled();
+        }
+        super.run(ctx, infos);
     }
 }

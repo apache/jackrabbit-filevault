@@ -35,7 +35,7 @@ import org.apache.jackrabbit.vault.fs.spi.UserManagement;
 /**
  * Implements a Service Provider for JCR 2.0 Repositories
  */
-public class JcrServiceProvider implements ServiceProvider {
+public class JackrabbitServiceProvider implements ServiceProvider {
 
     private ACLManagement aclManagement;
 

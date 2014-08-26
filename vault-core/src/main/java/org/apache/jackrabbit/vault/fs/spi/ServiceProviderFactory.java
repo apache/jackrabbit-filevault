@@ -17,18 +17,21 @@
 
 package org.apache.jackrabbit.vault.fs.spi;
 
-import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.JcrServiceProvider;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.OakServiceProvider;
 
 /**
  * <code>StaticServiceProvider</code>...
  */
 public class ServiceProviderFactory {
 
+
     private static ServiceProvider instance;
 
     public static ServiceProvider getProvider() {
+        // FIXME: provide means to retrieve service provider impl match the desired
+        // repository version (currently jr2.x or oak1.x)
         if (instance == null) {
-            instance = new JcrServiceProvider();
+            instance = new OakServiceProvider();
         }
         return instance;
     }

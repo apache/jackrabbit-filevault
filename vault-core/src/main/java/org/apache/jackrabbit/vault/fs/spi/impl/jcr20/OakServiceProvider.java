@@ -15,20 +15,34 @@
  * limitations under the License.
  */
 
-package org.apache.jackrabbit.vault.fs.spi;
+package org.apache.jackrabbit.vault.fs.spi.impl.jcr20;
+
+import java.util.Set;
+
+import org.apache.jackrabbit.vault.fs.spi.DefaultNodeTypes;
+import org.apache.jackrabbit.vault.fs.spi.UserManagement;
 
 /**
- * Specifies the JCR Version
+ * Implements a Service Provider for JCR 2.0 Repositories
  */
-public enum JcrVersion {
+public class OakServiceProvider extends JackrabbitServiceProvider {
+
+    private UserManagement userManagement;
 
     /**
-     * Version 1.0 (JSR170)
+     * {@inheritDoc}
      */
-    V10,
+    public Set<String> getBuiltInNodeTypeNames() {
+        return DefaultNodeTypes.CRX_3X_NODE_TYPES;
+    }
 
     /**
-     * Version 2.0 (JSR283)
+     * {@inheritDoc}
      */
-    V20
+    public UserManagement getUserManagement() {
+        if (userManagement == null) {
+            userManagement = new OakUserManagement();
+        }
+        return userManagement;
+    }
 }

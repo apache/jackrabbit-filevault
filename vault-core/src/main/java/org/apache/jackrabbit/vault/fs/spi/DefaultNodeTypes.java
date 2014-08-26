@@ -102,6 +102,25 @@ public final class DefaultNodeTypes {
         JACKRABBIT_2X_NODE_TYPES.add("rep:RetentionManageable");
     }
 
+    public static final Set<String> OAK_1X_NODE_TYPES = new HashSet<String>(JACKRABBIT_2X_NODE_TYPES);
+    static {
+        OAK_1X_NODE_TYPES.add("rep:SystemUser");
+        OAK_1X_NODE_TYPES.add("rep:MemberReferences");
+        OAK_1X_NODE_TYPES.add("rep:MemberReferencesList");
+        OAK_1X_NODE_TYPES.add("rep:Privileges");
+        OAK_1X_NODE_TYPES.add("rep:Privilege");
+        OAK_1X_NODE_TYPES.add("rep:Token");
+        OAK_1X_NODE_TYPES.add("rep:MergeConflict");
+        OAK_1X_NODE_TYPES.add("rep:PermissionStore");
+        OAK_1X_NODE_TYPES.add("rep:Permissions");
+        OAK_1X_NODE_TYPES.add("rep:Restrictions");
+        OAK_1X_NODE_TYPES.add("rep:NodeType");
+        OAK_1X_NODE_TYPES.add("rep:VersionablePaths");
+        OAK_1X_NODE_TYPES.add("rep:Unstructured");
+        OAK_1X_NODE_TYPES.add("oak:QueryIndexDefinition");
+        OAK_1X_NODE_TYPES.add("oak:Unstructured");
+    }
+
     public static final Set<String> CRX_1X_NODE_TYPES = new HashSet<String>(JACKRABBIT_1X_NODE_TYPES);
 
     static {
@@ -157,5 +176,11 @@ public final class DefaultNodeTypes {
         CRX_2X_NODE_TYPES.add("crx:NodeTypeRequestMapping");
         CRX_2X_NODE_TYPES.add("crx:PathRequestMapping");
     }
+
+    public static final Set<String> CRX_3X_NODE_TYPES = new HashSet<String>(CRX_2X_NODE_TYPES);
+    static {
+        CRX_3X_NODE_TYPES.addAll(OAK_1X_NODE_TYPES);
+    }
+
 
 }

@@ -15,20 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.jackrabbit.vault.fs.spi;
+package org.apache.jackrabbit.vault.fs.spi.impl.jcr20;
 
 /**
- * Specifies the JCR Version
+ * <code>JackrabbitUserManagement</code>...
  */
-public enum JcrVersion {
+public class OakUserManagement extends JackrabbitUserManagement {
 
     /**
-     * Version 1.0 (JSR170)
+     * {@inheritDoc}
      */
-    V10,
-
-    /**
-     * Version 2.0 (JSR283)
-     */
-    V20
+    public boolean isAuthorizableNodeType(String ntName) {
+        return ntName.equals("rep:Group") || ntName.equals("rep:User") || ntName.equals("rep:SystemUser");
+    }
 }

@@ -67,6 +67,24 @@ public class ImportTests extends IntegrationTestBase {
     }
 
     @Test
+    public void testReimportLess() throws IOException, RepositoryException, ConfigurationException {
+        ZipArchive archive = new ZipArchive(getTempFile("testpackages/tmp.zip"));
+        archive.open(true);
+        Node rootNode = admin.getRootNode();
+        ImportOptions opts = getDefaultOptions();
+        Importer importer = new Importer(opts);
+        importer.run(archive, rootNode);
+
+        assertNodeExists("/tmp/foo/bar/tobi");
+
+        ZipArchive archive2 = new ZipArchive(getTempFile("testpackages/tmp_less.zip"));
+        archive2.open(true);
+        importer.run(archive2, rootNode);
+
+        assertNodeMissing("/tmp/foo/bar/tobi");
+    }
+
+    @Test
     public void testFilteredImport() throws IOException, RepositoryException, ConfigurationException {
         ZipArchive archive = new ZipArchive(getTempFile("testpackages/filtered_package.zip"));
         archive.open(true);

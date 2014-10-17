@@ -1,10 +1,22 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.6
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.8
 
 Introduction
 ------------
 The FileVault introduces a JCR repository to filesystem mapping. The mapping is exposed by and API and used by the
 _CRX Content Packaging_  that allows to create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.1.8
+-------------------------------------
+Bug Fixes:
+    * [JCRVLT-55] - vlt st should notify the user executed in a directory not under vault control
+
+Improvement:
+    * [JCRVLT-54] - [vault-rcp] Allow single task retrieval
+    * [JCRVLT-56] - Add support for oak system users
+
+Tasks:
+    * [JCRVLT-52] - Set maven-compiler-plugin target/source version to 1.6
 
 
 Changes in Jackrabbit FileVault 3.1.6

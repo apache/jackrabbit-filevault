@@ -54,6 +54,8 @@ importing content. the following values are possible:
 "update"
 : Existing content is updated, new content is added and none is deleted.
 
+For a more detailed description of the import mode, see [here](importmode.html)
+
 ### include and exclude elements
 the include and exclude elements allow more fine grained filtering of the subtree during import and export. they have a
 mandatory `pattern` attribute which has the format of a regexp. the regexp is matched against the _path_ of the

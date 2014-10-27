@@ -33,6 +33,7 @@
     <menu name="Using Filevault">
       <item href="usage.html" name="Getting Started" />
       <item href="filter.html" name="Workspace Filter" />
+      <item href="importmode.html" name="Import Mode" />
     </menu>
     <menu name="Developing">
       <item href="dev.html" name="Overview" />

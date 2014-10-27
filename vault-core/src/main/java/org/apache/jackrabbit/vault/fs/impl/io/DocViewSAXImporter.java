@@ -636,7 +636,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                             }
                         } else if (userManagement != null && userManagement.isAuthorizableNodeType(ni.primary)) {
                             boolean skip = false;
-                            String id = org.apache.jackrabbit.util.Text.unescapeIllegalJcrChars(ni.name);
+                            String id = userManagement.getAuthorizableId(ni);
                             String oldPath = node.getPath() + "/" + ni.name;
                             if (wspFilter.getImportMode(oldPath) == ImportMode.MERGE) {
                                 String existingPath = userManagement.getAuthorizablePath(this.session, id);

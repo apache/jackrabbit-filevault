@@ -19,6 +19,8 @@ package org.apache.jackrabbit.vault.fs.spi;
 
 import javax.jcr.Session;
 
+import org.apache.jackrabbit.vault.util.DocViewNode;
+
 /**
  * <code>UserManagement</code>...
  */
@@ -41,6 +43,17 @@ public interface UserManagement {
      * @since 2.3.26
      */
     String getAuthorizablePath(Session session, String name);
+
+    /**
+     * Returns the id of the authorizable from the specified authorizable node
+     * to be imported.
+     *
+     * @param node the authorizable import node
+     * @return The id of the authorizable to be imported.
+     *
+     * @since 3.1.10
+     */
+    String getAuthorizableId(DocViewNode node);
 
     /**
      * Adds the given memberships to the specified group.

@@ -29,6 +29,8 @@ import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
+import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +64,21 @@ public class JackrabbitUserManagement implements UserManagement {
             // ignore
         }
         return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getAuthorizableId(DocViewNode node) {
+        // try Oak way of storing the id first:
+        DocViewProperty idProp = node.props.get("rep:authorizableId");
+        if (idProp == null || idProp.isMulti) {
+            // jackrabbit 2.x or Oak with migrated Jackrabbit 2.x content
+            return org.apache.jackrabbit.util.Text.unescapeIllegalJcrChars(node.name);
+        } else {
+            // oak 1.x
+            return idProp.values[0];
+        }
     }
 
     /**

@@ -78,25 +78,21 @@ public class TestUserContentPackage extends IntegrationTestBase {
     }
 
     @Test
-    @Ignore("JCRVLT-66")
     public void installUserA_Merge() throws RepositoryException, IOException, PackageException {
         installUserA(ImportMode.MERGE, false, false);
     }
 
     @Test
-    @Ignore("JCRVLT-66")
     public void installUserA_Merge_PkgPath() throws RepositoryException, IOException, PackageException {
         installUserA(ImportMode.MERGE, true, true);
     }
 
     @Test
-    @Ignore("JCRVLT-66")
     public void installUserA_Update() throws RepositoryException, IOException, PackageException {
         installUserA(ImportMode.UPDATE, false, false);
     }
 
     @Test
-    @Ignore("JCRVLT-66")
     public void installUserA_Update_PkgPath() throws RepositoryException, IOException, PackageException {
         installUserA(ImportMode.UPDATE, true, true);
     }

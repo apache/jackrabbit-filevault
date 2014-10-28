@@ -48,6 +48,8 @@ public class TestUserContentPackage extends IntegrationTestBase {
     private static final String PARENT_PATH_TEST_USER_A = "/home/users/test";
     private static final String ID_TEST_USER_A = "test-user-a";
     private static final String NAME_USER_PROPERTY = "userProperty";
+    private static final String NAME_PROFILE_FULLNAME = "profile/fullname";
+    private static final String NAME_PROFILE_PROPERTY = "profile/profileProperty";
     private static final String NAME_PROFILE_NODE = "profile";
     private static final String NAME_PROFILE_PRIVATE_NODE = "profile_private";
 
@@ -107,6 +109,42 @@ public class TestUserContentPackage extends IntegrationTestBase {
         installUserA(ImportMode.REPLACE, true, true);
     }
 
+    @Test
+    @Ignore("JCRVLT-64")
+    public void installUserA_Profile() throws RepositoryException, IOException, PackageException {
+        // install default user at package path
+        User userA = installUserA(ImportMode.REPLACE, true, true);
+        String authPath = userA.getPath();
+
+        assertPropertyMissing(authPath + "/" + NAME_PROFILE_PROPERTY);
+
+        // install updated profile
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        assertProperty(authPath + "/" + NAME_PROFILE_FULLNAME, "Test User");
+        assertProperty(authPath + "/" + NAME_PROFILE_PROPERTY, "a");
+    }
+
+    @Test
+    @Ignore("JCRVLT-65")
+    public void installUserA_Profile_Moved() throws RepositoryException, IOException, PackageException {
+        // install default user at package path
+        User userA = installUserA(ImportMode.UPDATE, false, false);
+        String authPath = userA.getPath();
+
+        assertPropertyMissing(authPath + "/" + NAME_PROFILE_PROPERTY);
+
+        // install updated profile
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        assertProperty(authPath + "/" + NAME_PROFILE_FULLNAME, "Test User");
+        assertProperty(authPath + "/" + NAME_PROFILE_PROPERTY, "a");
+    }
+
     private User installUserA(ImportMode mode, boolean usePkgPath, boolean expectPkgPath) throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
         assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
@@ -152,14 +190,17 @@ public class TestUserContentPackage extends IntegrationTestBase {
         // check import mode dependent stuff
         if (mode == null || mode == ImportMode.REPLACE) {
             assertProperty(userA.getPath() + "/" + NAME_USER_PROPERTY, "a");
+            assertProperty(userA.getPath() + "/" + NAME_PROFILE_FULLNAME, "Test User");
             assertNodeExists(userA.getPath() + "/" + NAME_PROFILE_NODE);
             assertNodeMissing(userA.getPath() + "/" + NAME_PROFILE_PRIVATE_NODE);
         } else if (mode == ImportMode.UPDATE) {
             assertProperty(userA.getPath() + "/" + NAME_USER_PROPERTY, "a");
+            assertProperty(userA.getPath() + "/" + NAME_PROFILE_FULLNAME, "Test User");
             assertNodeExists(userA.getPath() + "/" + NAME_PROFILE_NODE);
             assertNodeExists(userA.getPath() + "/" + NAME_PROFILE_PRIVATE_NODE);
         } else if (mode == ImportMode.MERGE) {
             assertProperty(userA.getPath() + "/" + NAME_USER_PROPERTY, "initial");
+            assertProperty(userA.getPath() + "/" + NAME_PROFILE_FULLNAME, "Test User");
             assertNodeExists(userA.getPath() + "/" + NAME_PROFILE_NODE);
             assertNodeExists(userA.getPath() + "/" + NAME_PROFILE_PRIVATE_NODE);
         }

@@ -42,6 +42,15 @@ public class DocViewNode {
     public final String[] mixins;
     public final String primary;
 
+    public DocViewNode(String name, String label, String uuid, Map<String, DocViewProperty> props, String[] mixins, String primary) {
+        this.name = name;
+        this.label = label;
+        this.uuid = uuid;
+        this.mixins = mixins;
+        this.primary = primary;
+        this.props.putAll(props);
+    }
+
     public DocViewNode(String name, String label, Attributes attributes, NamePathResolver npResolver)
             throws NamespaceException {
         this.name = name;

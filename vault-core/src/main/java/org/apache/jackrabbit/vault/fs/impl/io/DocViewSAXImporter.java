@@ -635,37 +635,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 stack = stack.push();
                             }
                         } else if (userManagement != null && userManagement.isAuthorizableNodeType(ni.primary)) {
-                            boolean skip = false;
-                            String id = userManagement.getAuthorizableId(ni);
-                            String oldPath = node.getPath() + "/" + ni.name;
-                            if (wspFilter.getImportMode(oldPath) == ImportMode.MERGE) {
-                                String existingPath = userManagement.getAuthorizablePath(this.session, id);
-                                if (existingPath != null) {
-                                    // if existing path is not the same as this, we need to register this so that further
-                                    // nodes down the line (i.e. profiles, policies) are imported at the correct location
-                                    if (!oldPath.equals(existingPath)) {
-                                        importInfo.onRemapped(oldPath, existingPath);
-                                    }
-                                    skip = true;
-
-                                    // remember desired memberships. todo: how to deal with multi-node memberships?
-                                    DocViewProperty prop = ni.props.get("rep:members");
-                                    if (prop != null) {
-                                        importInfo.registerMemberships(id, prop.values);
-                                    }
-                                }
-                            }
-                            if (skip) {
-                                log.info("Skipping import of existing authorizable '{}' due to MERGE import mode.", id);
-                                stack = stack.push();
-                                importInfo.onNop(node.getPath() + "/" + ni.name);
-                            } else {
-                                log.debug("Authorizable element detected. starting sysview transformation {}/{}", node.getPath(), name);
-                                stack = stack.push();
-                                stack.adapter = new JcrSysViewTransformer(node);
-                                stack.adapter.startNode(ni);
-                                importInfo.onCreated(node.getPath() + "/" + ni.name);
-                            }
+                            handleAuthorizable(node, ni);
                         } else {
                             stack = stack.push(addNode(ni));
                         }
@@ -683,6 +653,90 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             }
         } catch (Exception e) {
             throw new SAXException(e);
+        }
+    }
+
+    /**
+     * Handle an authorizable node
+     * @param node the parent node
+     * @param ni doc view node of the authorizable
+     * @throws RepositoryException
+     * @throws SAXException
+     */
+    private void handleAuthorizable(Node node, DocViewNode ni) throws RepositoryException, SAXException {
+        String id = userManagement.getAuthorizableId(ni);
+        String newPath = node.getPath() + "/" + ni.name;
+        String oldPath = userManagement.getAuthorizablePath(this.session, id);
+        if (oldPath == null) {
+            // just import the authorizable node
+            log.debug("Authorizable element detected. starting sysview transformation {}", newPath);
+            stack = stack.push();
+            stack.adapter = new JcrSysViewTransformer(node);
+            stack.adapter.startNode(ni);
+            importInfo.onCreated(newPath);
+            return;
+        }
+
+        Node authNode = session.getNode(oldPath);
+        ImportMode mode = wspFilter.getImportMode(oldPath);
+        // if existing path is not the same as this, we need to register this so that further
+        // nodes down the line (i.e. profiles, policies) are imported at the correct location
+        // todo: check if this also works cross-aggregates
+        if (mode != ImportMode.REPLACE && !oldPath.equals(newPath)) {
+            importInfo.onRemapped(oldPath, newPath);
+        }
+
+        switch (mode) {
+            case MERGE:
+                // remember desired memberships.
+                // todo: how to deal with multi-node memberships? see JCRVLT-69
+                DocViewProperty prop = ni.props.get("rep:members");
+                if (prop != null) {
+                    importInfo.registerMemberships(id, prop.values);
+                }
+
+                log.info("Skipping import of existing authorizable '{}' due to MERGE import mode.", id);
+                stack = stack.push(new StackElement(authNode, false));
+                importInfo.onNop(oldPath);
+                break;
+
+            case REPLACE:
+                // just replace the entire subtree for now.
+                log.debug("Authorizable element detected. starting sysview transformation {}", newPath);
+                stack = stack.push();
+                stack.adapter = new JcrSysViewTransformer(node);
+                stack.adapter.startNode(ni);
+                importInfo.onReplaced(newPath);
+                break;
+
+            case UPDATE:
+                log.debug("Authorizable element detected. starting sysview transformation {}", newPath);
+                stack = stack.push();
+                stack.adapter = new JcrSysViewTransformer(node, oldPath);
+                // we need to tweak the ni.name so that the sysview import does not
+                // rename the authorizable node name
+                String newName = Text.getName(oldPath);
+                DocViewNode mapped = new DocViewNode(
+                        newName,
+                        newName,
+                        ni.uuid,
+                        ni.props,
+                        ni.mixins,
+                        ni.primary
+                );
+                // but we need to be augment with a potential rep:authorizableId
+                if (authNode.hasProperty("rep:authorizableId")) {
+                    DocViewProperty authId = new DocViewProperty(
+                            "rep:authorizableId",
+                            new String[]{authNode.getProperty("rep:authorizableId").getString()},
+                            false,
+                            PropertyType.STRING
+                    );
+                    mapped.props.put(authId.name, authId);
+                }
+                stack.adapter.startNode(mapped);
+                importInfo.onReplaced(newPath);
+                break;
         }
     }
 

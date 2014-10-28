@@ -206,6 +206,10 @@ public class IntegrationTestBase  {
         assertEquals(path + " should contain " + value, value, admin.getProperty(path).getString());
     }
 
+    public void assertPropertyMissing(String path) throws RepositoryException {
+        assertFalse(path + " should not exist", admin.propertyExists(path));
+    }
+
     public void createNodes(Node parent, int maxDepth, int nodesPerFolder) throws RepositoryException {
         for (int i=0; i<nodesPerFolder; i++) {
             Node n = parent.addNode("n" + i, "nt:folder");

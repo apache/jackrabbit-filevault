@@ -965,7 +965,7 @@ public class Importer {
             // check if node was remapped. currently we just skip them as it's not clear how the filter should be
             // reapplied or what happens if the remapping links to a tree we already processed.
             // in this case we don't descend in any children and can clear them right away
-            if (imp.getRemapped().containsKey(info.path)) {
+            if (!imp.getRemapped().map(info.path, true).equals(info.path)) {
                 info.children = null;
             }
         }

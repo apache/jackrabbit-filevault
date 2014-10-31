@@ -32,7 +32,9 @@ import javax.jcr.Session;
 import javax.jcr.version.Version;
 
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
+import org.apache.jackrabbit.vault.fs.api.MultiPathMapping;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
+import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.PathComparator;
 import org.slf4j.Logger;
@@ -51,7 +53,7 @@ public class ImportInfoImpl implements ImportInfo {
 
     private final TreeMap<String, Info> infos = new TreeMap<String, Info>(new PathComparator());
 
-    private Map<String, String> remapped;
+    private MultiPathMapping mapping = null;
 
     /**
      * list of uuids of nodes that need to be checked-in after the import
@@ -82,10 +84,10 @@ public class ImportInfoImpl implements ImportInfo {
             numModified +=baseImpl.numModified;
             numErrors += baseImpl.numErrors;
             toVersion.addAll(baseImpl.toVersion);
-            if (remapped == null) {
-                remapped = baseImpl.remapped;
+            if (mapping == null) {
+                mapping = baseImpl.mapping;
             } else {
-                remapped.putAll(baseImpl.getRemapped());
+                mapping.merge(baseImpl.mapping);
             }
             if (memberships == null) {
                 memberships = baseImpl.memberships;
@@ -156,15 +158,24 @@ public class ImportInfoImpl implements ImportInfo {
         numErrors++;
     }
 
-    public void onRemapped(String oldPath, String newPath) {
-        if (remapped == null) {
-            remapped = new HashMap<String, String>();
+    /**
+     * remembers that a package path was remapped during import. e.g. when the importer follows and existing
+     * authorizable for MERGE and UPDATE modes.
+     *
+     * @param packagePath the original path as presented in the package
+     * @param followedPath the followed path during the import
+     */
+    public void onRemapped(String followedPath, String packagePath) {
+        if (!packagePath.equals(followedPath)) {
+            if (mapping == null) {
+                mapping = new MultiPathMapping();
+            }
+            mapping.link(followedPath, packagePath);
         }
-        remapped.put(oldPath, newPath);
     }
 
-    public Map<String, String> getRemapped() {
-        return remapped == null ? Collections.<String, String>emptyMap() : remapped;
+    public PathMapping getRemapped() {
+        return mapping == null ? PathMapping.IDENTITY : mapping;
     }
 
     private void addMod(String path, Type mod, Exception e) {

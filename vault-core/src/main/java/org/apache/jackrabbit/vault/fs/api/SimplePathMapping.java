@@ -39,7 +39,18 @@ public class SimplePathMapping implements PathMapping {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String map(String path) {
+        return map(path, false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String map(String path, boolean reverse) {
+        String strip = reverse ? this.root : this.strip;
+        String root = reverse ? this.strip : this.root;
         if (path.startsWith(strip)) {
             StringBuilder b = new StringBuilder(root);
             b.append(path.substring(strip.length()));

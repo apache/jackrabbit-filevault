@@ -51,6 +51,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
     private static final String NAME_PROFILE_FULLNAME = "profile/fullname";
     private static final String NAME_PROFILE_PROPERTY = "profile/profileProperty";
     private static final String NAME_PROFILE_NODE = "profile";
+    private static final String NAME_PROFILE_PICTURE_NODE = "profile/picture.txt";
     private static final String NAME_PROFILE_PRIVATE_NODE = "profile_private";
 
     @Override
@@ -110,7 +111,6 @@ public class TestUserContentPackage extends IntegrationTestBase {
     }
 
     @Test
-    @Ignore("JCRVLT-64")
     public void installUserA_Profile() throws RepositoryException, IOException, PackageException {
         // install default user at package path
         User userA = installUserA(ImportMode.REPLACE, true, true);
@@ -128,7 +128,6 @@ public class TestUserContentPackage extends IntegrationTestBase {
     }
 
     @Test
-    @Ignore("JCRVLT-65")
     public void installUserA_Profile_Moved() throws RepositoryException, IOException, PackageException {
         // install default user at package path
         User userA = installUserA(ImportMode.UPDATE, false, false);
@@ -143,6 +142,43 @@ public class TestUserContentPackage extends IntegrationTestBase {
 
         assertProperty(authPath + "/" + NAME_PROFILE_FULLNAME, "Test User");
         assertProperty(authPath + "/" + NAME_PROFILE_PROPERTY, "a");
+    }
+
+    @Test
+    public void installUserA_Profile_Picture() throws RepositoryException, IOException, PackageException {
+        // install default user at package path
+        User userA = installUserA(ImportMode.REPLACE, true, true);
+        String authPath = userA.getPath();
+
+        assertPropertyMissing(authPath + "/" + NAME_PROFILE_PROPERTY);
+
+        // install updated profile
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile_picture.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        assertProperty(authPath + "/" + NAME_PROFILE_FULLNAME, "Test User");
+        assertProperty(authPath + "/" + NAME_PROFILE_PROPERTY, "a");
+        assertNodeExists(authPath + "/" + NAME_PROFILE_PICTURE_NODE);
+    }
+
+    @Test
+    @Ignore("JCRVLT-65")
+    public void installUserA_Profile_Picture_Moved() throws RepositoryException, IOException, PackageException {
+        // install default user at package path
+        User userA = installUserA(ImportMode.UPDATE, false, false);
+        String authPath = userA.getPath();
+
+        assertPropertyMissing(authPath + "/" + NAME_PROFILE_PROPERTY);
+
+        // install updated profile
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile_picture.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        assertProperty(authPath + "/" + NAME_PROFILE_FULLNAME, "Test User");
+        assertProperty(authPath + "/" + NAME_PROFILE_PROPERTY, "a");
+        assertNodeExists(authPath + "/" + NAME_PROFILE_PICTURE_NODE);
     }
 
     private User installUserA(ImportMode mode, boolean usePkgPath, boolean expectPkgPath) throws RepositoryException, IOException, PackageException {

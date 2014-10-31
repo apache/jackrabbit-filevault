@@ -27,7 +27,14 @@ public interface PathMapping {
      * Implements an identity mapping
      */
     PathMapping IDENTITY = new PathMapping() {
+
+        @Override
         public String map(String path) {
+            return path;
+        }
+
+        @Override
+        public String map(String path, boolean reverse) {
             return path;
         }
     };
@@ -38,4 +45,14 @@ public interface PathMapping {
      * @return the mapped path.
      */
     String map(String path);
+
+    /**
+     * Maps the given path to a new location.
+     * @param path the path
+     * @param reverse if {@code true} a reverse mapping is applied
+     * @return the mapped path.
+     */
+    String map(String path, boolean reverse);
+
+
 }

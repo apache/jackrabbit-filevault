@@ -306,7 +306,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
     }
 
     private boolean isIncluded(Item item, int depth) throws RepositoryException {
-        String path = item.getPath();
+        String path = importInfo.getRemapped().map(item.getPath());
         return wspFilter.contains(path) && (depth == 0 || filter.contains(item, path, depth));
     }
 
@@ -676,14 +676,25 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             importInfo.onCreated(newPath);
             return;
         }
+        boolean isIncluded = wspFilter.contains(newPath);
 
         Node authNode = session.getNode(oldPath);
-        ImportMode mode = wspFilter.getImportMode(oldPath);
+        ImportMode mode = wspFilter.getImportMode(newPath);
+
         // if existing path is not the same as this, we need to register this so that further
         // nodes down the line (i.e. profiles, policies) are imported at the correct location
+        // we only follow existing authorizables for non-REPLACE mode and if ignoring this authorizable node
         // todo: check if this also works cross-aggregates
-        if (mode != ImportMode.REPLACE && !oldPath.equals(newPath)) {
+        if (mode != ImportMode.REPLACE || !isIncluded) {
             importInfo.onRemapped(oldPath, newPath);
+        }
+
+        if (!isIncluded) {
+            // skip authorizable handling - always follow existing authorizable - regardless of mode
+            // todo: we also need to check any rep:Memberlist subnodes. see JCRVLT-69
+            stack = stack.push(new StackElement(authNode, false));
+            importInfo.onNop(oldPath);
+            return;
         }
 
         switch (mode) {
@@ -697,7 +708,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
                 log.info("Skipping import of existing authorizable '{}' due to MERGE import mode.", id);
                 stack = stack.push(new StackElement(authNode, false));
-                importInfo.onNop(oldPath);
+                importInfo.onNop(newPath);
                 break;
 
             case REPLACE:

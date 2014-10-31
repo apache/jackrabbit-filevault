@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * it uses the "com.adobe.granite.packaging" to better fit into the granite hierarchy.
  */
 @Component()
-@Property(name = "jmx.objectname", value="com.adobe.granite.packaging:type=manager")
+@Property(name = "jmx.objectname", value="org.apache.jackrabbit.vault.packaging:type=manager")
 @Service(value = DynamicMBean.class)
 public class PackageManagerMBeanImpl extends StandardMBean implements PackageManagerMBean {
 

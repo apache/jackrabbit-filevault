@@ -52,6 +52,7 @@ import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
@@ -962,12 +963,8 @@ public class Importer {
                     }
                 }
             }
-            // check if node was remapped. currently we just skip them as it's not clear how the filter should be
-            // reapplied or what happens if the remapping links to a tree we already processed.
-            // in this case we don't descend in any children and can clear them right away
-            if (!imp.getRemapped().map(info.path, true).equals(info.path)) {
-                info.children = null;
-            }
+            // remap the child tree in case some of the nodes where moved during import (e.g. authorizable)
+            info = info.remap(imp.getRemapped());
         }
         log.debug("committed {}", info.path);
         return imp;
@@ -1061,7 +1058,7 @@ public class Importer {
 
     private static class TxInfo {
 
-        private final TxInfo parent;
+        private TxInfo parent;
 
         private final String path;
 
@@ -1160,6 +1157,38 @@ public class Importer {
                 }
             }
             return root;
+        }
+
+        public TxInfo remap(PathMapping mapping) {
+            String mappedPath = mapping.map(path, true);
+            if (mappedPath.equals(path)) {
+                return this;
+            }
+
+            TxInfo ret = new TxInfo(parent, mappedPath);
+
+            // todo: what should we do with the artifacts ?
+            ret.artifacts.addAll(artifacts);
+
+            // todo: do we need to remap the namelist, too?
+            ret.nameList = nameList;
+
+            ret.isIntermediate = isIntermediate;
+
+            if (children != null) {
+                for (TxInfo child: children.values()) {
+                    child = child.remap(mapping);
+                    child.parent = this;
+                    ret.addChild(child);
+                }
+            }
+
+            // ensure that our parent links the new info
+            if (parent.children != null) {
+                parent.children.put(ret.name, ret);
+            }
+
+            return ret;
         }
     }
 

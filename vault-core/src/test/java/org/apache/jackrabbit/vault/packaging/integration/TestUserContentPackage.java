@@ -163,7 +163,6 @@ public class TestUserContentPackage extends IntegrationTestBase {
     }
 
     @Test
-    @Ignore("JCRVLT-65")
     public void installUserA_Profile_Picture_Moved() throws RepositoryException, IOException, PackageException {
         // install default user at package path
         User userA = installUserA(ImportMode.UPDATE, false, false);

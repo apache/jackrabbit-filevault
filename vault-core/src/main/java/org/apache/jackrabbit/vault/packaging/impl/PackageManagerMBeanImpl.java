@@ -46,7 +46,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <code>PackageManagerMBeanImpl</code> provide a MBean that lists all available packages as tabular data.
- * it uses the "com.adobe.granite.packaging" to better fit into the granite hierarchy.
  */
 @Component()
 @Property(name = "jmx.objectname", value="org.apache.jackrabbit.vault.packaging:type=manager")

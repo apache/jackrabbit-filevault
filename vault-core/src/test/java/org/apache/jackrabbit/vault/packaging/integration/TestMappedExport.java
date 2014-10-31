@@ -54,7 +54,7 @@ public class TestMappedExport extends IntegrationTestBase {
         filter.add(new PathFilterSet("/tmp/foo/bar"));
         inf.setFilter(filter);
         Properties props = new Properties();
-        props.setProperty(VaultPackage.NAME_GROUP, "adobe/test");
+        props.setProperty(VaultPackage.NAME_GROUP, "jackrabbit/test");
         props.setProperty(VaultPackage.NAME_NAME, "test-package");
         inf.setProperties(props);
 

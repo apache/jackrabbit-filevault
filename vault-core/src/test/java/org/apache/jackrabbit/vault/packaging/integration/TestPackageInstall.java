@@ -127,7 +127,7 @@ public class TestPackageInstall extends IntegrationTestBase {
 
         // just extract - no snapshots
         pack.extract(getDefaultOptions());
-        assertNodeExists("/etc/designs/agadobe/images/backgroundImage.png/jcr:content/dam:thumbnails/dam:thumbnail_48.png");
+        assertNodeExists("/etc/designs/apache/images/backgroundImage.png/jcr:content/dam:thumbnails/dam:thumbnail_48.png");
     }
 
     /**

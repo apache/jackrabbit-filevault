@@ -271,7 +271,7 @@ Example (executed in a vlt checkout):
     Starting initialization of sync service in existing vlt checkout /tmp/workspace/vltsync/jcr_root for http://localhost:4502/crx/server/-/jcr:root
     Preparing to install vault-sync-2.3.22.jar...
     Updated bundle: vault-sync-2.3.22.jar
-    Created new config at /libs/crx/vault/config/com.day.jcr.sync.impl.VaultSyncServiceImpl
+    Created new config at /libs/crx/vault/config/org.apache.jackrabbit.vault.sync.impl.VaultSyncServiceImpl
     Added new sync directory: /tmp/workspace/vltsync/jcr_root
 
 The directory `/tmp/workspace/vltsync/jcr_root` is now enabled for syncing.

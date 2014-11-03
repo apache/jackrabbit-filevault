@@ -128,6 +128,22 @@ public class TestUserContentPackage extends IntegrationTestBase {
     }
 
     @Test
+    public void installUserA_Profile_NonExistingUser() throws RepositoryException, IOException, PackageException {
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
+
+        // install profile
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
+
+        // profile must not exist
+        assertNodeMissing("/home/users/test/test-user-a/profile");
+    }
+
+    @Test
     public void installUserA_Profile_Moved() throws RepositoryException, IOException, PackageException {
         // install default user at package path
         User userA = installUserA(ImportMode.UPDATE, false, false);
@@ -160,6 +176,22 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertProperty(authPath + "/" + NAME_PROFILE_FULLNAME, "Test User");
         assertProperty(authPath + "/" + NAME_PROFILE_PROPERTY, "a");
         assertNodeExists(authPath + "/" + NAME_PROFILE_PICTURE_NODE);
+    }
+
+    @Test
+    public void installUserA_Profile_Picture_NonExistingUser() throws RepositoryException, IOException, PackageException {
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
+
+        // install updated profile
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile_picture.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
+
+        // image profile must not exist
+        assertNodeMissing("/home/users/test/test-user-a/profile/" + NAME_PROFILE_PICTURE_NODE);
     }
 
     @Test

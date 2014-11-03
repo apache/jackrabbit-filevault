@@ -666,8 +666,16 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
     private void handleAuthorizable(Node node, DocViewNode ni) throws RepositoryException, SAXException {
         String id = userManagement.getAuthorizableId(ni);
         String newPath = node.getPath() + "/" + ni.name;
+        boolean isIncluded = wspFilter.contains(newPath);
         String oldPath = userManagement.getAuthorizablePath(this.session, id);
         if (oldPath == null) {
+            if (!isIncluded) {
+                log.debug("Skipping authorizable node not in filter {}", newPath);
+                stack = stack.push();
+                importInfo.onMissing(newPath);
+                return;
+            }
+
             // just import the authorizable node
             log.debug("Authorizable element detected. starting sysview transformation {}", newPath);
             stack = stack.push();
@@ -676,7 +684,6 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             importInfo.onCreated(newPath);
             return;
         }
-        boolean isIncluded = wspFilter.contains(newPath);
 
         Node authNode = session.getNode(oldPath);
         ImportMode mode = wspFilter.getImportMode(newPath);

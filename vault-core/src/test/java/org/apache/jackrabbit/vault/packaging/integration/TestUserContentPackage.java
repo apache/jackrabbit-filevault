@@ -137,10 +137,11 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
-        assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
+        Authorizable user = mgr.getAuthorizable(ID_TEST_USER_A);
+        assertNotNull("test-user-a must exist", user);
 
-        // profile must not exist
-        assertNodeMissing("/home/users/test/test-user-a/profile");
+        // profile must exist
+        assertProperty(user.getPath() + "/" + NAME_PROFILE_PROPERTY, "a");
     }
 
     @Test
@@ -188,10 +189,11 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
-        assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
+        Authorizable user = mgr.getAuthorizable(ID_TEST_USER_A);
+        assertNotNull("test-user-a must exist", user);
 
-        // image profile must not exist
-        assertNodeMissing("/home/users/test/test-user-a/profile/" + NAME_PROFILE_PICTURE_NODE);
+        // image profile must exist
+        assertNodeExists(user.getPath() + "/" + NAME_PROFILE_PICTURE_NODE);
     }
 
     @Test

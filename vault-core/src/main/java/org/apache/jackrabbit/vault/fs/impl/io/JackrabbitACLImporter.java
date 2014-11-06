@@ -158,15 +158,24 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         }
     }
 
-    public void close() throws SAXException {
+    public List<String> close() throws SAXException {
         if (states.peek() != State.INITIAL) {
             log.error("Unexpected end state: {}", states.peek());
         }
+        List<String> paths = new ArrayList<String>();
         try {
             apply();
+
+            // currently cheat a little here
+            if (accessControlledPath == null && session.nodeExists("/rep:repoPolicy")) {
+                paths.add("/rep:repoPolicy");
+            } else if (session.nodeExists(accessControlledPath + "/rep:policy")) {
+                paths.add(accessControlledPath + "/rep:policy");
+            }
         } catch (RepositoryException e) {
             log.error("Error while applying access control content.", e);
         }
+        return paths;
     }
 
     private void apply() throws RepositoryException {

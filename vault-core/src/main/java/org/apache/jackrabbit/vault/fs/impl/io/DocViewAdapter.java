@@ -16,6 +16,8 @@
  ************************************************************************/
 package org.apache.jackrabbit.vault.fs.impl.io;
 
+import java.util.List;
+
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.xml.sax.SAXException;
 
@@ -43,6 +45,6 @@ public interface DocViewAdapter {
      * Is called by the importer if the adapter is no longer used and must finalize the import.
      * @throws SAXException if an error occurrs.
      */
-    public void close() throws SAXException;
+    public List<String> close() throws SAXException;
 
 }

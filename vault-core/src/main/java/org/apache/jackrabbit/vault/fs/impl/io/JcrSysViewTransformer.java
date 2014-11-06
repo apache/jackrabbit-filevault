@@ -16,6 +16,9 @@
  ************************************************************************/
 package org.apache.jackrabbit.vault.fs.impl.io;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -56,6 +59,10 @@ public class JcrSysViewTransformer implements DocViewAdapter {
      */
     private Node tmpNode;
 
+    private String rootName;
+
+    private Node parent;
+
     private final String existingPath;
 
     public JcrSysViewTransformer(Node node) throws SAXException, RepositoryException {
@@ -64,6 +71,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
     JcrSysViewTransformer(Node node, String existingPath) throws RepositoryException, SAXException {
         Session session = node.getSession();
+        parent = node;
         handler = session.getImportContentHandler(
                 node.getPath(),
                 existingPath != null
@@ -101,8 +109,20 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         }
     }
 
-    public void close() throws SAXException {
+    public List<String> close() throws SAXException {
         handler.endDocument();
+
+        // get list of created paths
+        List<String> paths = new ArrayList<String>();
+        try {
+            if (existingPath != null && parent.getSession().nodeExists(existingPath)) {
+                addPaths(paths, parent.getSession().getNode(existingPath));
+            } else if (rootName != null && parent.hasNode(rootName)) {
+                addPaths(paths, parent.getNode(rootName));
+            }
+        } catch (RepositoryException e) {
+            log.error("error while retrieving list of created nodes.");
+        }
 
         // check for rescued child nodes
         // move the old child nodes back
@@ -127,6 +147,15 @@ public class JcrSysViewTransformer implements DocViewAdapter {
             }
         }
 
+        return paths;
+    }
+
+    private void addPaths(List<String> paths, Node node) throws RepositoryException {
+        paths.add(node.getPath());
+        NodeIterator iter = node.getNodes();
+        while (iter.hasNext()) {
+            addPaths(paths, iter.nextNode());
+        }
     }
 
     public void startNode(DocViewNode ni) throws SAXException {
@@ -151,6 +180,10 @@ public class JcrSysViewTransformer implements DocViewAdapter {
                 }
                 handler.endElement(Name.NS_SV_URI, "property", "sv:property");
             }
+        }
+
+        if (rootName == null) {
+            rootName = ni.name;
         }
     }
 

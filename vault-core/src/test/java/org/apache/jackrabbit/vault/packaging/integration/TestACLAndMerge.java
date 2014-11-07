@@ -414,6 +414,20 @@ public class TestACLAndMerge extends IntegrationTestBase {
         assertPermission(null, true, new String[]{"jcr:all"}, "testuser1", null);
     }
 
+    /**
+     * Installs a package a the root level (JCRVLT-75)
+     */
+    @Test
+    public void testRootACL() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/root_policy.zip"), false);
+        assertNotNull(pack);
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
+        pack.install(opts);
+
+        // test if nodes and ACLs of first package exist
+        assertPermission("/", true, new String[]{"jcr:all"}, "everyone", null);
+    }
 
     protected void assertPermissionMissing(String path, boolean allow, String[] privs, String name, String globRest)
             throws RepositoryException {

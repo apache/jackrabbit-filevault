@@ -167,15 +167,23 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             apply();
 
             // currently cheat a little here
-            if (accessControlledPath == null && session.nodeExists("/rep:repoPolicy")) {
-                paths.add("/rep:repoPolicy");
-            } else if (session.nodeExists(accessControlledPath + "/rep:policy")) {
-                paths.add(accessControlledPath + "/rep:policy");
+            if (accessControlledPath == null) {
+                addPathIfExists(paths, "/rep:repoPolicy");
+            } else if ("/".equals(accessControlledPath)) {
+                addPathIfExists(paths, "/rep:policy");
+            } else {
+                addPathIfExists(paths, accessControlledPath + "/rep:policy");
             }
         } catch (RepositoryException e) {
             log.error("Error while applying access control content.", e);
         }
         return paths;
+    }
+
+    private void addPathIfExists(List<String> paths, String path) throws RepositoryException {
+        if (session.nodeExists(path)) {
+            paths.add(path);
+        }
     }
 
     private void apply() throws RepositoryException {

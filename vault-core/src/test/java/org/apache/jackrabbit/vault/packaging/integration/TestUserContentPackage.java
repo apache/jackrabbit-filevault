@@ -18,6 +18,7 @@
 package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
@@ -26,6 +27,7 @@ import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
+import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
@@ -243,6 +245,20 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertPermission(authPath, true, new String[]{"jcr:all"}, "everyone", null);
     }
 
+    /**
+     * Tests if a package that contains 2 sibling user aggregates don't produce a concurrent modification
+     * exception, if the users are remapped. JCRVLT-76
+     */
+    @Test
+    @Ignore("JCRVLT-76")
+    public void install_two_moved_users() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_two_moved_users.zip"), false);
+        assertNotNull(pack);
+        ImportOptions opts = getDefaultOptions();
+        opts.setImportMode(ImportMode.MERGE);
+        opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
+        pack.install(opts);
+    }
 
     private User installUserA(ImportMode mode, boolean usePkgPath, boolean expectPkgPath) throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();

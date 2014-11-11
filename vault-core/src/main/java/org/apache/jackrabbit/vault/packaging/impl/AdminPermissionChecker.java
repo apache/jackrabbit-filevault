@@ -47,22 +47,27 @@ public class AdminPermissionChecker {
      */
     public static boolean hasAdministrativePermissions(Session session) throws RepositoryException {
         String userId = session.getUserID();
-        boolean isAdministrator = ADMIN_USER.equals(userId) || SYSTEM_USER.equals(userId);
-        boolean isJackrabbitSession = session instanceof JackrabbitSession;
-        if (!isAdministrator) {
-            if (isJackrabbitSession) {
-                JackrabbitSession jackrabbitSession = (JackrabbitSession) session;
-                Authorizable authorizable = jackrabbitSession.getUserManager().getAuthorizable(userId);
-                Iterator<Group> groupIterator = authorizable.memberOf();
-                while (groupIterator.hasNext()) {
-                    if (ADMINISTRATORS_GROUP.equals(groupIterator.next().getID())) {
-                        isAdministrator = true;
-                        break;
-                    }
-                }
-            } else
-                log.warn("could not evaluate group permissions but just user name");
+        if (ADMIN_USER.equals(userId) || SYSTEM_USER.equals(userId)) {
+            return true;
         }
-        return isAdministrator;
+        if (!(session instanceof JackrabbitSession)) {
+            log.warn("could not evaluate group permissions but just user name");
+            return false;
+        }
+
+        JackrabbitSession jackrabbitSession = (JackrabbitSession) session;
+        Authorizable authorizable = jackrabbitSession.getUserManager().getAuthorizable(userId);
+        if (authorizable == null) {
+            return false;
+        }
+
+        Iterator<Group> groupIterator = authorizable.memberOf();
+        while (groupIterator.hasNext()) {
+            if (ADMINISTRATORS_GROUP.equals(groupIterator.next().getID())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

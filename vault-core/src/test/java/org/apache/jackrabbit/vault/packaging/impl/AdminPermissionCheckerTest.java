@@ -30,6 +30,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -58,10 +59,11 @@ public class AdminPermissionCheckerTest extends IntegrationTestBase {
     public void testNotAdminUser() throws Exception {
         JackrabbitSession jackrabbitSession = (JackrabbitSession) admin;
         Authorizable vip = jackrabbitSession.getUserManager().getAuthorizable(TEST_USER);
-        if (vip == null) {
-            jackrabbitSession.getUserManager().createUser(TEST_USER, TEST_USER);
-        }
+        assertNull("test user must not exist", vip);
+
+        jackrabbitSession.getUserManager().createUser(TEST_USER, TEST_USER);
         admin.save();
+
         Session session = repository.login(new SimpleCredentials(TEST_USER, TEST_USER.toCharArray()));
         try {
             assertFalse(

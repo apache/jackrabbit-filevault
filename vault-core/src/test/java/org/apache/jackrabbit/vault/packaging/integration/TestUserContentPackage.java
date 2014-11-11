@@ -28,6 +28,7 @@ import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
+import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
@@ -213,6 +214,35 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertProperty(authPath + "/" + NAME_PROFILE_PROPERTY, "a");
         assertNodeExists(authPath + "/" + NAME_PROFILE_PICTURE_NODE);
     }
+
+    @Test
+    public void installUserA_Policy_Moved() throws RepositoryException, IOException, PackageException {
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
+
+        User u = mgr.createUser(ID_TEST_USER_A, "nonce");
+        String authPath = u.getPath();
+        assertNotSame("authorizable path must be different than the one in the package", PARENT_PATH_TEST_USER_A, Text.getRelativeParent(authPath, 1));
+
+        // assert that user does not have an ACL setup
+        assertPermissionMissing(authPath, true, new String[]{"jcr:all"}, "everyone", null);
+
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_policy.zip"), false);
+        assertNotNull(pack);
+        ImportOptions opts = getDefaultOptions();
+        opts.setImportMode(ImportMode.MERGE);
+        opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
+        pack.install(opts);
+
+        // check if user exists
+        User userA = (User) mgr.getAuthorizable(ID_TEST_USER_A);
+        assertNotNull("test-user-a must exist", userA);
+        authPath = u.getPath();
+
+        // assert that user has an ACL setup
+        assertPermission(authPath, true, new String[]{"jcr:all"}, "everyone", null);
+    }
+
 
     private User installUserA(ImportMode mode, boolean usePkgPath, boolean expectPkgPath) throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();

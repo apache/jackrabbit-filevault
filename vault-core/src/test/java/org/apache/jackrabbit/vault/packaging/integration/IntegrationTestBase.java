@@ -21,7 +21,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -29,13 +34,21 @@ import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.Value;
+import javax.jcr.security.AccessControlEntry;
+import javax.jcr.security.AccessControlPolicy;
+import javax.jcr.security.AccessControlPolicyIterator;
+import javax.jcr.security.Privilege;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.api.security.JackrabbitAccessControlEntry;
+import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
 import org.apache.jackrabbit.core.RepositoryImpl;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
 import org.apache.jackrabbit.core.security.principal.EveryonePrincipal;
+import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
 import org.apache.jackrabbit.oak.jcr.Jcr;
 import org.apache.jackrabbit.oak.security.SecurityProviderImpl;
 import org.apache.jackrabbit.oak.security.user.RandomAuthorizableNodeName;
@@ -61,7 +74,9 @@ import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * <code>IntegrationTestBase</code>...
@@ -226,5 +241,133 @@ public class IntegrationTestBase  {
             total += countNodes(iter.nextNode());
         }
         return total;
+    }
+
+    public void assertPermissionMissing(String path, boolean allow, String[] privs, String name, String globRest)
+            throws RepositoryException {
+        Map<String, String[]> restrictions = new HashMap<String, String[]>();
+        if (globRest != null) {
+            restrictions.put("rep:glob", new String[]{globRest});
+        }
+        if (hasPermission(path, allow, privs, name, restrictions) >= 0) {
+            fail("Expected permission should not exist on path " + path);
+        }
+    }
+
+    public void assertPermission(String path, boolean allow, String[] privs, String name, String globRest)
+            throws RepositoryException {
+        Map<String, String[]> restrictions = new HashMap<String, String[]>();
+        if (globRest != null) {
+            restrictions.put("rep:glob", new String[]{globRest});
+        }
+        if (hasPermission(path, allow, privs, name, restrictions) < 0) {
+            fail("Expected permission missing on path " + path);
+        }
+    }
+
+    public int hasPermission(String path, boolean allow, String[] privs, String name, Map<String, String[]> restrictions)
+            throws RepositoryException {
+        AccessControlPolicy[] ap = admin.getAccessControlManager().getPolicies(path);
+        int idx = 0;
+        for (AccessControlPolicy p: ap) {
+            if (p instanceof JackrabbitAccessControlList) {
+                JackrabbitAccessControlList acl = (JackrabbitAccessControlList) p;
+                for (AccessControlEntry ac: acl.getAccessControlEntries()) {
+                    if (ac instanceof JackrabbitAccessControlEntry) {
+                        idx++;
+                        JackrabbitAccessControlEntry ace = (JackrabbitAccessControlEntry) ac;
+                        if (ace.isAllow() != allow) {
+                            continue;
+                        }
+                        if (!ace.getPrincipal().getName().equals(name)) {
+                            continue;
+                        }
+                        Set<String> expectedPrivs = new HashSet<String>(Arrays.asList(privs));
+                        for (Privilege priv: ace.getPrivileges()) {
+                            if (!expectedPrivs.remove(priv.getName())) {
+                                expectedPrivs.add("dummy");
+                                break;
+                            }
+                        }
+                        if (!expectedPrivs.isEmpty()) {
+                            continue;
+                        }
+                        Map<String, String[]> rests = new HashMap<String, String[]>(restrictions);
+                        boolean restrictionExpected = true;
+                        for (String restName: ace.getRestrictionNames()) {
+                            String[] expected = rests.remove(restName);
+                            if (expected == null) {
+                                continue;
+                            }
+                            Value[] values;
+                            if ("rep:glob".equals(restName)) {
+                                values = new Value[]{ace.getRestriction(restName)};
+                            } else {
+                                values = ace.getRestrictions(restName);
+                            }
+                            String[] actual = new String[values.length];
+                            for (int i=0; i<actual.length; i++) {
+                                actual[i] = values[i].getString();
+                            }
+                            Arrays.sort(expected);
+                            Arrays.sort(actual);
+                            if (!Arrays.equals(expected, actual)) {
+                                restrictionExpected = false;
+                                break;
+                            }
+                        }
+                        if (!restrictionExpected || !rests.isEmpty()) {
+                            continue;
+                        }
+                        return idx-1;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    public void removeRepoACL() throws RepositoryException {
+        AccessControlPolicy[] ap = admin.getAccessControlManager().getPolicies(null);
+        for (AccessControlPolicy p: ap) {
+            if (p instanceof JackrabbitAccessControlList) {
+                JackrabbitAccessControlList acl = (JackrabbitAccessControlList) p;
+                for (AccessControlEntry ac: acl.getAccessControlEntries()) {
+                    if (ac instanceof JackrabbitAccessControlEntry) {
+                        acl.removeAccessControlEntry(ac);
+                    }
+                }
+            }
+        }
+        admin.save();
+    }
+
+    public void addACL(String path, boolean allow, String[] privs, String principal) throws RepositoryException {
+        JackrabbitAccessControlList acl = null;
+        for (AccessControlPolicy p: admin.getAccessControlManager().getPolicies(path)) {
+            if (p instanceof JackrabbitAccessControlList) {
+                acl = (JackrabbitAccessControlList) p;
+                break;
+            }
+        }
+        if (acl == null) {
+            AccessControlPolicyIterator iter =  admin.getAccessControlManager().getApplicablePolicies(path);
+            while (iter.hasNext()) {
+                AccessControlPolicy p = iter.nextAccessControlPolicy();
+                if (p instanceof JackrabbitAccessControlList) {
+                    acl = (JackrabbitAccessControlList) p;
+                    break;
+                }
+            }
+        }
+        assertNotNull(acl);
+
+        Privilege[] ps = new Privilege[privs.length];
+        for (int i=0; i<privs.length; i++) {
+            ps[i] = admin.getAccessControlManager().privilegeFromName(privs[i]);
+        }
+        acl.addEntry(new PrincipalImpl(principal), ps, allow);
+        admin.getAccessControlManager().setPolicy(path, acl);
+        admin.save();
     }
 }

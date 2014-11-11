@@ -622,14 +622,12 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                     if (node.getDepth() == 0) {
                                         stack.adapter = new JackrabbitACLImporter(session, aclHandling);
                                         stack.adapter.startNode(ni);
-//                                        importInfo.onCreated(node.getPath() + "/" + ni.name);
                                     } else {
                                         log.info("ignoring invalid location for repository level ACL: {}", node.getPath());
                                     }
                                 } else {
                                     stack.adapter = new JackrabbitACLImporter(node, aclHandling);
                                     stack.adapter.startNode(ni);
-//                                    importInfo.onCreated(node.getPath() + "/" + ni.name);
                                 }
                             } else {
                                 stack = stack.push();
@@ -676,7 +674,6 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             // just import the authorizable node
             log.debug("Authorizable element detected. starting sysview transformation {}", newPath);
             stack = stack.push();
-//            stack.addName(ni.name);
             stack.adapter = new JcrSysViewTransformer(node);
             stack.adapter.startNode(ni);
             importInfo.onCreated(newPath);

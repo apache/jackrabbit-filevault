@@ -18,7 +18,9 @@
 package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.IOException;
-import java.util.UUID;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
@@ -27,7 +29,6 @@ import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
-import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
@@ -35,7 +36,6 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.util.Text;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -57,11 +57,33 @@ public class TestUserContentPackage extends IntegrationTestBase {
     private static final String NAME_PROFILE_PICTURE_NODE = "profile/picture.txt";
     private static final String NAME_PROFILE_PRIVATE_NODE = "profile_private";
 
+    private Set<String> preTestAuhorizables;
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        preTestAuhorizables = getAllAuthorizableIds();
+    }
+
+    private Set<String> getAllAuthorizableIds() throws RepositoryException {
+        Set<String> ret = new HashSet<String>();
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        Iterator<Authorizable> auths = mgr.findAuthorizables("rep:principalName", null);
+        while (auths.hasNext()) {
+            ret.add(auths.next().getID());
+        }
+        return ret;
+    }
+
     @Override
     public void tearDown() throws Exception {
         // remove test authorizables
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
-        removeAuthorizable(mgr, ID_TEST_USER_A);
+        for (String id: getAllAuthorizableIds()) {
+            if (preTestAuhorizables.remove(id)) {
+                removeAuthorizable(mgr, ID_TEST_USER_A);
+            }
+        }
         admin.save();
         super.tearDown();
     }
@@ -250,7 +272,6 @@ public class TestUserContentPackage extends IntegrationTestBase {
      * exception, if the users are remapped. JCRVLT-76
      */
     @Test
-    @Ignore("JCRVLT-76")
     public void install_two_moved_users() throws RepositoryException, IOException, PackageException {
         JcrPackage pack = packMgr.upload(getStream("testpackages/test_two_moved_users.zip"), false);
         assertNotNull(pack);

@@ -789,9 +789,12 @@ public class Importer {
                 processedInfos.clear();
             }
 
+            // copy the children collection since children could be removed during remapping
+            List<TxInfo> children = new ArrayList<TxInfo>(info.children().values());
+
             // traverse children but skip the ones not in the skip list
             TxInfo next = skipList.isEmpty() ? null : skipList.removeFirst();
-            for (TxInfo child: info.children().values()) {
+            for (TxInfo child: children) {
                 if (next == null || next == child) {
                     commit(session, child, skipList);
                     // continue normally after lng child was found
@@ -964,6 +967,7 @@ public class Importer {
                 }
             }
             // remap the child tree in case some of the nodes where moved during import (e.g. authorizable)
+            // todo: this could be a problem during error recovery
             info = info.remap(imp.getRemapped());
         }
         log.debug("committed {}", info.path);

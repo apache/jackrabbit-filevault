@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
+import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 
@@ -57,6 +58,8 @@ public class ImportOptions {
 
     private ClassLoader hookClassLoader;
 
+    private PathMapping pathMapping = null;
+
     public ImportOptions() {
         // default constructor.
     }
@@ -81,6 +84,7 @@ public class ImportOptions {
             cndPattern = base.cndPattern;
             filter = base.filter;
             hookClassLoader = base.hookClassLoader;
+            pathMapping = base.pathMapping;
         }
     }
 
@@ -99,6 +103,7 @@ public class ImportOptions {
         ret.cndPattern = cndPattern;
         ret.filter = filter;
         ret.hookClassLoader = hookClassLoader;
+        ret.pathMapping = pathMapping;
         return ret;
     }
 
@@ -246,5 +251,24 @@ public class ImportOptions {
      */
     public void setHookClassLoader(ClassLoader hookClassLoader) {
         this.hookClassLoader = hookClassLoader;
+    }
+
+    /**
+     * Defines a path mapping that is applied to the incoming package paths and filter when installing the package.
+     *
+     * @since 3.1.14
+     * @return {@code null} if no path mapping is defined.
+     */
+    public PathMapping getPathMapping() {
+        return pathMapping;
+    }
+
+    /**
+     * Sets the path mapping
+     * @see #getPathMapping()
+     * @since 3.1.14
+     */
+    public void setPathMapping(PathMapping pathMapping) {
+        this.pathMapping = pathMapping;
     }
 }

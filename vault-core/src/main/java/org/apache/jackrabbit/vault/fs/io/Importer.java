@@ -225,6 +225,11 @@ public class Importer {
     private final ImportOptions opts;
 
     /**
+     * path mapping from the import options
+     */
+    private PathMapping pathMapping;
+
+    /**
      * the checkpoint state of the autosave. used for recovering from stale item errors during install.
      */
     private AutoSave cpAutosave;
@@ -356,6 +361,14 @@ public class Importer {
         }
         if (filter == null) {
             filter = new DefaultWorkspaceFilter();
+        }
+
+        // check path remapping
+        pathMapping = opts.getPathMapping();
+        if (pathMapping != null) {
+            filter = filter.translate(pathMapping);
+        } else {
+            pathMapping = PathMapping.IDENTITY;
         }
 
         // set import mode if possible
@@ -596,6 +609,20 @@ public class Importer {
                     repoName = repoName.substring(0, repoName.length() - 4);
                     repoPath = parentInfo.path + "/" + repoName;
                 }
+
+                // remap if needed
+                String mappedPath = pathMapping.map(repoPath);
+                if (!mappedPath.equals(repoPath)) {
+                    String mappedParent = Text.getRelativeParent(mappedPath, 1);
+                    if (!mappedParent.equals(parentInfo.path)) {
+                        log.warn("remapping other than renames not supported yet ({} -> {}).", repoPath, mappedPath);
+                    } else {
+                        log.info("remapping detected {} -> {}", repoPath, mappedPath);
+                        repoPath = mappedPath;
+                        repoName = Text.getName(repoPath);
+                    }
+                }
+
                 TxInfo info = parentInfo.addChild(new TxInfo(parentInfo, repoPath));
                 log.debug("Creating directory artifact for {}", repoName);
                 Artifact parent = new DirectoryArtifact(repoName);
@@ -645,6 +672,20 @@ public class Importer {
                 if (repoPath.startsWith("/etc/packages/") && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
                     subPackages.add(repoPath);
                 }
+
+                // remap if needed
+                String mappedPath = pathMapping.map(repoPath);
+                if (!mappedPath.equals(repoPath)) {
+                    String mappedParent = Text.getRelativeParent(mappedPath, 1);
+                    if (!mappedParent.equals(parentInfo.path)) {
+                        log.warn("remapping other than renames not supported yet ({} -> {}).", repoPath, mappedPath);
+                    } else {
+                        log.info("remapping detected {} -> {}", repoPath, mappedPath);
+                        repoPath = mappedPath;
+                        repoName = Text.getName(repoPath);
+                    }
+                }
+
                 String repoBase = repoName;
                 String ext = "";
                 int idx = repoName.lastIndexOf('.');
@@ -652,6 +693,7 @@ public class Importer {
                     repoBase = repoName.substring(0, idx);
                     ext = repoName.substring(idx);
                 }
+
                 SerializationType serType = SerializationType.GENERIC;
                 ArtifactType type = ArtifactType.PRIMARY;
                 VaultInputSource is = archive.getInputSource(file);

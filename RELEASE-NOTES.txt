@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.12
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.14
 
 Introduction
 ------------
@@ -10,7 +10,7 @@ The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
 
 
-Changes in Jackrabbit FileVault 3.1.12
+Changes in Jackrabbit FileVault 3.1.14
 --------------------------------------
 Bug Fixes:
 * [JCRVLT-63] - DocViewSAXImporter relies on implementation detail wrt authorizable Id
@@ -20,8 +20,11 @@ Bug Fixes:
 * [JCRVLT-67] - rep:authorizableId might be removed on package install causing error in oak
 * [JCRVLT-68] - Wrong JAVA_HOME default location for OSX Yosemite
 * [JCRVLT-75] - Installing rep:policy on root node fails (regression of JCRVLT-71)
+* [JCRVLT-76] - Installing 2 moved sibling authorizables fails (regression)
+* [JCRVLT-77] - AdminPermissionChecker fails if user can't read itself.
 
 Improvements:
+* [JCRVLT-72] - Add support for global remapping content during package installation.
 * [JCRVLT-57] - Update maven-scr-plugin to 1.19.0 to allow building with Java 8
 * [JCRVLT-71] - Allow creation of ancestor user nodes when they are not explicitly included in a filter
 

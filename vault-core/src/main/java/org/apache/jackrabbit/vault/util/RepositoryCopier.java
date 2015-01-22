@@ -579,7 +579,7 @@ public class RepositoryCopier {
                 if (mapped.equals(prefix)) {
                     return name;
                 } else {
-                    return mapped + prefix.substring(idx);
+                    return mapped + name.substring(idx);
                 }
             }
         } catch (RepositoryException e) {

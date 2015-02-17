@@ -34,6 +34,7 @@
       <item href="usage.html" name="Getting Started" />
       <item href="filter.html" name="Workspace Filter" />
       <item href="importmode.html" name="Import Mode" />
+      <item href="rcp.html" name="Vault Remote Copy" />
     </menu>
     <menu name="Developing">
       <item href="dev.html" name="Overview" />

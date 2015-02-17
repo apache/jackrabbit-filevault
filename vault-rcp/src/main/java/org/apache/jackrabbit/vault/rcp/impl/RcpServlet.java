@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 /**
  */
 @SlingServlet(paths = {
-        "/libs/granite/packaging/rcp"
+        "/system/jackrabbit/filevault/rcp"
 })
 public class RcpServlet extends SlingAllMethodsServlet {
 

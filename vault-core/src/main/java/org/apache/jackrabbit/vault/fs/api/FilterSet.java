@@ -235,6 +235,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void dump(DumpContext ctx, boolean isLast) {
         ctx.printf(false, "root: %s", getRoot());
         if (entries != null) {
@@ -249,21 +250,25 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode() {
-        return 0;
+        int result = root.hashCode();
+        result = 31 * result + (entries != null ? entries.hashCode() : 0);
+        return result;
     }
 
     /**
      * {@inheritDoc}
      */
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj instanceof FilterSet) {
-            return entries.equals(((FilterSet) obj).entries);
-        }
-        return false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FilterSet)) return false;
+
+        FilterSet filterSet = (FilterSet) o;
+        if (entries != null ? !entries.equals(filterSet.entries) : filterSet.entries != null) return false;
+        return root.equals(filterSet.root);
+
     }
 
     /**
@@ -310,6 +315,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         /**
          * {@inheritDoc}
          */
+        @Override
         public void dump(DumpContext ctx, boolean isLast) {
             if (include) {
                 ctx.println(isLast, "include");
@@ -324,21 +330,23 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         /**
          * {@inheritDoc}
          */
+        @Override
         public int hashCode() {
-            return 0;
+            int result = filter.hashCode();
+            result = 31 * result + (include ? 1 : 0);
+            return result;
         }
 
         /**
          * {@inheritDoc}
          */
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj instanceof Entry) {
-                return ((Entry) obj).include == include && ((Entry) obj).filter.equals(filter);
-            }
-            return false;
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Entry)) return false;
+            Entry entry = (Entry) o;
+            return include == entry.include && filter.equals(entry.filter);
         }
+
     }
 }

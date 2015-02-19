@@ -25,7 +25,6 @@ import org.apache.jackrabbit.vault.fs.api.PathMapping;
 
 /**
  * The default path filter provides hierarchical filtering.
- *
  */
 public class DefaultPathFilter implements PathFilter {
 
@@ -80,6 +79,7 @@ public class DefaultPathFilter implements PathFilter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean matches(String path) {
         return regex.matcher(path).matches();
     }
@@ -87,6 +87,7 @@ public class DefaultPathFilter implements PathFilter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isAbsolute() {
         return regex.pattern().startsWith("/");
     }
@@ -94,6 +95,7 @@ public class DefaultPathFilter implements PathFilter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public PathFilter translate(PathMapping mapping) {
         if (mapping == null) {
             return this;
@@ -108,6 +110,26 @@ public class DefaultPathFilter implements PathFilter {
     /**
      * {@inheritDoc}
      */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DefaultPathFilter)) return false;
+        DefaultPathFilter that = (DefaultPathFilter) o;
+        return regex.toString().equals(that.regex.toString());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return regex.hashCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void dump(DumpContext ctx, boolean isLast) {
         ctx.printf(isLast, "%s:", getClass().getSimpleName());
         ctx.indent(isLast);

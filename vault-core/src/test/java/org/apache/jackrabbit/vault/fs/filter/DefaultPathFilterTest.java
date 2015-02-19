@@ -20,10 +20,9 @@ package org.apache.jackrabbit.vault.fs.filter;
 import junit.framework.TestCase;
 
 /**
- * <code>PathFiterTest</code>...
- *
+ * <code>DefaultPathFilterTest</code>...
  */
-public class DefaultPathFiterTest extends TestCase {
+public class DefaultPathFilterTest extends TestCase {
 
     public void testExact() {
         test("/foo\\.bar", "/foo.bar", true);

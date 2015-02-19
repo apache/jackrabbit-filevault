@@ -423,7 +423,12 @@ public class RepositoryCopier {
                 // remove obsolete properties
                 for (String pName: names) {
                     try {
-                        dst.getProperty(pName).remove();
+                        // ignore protected. should not happen, unless the primary node type changes.
+                        Property dstP = dst.getProperty(pName);
+                        if (dstP.getDefinition().isProtected()) {
+                            continue;
+                        }
+                        dstP.remove();
                     } catch (RepositoryException e) {
                         // ignore
                     }

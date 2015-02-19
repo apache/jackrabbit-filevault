@@ -95,17 +95,26 @@ public class Checkout extends AbstractAction {
             if (remoteDir == null) {
                 remoteDir = "/";
             }
+
+            // ensure that we use proper filter (JCRVLT-60)
+            if (ctx.getDefaultFilter() != null) {
+                ((DefaultMetaInf) ctx.getExportRoot().getMetaInf()).setFilter(null);
+            }
+
             VaultFile vaultFile = ctx.getFileSystem(mountPoint).getFile(remoteDir);
             if (vaultFile == null) {
                 throw new VltException(remoteDir, "Error during checkout. Remote directory does not exit.");
             }
+
             // store filter and config
+            DefaultMetaInf inf = (DefaultMetaInf) ctx.getMetaInf();
+            inf.setConfig(vaultFile.getFileSystem().getConfig());
+            inf.setFilter(vaultFile.getFileSystem().getWorkspaceFilter());
+
             if (!force) {
-                DefaultMetaInf inf = (DefaultMetaInf) ctx.getMetaInf();
-                inf.setConfig(vaultFile.getFileSystem().getConfig());
-                inf.setFilter(vaultFile.getFileSystem().getWorkspaceFilter());
                 inf.save(ctx.getExportRoot().getMetaDir());
             }
+
             if (ctx.isVerbose()) {
                 DumpContext dc = new DumpContext(new PrintWriter(ctx.getStdout()));
                 dc.println("Filter");

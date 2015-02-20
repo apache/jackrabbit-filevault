@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.14
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.16
 
 Introduction
 ------------
@@ -8,6 +8,14 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka _vlt_ that provides a subversion like 
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.1.16
+--------------------------------------
+Bug Fixes:
+* [JCRVLT-21] - "Item is protected" error during vlt rcp copy operation
+* [JCRVLT-60] - The "--filter <file>" parameter does not seem to work
+* [JCRVLT-81] - FilterSet.equals is returning true for filter sets with distinct roots
+* [JCRVLT-83] - vlt rcp does not map namespaces properly
 
 
 Changes in Jackrabbit FileVault 3.1.14

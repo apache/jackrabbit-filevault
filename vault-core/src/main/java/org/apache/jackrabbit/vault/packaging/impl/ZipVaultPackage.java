@@ -226,6 +226,8 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         Importer importer = ctx.getImporter();
         try {
             if (!hooks.execute(ctx)) {
+                ctx.setPhase(InstallContext.Phase.PREPARE_FAILED);
+                hooks.execute(ctx);
                 throw new PackageException("Import aborted during prepare phase.");
             }
             try {

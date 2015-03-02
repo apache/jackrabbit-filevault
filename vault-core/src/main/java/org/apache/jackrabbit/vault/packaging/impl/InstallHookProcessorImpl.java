@@ -150,8 +150,6 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                 // abort processing only for prepare phase
                 if (context.getPhase() == InstallContext.Phase.PREPARE) {
                     log.warn("Hook " + hook.name +" threw package exception. Prepare aborted.", e);
-                    ((InstallContextImpl) context).setPhase(InstallContext.Phase.PREPARE_FAILED);
-                    execute(context);
                     return false;
                 }
                 log.warn("Hook " + hook.name +" threw package exception. Ignored", e);

@@ -108,7 +108,6 @@ public class TestGroupMergePackage extends IntegrationTestBase {
      * since the import mode is merge, the memberships should be merged. this variant uses a renamed authorizable node name
      */
     @Test
-    @Ignore("JCRVLT-86")
     public void installGroupABC_renamed() throws RepositoryException, IOException, PackageException {
         // ensure that test users don't exist yet (proper setup)
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();

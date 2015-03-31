@@ -53,6 +53,7 @@ public class RcpTask implements Runnable {
         NEW,
         RUNNING,
         ENDED,
+        STOPPING,
         STOPPED
     }
     private final RcpTaskManagerImpl mgr;
@@ -70,6 +71,8 @@ public class RcpTask implements Runnable {
     private File logFile;
 
     private volatile STATE state = STATE.NEW;
+
+    private Exception error = null;
 
     private List<String> excludes = new ArrayList<String>();
 
@@ -107,20 +110,24 @@ public class RcpTask implements Runnable {
 
     public boolean stop() {
         // wait for thread
-        if (state != STATE.STOPPED) {
-            if (state == STATE.RUNNING) {
-                rcp.abort();
-            }
-            state = STATE.STOPPED;
-            log.info("Stopping task {}...", id);
-            if (thread != null) {
+        if (state != STATE.STOPPED && state != STATE.STOPPING) {
+            rcp.abort();
+            int cnt = 3;
+            while (thread != null && thread.isAlive() && cnt-- > 0) {
+                state = STATE.STOPPING;
+                log.info("Stopping task {}...", id);
                 try {
-                    thread.join();
+                    thread.join(10000);
                 } catch (InterruptedException e) {
                     log.error("Error while waiting for thread: " + thread.getName(), e);
                 }
-                thread = null;
+                if (thread.isAlive()) {
+                    // try to interrupt the thread
+                    thread.interrupt();
+                }
             }
+            state = STATE.STOPPED;
+            thread = null;
             if (srcSession != null) {
                 srcSession.logout();
                 srcSession = null;
@@ -189,8 +196,14 @@ public class RcpTask implements Runnable {
         log.info("Starting repository copy task id={}. From {} to {}.", new Object[]{
                 id, src.toString(), dst
         });
-        rcp.copy(srcSession, src.getPath(), dstSession, dst, recursive);
-        state = STATE.ENDED;
+        try {
+            rcp.copy(srcSession, src.getPath(), dstSession, dst, recursive);
+            state = STATE.ENDED;
+        } catch (Exception e) {
+            error = e;
+        } finally {
+            state = STATE.ENDED;
+        }
         // todo: notify manager that we ended.
     }
 
@@ -250,6 +263,7 @@ public class RcpTask implements Runnable {
         w.key("totalSize").value(rcp.getTotalSize());
         w.key("currentSize").value(rcp.getCurrentSize());
         w.key("currentNodes").value(rcp.getCurrentNumNodes());
+        w.key("error").value(error == null ? "" : error.toString());
         w.endObject();
         w.endObject();
     }

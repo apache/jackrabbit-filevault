@@ -28,6 +28,7 @@ import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -99,7 +100,35 @@ public class TestGroupMergePackage extends IntegrationTestBase {
         pack = packMgr.upload(getStream("testpackages/group_with_bc.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
+        assertABC(mgr);
+    }
 
+    /**
+     * Installs 2 packages with "test-group" that contain test-user-a and test-user-b,test-user-c respectively.
+     * since the import mode is merge, the memberships should be merged. this variant uses a renamed authorizable node name
+     */
+    @Test
+    @Ignore("JCRVLT-86")
+    public void installGroupABC_renamed() throws RepositoryException, IOException, PackageException {
+        // ensure that test users don't exist yet (proper setup)
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        assertNull("test-group must not exist", mgr.getAuthorizable("test-group"));
+        assertNull("test-user-a must not exist", mgr.getAuthorizable("test-user-a"));
+        assertNull("test-user-b must not exist", mgr.getAuthorizable("test-user-b"));
+        assertNull("test-user-c must not exist", mgr.getAuthorizable("test-user-c"));
+
+        JcrPackage pack = packMgr.upload(getStream("testpackages/group_with_bc.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        pack = packMgr.upload(getStream("testpackages/group_with_a_moved.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+        assertABC(mgr);
+    }
+
+
+    private void assertABC(UserManager mgr) throws RepositoryException {
         // check if group exists
         Group grp = (Group) mgr.getAuthorizable("test-group");
         assertNotNull("test-group must exist", grp);
@@ -114,6 +143,5 @@ public class TestGroupMergePackage extends IntegrationTestBase {
         assertTrue("test-user-b is member of test-group", grp.isMember(userB));
         assertTrue("test-user-c is member of test-group", grp.isMember(userC));
     }
-
 
 }

@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.16
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.18
 
 Introduction
 ------------
@@ -8,6 +8,14 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka _vlt_ that provides a subversion like 
 utility to work and develop with repository content.
+
+
+Changes in Jackrabbit FileVault 3.1.18
+--------------------------------------
+Bug Fixes:
+* [JCRVLT-84] - Installhook processor should not recursively call itself
+* [JCRVLT-86] - Unable to merge group-member if the member node name is different from its authorizable id.
+
 
 Changes in Jackrabbit FileVault 3.1.16
 --------------------------------------

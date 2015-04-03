@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,6 +73,7 @@ import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -219,6 +221,14 @@ public class IntegrationTestBase  {
 
     public void assertProperty(String path, String value) throws RepositoryException {
         assertEquals(path + " should contain " + value, value, admin.getProperty(path).getString());
+    }
+
+    public void assertProperty(String path, String[] values) throws RepositoryException {
+        ArrayList<String> strings = new ArrayList<String>();
+        for (Value v: admin.getProperty(path).getValues()) {
+            strings.add(v.getString());
+        }
+        assertArrayEquals(path + " should contain " + values, values, strings.toArray(new String[strings.size()]));
     }
 
     public void assertPropertyMissing(String path) throws RepositoryException {

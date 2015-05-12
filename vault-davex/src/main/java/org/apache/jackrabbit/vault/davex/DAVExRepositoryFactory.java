@@ -73,6 +73,7 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
     private static final Set<String> SCHEMES = new HashSet<String>();
     static {
         SCHEMES.add("http");
+        SCHEMES.add("https");
     }
 
     public Set<String> getSupportedSchemes() {

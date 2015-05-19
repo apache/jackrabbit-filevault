@@ -24,11 +24,13 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.tika.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -55,6 +57,21 @@ public class TestPackageInstall extends IntegrationTestBase {
 
         // todo: check definition props
 
+    }
+
+    /**
+     * Installs a package that contains and checks if everything is correct.
+     */
+    @Test
+    @Ignore("JCRVLT-92")
+    public void testRewrap() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        assertNotNull(pack);
+
+        ImportOptions opts = getDefaultOptions();
+        pack.install(opts);
+
+        packMgr.rewrap(pack, opts.getListener());
     }
 
     /**

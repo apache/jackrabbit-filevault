@@ -41,6 +41,7 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
+import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.CyclicDependencyException;
 import org.apache.jackrabbit.vault.packaging.DependencyUtil;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
@@ -318,6 +319,27 @@ public class JcrPackageImpl implements JcrPackage {
      * {@inheritDoc}
      */
     public VaultPackage getPackage() throws RepositoryException, IOException {
+        return getPackage(false);
+    }
+
+    /**
+     * Creates a new package by creating the appropriate archive.
+     *
+     * This is basically a workaround to ensure that 'rewrap' has a zip file to work on.
+     * Ideally rewrap should not realy on the archive format.
+     *
+     * @param forceFileArchive if {@code true} a file archive is enforced
+     * @return the package
+     *
+     * @throws RepositoryException
+     * @throws IOException
+     */
+    protected VaultPackage getPackage(boolean forceFileArchive) throws RepositoryException, IOException {
+        if (forceFileArchive && pack != null && !(pack.getArchive() instanceof ZipArchive)) {
+            pack.close();
+            pack = null;
+        }
+
         if (pack == null) {
             long size = -1;
             try {
@@ -325,7 +347,7 @@ public class JcrPackageImpl implements JcrPackage {
             } catch (RepositoryException e) {
                 // ignore
             }
-            if (size >= 0 && size < 1024*1024) {
+            if (!forceFileArchive && size >= 0 && size < 1024*1024) {
                 MemoryArchive archive = new MemoryArchive(false);
                 InputStream in = getData().getStream();
                 try {

@@ -524,7 +524,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      */
     public void rewrap(JcrPackage pack, ProgressTrackerListener listener)
             throws PackageException, RepositoryException, IOException {
-        VaultPackage src = pack.getPackage();
+        VaultPackage src = ((JcrPackageImpl) pack).getPackage(true);
 
         Calendar now = Calendar.getInstance();
         pack.verifyId(true, false);

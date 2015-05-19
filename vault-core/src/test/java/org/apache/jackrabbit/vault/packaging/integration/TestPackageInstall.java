@@ -60,10 +60,9 @@ public class TestPackageInstall extends IntegrationTestBase {
     }
 
     /**
-     * Installs a package that contains and checks if everything is correct.
+     * Test if rewrap of a small package works
      */
     @Test
-    @Ignore("JCRVLT-92")
     public void testRewrap() throws RepositoryException, IOException, PackageException {
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
         assertNotNull(pack);

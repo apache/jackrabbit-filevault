@@ -1,13 +1,19 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.18
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.20
 
 Introduction
 ------------
-The FileVault introduces a JCR repository to filesystem mapping. The mapping 
-is exposed by and API and used by the _CRX Content Packaging_  that allows to 
+The FileVault introduces a JCR repository to filesystem mapping. The mapping
+is exposed by and API and used by the _CRX Content Packaging_  that allows to
 create portable packages of repository content.
 
-The Vault Command Line Interface aka _vlt_ that provides a subversion like 
+The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.1.20
+--------------------------------------
+Bug Fixes:
+* [JCRVLT-91] - HTTPS Support for CLI
+* [JCRVLT-92] - Package rewrap broken for packages smaller than 1mb since introduction of memory archive
 
 
 Changes in Jackrabbit FileVault 3.1.18
@@ -110,7 +116,7 @@ Changes in Jackrabbit FileVault 3.0.0
 -------------------------------------
 New features:
 
-    Version 3.0.0 is the initial version of this contribution to the Apache 
+    Version 3.0.0 is the initial version of this contribution to the Apache
     Jackrabbit project.
 
     For more detailed information about all the changes in this and other

@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.20
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.22
 
 Introduction
 ------------
@@ -9,11 +9,14 @@ create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
 
-Changes in Jackrabbit FileVault 3.1.20
+Changes in Jackrabbit FileVault 3.1.22
 --------------------------------------
 Bug Fixes:
 * [JCRVLT-91] - HTTPS Support for CLI
 * [JCRVLT-92] - Package rewrap broken for packages smaller than 1mb since introduction of memory archive
+
+Tasks:
+* [JCRVLT-93] - Install apache-rat-plugin for license header checks
 
 
 Changes in Jackrabbit FileVault 3.1.18

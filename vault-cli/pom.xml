@@ -107,6 +107,17 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <!-- exclude appassembler resources from rat-check -->
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>src/main/appassembler/unix-template</exclude>
+                        <exclude>src/main/appassembler/windows-template</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

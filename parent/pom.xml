@@ -168,6 +168,23 @@
                     <version>2.4.2</version>
                 </plugin>
                 <!-- ====================================================================== -->
+                <!-- R A T   P L U G I N                                                    -->
+                <!-- ====================================================================== -->
+                <plugin>
+                    <groupId>org.apache.rat</groupId>
+                    <artifactId>apache-rat-plugin</artifactId>
+                    <version>0.11</version>
+                    <configuration>
+                        <excludes>
+                            <exclude>release.properties</exclude>
+                            <exclude>.git/**</exclude>
+                            <exclude>.idea/**</exclude>
+                            <exclude>.gitignore</exclude>
+                            <exclude>derby.log</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <!-- ====================================================================== -->
                 <!-- S I T E    P L U G I N                                                 -->
                 <!-- ====================================================================== -->
                 <plugin>
@@ -339,6 +356,31 @@
     <!-- P R O F I L E S                                                        -->
     <!-- ====================================================================== -->
     <profiles>
+        <profile>
+            <!-- ====================================================================== -->
+            <!-- R A T   P L U G I N                                                    -->
+            <!-- ====================================================================== -->
+            <id>rat-check</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.rat</groupId>
+                        <artifactId>apache-rat-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>

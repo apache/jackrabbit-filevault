@@ -80,6 +80,16 @@
                     </instructions>
                 </configuration>
             </plugin>
+            <!-- exclude test resources from rat-check -->
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>src/test/resources/*.json</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

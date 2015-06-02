@@ -43,6 +43,7 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -137,6 +138,33 @@ public class TestACLAndMerge extends IntegrationTestBase {
         assertNodeExists("/testroot/node_b");
         assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
         assertPermission("/testroot/secured", true, new String[]{"jcr:read"}, "everyone", "*/foo/*");
+    }
+
+    /**
+     * Installs 2 packages with the same ACE. the later packages has AC Handling MERGE and should overwrite the
+     * existing ACL.
+     */
+    @Test
+    @Ignore("JCRVLT-94")
+    public void testACMerge4() throws RepositoryException, IOException, PackageException {
+        assertNodeMissing("/testroot");
+
+        JcrPackage pack = packMgr.upload(getStream("testpackages/mode_ac_test_b2_merge.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        // test if nodes and ACLs of first package exist
+        assertNodeExists("/testroot/node_a");
+        assertPermission("/testroot/secured", true, new String[]{"jcr:read", "jcr:write"}, "everyone", null);
+
+        pack = packMgr.upload(getStream("testpackages/mode_ac_test_b3_merge.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        // test if nodes and ACLs of 2nd package exist
+        assertNodeExists("/testroot/node_a");
+        assertNodeExists("/testroot/node_b");
+        assertPermission("/testroot/secured", true, new String[]{"jcr:read", "jcr:versionManagement"}, "everyone", null);
     }
 
     /**

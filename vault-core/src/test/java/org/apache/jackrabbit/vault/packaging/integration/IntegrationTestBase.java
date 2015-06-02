@@ -260,7 +260,7 @@ public class IntegrationTestBase  {
             restrictions.put("rep:glob", new String[]{globRest});
         }
         if (hasPermission(path, allow, privs, name, restrictions) >= 0) {
-            fail("Expected permission should not exist on path " + path);
+            fail("Expected permission should not exist on path " + path + ". permissions: " + dumpPermissions(path));
         }
     }
 
@@ -271,8 +271,43 @@ public class IntegrationTestBase  {
             restrictions.put("rep:glob", new String[]{globRest});
         }
         if (hasPermission(path, allow, privs, name, restrictions) < 0) {
-            fail("Expected permission missing on path " + path);
+            fail("Expected permission missing on path " + path + ". permissions: " + dumpPermissions(path));
         }
+    }
+
+    public String dumpPermissions(String path) throws RepositoryException {
+        StringBuilder ret = new StringBuilder();
+        AccessControlPolicy[] ap = admin.getAccessControlManager().getPolicies(path);
+        for (AccessControlPolicy p: ap) {
+            if (p instanceof JackrabbitAccessControlList) {
+                JackrabbitAccessControlList acl = (JackrabbitAccessControlList) p;
+                for (AccessControlEntry ac: acl.getAccessControlEntries()) {
+                    if (ac instanceof JackrabbitAccessControlEntry) {
+                        JackrabbitAccessControlEntry ace = (JackrabbitAccessControlEntry) ac;
+                        ret.append(ace.isAllow() ? "\n- allow " : "deny ");
+                        ret.append(ace.getPrincipal().getName());
+                        char delim = '[';
+                        for (Privilege priv: ace.getPrivileges()) {
+                            ret.append(delim).append(priv.getName());
+                            delim=',';
+                        }
+                        ret.append(']');
+                        for (String restName: ace.getRestrictionNames()) {
+                            Value[] values;
+                            if ("rep:glob".equals(restName)) {
+                                values = new Value[]{ace.getRestriction(restName)};
+                            } else {
+                                values = ace.getRestrictions(restName);
+                            }
+                            for (Value value : values) {
+                                ret.append(" rest=").append(value.getString());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return ret.toString();
     }
 
     public int hasPermission(String path, boolean allow, String[] privs, String name, Map<String, String[]> restrictions)

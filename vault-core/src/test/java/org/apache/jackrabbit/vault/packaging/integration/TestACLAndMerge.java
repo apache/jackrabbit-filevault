@@ -145,7 +145,6 @@ public class TestACLAndMerge extends IntegrationTestBase {
      * existing ACL.
      */
     @Test
-    @Ignore("JCRVLT-94")
     public void testACMerge4() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 

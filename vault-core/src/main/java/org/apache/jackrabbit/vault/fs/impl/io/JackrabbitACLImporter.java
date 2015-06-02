@@ -222,6 +222,18 @@ public class JackrabbitACLImporter implements DocViewAdapter {
                     (accessControlledPath == null ? "'root'" : accessControlledPath));
         }
 
+        // clear all ACEs of the package principals for merge (VLT-94), otherwise the `acl.addEntry()` below
+        // might just combine the privileges.
+        if (aclHandling == AccessControlHandling.MERGE) {
+            for (String name: aceMap.keySet()) {
+                for (AccessControlEntry ace : acl.getAccessControlEntries()) {
+                    if (ace.getPrincipal().getName().equals(name)) {
+                        acl.removeAccessControlEntry(ace);
+                    }
+                }
+            }
+        }
+
         // apply ACEs of package
         for (Map.Entry<String, List<ACE>> entry: aceMap.entrySet()) {
             final String principalName = entry.getKey();

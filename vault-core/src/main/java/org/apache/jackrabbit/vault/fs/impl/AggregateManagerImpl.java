@@ -73,6 +73,12 @@ public class AggregateManagerImpl implements AggregateManager {
             "org/apache/jackrabbit/vault/fs/config/defaultConfig-1.1.xml";
 
     /**
+     * the name of the (internal) default config
+     */
+    private static final String DEFAULT_BINARY_REFERENCES_CONFIG =
+            "org/apache/jackrabbit/vault/fs/config/defaultConfig-1.1-binaryless.xml";
+
+    /**
      * the name of the (internal) default workspace filter
      */
     private static final String DEFAULT_WSP_FILTER = "" +
@@ -214,6 +220,25 @@ public class AggregateManagerImpl implements AggregateManager {
                 throw new InternalError("Default config not in classpath: " + DEFAULT_CONFIG);
             }
             return AbstractVaultFsConfig.load(in, DEFAULT_CONFIG);
+        } catch (ConfigurationException e) {
+            throw new IllegalArgumentException("Internal error while parsing config.", e);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Internal error while parsing config.", e);
+        }
+    }
+
+    /**
+     * Returns the default config
+     * @return the default config
+     */
+    public static VaultFsConfig getDefaultBinaryReferencesConfig() {
+        try {
+            InputStream in = AggregateManagerImpl.class.getClassLoader()
+                    .getResourceAsStream(DEFAULT_BINARY_REFERENCES_CONFIG);
+            if (in == null) {
+                throw new InternalError("Default config not in classpath: " + DEFAULT_BINARY_REFERENCES_CONFIG);
+            }
+            return AbstractVaultFsConfig.load(in, DEFAULT_BINARY_REFERENCES_CONFIG);
         } catch (ConfigurationException e) {
             throw new IllegalArgumentException("Internal error while parsing config.", e);
         } catch (IOException e) {

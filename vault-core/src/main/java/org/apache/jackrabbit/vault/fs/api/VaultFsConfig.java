@@ -24,16 +24,40 @@ import java.util.List;
  * <code>VaultFsConfig</code>...
  */
 public interface VaultFsConfig {
-    
+
+    /**
+     * Name of the property that configures whether to use binary references instead of actual binary
+     */
+    String NAME_USE_BINARY_REFERENCES = "useBinaryReferences";
+
+    /**
+     * Returns an input stream that contains the source xml that constructs this config
+     * @return the source config
+     */
     InputStream getSource();
 
     /**
-     * Returns the source xml that constructs this filter
+     * Returns the source xml that constructs this config
      * @return the source xml
      */
     String getSourceAsString();
 
+    /**
+     * Returns a list of configured aggregators.
+     * @return the configured aggregators.
+     */
     List<Aggregator> getAggregators();
 
+    /**
+     * Returns a list of configured artifact handlers.
+     * @return the configured artifact handlers.
+     */
     List<ArtifactHandler> getHandlers();
+
+    /**
+     * Returns the configuration property with the given name or {@code null} if it is not defined.
+     * @param name the name of the property
+     * @return the value or null
+     */
+    String getProperty(String name);
 }

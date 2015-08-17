@@ -17,8 +17,6 @@
 
 package org.apache.jackrabbit.vault.fs.config;
 
-import java.util.Map;
-
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.ArtifactHandler;
 import org.apache.jackrabbit.vault.fs.api.ItemFilter;
@@ -72,6 +70,12 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
                     } else {
                         log.warn("Unknown element name in config: " + handler.getNodeName());
                     }
+                }
+
+            } else if ("properties".equals(child.getNodeName())) {
+                for (Element prop: getChildElements(child)) {
+                    String value = prop.getTextContent();
+                    getProperties().put(prop.getNodeName(), value == null ? "" : value.trim());
                 }
 
             } else {

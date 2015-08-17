@@ -34,6 +34,7 @@ import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.util.ISO9075;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
+import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.impl.AggregateManagerImpl;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.util.ItemNameComparator;
@@ -56,11 +57,15 @@ public class DocViewSAXFormatter extends AbstractSAXFormatter {
 
     private boolean useJcrRoot;
 
+    private boolean useBinaryReferences;
+
     private Set<String> ignored = new HashSet<String>();
 
     public DocViewSAXFormatter(Aggregate aggregate, ContentHandler contentHandler)
             throws RepositoryException {
         super(aggregate, contentHandler);
+
+        useBinaryReferences = "true".equals(aggregate.getManager().getConfig().getProperty(VaultFsConfig.NAME_USE_BINARY_REFERENCES));
     }
 
     private Name getQName(String rawName) throws RepositoryException {
@@ -148,7 +153,7 @@ public class DocViewSAXFormatter extends AbstractSAXFormatter {
                 Name qName = getQName(attrName);
                 boolean sort = qName.equals(NameConstants.JCR_MIXINTYPES);
                 attrs.addAttribute(qName.getNamespaceURI(), qName.getLocalName(),
-                        attrName, CDATA_TYPE, DocViewProperty.format(prop, sort));
+                        attrName, CDATA_TYPE, DocViewProperty.format(prop, sort, useBinaryReferences));
             }
 
             // start element (node)

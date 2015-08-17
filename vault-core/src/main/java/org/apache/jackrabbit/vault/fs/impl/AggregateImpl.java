@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
@@ -35,6 +36,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
+import org.apache.jackrabbit.api.ReferenceBinary;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -44,6 +46,7 @@ import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
+import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.impl.io.AggregateWalkListener;
 import org.apache.jackrabbit.vault.util.NodeNameComparator;
 import org.apache.jackrabbit.vault.util.PathUtil;
@@ -82,6 +85,8 @@ public class AggregateImpl implements Aggregate {
 
     private final AggregateManagerImpl mgr;
 
+    private final boolean useBinaryReferences;
+
     private ArtifactSetImpl artifacts;
 
     /**
@@ -119,6 +124,7 @@ public class AggregateImpl implements Aggregate {
         this.parent = null;
         this.path = path.equals("/") ? "" : path;
         this.aggregator = aggregator;
+        this.useBinaryReferences = "true".equals(mgr.getConfig().getProperty(VaultFsConfig.NAME_USE_BINARY_REFERENCES));
     }
 
     /**
@@ -135,6 +141,7 @@ public class AggregateImpl implements Aggregate {
         this.parent = parent;
         this.path = path;
         this.aggregator = aggregator;
+        this.useBinaryReferences = "true".equals(mgr.getConfig().getProperty(VaultFsConfig.NAME_USE_BINARY_REFERENCES));
         // if we have a full coverage aggregator, consider this already collected
         mgr.onAggregateCreated();
         if (aggregator.hasFullCoverage()) {
@@ -542,10 +549,25 @@ public class AggregateImpl implements Aggregate {
             include(parent, null);
             includes.add(mgr.cacheString(relPath));
             if (prop.getType() == PropertyType.BINARY) {
-                if (binaries == null) {
-                     binaries = new LinkedList<Property>();
+                boolean includeBinary = true;
+                if (useBinaryReferences) {
+                    Binary bin = prop.getBinary();
+                    if (bin != null && bin instanceof ReferenceBinary) {
+                        String binaryReference = ((ReferenceBinary) bin).getReference();
+
+                        // do not create a separate binary file if there is a reference
+                        if (binaryReference != null) {
+                            includeBinary = false;
+                        }
+                    }
                 }
-                binaries.add(prop);
+
+                if (includeBinary) {
+                    if (binaries == null) {
+                        binaries = new LinkedList<Property>();
+                    }
+                    binaries.add(prop);
+                }
             }
         }
     }

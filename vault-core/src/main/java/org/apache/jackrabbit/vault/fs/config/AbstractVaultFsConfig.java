@@ -25,7 +25,9 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -59,6 +61,8 @@ public abstract class AbstractVaultFsConfig implements VaultFsConfig {
     private List<Aggregator> aggregators = new ArrayList<Aggregator>();
 
     private List<ArtifactHandler> handlers = new ArrayList<ArtifactHandler>();
+
+    private Map<String, String> properties = new HashMap<String, String>();
 
     private byte[] source;
 
@@ -98,6 +102,15 @@ public abstract class AbstractVaultFsConfig implements VaultFsConfig {
             IOUtils.closeQuietly(in);
         }
 
+    }
+
+    protected Map<String, String> getProperties() {
+        return properties;
+    }
+
+    @Override
+    public String getProperty(String name) {
+        return properties.get(name);
     }
 
     protected abstract void process(Element doc) throws ConfigurationException;

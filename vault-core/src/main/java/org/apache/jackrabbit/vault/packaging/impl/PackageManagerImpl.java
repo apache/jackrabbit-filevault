@@ -37,12 +37,15 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.Mounter;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
+import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.fs.impl.AggregateManagerImpl;
 import org.apache.jackrabbit.vault.fs.io.JarExporter;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Constants;
 
@@ -110,7 +113,15 @@ public class PackageManagerImpl implements PackageManager {
         if (metaInf == null) {
             metaInf = new DefaultMetaInf();
         }
-        VaultFileSystem jcrfs = Mounter.mount(metaInf.getConfig(), metaInf.getFilter(), addr, opts.getRootPath(), s);
+
+        VaultFsConfig config = metaInf.getConfig();
+        if (metaInf.getProperties() != null) {
+            if ("true".equals(metaInf.getProperties().getProperty(PackageProperties.NAME_USE_BINARY_REFERENCES))) {
+                config = AggregateManagerImpl.getDefaultBinaryReferencesConfig();
+            }
+        }
+
+        VaultFileSystem jcrfs = Mounter.mount(config, metaInf.getFilter(), addr, opts.getRootPath(), s);
         JarExporter exporter = new JarExporter(out);
         exporter.setProperties(metaInf.getProperties());
         if (opts.getListener() != null) {

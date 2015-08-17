@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging;
 
 import java.util.Calendar;
 
+import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 
 /**
@@ -127,6 +128,11 @@ public interface PackageProperties {
      * @since 3.1
      */
     String NAME_SUB_PACKAGE_HANDLING = "subPackageHandling";
+
+    /**
+     * Name of the flag that configures whether to use binary references instead of actual binary
+     */
+    String NAME_USE_BINARY_REFERENCES = VaultFsConfig.NAME_USE_BINARY_REFERENCES;
 
     /**
      * the prefix for an install hook property. eg:

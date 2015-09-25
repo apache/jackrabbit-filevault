@@ -23,14 +23,14 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.1.23-SNAPSHOT</version>
+        <version>3.1.24</version>
     </parent>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>vault-hook-externalclass-test</artifactId>
-    <version>3.1.23-SNAPSHOT</version>
+    <version>3.1.24</version>
     <packaging>jar</packaging>
 
     <name>Apache Jackrabbit FileVault Package Hook Sling Example</name>
@@ -42,9 +42,9 @@
     <!-- S C M  D E F I N I T I O N                                             -->
     <!-- ====================================================================== -->
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-hook-externalclass-test</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-hook-externalclass-test</developerConnection>
-        <url>http://svn.apache.org/viewvc/asf/jackrabbit/commons/filevault/trunk/vault-hook-externalclass-test</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.1.24/vault-hook-externalclass-test</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.1.24/vault-hook-externalclass-test</developerConnection>
+        <url>http://svn.apache.org/viewvc/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.1.24/vault-hook-externalclass-test</url>
     </scm>
 
 
@@ -97,7 +97,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.1.23-SNAPSHOT</version>
+            <version>3.1.24</version>
         </dependency>
 
         <!-- JCR Stuff -->

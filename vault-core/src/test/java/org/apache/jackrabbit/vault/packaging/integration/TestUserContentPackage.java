@@ -17,11 +17,15 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Set;
 
+import javax.jcr.Node;
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 
@@ -31,10 +35,15 @@ import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
+import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Text;
 import org.junit.Test;
 
@@ -42,6 +51,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * <code>TestEmptyPackage</code>...
@@ -281,6 +291,41 @@ public class TestUserContentPackage extends IntegrationTestBase {
         pack.install(opts);
     }
 
+
+
+    @Test
+    public void install_mv_property() throws RepositoryException, IOException, PackageException {
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        User u = mgr.createUser(ID_TEST_USER_A, "nonce");
+        Node node = admin.getNode(u.getPath());
+
+        node.setProperty("mv", new String[]{"mv1"});
+        Property property = node.getProperty("mv");
+        assertTrue(property.isMultiple());
+        admin.save();
+
+        File tmpFile = createPackage("test", "test", u.getPath());
+        u.remove();
+        u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
+        assertNull(u);
+
+
+        JcrPackage pack = packMgr.upload(tmpFile, true, true, null);
+        assertNotNull(pack);
+        ImportOptions opts = getDefaultOptions();
+        pack.install(opts);
+
+
+        u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
+        assertNotNull(u);
+
+        node = admin.getNode(u.getPath());
+        property = node.getProperty("mv");
+        assertTrue(property.isMultiple());
+
+    }
+
+
     private User installUserA(ImportMode mode, boolean usePkgPath, boolean expectPkgPath) throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
         assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
@@ -342,6 +387,32 @@ public class TestUserContentPackage extends IntegrationTestBase {
         }
 
         return userA;
+    }
+
+
+
+    public File createPackage(String group, String name, String... paths) throws RepositoryException, IOException, PackageException {
+        ExportOptions opts = new ExportOptions();
+        DefaultMetaInf inf = new DefaultMetaInf();
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        for (String path : paths) {
+            filter.add(new PathFilterSet(path));
+        }
+
+        inf.setFilter(filter);
+        Properties props = new Properties();
+        props.setProperty(VaultPackage.NAME_GROUP, group);
+        props.setProperty(VaultPackage.NAME_NAME, name);
+        inf.setProperties(props);
+
+        opts.setMetaInf(inf);
+
+        File tmpFile = File.createTempFile("vaulttest", "zip");
+        VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile);
+
+        pkg.close();
+
+        return tmpFile;
     }
 
 }

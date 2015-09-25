@@ -172,6 +172,10 @@ public class JcrSysViewTransformer implements DocViewAdapter {
                 attrs = new AttributesImpl();
                 attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", p.name);
                 attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", "CDATA", PropertyType.nameFromValue(p.type));
+                if (p.isMulti) {
+                    attrs.addAttribute(Name.NS_SV_URI, "multiple", "sv:multiple", "CDATA", "true");
+                }
+
                 handler.startElement(Name.NS_SV_URI, "property", "sv:property", attrs);
                 for (String v: p.values) {
                     handler.startElement(Name.NS_SV_URI, "value", "sv:value", DocViewSAXImporter.EMPTY_ATTRIBUTES);

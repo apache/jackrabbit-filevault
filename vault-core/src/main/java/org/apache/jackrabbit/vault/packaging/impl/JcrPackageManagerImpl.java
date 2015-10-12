@@ -147,7 +147,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         PackageId bestId = null;
         while (iter.hasNext()) {
             Node child = iter.nextNode();
-            if (child.getName().equals(".snapshot")) {
+            if (".snapshot".equals(child.getName())) {
                 continue;
             }
             JcrPackageImpl pack = new JcrPackageImpl(child);
@@ -364,7 +364,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             throws RepositoryException, IOException {
         // sanitize name
         String ext = Text.getName(name, '.');
-        if (ext.equals("zip") || ext.equals("jar")) {
+        if ("zip".equals(ext) || "jar".equals(ext)) {
             name = name.substring(0, name.length() - 4);
         }
         if (!PackageId.isValid(group, name, version)) {
@@ -581,7 +581,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             return session.getNode(path);
         }
         String parentPath = Text.getRelativeParent(path, 1);
-        if (path == null || (path.equals("/") && parentPath.equals(path))) {
+        if (path == null || ("/".equals(path) && parentPath.equals(path))) {
             throw new RepositoryException("could not crete intermediate nodes");
         }
         Node parent = mkdir(parentPath, autoSave);
@@ -743,7 +743,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         if (root != null) {
             for (NodeIterator iter = root.getNodes(); iter.hasNext();) {
                 Node child = iter.nextNode();
-                if (child.getName().equals(".snapshot")) {
+                if (".snapshot".equals(child.getName())) {
                     continue;
                 }
                 JcrPackageImpl pack = new JcrPackageImpl(child);
@@ -759,7 +759,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
                         }
                     }
                 } else if (child.hasNodes() && !shallow){
-                    listPackages(child, packages, filter, built, shallow);
+                    listPackages(child, packages, filter, built, false);
                 }
             }
         }

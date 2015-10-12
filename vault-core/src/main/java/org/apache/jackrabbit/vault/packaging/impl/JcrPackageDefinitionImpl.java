@@ -134,7 +134,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             int idx = path.lastIndexOf('.');
             if (idx > 0) {
                 String ext = path.substring(idx);
-                if (ext.equalsIgnoreCase(".zip") || ext.equalsIgnoreCase(".jar")) {
+                if (".zip".equalsIgnoreCase(ext) || ".jar".equalsIgnoreCase(ext)) {
                     path = path.substring(0, idx);
                 }
             }

@@ -238,7 +238,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     }
 
     /**
-     * Extracts the content represenatation of a definition store the given
+     * Extracts the content representation of a definition store the given
      * package to this node.
      *
      * @param packArchive the archive of the package

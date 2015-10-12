@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.xml.parsers.DocumentBuilder;
@@ -414,12 +415,14 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         }
         String rootPath = tree.getRootPath();
         javax.jcr.Node rootNode;
-        try {
+        if (session.nodeExists(rootPath)) {
             rootNode = session.getNode(rootPath);
-        } catch (RepositoryException e) {
+        } else if (session.nodeExists("/")) {
             log.warn("Common ancestor {} not found. Using root node", rootPath);
             rootNode = session.getRootNode();
             rootPath = "/";
+        } else {
+            throw new PathNotFoundException("Common ancestor " + rootPath+ " not found.");
         }
         log.debug("Starting coverage dump at {} (skipJcrContent={})", rootPath, skipJcrContent);
         dumpCoverage(rootNode, tracker, skipJcrContent);

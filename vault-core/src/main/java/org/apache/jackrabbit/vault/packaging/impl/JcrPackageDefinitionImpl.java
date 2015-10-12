@@ -274,7 +274,6 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
 
         try {
             Node rootNode = session.getNode(rootPath);
-            String defPath = defNode.getPath().substring(1);
 
             Importer importer = new Importer();
             // disable saving
@@ -283,7 +282,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             importer.run(archive, rootNode);
 
             // refresh defNode if it was replaced during unwrap
-            defNode = session.getRootNode().getNode(defPath);
+            defNode = session.getNode(rootPath);
 
             // set props again
             if (lastUnpacked != null) {

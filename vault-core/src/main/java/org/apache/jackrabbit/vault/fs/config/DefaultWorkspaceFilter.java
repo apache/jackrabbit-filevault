@@ -252,11 +252,11 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             builder.setEntityResolver(new RejectingEntityResolver());
             Document document = builder.parse(in);
             Element doc = document.getDocumentElement();
-            if (!doc.getNodeName().equals("workspaceFilter")) {
+            if (!"workspaceFilter".equals(doc.getNodeName())) {
                 throw new ConfigurationException("<workspaceFilter> expected.");
             }
             String v = doc.getAttribute(ATTR_VERSION);
-            if (v == null || v.equals("")) {
+            if (v == null || "".equals(v)) {
                 v = "1.0";
             }
             version = Double.parseDouble(v);
@@ -281,7 +281,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         for (int i=0; i<nl.getLength(); i++) {
             Node child = nl.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE) {
-                if (!child.getNodeName().equals("filter")) {
+                if (!"filter".equals(child.getNodeName())) {
                     throw new ConfigurationException("<filter> expected.");
                 }
                 PathFilterSet def = readDef((Element) child);
@@ -303,9 +303,9 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         for (int i=0; i<n1.getLength(); i++) {
             Node child = n1.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE) {
-                if (child.getNodeName().equals("include")) {
+                if ("include".equals(child.getNodeName())) {
                     def.addInclude(readFilter((Element) child));
-                } else if (child.getNodeName().equals("exclude")) {
+                } else if ("exclude".equals(child.getNodeName())) {
                     def.addExclude(readFilter((Element) child));
                 } else {
                     throw new ConfigurationException("either <include> or <exclude> expected.");
@@ -317,7 +317,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
     protected PathFilter readFilter(Element elem) throws ConfigurationException {
         String pattern = elem.getAttribute("pattern");
-        if (pattern == null || pattern.equals("")) {
+        if (pattern == null || "".equals(pattern)) {
             throw new ConfigurationException("Filter pattern must not be empty");
         }
         return new DefaultPathFilter(pattern);
@@ -340,6 +340,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     /**
      * Reset the source content to a null state.
      */
+    @SuppressWarnings("unused")
     public void resetSource() {
         source = null;
     }

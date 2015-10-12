@@ -823,25 +823,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             // check versionable
             new VersioningState(stack, oldNode).ensureCheckedOut();
 
-            // replace node
-            Node tmpNode = null;
-            try {
-                // if old node exist, try to 'save' the child nodes
-                NodeIterator iter = oldNode.getNodes();
-                while (iter.hasNext()) {
-                    Node child = iter.nextNode();
-                    if (tmpNode == null) {
-                        tmpNode = session.getRootNode().addNode("tmp" + System.currentTimeMillis(), JcrConstants.NT_UNSTRUCTURED);
-                    }
-                    try {
-                        session.move(child.getPath(), tmpNode.getPath() + "/" + child.getName());
-                    } catch (RepositoryException e) {
-                        log.error("Error while moving child node to temporary location. Child will be removed.", e);
-                    }
-                }
-            } catch (RepositoryException e) {
-                log.warn("error while moving child nodes (ignored)", e);
-            }
+            ChildNodeStash recovery = new ChildNodeStash(session);
+            recovery.stashChildren(oldNode);
+
             // ensure that existing binaries are not sourced from a property
             // that is about to be removed
             Map<String, DocViewSAXImporter.BlobInfo> blobs = binaries.get(oldNode.getPath());
@@ -855,26 +839,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             // now create the new node
             node = createNode(currentNode, ni);
 
-            // move the old child nodes back
-            if (tmpNode != null) {
-                NodeIterator iter = tmpNode.getNodes();
-                boolean hasErrors = false;
-                while (iter.hasNext()) {
-                    Node child = iter.nextNode();
-                    String newPath = node.getPath() + "/" + child.getName();
-                    try {
-                        session.move(child.getPath(), newPath);
-                    } catch (RepositoryException e) {
-                        log.warn("Unable to move child back to new location at {} due to: {}. Node will remain in temporary location: {}",
-                                new Object[]{newPath, e.getMessage(), child.getPath()});
-                        importInfo.onError(newPath, e);
-                        hasErrors = true;
-                    }
-                }
-                if (!hasErrors) {
-                    tmpNode.remove();
-                }
-            }
+            // move the children back
+            recovery.recoverChildren(node, importInfo);
+
             importInfo.onReplaced(node.getPath());
             return new StackElement(node, false);
         }

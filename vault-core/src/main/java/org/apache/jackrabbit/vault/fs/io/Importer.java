@@ -1159,25 +1159,16 @@ public class Importer {
         }
 
         public Node getParentNode(Session s) throws RepositoryException {
-            Node root = s.getRootNode();
-            String parentPath = Text.getRelativeParent(path, 1);
-            if (parentPath.length() > 0 && !parentPath.equals("/")) {
-                parentPath = parentPath.substring(1);
-                if (root.hasNode(parentPath)) {
-                    root = root.getNode(parentPath);
-                } else {
-                    root = null;
-                }
-            }
-            return root;
+            String parentPath = emptyPathToRoot(Text.getRelativeParent(path, 1));
+            return s.nodeExists(parentPath)
+                    ? s.getNode(parentPath)
+                    : null;
         }
 
         public Node getNode(Session s) throws RepositoryException {
-            if (path.length() == 0) {
-                return s.getRootNode();
-            }
-            return s.nodeExists(path)
-                    ? s.getNode(path)
+            String p = emptyPathToRoot(path);
+            return s.nodeExists(p)
+                    ? s.getNode(p)
                     : null;
         }
 
@@ -1235,6 +1226,10 @@ public class Importer {
             }
 
             return ret;
+        }
+
+        private static String emptyPathToRoot(String path) {
+            return path == null || path.length() == 0 ? "/" : path;
         }
     }
 

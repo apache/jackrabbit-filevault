@@ -29,7 +29,6 @@ import javax.jcr.Session;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
-import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
@@ -55,9 +54,9 @@ public class JcrSysViewTransformer implements DocViewAdapter {
     private ContentHandler handler;
 
     /**
-     * temporary node when 'rescuing' the child nodes
+     * temporary recovery helper when 'rescuing' the child nodes
      */
-    private Node tmpNode;
+    private ChildNodeStash recovery;
 
     private String rootName;
 
@@ -87,25 +86,9 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
         this.existingPath = existingPath;
         if (existingPath != null) {
-            Node existingNode = session.getNode(existingPath);
             // check if there is an existing node with the name
-            try {
-                // if old node exist, try to 'save' the child nodes
-                NodeIterator iter = existingNode.getNodes();
-                while (iter.hasNext()) {
-                    Node child = iter.nextNode();
-                    if (tmpNode == null) {
-                        tmpNode = session.getRootNode().addNode("tmp" + System.currentTimeMillis(), JcrConstants.NT_UNSTRUCTURED);
-                    }
-                    try {
-                        session.move(child.getPath(), tmpNode.getPath() + "/" + child.getName());
-                    } catch (RepositoryException e) {
-                        log.error("Error while moving child node to temporary location. Child will be removed.", e);
-                    }
-                }
-            } catch (RepositoryException e) {
-                log.warn("error while moving child nodes (ignored)", e);
-            }
+            recovery = new ChildNodeStash(session);
+            recovery.stashChildren(existingPath);
         }
     }
 
@@ -125,25 +108,13 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         }
 
         // check for rescued child nodes
-        // move the old child nodes back
-        if (tmpNode != null) {
+        if (recovery != null) {
             try {
-                Session session = tmpNode.getSession();
-                Node node = session.getNode(existingPath);
-                NodeIterator iter = tmpNode.getNodes();
-                while (iter.hasNext()) {
-                    Node child = iter.nextNode();
-                    String newPath = node.getPath() + "/" + child.getName();
-                    try {
-                        session.move(child.getPath(), newPath);
-                    } catch (RepositoryException e) {
-                        log.warn("Unable to move child back to new location at {} due to: {}. Node will remain in temporary location: {}",
-                                new Object[]{newPath, e.getMessage(), child.getPath()});
-                    }
-                }
-                tmpNode.remove();
+                recovery.recoverChildren(existingPath);
             } catch (RepositoryException e) {
                 log.error("Error while processing rescued child nodes");
+            } finally {
+                recovery = null;
             }
         }
 

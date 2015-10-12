@@ -80,6 +80,11 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     private final static String[] FOLDER_TYPES = {"sling:Folder", "nt:folder", "nt:unstructured", null};
 
     /**
+     * root path for packages
+     */
+    private final static String PACKAGE_ROOT_PATH = "/etc/packages";
+
+    /**
      * internal session
      */
     private final Session session;
@@ -434,7 +439,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         }
 
         session.save();
-        Node newNode = session.getRootNode().getNode(dstPath.substring(1));
+        Node newNode = session.getNode(dstPath);
         return open(newNode);
     }
 
@@ -633,40 +638,34 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * {@inheritDoc}
      */
     public Node getPackageRoot(boolean noCreate) throws RepositoryException {
-        if (this.packRoot == null) {
-            Node packRoot = session.getRootNode();
-            if (packRoot.hasNode("etc")) {
-                packRoot = packRoot.getNode("etc");
+        if (packRoot == null) {
+            if (session.nodeExists(PACKAGE_ROOT_PATH)) {
+                packRoot = session.getNode(PACKAGE_ROOT_PATH);
+            } else if (noCreate) {
+                return null;
             } else {
-                if (noCreate) {
-                    return null;
-                }
-                if (packRoot.isModified()) {
+                // assert that the session has no pending changes
+                if (session.hasPendingChanges()) {
                     throw new RepositoryException("Unwilling to create package root folder while session has transient changes.");
                 }
-                packRoot = packRoot.addNode("etc", JcrConstants.NT_FOLDER);
-            }
-            if (packRoot.hasNode("packages")) {
-                packRoot = packRoot.getNode("packages");
-            } else {
-                if (noCreate) {
-                    return null;
+                // try to create the missing intermediate nodes
+                String etcPath = Text.getRelativeParent(PACKAGE_ROOT_PATH, 1);
+                Node etc;
+                if (session.nodeExists(etcPath)) {
+                    etc = session.getNode(etcPath);
+                } else {
+                    etc = session.getRootNode().addNode(Text.getName(etcPath), JcrConstants.NT_FOLDER);
                 }
-                packRoot = packRoot.addNode("packages", JcrConstants.NT_FOLDER);
+                Node pack = etc.addNode(Text.getName(PACKAGE_ROOT_PATH), JcrConstants.NT_FOLDER);
                 try {
                     session.save();
-                } catch (RepositoryException e) {
-                    try {
-                        session.refresh(false);
-                    } catch (RepositoryException e1) {
-                        // ignore and re-throw original exception
-                    }
-                    throw e;
+                } finally {
+                    session.refresh(false);
                 }
+                packRoot = pack;
             }
-            this.packRoot = packRoot;
         }
-        return this.packRoot;
+        return packRoot;
     }
 
     /**

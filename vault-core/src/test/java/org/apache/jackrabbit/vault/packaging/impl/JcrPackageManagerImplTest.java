@@ -16,26 +16,36 @@
  */
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.GuestCredentials;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
+import javax.jcr.security.AccessControlEntry;
+import javax.jcr.security.AccessControlManager;
 
+import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
+import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
 import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Testcase for {@link JcrPackageManagerImpl}
+ * Test case for {@link JcrPackageManagerImpl}
  */
 public class JcrPackageManagerImplTest extends IntegrationTestBase {
 
@@ -78,13 +88,105 @@ public class JcrPackageManagerImplTest extends IntegrationTestBase {
         }
     }
 
+    @Test
+    public void testGetPackageRootNoCreate() throws Exception {
+        JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(admin);
+
+        assertNull(jcrPackageManager.getPackageRoot(true));
+    }
+
+    @Test
+    public void testGetPackageRootWithCreate() throws Exception {
+        JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(admin);
+
+        Node packageNode = jcrPackageManager.getPackageRoot(false);
+        assertEquals("/etc/packages", packageNode.getPath());
+    }
+
+    @Test
+    public void testGetPackageRootTwice() throws Exception {
+        JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(admin);
+        Node packageNode = jcrPackageManager.getPackageRoot(false);
+        assertSame(packageNode, jcrPackageManager.getPackageRoot());
+    }
+
+    @Test
+    public void testGetPackageRootWithAdminPendingChanges() throws Exception {
+        admin.getRootNode().addNode("testNode");
+
+        JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(admin);
+        try {
+            jcrPackageManager.getPackageRoot(false);
+            fail("transient modifications must fail the package root creation.");
+        } catch (RepositoryException e) {
+            // success
+        }
+    }
+
+    @Test
+    public void testGetPackageRootNoRootAccess() throws Exception {
+        Node packageRoot = new JcrPackageManagerImpl(admin).getPackageRoot();
+
+        // TODO: maybe rather change the setup of the test-base to not assume that everyone has full read-access
+        AccessControlManager acMgr = admin.getAccessControlManager();
+        JackrabbitAccessControlList acl = AccessControlUtils.getAccessControlList(acMgr, "/");
+        acMgr.removePolicy(acl.getPath(), acl);
+
+        AccessControlUtils.getAccessControlList(acMgr, "/etc/packages");
+        AccessControlUtils.allow(packageRoot, org.apache.jackrabbit.oak.spi.security.principal.EveryonePrincipal.NAME, javax.jcr.security.Privilege.JCR_READ);
+
+        admin.save();
+
+        Session anonymous = repository.login(new GuestCredentials());
+        try {
+            assertFalse(anonymous.nodeExists("/"));
+            assertFalse(anonymous.nodeExists("/etc"));
+            assertTrue(anonymous.nodeExists("/etc/packages"));
+
+            JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(anonymous);
+            jcrPackageManager.getPackageRoot(false);
+        } finally {
+            anonymous.logout();
+        }
+    }
+
+    @Test
+    public void testGetPackageRootNoCreateAccess() throws Exception {
+        // TODO: maybe rather change the setup of the test-base to not assume that everyone has full read-access
+        AccessControlManager acMgr = admin.getAccessControlManager();
+        JackrabbitAccessControlList acl = AccessControlUtils.getAccessControlList(acMgr, "/");
+        for (AccessControlEntry ace : acl.getAccessControlEntries()) {
+            acl.removeAccessControlEntry(ace);
+        }
+        acl.addEntry(AccessControlUtils.getEveryonePrincipal(admin),
+                AccessControlUtils.privilegesFromNames(admin, javax.jcr.security.Privilege.JCR_READ),
+                true,
+                Collections.singletonMap("rep:glob", admin.getValueFactory().createValue("etc/*")));
+        admin.save();
+
+        Session anonymous = repository.login(new GuestCredentials());
+        try {
+            JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(anonymous);
+            assertNull(jcrPackageManager.getPackageRoot(true));
+
+            try {
+                jcrPackageManager.getPackageRoot(false);
+                fail();
+            } catch (AccessDeniedException e) {
+                // success
+            }
+        }  finally {
+            anonymous.logout();
+        }
+    }
+
     private String getNextPath(String path) throws RepositoryException {
         Node currentNode = admin.getNode(path);
         if (currentNode.hasNodes()) {
             NodeIterator nodes = currentNode.getNodes();
             while (nodes.hasNext()) {
                 Node node = nodes.nextNode();
-                if (node.getName().equals("jcr:system")) {
+                if ("jcr:system".equals(node.getName())) {
                     continue;
                 }
                 String nodePath = node.getPath();

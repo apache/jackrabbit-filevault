@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.22
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.26
 
 Introduction
 ------------
@@ -8,6 +8,16 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.1.26
+--------------------------------------
+Bug Fixes:
+* [JCRVLT-100] - FileVault requires access to root node
+  ** [JCRVLT-99] - Creating a package using package manager API requires read access to root node
+  ** [JCRVLT-101] - Importer.TxInfo : access to root node
+  ** [JCRVLT-102] - DefaultWorkspaceFilter requires access to root node
+  ** [JCRVLT-103] - JcrPackageDefinitionImpl always accesses root node
+  ** [JCRVLT-104] - Access to root node in DocViewSAXImporter and JcrSysViewTransformer
 
 Changes in Jackrabbit FileVault 3.1.24
 --------------------------------------

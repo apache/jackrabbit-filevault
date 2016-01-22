@@ -24,13 +24,13 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.derby.impl.load.Import;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.tika.io.IOUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -306,9 +306,74 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertEquals("child order", "jcr:content,toolbar,products,services,company,events,support,community,blog,", names.toString());
     }
 
+    /**
+     * Installs a package that and checks if snapshot is created
+     */
+    @Test
+    public void testSnapshotExists() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        assertNodeExists("/etc/packages/my_packages/.snapshot/tmp.zip");
+        assertNodeExists("/tmp/foo/bar/tobi");
+    }
+
+    /**
+     * Installs and uninstalls a package that and checks if the content is reverted.
+     */
+    @Test
+    public void testUninstall() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+        assertNodeExists("/tmp/foo/bar/tobi");
+
+        pack.uninstall(getDefaultOptions());
+        assertNodeMissing("/tmp/foo/bar/tobi");
+    }
+
+    /**
+     * Uninstalls a package that has no snapshot (JCRVLT-89)
+     */
+    @Test
+    public void testUninstallNoSnapshot() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        assertNotNull(pack);
+
+        // extract should not generate snapshots
+        pack.extract(getDefaultOptions());
+        assertNodeExists("/tmp/foo/bar/tobi");
+        assertNodeMissing("/etc/packages/my_packages/.snapshot/tmp.zip");
+
+        pack.uninstall(getDefaultOptions());
+        assertNodeExists("/tmp/foo/bar/tobi");
+    }
+
+    /**
+     * Checks if uninstalling a package in strict mode with no snapshot fails (JCRVLT-89).
+     */
+    @Test
+    public void testUninstallNoSnapshotStrict() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        assertNotNull(pack);
+
+        // extract should not generate snapshots
+        pack.extract(getDefaultOptions());
+        assertNodeExists("/tmp/foo/bar/tobi");
+        assertNodeMissing("/etc/packages/my_packages/.snapshot/tmp.zip");
+
+        ImportOptions opts = getDefaultOptions();
+        opts.setStrict(true);
+        try {
+            pack.uninstall(opts);
+            fail("uninstalling a package with no snapshot should fail in strict mode.");
+        } catch (PackageException e) {
+            // ok
+        }
+    }
+
     // todo: upload with version
-    // todo: install / uninstall
-    // todo: sub packages
     // todo: rename
 
 }

@@ -606,43 +606,53 @@ public class JcrPackageImpl implements JcrPackage {
     public void uninstall(ImportOptions opts) throws RepositoryException, PackageException, IOException {
         JcrPackage snap = getSnapshot();
         if (snap == null) {
-            throw new PackageException("Unable to uninstall package. No snapshot present.");
-        }
-        if (opts.getListener() != null) {
-            opts.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, "Uninstalling package from snapshot " + snap.getDefinition().getId(), "");
-        }
-        Session s = getNode().getSession();
-        // check for recursive uninstall
-        if (!opts.isNonRecursive()) {
-            Node defNode = snap.getDefNode();
-            LinkedList<PackageId> subPackages = new LinkedList<PackageId>();
-            if (defNode.hasProperty(JcrPackageDefinition.PN_SUB_PACKAGES)) {
-                Value[] subIds = defNode.getProperty(JcrPackageDefinition.PN_SUB_PACKAGES).getValues();
-                for (Value v: subIds) {
-                    // reverse installation order
-                    subPackages.addLast(PackageId.fromString(v.getString()));
-                }
+            if (opts.isStrict()) {
+                throw new PackageException("Unable to uninstall package. No snapshot present.");
             }
-            if (subPackages.size() > 0) {
-                JcrPackageManagerImpl packMgr = new JcrPackageManagerImpl(s);
-                for (PackageId id: subPackages) {
-                    JcrPackage pack = packMgr.open(id);
-                    if (pack != null) {
-                        if (pack.getSnapshot() == null) {
-                            log.warn("Unable to uninstall sub package {}. Snapshot missing.", id);
-                        } else {
-                            pack.uninstall(opts);
-                        }
+            log.warn("Unable to revert package content {}. Snapshot missing.", getDefinition().getId());
+            if (opts.getListener() != null) {
+                opts.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, "Unable to revert package content. Snapshot missing.", "");
+            }
+
+        } else {
+            Session s = getNode().getSession();
+            // check for recursive uninstall
+            if (!opts.isNonRecursive()) {
+                Node defNode = snap.getDefNode();
+                LinkedList<PackageId> subPackages = new LinkedList<PackageId>();
+                if (defNode.hasProperty(JcrPackageDefinition.PN_SUB_PACKAGES)) {
+                    Value[] subIds = defNode.getProperty(JcrPackageDefinition.PN_SUB_PACKAGES).getValues();
+                    for (Value v : subIds) {
+                        // reverse installation order
+                        subPackages.addLast(PackageId.fromString(v.getString()));
                     }
                 }
+                if (subPackages.size() > 0) {
+                    JcrPackageManagerImpl packMgr = new JcrPackageManagerImpl(s);
+                    for (PackageId id : subPackages) {
+                        JcrPackage pack = packMgr.open(id);
+                        if (pack != null) {
+                            if (pack.getSnapshot() == null) {
+                                log.warn("Unable to uninstall sub package {}. Snapshot missing.", id);
+                            } else {
+                                pack.uninstall(opts);
+                            }
+                        }
+                    }
 
+                }
             }
+
+            if (opts.getListener() != null) {
+                opts.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, "Uninstalling package from snapshot " + snap.getDefinition().getId(), "");
+            }
+            // override import mode
+            opts.setImportMode(ImportMode.REPLACE);
+            snap.extract(opts);
+            snap.getNode().remove();
+            s.save();
         }
-        // override import mode
-        opts.setImportMode(ImportMode.REPLACE);
-        snap.extract(opts);
-        snap.getNode().remove();
-        s.save();
+
         // revert installed flags on this package
         JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) getDefinition();
         def.clearLastUnpacked(true);

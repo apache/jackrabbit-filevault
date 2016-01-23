@@ -141,6 +141,33 @@ public class TestACLAndMerge extends IntegrationTestBase {
     }
 
     /**
+     * Installs 2 packages with the same ACL. the later packages has a sub package with a different AC handling.
+     * See JCRVLT-107.
+     */
+    @Test
+    public void testACMergeSubpackage() throws RepositoryException, IOException, PackageException {
+        assertNodeMissing("/testroot");
+
+        JcrPackage pack = packMgr.upload(getStream("testpackages/mode_ac_test_a.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        // test if nodes and ACLs of first package exist
+        assertNodeExists("/testroot/node_a");
+        assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
+
+        pack = packMgr.upload(getStream("testpackages/mode_ac_subpackage.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        // test if nodes and ACLs of 2nd package exist
+        assertNodeExists("/testroot/node_a");
+        assertNodeExists("/testroot/node_b");
+        assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
+        assertPermission("/testroot/secured", true, new String[]{"jcr:read"}, "everyone", "*/foo/*");
+    }
+
+    /**
      * Installs 2 packages with the same ACE. the later packages has AC Handling MERGE and should overwrite the
      * existing ACL.
      */

@@ -50,20 +50,28 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestBinarylessExport extends IntegrationTestBase {
 
-    private final String BIG_TEXT = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel dui in elit venenatis dictum sed nec arcu. Phasellus aliquam imperdiet tincidunt. Vestibulum lacinia mollis mi. Cras non metus.";
-    private final String SMALL_TEXT = "Lorem ipsum";
-    private final String BINARY_NODE_PATH = "/tmp/binaryless/node";
-    private final String BIG_BINARY_PROPERTY = "bigbin";
-    private final String SMALL_BINARY_PROPERTY = "smallbin";
+    private final static String SMALL_TEXT = "Lorem ipsum";
+    private final static String BINARY_NODE_PATH = "/tmp/binaryless/node";
+    private final static String BIG_BINARY_PROPERTY = "bigbin";
+    private final static String SMALL_BINARY_PROPERTY = "smallbin";
 
-    private final String FILE_NODE_PATH = "/tmp/binaryless/file";
+    private final static String FILE_NODE_PATH = "/tmp/binaryless/file";
 
 
+    private final static int BIG_TEXT_LENGTH = 0x1000 * 64;
+    private final static String BIG_TEXT;
+    static {
+        StringBuilder buffer = new StringBuilder(BIG_TEXT_LENGTH);
+        buffer.append("0123456789abcdef");
+        while (buffer.length() < BIG_TEXT_LENGTH) {
+            buffer.append(buffer, 0, buffer.length());
+        }
+        BIG_TEXT = buffer.toString();
+    }
 
 
     @Before
     public void setup() throws RepositoryException, PackageException, IOException {
-
         Node binaryNode = JcrUtils.getOrCreateByPath(BINARY_NODE_PATH, "nt:unstructured", admin);
 
         Binary bigBin = admin.getValueFactory().createBinary(IOUtils.toInputStream(BIG_TEXT, "UTF-8"));

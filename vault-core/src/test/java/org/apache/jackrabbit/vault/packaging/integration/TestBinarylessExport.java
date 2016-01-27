@@ -17,17 +17,22 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.api.ReferenceBinary;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
+import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.jcr.Binary;
@@ -69,7 +74,6 @@ public class TestBinarylessExport extends IntegrationTestBase {
         BIG_TEXT = buffer.toString();
     }
 
-
     @Before
     public void setup() throws RepositoryException, PackageException, IOException {
         Node binaryNode = JcrUtils.getOrCreateByPath(BINARY_NODE_PATH, "nt:unstructured", admin);
@@ -81,12 +85,16 @@ public class TestBinarylessExport extends IntegrationTestBase {
 
         Binary smallBin = admin.getValueFactory().createBinary(IOUtils.toInputStream(SMALL_TEXT, "UTF-8"));
         Property smallProperty = binaryNode.setProperty(SMALL_BINARY_PROPERTY, smallBin);
-        assertFalse(smallProperty.getBinary() instanceof ReferenceBinary);
-
+        if (isOak()) {
+            assertTrue(smallProperty.getBinary() instanceof ReferenceBinary);
+        } else {
+            assertFalse(smallProperty.getBinary() instanceof ReferenceBinary);
+        }
 
         JcrUtils.putFile(binaryNode.getParent(), "file", "text/plain", IOUtils.toInputStream(BIG_TEXT, "UTF-8"));
         admin.save();
     }
+
 
 
     @Test
@@ -116,7 +124,7 @@ public class TestBinarylessExport extends IntegrationTestBase {
         assertNotNull(pkg.getArchive().getEntry("jcr_root"+ BINARY_NODE_PATH + "/" + SMALL_BINARY_PROPERTY + ".binary"));
 
 
-        admin.getNode(nodePath).remove();
+        clean(nodePath);
 
         pkg.extract(admin, getDefaultOptions());
 
@@ -155,7 +163,7 @@ public class TestBinarylessExport extends IntegrationTestBase {
 
         assertTrue(pkg.getArchive().getEntry("jcr_root" + FILE_NODE_PATH).isDirectory());
 
-        admin.getNode(nodePath).remove();
+        clean(nodePath);
 
         pkg.extract(admin, getDefaultOptions());
 
@@ -169,6 +177,55 @@ public class TestBinarylessExport extends IntegrationTestBase {
         assertEquals(BIG_TEXT, actualText);
 
         pkg.close();
+        tmpFile.delete();
+    }
+
+    /**
+     * Tests if the same package installed twice does not report and update. See JCRVLT-108
+     */
+    @Test
+    @Ignore("JCRVLT-108")
+    public void importTwice() throws RepositoryException, IOException, PackageException {
+        String nodePath = BINARY_NODE_PATH;
+
+        ExportOptions opts = new ExportOptions();
+        DefaultMetaInf inf = new DefaultMetaInf();
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet(nodePath));
+
+        inf.setFilter(filter);
+        Properties props = new Properties();
+        props.setProperty(VaultPackage.NAME_GROUP, "jackrabbit/test");
+        props.setProperty(VaultPackage.NAME_NAME, "test-package");
+        props.setProperty(PackageProperties.NAME_USE_BINARY_REFERENCES, "true");
+        inf.setProperties(props);
+
+        opts.setMetaInf(inf);
+
+        File tmpFile = File.createTempFile("vaulttest", "zip");
+        VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile);
+        pkg.close();
+
+        clean(nodePath);
+
+        // import again
+        JcrPackage pack = packMgr.upload(FileUtils.openInputStream(tmpFile), false);
+        assertNotNull(pack);
+
+        ImportOptions io = getDefaultOptions();
+        TrackingListener listener = new TrackingListener(opts.getListener());
+        io.setListener(listener);
+        pack.install(io);
+        assertEquals("A", listener.getActions().get(BINARY_NODE_PATH));
+
+        // and again
+        io = getDefaultOptions();
+        listener = new TrackingListener(opts.getListener());
+        io.setListener(listener);
+
+        pack.install(io);
+        assertEquals("U", listener.getActions().get(BINARY_NODE_PATH));
+
         tmpFile.delete();
     }
 }

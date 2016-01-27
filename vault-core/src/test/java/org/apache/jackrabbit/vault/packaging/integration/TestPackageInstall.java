@@ -20,7 +20,10 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import java.io.File;
 import java.io.IOException;
 
+import javax.jcr.Binary;
 import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
@@ -371,6 +374,20 @@ public class TestPackageInstall extends IntegrationTestBase {
         } catch (PackageException e) {
             // ok
         }
+    }
+
+    /**
+     * Installs a package that and checks if snapshot is created
+     */
+    @Test
+    public void testBinaryProperties() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_binary.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        Property p = admin.getProperty("/tmp/binary/test/jcr:data");
+        assertEquals(PropertyType.BINARY, p.getType());
+        assertEquals("this is binary data.\n", p.getString());
     }
 
     // todo: upload with version

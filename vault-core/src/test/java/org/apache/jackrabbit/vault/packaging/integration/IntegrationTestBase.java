@@ -48,11 +48,16 @@ import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
 import org.apache.jackrabbit.core.RepositoryImpl;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
+import org.apache.jackrabbit.core.data.FileDataStore;
 import org.apache.jackrabbit.core.security.principal.EveryonePrincipal;
 import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
 import org.apache.jackrabbit.oak.jcr.Jcr;
+import org.apache.jackrabbit.oak.plugins.blob.datastore.DataStoreBlobStore;
+import org.apache.jackrabbit.oak.plugins.segment.SegmentNodeStore;
+import org.apache.jackrabbit.oak.plugins.segment.file.FileStore;
 import org.apache.jackrabbit.oak.security.SecurityProviderImpl;
 import org.apache.jackrabbit.oak.security.user.RandomAuthorizableNodeName;
+import org.apache.jackrabbit.oak.spi.blob.BlobStore;
 import org.apache.jackrabbit.oak.spi.security.ConfigurationParameters;
 import org.apache.jackrabbit.oak.spi.security.authorization.AuthorizationConfiguration;
 import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants;
@@ -70,6 +75,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,6 +98,14 @@ public class IntegrationTestBase  {
     private static final Logger log = LoggerFactory.getLogger(IntegrationTestBase.class);
 
     private static final String REPO_HOME = "target/repository";
+    private static final File DIR_REPO_HOME = new File(REPO_HOME);
+    private static final File DIR_DATA_STORE = new File(REPO_HOME + "/datastore");
+    private static final File DIR_BLOB_STORE = new File(REPO_HOME + "/blobstore");
+
+    @Rule
+    public static TemporaryFolder tempFolder = new TemporaryFolder();
+
+    private static FileStore fileStore = null;
 
     protected static Repository repository;
 
@@ -99,7 +114,7 @@ public class IntegrationTestBase  {
     protected JcrPackageManager packMgr;
 
     @BeforeClass
-    public static void initRepository() throws RepositoryException {
+    public static void initRepository() throws RepositoryException, IOException {
         if (isOak()) {
             Properties userProps = new Properties();
             AuthorizableNodeName nameGenerator = new RandomAuthorizableNodeName();
@@ -115,7 +130,21 @@ public class IntegrationTestBase  {
             Properties securityProps = new Properties();
             securityProps.put(UserConfiguration.NAME, ConfigurationParameters.of(userProps));
             securityProps.put(AuthorizationConfiguration.NAME, ConfigurationParameters.of(authzProps));
-            repository = new Jcr()
+
+            Jcr jcr;
+            if (useFileStore()) {
+                BlobStore blobStore = createBlobStore();
+                DIR_DATA_STORE.mkdirs();
+                fileStore = FileStore.newFileStore(DIR_DATA_STORE)
+                        .withBlobStore(blobStore)
+                        .create();
+                SegmentNodeStore nodeStore = SegmentNodeStore.newSegmentNodeStore(fileStore).create();
+                jcr = new Jcr(nodeStore);
+            } else {
+                jcr = new Jcr();
+            }
+
+            repository = jcr
                     .with(new SecurityProviderImpl(ConfigurationParameters.of(securityProps)))
                     .createRepository();
 
@@ -134,12 +163,33 @@ public class IntegrationTestBase  {
                 repository.getDescriptor(Repository.REP_VERSION_DESC));
     }
 
+    public static boolean useFileStore() {
+        return true;
+    }
+
+    private static BlobStore createBlobStore() throws IOException {
+        DIR_BLOB_STORE.mkdirs();
+        FileDataStore fds = new FileDataStore();
+        fds.setMinRecordLength(4092);
+        fds.init(DIR_BLOB_STORE.getAbsolutePath());
+        return new DataStoreBlobStore(fds);
+    }
+
     @AfterClass
-    public static void shutdownRepository() {
+    public static void shutdownRepository() throws IOException {
         if (repository instanceof RepositoryImpl) {
             ((RepositoryImpl) repository).shutdown();
+        } else if (repository instanceof org.apache.jackrabbit.oak.jcr.repository.RepositoryImpl) {
+            ((org.apache.jackrabbit.oak.jcr.repository.RepositoryImpl) repository).shutdown();
         }
         repository = null;
+
+        if (fileStore != null) {
+            fileStore.close();
+            fileStore = null;
+        }
+
+        FileUtils.deleteDirectory(DIR_REPO_HOME);
     }
 
     @Before
@@ -414,5 +464,36 @@ public class IntegrationTestBase  {
         acl.addEntry(new PrincipalImpl(principal), ps, allow);
         admin.getAccessControlManager().setPolicy(path, acl);
         admin.save();
+    }
+
+    public static class TrackingListener implements ProgressTrackerListener {
+
+        private final ProgressTrackerListener delegate;
+
+        private final Map<String, String> actions = new HashMap<String, String>();
+
+        public TrackingListener(ProgressTrackerListener delegate) {
+            this.delegate = delegate;
+        }
+
+        public Map<String, String> getActions() {
+            return actions;
+        }
+
+        @Override
+        public void onMessage(Mode mode, String action, String path) {
+            if (delegate != null) {
+                delegate.onMessage(mode, action, path);
+            }
+            actions.put(path, action);
+        }
+
+        @Override
+        public void onError(Mode mode, String path, Exception e) {
+            if (delegate != null) {
+                delegate.onError(mode, path, e);
+            }
+            actions.put(path, "E");
+        }
     }
 }

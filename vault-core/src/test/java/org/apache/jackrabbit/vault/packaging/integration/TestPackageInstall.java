@@ -28,12 +28,14 @@ import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.derby.impl.load.Import;
+import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.tika.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -377,9 +379,11 @@ public class TestPackageInstall extends IntegrationTestBase {
     }
 
     /**
-     * Installs a package that and checks if snapshot is created
+     * Installs a binary properties twice to check if it doesn't report an update. JCRVLT-108.
+     * this only works for small binaries, though.
      */
     @Test
+    @Ignore("JCRVLT-108")
     public void testBinaryProperties() throws RepositoryException, IOException, PackageException {
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_binary.zip"), false);
         assertNotNull(pack);
@@ -387,7 +391,23 @@ public class TestPackageInstall extends IntegrationTestBase {
 
         Property p = admin.getProperty("/tmp/binary/test/jcr:data");
         assertEquals(PropertyType.BINARY, p.getType());
-        assertEquals("this is binary data.\n", p.getString());
+
+        StringBuilder buffer = new StringBuilder(8192);
+        while (buffer.length() < 8192) {
+            buffer.append("0123456789abcdef");
+        }
+        String result = IOUtils.toString(p.getBinary().getStream());
+
+        assertEquals(buffer.toString(), result);
+
+        // install again to check if binary data is not updated
+        ImportOptions opts = getDefaultOptions();
+        TrackingListener listener = new TrackingListener(opts.getListener());
+        opts.setListener(listener);
+
+        pack.install(opts);
+
+        assertEquals("-", listener.getActions().get("/tmp/binary/test"));
     }
 
     // todo: upload with version

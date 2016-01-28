@@ -375,6 +375,7 @@ public class DocViewProperty {
             }
         }
         if (isMulti) {
+            // todo: handle multivalue binaries and reference binaries
             Value[] vs = prop == null ? null : prop.getValues();
             if (vs != null && vs.length == values.length) {
                 // quick check all values
@@ -397,10 +398,19 @@ public class DocViewProperty {
             return true;
         } else {
             Value v = prop == null ? null : prop.getValue();
-            if (type == PropertyType.BINARY && isRef) {
-                ReferenceBinary ref = new SimpleReferenceBinary(values[0]);
-                Binary binary = node.getSession().getValueFactory().createValue(ref).getBinary();
-                node.setProperty(name, binary);
+            if (type == PropertyType.BINARY) {
+                if (isRef) {
+                    ReferenceBinary ref = new SimpleReferenceBinary(values[0]);
+                    Binary binary = node.getSession().getValueFactory().createValue(ref).getBinary();
+                    if (v != null) {
+                        Binary bin = v.getBinary();
+                        if (bin.equals(binary)) {
+                            return false;
+                        }
+                    }
+                    node.setProperty(name, binary);
+                }
+                // the binary property is always modified (TODO: check if still correct with JCRVLT-110)
                 return true;
             }
             if (v == null || !v.getString().equals(values[0])) {
@@ -419,4 +429,5 @@ public class DocViewProperty {
         }
         return false;
     }
+
 }

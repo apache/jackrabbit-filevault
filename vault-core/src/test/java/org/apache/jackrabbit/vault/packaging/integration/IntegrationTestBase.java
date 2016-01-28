@@ -164,7 +164,7 @@ public class IntegrationTestBase  {
     }
 
     public static boolean useFileStore() {
-        return true;
+        return Boolean.getBoolean("fds");
     }
 
     private static BlobStore createBlobStore() throws IOException {

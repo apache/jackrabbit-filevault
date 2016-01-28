@@ -379,12 +379,33 @@ public class TestPackageInstall extends IntegrationTestBase {
     }
 
     /**
-     * Installs a binary properties twice to check if it doesn't report an update. JCRVLT-108.
-     * this only works for small binaries, though.
+     * Installs a binary properties.
      */
     @Test
-    @Ignore("JCRVLT-108")
     public void testBinaryProperties() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_binary.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        Property p = admin.getProperty("/tmp/binary/test/jcr:data");
+        assertEquals(PropertyType.BINARY, p.getType());
+
+        StringBuilder buffer = new StringBuilder(8192);
+        while (buffer.length() < 8192) {
+            buffer.append("0123456789abcdef");
+        }
+        String result = IOUtils.toString(p.getBinary().getStream());
+
+        assertEquals(buffer.toString(), result);
+    }
+
+    /**
+     * Installs a binary properties twice to check if it doesn't report an update.
+     * TODO: this is not implemented yet. see JCRVLT-110
+     */
+    @Test
+    @Ignore
+    public void testBinaryPropertyTwice() throws RepositoryException, IOException, PackageException {
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_binary.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
@@ -407,7 +428,8 @@ public class TestPackageInstall extends IntegrationTestBase {
 
         pack.install(opts);
 
-        assertEquals("-", listener.getActions().get("/tmp/binary/test"));
+        //TODO: assertEquals("-", listener.getActions().get("/tmp/binary/test"));
+        assertEquals("U", listener.getActions().get("/tmp/binary/test"));
     }
 
     // todo: upload with version

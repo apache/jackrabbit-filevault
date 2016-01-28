@@ -30,6 +30,7 @@ import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -75,7 +76,11 @@ public class TestBinarylessExport extends IntegrationTestBase {
     }
 
     @Before
+    @Ignore
     public void setup() throws RepositoryException, PackageException, IOException {
+        // test only works for Jackrabbit 2.0 or Oak with FileDataStore
+        Assume.assumeTrue(!isOak() || useFileStore());
+
         Node binaryNode = JcrUtils.getOrCreateByPath(BINARY_NODE_PATH, "nt:unstructured", admin);
 
         Binary bigBin = admin.getValueFactory().createBinary(IOUtils.toInputStream(BIG_TEXT, "UTF-8"));
@@ -184,7 +189,6 @@ public class TestBinarylessExport extends IntegrationTestBase {
      * Tests if the same package installed twice does not report and update. See JCRVLT-108
      */
     @Test
-    @Ignore("JCRVLT-108")
     public void importTwice() throws RepositoryException, IOException, PackageException {
         String nodePath = BINARY_NODE_PATH;
 

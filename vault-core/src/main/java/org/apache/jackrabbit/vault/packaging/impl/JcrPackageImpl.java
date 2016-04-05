@@ -29,10 +29,14 @@ import java.util.List;
 
 import javax.jcr.Binary;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
+import javax.jcr.query.QueryResult;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -51,6 +55,7 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.Version;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
@@ -441,7 +446,31 @@ public class JcrPackageImpl implements JcrPackage {
                     }
                 }
                 if (p.isValid()) {
-                    subPacks.add(p);
+                    Version thisVersion = p.getPackage().getId().getVersion();
+                    QueryManager qmgr = s.getWorkspace().getQueryManager();
+                    String findQuery = "//element(*,"+NT_VLT_PACKAGE+")["
+                            +JcrPackage.NN_VLT_DEFINITION
+                            +"/@"+JcrPackageDefinition.PN_GROUP+"='"+p.getPackage().getId().getGroup()
+                            +"' and "+JcrPackage.NN_VLT_DEFINITION+"/@"+JcrPackageDefinition.PN_NAME+"='"+p.getPackage().getId().getName()
+                            +"']";
+                    log.debug("lookup for other versions with:"+findQuery);
+                    Query searchOtherVersion = qmgr.createQuery(findQuery, Query.XPATH);
+                    QueryResult qr = searchOtherVersion.execute();
+                    NodeIterator nodeIter = qr.getNodes();
+                    boolean foundMoreRecent = false;
+                    JcrPackageImpl foundP = null;
+                    while (nodeIter.hasNext()) {
+                        foundP = new JcrPackageImpl(nodeIter.nextNode().getParent());
+                        if (foundP.isValid() && foundP.isInstalled() && foundP.getPackage().getId().getVersion().compareTo(thisVersion) == 1) {
+                            foundMoreRecent = true;
+                            break;
+                        }
+                    }
+                    if (!foundMoreRecent) {
+                        subPacks.add(p);
+                    } else {
+                        log.info("Skipping "+path+" installation due to newer version present and installed at "+foundP.getNode().getPath());
+                    }
                 }
             }
         }

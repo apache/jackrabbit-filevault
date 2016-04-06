@@ -240,7 +240,7 @@ public class TestSubPackages extends IntegrationTestBase {
     }
 
     /**
-     * Installs a packages that contains same sub packages with different version
+     * Installs 2 packages that contains same sub packages with different version
      */
     @Test
     public void testSkipOlderVersionInstallation() throws RepositoryException, IOException, PackageException {

@@ -455,21 +455,27 @@ public class JcrPackageImpl implements JcrPackage {
                     JcrPackageManager pkgMgr = new JcrPackageManagerImpl(s);                    
                     List<JcrPackage> listPackages = pkgMgr.listPackages(pId.getGroup(), true);
 
-
+                    // keep some status variable if a more recent is found in the next loop
                     boolean foundMoreRecent = false;
                     JcrPackage foundPackage = null;
+
+                    // loop in the list of packages returned previously by package manager
                     for (JcrPackage listedPackage: listPackages) {
                         PackageId listedPackageId = listedPackage.getPackage().getId();
+                        // check that the listed package is actually from same name (so normally only version would differ)
+                        // if that package is valid, installed, and the version is more recent than the one in our sub package
+                        // then we can stop the loop here
                         if (listedPackageId.getName().equals(pName) && listedPackage.isValid() && listedPackage.isInstalled() && listedPackageId.getVersion().compareTo(pVersion) == 1) {
-                            foundMoreRecent = true;
+                            foundMoreRecent = true; 
                             foundPackage = listedPackage;
                             break;
                         }
                     }
-                    if (!foundMoreRecent) {
-                        subPacks.add(p);
-                    } else {
+                    // if a more recent version of that subpackage was found we don't need to add it to the list of sub packages to eventually extract later on.
+                    if (foundMoreRecent) {
                         log.info("Skipping "+path+" installation due to newer version present and installed at "+foundPackage.getNode().getPath());
+                    } else {
+                        subPacks.add(p);
                     }
                 }
             }

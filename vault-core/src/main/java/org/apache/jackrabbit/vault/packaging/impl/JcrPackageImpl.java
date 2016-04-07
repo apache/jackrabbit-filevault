@@ -47,10 +47,12 @@ import org.apache.jackrabbit.vault.packaging.DependencyUtil;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
+import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.Version;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
@@ -441,7 +443,36 @@ public class JcrPackageImpl implements JcrPackage {
                     }
                 }
                 if (p.isValid()) {
-                    subPacks.add(p);
+                    PackageId pId = p.getPackage().getId();
+                    String pName = pId.getName();
+                    Version pVersion = pId.getVersion();
+
+                    // get the list of packages available in the same group
+                    JcrPackageManager pkgMgr = new JcrPackageManagerImpl(s);                    
+                    List<JcrPackage> listPackages = pkgMgr.listPackages(pId.getGroup(), true);
+
+                    // keep some status variable if a more recent is found in the next loop
+                    boolean foundMoreRecent = false;
+                    JcrPackage foundPackage = null;
+
+                    // loop in the list of packages returned previously by package manager
+                    for (JcrPackage listedPackage: listPackages) {
+                        PackageId listedPackageId = listedPackage.getPackage().getId();
+                        // check that the listed package is actually from same name (so normally only version would differ)
+                        // if that package is valid, installed, and the version is more recent than the one in our sub package
+                        // then we can stop the loop here
+                        if (listedPackageId.getName().equals(pName) && listedPackage.isValid() && listedPackage.isInstalled() && listedPackageId.getVersion().compareTo(pVersion) == 1) {
+                            foundMoreRecent = true; 
+                            foundPackage = listedPackage;
+                            break;
+                        }
+                    }
+                    // if a more recent version of that subpackage was found we don't need to add it to the list of sub packages to eventually extract later on.
+                    if (foundMoreRecent) {
+                        log.info("Skipping "+path+" installation due to newer version present and installed at "+foundPackage.getNode().getPath());
+                    } else {
+                        subPacks.add(p);
+                    }
                 }
             }
         }

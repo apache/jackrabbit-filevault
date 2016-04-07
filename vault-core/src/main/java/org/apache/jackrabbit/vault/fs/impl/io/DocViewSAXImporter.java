@@ -765,11 +765,6 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         } else if (ni.uuid == null) {
             if (stack.checkForNode() && currentNode.hasNode(ni.label)) {
                 node = currentNode.getNode(ni.label);
-                if (ni.primary != null && !node.getPrimaryNodeType().getName().equals(ni.primary)) {
-                    // if node type mismatches => replace
-                    oldNode = node;
-                    node = null;
-                }
             }
         } else {
             try {
@@ -792,20 +787,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             if (node == null) {
                 if (stack.checkForNode() && currentNode.hasNode(ni.label)) {
                     node = currentNode.getNode(ni.label);
-                    if (ni.primary != null && !node.getPrimaryNodeType().getName().equals(ni.primary)) {
-                        // if node type mismatches => replace
-                        oldNode = node;
-                        node = null;
-                    }
                 }
             } else {
-                if (node.getName().equals(ni.name)) {
-                    if (ni.primary != null && !node.getPrimaryNodeType().getName().equals(ni.primary)) {
-                        // if node type mismatches => replace
-                        oldNode = node;
-                        node = null;
-                    }
-                } else {
+                if (!node.getName().equals(ni.name)) {
                     // if names mismatches => replace
                     oldNode = node;
                     node = null;
@@ -880,6 +864,11 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 importInfo.registerToVersion(node.getPath());
             }
             VersioningState vs = new VersioningState(stack, node);
+
+            // set new primary type (but never set rep:root)
+            if (!"rep:root".equals(ni.primary)) {
+                node.setPrimaryType(ni.primary);
+            }
 
             // remove the 'system' properties from the set
             ni.props.remove(JcrConstants.JCR_PRIMARYTYPE);

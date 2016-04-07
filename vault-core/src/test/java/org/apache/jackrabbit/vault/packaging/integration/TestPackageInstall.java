@@ -432,6 +432,32 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertEquals("U", listener.getActions().get("/tmp/binary/test"));
     }
 
+    /**
+     * Installs a package with a different node type
+     */
+    @Test
+    public void testNodeTypeChange() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        assertNotNull(pack);
+        assertNodeExists("/etc/packages/my_packages/tmp.zip");
+
+        ImportOptions opts = getDefaultOptions();
+        pack.install(opts);
+
+        assertNodeExists("/tmp/foo");
+        assertEquals(admin.getNode("/tmp").getPrimaryNodeType().getName(), "sling:OrderedFolder");
+
+        pack = packMgr.upload(getStream("testpackages/tmp_nt_folder.zip"), false);
+        assertNotNull(pack);
+        assertNodeExists("/etc/packages/my_packages/tmp.zip");
+
+        pack.install(opts);
+
+        assertNodeExists("/tmp/foo");
+        assertEquals(admin.getNode("/tmp").getPrimaryNodeType().getName(), "nt:folder");
+    }
+
+
     // todo: upload with version
     // todo: rename
 

@@ -29,14 +29,10 @@ import java.util.List;
 
 import javax.jcr.Binary;
 import javax.jcr.Node;
-import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
-import javax.jcr.query.Query;
-import javax.jcr.query.QueryManager;
-import javax.jcr.query.QueryResult;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;

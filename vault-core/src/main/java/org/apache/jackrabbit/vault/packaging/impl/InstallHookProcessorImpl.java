@@ -199,7 +199,6 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
 
         private void init() throws IOException, PackageException {
             try {
-	            final ClassLoader classLoader;
 	            if (jarFile != null) {
 	                // open jar file and get manifest
 	                JarFile jar = new JarFile(jarFile);
@@ -211,15 +210,29 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
 	                if (mainClassName == null) {
 	                    throw new PackageException("hook manifest file does not have a Main-Class entry: " + name);
 	                }
-	                classLoader = URLClassLoader.newInstance(
-	                    new URL[]{jarFile.toURL()},
-	                    parentClassLoader);
-	                loadMainClass(classLoader);
+	                // create classloader
+	                if (parentClassLoader == null) {
+	                    try {
+	                    	// 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
+	                    	loadMainClass(URLClassLoader.newInstance(
+	        	                    new URL[]{jarFile.toURL()},
+	        	                    this.getClass().getClassLoader()));
+	                    } catch (ClassNotFoundException cnfe) {
+	                    	// 2nd fallback is the thread context classloader
+	                    	loadMainClass(URLClassLoader.newInstance(
+	        	                    new URL[]{jarFile.toURL()},
+	        	                    Thread.currentThread().getContextClassLoader()));
+	                    }
+	                } else {
+	                	loadMainClass(URLClassLoader.newInstance(
+        	                    new URL[]{jarFile.toURL()},
+        	                    parentClassLoader));
+	                }
 	            } else {
 	            	// create classloader
 	                if (parentClassLoader == null) {
 	                    try {
-	                    	// 1st fallback is the current classes classloader (the bundle classloader in the OSGi context
+	                    	// 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
 	                    	loadMainClass(this.getClass().getClassLoader());
 	                    } catch (ClassNotFoundException cnfe) {
 	                    	// 2nd fallback is the thread context classloader

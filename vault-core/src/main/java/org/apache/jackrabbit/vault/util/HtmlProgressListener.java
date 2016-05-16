@@ -23,8 +23,7 @@ import java.io.Writer;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 
 /**
- * <code>HtmlProgrressTrackerListener</code>...
- *
+ * <code>HtmlProgressTrackerListener</code> implements a progress tracker listener that writes the progress in HTML.
  */
 public class HtmlProgressListener implements ProgressTrackerListener {
 
@@ -68,6 +67,9 @@ public class HtmlProgressListener implements ProgressTrackerListener {
 
     private void print(Mode mode, String action, String path, String msg) {
         try {
+            action = Text.encodeIllegalXMLCharacters(action);
+            path = Text.encodeIllegalXMLCharacters(path);
+            msg = msg == null ? null : Text.encodeIllegalXMLCharacters(msg);
             out.write("<span class=\"");
             out.write(action);
             out.write("\">");

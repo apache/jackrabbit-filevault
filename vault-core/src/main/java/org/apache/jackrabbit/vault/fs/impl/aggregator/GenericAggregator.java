@@ -253,7 +253,7 @@ public class GenericAggregator implements Aggregator, Dumpable {
             node.remove();
         }
         if (trySave) {
-            parent.save();
+            parent.getSession().save();
         }
         return info;
     }

@@ -86,7 +86,7 @@ public class JcrExporter extends AbstractExporter {
                 }
             }
         }
-        localParent.save();
+        localParent.getSession().save();
     }
 
     private void scan(Node dir) throws RepositoryException {
@@ -94,7 +94,7 @@ public class JcrExporter extends AbstractExporter {
         while (iter.hasNext()) {
             Node child = iter.nextNode();
             String name = child.getName();
-            if (name.equals(".svn") || name.equals(".vlt")) {
+            if (".svn".equals(name) || ".vlt".equals(name)) {
                 continue;
             }
             if (child.isNodeType(JcrConstants.NT_FOLDER)) {

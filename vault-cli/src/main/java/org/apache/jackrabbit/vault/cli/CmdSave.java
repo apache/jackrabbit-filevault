@@ -45,7 +45,7 @@ public class CmdSave extends AbstractJcrFsCommand {
         if (wo instanceof RepositoryCFile) {
             Node node = (Node) wo.unwrap();
             try {
-                node.save();
+                node.getSession().save();
                 System.out.println("Modifications persisted.");
             } catch (RepositoryException e) {
                 throw new ExecutionException("Error while saving: " + e);

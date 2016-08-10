@@ -221,7 +221,7 @@ public class JcrPackageImpl implements JcrPackage {
                 def.unwrap(pack, true, false);
             }
             if (autoSave) {
-                parent.save();
+                parent.getSession().save();
             }
         } finally {
             IOUtils.closeQuietly(in);
@@ -304,12 +304,12 @@ public class JcrPackageImpl implements JcrPackage {
             Node defNode = content.addNode(NN_VLT_DEFINITION);
             JcrPackageDefinition def = new JcrPackageDefinitionImpl(defNode);
             def.unwrap(pack, true, false);
-            node.save();
+            node.getSession().save();
             ok = true;
         } finally {
             if (!ok) {
                 try {
-                    node.refresh(false);
+                    node.getSession().refresh(false);
                 } catch (RepositoryException e) {
                     // ignore
                 }
@@ -527,7 +527,7 @@ public class JcrPackageImpl implements JcrPackage {
             // register sub packages in snapshot for uninstall
             if (snap != null) {
                 snap.getDefinition().getNode().setProperty(JcrPackageDefinition.PN_SUB_PACKAGES, subIds.toArray(new String[subIds.size()]));
-                snap.getDefinition().getNode().save();
+                s.save();
             }
         }
     }

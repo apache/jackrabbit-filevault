@@ -105,7 +105,7 @@ public class ExampleHook implements InstallHook {
         // update a property in the install
         Node testNode = ctx.getSession().getNode(testNodePath);
         testNode.setProperty("hook-example", Calendar.getInstance());
-        testNode.save();
+        ctx.getSession().save();
     }
 
     private void doInstallFailed(InstallContext ctx) {

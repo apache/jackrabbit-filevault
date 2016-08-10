@@ -483,7 +483,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         contentNode.setProperty(JcrConstants.JCR_DATA, in);
         contentNode.setProperty(JcrConstants.JCR_LASTMODIFIED, now);
         contentNode.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
-        packNode.save();
+        packNode.getSession().save();
         pack.close();
     }
 
@@ -557,7 +557,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         contentNode.setProperty(JcrConstants.JCR_DATA, in);
         contentNode.setProperty(JcrConstants.JCR_LASTMODIFIED, now);
         contentNode.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
-        packNode.save();
+        packNode.getSession().save();
         dst.close();
     }
 
@@ -598,7 +598,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             throw lastError;
         }
         if (autoSave) {
-            parent.save();
+            parent.getSession().save();
         }
         return node;
     }

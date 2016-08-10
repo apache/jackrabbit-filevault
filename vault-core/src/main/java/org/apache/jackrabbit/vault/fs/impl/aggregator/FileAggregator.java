@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.fs.impl.aggregator;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.Value;
 
 import org.apache.jackrabbit.vault.fs.DirectoryArtifact;
@@ -249,10 +250,10 @@ public class FileAggregator implements Aggregator, Dumpable {
             throws RepositoryException {
         ImportInfo info = new ImportInfoImpl();
         info.onDeleted(node.getPath());
-        Node parent = node.getParent();
+        Session s = node.getSession();
         node.remove();
         if (trySave) {
-            parent.save();
+            s.save();
         }
         return info;
     }

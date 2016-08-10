@@ -233,7 +233,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         defNode.setProperty("unwrapped", (Value) null);
         defNode.setProperty(PN_LAST_UNWRAPPED, Calendar.getInstance());
         if (autoSave) {
-            defNode.save();
+            defNode.getSession().save();
         }
     }
 
@@ -292,7 +292,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
                 defNode.setProperty(PN_LAST_UNPACKED_BY, lastUnpackedBy);
             }
             if (autoSave) {
-                defNode.save();
+                defNode.getSession().save();
             }
         } catch (Exception e) {
             log.error("Unable to extract definition: {}", e.toString());
@@ -423,7 +423,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             defNode.setProperty(PN_CND_PATTERN, props.getProperty(VaultPackage.NAME_CND_PATTERN));
             defNode.setProperty(PN_DISABLE_INTERMEDIATE_SAVE, props.getProperty(VaultPackage.NAME_DISABLE_INTERMEDIATE_SAVE));
             if (autoSave) {
-                defNode.save();
+                defNode.getSession().save();
             }
         } catch (RepositoryException e) {
             log.error("error while saving properties.", e);
@@ -546,7 +546,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
                     now == null ? Calendar.getInstance() : now);
             defNode.setProperty(PN_LASTMODIFIED_BY, getUserId());
             if (autoSave) {
-                defNode.save();
+                defNode.getSession().save();
             }
         } catch (RepositoryException e) {
             log.error("Error during touch()", e);
@@ -621,7 +621,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             defNode.setProperty("unwrapped", (Value) null);
             touch(now, false);
             if (autoSave) {
-                defNode.save();
+                defNode.getSession().save();
             }
         } catch (RepositoryException e) {
             log.error("Error during sealForRewrap()", e);
@@ -639,7 +639,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
                     now == null ? Calendar.getInstance() : now);
             defNode.setProperty(PN_LAST_UNPACKED_BY, getUserId());
             if (autoSave) {
-                defNode.save();
+                defNode.getSession().save();
             }
         } catch (RepositoryException e) {
             log.error("Error during touchLastUnpacked()", e);
@@ -659,7 +659,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
                 defNode.getProperty(PN_LAST_UNPACKED_BY).remove();
             }
             if (autoSave) {
-                defNode.save();
+                defNode.getSession().save();
             }
         } catch (RepositoryException e) {
             log.error("Error during clearLastUnpacked()", e);
@@ -822,7 +822,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     }
 
     /**
-     * Returns a export processor that add the inlines definition package to
+     * Returns a export processor that adds the inline definition package to
      * the exporter.
      * @return the export processor for this definition
      */

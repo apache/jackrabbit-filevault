@@ -273,6 +273,11 @@ public class IntegrationTestBase  {
         assertEquals(path + " should contain " + value, value, admin.getProperty(path).getString());
     }
 
+    public void assertPropertyExists(String path) throws RepositoryException {
+        assertTrue(path + " should exist", admin.propertyExists(path));
+    }
+
+
     public void assertProperty(String path, String[] values) throws RepositoryException {
         ArrayList<String> strings = new ArrayList<String>();
         for (Value v: admin.getProperty(path).getValues()) {

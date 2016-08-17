@@ -122,7 +122,7 @@ public class AggregateImpl implements Aggregate {
         log.debug("Create Root Aggregate {}", path);
         this.mgr = mgr;
         this.parent = null;
-        this.path = path.equals("/") ? "" : path;
+        this.path = "/".equals(path) ? "" : path;
         this.aggregator = aggregator;
         this.useBinaryReferences = "true".equals(mgr.getConfig().getProperty(VaultFsConfig.NAME_USE_BINARY_REFERENCES));
     }
@@ -227,7 +227,7 @@ public class AggregateImpl implements Aggregate {
             throws RepositoryException {
         if (pos < pathElems.length) {
             String elem = pathElems[pos];
-            if (elem.equals("..")) {
+            if ("..".equals(elem)) {
                 return parent == null ? null : parent.getAggregate(pathElems, pos + 1);
             }
             // find suitable leaf
@@ -264,7 +264,7 @@ public class AggregateImpl implements Aggregate {
                 na.addAll(artifacts);
                 for (Artifact a: na.values()) {
                     if (a.getType() != ArtifactType.DIRECTORY) {
-                        if (!Text.getName(a.getPlatformPath()).equals(".content.xml")) {
+                        if (!".content.xml".equals(Text.getName(a.getPlatformPath()))) {
                             artifacts.remove(a);
                         }
                     }
@@ -516,7 +516,7 @@ public class AggregateImpl implements Aggregate {
         addNamespace(prefixes, propName);
         switch (prop.getType()) {
             case PropertyType.NAME:
-                if (propName.equals("jcr:mixinTypes") || prop.getDefinition().isMultiple()) {
+                if ("jcr:mixinTypes".equals(propName) || prop.getDefinition().isMultiple()) {
                     Value[] values = prop.getValues();
                     for (Value value: values) {
                         addNamespace(prefixes, value.getString());
@@ -570,6 +570,15 @@ public class AggregateImpl implements Aggregate {
                 }
             }
         }
+    }
+
+    private boolean includesProperty(String propertyPath) {
+        for (PathFilterSet filterSet: mgr.getWorkspaceFilter().getPropertyFilterSets()) {
+            if (!filterSet.contains(propertyPath)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void addNamespace(Set<String> prefixes, String name) throws RepositoryException {
@@ -676,7 +685,7 @@ public class AggregateImpl implements Aggregate {
         while (pIter.hasNext()) {
             Property p = pIter.nextProperty();
             String path = p.getPath();
-            if (aggregator.includes(getNode(), node, p, path)) {
+            if (aggregator.includes(getNode(), node, p, path) && includesProperty(path)) {
                 include(node, p, path);
             }
         }

@@ -220,7 +220,7 @@ public class RepositoryCopier {
             try {
                 Credentials dstCreds = dst.getCredentials();
                 if (dstCreds == null && credentialsProvider != null) {
-                    dstCreds = credentialsProvider.getCredentials(src);
+                    dstCreds = credentialsProvider.getCredentials(dst);
                 }
                 dstSession = dstRepo.login(dstCreds, dst.getWorkspace());
             } catch (RepositoryException e) {

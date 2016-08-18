@@ -89,7 +89,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                     String name = names.nextElement().toString();
                     if (name.startsWith(VaultPackage.PREFIX_INSTALL_HOOK)) {
                         String[] segs = Text.explode(name.substring(VaultPackage.PREFIX_INSTALL_HOOK.length()), '.');
-                        if (segs.length == 0 || segs.length > 2 || !segs[1].equals("class")) {
+                        if (segs.length == 0 || segs.length > 2 || !"class".equals(segs[1])) {
                             throw new PackageException("Invalid installhook property: " + name);
                         }
                         Hook hook = new Hook(segs[0], props.getProperty(name), classLoader);
@@ -215,17 +215,17 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
 	                    try {
 	                    	// 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
 	                    	loadMainClass(URLClassLoader.newInstance(
-	        	                    new URL[]{jarFile.toURL()},
+	        	                    new URL[]{jarFile.toURI().toURL()},
 	        	                    this.getClass().getClassLoader()));
 	                    } catch (ClassNotFoundException cnfe) {
 	                    	// 2nd fallback is the thread context classloader
 	                    	loadMainClass(URLClassLoader.newInstance(
-	        	                    new URL[]{jarFile.toURL()},
+	        	                    new URL[]{jarFile.toURI().toURL()},
 	        	                    Thread.currentThread().getContextClassLoader()));
 	                    }
 	                } else {
 	                	loadMainClass(URLClassLoader.newInstance(
-        	                    new URL[]{jarFile.toURL()},
+        	                    new URL[]{jarFile.toURI().toURL()},
         	                    parentClassLoader));
 	                }
 	            } else {

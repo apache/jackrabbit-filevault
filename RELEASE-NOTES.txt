@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.26
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.28
 
 Introduction
 ------------
@@ -8,6 +8,23 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
+
+
+Changes in Jackrabbit FileVault 3.1.28
+--------------------------------------
+Bug Fixes:
+* [JCRVLT-89] - JcrPackageImpl.uninstall() throws exception if snapshot is missing
+* [JCRVLT-108] - Import of binaries fail because they cannot be converted to strings
+* [JCRVLT-114] - Subpackage extraction that contains vlt:definitiion might already have installed state
+* [JCRVLT-117] - Potential XSS problem in org.apache.jackrabbit.vault.util.HtmlProgressListener
+* [JCRVLT-121] - Credential challenge incorrect for dst server in rcp
+
+Improvements:
+* [JCRVLT-105] - Use Node.setPrimaryType() when changing primary type.
+* [JCRVLT-113] - Skip installation of sub packages if newer version is already present and installed
+* [JCRVLT-116] - InstallHookProcessor.Hook should not only use TCCL as fallback
+* [JCRVLT-120] - Allow to filter content properties based on property name and value
+* [JCRVLT-122] - Avoid deprecated Item.save()
 
 Changes in Jackrabbit FileVault 3.1.26
 --------------------------------------

@@ -307,6 +307,57 @@ public class TestACLAndMerge extends IntegrationTestBase {
     }
 
     /**
+     * Installs a second package with removed mix:accesscontrolable and different nodetype but with ac merge_preserve.
+     */
+    @Test
+    public void testACMergePreserveNodeType() throws RepositoryException, IOException, PackageException {
+        assertNodeMissing("/testroot");
+
+        JcrPackage pack = packMgr.upload(getStream("testpackages/mode_ac_test_a.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        // test if nodes and ACLs of first package exist
+        assertNodeExists("/testroot/node_a");
+        assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
+        assertProperty("/testroot/secured/jcr:primaryType", "nt:folder");
+
+        pack = packMgr.upload(getStream("testpackages/mode_ac_test_unsecured_nodetype.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        // test if permissions remain and pt changed
+        assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
+        assertProperty("/testroot/secured/jcr:primaryType", "sling:Folder");
+    }
+
+    /**
+     * Installs a second package with removed mix:accesscontrolable and different uuid but with ac merge_preserve.
+     */
+    @Test
+    @Ignore("JCRVLT-127")
+    public void testACMergePreserveUUID() throws RepositoryException, IOException, PackageException {
+        assertNodeMissing("/testroot");
+
+        JcrPackage pack = packMgr.upload(getStream("testpackages/mode_ac_test_a_uuid.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        // test if nodes and ACLs of first package exist
+        assertNodeExists("/testroot/node_a");
+        assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
+        assertProperty("/testroot/secured/jcr:uuid", "88292ab3-40da-44aa-aba2-0be0019cddc1");
+
+        pack = packMgr.upload(getStream("testpackages/mode_ac_test_unsecured_uuid.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+
+        // test if permissions remain and uuid changed
+        assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
+        assertProperty("/testroot/secured/jcr:uuid", "98292ab3-40da-44aa-aba2-0be0019cddc2");
+    }
+
+    /**
      * Installs a package with 3 ACLs and checks if the order of the entries is still correct.
      */
     @Test

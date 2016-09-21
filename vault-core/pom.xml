@@ -210,6 +210,12 @@
             <version>${oak.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>oak-segment</artifactId>
+            <version>${oak.version}</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 

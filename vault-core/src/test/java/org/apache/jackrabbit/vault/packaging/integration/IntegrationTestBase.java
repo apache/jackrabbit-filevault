@@ -55,6 +55,7 @@ import org.apache.jackrabbit.oak.jcr.Jcr;
 import org.apache.jackrabbit.oak.plugins.blob.datastore.DataStoreBlobStore;
 import org.apache.jackrabbit.oak.plugins.segment.SegmentNodeStore;
 import org.apache.jackrabbit.oak.plugins.segment.file.FileStore;
+import org.apache.jackrabbit.oak.plugins.segment.file.InvalidFileStoreVersionException;
 import org.apache.jackrabbit.oak.security.SecurityProviderImpl;
 import org.apache.jackrabbit.oak.security.user.RandomAuthorizableNodeName;
 import org.apache.jackrabbit.oak.spi.blob.BlobStore;
@@ -114,7 +115,7 @@ public class IntegrationTestBase  {
     protected JcrPackageManager packMgr;
 
     @BeforeClass
-    public static void initRepository() throws RepositoryException, IOException {
+    public static void initRepository() throws RepositoryException, IOException, InvalidFileStoreVersionException {
         if (isOak()) {
             Properties userProps = new Properties();
             AuthorizableNodeName nameGenerator = new RandomAuthorizableNodeName();
@@ -135,10 +136,10 @@ public class IntegrationTestBase  {
             if (useFileStore()) {
                 BlobStore blobStore = createBlobStore();
                 DIR_DATA_STORE.mkdirs();
-                fileStore = FileStore.newFileStore(DIR_DATA_STORE)
+                fileStore = FileStore.builder(DIR_DATA_STORE)
                         .withBlobStore(blobStore)
-                        .create();
-                SegmentNodeStore nodeStore = SegmentNodeStore.newSegmentNodeStore(fileStore).create();
+                        .build();
+                SegmentNodeStore nodeStore = SegmentNodeStore.builder(fileStore).build();
                 jcr = new Jcr(nodeStore);
             } else {
                 jcr = new Jcr();

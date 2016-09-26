@@ -867,7 +867,11 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
             // set new primary type (but never set rep:root)
             if (!"rep:root".equals(ni.primary)) {
-                node.setPrimaryType(ni.primary);
+                if (!node.getPrimaryNodeType().getName().equals(ni.primary)) {
+                    vs.ensureCheckedOut();
+                    node.setPrimaryType(ni.primary);
+                    modified = true;
+                }
             }
 
             // remove the 'system' properties from the set

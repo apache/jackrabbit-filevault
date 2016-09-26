@@ -33,14 +33,16 @@ public class JcrACLManagement implements ACLManagement {
      * {@inheritDoc}
      */
     public boolean isACLNodeType(String name) {
-        return name.equals("rep:ACL");
+        return name.equals("rep:ACL") || name.equals("rep:CugPolicy");
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isAccessControllableMixin(String name) {
-        return name.equals("rep:AccessControllable") || name.equals("rep:RepoAccessControllable");
+        return name.equals("rep:AccessControllable")
+                || name.equals("rep:RepoAccessControllable")
+                || name.equals("rep:CugMixin");
     }
 
     /**
@@ -53,15 +55,22 @@ public class JcrACLManagement implements ACLManagement {
     /**
      * {@inheritDoc}
      */
-    public boolean ensureAccessControllable(Node node) throws RepositoryException {
+    public boolean ensureAccessControllable(Node node, String policyPrimaryType) throws RepositoryException {
         boolean modified = false;
-        if (!node.isNodeType("rep:AccessControllable")) {
-            node.addMixin("rep:AccessControllable");
-            modified = true;
-        }
-        if (isRootNode(node) && !node.isNodeType("rep:RepoAccessControllable")) {
-            node.addMixin("rep:RepoAccessControllable");
-            modified = true;
+        if ("rep:ACL".equals(policyPrimaryType)) {
+            if (!node.isNodeType("rep:AccessControllable")) {
+                node.addMixin("rep:AccessControllable");
+                modified = true;
+            }
+            if (isRootNode(node) && !node.isNodeType("rep:RepoAccessControllable")) {
+                node.addMixin("rep:RepoAccessControllable");
+                modified = true;
+            }
+        } else if ("rep:CugPolicy".equals(policyPrimaryType)) {
+            if (!node.isNodeType("rep:CugMixin")) {
+                node.addMixin("rep:CugMixin");
+                modified = true;
+            }
         }
         return modified;
     }

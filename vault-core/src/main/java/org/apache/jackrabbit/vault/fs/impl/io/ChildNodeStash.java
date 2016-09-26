@@ -127,7 +127,11 @@ public class ChildNodeStash {
                 Node child = iter.nextNode();
                 String newPath = parent.getPath() + "/" + child.getName();
                 try {
-                    session.move(child.getPath(), newPath);
+                    if (session.nodeExists(newPath)) {
+                        log.debug("Skipping restore from temporary location {} as node already exists at {}", child.getPath(), newPath);
+                    } else {
+                        session.move(child.getPath(), newPath);
+                    }
                 } catch (RepositoryException e) {
                     log.warn("Unable to move child back to new location at {} due to: {}. Node will remain in temporary location: {}",
                             new Object[]{newPath, e.getMessage(), child.getPath()});

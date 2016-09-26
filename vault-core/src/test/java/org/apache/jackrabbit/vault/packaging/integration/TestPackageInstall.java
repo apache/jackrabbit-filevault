@@ -457,6 +457,63 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertEquals(admin.getNode("/tmp").getPrimaryNodeType().getName(), "nt:folder");
     }
 
+    /**
+     * Installs a package with versioned nodes
+     */
+    @Test
+    public void testVersionInstall() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_version.zip"), false);
+        assertNotNull(pack);
+
+        ImportOptions opts = getDefaultOptions();
+        pack.install(opts);
+
+        assertProperty("/testroot/a/test", "123");
+        assertProperty("/testroot/a/jcr:isCheckedOut", "false");
+
+        // modify
+        admin.getWorkspace().getVersionManager().checkout("/testroot/a");
+        admin.getProperty("/testroot/a/test").setValue("test");
+        admin.save();
+        admin.getWorkspace().getVersionManager().checkin("/testroot/a");
+
+        // install a 2nd time
+        opts = getDefaultOptions();
+        pack.install(opts);
+
+        assertProperty("/testroot/a/test", "123");
+        assertProperty("/testroot/a/jcr:isCheckedOut", "false");
+
+    }
+
+
+    /**
+     * Installs a package with versions retains checked out state
+     */
+    @Test
+    public void testVersionInstallCheckedOut() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_version.zip"), false);
+        assertNotNull(pack);
+
+        ImportOptions opts = getDefaultOptions();
+        pack.install(opts);
+
+        assertProperty("/testroot/a/test", "123");
+        assertProperty("/testroot/a/jcr:isCheckedOut", "false");
+
+        // modify
+        admin.getWorkspace().getVersionManager().checkout("/testroot/a");
+        admin.getProperty("/testroot/a/test").setValue("test");
+        admin.save();
+
+        // install a 2nd time
+        opts = getDefaultOptions();
+        pack.install(opts);
+
+        assertProperty("/testroot/a/test", "123");
+        assertProperty("/testroot/a/jcr:isCheckedOut", "false");
+    }
+
 
     // todo: upload with version
     // todo: rename

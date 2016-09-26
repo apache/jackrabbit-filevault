@@ -1133,7 +1133,14 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                         } else {
                             if (wspFilter.getImportMode(path) == ImportMode.REPLACE) {
                                 importInfo.onDeleted(path);
-                                child.remove();
+                                // check if child is not protected
+                                if (child.getDefinition().isProtected()) {
+                                    log.info("Refuse to delete protected child node: {}", path);
+                                } else if (child.getDefinition().isMandatory()) {
+                                    log.info("Refuse to delete mandatory child node: {}", path);
+                                } else {
+                                    child.remove();
+                                }
                             }
                         }
                     } else if (aclHandling == AccessControlHandling.CLEAR

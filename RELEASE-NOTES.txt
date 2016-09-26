@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.28
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.30
 
 Introduction
 ------------
@@ -9,6 +9,16 @@ create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
 
+Changes in Jackrabbit FileVault 3.1.30
+--------------------------------------
+Bug Fixes:
+* [JCRVLT-106] Importing an user and children with UPDATE mode causes unnecessary warnings
+* [JCRVLT-126] Content packages update content outside of their filters if ancestor node have binary property
+* [JCRVLT-130] Installing package with versions fails if the node is checked in
+
+Improvements:
+* [JCRVLT-111] Add support for o.a.j.api.security.authorization.PrincipalSetPolicy
+* [JCRVLT-129] Update commons-httpclient to 3.1
 
 Changes in Jackrabbit FileVault 3.1.28
 --------------------------------------

@@ -832,7 +832,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
         // check if new node needs to be checked in
         DocViewProperty coProp = ni.props.remove(JcrConstants.JCR_ISCHECKEDOUT);
-        boolean isCheckedIn = coProp != null && coProp.values[0].equals("false");
+        boolean isCheckedIn = coProp != null && "false".equals(coProp.values[0]);
 
         // create or update node
         boolean isNew = false;
@@ -959,6 +959,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             } else {
                 importInfo.onNop(node.getPath());
             }
+        } else {
+            // remove registered binaries outside of the filter (JCR-126)
+            binaries.remove(node.getPath());
         }
         return new StackElement(node, isNew);
     }

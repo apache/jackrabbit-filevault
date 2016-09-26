@@ -433,6 +433,37 @@ public class TestPackageInstall extends IntegrationTestBase {
     }
 
     /**
+     * Test is binaries outside the filter are not imported (JCRVLT-126)
+     */
+    @Test
+    public void testBinaryPropertiesOutsideFilter() throws RepositoryException, IOException, PackageException {
+        // first install the package once to create the intermediate nodes
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_filter_binary.zip"), false);
+        assertNotNull(pack);
+        pack.install(getDefaultOptions());
+        assertProperty("/tmp/test", "123");
+
+        // delete the binary properties
+        if (admin.itemExists("/root-binary-property")) {
+            admin.removeItem("/root-binary-property");
+        }
+
+        admin.removeItem("/tmp/tmp-binary-property");
+        admin.removeItem("/tmp/test");
+        admin.removeItem("/tmp/test-project");
+        admin.save();
+
+        assertPropertyMissing("/root-binary-property");
+        assertPropertyMissing("/tmp/tmp-binary-property");
+
+        // now install again and check if the properties are still missing
+        pack.install(getDefaultOptions());
+        assertPropertyMissing("/tmp/test");
+        assertPropertyMissing("/root-binary-property");
+        assertPropertyMissing("/tmp/tmp-binary-property");
+    }
+
+    /**
      * Installs a package with a different node type
      */
     @Test

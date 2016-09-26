@@ -39,6 +39,7 @@ import javax.jcr.security.Privilege;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
+import org.apache.jackrabbit.api.security.authorization.PrincipalSetPolicy;
 import org.apache.jackrabbit.api.security.principal.PrincipalManager;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.util.DocViewNode;
@@ -67,16 +68,15 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
     private final String accessControlledPath;
 
-    private Map<String, List<ACE>> aceMap = new LinkedHashMap<String, List<ACE>>();
+    private ImportedPolicy importPolicy;
 
-    private ACE currentACE;
-
-    private static enum State {
+    private enum State {
         INITIAL,
         ACL,
         ACE,
         RESTRICTION,
         ERROR,
+        PRINCIPAL_SET_POLICY
     }
 
     private final Stack<State> states = new Stack<State>();
@@ -104,35 +104,28 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         this.states.push(State.INITIAL);
     }
 
-
     public void startNode(DocViewNode node) throws SAXException {
         State state = states.peek();
         switch (state) {
             case INITIAL:
                 if ("rep:ACL".equals(node.primary)) {
+                    importPolicy = new ImportedAcList();
                     state = State.ACL;
+                } else if ("rep:CugPolicy".equals(node.primary)) {
+                    importPolicy = new ImportedPrincipalSet(node);
+                    state = State.PRINCIPAL_SET_POLICY;
                 } else {
-                    log.error("Error while reading access control content: Expected rep:ACL but was: {}", node.primary);
+                    log.error("Error while reading access control content: Expected rep:ACL or rep:CugPolicy but was: {}", node.primary);
                     state = State.ERROR;
                 }
                 break;
-
             case ACL:
-                try {
-                    currentACE = addACE(aceMap, new ACE(node));
-                    state = State.ACE;
-                } catch (IllegalArgumentException e) {
-                    log.error("Error while reading access control content: {}", e);
-                    state = State.ERROR;
-                }
-                break;
             case ACE:
-                currentACE.addRestrictions(node);
-                state = State.RESTRICTION;
-                break;
             case RESTRICTION:
-                log.error("Error while reading access control content: Unexpected node: {} for state {}", node.primary, state);
-                state = State.ERROR;
+                state = importPolicy.append(state, node);
+                break;
+            case PRINCIPAL_SET_POLICY:
+                state = importPolicy.append(state, node);
                 break;
             case ERROR:
                 // stay in error
@@ -153,9 +146,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
     public void endNode() throws SAXException {
         State state = states.pop();
-        if (state == State.ACE) {
-            currentACE = null;
-        }
+        importPolicy.endNode(state);
     }
 
     public List<String> close() throws SAXException {
@@ -164,16 +155,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         }
         List<String> paths = new ArrayList<String>();
         try {
-            apply();
-
-            // currently cheat a little here
-            if (accessControlledPath == null) {
-                addPathIfExists(paths, "/rep:repoPolicy");
-            } else if ("/".equals(accessControlledPath)) {
-                addPathIfExists(paths, "/rep:policy");
-            } else {
-                addPathIfExists(paths, accessControlledPath + "/rep:policy");
-            }
+            importPolicy.apply(paths);
         } catch (RepositoryException e) {
             log.error("Error while applying access control content.", e);
         }
@@ -186,41 +168,106 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         }
     }
 
-    private void apply() throws RepositoryException {
-        final ValueFactory valueFactory = session.getValueFactory();
+    private abstract class ImportedPolicy<T extends AccessControlPolicy> {
 
-        // find principals of existing ACL
-        JackrabbitAccessControlList acl = null;
-        Set<String> existingPrincipals = new HashSet<String>();
-        for (AccessControlPolicy p: acMgr.getPolicies(accessControlledPath)) {
-            if (p instanceof JackrabbitAccessControlList) {
-                acl = (JackrabbitAccessControlList) p;
-                for (AccessControlEntry ace: acl.getAccessControlEntries()) {
-                    existingPrincipals.add(ace.getPrincipal().getName());
+        abstract State append(State state, DocViewNode childNode);
+
+        abstract void endNode(State state);
+
+        abstract void apply(List<String> paths) throws RepositoryException;
+
+        Principal getPrincipal(final String principalName) {
+            Principal principal = pMgr.getPrincipal(principalName);
+            if (principal == null) {
+                principal = new Principal() {
+                    public String getName() {
+                        return principalName;
+                    }
+                };
+            }
+            return principal;
+        }
+
+        T getPolicy(Class<T> clz) throws RepositoryException {
+            for (AccessControlPolicy p : acMgr.getPolicies(accessControlledPath)) {
+                if (clz.isAssignableFrom(p.getClass())) {
+                    return (T) p;
                 }
             }
+            return null;
         }
 
-        // remove existing policy for 'overwrite'
-        if (aclHandling == AccessControlHandling.OVERWRITE && acl != null) {
-            acMgr.removePolicy(accessControlledPath, acl);
-            acl = null;
-        }
-
-        if (acl == null) {
+        T getApplicablePolicy(Class<T> clz) throws RepositoryException {
             AccessControlPolicyIterator iter = acMgr.getApplicablePolicies(accessControlledPath);
             while (iter.hasNext()) {
                 AccessControlPolicy p = iter.nextAccessControlPolicy();
-                if (p instanceof JackrabbitAccessControlList) {
-                    acl = (JackrabbitAccessControlList) p;
-                    break;
+                if (clz.isAssignableFrom(p.getClass())) {
+                    return (T) p;
                 }
             }
+
+            // no applicable policy
+            throw new RepositoryException("no applicable AccessControlPolicy of type "+ clz + " on " +
+                                    (accessControlledPath == null ? "'root'" : accessControlledPath));
         }
-        if (acl == null) {
-            throw new RepositoryException("not JackrabbitAccessControlList applicable on " +
-                    (accessControlledPath == null ? "'root'" : accessControlledPath));
+    }
+
+    private final class ImportedAcList extends ImportedPolicy<JackrabbitAccessControlList> {
+
+        private Map<String, List<ACE>> aceMap = new LinkedHashMap<String, List<ACE>>();
+        private ACE currentACE;
+
+        private ImportedAcList() {
         }
+
+        @Override
+        State append(State state, DocViewNode childNode) {
+            if (state == State.ACL) {
+                try {
+                    currentACE = addACE(aceMap, new ACE(childNode));
+                    return State.ACE;
+                } catch (IllegalArgumentException e) {
+                    log.error("Error while reading access control content: {}", e);
+                    return State.ERROR;
+                }
+            } else if (state == State.ACE) {
+                currentACE.addRestrictions(childNode);
+                return State.RESTRICTION;
+            } else {
+                log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.primary, state);
+                return State.ERROR;
+            }
+        }
+
+        @Override
+        void endNode(State state) {
+            if (state == State.ACE) {
+                currentACE = null;
+            }
+        }
+
+        @Override
+        void apply(List<String> paths) throws RepositoryException {
+            final ValueFactory valueFactory = session.getValueFactory();
+
+            // find principals of existing ACL
+            JackrabbitAccessControlList acl = getPolicy(JackrabbitAccessControlList.class);
+            Set<String> existingPrincipals = new HashSet<String>();
+            if (acl != null) {
+                for (AccessControlEntry ace: acl.getAccessControlEntries()) {
+                    existingPrincipals.add(ace.getPrincipal().getName());
+                }
+
+                // remove existing policy for 'overwrite'
+                if (aclHandling == AccessControlHandling.OVERWRITE) {
+                    acMgr.removePolicy(accessControlledPath, acl);
+                    acl = null;
+                }
+            }
+
+            if (acl == null) {
+                acl = getApplicablePolicy(JackrabbitAccessControlList.class);
+            }
 
         // clear all ACEs of the package principals for merge (VLT-94), otherwise the `acl.addEntry()` below
         // might just combine the privileges.
@@ -234,48 +281,102 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             }
         }
 
-        // apply ACEs of package
-        for (Map.Entry<String, List<ACE>> entry: aceMap.entrySet()) {
-            final String principalName = entry.getKey();
-            if (aclHandling == AccessControlHandling.MERGE_PRESERVE && existingPrincipals.contains(principalName)) {
-                // skip principal if it already has an ACL
-                continue;
-            }
-            Principal principal = pMgr.getPrincipal(principalName);
-            if (principal == null) {
-                principal = new Principal(){
-                    public String getName() {
-                        return principalName;
-                    }
-                };
-            }
+            // apply ACEs of package
+            for (Map.Entry<String, List<ACE>> entry: aceMap.entrySet()) {
+                final String principalName = entry.getKey();
+                if (aclHandling == AccessControlHandling.MERGE_PRESERVE && existingPrincipals.contains(principalName)) {
+                    // skip principal if it already has an ACL
+                    continue;
+                }
+                Principal principal = getPrincipal(principalName);
 
-            for (ACE ace: entry.getValue()) {
-                Privilege[] privileges = new Privilege[ace.privileges.length];
-                for (int i = 0; i < privileges.length; i++) {
-                    privileges[i] = acMgr.privilegeFromName(ace.privileges[i]);
-                }
-                Map<String, Value> svRestrictions = new HashMap<String, Value>();
-                Map<String, Value[]> mvRestrictions = new HashMap<String, Value[]>();
-                for (String restName : acl.getRestrictionNames()) {
-                    DocViewProperty restriction = ace.restrictions.get(restName);
-                    if (restriction != null) {
-                        Value[] values = new Value[restriction.values.length];
-                        int type = acl.getRestrictionType(restName);
-                        for (int i=0; i<values.length; i++) {
-                            values[i] = valueFactory.createValue(restriction.values[i], type);
-                        }
-                        if (restriction.isMulti) {
-                            mvRestrictions.put(restName, values);
-                        } else {
-                            svRestrictions.put(restName, values[0]);
+                for (ACE ace: entry.getValue()) {
+                    Privilege[] privileges = new Privilege[ace.privileges.length];
+                    for (int i = 0; i < privileges.length; i++) {
+                        privileges[i] = acMgr.privilegeFromName(ace.privileges[i]);
+                    }
+                    Map<String, Value> svRestrictions = new HashMap<String, Value>();
+                    Map<String, Value[]> mvRestrictions = new HashMap<String, Value[]>();
+                    for (String restName : acl.getRestrictionNames()) {
+                        DocViewProperty restriction = ace.restrictions.get(restName);
+                        if (restriction != null) {
+                            Value[] values = new Value[restriction.values.length];
+                            int type = acl.getRestrictionType(restName);
+                            for (int i=0; i<values.length; i++) {
+                                values[i] = valueFactory.createValue(restriction.values[i], type);
+                            }
+                            if (restriction.isMulti) {
+                                mvRestrictions.put(restName, values);
+                            } else {
+                                svRestrictions.put(restName, values[0]);
+                            }
                         }
                     }
+                    acl.addEntry(principal, privileges, ace.allow, svRestrictions, mvRestrictions);
                 }
-                acl.addEntry(principal, privileges, ace.allow, svRestrictions, mvRestrictions);
+            }
+            acMgr.setPolicy(accessControlledPath, acl);
+
+            if (accessControlledPath == null) {
+                addPathIfExists(paths, "/rep:repoPolicy");
+            } else if ("/".equals(accessControlledPath)) {
+                addPathIfExists(paths, "/rep:policy");
+            } else {
+                addPathIfExists(paths, accessControlledPath + "/rep:policy");
             }
         }
-        acMgr.setPolicy(accessControlledPath, acl);
+    }
+
+    private final class ImportedPrincipalSet extends ImportedPolicy<PrincipalSetPolicy> {
+
+        private final String[] principalNames;
+
+        private ImportedPrincipalSet(DocViewNode node) {
+            // don't change the status as a cug policy may not have child nodes.
+            // just collect the rep:principalNames property
+            // any subsequent state would indicate an error
+            principalNames = node.getValues("rep:principalNames");
+        }
+
+        @Override
+        State append(State state, DocViewNode childNode) {
+            log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.primary, state);
+            return State.ERROR;
+        }
+
+        @Override
+        void endNode(State state) {
+            // nothing to do
+        }
+
+        @Override
+        void apply(List<String> paths) throws RepositoryException {
+            PrincipalSetPolicy psPolicy = getPolicy(PrincipalSetPolicy.class);
+            if (psPolicy != null) {
+                Set<Principal> existingPrincipals = psPolicy.getPrincipals();
+                // remove existing policy for 'overwrite'
+                if (aclHandling == AccessControlHandling.OVERWRITE) {
+                    psPolicy.removePrincipals(existingPrincipals.toArray(new Principal[existingPrincipals.size()]));
+                }
+            } else {
+                psPolicy = getApplicablePolicy(PrincipalSetPolicy.class);
+            }
+
+            // TODO: correct behavior for MERGE and MERGE_PRESERVE?
+            Principal[] principals = new Principal[principalNames.length];
+            for (int i = 0; i < principals.length; i++) {
+                principals[i] = getPrincipal(principalNames[i]);
+            }
+
+            psPolicy.addPrincipals(principals);
+            acMgr.setPolicy(accessControlledPath, psPolicy);
+
+            if ("/".equals(accessControlledPath)) {
+                addPathIfExists(paths, "/rep:cugPolicy");
+            } else {
+                addPathIfExists(paths, accessControlledPath + "/rep:cugPolicy");
+            }
+        }
     }
 
     private static class ACE {

@@ -54,10 +54,11 @@ public interface ACLManagement {
      * mixin and adds it if missing.
      *
      * @param node the node to check
+     * @param policyPrimaryType Primary node type of policy
      * @return <code>true</code> if was made access controllable
      * @throws RepositoryException if an error occurs
      */
-    boolean ensureAccessControllable(Node node) throws RepositoryException;
+    boolean ensureAccessControllable(Node node, String policyPrimaryType) throws RepositoryException;
 
     /**
      * Removes all ACLs from the given node.

@@ -613,9 +613,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                         DocViewNode ni = new DocViewNode(name, label, attributes, npResolver);
                         if (aclManagement.isACLNodeType(ni.primary)) {
                             if (aclHandling != AccessControlHandling.CLEAR && aclHandling != AccessControlHandling.IGNORE) {
-                                log.debug("ACL element detected. starting special transformation {}/{}", node.getPath(), name);
-                                if (aclManagement.ensureAccessControllable(node)) {
-                                    log.info("Adding ACL element to non ACL parent - adding mixin: {}", node.getPath());
+                                log.debug("Access control policy element detected. starting special transformation {}/{}", node.getPath(), name);
+                                if (aclManagement.ensureAccessControllable(node, ni.primary)) {
+                                    log.info("Adding access control policy element to non access-controllable parent - adding mixin: {}", node.getPath());
                                 }
                                 stack = stack.push();
                                 if ("rep:repoPolicy".equals(name)) {

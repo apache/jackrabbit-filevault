@@ -27,10 +27,12 @@ import java.util.Set;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.jcr.SimpleCredentials;
 import javax.jcr.nodetype.NodeType;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
+import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
@@ -45,6 +47,8 @@ import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Text;
+import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -60,6 +64,8 @@ public class TestUserContentPackage extends IntegrationTestBase {
 
     private static final String PARENT_PATH_TEST_USER_A = "/home/users/test";
     private static final String ID_TEST_USER_A = "test-user-a";
+    private static final String ID_TEST_PASSWORD = "nonce";
+    private static final String ID_TEST_GROUP_A = "test-group-a";
     private static final String NAME_USER_PROPERTY = "userProperty";
     private static final String NAME_PROFILE_FULLNAME = "profile/fullname";
     private static final String NAME_PROFILE_PROPERTY = "profile/profileProperty";
@@ -88,6 +94,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
     @Override
     public void tearDown() throws Exception {
         // remove test authorizables
+        admin.refresh(false);
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
         for (String id: getAllAuthorizableIds()) {
             if (preTestAuhorizables.remove(id)) {
@@ -296,7 +303,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
     @Test
     public void install_mv_property() throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
-        User u = mgr.createUser(ID_TEST_USER_A, "nonce");
+        User u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD);
         Node node = admin.getNode(u.getPath());
 
         node.setProperty("mv", new String[]{"mv1", "mv2"});
@@ -328,7 +335,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
     @Test
     public void install_single_mv_property() throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
-        User u = mgr.createUser(ID_TEST_USER_A, "nonce");
+        User u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD);
         Node node = admin.getNode(u.getPath());
 
         node.setProperty("mv", new String[]{"mv1"});
@@ -354,6 +361,42 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertTrue(property.isMultiple());
     }
 
+    @Test
+    @Ignore("JCRVLT-128")
+    public void install_moved_user_with_rep_cache() throws RepositoryException, IOException, PackageException {
+        Assume.assumeTrue(isOak());
+
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        User u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD);
+        String newPath = u.getPath() + "_moved";
+        admin.move(u.getPath(), newPath);
+        admin.save();
+
+        Group g = mgr.createGroup(ID_TEST_GROUP_A);
+        g.addMember(u);
+        admin.save();
+
+        // login to the repository to generate some rep:cache nodes
+        repository.login(new SimpleCredentials(ID_TEST_USER_A, ID_TEST_PASSWORD.toCharArray())).logout();
+        admin.refresh(false);
+
+        // ensure that there is a rep:cache node
+        assertNodeExists(newPath + "/rep:cache");
+
+        // install user pacakge
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a.zip"), false);
+        assertNotNull(pack);
+        ImportOptions opts = getDefaultOptions();
+        opts.setImportMode(ImportMode.UPDATE);
+        pack.install(opts);
+
+        // check if user exists
+        User userA = (User) mgr.getAuthorizable(ID_TEST_USER_A);
+        assertNotNull("test-user-a must exist", userA);
+
+        // check path
+        assertEquals("authorizable path must be correct", newPath, userA.getPath());
+    }
 
     private User installUserA(ImportMode mode, boolean usePkgPath, boolean expectPkgPath) throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
@@ -361,9 +404,9 @@ public class TestUserContentPackage extends IntegrationTestBase {
 
         User u;
         if (usePkgPath) {
-            u = mgr.createUser(ID_TEST_USER_A, "nonce", new PrincipalImpl(ID_TEST_USER_A), PARENT_PATH_TEST_USER_A);
+            u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD, new PrincipalImpl(ID_TEST_USER_A), PARENT_PATH_TEST_USER_A);
         } else {
-            u = mgr.createUser(ID_TEST_USER_A, "nonce");
+            u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD);
         }
         final String authPath = u.getPath();
         if (usePkgPath) {

@@ -126,6 +126,7 @@ public class IntegrationTestBase  {
             userProps.put(AccessControlAction.GROUP_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_READ});
             userProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
             userProps.put(UserConstants.PARAM_AUTHORIZABLE_NODE_NAME, nameGenerator);
+            userProps.put("cacheExpiration", 3600*1000);
             Properties authzProps = new Properties();
             authzProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
             Properties securityProps = new Properties();

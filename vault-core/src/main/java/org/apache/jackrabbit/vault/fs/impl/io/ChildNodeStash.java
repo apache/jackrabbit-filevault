@@ -16,6 +16,9 @@
  */
 package org.apache.jackrabbit.vault.fs.impl.io;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -38,6 +41,8 @@ public class ChildNodeStash {
     private final Session session;
 
     private Node tmpNode;
+
+    private final Set<String> excludedNodeName = new HashSet<String>();
 
     /**
      * List of potential roots where the transient temporary node will be created.
@@ -75,6 +80,17 @@ public class ChildNodeStash {
     }
 
     /**
+     * Adds the given name to the set of excluded child node names. the nodes that are excluded are not saved
+     * in the stash.
+     * @param name The name of the node to exclude
+     * @return "this" suitable for chaining.
+     */
+    public ChildNodeStash excludeName(String name) {
+        excludedNodeName.add(name);
+        return this;
+    }
+
+    /**
      * Moves the nodes below the given parent path to a temporary location.
      * @param parentPath the path of the parent node.
      * @throws RepositoryException if an error occurrs
@@ -92,9 +108,14 @@ public class ChildNodeStash {
             NodeIterator iter = parent.getNodes();
             while (iter.hasNext()) {
                 Node child = iter.nextNode();
+                String name = child.getName();
+                if (excludedNodeName.contains(name)) {
+                    log.info("skipping excluded child node from stash: {}", child.getPath());
+                    continue;
+                }
                 Node tmp = getOrCreateTemporaryNode();
                 try {
-                    session.move(child.getPath(), tmp.getPath() + "/" + child.getName());
+                    session.move(child.getPath(), tmp.getPath() + "/" + name);
                 } catch (RepositoryException e) {
                     log.error("Error while moving child node to temporary location. Child will be removed.", e);
                 }

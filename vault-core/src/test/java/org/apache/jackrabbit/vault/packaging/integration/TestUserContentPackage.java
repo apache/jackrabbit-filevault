@@ -97,8 +97,8 @@ public class TestUserContentPackage extends IntegrationTestBase {
         admin.refresh(false);
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
         for (String id: getAllAuthorizableIds()) {
-            if (preTestAuhorizables.remove(id)) {
-                removeAuthorizable(mgr, ID_TEST_USER_A);
+            if (!preTestAuhorizables.remove(id)) {
+                removeAuthorizable(mgr, id);
             }
         }
         admin.save();
@@ -361,11 +361,37 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertTrue(property.isMultiple());
     }
 
+    /**
+     * Tests if installing a package using {@link ImportMode#UPDATE} with a user that already exists in the repository
+     * succeeds, even if it has a rep:cache node and is on a different location (JCRVLT-128).
+     */
     @Test
-    @Ignore("JCRVLT-128")
-    public void install_moved_user_with_rep_cache() throws RepositoryException, IOException, PackageException {
+    public void install_moved_user_with_rep_cache_update() throws RepositoryException, IOException, PackageException {
         Assume.assumeTrue(isOak());
+        install_moved_user_with_rep_cache(ImportMode.UPDATE);
+    }
 
+    /**
+     * Tests if installing a package using {@link ImportMode#REPLACE} with a user that already exists in the repository
+     * succeeds, even if it has a rep:cache node and is on a different location (JCRVLT-128).
+     */
+    @Test
+    public void install_moved_user_with_rep_cache_replace() throws RepositoryException, IOException, PackageException {
+        Assume.assumeTrue(isOak());
+        install_moved_user_with_rep_cache(ImportMode.REPLACE);
+    }
+
+    /**
+     * Tests if installing a package using {@link ImportMode#MERGE} with a user that already exists in the repository
+     * succeeds, even if it has a rep:cache node and is on a different location (JCRVLT-128).
+     */
+    @Test
+    public void install_moved_user_with_rep_cache_merge() throws RepositoryException, IOException, PackageException {
+        Assume.assumeTrue(isOak());
+        install_moved_user_with_rep_cache(ImportMode.MERGE);
+    }
+
+    private void install_moved_user_with_rep_cache(ImportMode mode) throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
         User u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD);
         String newPath = u.getPath() + "_moved";
@@ -383,19 +409,16 @@ public class TestUserContentPackage extends IntegrationTestBase {
         // ensure that there is a rep:cache node
         assertNodeExists(newPath + "/rep:cache");
 
-        // install user pacakge
+        // install user package
         JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a.zip"), false);
         assertNotNull(pack);
         ImportOptions opts = getDefaultOptions();
-        opts.setImportMode(ImportMode.UPDATE);
+        opts.setImportMode(mode);
         pack.install(opts);
 
         // check if user exists
         User userA = (User) mgr.getAuthorizable(ID_TEST_USER_A);
         assertNotNull("test-user-a must exist", userA);
-
-        // check path
-        assertEquals("authorizable path must be correct", newPath, userA.getPath());
     }
 
     private User installUserA(ImportMode mode, boolean usePkgPath, boolean expectPkgPath) throws RepositoryException, IOException, PackageException {

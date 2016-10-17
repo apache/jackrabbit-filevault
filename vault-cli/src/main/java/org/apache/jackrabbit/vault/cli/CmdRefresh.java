@@ -47,7 +47,7 @@ public class CmdRefresh extends AbstractJcrFsCommand {
         if (wo instanceof RepositoryCFile) {
             Node node = (Node) wo.unwrap();
             try {
-                node.refresh(cl.hasOption(optKeepChanges));
+                node.getSession().refresh(cl.hasOption(optKeepChanges));
                 System.out.println("Modifications refreshed.");
             } catch (RepositoryException e) {
                 throw new ExecutionException("Error while refreshing: " + e);

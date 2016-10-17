@@ -944,7 +944,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             } finally {
                 try {
                     // revert removed properties
-                    defNode.refresh(false);
+                    defNode.getSession().refresh(false);
                 } catch (RepositoryException e) {
                     // ignore
                 }

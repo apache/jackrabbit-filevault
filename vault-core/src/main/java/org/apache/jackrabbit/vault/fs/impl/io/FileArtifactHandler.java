@@ -278,7 +278,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
         if (exists) {
             fileNode = parent.getNode(name);
             if (!fileNode.isNodeType(JcrConstants.NT_FILE)) {
-                parent.refresh(false);
+                parent.getSession().refresh(false);
                 throw new IOException("Incompatible content. Expected a nt:file but was " + fileNode.getPrimaryNodeType().getName());
             }
             contentNode = fileNode.getNode(JcrConstants.JCR_CONTENT);

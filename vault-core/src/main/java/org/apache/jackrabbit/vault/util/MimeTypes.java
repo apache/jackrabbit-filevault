@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * <code>MimeTypes</code> contains a mapping from extensions to mime types.
+ * {@code MimeTypes} contains a mapping from extensions to mime types.
  *
  */
 public class MimeTypes {
@@ -94,7 +94,7 @@ public class MimeTypes {
     /**
      * Retrieve the mimetype for the given extension or name
      * @param name the name
-     * @return the mimetype or <code>null</code>
+     * @return the mimetype or {@code null}
      */
     public static String getMimeType(String name) {
         return getMimeType(name, null);
@@ -104,7 +104,7 @@ public class MimeTypes {
      * Retrieve the mimetype for the given extension or name
      * @param name the name
      * @param defaultType type to return if no mapping is found.
-     * @return the mimetype or <code>null</code>
+     * @return the mimetype or {@code null}
      */
     public static String getMimeType(String name, String defaultType) {
         name = name.substring(name.lastIndexOf('.') + 1);
@@ -133,7 +133,7 @@ public class MimeTypes {
     /**
      * checks if the given mimetype denotes binary content
      * @param mimeType the mime type
-     * @return <code>true</code> if binary or if <code>mimeType</code> is <code>null</code>
+     * @return {@code true} if binary or if {@code mimeType} is {@code null}
      */
     public static boolean isBinary(String mimeType) {
         if (mimeType == null) {
@@ -150,7 +150,7 @@ public class MimeTypes {
      * Checks if the given mime type is mapped to the extension
      * @param mimeType the mime type
      * @param ext the extension
-     * @return <code>true</code> if the given mime type contains that extension
+     * @return {@code true} if the given mime type contains that extension
      */
     public static boolean hasExtension(String mimeType, String ext) {
         MimeType mt = byMimeType.get(mimeType);
@@ -210,8 +210,8 @@ public class MimeTypes {
         }
 
         /**
-         * Returns <code>true</code> if this is a binary mime type
-         * @return <code>true</code> if binary.
+         * Returns {@code true} if this is a binary mime type
+         * @return {@code true} if binary.
          *
          */
         public boolean isBinary() {

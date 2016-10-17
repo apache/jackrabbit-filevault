@@ -18,7 +18,7 @@
 package org.apache.jackrabbit.vault.fs.config;
 
 /**
- * <code>ConfigurationException</code>...
+ * {@code ConfigurationException}...
  *
  */
 public class ConfigurationException extends Exception {

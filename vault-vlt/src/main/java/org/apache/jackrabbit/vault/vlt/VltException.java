@@ -17,7 +17,7 @@
 package org.apache.jackrabbit.vault.vlt;
 
 /**
- * <code>VaultException</code>...
+ * {@code VaultException}...
  *
  */
 public class VltException extends Exception {

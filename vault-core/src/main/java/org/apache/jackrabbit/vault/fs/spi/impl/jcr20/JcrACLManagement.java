@@ -25,7 +25,7 @@ import javax.jcr.security.AccessControlPolicy;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 
 /**
- * <code>JcrACLManagement</code>...
+ * {@code JcrACLManagement}...
  */
 public class JcrACLManagement implements ACLManagement {
 

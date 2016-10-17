@@ -41,7 +41,7 @@ import org.apache.jackrabbit.value.ValueHelper;
  * It contains formatting and parsing methods for writing/reading enhanced
  * docview properties.
  *
- * <code>prop:= [ "{" type "}" ] ( value | "[" [ value { "," value } ] "]" )</code>
+ * {@code prop:= [ "{" type "}" ] ( value | "[" [ value { "," value } ] "]" )}
  */
 public class DocViewProperty {
 
@@ -71,7 +71,7 @@ public class DocViewProperty {
     /**
      * indicates a binary ref property
      */
-    public final boolean isRef;
+    public final boolean isReferenceProperty;
 
     /**
      * set of unambigous property names
@@ -88,20 +88,28 @@ public class DocViewProperty {
      * @param values values.
      * @param multi multiple flag
      * @param type type of the property
-     * @throws IllegalArgumentException if single value property and not
-     *         exactly 1 value is given.
+     * @throws IllegalArgumentException if single value property and not exactly 1 value is given.
      */
     public DocViewProperty(String name, String[] values, boolean multi, int type) {
         this(name, values, multi, type, false);
     }
 
-    public DocViewProperty(String name, String[] values, boolean multi, int type, boolean ref) {
+    /**
+     * Creates a new property.
+     * @param name name of the property
+     * @param values values.
+     * @param multi multiple flag
+     * @param type type of the property
+     * @param isRef {@code true} to indicated that this is a binary reference property
+     * @throws IllegalArgumentException if single value property and not exactly 1 value is given.
+     */
+    public DocViewProperty(String name, String[] values, boolean multi, int type, boolean isRef) {
         this.name = name;
         this.values = values;
         isMulti = multi;
         // validate type
         if (type == PropertyType.UNDEFINED) {
-            if (name.equals("jcr:primaryType") || name.equals("jcr:mixinTypes")) {
+            if ("jcr:primaryType".equals(name) || "jcr:mixinTypes".equals(name)) {
                 type = PropertyType.NAME;
             }
         }
@@ -109,7 +117,7 @@ public class DocViewProperty {
         if (!isMulti && values.length != 1) {
             throw new IllegalArgumentException("Single value property needs exactly 1 value.");
         }
-        this.isRef = ref;
+        this.isReferenceProperty = isRef;
     }
 
     /**
@@ -248,7 +256,8 @@ public class DocViewProperty {
     /**
      * Formats the given jcr property to the enhanced docview syntax.
      * @param prop the jcr property
-     * @param sort if <code>true</code> multivalue properties are sorted
+     * @param sort if {@code true} multivalue properties are sorted
+     * @param useBinaryReferences {@code true} to use binary references
      * @return the formatted string
      * @throws RepositoryException if a repository error occurs
      */
@@ -357,7 +366,7 @@ public class DocViewProperty {
      * Sets this property on the given node
      *
      * @param node the node
-     * @return <code>true</code> if the value was modified.
+     * @return {@code true} if the value was modified.
      * @throws RepositoryException if a repository error occurs
      */
     public boolean apply(Node node) throws RepositoryException {
@@ -399,7 +408,7 @@ public class DocViewProperty {
         } else {
             Value v = prop == null ? null : prop.getValue();
             if (type == PropertyType.BINARY) {
-                if (isRef) {
+                if (isReferenceProperty) {
                     ReferenceBinary ref = new SimpleReferenceBinary(values[0]);
                     Binary binary = node.getSession().getValueFactory().createValue(ref).getBinary();
                     if (v != null) {

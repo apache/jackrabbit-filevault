@@ -52,7 +52,7 @@ public class DefaultPathFilter implements PathFilter {
      * Sets the regexp pattern for this filter.
      *
      * Examples:
-     * <xmp>
+     * <pre>
      * | Pattern        | Matches
      * | /foo           | exactly "/foo"
      * | /foo.*         | all paths starting with "/foo"
@@ -60,7 +60,7 @@ public class DefaultPathFilter implements PathFilter {
      * | /foo/[^/]*$    | all direct children of /foo
      * | /foo/.*        | all children of /foo
      * | /foo(/.*)?     | all children of /foo and foo itself
-     * </xmp>
+     * </pre>
      *
      * @param pattern the pattern.
      */

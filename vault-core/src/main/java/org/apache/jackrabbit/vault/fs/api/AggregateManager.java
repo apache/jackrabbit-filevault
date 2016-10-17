@@ -25,7 +25,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
- * <code>AggregateManager</code>...
+ * {@code AggregateManager}...
  */
 public interface AggregateManager extends NodeTypesCollector {
     /**
@@ -49,11 +49,11 @@ public interface AggregateManager extends NodeTypesCollector {
     RepositoryAddress getMountpoint();
 
     /**
-     * Returns the aggregator for the given node or <code>null</code> if none
+     * Returns the aggregator for the given node or {@code null} if none
      * found.
      * @param node for which the aggregator is to be returned
-     * @param path the path of the node or <code>null</code>
-     * @return the aggregator or <code>null</code>
+     * @param path the path of the node or {@code null}
+     * @return the aggregator or {@code null}
      * @throws RepositoryException if a repository error occurs.
      */
     Aggregator getAggregator(Node node, String path) throws RepositoryException;
@@ -68,7 +68,7 @@ public interface AggregateManager extends NodeTypesCollector {
      * Checks if this tree is still mounted and if the attached session
      * is still live.
      *
-     * @return <code>true</code> if still mounted
+     * @return {@code true} if still mounted
      */
     boolean isMounted();
 

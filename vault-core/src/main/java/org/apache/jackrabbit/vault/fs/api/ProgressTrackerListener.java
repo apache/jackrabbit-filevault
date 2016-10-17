@@ -18,7 +18,7 @@
 package org.apache.jackrabbit.vault.fs.api;
 
 /**
- * A <code>ProgressTrackerListener</code> can be provided by clients to
+ * A {@code ProgressTrackerListener} can be provided by clients to
  * receive messages and errors during operations.
  */
 public interface ProgressTrackerListener {

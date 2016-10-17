@@ -29,7 +29,7 @@ import org.apache.jackrabbit.vault.util.console.commands.CmdCtx;
 import org.apache.jackrabbit.vault.util.console.examples.CmdHello;
 
 /**
- * <code>HelloWorldApp</code>...
+ * {@code HelloWorldApp}...
  */
 public class ShellApp extends AbstractApplication {
 

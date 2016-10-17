@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.fs.api;
 import java.util.Collection;
 
 /**
- * <code>ArtifactSet</code>...
+ * {@code ArtifactSet}...
  */
 public interface ArtifactSet extends Dumpable {
     
@@ -54,20 +54,20 @@ public interface ArtifactSet extends Dumpable {
     void add(Artifact artifact);
 
     /**
-     * Returns the primary data artifact or <code>null</code>.
-     * @return the primary data artifact or <code>null</code>.
+     * Returns the primary data artifact or {@code null}.
+     * @return the primary data artifact or {@code null}.
      */
     Artifact getPrimaryData();
 
     /**
-     * Returns the directory artifact or <code>null</code>.
-     * @return the directory artifact or <code>null</code>.
+     * Returns the directory artifact or {@code null}.
+     * @return the directory artifact or {@code null}.
      */
     Artifact getDirectory();
 
     /**
      * Checks if this set is empty.
-     * @return <code>true</code> if this set is empty.
+     * @return {@code true} if this set is empty.
      */
     boolean isEmpty();
 

@@ -51,7 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>VaultContext</code>...
+ * {@code VaultContext}...
  *
  */
 public class VltContext {

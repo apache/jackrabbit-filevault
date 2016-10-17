@@ -76,18 +76,18 @@ public class DepthItemFilter implements ItemFilter {
      *
      * Matches if the given depth is greater or equal the minimum depth and
      * less or equal the maximum depth and if the call to {@link #matches(Item)}
-     * returns <code>true</code>.
+     * returns {@code true}.
      */
     public boolean matches(Item item, int depth) throws RepositoryException {
         return depth >= minDepth && depth <= maxDepth && matches(item);
     }
 
     /**
-     * Returns <code>true</code>. Subclasses can override to implement something
+     * Returns {@code true}. Subclasses can override to implement something
      * useful that is dependant of the depth.
      * 
      * @param item the item to match
-     * @return <code>true</code> if the item matches; <code>false</code> otherwise.
+     * @return {@code true} if the item matches; {@code false} otherwise.
      * @throws RepositoryException if an error occurs.
      */
     public boolean matches(Item item) throws RepositoryException {

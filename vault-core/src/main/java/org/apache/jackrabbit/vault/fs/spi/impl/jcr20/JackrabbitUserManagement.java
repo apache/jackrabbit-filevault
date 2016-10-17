@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>JackrabbitUserManagement</code>...
+ * {@code JackrabbitUserManagement}...
  */
 public class JackrabbitUserManagement implements UserManagement {
 

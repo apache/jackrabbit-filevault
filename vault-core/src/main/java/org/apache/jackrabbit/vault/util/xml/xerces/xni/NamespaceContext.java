@@ -21,10 +21,10 @@ import java.util.Enumeration;
 
 /**
  * Represents an interface to query namespace information.
- * <p/>
+ * <p>
  * The prefix and namespace must be identical references for equal strings, thus
  * each string should be internalized (@see String.intern())
- * or added to the <code>SymbolTable</code>
+ * or added to the {@code SymbolTable}
  *
  * @author Andy Clark, IBM
  * @version $Id$
@@ -56,12 +56,12 @@ public interface NamespaceContext {
 
     /**
      * Start a new Namespace context.
-     * <p/>
+     * <p>
      * A new context should be pushed at the beginning
      * of each XML element: the new context will automatically inherit
      * the declarations of its parent context, but it will also keep
      * track of which declarations were made within this context.
-     * <p/>
+     * <p>
      *
      * @see #popContext
      */
@@ -69,11 +69,11 @@ public interface NamespaceContext {
 
     /**
      * Revert to the previous Namespace context.
-     * <p/>
+     * <p>
      * The context should be popped at the end of each
      * XML element.  After popping the context, all Namespace prefix
      * mappings that were previously in force are restored.
-     * <p/>
+     * <p>
      * Users must not attempt to declare additional Namespace
      * prefixes after popping a context, unless you push another
      * context first.
@@ -84,14 +84,14 @@ public interface NamespaceContext {
 
     /**
      * Declare a Namespace prefix.
-     * <p/>
+     * <p>
      * This method declares a prefix in the current Namespace
      * context; the prefix will remain in force until this context
      * is popped, unless it is shadowed in a descendant context.
-     * <p/>
+     * <p>
      * Note that to declare a default Namespace, use the empty string.
      * The prefixes "xml" and "xmlns" can't be rebound.
-     * <p/>
+     * <p>
      * Note that you must <em>not</em> declare a prefix after
      * you've pushed and popped another Namespace.
      *
@@ -107,7 +107,7 @@ public interface NamespaceContext {
 
     /**
      * Look up a prefix and get the currently-mapped Namespace URI.
-     * <p/>
+     * <p>
      * This method looks up the prefix in the current context. If no mapping
      * is found, this methods will continue lookup in the parent context(s).
      * Use the empty string ("") for the default Namespace.
@@ -120,7 +120,7 @@ public interface NamespaceContext {
 
     /**
      * Look up a namespace URI and get one of the mapped prefix.
-     * <p/>
+     * <p>
      * This method looks up the namespace URI in the current context.
      * If more than one prefix is currently mapped to the same URI,
      * this method will make an arbitrary selection
@@ -156,10 +156,10 @@ public interface NamespaceContext {
 
     /**
      * Reset this Namespace support object for reuse.
-     * <p/>
+     * <p>
      * <p>It is necessary to invoke this method before reusing the
      * Namespace support object for a new session.</p>
-     * <p/>
+     * <p>
      * <p>Note that implementations of this method need to ensure that
      * the declaration of the prefixes "xmlns" and "xml" are available.</p>
      */

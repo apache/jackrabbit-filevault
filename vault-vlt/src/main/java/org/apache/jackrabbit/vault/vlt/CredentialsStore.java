@@ -22,7 +22,7 @@ import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.util.CredentialsProvider;
 
 /**
- * <code>CredentialsProvider</code>...
+ * {@code CredentialsProvider}...
  *
  */
 public interface CredentialsStore extends CredentialsProvider {

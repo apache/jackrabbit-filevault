@@ -18,7 +18,7 @@
 package org.apache.jackrabbit.vault.fs.api;
 
 /**
- * <code>AccessType</code>...
+ * {@code AccessType}...
  *
  */
 public enum AccessType {

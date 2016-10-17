@@ -37,14 +37,14 @@ public interface VltEntries {
     /**
      * Checks if the entry with the given name exists
      * @param localName name of the entry
-     * @return <code>true</code> if exists
+     * @return {@code true} if exists
      */
     boolean hasEntry(String localName);
 
     /**
      * Returns the vault entry for the given name
      * @param localName the name of the entry
-     * @return the entry or <code>null</code> if not exists.
+     * @return the entry or {@code null} if not exists.
      */
     VltEntry getEntry(String localName);
 
@@ -55,7 +55,7 @@ public interface VltEntries {
     void update(VltFile file);
 
     /**
-     * Updates the paths properties of the entry with <code>localName</code>. If the entry did not exist yet,
+     * Updates the paths properties of the entry with {@code localName}. If the entry did not exist yet,
      * a new one is created.
      * @param localName the name of the entry
      * @param aggregatePath the new aggregate path

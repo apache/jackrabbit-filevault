@@ -32,7 +32,7 @@ import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 
 /**
- * <code>RepositoryWorkObject</code>...
+ * {@code RepositoryWorkObject}...
  *
  */
 public class RepositoryCFile implements ConsoleFile {

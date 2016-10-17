@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
-* <code>SyncResult</code>...
+* {@code SyncResult}...
 */
 public class SyncResult {
 

@@ -17,7 +17,7 @@
 package org.apache.jackrabbit.vault.sync.impl;
 
 /**
-* <code>SyncMode</code>...
+* {@code SyncMode}...
 */
 enum SyncMode {
     FS2JCR,

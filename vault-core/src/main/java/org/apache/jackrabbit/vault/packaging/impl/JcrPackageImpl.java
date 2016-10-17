@@ -189,7 +189,7 @@ public class JcrPackageImpl implements JcrPackage {
      * @param parent the parent node
      * @param pid the package id of the new package.
      * @param pack the underlying zip package or null.
-     * @param autoSave if <code>true</code> the changes are persisted immediately
+     * @param autoSave if {@code true} the changes are persisted immediately
      * @return the created jcr vault package.
      * @throws RepositoryException if an repository error occurs
      * @throws IOException if an I/O error occurs
@@ -333,8 +333,8 @@ public class JcrPackageImpl implements JcrPackage {
      * @param forceFileArchive if {@code true} a file archive is enforced
      * @return the package
      *
-     * @throws RepositoryException
-     * @throws IOException
+     * @throws RepositoryException If a repository error occurrs.
+     * @throws IOException if an i/o error occurrs.
      */
     protected VaultPackage getPackage(boolean forceFileArchive) throws RepositoryException, IOException {
         if (forceFileArchive && pack != null && !(pack.getArchive() instanceof ZipArchive)) {
@@ -398,8 +398,8 @@ public class JcrPackageImpl implements JcrPackage {
      * internally extracts the package.
      *
      * @param options the import options
-     * @param createSnapshot <code>true</code> if a snapshot should be created
-     * @param replaceSnapshot <code>true</code> if a snapshot should be replaced
+     * @param createSnapshot {@code true} if a snapshot should be created
+     * @param replaceSnapshot {@code true} if a snapshot should be replaced
      * @throws RepositoryException if a repository error occurs
      * @throws PackageException if a package error occurs
      * @throws IOException if an I/O error occurs
@@ -543,9 +543,9 @@ public class JcrPackageImpl implements JcrPackage {
     /**
      * Internally creates the snapshot
      * @param opts exports options when building the snapshot
-     * @param replace if <code>true</code> existing snapshot will be replaced
+     * @param replace if {@code true} existing snapshot will be replaced
      * @param acHandling user acHandling to use when snapshot is installed, i.e. package is uninstalled
-     * @return the package of the snapshot or <code>null</code>
+     * @return the package of the snapshot or {@code null}
      * @throws RepositoryException if an error occurrs.
      * @throws PackageException if an error occurrs.
      * @throws IOException if an error occurrs.

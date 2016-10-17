@@ -50,7 +50,7 @@ import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.RepositoryFactory;
 
 /**
- * <code>DAVExRepositoryFactory</code>...
+ * {@code DAVExRepositoryFactory}...
  */
 public class DAVExRepositoryFactory implements RepositoryFactory {
 

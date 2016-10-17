@@ -530,13 +530,13 @@ public class RepositoryCopier {
         }
     }
     /**
-     * Checks if <code>src</code> node is newer than <code>dst</code> node.
+     * Checks if {@code src} node is newer than {@code dst} node.
      * this only applies if the nodes have either a "jcr:lastModified" or
      * "cq:lastModified" property.
      *
      * @param src source node
      * @param dst destination node
-     * @return <code>true</code> if src is newer than dst node or if the
+     * @return {@code true} if src is newer than dst node or if the
      *         nodes could not be compared
      */
     private boolean isNewer(Node src, Node dst) {

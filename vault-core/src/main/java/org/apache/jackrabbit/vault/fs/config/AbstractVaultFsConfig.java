@@ -47,7 +47,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- * <code>JcrFsConfig</code>...
+ * {@code JcrFsConfig}...
  */
 public abstract class AbstractVaultFsConfig implements VaultFsConfig {
 

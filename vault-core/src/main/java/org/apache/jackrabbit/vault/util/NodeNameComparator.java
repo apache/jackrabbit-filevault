@@ -23,7 +23,7 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- * <code>ItemNameComparator</code>...
+ * {@code ItemNameComparator}...
  */
 public class NodeNameComparator implements Comparator<Node> {
 

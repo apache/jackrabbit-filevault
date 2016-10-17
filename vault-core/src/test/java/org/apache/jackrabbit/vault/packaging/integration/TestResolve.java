@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * <code>TestPackageInstall</code>...
+ * {@code TestPackageInstall}...
  */
 public class TestResolve extends IntegrationTestBase {
 

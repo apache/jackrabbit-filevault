@@ -52,7 +52,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
 
     /**
      * Returns the package definition of this package
-     * @return the package definition or <code>null</code> if this package is
+     * @return the package definition or {@code null} if this package is
      *         not valid.
      * @throws RepositoryException if an error occurrs
      */
@@ -61,7 +61,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
 
     /**
      * Checks if the underlying node contains the correct structure.
-     * @return <code>true</code> if this package is valid.
+     * @return {@code true} if this package is valid.
      */
     boolean isValid();
 
@@ -74,7 +74,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
     /**
      * Checks if this package is sealed. this is the case, if it was not
      * modified since it was unwrapped.
-     * @return <code>true</code> if this package is sealed.
+     * @return {@code true} if this package is sealed.
      */
     boolean isSealed();
 
@@ -118,7 +118,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      * Creates a snapshot of this package.
      *
      * @param opts export options
-     * @param replace if <code>true</code> any existing snapshot is replaced.
+     * @param replace if {@code true} any existing snapshot is replaced.
      * @return a package that represents the snapshot of this package.
      * @throws RepositoryException if a repository error during installation occurs.
      * @throws PackageException if an error during packaging occurs
@@ -132,7 +132,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
 
     /**
      * Returns the snapshot that was taken when installing this package.
-     * @return the snapshot package or <code>null</code>
+     * @return the snapshot package or {@code null}
      * @throws RepositoryException if an error occurs.
      *
      * @since 2.0
@@ -159,9 +159,9 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      * Checks if the package id is correct in respect to the installation path
      * and adjusts it accordingly.
      *
-     * @param autoFix <code>true</code> to automatically fix the id
-     * @param autoSave <code>true</code> to save changes immediately
-     * @return <code>true</code> if id is correct.
+     * @param autoFix {@code true} to automatically fix the id
+     * @param autoSave {@code true} to save changes immediately
+     * @return {@code true} if id is correct.
      * @throws RepositoryException if an error occurs.
      *
      * @since 2.2.18
@@ -172,9 +172,9 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      * Checks if this package is installed.
      *
      * Note: the default implementation only checks the {@link org.apache.jackrabbit.vault.packaging.JcrPackageDefinition#getLastUnpacked()}
-     * date. If the package is replaced since it was installed. this method will return <code>false</code>.
+     * date. If the package is replaced since it was installed. this method will return {@code false}.
      *
-     * @return <code>true</code> if this package is installed.
+     * @return {@code true} if this package is installed.
      * @throws RepositoryException if an error occurs.
      *
      * @since 2.4.6
@@ -200,7 +200,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
     Property getData() throws RepositoryException;
 
     /**
-     * Returns the definition node or <code>null</code> if not exists
+     * Returns the definition node or {@code null} if not exists
      * @return the definition node.
      * @throws RepositoryException if an error occurrs
      */

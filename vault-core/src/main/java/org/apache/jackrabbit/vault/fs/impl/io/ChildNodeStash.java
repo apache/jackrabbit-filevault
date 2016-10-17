@@ -137,6 +137,7 @@ public class ChildNodeStash {
     /**
      * Moves the stashed nodes back below the given parent path.
      * @param parent the new parent node
+     * @param importInfo the import info to record the changes
      * @throws RepositoryException if an error occurrs
      */
     public void recoverChildren(Node parent, ImportInfo importInfo) throws RepositoryException {

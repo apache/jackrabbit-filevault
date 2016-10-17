@@ -33,7 +33,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * <code>TestEmptyPackage</code>...
+ * {@code TestEmptyPackage}...
  */
 public class TestEmptyPackage extends IntegrationTestBase {
 

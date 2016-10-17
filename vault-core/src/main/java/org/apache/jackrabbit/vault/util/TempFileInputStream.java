@@ -24,7 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
- * <code>TempFileInputStream</code>...
+ * {@code TempFileInputStream}...
  */
 public class TempFileInputStream extends FileInputStream {
 

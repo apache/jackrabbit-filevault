@@ -25,7 +25,7 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
 
 /**
- * <code>Resolved</code>...
+ * {@code Resolved}...
  *
  */
 public class PropGet extends BaseAction {

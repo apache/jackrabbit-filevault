@@ -41,8 +41,10 @@ public class ParseException extends Exception {
 
 
     /**
-     * Constructs a new instance of this class with <code>null</code> as its
-     * detail message.
+     * Constructs a new instance of this class with {@code null} as its detail message.
+     * @param lineNumber The line number where the error occurred.
+     * @param colNumber The number of the column where the error occurred.
+     * @param systemId The system id of the file.
      */
     public ParseException(int lineNumber, int colNumber, String systemId) {
         super();
@@ -55,6 +57,9 @@ public class ParseException extends Exception {
      * Constructs a new instance of this class with the specified detail
      * message.
      *
+     * @param lineNumber The line number where the error occurred.
+     * @param colNumber The number of the column where the error occurred.
+     * @param systemId The system id of the file.
      * @param message the detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      */
@@ -69,6 +74,9 @@ public class ParseException extends Exception {
      * Constructs a new instance of this class with the specified detail
      * message and root cause.
      *
+     * @param lineNumber The line number where the error occurred.
+     * @param colNumber The number of the column where the error occurred.
+     * @param systemId The system id of the file.
      * @param message   the detail message. The detail message is saved for
      *                  later retrieval by the {@link #getMessage()} method.
      * @param rootCause root failure cause
@@ -83,6 +91,9 @@ public class ParseException extends Exception {
     /**
      * Constructs a new instance of this class with the specified root cause.
      *
+     * @param lineNumber The line number where the error occurred.
+     * @param colNumber The number of the column where the error occurred.
+     * @param systemId The system id of the file.
      * @param rootCause root failure cause
      */
     public ParseException(Throwable rootCause, int lineNumber, int colNumber, String systemId) {
@@ -98,7 +109,7 @@ public class ParseException extends Exception {
     public String getMessage() {
         StringBuffer b = new StringBuffer(super.getMessage());
         String delim = " (";
-        if (systemId != null && !systemId.equals("")) {
+        if (systemId != null && !"".equals(systemId)) {
             b.append(delim);
             b.append(systemId);
             delim = ", ";
@@ -115,7 +126,7 @@ public class ParseException extends Exception {
             b.append(colNumber);
             delim = ", ";
         }
-        if (delim.equals(", ")) {
+        if (", ".equals(delim)) {
             b.append(")");
         }
         return b.toString();

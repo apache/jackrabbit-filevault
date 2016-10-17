@@ -80,7 +80,7 @@ public interface PackageManager {
     /**
      * Opens the given file and creates a package
      * @param file the file
-     * @param strict if <code>true</code> the import is more strict in respect to errors.
+     * @param strict if {@code true} the import is more strict in respect to errors.
      * @return the package
      * @throws IOException if an error occurrs
      */
@@ -88,7 +88,7 @@ public interface PackageManager {
 
     /**
      * Assembles a package using the given meta information and file to
-     * store to. if file is <code>null</code> a temp file is generated.
+     * store to. if file is {@code null} a temp file is generated.
      *
      * @param s the repository session
      * @param opts export options
@@ -118,7 +118,7 @@ public interface PackageManager {
 
     /**
      * Re-wraps a package using the given meta information and file to
-     * store to. if file is <code>null</code> a temp file is generated.
+     * store to. if file is {@code null} a temp file is generated.
      *
      * @param opts export options
      * @param src source package

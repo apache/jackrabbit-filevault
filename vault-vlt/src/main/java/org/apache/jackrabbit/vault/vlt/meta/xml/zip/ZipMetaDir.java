@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>ZipMetaDir</code>...
+ * {@code ZipMetaDir}...
  */
 public class ZipMetaDir implements MetaDirectory {
 

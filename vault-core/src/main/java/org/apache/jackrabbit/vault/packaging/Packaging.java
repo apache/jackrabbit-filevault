@@ -48,8 +48,8 @@ public interface Packaging {
     JcrPackageDefinition createPackageDefinition(Node defNode);
 
     /**
-     * Opens a package that is based on the given node. If <code>allowInvalid</code>
-     * is <code>true</code> also invalid packages are returned, but only if the
+     * Opens a package that is based on the given node. If {@code allowInvalid}
+     * is {@code true} also invalid packages are returned, but only if the
      * node is file like (i.e. is nt:hierarchyNode and has a
      * jcr:content/jcr:data property).
      *
@@ -57,9 +57,9 @@ public interface Packaging {
      * which does not create a package manager instance.
      *
      * @param node the underlying node
-     * @param allowInvalid if <code>true</code> invalid packages are openend, too.
-     * @return the new package or <code>null</code> it the package is not
-     *         valid unless <code>allowInvalid</code> is <code>true</code>.
+     * @param allowInvalid if {@code true} invalid packages are opened, too.
+     * @return the new package or {@code null} it the package is not
+     *         valid unless {@code allowInvalid} is {@code true}.
      * @throws javax.jcr.RepositoryException if an error occurs
      * 
      * @since 2.3.0

@@ -17,7 +17,7 @@
 package org.apache.jackrabbit.vault.sync.impl;
 
 /**
- * <code>SyncConstants</code>...
+ * {@code SyncConstants}...
  */
 public class SyncConstants {
 

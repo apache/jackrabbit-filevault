@@ -79,32 +79,32 @@ public interface VltEntry {
 
     /**
      * Returns the entry info of type {@link VltEntryInfo.Type#WORK}
-     * @return the "work" entry info or <code>null</code> if not defined.
+     * @return the "work" entry info or {@code null} if not defined.
      */
     VltEntryInfo work();
 
     /**
      * Returns the entry info of type {@link VltEntryInfo.Type#BASE}
-     * @return the "base" entry info or <code>null</code> if not defined.
+     * @return the "base" entry info or {@code null} if not defined.
      */
     VltEntryInfo base();
 
     /**
      * Returns the entry info of type {@link VltEntryInfo.Type#MINE}
-     * @return the "mine" entry info or <code>null</code> if not defined.
+     * @return the "mine" entry info or {@code null} if not defined.
      */
     VltEntryInfo mine();
 
     /**
      * Returns the entry info of type {@link VltEntryInfo.Type#THEIRS}
-     * @return the "theirs" entry info or <code>null</code> if not defined.
+     * @return the "theirs" entry info or {@code null} if not defined.
      */
     VltEntryInfo theirs();
 
     /**
      * Removes the entry info with the given type.
      * @param type the info type
-     * @return the previously assigned info or <code>null</code>
+     * @return the previously assigned info or {@code null}
      */
     VltEntryInfo remove(VltEntryInfo.Type type);
 

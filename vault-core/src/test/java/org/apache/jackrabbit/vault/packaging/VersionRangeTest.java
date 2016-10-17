@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.packaging;
 import junit.framework.TestCase;
 
 /**
- * <code>VersionRangeTest</code>...
+ * {@code VersionRangeTest}...
  */
 public class VersionRangeTest extends TestCase {
 

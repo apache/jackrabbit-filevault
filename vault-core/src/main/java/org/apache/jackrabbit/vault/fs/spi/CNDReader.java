@@ -23,7 +23,7 @@ import java.io.Reader;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
 
 /**
- * <code>CNDReader</code>...
+ * {@code CNDReader}...
  */
 public interface CNDReader extends NodeTypeSet {
 

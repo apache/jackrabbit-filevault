@@ -24,7 +24,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 
 /**
- * <code>NodeTypeInstaller</code>...
+ * {@code NodeTypeInstaller}...
  */
 public interface NodeTypeInstaller {
 

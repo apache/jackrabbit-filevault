@@ -32,7 +32,7 @@ import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.FileInputSource;
 
 /**
- * <code>FileArchive</code>...
+ * {@code FileArchive}...
  */
 public class FileArchive extends AbstractArchive {
 

@@ -19,7 +19,7 @@ package org.apache.jackrabbit.vault.util.console;
 import java.io.IOException;
 
 /**
- * <code>FSContext</code>...
+ * {@code FSContext}...
  */
 public interface ConsoleFile {
 

@@ -21,7 +21,7 @@ import org.apache.jackrabbit.util.XMLChar;
 import org.apache.jackrabbit.vault.util.Text;
 
 /**
- * <code>PackageId</code> provides the basic metrics for identifying a package.
+ * {@code PackageId} provides the basic metrics for identifying a package.
  * A package id consists of a group id, a name and a version.
  * the group is a relative path, eg: "company/project/subgroup", the name and the version
  * can be of any format.
@@ -205,7 +205,7 @@ public class PackageId implements Comparable<PackageId> {
 
     /**
      * Returns a package id from a id string. if the given id is null or an
-     * empty string, <code>null</code> is returned.
+     * empty string, {@code null} is returned.
      * @param str the string
      * @return the package id
      */
@@ -254,7 +254,7 @@ public class PackageId implements Comparable<PackageId> {
     /**
      * Checks if this definition was constructed from a path, rather from a
      * group and name.
-     * @return <code>true</code> if constructed from path.
+     * @return {@code true} if constructed from path.
      *
      * @since 2.2.26
      */
@@ -310,7 +310,7 @@ public class PackageId implements Comparable<PackageId> {
 
     /**
      * Returns a download name in the form
-     * <code>name [ "-" version ] ".zip"</code>
+     * {@code name [ "-" version ] ".zip"}
      * @return the download name
      * @since 2.0
      */
@@ -324,7 +324,7 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns the version of this package or <code>null</code> if n/a.
+     * Returns the version of this package or {@code null} if n/a.
      * @return the version of this package
      */
     public Version getVersion() {
@@ -437,7 +437,7 @@ public class PackageId implements Comparable<PackageId> {
     private static final int STATE_URI = 5;
 
     /**
-     * Parses the <code>jcrName</code> (either qualified or expanded) and validates it.
+     * Parses the {@code jcrName} (either qualified or expanded) and validates it.
      * @throws java.lang.IllegalArgumentException if the name is not valid
      */
     private static void assertValidJcrName(String jcrName) throws IllegalArgumentException {

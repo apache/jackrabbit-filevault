@@ -24,7 +24,7 @@ import org.apache.jackrabbit.vault.packaging.InstallHook;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 
 /**
- * <code>ExternalTestHook</code> that is called by the external_hook package.
+ * {@code ExternalTestHook} that is called by the external_hook package.
  */
 public class ExternalTestHook1 implements InstallHook {
 

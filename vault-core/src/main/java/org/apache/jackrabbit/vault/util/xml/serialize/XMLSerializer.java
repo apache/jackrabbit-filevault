@@ -65,25 +65,25 @@ import org.xml.sax.helpers.AttributesImpl;
  * <li> skip attribute default values feature
  * <li> entity node reference feature
  * </ul>
- * <p/>
+ * <p>
  *  
  * Implements an XML serializer supporting both DOM and SAX pretty
  * serializing. For usage instructions see {@link Serializer}.
- * <p/>
+ * <p>
  * If an output stream is used, the encoding is taken from the
  * output format (defaults to <tt>UTF-8</tt>). If a writer is
  * used, make sure the writer uses the same encoding (if applies)
  * as specified in the output format.
- * <p/>
+ * <p>
  * The serializer supports both DOM and SAX. SAX serializing is done by firing
  * SAX events and using the serializer as a document handler. DOM serializing is done
  * by calling {@link #serialize(Document)} or by using DOM Level 3
- * <p/>
+ * <p>
  * If an I/O exception occurs while serializing, the serializer
  * will not throw an exception directly, but only throw it
  * at the end of serializing (either DOM or SAX's {@link
  * org.xml.sax.DocumentHandler#endDocument}.
- * <p/>
+ * <p>
  * For elements that are not specified as whitespace preserving,
  * the serializer will potentially break long text lines at space
  * boundaries, indent lines, and serialize elements on separate
@@ -536,7 +536,7 @@ public class XMLSerializer extends BaseMarkupSerializer {
      * The document type declaration must name the root element,
      * but the root element is only known when that element is serialized,
      * and not at the start of the document.
-     * <p/>
+     * <p>
      * This method will check if it has not been called before ({@link #_started}),
      * will serialize the document type declaration, and will serialize all
      * pre-root comments and PIs that were accumulated in the document

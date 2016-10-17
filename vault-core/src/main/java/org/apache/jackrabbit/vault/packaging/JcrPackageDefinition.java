@@ -193,7 +193,7 @@ public interface JcrPackageDefinition {
     /**
      * Writes the properties derived from the package id to the content
      * @param id the package id
-     * @param autoSave if <code>true</code> the changes are saved automatically.
+     * @param autoSave if {@code true} the changes are saved automatically.
      * @since 2.2
      */
     void setId(PackageId id, boolean autoSave);
@@ -201,22 +201,22 @@ public interface JcrPackageDefinition {
     /**
      * Checks if this definition is unwrapped, i.e. if the definition structured
      * was extracted from a VaultPackage.
-     * @return <code>true</code> if unwrapped.
+     * @return {@code true} if unwrapped.
      */
     boolean isUnwrapped();
 
     /**
      * Checks if the definition was modified since it was last wrapped.
      * new packages are considered modified.
-     * @return <code>true</code> if modified
+     * @return {@code true} if modified
      */
     boolean isModified();
 
     /**
      * Unwraps the package definition to the underlying node.
      * @param pack the package
-     * @param force if <code>true</code> unwrapping is forced
-     * @param autoSave if <code>true</code> modifications are saved automatically
+     * @param force if {@code true} unwrapping is forced
+     * @param autoSave if {@code true} modifications are saved automatically
      * @throws RepositoryException if an error occurs
      * @throws IOException if an I/O error occurs
      */
@@ -239,37 +239,37 @@ public interface JcrPackageDefinition {
     /**
      * Generic method to retrieve a string property of this definition.
      * @param name the name of the property.
-     * @return the property value or <code>null</code> if it does not exist.
+     * @return the property value or {@code null} if it does not exist.
      */
     String get(String name);
 
     /**
      * Generic method to retrieve a boolean property of this definition.
      * @param name the name of the property.
-     * @return the property value or <code>null</code> if it does not exist.
+     * @return the property value or {@code null} if it does not exist.
      */
     boolean getBoolean(String name);
 
     /**
      * Generic method to retrieve a date property of this definition.
      * @param name the name of the property.
-     * @return the property value or <code>null</code> if it does not exist.
+     * @return the property value or {@code null} if it does not exist.
      */
     Calendar getCalendar(String name);
 
     /**
      * Generic method to set a string property to this definition.
      * @param name the name of the property
-     * @param value the value or <code>null</code> to clear the property
-     * @param autoSave if <code>true</code> the modifications are saved automatically.
+     * @param value the value or {@code null} to clear the property
+     * @param autoSave if {@code true} the modifications are saved automatically.
      */
     void set(String name, String value, boolean autoSave);
 
     /**
      * Generic method to set a date property to this definition.
      * @param name the name of the property
-     * @param value the value or <code>null</code> to clear the property
-     * @param autoSave if <code>true</code> the modifications are saved automatically.
+     * @param value the value or {@code null} to clear the property
+     * @param autoSave if {@code true} the modifications are saved automatically.
      */
     void set(String name, Calendar value, boolean autoSave);
 
@@ -277,14 +277,14 @@ public interface JcrPackageDefinition {
      * Generic method to set a boolean property to this definition.
      * @param name the name of the property
      * @param value the value
-     * @param autoSave if <code>true</code> the modifications are saved automatically.
+     * @param autoSave if {@code true} the modifications are saved automatically.
      */
     void set(String name, boolean value, boolean autoSave);
 
     /**
      * Touches the last modified and last modified by property.
-     * @param now calendar or <code>null</code>
-     * @param autoSave if <code>true</code> the modifications are saved automatically.
+     * @param now calendar or {@code null}
+     * @param autoSave if {@code true} the modifications are saved automatically.
      */
     void touch(Calendar now, boolean autoSave);
 
@@ -292,7 +292,7 @@ public interface JcrPackageDefinition {
      * Sets the filter to this definition and stores it in a node representation.
      *
      * @param filter the filter to set
-     * @param autoSave if <code>true</code> the modifications are saved automatically.
+     * @param autoSave if {@code true} the modifications are saved automatically.
      */
     void setFilter(WorkspaceFilter filter, boolean autoSave);
 
@@ -359,7 +359,7 @@ public interface JcrPackageDefinition {
     String getLastUnpackedBy();
 
     /**
-     * Returns <code>true</code> if this package needs a admin user to install it.
+     * Returns {@code true} if this package needs a admin user to install it.
      * @return the "requires root" flag
      * @deprecated
      */
@@ -367,15 +367,15 @@ public interface JcrPackageDefinition {
     boolean requiresRoot();
 
     /**
-     * Returns <code>true</code> if this package needs restart after installation.
+     * Returns {@code true} if this package needs restart after installation.
      * @return the "requires restart" flag.
      */
     boolean requiresRestart();
 
     /**
-     * Returns the access control handling defined in the definition, or <code>null</code>
+     * Returns the access control handling defined in the definition, or {@code null}
      * if not defined.
-     * @return the access control handling or <code>null</code>
+     * @return the access control handling or {@code null}
      * @since 2.3.2
      */
     AccessControlHandling getAccessControlHandling();

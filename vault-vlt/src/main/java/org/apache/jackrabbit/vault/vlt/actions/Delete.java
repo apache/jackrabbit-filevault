@@ -26,7 +26,7 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
 
 /**
- * <code>Delete</code>...
+ * {@code Delete}...
  */
 public class Delete extends BaseAction {
 

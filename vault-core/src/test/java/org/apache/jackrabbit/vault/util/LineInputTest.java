@@ -26,7 +26,7 @@ import org.apache.commons.io.IOUtils;
 import junit.framework.TestCase;
 
 /**
- * <code>LineOutputTest</code>...
+ * {@code LineOutputTest}...
  *
  */
 public class LineInputTest extends TestCase {

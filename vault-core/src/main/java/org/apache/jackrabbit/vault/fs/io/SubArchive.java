@@ -25,7 +25,7 @@ import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 
 /**
- * <code>SubArchive</code>...
+ * {@code SubArchive}...
  */
 public class SubArchive extends AbstractArchive {
 

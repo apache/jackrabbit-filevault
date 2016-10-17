@@ -90,7 +90,7 @@ public class DocumentDiff3 {
 
     /**
      * Indicates if any of the hunks has a conflict.
-     * @return <code>true</code> if any of the hunks has a conflict.
+     * @return {@code true} if any of the hunks has a conflict.
      */
     public boolean hasConflicts() {
         return hasConflicts;
@@ -102,7 +102,7 @@ public class DocumentDiff3 {
      *
      * @param buf the string buffer to write to
      * @param lineSeparator the line separator to use
-     * @param showBase if set to <code>true</code> the base section of a conflict
+     * @param showBase if set to {@code true} the base section of a conflict
      *        is also included in the output.
      */
     public void write(StringBuffer buf, String lineSeparator, boolean showBase) {
@@ -120,7 +120,7 @@ public class DocumentDiff3 {
      * conflicting regions.
      *
      * @param w the writer to write to
-     * @param showBase if set to <code>true</code> the base section of a conflict
+     * @param showBase if set to {@code true} the base section of a conflict
      *        is also included in the output.
      * @throws IOException if an I/O error occurs
      */
@@ -384,7 +384,7 @@ public class DocumentDiff3 {
 
         /**
          * Checks if this is a deletion.
-         * @return <code>true</code> if this is a deletion.
+         * @return {@code true} if this is a deletion.
          */
         public boolean isDelete() {
             return low1 == high1;
@@ -392,7 +392,7 @@ public class DocumentDiff3 {
 
         /**
          * Checks if this is an insertion
-         * @return <code>false</code> if this is an insertion.
+         * @return {@code false} if this is an insertion.
          */
         public boolean isInsert() {
             return low0 == high0;

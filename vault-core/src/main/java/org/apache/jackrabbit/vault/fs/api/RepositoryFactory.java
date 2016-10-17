@@ -23,7 +23,7 @@ import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 
 /**
- * <code>RepositoryProvider</code>...
+ * {@code RepositoryProvider}...
  */
 public interface RepositoryFactory {
 

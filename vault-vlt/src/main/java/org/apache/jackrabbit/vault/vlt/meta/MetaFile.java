@@ -95,9 +95,9 @@ public interface MetaFile {
     File openTempFile() throws IOException;
 
     /**
-     * Close the previously opened temporary file. if <code>discard</code> is <code>false</code>, the contents of
+     * Close the previously opened temporary file. if {@code discard} is {@code false}, the contents of
      * the temporary file are copied back to this file.
-     * @param discard <code>true</code> to discard the changes to the temp file
+     * @param discard {@code true} to discard the changes to the temp file
      * @throws IOException if an I/O error occurs
      */
     void closeTempFile(boolean discard) throws IOException;
@@ -112,7 +112,7 @@ public interface MetaFile {
     /**
      * Copies the contents of this file to the indicated platform file.
      * @param file destination file
-     * @param preserveFileDate <code>true</code> to update the modification date of the destination file
+     * @param preserveFileDate {@code true} to update the modification date of the destination file
      * @throws IOException if an I/O error occurs
      */
     void copyTo(File file, boolean preserveFileDate) throws IOException;

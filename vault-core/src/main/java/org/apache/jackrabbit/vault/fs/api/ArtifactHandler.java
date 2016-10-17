@@ -23,7 +23,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
- * <code>ArtifactHandler</code>s are used to import artifacts into the
+ * {@code ArtifactHandler}s are used to import artifacts into the
  * jcr repository.
  *
  */
@@ -35,7 +35,7 @@ public interface ArtifactHandler extends Dumpable {
      * @param session the session to use for import
      * @param aggregate the aggregate
      * @param artifacts the artifacts to import
-     * @return the import info on successful import, <code>null</code> otherwise
+     * @return the import info on successful import, {@code null} otherwise
      * @throws RepositoryException if an error occurs.
      * @throws IOException if a I/O error occurs
      */
@@ -49,7 +49,7 @@ public interface ArtifactHandler extends Dumpable {
      * @param parent the parent aggregate of the new file to import
      * @param name the name of the new node
      * @param artifacts the artifacts to import
-     * @return the import info on successful import, <code>null</code> otherwise
+     * @return the import info on successful import, {@code null} otherwise
      * @throws RepositoryException if an error occurs.
      * @throws IOException if a I/O error occurs
      */

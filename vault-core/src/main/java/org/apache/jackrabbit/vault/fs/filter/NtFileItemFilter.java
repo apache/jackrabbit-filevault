@@ -61,7 +61,7 @@ public class NtFileItemFilter implements ItemFilter {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if the item is a nt:file or nt:resource property
+     * @return {@code true} if the item is a nt:file or nt:resource property
      */
     public boolean matches(Item item, int depth) throws RepositoryException {
         if (item.isNode()) {

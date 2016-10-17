@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>ZipMetaFile</code>...
+ * {@code ZipMetaFile}...
  */
 public class ZipMetaFile implements MetaFile {
 

@@ -44,7 +44,7 @@ public class DefaultChangeListener implements ChangeListener {
 
     /**
      * Creates a new default change listener that will write to the given
-     * writer. if debug is <code>true</code> the line numbers are also included
+     * writer. if debug is {@code true} the line numbers are also included
      * in the output.
      *
      * @param out the writer

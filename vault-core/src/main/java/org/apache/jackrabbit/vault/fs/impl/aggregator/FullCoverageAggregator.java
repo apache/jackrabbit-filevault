@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.fs.impl.aggregator;
 import org.apache.jackrabbit.vault.fs.api.ItemFilter;
 
 /**
- * <code>FullCoverageAggregator</code>...
+ * {@code FullCoverageAggregator}...
  */
 public class FullCoverageAggregator extends GenericAggregator {
 

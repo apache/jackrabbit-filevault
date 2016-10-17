@@ -78,7 +78,7 @@ public class NodeTypeItemFilter extends DepthItemFilter {
 
     /**
      * Sets the flag that indicates if super type should be respected.
-     * @param respectSupertype if <code>true</code>, super types are respected.
+     * @param respectSupertype if {@code true}, super types are respected.
      */
     public void setRespectSupertype(String respectSupertype) {
         this.respectSupertype = Boolean.valueOf(respectSupertype);
@@ -87,9 +87,9 @@ public class NodeTypeItemFilter extends DepthItemFilter {
     /**
      * {@inheritDoc}
      *
-     * Returns <code>true</code> if the item is a node and if the configured
+     * Returns {@code true} if the item is a node and if the configured
      * node type is equal to the primary type of the node. if super types are
-     * respected it also returns <code>true</code> if the items node type
+     * respected it also returns {@code true} if the items node type
      * extends from the configured node type (Node.isNodeType() check).
      */
     public boolean matches(Item item) throws RepositoryException {

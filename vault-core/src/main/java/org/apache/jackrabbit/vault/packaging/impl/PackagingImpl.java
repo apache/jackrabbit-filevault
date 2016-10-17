@@ -30,7 +30,7 @@ import org.apache.jackrabbit.vault.packaging.Packaging;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 
 /**
- * <code>PackagingImpl</code>...
+ * {@code PackagingImpl}...
  */
 @Component(metatype = false, immediate = true)
 @Service(value = Packaging.class)

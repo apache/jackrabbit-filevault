@@ -36,7 +36,7 @@ import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 
 /**
- * <code>AbstractArtifactHandler</code>...
+ * {@code AbstractArtifactHandler}...
  *
  */
 public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpable {
@@ -110,7 +110,7 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
      * @param parent the parent node
      * @param name the name of the (new) import
      * @param artifacts the artifact set
-     * @return the import info on successful import, <code>null</code> otherwise
+     * @return the import info on successful import, {@code null} otherwise
      * @throws RepositoryException if an error occurs.
      * @throws IOException if an I/O error occurs.
      */

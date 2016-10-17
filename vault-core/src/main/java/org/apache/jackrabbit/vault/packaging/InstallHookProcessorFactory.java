@@ -17,7 +17,7 @@
 package org.apache.jackrabbit.vault.packaging;
 
 /**
- * <code>InstallHookProcessorFactory</code>...
+ * {@code InstallHookProcessorFactory}...
  */
 public interface InstallHookProcessorFactory {
 

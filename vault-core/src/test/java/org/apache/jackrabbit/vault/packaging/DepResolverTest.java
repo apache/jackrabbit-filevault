@@ -24,7 +24,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 /**
- * <code>DepResolverTest</code>...
+ * {@code DepResolverTest}...
  */
 public class DepResolverTest extends TestCase {
 

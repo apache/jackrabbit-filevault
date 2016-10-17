@@ -19,7 +19,7 @@ package org.apache.jackrabbit.vault.util.diff;
 import junit.framework.TestCase;
 
 /**
- * <code>Diff3Test</code>...
+ * {@code Diff3Test}...
  */
 public class Diff3Test extends TestCase {
 

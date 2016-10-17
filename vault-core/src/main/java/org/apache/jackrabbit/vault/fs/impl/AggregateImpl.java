@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
  * of the repository one by invoking the respective aggregators. The aggregates
  * are controlled via the {@link AggregateManagerImpl} and are loaded dynamically
  * when traversing through the tree.
- * <p/>
+ * <p>
  * The aggregates can then later be used by the aggregators to provide the
  * artifacts of this aggregate.
  *
@@ -288,7 +288,7 @@ public class AggregateImpl implements Aggregate {
     /**
      * Creates a new child artifact node with the given name.
      * Please note, that the returned node is not attached to the tree.
-     * <p/>
+     * <p>
      * If this artifact node does not allow children a RepositoryException is
      * thrown.
      *
@@ -307,7 +307,7 @@ public class AggregateImpl implements Aggregate {
     /**
      * Removes this artifact node from the tree. If this artifact node has
      * directory and non-directory artifacts only the non-directory artifacts
-     * are removed unless <code>recursive</code> is specified.
+     * are removed unless {@code recursive} is specified.
      *
      * @param recursive specifies if directories are removed as well.
      * @return infos about the modifications
@@ -331,7 +331,7 @@ public class AggregateImpl implements Aggregate {
      * Writes the artifacts back to the repository.
      *
      * @param artifacts the artifacts to write
-     * @param reposName the name of a new child node or <code>null</code>
+     * @param reposName the name of a new child node or {@code null}
      * @return infos about the modifications
      * @throws RepositoryException if an error occurs.
      * @throws IOException if an I/O error occurs.

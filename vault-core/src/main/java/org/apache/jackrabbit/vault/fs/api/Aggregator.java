@@ -44,9 +44,9 @@ public interface Aggregator extends Dumpable {
      *
      * @param root the root of the aggregation.
      * @param node the node to check
-     * @param path the path of the node or <code>null</code>
-     * @return <code>true</code> if the node is included;
-     *         <code>false</code> otherwise.
+     * @param path the path of the node or {@code null}
+     * @return {@code true} if the node is included;
+     *         {@code false} otherwise.
      *
      * @throws RepositoryException if an error occurs.
      */
@@ -60,9 +60,9 @@ public interface Aggregator extends Dumpable {
      * @param root the root of the aggregation.
      * @param parent the parent node of the property to check
      * @param property the property to check
-     * @param path the path of the property or <code>null</code>
-     * @return <code>true</code> if the node is included;
-     *         <code>false</code> otherwise.
+     * @param path the path of the property or {@code null}
+     * @return {@code true} if the node is included;
+     *         {@code false} otherwise.
      *
      * @throws RepositoryException if an error occurs.
      */
@@ -72,41 +72,41 @@ public interface Aggregator extends Dumpable {
      * Checks if this aggregator can handles the given node
      *
      * @param node the node to check
-     * @param path the path of the node or <code>null</code>
-     * @return <code>true</code> if this aggregator will handle the node;
-     *         <code>false</code> otherwise.
+     * @param path the path of the node or {@code null}
+     * @return {@code true} if this aggregator will handle the node;
+     *         {@code false} otherwise.
      * @throws RepositoryException if an error occurs.
      */
     boolean matches(Node node, String path) throws RepositoryException;
 
     /**
-     * Returns <code>true</code> if this aggregator includes the entire node
-     * sub tree into the serialization; <code>false</code> if it does not do a
+     * Returns {@code true} if this aggregator includes the entire node
+     * sub tree into the serialization; {@code false} if it does not do a
      * complete serialization and allows child aggregations
      * (eg: nt:unstructured).
      *
-     * @return <code>true</code> if this aggregator aggregates all children.
+     * @return {@code true} if this aggregator aggregates all children.
      */
     boolean hasFullCoverage();
 
     /**
      * Checks if this aggregator is the default aggregator.
-     * @return <code>true</code> if this aggregator is the default aggregator.
+     * @return {@code true} if this aggregator is the default aggregator.
      */
     boolean isDefault();
 
     /**
      * Removes the content for this aggregation. If this aggregator allows
      * child aggregations it may fail if it's not possible to remove only
-     * parts of the content. If <code>recursive</code> is <code>true</code>
+     * parts of the content. If {@code recursive} is {@code true}
      * it must not fail due to that reason, though.
-     * <p/>
+     * <p>
      * The aggregator may become invalid after the removal of the content and
      * subsequent calls may throw an exception.
      *
      * @param node the node of the aggregation to remove
-     * @param recursive <code>true</code> if all content is to be removed.
-     * @param trySave if <code>true</code> the aggregator tries to save the
+     * @param recursive {@code true} if all content is to be removed.
+     * @param trySave if {@code true} the aggregator tries to save the
      *        modified content.
      * @return ImportInfo infos about the modification
      * @throws RepositoryException if an error occurs.

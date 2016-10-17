@@ -59,7 +59,7 @@ public class LineElementsFactory implements ElementsFactory {
      * Create a new line element factory for the given text.
      * @param source the document source
      * @param text the text
-     * @param ignoreWs if <code>true</code> white spaces are ignored for the diff
+     * @param ignoreWs if {@code true} white spaces are ignored for the diff
      * @return the new factory
      *
      * todo: create non-annotated variant
@@ -76,7 +76,7 @@ public class LineElementsFactory implements ElementsFactory {
     /**
      * Create a new line element factory for the given source.
      * @param source the file source
-     * @param ignoreWs if <code>true</code> white spaces are ignored for the diff
+     * @param ignoreWs if {@code true} white spaces are ignored for the diff
      * @param charset the charset
      * @return the new factory
      * @throws IOException if an I/O error occurs
@@ -103,7 +103,7 @@ public class LineElementsFactory implements ElementsFactory {
      * Create a new line element factory for the given source.
      * @param source the source
      * @param text the text
-     * @param ignoreWs if <code>true</code> white spaces are ignored for the diff
+     * @param ignoreWs if {@code true} white spaces are ignored for the diff
      * @return the new factory
      * @throws IOException if an I/O error occurs
      *

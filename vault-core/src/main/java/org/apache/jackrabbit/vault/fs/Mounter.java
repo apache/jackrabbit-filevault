@@ -33,7 +33,7 @@ import org.apache.jackrabbit.vault.fs.impl.VaultFileSystemImpl;
 
 /**
  * Utility method to mount a JCR FS.
- * The filesystem is mounted relative to the given <code>mountpoint</code> and rooted at <code>rootPath</code>.
+ * The filesystem is mounted relative to the given {@code mountpoint} and rooted at {@code rootPath}.
  * For example if the mountpoint is http://.../test/export and the rootPath is /foo, then the filesystem's root node
  * has a internal repository path "/foo" that corresponds to the "real" repository node at "/test/export".
  * The workspace filter will be matched against the filesystem paths (e.g. /foo).

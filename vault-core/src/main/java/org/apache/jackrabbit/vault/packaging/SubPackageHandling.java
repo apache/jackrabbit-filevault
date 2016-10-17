@@ -27,16 +27,16 @@ import org.apache.jackrabbit.util.Text;
  * configuration consists of a list of {@link org.apache.jackrabbit.vault.packaging.SubPackageHandling.Entry}s that
  * match against a given {@link org.apache.jackrabbit.vault.packaging.PackageId}. The version of the package id is
  * ignored.
- * <p/>
+ * <p>
  * The sub package handling can be specified in the package properties as a string of the following format:
- * <xmp>
+ * <pre>
  *     subPackageHandling := instruction { "," instruction };
  *     instruction := packageIdFilter { ";" option }
  *     packageIdFilter := packageNameFilter | groupNameFilter ":" packageNameFilter;
  *     groupNameFilter := "*" | groupName;
  *     packageNameFilter := "*" | packageName;
  *     option := "install" | "extract" | "add" | "ignore";
- * </xmp>
+ * </pre>
  *
  *  Note that 'ignore' is currently not really supported as sub packages are part of the normal package content and
  *  behaves the same as 'add'. Future implementations will transport the sub packages outside of the normal package

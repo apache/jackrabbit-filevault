@@ -21,9 +21,9 @@ package org.apache.jackrabbit.vault.util.xml.xerces.xni;
  * This exception is the base exception of all XNI exceptions. It
  * can be constructed with an error message or used to wrap another
  * exception object.
- * <p/>
+ * <p>
  * <strong>Note:</strong> By extending the Java
- * <code>RuntimeException</code>, XNI handlers and components are
+ * {@code RuntimeException}, XNI handlers and components are
  * not required to catch XNI exceptions but may explicitly catch
  * them, if so desired.
  *

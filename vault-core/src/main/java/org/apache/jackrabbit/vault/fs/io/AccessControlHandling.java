@@ -18,7 +18,7 @@
 package org.apache.jackrabbit.vault.fs.io;
 
 /**
- * <code>AccessControlHandling</code> defines the behavior when importing
+ * {@code AccessControlHandling} defines the behavior when importing
  * access control nodes.
  */
 public enum AccessControlHandling {
@@ -39,8 +39,8 @@ public enum AccessControlHandling {
      * content by replacing the access control entries of corresponding
      * principals (i.e. package first). It never alters access control entries
      * of principals not present in the package.
-     * <p/>
-     * Example:<br/>
+     * <p>
+     * Example:<br>
      *
      * Content ACL:
      * <pre>
@@ -70,8 +70,8 @@ public enum AccessControlHandling {
      * content (i.e. content first). It never alters access control entries already
      * existing in the content.
      *
-     * <p/>
-     * Example:<br/>
+     * <p>
+     * Example:<br>
      *
      * Content ACL:
      * <pre>

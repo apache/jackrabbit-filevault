@@ -17,7 +17,7 @@
 package org.apache.jackrabbit.vault.util.console;
 
 /**
- * <code>ConsoleFileSystem</code>...
+ * {@code ConsoleFileSystem}...
  */
 public interface ConsoleFileSystem {
 

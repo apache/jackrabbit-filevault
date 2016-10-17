@@ -39,7 +39,7 @@ import org.apache.jackrabbit.vault.vlt.meta.VltEntries;
 import org.apache.jackrabbit.vault.vlt.meta.VltEntry;
 
 /**
- * <code>VltDirectory</code>...
+ * {@code VltDirectory}...
  *
  */
 public class VltDirectory {

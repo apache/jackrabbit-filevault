@@ -36,7 +36,7 @@ import org.apache.jackrabbit.vault.util.console.commands.AbstractConsoleCommand;
 import org.apache.jackrabbit.vault.util.console.util.Table;
 
 /**
- * <code>CmdLs</code>...
+ * {@code CmdLs}...
  */
 public class CmdLs extends AbstractConsoleCommand {
 

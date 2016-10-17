@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.fs.spi;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 
 /**
- * <code>ProgressTracker</code>...
+ * {@code ProgressTracker}...
  *
  */
 public class ProgressTracker {

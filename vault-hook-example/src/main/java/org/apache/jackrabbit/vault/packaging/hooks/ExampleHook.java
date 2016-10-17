@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>ExampleHook</code>...
+ * {@code ExampleHook}...
  */
 public class ExampleHook implements InstallHook {
 

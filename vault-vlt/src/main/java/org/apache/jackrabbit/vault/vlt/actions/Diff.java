@@ -25,7 +25,7 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
 
 /**
- * <code>Diff</code>...
+ * {@code Diff}...
  *
  */
 public class Diff extends BaseAction {

@@ -21,7 +21,7 @@ import java.util.Map;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 
 /**
- * <code>RcpTaskManager</code>...
+ * {@code RcpTaskManager}...
  */
 public interface RcpTaskManager {
 

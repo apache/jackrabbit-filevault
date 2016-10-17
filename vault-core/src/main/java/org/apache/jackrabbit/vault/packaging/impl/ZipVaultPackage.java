@@ -122,7 +122,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
     /**
      * Returns the file this package is based on.
-     * @return the file of this package or <code>null</code>.
+     * @return the file of this package or {@code null}.
      */
     public File getFile() {
         return (archive instanceof ZipArchive) ? ((ZipArchive) archive).getFile() : null;

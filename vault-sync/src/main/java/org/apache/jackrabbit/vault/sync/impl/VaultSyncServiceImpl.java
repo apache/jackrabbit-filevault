@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>VaultSyncServiceImpl</code>...
+ * {@code VaultSyncServiceImpl}...
  */
 @Component(label = "Vault Sync Service", metatype = true, immediate = true)
 public class VaultSyncServiceImpl implements EventListener, Runnable {

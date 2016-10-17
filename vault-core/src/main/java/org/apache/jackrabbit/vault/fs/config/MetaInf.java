@@ -107,7 +107,7 @@ public interface MetaInf {
     
     /**
      * Checks if the meta-inf contains a serialized definition.
-     * @return <code>true</code> if it contains a serialized definition.
+     * @return {@code true} if it contains a serialized definition.
      */
     boolean hasDefinition();
 

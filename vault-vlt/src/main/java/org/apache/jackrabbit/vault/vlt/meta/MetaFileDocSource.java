@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.vlt.meta;
 import org.apache.jackrabbit.vault.util.diff.DocumentSource;
 
 /**
- * <code>MetaFileDocSource</code>...
+ * {@code MetaFileDocSource}...
  */
 public class MetaFileDocSource implements DocumentSource {
 

@@ -56,7 +56,7 @@ public class PlatformExporter extends AbstractExporter {
 
     /**
      * Checks if 'prune-missing' is enabled.
-     * @return <code>true</code> if prune-missing is enabled
+     * @return {@code true} if prune-missing is enabled
      */
     public boolean pruneMissing() {
         return pruneMissing;

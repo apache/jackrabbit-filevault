@@ -19,7 +19,7 @@ package org.apache.jackrabbit.vault.util.diff;
 import junit.framework.TestCase;
 
 /**
- * <code>LineElementTest</code>...
+ * {@code LineElementTest}...
  */
 public class LineElementTest extends TestCase {
 

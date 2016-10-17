@@ -66,7 +66,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
 
     /**
      * Returns the node type that is used for generic xml deserialization.
-     * This has only an effect if {@link #isExplodeXml()} is <code>true</code>.
+     * This has only an effect if {@link #isExplodeXml()} is {@code true}.
      *
      * @return the xml node type.
      */
@@ -76,9 +76,9 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
 
     /**
      * Sets the node type that is used for generic xml deserialization.
-     * This has only an effect if {@link #isExplodeXml()} is <code>true</code>.
-     * <p/>
-     * Default is <code>nt:xmlDocument</code>
+     * This has only an effect if {@link #isExplodeXml()} is {@code true}.
+     * <p>
+     * Default is {@code nt:xmlDocument}
      *
      * @param xmlNodeType the xml node type name
      */
@@ -89,7 +89,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
     /**
      * Checks if this handler explodes the xml for a generic xml deserialization.
      *
-     * @return <code>true</code> if this handler explodes the xml
+     * @return {@code true} if this handler explodes the xml
      */
     public boolean isExplodeXml() {
         return explodeXml;
@@ -98,10 +98,10 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
     /**
      * Sets whether this handler should explode the xml of a generic xml
      * serialization.
-     * <p/>
-     * Default is <code>false</code>.
+     * <p>
+     * Default is {@code false}.
      *
-     * @param explodeXml <code>true</code> if to explode the xml
+     * @param explodeXml {@code true} if to explode the xml
      */
     public void setExplodeXml(boolean explodeXml) {
         this.explodeXml = explodeXml;
@@ -109,7 +109,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
 
     /**
      * {@inheritDoc}
-     * <p/>
+     * <p>
      * Handles generic artifact sets
      */
     public ImportInfoImpl accept(WorkspaceFilter wspFilter, Node parent,

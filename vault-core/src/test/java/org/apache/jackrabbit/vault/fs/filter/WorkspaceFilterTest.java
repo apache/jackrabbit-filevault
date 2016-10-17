@@ -35,7 +35,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * <code>WorkspaceFilterTest</code>...
+ * {@code WorkspaceFilterTest}...
  */
 public class WorkspaceFilterTest {
 

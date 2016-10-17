@@ -20,7 +20,7 @@ import java.io.File;
 
 
 /**
- * <code>Test</code>...
+ * {@code Test}...
  */
 public class Test {
 

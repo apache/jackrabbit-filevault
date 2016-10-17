@@ -25,7 +25,7 @@ import org.apache.commons.cli2.option.Command;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
 /**
- * <code>CmdExit</code>...
+ * {@code CmdExit}...
  */
 public class CmdHelp extends AbstractCommand {
 

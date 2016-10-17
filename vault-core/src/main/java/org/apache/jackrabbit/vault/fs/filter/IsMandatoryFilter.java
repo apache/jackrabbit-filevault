@@ -25,7 +25,7 @@ import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 
 /**
- * <code>IsNodeFilter</code>...
+ * {@code IsNodeFilter}...
  *
  */
 public class IsMandatoryFilter extends DepthItemFilter {

@@ -23,7 +23,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 /**
- * <code>PlatformNameTest</code>...
+ * {@code PlatformNameTest}...
  *
  */
 public class PlatformNameTest extends TestCase {

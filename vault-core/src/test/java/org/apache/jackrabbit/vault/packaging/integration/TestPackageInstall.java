@@ -44,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * <code>TestPackageInstall</code>...
+ * {@code TestPackageInstall}...
  */
 public class TestPackageInstall extends IntegrationTestBase {
 

@@ -19,7 +19,7 @@ package org.apache.jackrabbit.vault.packaging.impl;
 import javax.management.openmbean.TabularData;
 
 /**
- * <code>PackageManagerMBean</code>...
+ * {@code PackageManagerMBean}...
  */
 public interface PackageManagerMBean {
 

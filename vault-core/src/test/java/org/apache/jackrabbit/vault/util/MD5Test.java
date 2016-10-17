@@ -24,7 +24,7 @@ import java.io.InputStream;
 import junit.framework.TestCase;
 
 /**
- * <code>MD5Test</code>...
+ * {@code MD5Test}...
  */
 public class MD5Test extends TestCase {
 

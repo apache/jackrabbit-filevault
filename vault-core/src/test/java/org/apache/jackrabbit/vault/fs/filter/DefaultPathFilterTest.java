@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.fs.filter;
 import junit.framework.TestCase;
 
 /**
- * <code>DefaultPathFilterTest</code>...
+ * {@code DefaultPathFilterTest}...
  */
 public class DefaultPathFilterTest extends TestCase {
 

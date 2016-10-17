@@ -34,7 +34,7 @@ public class FileFolderNodeFilter extends DepthItemFilter {
     /**
      * {@inheritDoc}
      *
-     * Returns <code>true</code> if the item is a node of type nt:hierarchyNode
+     * Returns {@code true} if the item is a node of type nt:hierarchyNode
      * that has or defines a 'jcr:content' child node.
      */
     public boolean matches(Item item) throws RepositoryException {

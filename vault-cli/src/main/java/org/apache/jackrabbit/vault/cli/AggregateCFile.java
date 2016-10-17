@@ -27,7 +27,7 @@ import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 
 /**
- * <code>JcrCWO</code>...
+ * {@code JcrCWO}...
  *
  */
 public class AggregateCFile implements ConsoleFile {

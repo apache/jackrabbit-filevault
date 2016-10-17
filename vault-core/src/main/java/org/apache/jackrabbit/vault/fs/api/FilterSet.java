@@ -26,7 +26,7 @@ import java.util.List;
  * The item filter set holds a set of item filters each attributed as include
  * or exclude filter. The evaluation of the set allows included items and
  * rejects excluded items.
- * <p/>
+ * <p>
  * Additionally it contains a "root" path for which the filters are evaluated.
  * if an item has not the node addressed by the root path as ancestor, it is
  * always excluded.
@@ -137,7 +137,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
 
     /**
      * Checks if this filter set is sealed.
-     * @return <code>true</code> if sealed.
+     * @return {@code true} if sealed.
      */
     public boolean isSealed() {
         return sealed;
@@ -146,7 +146,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     /**
      * Adds (replaces) all entries from the given set to this one.
      * @param set the set of entries
-     * @return <code>this</code> suitable for chaining.
+     * @return {@code this} suitable for chaining.
      */
     public FilterSet addAll(FilterSet<E> set) {
         if (sealed) {
@@ -164,7 +164,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     /**
      * Adds a new item filter as included entry.
      * @param filter the filter
-     * @return <code>this</code> suitable for chaining.
+     * @return {@code this} suitable for chaining.
      */
     public FilterSet addInclude(E filter) {
         addEntry(new Entry<E>(filter, true));
@@ -174,7 +174,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     /**
      * Adds a new item filter as excluded entry.
      * @param filter the filter
-     * @return <code>this</code> suitable for chaining.
+     * @return {@code this} suitable for chaining.
      */
     public FilterSet addExclude(E filter) {
         addEntry(new Entry<E>(filter, false));
@@ -206,7 +206,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
 
     /**
      * Checks if this filter set has any entries defined.
-     * @return <code>true</code> if empty
+     * @return {@code true} if empty
      */
     public boolean isEmpty() {
         return entries == null || entries.isEmpty();
@@ -214,10 +214,10 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
 
     /**
      * Checks if the given item is covered by this filter set. I.e. if the node
-     * addressed by the <code>root</code> path is an ancestor of the given item.
+     * addressed by the {@code root} path is an ancestor of the given item.
      *
      * @param path path of the item
-     * @return <code>true</code> if this set covers the given item
+     * @return {@code true} if this set covers the given item
      */
     public boolean covers(String path) {
         return path.equals(root) || path.startsWith(rootPattern);
@@ -226,7 +226,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     /**
      * Checks if the given item is an ancestor of the root node.
      * @param path path of the item to check
-     * @return <code>true</code> if the given item is an ancestor
+     * @return {@code true} if the given item is an ancestor
      */
     public boolean isAncestor(String path) {
         return path.equals(root) || root.startsWith(path + "/") || path.equals("/");

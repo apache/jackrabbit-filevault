@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <code>DefaultNodeTypes</code>...
+ * {@code DefaultNodeTypes}...
  */
 public final class DefaultNodeTypes {
 

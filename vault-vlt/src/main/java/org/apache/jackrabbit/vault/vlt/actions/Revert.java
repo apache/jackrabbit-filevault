@@ -25,7 +25,7 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
 
 /**
- * <code>Revert</code>...
+ * {@code Revert}...
  *
  */
 public class Revert extends BaseAction {

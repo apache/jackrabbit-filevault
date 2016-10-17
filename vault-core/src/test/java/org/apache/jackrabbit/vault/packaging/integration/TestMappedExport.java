@@ -37,7 +37,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * <code>TestEmptyPackage</code>...
+ * {@code TestEmptyPackage}...
  */
 public class TestMappedExport extends IntegrationTestBase {
 

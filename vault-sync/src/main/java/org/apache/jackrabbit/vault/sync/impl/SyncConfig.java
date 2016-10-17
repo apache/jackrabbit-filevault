@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>SyncConfig</code>...
+ * {@code SyncConfig}...
  */
 public class SyncConfig {
 

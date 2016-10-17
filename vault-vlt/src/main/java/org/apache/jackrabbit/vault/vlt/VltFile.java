@@ -50,7 +50,7 @@ import org.apache.jackrabbit.vault.vlt.meta.VltEntry;
 import org.apache.jackrabbit.vault.vlt.meta.VltEntryInfo;
 
 /**
- * <code>VltFile</code>...
+ * {@code VltFile}...
  *
  */
 public class VltFile implements DocumentSource {
@@ -234,7 +234,7 @@ public class VltFile implements DocumentSource {
      * Checks if this file has binary content. It does not actually read the
      * file data but calls {@link MimeTypes#isBinary(String)} with the content
      * type of the work file.
-     * @return <code>true</code> if this is binary
+     * @return {@code true} if this is binary
      */
     public boolean isBinary() {
         return MimeTypes.isBinary(getContentType());

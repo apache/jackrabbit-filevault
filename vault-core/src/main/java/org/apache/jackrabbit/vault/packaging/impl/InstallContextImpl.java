@@ -28,7 +28,7 @@ import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 
 /**
- * <code>InstallContextImpl</code>...
+ * {@code InstallContextImpl}...
  */
 public class InstallContextImpl implements InstallContext {
 

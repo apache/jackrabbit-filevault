@@ -59,7 +59,7 @@ public class VaultFileImpl implements VaultFile {
     private final String name;
 
     /**
-     * The artifact this represents or <code>null</code> if not attached
+     * The artifact this represents or {@code null} if not attached
      */
     private Artifact artifact;
 
@@ -146,7 +146,7 @@ public class VaultFileImpl implements VaultFile {
      * @param fs the file system
      * @param name the file entry name
      * @param node the node
-     * @param artifact the underlying artifact. can be <code>null</code>
+     * @param artifact the underlying artifact. can be {@code null}
      * @throws RepositoryException if an error occurs
      */
     protected VaultFileImpl(VaultFileSystem fs, String name, VaultFileNode node,

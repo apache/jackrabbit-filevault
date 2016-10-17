@@ -132,7 +132,7 @@ public class Dependency {
     /**
      * Checks if the given package id matches this dependency specification.
      * @param id the package id
-     * @return <code>true</code> if matches
+     * @return {@code true} if matches
      */
     public boolean matches(PackageId id) {
         return groupId.equals(id.getGroup())
@@ -142,7 +142,7 @@ public class Dependency {
 
     /**
      * Returns a dependency from a string. if the given id is null or an
-     * empty string, <code>null</code> is returned.
+     * empty string, {@code null} is returned.
      * @param str the string
      * @return the dependency
      */

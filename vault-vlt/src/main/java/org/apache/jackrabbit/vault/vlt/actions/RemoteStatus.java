@@ -26,7 +26,7 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
 
 /**
- * <code>RemoteStatus</code>...
+ * {@code RemoteStatus}...
  *
  */
 public class RemoteStatus extends BaseAction {

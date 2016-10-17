@@ -22,7 +22,7 @@ import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
 /**
- * <code>AbstractCommand</code>...
+ * {@code AbstractCommand}...
  */
 public abstract class AbstractConsoleCommand extends AbstractCommand implements ConsoleCommand {
 

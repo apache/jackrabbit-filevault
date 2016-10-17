@@ -38,7 +38,7 @@ public class AggregateBuilder {
     private final AggregateImpl aggregate;
 
     /**
-     * the name for the new node or <code>null</code>
+     * the name for the new node or {@code null}
      */
     private final String reposName;
 

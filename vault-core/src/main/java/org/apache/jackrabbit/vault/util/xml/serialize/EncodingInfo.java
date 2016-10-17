@@ -65,7 +65,7 @@ public class EncodingInfo {
     CharsetEncoder nioCharEncoder = null;
 
     /**
-     * Creates new <code>EncodingInfo</code> instance.
+     * Creates new {@code EncodingInfo} instance.
      */
     public EncodingInfo(String ianaName, String javaName, int lastPrintable) {
         this.ianaName = ianaName;

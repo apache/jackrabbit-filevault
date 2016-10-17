@@ -40,14 +40,11 @@ import org.w3c.dom.html.HTMLDocument;
  * XSLT specification for output format, plus additional parameters.
  * Used to select the suitable serializer and determine how the
  * document should be formatted on output.
- * <p/>
+ * <p>
  * The two interesting constructors are:
  * <ul>
- * <li>{@link #OutputFormat(String,String,boolean)} creates a format
- * for the specified method (XML, HTML, Text, etc), encoding and indentation
- * <li>{@link #OutputFormat(Document,String,boolean)} creates a format
- * compatible with the document type (XML, HTML, Text, etc), encoding and
- * indentation
+ * <li>{@link #OutputFormat(String,String,boolean)} creates a format for the specified method (XML, HTML, Text, etc), encoding and indentation
+ * <li>{@link #OutputFormat(Document,String,boolean)} creates a format compatible with the document type (XML, HTML, Text, etc), encoding and indentation
  * </ul>
  *
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
@@ -134,7 +131,7 @@ public class OutputFormat {
     private int _indent = 0;
 
     /**
-     * if <code>true</code> each attribute is placed on a new line
+     * if {@code true} each attribute is placed on a new line
      * (added by tripod@apache.org)
      */
     private boolean _breakEachAttribute = false;
@@ -438,7 +435,7 @@ public class OutputFormat {
     }
 
     /**
-     * Sets the encoding for this output method with an <code>EncodingInfo</code>
+     * Sets the encoding for this output method with an {@code EncodingInfo}
      * instance.
      */
     public void setEncoding(EncodingInfo encInfo) {
@@ -447,7 +444,7 @@ public class OutputFormat {
     }
 
     /**
-     * Returns an <code>EncodingInfo<code> instance for the encoding.
+     * Returns an {@code EncodingInfo{@code  instance for the encoding.
      *
      * @see #setEncoding
      */

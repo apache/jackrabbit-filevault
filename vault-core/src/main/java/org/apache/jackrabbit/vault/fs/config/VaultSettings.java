@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * <code>VaultUserConfig</code>...
+ * {@code VaultUserConfig}...
  *
  */
 public class VaultSettings extends AbstractConfig {

@@ -66,7 +66,7 @@ public interface ServiceProvider {
      * Returns the default CND writer
      * @param out the writer
      * @param s the session
-     * @param includeNS <code>true</code> if namespace should be included
+     * @param includeNS {@code true} if namespace should be included
      * @return the default CND writer
      */
     CNDWriter getCNDWriter(Writer out, Session s, boolean includeNS);
@@ -78,10 +78,10 @@ public interface ServiceProvider {
     ACLManagement getACLManagement();
 
     /**
-     * Returns the repository dependant User management or <code>null</code> if
+     * Returns the repository dependant User management or {@code null} if
      * the repository does not require a separate user handling.
      *
-     * @return repository dependant User management or <code>null</code>
+     * @return repository dependant User management or {@code null}
      */
     UserManagement getUserManagement();
 }

@@ -101,7 +101,7 @@ public class VaultFileSystemImpl implements VaultFileSystem {
      *
      * @param rootAggregate the root artifacts node
      * @param rootPath path of root file. used for remapping
-     * @param ownMgr <code>true</code> if it's own manager
+     * @param ownMgr {@code true} if it's own manager
      * @throws IOException if an I/O error occurs
      * @throws RepositoryException if a repository error occurs.
      */

@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 import java.util.LinkedList;
 
 /**
- * <code>DumpHandler</code>...
+ * {@code DumpHandler}...
  *
  */
 public class DumpContext {

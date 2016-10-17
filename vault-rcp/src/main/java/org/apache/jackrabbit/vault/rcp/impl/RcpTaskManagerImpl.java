@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>RcpTaskManager</code>...
+ * {@code RcpTaskManager}...
  */
 @Component
 @Service(value = RcpTaskManager.class)

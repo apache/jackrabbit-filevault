@@ -148,7 +148,7 @@ public abstract class AbstractExporter {
     /**
      * Exports the given vault file and writes the META-INF data.
      * @param parent the vault file
-     * @param noClose if <code>true</code> exporter will not be closed after export
+     * @param noClose if {@code true} exporter will not be closed after export
      * @throws RepositoryException if an error occurs
      * @throws IOException if an I/O error occurs
      */

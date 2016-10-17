@@ -36,7 +36,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * <code>Entry</code>...
+ * {@code Entry}...
  *
  */
 public class XmlEntry implements VltEntry {

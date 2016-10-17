@@ -24,7 +24,7 @@ import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
 /**
- * <code>XJcrLog</code>...
+ * {@code XJcrLog}...
  */
 public class XDavEx extends ExtendedOption {
 

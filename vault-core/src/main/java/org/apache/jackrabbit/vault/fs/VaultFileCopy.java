@@ -36,7 +36,7 @@ import org.apache.jackrabbit.vault.util.LineOutputStream;
 import org.apache.jackrabbit.vault.util.MD5;
 
 /**
- * <code>FileUtil</code>...
+ * {@code FileUtil}...
  *
  */
 public class VaultFileCopy {

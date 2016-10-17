@@ -19,7 +19,7 @@ package org.apache.jackrabbit.vault.util.console;
 import org.apache.commons.cli2.CommandLine;
 
 /**
- * <code>Command</code>...
+ * {@code Command}...
  */
 public interface ConsoleCommand extends CliCommand {
 

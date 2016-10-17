@@ -141,26 +141,26 @@ public interface PackageProperties {
     String PREFIX_INSTALL_HOOK = "installhook.";
 
     /**
-     * Returns the id of this package or <code>null</code> if the id can't
+     * Returns the id of this package or {@code null} if the id can't
      * be determined.
      * @return the id of this package.
      */
     PackageId getId();
 
     /**
-     * Returns the last modification date or <code>null</code> if n/a.
-     * @return last modification date or <code>null</code>
+     * Returns the last modification date or {@code null} if n/a.
+     * @return last modification date or {@code null}
      */
     Calendar getLastModified();
 
     /**
-     * Returns the user that last modified the package or <code>null</code> if n/a.
-     * @return the user or <code>null</code>
+     * Returns the user that last modified the package or {@code null} if n/a.
+     * @return the user or {@code null}
      */
     String getLastModifiedBy();
 
     /**
-     * Returns the date when this package was built or <code>null</code> if n/a.
+     * Returns the date when this package was built or {@code null} if n/a.
      * @return the creation date
      */
     Calendar getCreated();
@@ -172,7 +172,7 @@ public interface PackageProperties {
     String getCreatedBy();
 
     /**
-     * Returns the date when this package was wrapped or <code>null</code> if n/a.
+     * Returns the date when this package was wrapped or {@code null} if n/a.
      * @return the wrapped date
      * @since 2.2.22
      */
@@ -186,15 +186,15 @@ public interface PackageProperties {
     String getLastWrappedBy();
 
     /**
-     * Returns a description of this package or <code>null</code> if n/a
+     * Returns a description of this package or {@code null} if n/a
      * @return a description
      */
     String getDescription();
 
     /**
-     * Returns <code>true</code> if this package can only be extracted by a
+     * Returns {@code true} if this package can only be extracted by a
      * admin session.
-     * @return <code>true</code> if this package requires an admin session for extraction.
+     * @return {@code true} if this package requires an admin session for extraction.
      */
     boolean requiresRoot();
 

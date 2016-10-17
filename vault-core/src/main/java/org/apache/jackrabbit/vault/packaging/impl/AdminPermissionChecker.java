@@ -43,7 +43,7 @@ public class AdminPermissionChecker {
      *
      * @param session a JCR session
      * @return whether the passed session is an admin session
-     * @throws RepositoryException
+     * @throws RepositoryException If an error occurrs.
      */
     public static boolean hasAdministrativePermissions(Session session) throws RepositoryException {
         String userId = session.getUserID();

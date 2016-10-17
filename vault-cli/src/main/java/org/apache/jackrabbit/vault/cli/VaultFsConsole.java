@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.cli;
 import org.apache.jackrabbit.vault.util.console.Console;
 
 /**
- * <code>JcrFsConsole</code>...
+ * {@code JcrFsConsole}...
  *
  */
 public class VaultFsConsole extends Console {

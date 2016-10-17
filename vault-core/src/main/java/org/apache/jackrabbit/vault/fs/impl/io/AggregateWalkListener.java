@@ -42,7 +42,7 @@ public interface AggregateWalkListener {
      *
      * @param node     the node that is traversed
      * @param included indicates if the node is included in the aggregate. If
-     *                 <code>false</code> it's just a traversed intermediate node.
+     *                 {@code false} it's just a traversed intermediate node.
      * @param depth    the relative depth of the node in respect to the tree root node.
      * @throws RepositoryException if a repository error occurs.
      */
@@ -72,7 +72,7 @@ public interface AggregateWalkListener {
      *
      * @param node     the node that is finished traversing
      * @param included indicates if the node is included in the aggregate. If
-     *                 <code>false</code> it's just a traversed intermediate node.
+     *                 {@code false} it's just a traversed intermediate node.
      * @param depth    the relative depth of the node in respect to the tree root node.
      * @throws RepositoryException if a repository error occurs.
      */

@@ -183,7 +183,7 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
      * Removes the artifact from this set.
      *
      * @param a the artifact to remove
-     * @return <code>true</code> if the artifact was removed.
+     * @return {@code true} if the artifact was removed.
      */
     public boolean remove(Artifact a) {
         if (artifacts.remove(a)) {
@@ -205,7 +205,7 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
      * same name is replaced.
      *
      * @param a the artifact to put
-     * @return the previous artifact or <code>null</code>
+     * @return the previous artifact or {@code null}
      */
     public Artifact put(Artifact a) {
         Artifact prev = null;
@@ -295,10 +295,10 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
     }
 
     /**
-     * Returns the artifact with the given path or <code>null</code> if it does
+     * Returns the artifact with the given path or {@code null} if it does
      * not exist.
      * @param path the name of the artifact.
-     * @return the desired artifact or <code>null</code>
+     * @return the desired artifact or {@code null}
      */
     public Artifact getArtifact(String path) {
         for (Artifact a: artifacts) {

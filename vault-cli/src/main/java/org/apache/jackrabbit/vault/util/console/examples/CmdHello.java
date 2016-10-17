@@ -26,7 +26,7 @@ import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 import org.apache.jackrabbit.vault.util.console.commands.AbstractCommand;
 
 /**
- * <code>CmdExit</code>...
+ * {@code CmdExit}...
  */
 public class CmdHello extends AbstractCommand {
 

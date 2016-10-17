@@ -40,7 +40,7 @@ public class NodeTypeAggregator extends GenericAggregator {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> always.
+     * @return {@code true} always.
      */
     public boolean hasFullCoverage() {
         return true;
@@ -63,7 +63,6 @@ public class NodeTypeAggregator extends GenericAggregator {
 
     /**
      * {@inheritDoc}
-     * @param aggregate
      */
     public ArtifactSetImpl createArtifacts(AggregateImpl aggregate) throws RepositoryException {
         ArtifactSetImpl artifacts = new ArtifactSetImpl();

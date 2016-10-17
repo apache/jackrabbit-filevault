@@ -33,7 +33,7 @@ import org.apache.jackrabbit.vault.fs.io.Serializer;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 
 /**
- * <code>DocViewSerializer</code>...
+ * {@code DocViewSerializer}...
 *
 */
 public class CNDSerializer implements Serializer {

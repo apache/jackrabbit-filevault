@@ -89,7 +89,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * <code>IntegrationTestBase</code>...
+ * {@code IntegrationTestBase}...
  */
 public class IntegrationTestBase  {
 

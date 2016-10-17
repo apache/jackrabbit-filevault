@@ -21,7 +21,7 @@ import org.apache.commons.cli2.CommandLine;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
 /**
- * <code>AbstractJcrFsCommand</code> provides base functionality for JcrFs
+ * {@code AbstractJcrFsCommand} provides base functionality for JcrFs
  * commands.
  *
  */

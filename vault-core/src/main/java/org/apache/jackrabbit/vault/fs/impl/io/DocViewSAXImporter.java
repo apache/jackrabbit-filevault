@@ -78,7 +78,7 @@ import org.xml.sax.helpers.AttributesImpl;
 /**
  * Implements an importer that processes SAX events from a (modified) document
  * view. The behaviour for existing nodes works as follows:
- * <xmp>
+ * <pre>
  *
  * - extended docview always includes SNS indexes
  * - label is the last element of the path
@@ -99,7 +99,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * child | yes   | yes | reuse
  * desc  | -     | -   | *error*
  * other | -     | -   | *error*
- * </xmp>
+ * </pre>
  *
  */
 public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements NamespaceResolver {

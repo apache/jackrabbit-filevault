@@ -17,7 +17,7 @@
 package org.apache.jackrabbit.vault.util.console;
 
 /**
- * <code>ExecutionException</code> is used by commands reporting failure.
+ * {@code ExecutionException} is used by commands reporting failure.
  */
 public class ExecutionException extends RuntimeException {
 

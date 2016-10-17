@@ -129,7 +129,7 @@ public class GenericAggregator implements Aggregator, Dumpable {
     /**
      * Sets the flag indicating if this aggregator aggregates children
      *
-     * @param fullCoverage <code>true</code> if this aggregator aggregates
+     * @param fullCoverage {@code true} if this aggregator aggregates
      *        children
      */
     public void setFullCoverage(String fullCoverage) {
@@ -182,7 +182,6 @@ public class GenericAggregator implements Aggregator, Dumpable {
 
     /**
      * {@inheritDoc}
-     * @param aggregate
      */
     public ArtifactSet createArtifacts(Aggregate aggregate) throws RepositoryException {
         ArtifactSetImpl artifacts = new ArtifactSetImpl();
@@ -201,7 +200,7 @@ public class GenericAggregator implements Aggregator, Dumpable {
             name = "";
             ext = Constants.DOT_CONTENT_XML;
             // special optimization if only nt:folder
-            if (aggregate.getNode().getPrimaryNodeType().getName().equals("nt:folder")
+            if ("nt:folder".equals(aggregate.getNode().getPrimaryNodeType().getName())
                     && aggregate.getNode().getMixinNodeTypes().length == 0) {
                 return artifacts;
             }
@@ -236,7 +235,7 @@ public class GenericAggregator implements Aggregator, Dumpable {
      * {@inheritDoc}
      *
      * Throws an exception if this aggregator allows children but
-     * <code>recursive</code> is <code>false</code>.
+     * {@code recursive} is {@code false}.
      */
     public ImportInfo remove(Node node, boolean recursive, boolean trySave)
             throws RepositoryException {

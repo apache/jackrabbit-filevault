@@ -23,7 +23,7 @@ import java.io.Writer;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 
 /**
- * <code>HtmlProgressTrackerListener</code> implements a progress tracker listener that writes the progress in HTML.
+ * {@code HtmlProgressTrackerListener} implements a progress tracker listener that writes the progress in HTML.
  */
 public class HtmlProgressListener implements ProgressTrackerListener {
 

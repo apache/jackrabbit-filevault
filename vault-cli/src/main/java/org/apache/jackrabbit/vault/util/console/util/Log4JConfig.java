@@ -24,7 +24,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
- * <code>Log4JConfig</code>...
+ * {@code Log4JConfig}...
  */
 public class Log4JConfig {
 

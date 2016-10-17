@@ -25,7 +25,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * <code>MD5</code>...
+ * {@code MD5}...
  */
 public class MD5 {
 

@@ -22,7 +22,7 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
 
 /**
- * <code>AbstractAction</code>...
+ * {@code AbstractAction}...
  *
  */
 abstract public class AbstractAction implements Action {
@@ -48,8 +48,8 @@ abstract public class AbstractAction implements Action {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if the given directory is controlled or
-     *         {@link #onlyControlled} is <code>false</code>;
+     * @return {@code true} if the given directory is controlled or
+     *         {@link #onlyControlled} is {@code false};
      */
     public boolean run(VltDirectory dir, VaultFile remoteDir)
             throws VltException {

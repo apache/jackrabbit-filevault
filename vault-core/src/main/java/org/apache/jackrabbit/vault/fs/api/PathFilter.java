@@ -30,7 +30,7 @@ public interface PathFilter extends Filter {
     public static final PathFilter ALL = new PathFilter() {
 
         /**
-         * Returns always <code>true</code>
+         * Returns always {@code true}
          */
         public boolean matches(String path) {
             return true;
@@ -64,7 +64,7 @@ public interface PathFilter extends Filter {
     public static final PathFilter NONE = new PathFilter() {
 
         /**
-         * Returns always <code>false</code>
+         * Returns always {@code false}
          */
         public boolean matches(String path) {
             return false;
@@ -96,14 +96,14 @@ public interface PathFilter extends Filter {
      * Checks if the given path matches this filters criteria.
      *
      * @param path the path to check
-     * @return <code>true</code> if this filter matches the criteria;
-     *         <code>false</code> otherwise.
+     * @return {@code true} if this filter matches the criteria;
+     *         {@code false} otherwise.
      */
     boolean matches(String path);
 
     /**
      * Checks if the pattern is absolute, i.e. does not start with a wildcard.
-     * @return <code>true</code> if pattern is absolute
+     * @return {@code true} if pattern is absolute
      */
     boolean isAbsolute();
 

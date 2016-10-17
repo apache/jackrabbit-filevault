@@ -39,7 +39,7 @@ import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.VltException;
 
 /**
- * <code>Checkout</code>...
+ * {@code Checkout}...
  */
 public class Sync extends AbstractAction {
 

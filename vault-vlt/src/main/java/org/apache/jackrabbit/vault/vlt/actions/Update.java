@@ -26,7 +26,7 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
 
 /**
- * <code>Update</code>...
+ * {@code Update}...
  *
  */
 public class Update extends BaseAction {

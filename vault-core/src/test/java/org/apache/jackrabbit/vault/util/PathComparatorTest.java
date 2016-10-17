@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.util;
 import junit.framework.TestCase;
 
 /**
- * <code>PathComparatorTest</code>...
+ * {@code PathComparatorTest}...
  *
  */
 public class PathComparatorTest extends TestCase {

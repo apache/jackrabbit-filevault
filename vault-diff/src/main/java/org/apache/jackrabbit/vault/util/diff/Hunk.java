@@ -110,7 +110,7 @@ public class Hunk {
      * @param out the writer
      * @param numContextLines the number of context lines to include in the
      *        diff blocks. do not change during iteration!
-     * @return the next hunk or <code>null</code>.
+     * @return the next hunk or {@code null}.
      * @throws IOException if an I/O error occurs.
      */
     public Hunk write(DiffWriter out, int numContextLines) throws IOException {

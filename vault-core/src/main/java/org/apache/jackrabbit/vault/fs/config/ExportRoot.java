@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * Represents the root of a vault export or a vlt checkout. it has the following
  * structure:
  *
- * <xmp>
+ * <pre>
  * root
  * |-- META-INF
  * |   `-- vault
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * |       `-- properties.xml
  * `-- jcr_root
  *     :
- * </xmp>
+ * </pre>
  *
  */
 public class ExportRoot {
@@ -61,7 +61,7 @@ public class ExportRoot {
 
     /**
      * Checks if this export root already has the necessary structure setup.
-     * @return <code>true</code> if valid.
+     * @return {@code true} if valid.
      */
     public boolean isValid() {
         return jcrRoot.isDirectory() && metaDir.isDirectory();

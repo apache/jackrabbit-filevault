@@ -45,14 +45,14 @@ public interface InstallHookProcessor {
 
     /**
      * Checks if this process has any hooks registered.
-     * @return <code>true</code> if there are hooks registered.
+     * @return {@code true} if there are hooks registered.
      */
     boolean hasHooks();
 
     /**
      * Executes the registered hooks with the current {@link InstallContext.Phase}.
      * @param context the context
-     * @return <code>true</code> if successful.
+     * @return {@code true} if successful.
      */
     boolean execute(InstallContext context);
 }

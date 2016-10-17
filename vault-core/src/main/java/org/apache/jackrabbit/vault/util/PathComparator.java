@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.util;
 import java.util.Comparator;
 
 /**
- * <code>PathComparator</code>...
+ * {@code PathComparator}...
  *
  */
 public class PathComparator implements Comparator<String> {
@@ -53,8 +53,10 @@ public class PathComparator implements Comparator<String> {
      * Compared to the {@link String#compareTo(String)} it handles the '/'
      * differently giving it the highest priority so that:
      *
-     * "/a" < "/b"
-     * "/a1foo" < "/a/foo"
+     * <pre>
+     * "/a" &lt; "/b"
+     * "/a1foo" &lt; "/a/foo"
+     * </pre>
      */
     public int compare(String o1, String o2) {
         if (o1.equals(o2)) {

@@ -32,7 +32,7 @@ import org.apache.jackrabbit.vault.vlt.meta.VltEntry;
 import org.apache.jackrabbit.vault.vlt.meta.VltEntryInfo;
 
 /**
- * <code>Info</code>...
+ * {@code Info}...
  *
  */
 public class Info extends BaseAction {

@@ -191,7 +191,7 @@ public class PlatformNameFormat {
     /**
      * Returns the repository path for the given platform one.
      * @param path the platform path
-     * @param respectDotDir if <code>true</code>, all ".dir" are removed.
+     * @param respectDotDir if {@code true}, all ".dir" are removed.
      * @return the repository path
      */
     public static String getRepositoryPath(String path, boolean respectDotDir) {

@@ -32,7 +32,7 @@ import jline.History;
 import jline.SimpleCompletor;
 
 /**
- * <code>Console</code>...
+ * {@code Console}...
  */
 public class Console {
 

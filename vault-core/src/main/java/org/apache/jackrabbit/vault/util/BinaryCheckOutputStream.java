@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * <code>BinaryCheckOutputStream</code>...
+ * {@code BinaryCheckOutputStream}...
  */
 public class BinaryCheckOutputStream extends OutputStream {
 

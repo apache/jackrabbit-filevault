@@ -29,7 +29,7 @@ import org.apache.commons.cli2.option.Command;
 import org.apache.commons.cli2.util.HelpFormatter;
 
 /**
- * <code>Test</code>...
+ * {@code Test}...
  */
 public class Test {
 

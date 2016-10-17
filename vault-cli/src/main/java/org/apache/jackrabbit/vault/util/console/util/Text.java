@@ -19,7 +19,7 @@ package org.apache.jackrabbit.vault.util.console.util;
 import java.util.ArrayList;
 
 /**
- * <code>Text</code>...
+ * {@code Text}...
  */
 public class Text {
 

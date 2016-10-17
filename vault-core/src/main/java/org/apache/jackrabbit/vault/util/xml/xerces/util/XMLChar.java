@@ -24,15 +24,15 @@ import java.util.Arrays;
  * in this class can be used to verify that a character is a valid
  * XML character or if the character is a space, name start, or name
  * character.
- * <p/>
+ * <p>
  * A series of convenience methods are supplied to ease the burden
  * of the developer. Because inlining the checks can improve per
  * character performance, the tables of character properties are
- * public. Using the character as an index into the <code>CHARS</code>
+ * public. Using the character as an index into the {@code CHARS}
  * array and applying the appropriate mask flag (e.g.
- * <code>MASK_VALID</code>), yields the same results as calling the
+ * {@code MASK_VALID}), yields the same results as calling the
  * convenience methods. There is one exception: check the comments
- * for the <code>isValid</code> method for details.
+ * for the {@code isValid} method for details.
  *
  * @author Glenn Marcy, IBM
  * @author Andy Clark, IBM
@@ -83,7 +83,7 @@ public class XMLChar {
      * be considered the start of markup, such as '&lt;' and '&amp;'.
      * The various newline characters are considered special as well.
      * All other valid XML characters can be considered content.
-     * <p/>
+     * <p>
      * This is an optimization for the inner loop of character scanning.
      */
     public static final int MASK_CONTENT = 0x20;
@@ -793,9 +793,9 @@ public class XMLChar {
     /**
      * Returns true if the specified character is valid. This method
      * also checks the surrogate character range from 0x10000 to 0x10FFFF.
-     * <p/>
+     * <p>
      * If the program chooses to apply the mask directly to the
-     * <code>CHARS</code> array, then they are responsible for checking
+     * {@code CHARS} array, then they are responsible for checking
      * the surrogate character range.
      *
      * @param c The character to check.

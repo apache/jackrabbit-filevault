@@ -27,7 +27,7 @@ import org.apache.jackrabbit.vault.util.console.AbstractApplication;
 import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 
 /**
- * <code>CmdLs</code>...
+ * {@code CmdLs}...
  */
 public class CmdLoad extends AbstractConsoleCommand {
 

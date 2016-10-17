@@ -22,12 +22,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * <code>ImportInfo</code>...
+ * {@code ImportInfo}...
  */
 public interface ImportInfo {
 
     /**
      * @deprecated since 3.1
+     * @return the name list
      */
     @Deprecated
     NodeNameList getNameList();
@@ -97,6 +98,8 @@ public interface ImportInfo {
     TreeMap<String, Type> getModifications();
 
     /**
+     * @param path the path
+     * @return the error exception
      * @deprecated since 3.1. use getInfo(path).getError();
      */
     @Deprecated

@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.fs.api;
 import junit.framework.TestCase;
 
 /**
- * <code>RepAddrTest</code>...
+ * {@code RepAddrTest}...
  *
  */
 public class RepositoryAddressTest extends TestCase {

@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>AutoSave</code>...
+ * {@code AutoSave}...
  */
 public class AutoSave {
 
@@ -111,7 +111,7 @@ public class AutoSave {
     }
 
     /**
-     * Debug settings to allows to produce failures after each <code>debugFailEach</code> save.
+     * Debug settings to allows to produce failures after each {@code debugFailEach} save.
      * @param debugFailEach cardinal indicating when to fail 
      */
     public void setDebugFailEach(int debugFailEach) {
@@ -119,9 +119,9 @@ public class AutoSave {
     }
 
     /**
-     * Returns <code>true</code> if more than {@link #getThreshold()} nodes are
+     * Returns {@code true} if more than {@link #getThreshold()} nodes are
      * modified.
-     * @return <code>true</code> if threshold reached.
+     * @return {@code true} if threshold reached.
      */
     public boolean needsSave() {
         boolean res = (numModified - lastSave) >= threshold;
@@ -134,7 +134,7 @@ public class AutoSave {
 
     /**
      * saves the changes under the given node and resets the counter
-     * @param session the session to save. can be <code>null</code>
+     * @param session the session to save. can be {@code null}
      * @throws RepositoryException if an error occurs.
      */
     public void save(Session session) throws RepositoryException {
@@ -197,9 +197,9 @@ public class AutoSave {
     }
 
     /**
-     * Adds <code>num</code> modified
+     * Adds {@code num} modified
      * @param num number of modified
-     * @return <code>true</code> if threshold is reached
+     * @return {@code true} if threshold is reached
      */
     public boolean modified(int num) {
         numModified+= num;

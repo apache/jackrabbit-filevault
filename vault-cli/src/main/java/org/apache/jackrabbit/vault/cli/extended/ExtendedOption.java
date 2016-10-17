@@ -23,7 +23,7 @@ import org.apache.jackrabbit.vault.util.Text;
 import org.apache.jackrabbit.vault.util.console.CliCommand;
 
 /**
- * <code>ExtendedOption</code>...
+ * {@code ExtendedOption}...
  */
 abstract public class ExtendedOption implements CliCommand {
 

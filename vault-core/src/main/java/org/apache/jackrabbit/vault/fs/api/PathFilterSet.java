@@ -23,7 +23,7 @@ import java.util.List;
  * The path filter set holds a set of path filters each attributes as include
  * or exclude filter. The evaluation of the set allows included paths and
  * rejects excluded paths.
- * <p/>
+ * <p>
  * Additionally it contains a "root" path for which the filters are evaluated.
  * if an item has not the node addressed by the root path as ancestor, it is
  * always excluded.
@@ -66,14 +66,14 @@ public class PathFilterSet extends FilterSet<PathFilter> {
 
     /**
      * Evaluates the filters if this set does {@link #covers(String) cover} the
-     * given item. otherwise <code>false</code> is returned.
+     * given item. otherwise {@code false} is returned.
      * The result of the evaluation is the polarity of the last matched path.
-     * If no filter matches it returns <code>true</code>
+     * If no filter matches it returns {@code true}
      * if the first filter is an exclude filter or if no filter is defined;
-     * <code>false</code> if the first filter is an include filter.
+     * {@code false} if the first filter is an include filter.
      *
      * @param path the path to check
-     * @return <code>true</code> if this set matches the item
+     * @return {@code true} if this set matches the item
      */
     public boolean contains(String path) {
         if (!covers(path)) {
@@ -136,7 +136,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
      * Checks if this path filter set only contains entries that are relative
      * include patterns, eg: ".* /foo.*". in this case the aggregator will use a
      * different strategy when providing non matching leave nodes.
-     * @return <code>true</code> if only contains relative patterns
+     * @return {@code true} if only contains relative patterns
      */
     public boolean hasOnlyRelativePatterns() {
         seal();

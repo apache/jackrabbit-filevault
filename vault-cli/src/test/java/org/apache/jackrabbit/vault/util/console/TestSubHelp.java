@@ -24,7 +24,7 @@ import org.apache.jackrabbit.vault.util.console.commands.CmdSet;
 import org.apache.jackrabbit.vault.util.console.util.CliHelpFormatter;
 
 /**
- * <code>Test</code>...
+ * {@code Test}...
  */
 public class TestSubHelp {
 

@@ -23,7 +23,7 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 /**
- * <code>LineOutputTest</code>...
+ * {@code LineOutputTest}...
  *
  */
 public class LineOutputTest extends TestCase {

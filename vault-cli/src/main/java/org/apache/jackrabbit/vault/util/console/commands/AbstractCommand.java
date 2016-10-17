@@ -23,7 +23,7 @@ import org.apache.jackrabbit.vault.util.console.CliCommand;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
 /**
- * <code>AbstractCommand</code>...
+ * {@code AbstractCommand}...
  */
 public abstract class AbstractCommand implements CliCommand {
 

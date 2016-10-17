@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * <code>VaultFsConfig</code>...
+ * {@code VaultFsConfig}...
  */
 public interface VaultFsConfig {
 

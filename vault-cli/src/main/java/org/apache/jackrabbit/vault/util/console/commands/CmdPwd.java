@@ -22,7 +22,7 @@ import org.apache.commons.cli2.option.Command;
 import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 
 /**
- * <code>CmdEnv</code>...
+ * {@code CmdEnv}...
  */
 public class CmdPwd extends AbstractConsoleCommand {
 

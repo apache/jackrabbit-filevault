@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * <code>Entry</code>...
+ * {@code Entry}...
  *
  */
 public class XmlEntryInfo implements VltEntryInfo {
@@ -141,7 +141,7 @@ public class XmlEntryInfo implements VltEntryInfo {
      * - the content type differs
      *
      * @param remoteFile the remote file to compare with
-     * @return <code>true</code> if modified.
+     * @return {@code true} if modified.
      */
     public boolean checkModified(VaultFile remoteFile) {
         long rTime = remoteFile.lastModified();

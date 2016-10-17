@@ -29,7 +29,7 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import junit.framework.TestCase;
 
 /**
- * <code>TestEntries</code>...
+ * {@code TestEntries}...
  */
 public abstract class AbstractTestEntries extends TestCase {
 

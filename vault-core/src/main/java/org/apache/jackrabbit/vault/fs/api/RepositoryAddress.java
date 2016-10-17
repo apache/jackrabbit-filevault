@@ -34,7 +34,7 @@ import javax.jcr.SimpleCredentials;
  * <li> scheme://host:port/prefix
  * <li> scheme://host:port/prefix/workspace
  * <li> scheme://host:port/prefix/workspace/jcr_root/path
- * <ul>
+ * </ul>
  */
 public class RepositoryAddress {
 
@@ -220,9 +220,9 @@ public class RepositoryAddress {
     }
 
     /**
-     * Returns the name of the workspace or <code>null</code> if the default
+     * Returns the name of the workspace or {@code null} if the default
      * workspace is used.
-     * @return the name of the workspace or <code>null</code>
+     * @return the name of the workspace or {@code null}
      */
     public String getWorkspace() {
         return "-".equals(workspace) ? null : workspace;
@@ -247,7 +247,7 @@ public class RepositoryAddress {
     }
 
     /**
-     * Returns JCR credentials from the URI or <code>null</code> if no user info
+     * Returns JCR credentials from the URI or {@code null} if no user info
      * is specified.
      * @return the creds
      */
@@ -327,15 +327,15 @@ public class RepositoryAddress {
 
 
     /**
-     * Does an URL encoding of the <code>string</code> using the
-     * <code>escape</code> character. The characters that don't need encoding
+     * Does an URL encoding of the {@code string} using the
+     * {@code escape} character. The characters that don't need encoding
      * are those defined 'unreserved' in section 2.3 of the 'URI generic syntax'
-     * RFC 2396, but without the escape character. If <code>isPath</code> is
-     * <code>true</code>, additionally the slash '/' is ignored, too.
+     * RFC 2396, but without the escape character. If {@code isPath} is
+     * {@code true}, additionally the slash '/' is ignored, too.
      *
      * @param string the string to encode.
      * @return the escaped string
-     * @throws NullPointerException if <code>string</code> is <code>null</code>.
+     * @throws NullPointerException if {@code string} is @{code null}.
      */
     private static String escapePath(String string) {
         try {

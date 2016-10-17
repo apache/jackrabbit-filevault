@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>CNDImporter</code>...
+ * {@code CNDImporter}...
  *
  */
 public class CNDImporter {
@@ -445,7 +445,7 @@ public class CNDImporter {
      * argument.
      *
      * @param s the tokens to compare with
-     * @return <code>true</code> if equals; <code>false</code> otherwise.
+     * @return {@code true} if equals; {@code false} otherwise.
      */
     private boolean currentTokenEquals(String[] s) {
         for (String value : s) {
@@ -461,7 +461,7 @@ public class CNDImporter {
      * argument.
      *
      * @param c the tokens to compare with
-     * @return <code>true</code> if equals; <code>false</code> otherwise.
+     * @return {@code true} if equals; {@code false} otherwise.
      */
     private boolean currentTokenEquals(char c) {
         return currentToken.length() == 1 && currentToken.charAt(0) == c;
@@ -472,7 +472,7 @@ public class CNDImporter {
      * argument.
      *
      * @param s the tokens to compare with
-     * @return <code>true</code> if equals; <code>false</code> otherwise.
+     * @return {@code true} if equals; {@code false} otherwise.
      */
     private boolean currentTokenEquals(String s) {
         return currentToken.equals(s);

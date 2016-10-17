@@ -31,13 +31,13 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 /**
  * Defines a vault package. A vault package is a binary assembled representation
  * of a vault export.
- * <p/>
+ * <p>
  * Note that VaultPackage currently extends from PackageProperties to keep the interface backwards compatible.
  */
 public interface VaultPackage extends PackageProperties {
 
     /**
-     * Returns the id of this package or <code>null</code> if the id can't
+     * Returns the id of this package or {@code null} if the id can't
      * be determined.
      * @return the id of this package.
      */
@@ -52,19 +52,19 @@ public interface VaultPackage extends PackageProperties {
 
     /**
      * Checks if this package is valid.
-     * @return <code>true</code> if this package is valid.
+     * @return {@code true} if this package is valid.
      */
     boolean isValid();
 
     /**
      * Checks if this package is closed.
-     * @return <code>true</code> if this package is closed.
+     * @return {@code true} if this package is closed.
      */
     boolean isClosed();
 
     /**
      * Returns the meta inf that was either loaded or specified during build.
-     * @return the meta inf or <code>null</code>.
+     * @return the meta inf or {@code null}.
      */
     MetaInf getMetaInf();
 
@@ -86,7 +86,7 @@ public interface VaultPackage extends PackageProperties {
     void extract(Session session, ImportOptions opts) throws RepositoryException, PackageException;
 
     /**
-     * Returns the underlying file or <code>null</code> if not available.
+     * Returns the underlying file or {@code null} if not available.
      * @return the file
      * @since 2.0
      */
@@ -99,7 +99,7 @@ public interface VaultPackage extends PackageProperties {
 
     /**
      * Returns the underlying package archive
-     * @return the archive or <code>null</code> if already closed
+     * @return the archive or {@code null} if already closed
      */
     Archive getArchive();
 }

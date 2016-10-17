@@ -85,7 +85,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>AbstractImporter</code>
+ * {@code AbstractImporter}
  *
  * file/directory combinations
  *
@@ -276,7 +276,7 @@ public class Importer {
     }
 
     /**
-     * Debug settings to allows to produce failures after each <code>failAfterEach</code> save.
+     * Debug settings to allows to produce failures after each {@code failAfterEach} save.
      * @param failAfterEach cardinal indicating when to fail
      */
     public void setDebugFailAfterSave(int failAfterEach) {
@@ -531,7 +531,7 @@ public class Importer {
     /**
      * Checks if the given file name is excluded
      * @param fileName the file name
-     * @return <code>true</code> if excluded
+     * @return {@code true} if excluded
      */
     protected boolean isExcluded(String fileName) {
         // hard coded exclusion of .vlt files/directories

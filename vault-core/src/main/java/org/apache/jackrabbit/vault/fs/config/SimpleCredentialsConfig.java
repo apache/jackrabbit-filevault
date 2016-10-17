@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * <code>SimpleCredentialsConfig</code>...
+ * {@code SimpleCredentialsConfig}...
 *
 */
 public class SimpleCredentialsConfig extends CredentialsConfig {
@@ -135,7 +135,7 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
      * Decrypts a string that was previously {@link #encrypt(String)} encrypted}.
      *
      * @param s the data to decrypt
-     * @return the string or <code>null</code> if an internal error occurred
+     * @return the string or {@code null} if an internal error occurred
      */
     private static String decrypt(String s) {
         if (s == null || !s.startsWith(PREFIX)) {

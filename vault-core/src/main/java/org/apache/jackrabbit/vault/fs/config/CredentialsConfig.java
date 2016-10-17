@@ -25,7 +25,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * <code>CredentialsConfig</code>...
+ * {@code CredentialsConfig}...
 *
 */
 public abstract class CredentialsConfig {

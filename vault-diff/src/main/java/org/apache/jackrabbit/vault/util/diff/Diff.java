@@ -23,10 +23,12 @@ public class Diff {
     /**
      * Prepare to find differences between two arrays.  Each element of
      * the arrays is translated to an "equivalence number" based on
-     * the result of <code>equals</code>.  The original Object arrays
+     * the result of {@code equals}.  The original Object arrays
      * are no longer needed for computing the differences.  They will
      * be needed again later to print the results of the comparison as
      * an edit script, if desired.
+     * @param a left array
+     * @param b right array
      */
     public Diff(Object[] a, Object[] b) {
         HashMap h = new HashMap(a.length + b.length);
@@ -69,23 +71,23 @@ public class Diff {
     /**
      * Find the midpoint of the shortest edit script for a specified
      * portion of the two files.
-     * <p/>
+     * <p>
      * We scan from the beginnings of the files, and simultaneously from the ends,
      * doing a breadth-first search through the space of edit-sequence.
      * When the two searches meet, we have found the midpoint of the shortest
      * edit sequence.
-     * <p/>
+     * <p>
      * The value returned is the number of the diagonal on which the midpoint lies.
      * The diagonal number equals the number of inserted lines minus the number
      * of deleted lines (counting only lines before the midpoint).
      * The edit cost is stored into COST; this is the total number of
      * lines inserted or deleted (counting only lines before the midpoint).
-     * <p/>
+     * <p>
      * This function assumes that the first lines of the specified portions
      * of the two files do not match, and likewise that the last lines do not
      * match.  The caller must trim matching lines from the beginning and end
      * of the portions it is going to specify.
-     * <p/>
+     * <p>
      * Note that if we return the "wrong" diagonal value, or if
      * the value of bdiag at that diagonal is "wrong",
      * the worst this can do is cause suboptimal diff output.
@@ -249,12 +251,12 @@ public class Diff {
     /**
      * Compare in detail contiguous subsequences of the two files
      * which are known, as a whole, to match each other.
-     * <p/>
+     * <p>
      * The results are recorded in the vectors filevec[N].changed_flag, by
      * storing a 1 in the element for each line that is an insertion or deletion.
-     * <p/>
+     * <p>
      * The subsequence of file 0 is [XOFF, XLIM) and likewise for file 1.
-     * <p/>
+     * <p>
      * Note that XLIM, YLIM are exclusive bounds.
      * All line numbers are origin-0 and discarded lines are not counted.
      */
@@ -399,6 +401,8 @@ public class Diff {
 
     /**
      * Report the differences of two files.  DEPTH is the current directory depth.
+     * @param reverse true to perform a reverse diff.
+     * @return The changes
      */
     public Change diff_2(final boolean reverse) {
 
@@ -446,11 +450,11 @@ public class Diff {
      * The result of comparison is an "edit script": a chain of change objects.
      * Each change represents one place where some lines are deleted
      * and some are inserted.
-     * <p/>
+     * <p>
      * LINE0 and LINE1 are the first affected lines in the two files (origin 0).
      * DELETED is the number of lines deleted here from file 0.
      * INSERTED is the number of lines inserted here in file 1.
-     * <p/>
+     * <p>
      * If DELETED is 0 then LINE0 is the number of the line before
      * which the insertion was done; vice versa for INSERTED and LINE1.
      */
@@ -481,7 +485,7 @@ public class Diff {
          * LINE0 and LINE1 are the first affected lines in the two files (origin 0).
          * DELETED is the number of lines deleted here from file 0.
          * INSERTED is the number of lines inserted here in file 1.
-         * <p/>
+         * <p>
          * If DELETED is 0 then LINE0 is the number of the line before
          * which the insertion was done; vice versa for INSERTED and LINE1.
          */
@@ -525,14 +529,14 @@ public class Diff {
 
         /**
          * Discard lines that have no matches in another file.
-         * <p/>
+         * <p>
          * A line which is discarded will not be considered by the actual
          * comparison algorithm; it will be as if that line were not in the file.
          * The file's `realindexes' table maps virtual line numbers
          * (which don't count the discarded lines) into real line numbers;
          * this is how the actual comparison algorithm produces results
          * that are comprehensible when the discarded lines are counted.
-         * <p/>
+         * <p>
          * When we discard a line, we also mark it as a deletion or insertion
          * so that it will be printed in the output.
          *
@@ -746,7 +750,7 @@ public class Diff {
         /**
          * Adjust inserts/deletes of blank lines to join changes
          * as much as possible.
-         * <p/>
+         * <p>
          * We do something when a run of changed lines include a blank
          * line at one end and have an excluded blank line at the other.
          * We are free to choose which blank line is included.

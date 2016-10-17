@@ -37,7 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * <code>TestFilteredExport</code> cover testing the filtering of properties
+ * {@code TestFilteredExport} cover testing the filtering of properties
  */
 public class TestFilteredPropertyExport extends IntegrationTestBase {
 

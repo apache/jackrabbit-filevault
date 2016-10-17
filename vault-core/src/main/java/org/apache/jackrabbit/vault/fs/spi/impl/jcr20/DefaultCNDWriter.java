@@ -30,7 +30,7 @@ import org.apache.jackrabbit.spi.commons.nodetype.compact.CompactNodeTypeDefWrit
 import org.apache.jackrabbit.vault.fs.spi.CNDWriter;
 
 /**
- * <code>DefaultCNDWriter</code>...
+ * {@code DefaultCNDWriter}...
  */
 public class DefaultCNDWriter implements CNDWriter {
 

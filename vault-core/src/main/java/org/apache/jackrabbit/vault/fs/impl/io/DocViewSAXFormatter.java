@@ -45,7 +45,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * <code>DocViewSAXFormatter</code>...
+ * {@code DocViewSAXFormatter}...
  *
  */
 public class DocViewSAXFormatter extends AbstractSAXFormatter {
@@ -80,7 +80,7 @@ public class DocViewSAXFormatter extends AbstractSAXFormatter {
 
     /**
      * Controls if the jcr:root should be used as root element name.
-     * @param useJcrRoot <code>true</code> if jcrRoot is to be used as
+     * @param useJcrRoot {@code true} if jcrRoot is to be used as
      * root element name.
      */
     public void setUseJcrRoot(boolean useJcrRoot) {

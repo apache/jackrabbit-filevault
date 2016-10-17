@@ -34,7 +34,7 @@ import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 
 /**
- * <code>JcrWorkspaceFilter</code> implements serializations of a workspace
+ * {@code JcrWorkspaceFilter} implements serializations of a workspace
  * filter that is stored in the repository
  */
 public class JcrWorkspaceFilter  {

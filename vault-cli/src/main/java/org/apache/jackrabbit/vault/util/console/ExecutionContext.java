@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
- * <code>Console</code>...
+ * {@code Console}...
  */
 public class ExecutionContext {
 

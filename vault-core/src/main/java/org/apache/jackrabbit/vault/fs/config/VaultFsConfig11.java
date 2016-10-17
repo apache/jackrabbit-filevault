@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 
 /**
- * <code>JcrFsConfig</code>...
+ * {@code JcrFsConfig}...
  */
 class VaultFsConfig11 extends AbstractVaultFsConfig {
 

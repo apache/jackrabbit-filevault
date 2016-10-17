@@ -33,7 +33,7 @@ import org.apache.jackrabbit.vault.vlt.meta.VltEntries;
 import org.apache.jackrabbit.vault.vlt.meta.VltEntry;
 
 /**
- * <code>FileList</code>...
+ * {@code FileList}...
  *
  */
 public class FileList {

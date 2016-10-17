@@ -22,7 +22,7 @@ import java.io.IOException;
 import javax.jcr.RepositoryException;
 
 /**
- * <code>VaultFileSystem</code>...
+ * {@code VaultFileSystem}...
  */
 public interface VaultFileSystem {
 
@@ -36,7 +36,7 @@ public interface VaultFileSystem {
      * Checks if this tree is still mounted and if the attached session
      * is still live.
      *
-     * @return <code>true</code> if still mounted
+     * @return {@code true} if still mounted
      */
     boolean isMounted();
 
@@ -54,10 +54,10 @@ public interface VaultFileSystem {
 
     /**
      * Returns the file at the given path. If the file does not exists
-     * <code>null</code> is thrown.
+     * {@code null} is thrown.
      *
      * @param path the path of the file
-     * @return the file or <code>null</code>
+     * @return the file or {@code null}
      * @throws IOException if an I/O error occurs.
      * @throws RepositoryException if a repository error occurs.
      */
@@ -65,12 +65,12 @@ public interface VaultFileSystem {
 
     /**
      * Returns the file at the given path. The path can be relative and may
-     * contain ".." path elements. If the file does not exists <code>null</code>
+     * contain ".." path elements. If the file does not exists {@code null}
      * is returned.
      *
      * @param parent the parent file.
      * @param path the path of the file
-     * @return the file or <code>null</code>
+     * @return the file or {@code null}
      * @throws IOException if an I/O error occurs.
      * @throws RepositoryException if a repository error occurs.
      */

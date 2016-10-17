@@ -47,7 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
-* <code>SyncHandler</code>...
+* {@code SyncHandler}...
 */
 public class SyncHandler implements FilesystemAlterationListener {
 

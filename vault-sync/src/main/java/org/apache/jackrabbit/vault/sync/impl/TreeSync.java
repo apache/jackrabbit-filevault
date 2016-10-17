@@ -43,7 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>TreeSync</code>...
+ * {@code TreeSync}...
  */
 public class TreeSync {
 

@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import static junit.framework.Assert.assertEquals;
 
 /**
- * <code>ImportTests</code>...
+ * {@code ImportTests}...
  */
 public class DumpCoverageTests extends IntegrationTestBase {
 

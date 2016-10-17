@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.fs.spi;
 import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.OakServiceProvider;
 
 /**
- * <code>StaticServiceProvider</code>...
+ * {@code StaticServiceProvider}...
  */
 public class ServiceProviderFactory {
 

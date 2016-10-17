@@ -40,7 +40,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 /**
- * <code>ImportTests</code>...
+ * {@code ImportTests}...
  */
 public class ImportTests extends IntegrationTestBase {
 

@@ -20,10 +20,10 @@ package org.apache.jackrabbit.vault.util.xml.xerces.util;
 /**
  * This class is a symbol table implementation that guarantees that
  * strings used as identifiers are unique references. Multiple calls
- * to <code>addSymbol</code> will always return the same string
+ * to {@code addSymbol} will always return the same string
  * reference.
- * <p/>
- * The symbol table performs the same task as <code>String.intern()</code>
+ * <p>
+ * The symbol table performs the same task as {@code String.intern()}
  * with the following differences:
  * <ul>
  * <li>
@@ -158,7 +158,7 @@ public class SymbolTable {
     /**
      * Returns a hashcode value for the specified symbol. The value
      * returned by this method must be identical to the value returned
-     * by the <code>hash(char[],int,int)</code> method when called
+     * by the {@code hash(char[],int,int)} method when called
      * with the character array that comprises the symbol string.
      *
      * @param symbol The symbol to hash.
@@ -177,7 +177,7 @@ public class SymbolTable {
     /**
      * Returns a hashcode value for the specified symbol information.
      * The value returned by this method must be identical to the value
-     * returned by the <code>hash(String)</code> method when called
+     * returned by the {@code hash(String)} method when called
      * with the string object created from the symbol information.
      *
      * @param buffer The character buffer containing the symbol.

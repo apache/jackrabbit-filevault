@@ -23,7 +23,7 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
 
 /**
- * <code>Action</code>...
+ * {@code Action}...
  *
  */
 public interface Action {
@@ -52,7 +52,7 @@ public interface Action {
      * @param remoteDir remote directory
      * @throws VltException if an error occurs
      *
-     * @return <code>true</code> if proceed; <code>false</code> to abort
+     * @return {@code true} if proceed; {@code false} to abort
      */
     public boolean run(VltDirectory dir, VaultFile remoteDir) throws VltException;
 }

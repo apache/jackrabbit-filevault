@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>RcpTask</code>...
+ * {@code RcpTask}...
  */
 public class RcpTask implements Runnable {
 

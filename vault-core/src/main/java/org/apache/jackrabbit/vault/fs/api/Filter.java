@@ -18,7 +18,7 @@
 package org.apache.jackrabbit.vault.fs.api;
 
 /**
- * <code>Filter</code>...
+ * {@code Filter}...
  */
 public interface Filter extends Dumpable {
 }

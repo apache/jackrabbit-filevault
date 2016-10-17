@@ -21,7 +21,7 @@ import org.apache.jackrabbit.vault.util.console.Console;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
 /**
- * <code>HelloWorldApp</code>...
+ * {@code HelloWorldApp}...
  */
 public class HelloWorldApp extends AbstractApplication {
 

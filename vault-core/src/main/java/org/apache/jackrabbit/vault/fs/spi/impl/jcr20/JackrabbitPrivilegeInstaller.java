@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The <code>JcrNodeTypeInstaller</code> is used to install privileges using the
+ * The {@code JcrNodeTypeInstaller} is used to install privileges using the
  * jackrabbit privilege manager
  */
 public class JackrabbitPrivilegeInstaller implements PrivilegeInstaller {

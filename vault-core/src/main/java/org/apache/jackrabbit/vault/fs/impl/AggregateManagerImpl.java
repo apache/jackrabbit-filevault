@@ -464,7 +464,7 @@ public class AggregateManagerImpl implements AggregateManager {
      * Writes the artifact set back to the repository.
      *
      * @param node the artifact node to write
-     * @param reposName the name of the new node or <code>null</code>
+     * @param reposName the name of the new node or {@code null}
      * @param artifacts the artifact to write
      * @return infos about the modifications
      * @throws RepositoryException if an error occurs.

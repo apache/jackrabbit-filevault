@@ -32,7 +32,7 @@ import org.apache.jackrabbit.vault.vlt.meta.VltEntries;
 import org.apache.jackrabbit.vault.vlt.meta.xml.XmlEntries;
 
 /**
- * <code>FileMetaDir</code>...
+ * {@code FileMetaDir}...
  */
 public class FileMetaDir implements MetaDirectory {
 

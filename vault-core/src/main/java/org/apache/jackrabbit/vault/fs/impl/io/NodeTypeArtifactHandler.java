@@ -40,7 +40,7 @@ public class NodeTypeArtifactHandler extends AbstractArtifactHandler {
 
     /**
      * {@inheritDoc}
-     * <p/>
+     * <p>
      * Handles generic artifact sets
      */
     protected ImportInfoImpl accept(WorkspaceFilter wspFilter, Node parent,

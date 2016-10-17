@@ -26,7 +26,7 @@ import javax.jcr.RepositoryException;
  * The item filter set holds a set of item filters each attributes as include
  * or exclude filter. The evaluation of the set allows included items and
  * rejects excluded items.
- * <p/>
+ * <p>
  * Additionally it contains a "root" path for which the filters are evaluated.
  * if an item has not the node addressed by the root path as ancestor, it is
  * always excluded.
@@ -64,15 +64,15 @@ public class ItemFilterSet extends FilterSet<ItemFilter> {
 
     /**
      * Evaluates the filters if this set does {@link #covers(String) cover} the
-     * given item. otherwise <code>false</code> is returned.
+     * given item. otherwise {@code false} is returned.
      * The result of the evaluation is the polarity of the last matched item.
-     * If no filter matches it returns <code>true</code>
+     * If no filter matches it returns {@code true}
      * if the first filter is an exclude filter or if no filter is defined;
-     * <code>false</code> if the first filter is an include filter.
+     * {@code false} if the first filter is an include filter.
      *
      * @param item the item to check
      * @param depth the depth to check
-     * @return <code>true</code> if this set matches the item
+     * @return {@code true} if this set matches the item
      * @throws RepositoryException if an error occurs.
      */
     public boolean contains(Item item, int depth) throws RepositoryException {
@@ -80,16 +80,16 @@ public class ItemFilterSet extends FilterSet<ItemFilter> {
     }
     /**
      * Evaluates the filters if this set does {@link #covers(String) cover} the
-     * given item. otherwise <code>false</code> is returned.
+     * given item. otherwise {@code false} is returned.
      * The result of the evaluation is the polarity of the last matched item.
-     * If no filter matches it returns <code>true</code>
+     * If no filter matches it returns {@code true}
      * if the first filter is an exclude filter or if no filter is defined;
-     * <code>false</code> if the first filter is an include filter.
+     * {@code false} if the first filter is an include filter.
      *
      * @param item the item to check
-     * @param path of the item or <code>null</code>
+     * @param path of the item or {@code null}
      * @param depth the depth to check
-     * @return <code>true</code> if this set matches the item
+     * @return {@code true} if this set matches the item
      * @throws RepositoryException if an error occurs.
      */
     public boolean contains(Item item, String path, int depth) throws RepositoryException {

@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * <code>PomProperties</code>...
+ * {@code PomProperties}...
  */
 public class PomProperties {
 

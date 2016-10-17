@@ -24,7 +24,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.util.MD5;
 
 /**
- * <code>Entry</code>...
+ * {@code Entry}...
  *
  */
 public interface VltEntryInfo {

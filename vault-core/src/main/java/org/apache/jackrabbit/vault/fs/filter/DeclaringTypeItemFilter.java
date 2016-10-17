@@ -49,7 +49,7 @@ public class DeclaringTypeItemFilter extends DepthItemFilter {
     /**
      * Creates a new filter for the given node type and flags.
      * @param nodeType the node type name to check
-     * @param propsOnly if <code>true</code> only properties are checked
+     * @param propsOnly if {@code true} only properties are checked
      * @param minDepth the minimal depth
      * @param maxDepth the maximal depth
      */
@@ -63,7 +63,7 @@ public class DeclaringTypeItemFilter extends DepthItemFilter {
     /**
      * Creates a new filter for the given node type and flags
      * @param nodeType the node type name to check
-     * @param propsOnly if <code>true</code> only properties are checked
+     * @param propsOnly if {@code true} only properties are checked
      */
     public DeclaringTypeItemFilter(String nodeType, boolean propsOnly) {
         this(nodeType, propsOnly, 0, Integer.MAX_VALUE);
@@ -79,7 +79,7 @@ public class DeclaringTypeItemFilter extends DepthItemFilter {
 
     /**
      * Sets the flag that indicates if only properties are to be checked.
-     * @param propsOnly if <code>true</code> only properties are checked.
+     * @param propsOnly if {@code true} only properties are checked.
      */
     public void setPropsOnly(String propsOnly) {
         this.propsOnly = Boolean.valueOf(propsOnly);
@@ -89,8 +89,8 @@ public class DeclaringTypeItemFilter extends DepthItemFilter {
      * {@inheritDoc}
      *
      * Matches if the declaring node type of the item is equal to the one
-     * specified in this filter. If the item is a node and <code>propsOnly</code>
-     * flag is <code>true</code> it returns <code>false</code>.
+     * specified in this filter. If the item is a node and {@code propsOnly}
+     * flag is {@code true} it returns {@code false}.
      */
     public boolean matches(Item item) throws RepositoryException {
         if (item.isNode()) {

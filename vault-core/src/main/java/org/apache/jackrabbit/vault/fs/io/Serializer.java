@@ -25,7 +25,7 @@ import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 
 /**
- * <code>Serializer</code>...
+ * {@code Serializer}...
  *
  */
 public interface Serializer {

@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 /**
- * <code>ConfigHelper</code>...
+ * {@code ConfigHelper}...
  */
 public class ConfigHelper {
 

@@ -24,7 +24,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.security.Privilege;
 
 /**
- * <code>NodeTypeInstaller</code>...
+ * {@code NodeTypeInstaller}...
  */
 public interface PrivilegeInstaller {
 

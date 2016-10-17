@@ -110,7 +110,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     /**
      * Writes the properties derived from the package id to the content
      * @param id the package id
-     * @param autoSave if <code>true</code> the changes are saved automatically.
+     * @param autoSave if {@code true} the changes are saved automatically.
      */
     public void setId(PackageId id, boolean autoSave) {
         set(PN_GROUP, id.getGroup(), false);
@@ -122,7 +122,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      * Returns the installation path. If the path is not defined in the definition,
      * the grand-parent of the underlying node is returned. if the path would end
      * with .zip or .jar, the extension is truncated.
-     * @return the installation path or <code>null</code> if it cannot be determined.
+     * @return the installation path or {@code null} if it cannot be determined.
      */
     private String getInstallationPath() {
         try {
@@ -242,7 +242,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      * package to this node.
      *
      * @param packArchive the archive of the package
-     * @param autoSave saves changed automatically if <code>true</code>
+     * @param autoSave saves changed automatically if {@code true}
      * @throws RepositoryException if an error occurs
      */
     private void extractDefinition(Archive packArchive, boolean autoSave)
@@ -377,7 +377,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     /**
      * Writes the given properties to the content.
      * @param props the properties
-     * @param autoSave saves the changes automatically if <code>true</code>
+     * @param autoSave saves the changes automatically if {@code true}
      */
     protected void writeProperties(Properties props, boolean autoSave) {
         try {
@@ -433,7 +433,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     /**
      * Internal method that converts a ISO date to a calendar.
      * @param iso the iso8601 formatted date
-     * @return the calendar or <code>null</code>
+     * @return the calendar or {@code null}
      */
     private static Calendar getDate(String iso) {
         if (iso == null) {
@@ -572,8 +572,8 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      * - updates the lastUnwrapped(by) properties
      * - clears the unwrapped property
      *
-     * @param now the date or <code>null</code>
-     * @param autoSave saves the changes automatically if <code>true</code>
+     * @param now the date or {@code null}
+     * @param autoSave saves the changes automatically if {@code true}
      */
     public void sealForAssembly(Calendar now, boolean autoSave) {
         try {
@@ -601,8 +601,8 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      * - updates the lastUnwrapped(by) properties
      * - clears the unwrapped property
      *
-     * @param now the date or <code>null</code>
-     * @param autoSave saves the changes automatically if <code>true</code>
+     * @param now the date or {@code null}
+     * @param autoSave saves the changes automatically if {@code true}
      */
     public void sealForRewrap(Calendar now, boolean autoSave) {
         try {
@@ -630,8 +630,8 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
 
     /**
      * Touches the lastUnpacked (i.e. installed) properties.
-     * @param now the date or <code>null</code>
-     * @param autoSave saves the changes automatically if <code>true</code>
+     * @param now the date or {@code null}
+     * @param autoSave saves the changes automatically if {@code true}
      */
     public void touchLastUnpacked(Calendar now, boolean autoSave) {
         try {
@@ -648,7 +648,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
 
     /**
      * Clears the last unpacked properties.
-     * @param autoSave saves the changes automatically if <code>true</code>
+     * @param autoSave saves the changes automatically if {@code true}
      */
     public void clearLastUnpacked(boolean autoSave) {
         try {
@@ -813,7 +813,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     /**
      * Writes the workspace filter to the definition
      * @param filter the filter
-     * @param save automatically save the changes if <code>true</code>
+     * @param save automatically save the changes if {@code true}
      * @throws RepositoryException if an error occurs
      */
     public void writeFilter(WorkspaceFilter filter, boolean save)
@@ -832,7 +832,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
 
     /**
      * Returns the user id of the current session. if the userid provided by
-     * the session is <code>null</code>, "system" is returned.
+     * the session is {@code null}, "system" is returned.
      * @return the user id
      */
     private String getUserId() {

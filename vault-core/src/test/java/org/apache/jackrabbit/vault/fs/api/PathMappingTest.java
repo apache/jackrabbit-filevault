@@ -21,7 +21,7 @@ import org.junit.Test;
 import static junit.framework.Assert.assertEquals;
 
 /**
- * <code>PathMappingTest</code>...
+ * {@code PathMappingTest}...
  */
 public class PathMappingTest {
 

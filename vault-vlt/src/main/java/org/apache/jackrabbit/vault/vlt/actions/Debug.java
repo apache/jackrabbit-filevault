@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>Resolved</code>...
+ * {@code Resolved}...
  *
  */
 public class Debug extends AbstractAction {

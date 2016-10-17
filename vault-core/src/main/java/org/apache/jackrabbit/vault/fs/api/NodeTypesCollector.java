@@ -23,7 +23,7 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- * <code>NodeTypesCollector</code>...
+ * {@code NodeTypesCollector}...
  */
 public interface NodeTypesCollector {
 

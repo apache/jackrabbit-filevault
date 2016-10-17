@@ -28,7 +28,7 @@ import org.mockito.Mockito;
 import junit.framework.TestCase;
 
 /**
- * <code>DocViewPropertyTest</code>...
+ * {@code DocViewPropertyTest}...
  */
 public class DocViewPropertyTest extends TestCase {
 

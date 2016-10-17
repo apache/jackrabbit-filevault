@@ -26,7 +26,7 @@ import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 
 /**
- * <code>PlatformFile</code>...
+ * {@code PlatformFile}...
  */
 public class PlatformFile implements ConsoleFile {
 

@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>CredentialsProvider</code>...
+ * {@code CredentialsProvider}...
  *
  */
 public class ConfigCredentialsStore implements CredentialsStore {

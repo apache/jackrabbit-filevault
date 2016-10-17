@@ -23,7 +23,7 @@ import java.util.Collection;
 import javax.jcr.RepositoryException;
 
 /**
- * <code>VaultFsTransaction</code>...
+ * {@code VaultFsTransaction}...
  */
 public interface VaultFsTransaction {
 

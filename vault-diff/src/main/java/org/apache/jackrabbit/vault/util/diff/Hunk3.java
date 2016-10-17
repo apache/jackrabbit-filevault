@@ -21,10 +21,10 @@ import java.io.IOException;
 /**
  * A hunk3 represents a block of a change from the 3-way diff. it can either be
  * a modification on the left side (for which {@link #getLeftRange()} is not
- * <code>null</code>), or a change on the right side (for which
- * {@link #getRightRange()} is not <code>null</code>. if the left and the right
- * ranges are <code>null</code> this hunk represents an unmodified block of the
- * base document. if both ranges are NOT <code>null</code> it represents a
+ * {@code null}), or a change on the right side (for which
+ * {@link #getRightRange()} is not {@code null}. if the left and the right
+ * ranges are {@code null} this hunk represents an unmodified block of the
+ * base document. if both ranges are NOT {@code null} it represents a
  * conflicting block.
  */
 public class Hunk3 {
@@ -50,7 +50,7 @@ public class Hunk3 {
     public static final String[] MARKER_M  = new String[]{"=======", ""};
 
     /**
-     * the base range. never <code>null</code>.
+     * the base range. never {@code null}.
      */
     private final Range base;
 
@@ -86,7 +86,7 @@ public class Hunk3 {
     }
 
     /**
-     * Returns the next hunk in this chain or <code>null</code> of this hunk is
+     * Returns the next hunk in this chain or {@code null} of this hunk is
      * the last one.
      * @return the next hunk.
      */
@@ -104,7 +104,7 @@ public class Hunk3 {
 
     /**
      * Returns the range of the left document this hunk spans.
-     * can be <code>null</code>.
+     * can be {@code null}.
      * @return the left range.
      */
     public Range getLeftRange() {
@@ -113,7 +113,7 @@ public class Hunk3 {
 
     /**
      * Returns the range of the right document this hunk spans.
-     * can be <code>null</code>.
+     * can be {@code null}.
      * @return the right range.
      */
     public Range getRightRange() {
@@ -220,7 +220,7 @@ public class Hunk3 {
     /**
      * Returns the marker string for the given format and document
      * @param fmt the marker format
-     * @param doc the document or <code>null</code>.
+     * @param doc the document or {@code null}.
      * @return the marker string
      */
     public static String getMarker(String[] fmt, Document doc) {

@@ -18,7 +18,7 @@
 package org.apache.jackrabbit.vault.fs.api;
 
 /**
- * <code>Dumpable</code>...
+ * {@code Dumpable}...
  *
  */
 public interface Dumpable {

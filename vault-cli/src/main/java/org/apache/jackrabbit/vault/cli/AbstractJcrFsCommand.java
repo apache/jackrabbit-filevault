@@ -22,7 +22,7 @@ import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 import org.apache.jackrabbit.vault.util.console.commands.AbstractConsoleCommand;
 
 /**
- * <code>AbstractJcrFsCommand</code> provides base functionality for JcrFs
+ * {@code AbstractJcrFsCommand} provides base functionality for JcrFs
  * commands.
  *
  */

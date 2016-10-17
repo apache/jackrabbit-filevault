@@ -43,8 +43,8 @@ public class IsNodeFilter extends DepthItemFilter {
     /**
      * Creates a new node item filter.
      *
-     * @param polarity the polarity of this filter. if <code>true</code> it matches
-     * nodes, if <code>false</code> it matches properties.
+     * @param polarity the polarity of this filter. if {@code true} it matches
+     * nodes, if {@code false} it matches properties.
      * @param minDepth the minimum depth
      * @param maxDepth the maximum depth
      *
@@ -57,15 +57,15 @@ public class IsNodeFilter extends DepthItemFilter {
 
     /**
      * Creates a new node item filter
-     * @param polarity the polarity of this filter. if <code>true</code> it matches
-     * nodes, if <code>false</code> it matches properties.
+     * @param polarity the polarity of this filter. if {@code true} it matches
+     * nodes, if {@code false} it matches properties.
      */
     public IsNodeFilter(boolean polarity) {
         this(polarity, 1, Integer.MAX_VALUE);
     }
 
     /**
-     * Sets the polarity of this filter. If set to <code>true</code> this filter
+     * Sets the polarity of this filter. If set to {@code true} this filter
      * matches nodes otherwise properties.
      *
      * @param polarity the polarity
@@ -75,7 +75,7 @@ public class IsNodeFilter extends DepthItemFilter {
     }
 
     /**
-     * Sets the polarity of this filter. If set to <code>true</code> this filter
+     * Sets the polarity of this filter. If set to {@code true} this filter
      * matches nodes otherwise properties.
      *
      * @param polarity the polarity
@@ -87,7 +87,7 @@ public class IsNodeFilter extends DepthItemFilter {
     /**
      * {@inheritDoc}
      *
-     * Returns <code>true</code> if the item is a node and the polarity is
+     * Returns {@code true} if the item is a node and the polarity is
      * positive (true).
      */
     public boolean matches(Item item) throws RepositoryException {

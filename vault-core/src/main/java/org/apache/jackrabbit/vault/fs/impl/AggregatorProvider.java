@@ -55,11 +55,12 @@ public class AggregatorProvider {
 
     /**
      * Selects an aggregator that can handle the given node. If no aggregator can
-     * be found, <code>null</code> is returned. Although this is a very rare case
+     * be found, {@code null} is returned. Although this is a very rare case
      * because there should always be a default, catch-all aggregator.
      *
      * @param node the node to match
-     * @return an aggregator that handles the node or <code>null</code> if not found.
+     * @param path the path to match
+     * @return an aggregator that handles the node or {@code null} if not found.
      * @throws RepositoryException if a repository error occurs
      */
     public Aggregator getAggregator(Node node, String path) throws RepositoryException {

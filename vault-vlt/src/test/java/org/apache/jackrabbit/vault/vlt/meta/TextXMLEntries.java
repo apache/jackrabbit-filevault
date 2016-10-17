@@ -23,7 +23,7 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.meta.xml.zip.ZipMetaDir;
 
 /**
- * <code>TextXMLEntries</code>...
+ * {@code TextXMLEntries}...
  */
 public class TextXMLEntries extends AbstractTestEntries {
 

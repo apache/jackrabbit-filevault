@@ -41,7 +41,7 @@ public abstract class AbstractArtifact implements Artifact {
     private final String repoRelPath;
 
     /**
-     * the platform relative path or <code>null</code> if not differs from
+     * the platform relative path or {@code null} if not differs from
      * {@link #repoRelPath}.
      */
     private String platRelPath;
@@ -66,7 +66,7 @@ public abstract class AbstractArtifact implements Artifact {
      * platform extension and and type. the parent artifact is only used for
      * generating the paths and is not linked to this artifact.
      *
-     * @param parent the parent artifact or <code>null</code>.
+     * @param parent the parent artifact or {@code null}.
      * @param repoRelPath the repository name
      * @param extension the platform extension
      * @param type type of the artifact

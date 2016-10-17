@@ -60,7 +60,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Extends the <code>PackageManager</code> by JCR specific methods
+ * Extends the {@code PackageManager} by JCR specific methods
  */
 public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPackageManager {
 
@@ -572,7 +572,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     /**
      * yet another Convenience method to create intermediate nodes.
      * @param path path to create
-     * @param autoSave if <code>true</code> all changes are automatically persisted
+     * @param autoSave if {@code true} all changes are automatically persisted
      * @return the node
      * @throws RepositoryException if an error occurrs
      */
@@ -727,14 +727,14 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     }
 
     /**
-     * internally adds the packages below <code>root</code> to the given list
+     * internally adds the packages below {@code root} to the given list
      * recursively.
      *
      * @param root root node
      * @param packages list for the packages
      * @param filter optional filter to filter out packages
-     * @param built if <code>true</code> only packages with size > 0 are returned
-     * @param shallow if <code>true</code> don't recurs
+     * @param built if {@code true} only packages with size > 0 are returned
+     * @param shallow if {@code true} don't recurs
      * @throws RepositoryException if an error occurs
      */
     private void listPackages(Node root, List<JcrPackage> packages,

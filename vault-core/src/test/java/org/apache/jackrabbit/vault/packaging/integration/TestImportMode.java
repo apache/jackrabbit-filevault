@@ -27,7 +27,7 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Test;
 
 /**
- * <code>TestPackageInstall</code>...
+ * {@code TestPackageInstall}...
  */
 public class TestImportMode extends IntegrationTestBase {
 

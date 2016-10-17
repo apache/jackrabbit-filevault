@@ -295,13 +295,13 @@ public class DocumentDiff {
     private class MergeElementFactory implements ElementsFactory {
 
         /**
-         * if <code>true</code>, do the merge reverse
+         * if {@code true}, do the merge reverse
          */
         boolean reverse;
 
         /**
          * Create a new element factory.
-         * @param reverse if <code>true</code>, do the merge revese
+         * @param reverse if {@code true}, do the merge revese
          */
         public MergeElementFactory(boolean reverse) {
             this.reverse = reverse;

@@ -86,10 +86,6 @@ public class Lexer {
 
     private final String systemId;
 
-    /**
-     * Constructor
-     * @param r
-     */
     public Lexer(Reader r, String systemId) {
         this.systemId = systemId;
         st = new StreamTokenizer(r);
@@ -121,12 +117,6 @@ public class Lexer {
         st.ordinaryChar(CONSTRAINT);
     }
 
-    /**
-     * getNextToken
-     *
-     * @return
-     * @throws ParseException
-     */
     public String getNextToken() throws ParseException {
         try {
             int tokenType = st.nextToken();

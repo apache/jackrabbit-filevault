@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * <code>ArtifactIterator</code>...
+ * {@code ArtifactIterator}...
  *
  */
 public interface ArtifactIterator extends Iterator {

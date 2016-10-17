@@ -23,14 +23,14 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- * <code>PathUtil</code>...
+ * {@code PathUtil}...
  *
  */
 public class PathUtil {
 
     /**
      * make a canonical path. removes all /./ and /../ and multiple slashes.
-     * @param parent the parent path (can be <code>null</code>)
+     * @param parent the parent path (can be {@code null})
      * @param path the path to resolve
      * @return the canonicalized path
      */

@@ -22,7 +22,7 @@ import java.io.PrintWriter;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 
 /**
- * <code>DefaultProgressListener</code>...
+ * {@code DefaultProgressListener}...
 */
 public class DefaultProgressListener implements ProgressTrackerListener {
 

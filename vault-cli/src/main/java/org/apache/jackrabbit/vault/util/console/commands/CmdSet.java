@@ -28,7 +28,7 @@ import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 import org.apache.jackrabbit.vault.util.console.util.Table;
 
 /**
- * <code>CmdSetenv</code>...
+ * {@code CmdSetenv}...
  */
 public class CmdSet extends AbstractConsoleCommand {
 

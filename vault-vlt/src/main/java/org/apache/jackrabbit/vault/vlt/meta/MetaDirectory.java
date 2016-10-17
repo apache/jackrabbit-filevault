@@ -36,7 +36,7 @@ public interface MetaDirectory {
 
     /**
      * Checks if this meta directory already exists on the filesystem.
-     * @return <code>true</code> if this meta directory exists.
+     * @return {@code true} if this meta directory exists.
      */
     boolean exists();
 
@@ -67,7 +67,7 @@ public interface MetaDirectory {
 
     /**
      * Returns the repository url defined for this meta directory.
-     * @return the url or <code>null</code> if not defined.
+     * @return the url or {@code null} if not defined.
      * @throws IOException if an I/O error occurs
      */
     String getRepositoryUrl() throws IOException;
@@ -89,7 +89,7 @@ public interface MetaDirectory {
     /**
      * Returns a file of this meta directory.
      * @param name name of the file
-     * @return the file or <code>null</code> if not found
+     * @return the file or {@code null} if not found
      * @throws IOException if an I/O error occurs
      */
     MetaFile getFile(String name) throws IOException;
@@ -97,8 +97,8 @@ public interface MetaDirectory {
     /**
      * Returns a file of this meta directory.
      * @param name name of the file
-     * @param create if <code>true</code> a new file will be created if not exists.
-     * @return the file or <code>null</code> if not found and create is <code>false</code>.
+     * @param create if {@code true} a new file will be created if not exists.
+     * @return the file or {@code null} if not found and create is {@code false}.
      * @throws IOException if an I/O error occurs
      */
     MetaFile getFile(String name, boolean create) throws IOException;
@@ -106,8 +106,8 @@ public interface MetaDirectory {
     /**
      * Returns a file from the internal temporary storage of this directory.
      * @param name name of the file.
-     * @param create if <code>true</code> a new file will be created if not exists.
-     * @return the file or <code>null</code> if not found and create is <code>false</code>.
+     * @param create if {@code true} a new file will be created if not exists.
+     * @return the file or {@code null} if not found and create is {@code false}.
      * @throws IOException if an I/O error occurs
      */
     MetaFile getTmpFile(String name, boolean create) throws IOException;
@@ -115,8 +115,8 @@ public interface MetaDirectory {
     /**
      * Returns a file from the internal base storage of this directory.
      * @param name name of the file.
-     * @param create if <code>true</code> a new file will be created if not exists.
-     * @return the file or <code>null</code> if not found and create is <code>false</code>.
+     * @param create if {@code true} a new file will be created if not exists.
+     * @return the file or {@code null} if not found and create is {@code false}.
      * @throws IOException if an I/O error occurs
      */
     MetaFile getBaseFile(String name, boolean create) throws IOException;
@@ -124,7 +124,7 @@ public interface MetaDirectory {
     /**
      * Checks if the file with the given name exists.
      * @param name name of the file.
-     * @return <code>true</code> if the file exists.
+     * @return {@code true} if the file exists.
      * @throws IOException if an I/O error occurs
      */
     boolean hasFile(String name) throws IOException;

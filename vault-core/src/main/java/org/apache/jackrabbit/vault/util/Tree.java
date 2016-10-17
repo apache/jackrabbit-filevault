@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * <code>Tree</code>...
+ * {@code Tree}...
  */
 public class Tree<E> {
 

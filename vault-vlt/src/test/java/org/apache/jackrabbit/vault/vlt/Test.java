@@ -34,7 +34,7 @@ import org.apache.jackrabbit.vault.vlt.meta.xml.zip.UpdateableZipFile;
 import org.junit.Ignore;
 
 /**
- * <code>Test</code>...
+ * {@code Test}...
  */
 @Ignore
 public class Test {

@@ -22,7 +22,7 @@ import javax.jcr.Session;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 
 /**
- * <code>UserManagement</code>...
+ * {@code UserManagement}...
  */
 public interface UserManagement {
 
@@ -30,12 +30,12 @@ public interface UserManagement {
      * Checks if the given node type name is used for a User node.
      *
      * @param ntName the node type name
-     * @return <code>true</code> if used for a User node.
+     * @return {@code true} if used for a User node.
      */
     boolean isAuthorizableNodeType(String ntName);
 
     /**
-     * Returns the path of the authorizable or <code>null</code> if not exists.
+     * Returns the path of the authorizable or {@code null} if not exists.
      * @param name the authorizable name
      * @param session the session to access the repository
      * @return path of authorizable

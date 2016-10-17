@@ -28,7 +28,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 /**
  * Implements a input source that is based on a {@link File}. The path of the
  * file is used as systemId.
- * <p/>
+ * <p>
  * Currently only {@link #getByteStream()} is implemented.
  *
  */
@@ -54,7 +54,7 @@ public class FileInputSource extends VaultInputSource {
     }
 
     /**
-     * Sets the linefeed to use. If this is not <code>null</code> the output
+     * Sets the linefeed to use. If this is not {@code null} the output
      * stream of the file is wrapped by a {@link LineInputStream} with that
      * given line feed
      * @param lineSeparator the linefeed for text

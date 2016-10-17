@@ -21,7 +21,7 @@ import javax.jcr.Credentials;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 
 /**
- * <code>CredentialsProvider</code>...
+ * {@code CredentialsProvider}...
  */
 public interface CredentialsProvider {
 

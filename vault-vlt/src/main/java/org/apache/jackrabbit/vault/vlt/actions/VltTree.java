@@ -32,7 +32,7 @@ import org.apache.jackrabbit.vault.vlt.VltDirectory;
 import org.apache.jackrabbit.vault.vlt.VltException;
 
 /**
- * <code>VltTree</code>...
+ * {@code VltTree}...
  */
 public class VltTree {
 

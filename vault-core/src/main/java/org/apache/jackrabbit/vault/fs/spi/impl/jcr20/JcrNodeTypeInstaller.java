@@ -42,7 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The <code>JcrNodeTypeInstaller</code> is used to install nodetypes using the
+ * The {@code JcrNodeTypeInstaller} is used to install nodetypes using the
  * JCR 2.0 node type install features
  */
 public class JcrNodeTypeInstaller implements NodeTypeInstaller {

@@ -27,7 +27,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 
 /**
- * <code>OsWorkObject</code>...
+ * {@code OsWorkObject}...
  *
  */
 public class VaultFsCFile implements ConsoleFile {

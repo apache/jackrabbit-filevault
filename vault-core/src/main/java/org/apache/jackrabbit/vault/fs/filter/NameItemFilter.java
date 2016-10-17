@@ -69,7 +69,7 @@ public class NameItemFilter extends DepthItemFilter {
     /**
      * {@inheritDoc}
      *
-     * Returns <code>true</code> if the name of the given item is equal to
+     * Returns {@code true} if the name of the given item is equal to
      * the configured name.
      */
     public boolean matches(Item item) throws RepositoryException {

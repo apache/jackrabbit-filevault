@@ -32,7 +32,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
- * <code>AbstractSaxFormatter</code>...
+ * {@code AbstractSaxFormatter}...
  *
  */
 public abstract class AbstractSAXFormatter implements AggregateWalkListener {

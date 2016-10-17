@@ -17,7 +17,7 @@
 package org.apache.jackrabbit.vault.util.diff;
 
 /**
- * <code>DocumentSource</code>...
+ * {@code DocumentSource}...
  */
 public interface DocumentSource {
 

@@ -33,7 +33,7 @@ import org.apache.jackrabbit.vault.fs.impl.io.GenericArtifactHandler;
 import org.apache.jackrabbit.vault.fs.impl.io.NodeTypeArtifactHandler;
 
 /**
- * <code>Registry</code>...
+ * {@code Registry}...
  */
 public class Registry {
 

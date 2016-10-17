@@ -23,7 +23,7 @@ import java.util.Collection;
 import javax.jcr.RepositoryException;
 
 /**
- * <code>VaultFile</code>...
+ * {@code VaultFile}...
  */
 public interface VaultFile extends Dumpable {
     /**
@@ -44,26 +44,26 @@ public interface VaultFile extends Dumpable {
 
     /**
      * Returns the underlying artifact for this os file. If this file represents
-     * the <em>Meta-Directory</em> <code>null</code> is returned.
-     * @return the artifact or <code>null</code>.
+     * the <em>Meta-Directory</em> {@code null} is returned.
+     * @return the artifact or {@code null}.
      */
     Artifact getArtifact();
 
     /**
      * Checks if this file is a directory.
-     * @return <code>true</code> if this file is a directory.
+     * @return {@code true} if this file is a directory.
      */
     boolean isDirectory();
 
     /**
      * Checks if this file is transient. a file is transient if it's only used
      * as hierarchical node for a deeper 'real' file. i.e.
-     * @return <code>true</code> if this file is transient
+     * @return {@code true} if this file is transient
      */
     boolean isTransient();
 
     /**
-     * Returns the parent file or <code>null</code> if this is the root file.
+     * Returns the parent file or {@code null} if this is the root file.
      * @return the parent file.
      * @throws IOException if an I/O error occurs.
      * @throws RepositoryException if a repository error occurs.
@@ -71,7 +71,7 @@ public interface VaultFile extends Dumpable {
     VaultFile getParent() throws IOException, RepositoryException;
 
     /**
-     * Returns the artifacts node of this file or <code>null</code> if it's
+     * Returns the artifacts node of this file or {@code null} if it's
      * transient
      * @return the artifacts node
      */
@@ -84,9 +84,9 @@ public interface VaultFile extends Dumpable {
     Aggregate getControllingAggregate();
 
     /**
-     * Returns the child with the given name or <code>null</code>
+     * Returns the child with the given name or {@code null}
      * @param name the name of the child
-     * @return the child or <code>null</code>
+     * @return the child or {@code null}
      * @throws RepositoryException if an error occurs
      */
     VaultFile getChild(String name) throws RepositoryException;
@@ -109,27 +109,27 @@ public interface VaultFile extends Dumpable {
 
     /**
      * Checks if this file can be read from (eg. if it's not a directory)
-     * @return <code>true</code> if this file can be read from.
+     * @return {@code true} if this file can be read from.
      */
     boolean canRead();
 
     /**
-     * Returns the last modified date or <code>0</code> if not known.
-     * @return the last modified date or <code>0</code>
+     * Returns the last modified date or {@code 0} if not known.
+     * @return the last modified date or {@code 0}
      */
     long lastModified();
 
     /**
      * Returns the length of the serialized data if it's known without doing the
      * actual serialization.
-     * @return the length or <code>-1</code> if the length cannot be determined.
+     * @return the length or {@code -1} if the length cannot be determined.
      */
     long length();
 
     /**
-     * Returns the content type of this file or <code>null</code> if the type
+     * Returns the content type of this file or {@code null} if the type
      * cannot be determined or if it's a directory.
-     * @return the content type or <code>null</code>.
+     * @return the content type or {@code null}.
      */
     String getContentType();
 

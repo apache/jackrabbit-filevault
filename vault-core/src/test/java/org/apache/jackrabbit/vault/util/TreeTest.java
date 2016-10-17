@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.util;
 import junit.framework.TestCase;
 
 /**
- * <code>PathUtilTest</code>...
+ * {@code PathUtilTest}...
  */
 public class TreeTest extends TestCase {
 

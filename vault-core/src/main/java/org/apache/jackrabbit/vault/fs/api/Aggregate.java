@@ -25,7 +25,7 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 
 /**
- * <code>Aggregate</code>...
+ * {@code Aggregate}...
  */
 public interface Aggregate extends Dumpable {
 
@@ -49,8 +49,8 @@ public interface Aggregate extends Dumpable {
     /**
      * Checks if this artifact node possibly allows children, i.e. is a folder.
      *
-     * @return <code>true</code> if this artifact node allows children;
-     *         <code>false</code> otherwise.
+     * @return {@code true} if this artifact node allows children;
+     *         {@code false} otherwise.
      */
     boolean allowsChildren();
 
@@ -69,7 +69,7 @@ public interface Aggregate extends Dumpable {
     String getName();
 
     /**
-     * Returns the leaves of this aggregate or <code>null</code>.
+     * Returns the leaves of this aggregate or {@code null}.
      * @return the leaves
      * @throws RepositoryException if an error occurs
      */
@@ -93,7 +93,7 @@ public interface Aggregate extends Dumpable {
 
     /**
      * Checks if this aggregate has an aggregator and its node exists.
-     * @return <code>true</code> if this aggregate is attached
+     * @return {@code true} if this aggregate is attached
      * @throws RepositoryException if an error occurs
      */
     boolean isAttached() throws RepositoryException;
@@ -104,7 +104,7 @@ public interface Aggregate extends Dumpable {
 
     /**
      * Returns the collection of binary properties in this aggregate
-     * @return the binaries or <code>null</code>
+     * @return the binaries or {@code null}
      */
     Collection<Property> getBinaries();
 }

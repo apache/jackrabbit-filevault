@@ -33,7 +33,7 @@ public interface ItemFilter extends Filter {
     public static final ItemFilter ALL = new ItemFilter() {
 
         /**
-         * Returns always <code>true</code>
+         * Returns always {@code true}
          */
         public boolean matches(Item item, int depth) throws RepositoryException {
             return true;
@@ -53,7 +53,7 @@ public interface ItemFilter extends Filter {
     public static final ItemFilter NONE = new ItemFilter() {
 
         /**
-         * Returns always <code>false</code>
+         * Returns always {@code false}
          */
         public boolean matches(Item item, int depth) throws RepositoryException {
             return false;
@@ -75,8 +75,8 @@ public interface ItemFilter extends Filter {
      * 
      * @param item the item to check
      * @param depth a relative depth.
-     * @return <code>true</code> if this filter matches the criteria;
-     *         <code>false</code> otherwise.
+     * @return {@code true} if this filter matches the criteria;
+     *         {@code false} otherwise.
      * @throws RepositoryException if an error occurs.
      */
     public boolean matches(Item item, int depth) throws RepositoryException;

@@ -33,7 +33,7 @@ import org.apache.jackrabbit.vault.vlt.VltDirectory;
 import org.apache.jackrabbit.vault.vlt.VltException;
 
 /**
- * <code>Resolved</code>...
+ * {@code Resolved}...
  *
  */
 public class Commit extends AbstractAction {

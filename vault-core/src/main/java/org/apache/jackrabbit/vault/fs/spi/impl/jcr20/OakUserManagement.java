@@ -18,7 +18,7 @@
 package org.apache.jackrabbit.vault.fs.spi.impl.jcr20;
 
 /**
- * <code>JackrabbitUserManagement</code>...
+ * {@code JackrabbitUserManagement}...
  */
 public class OakUserManagement extends JackrabbitUserManagement {
 

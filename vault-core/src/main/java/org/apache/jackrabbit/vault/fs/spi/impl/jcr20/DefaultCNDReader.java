@@ -29,7 +29,7 @@ import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.DefaultNodeTypeSet;
 
 /**
- * <code>CNDReaderWrapper</code>...
+ * {@code CNDReaderWrapper}...
  */
 public class DefaultCNDReader extends DefaultNodeTypeSet implements CNDReader {
 

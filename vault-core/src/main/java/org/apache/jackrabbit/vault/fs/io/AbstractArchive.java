@@ -23,7 +23,7 @@ import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.Text;
 
 /**
- * <code>AbstractArchive</code>...
+ * {@code AbstractArchive}...
  */
 abstract class AbstractArchive implements Archive {
 

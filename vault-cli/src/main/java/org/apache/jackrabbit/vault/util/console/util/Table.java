@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
- * <code>Table</code>...
+ * {@code Table}...
  */
 public class Table {
     private int numCols;

@@ -30,7 +30,7 @@ import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 
 /**
- * <code>DocViewSerializer</code>...
+ * {@code DocViewSerializer}...
 *
 */
 public class DocViewSerializer implements Serializer {

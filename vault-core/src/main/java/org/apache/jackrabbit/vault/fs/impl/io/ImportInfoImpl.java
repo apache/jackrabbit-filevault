@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>ImportInfo</code>...
+ * {@code ImportInfo}...
  *
  */
 public class ImportInfoImpl implements ImportInfo {

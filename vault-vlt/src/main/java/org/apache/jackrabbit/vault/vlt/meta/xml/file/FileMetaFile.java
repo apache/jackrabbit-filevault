@@ -30,7 +30,7 @@ import org.apache.jackrabbit.vault.vlt.meta.MetaDirectory;
 import org.apache.jackrabbit.vault.vlt.meta.MetaFile;
 
 /**
- * <code>FileMetaFile</code>...
+ * {@code FileMetaFile}...
  */
 public class FileMetaFile implements MetaFile {
 

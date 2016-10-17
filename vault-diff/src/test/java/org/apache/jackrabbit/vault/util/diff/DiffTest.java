@@ -24,7 +24,7 @@ import org.apache.commons.io.IOUtils;
 import junit.framework.TestCase;
 
 /**
- * <code>DiffTest</code>...
+ * {@code DiffTest}...
  */
 public class DiffTest extends TestCase {
 

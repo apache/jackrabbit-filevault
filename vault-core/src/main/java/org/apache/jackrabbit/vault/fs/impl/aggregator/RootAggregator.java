@@ -38,7 +38,7 @@ public class RootAggregator extends GenericAggregator {
     /**
      * {@inheritDoc}
      *
-     * @return <code>false</code> always
+     * @return {@code false} always
      */
     public boolean hasFullCoverage() {
         return false;
@@ -47,7 +47,7 @@ public class RootAggregator extends GenericAggregator {
     /**
      * {@inheritDoc}
      *
-     * @return <code>false</code> always
+     * @return {@code false} always
      */
     public boolean isDefault() {
         return false;

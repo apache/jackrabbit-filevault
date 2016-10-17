@@ -31,7 +31,7 @@ public interface Archive {
 
     /**
      * Opens the archive.
-     * @param strict if <code>true</code> open will fail if there was an
+     * @param strict if {@code true} open will fail if there was an
      *        internal error while parsing meta data.
      * @throws IOException if an error occurs
      */
@@ -55,8 +55,8 @@ public interface Archive {
 
     /**
      * Returns the entry that specifies the "jcr_root". if no such
-     * entry exists, <code>null</code> is returned.
-     * @return the jcr_root entry or <code>null</code>
+     * entry exists, {@code null} is returned.
+     * @return the jcr_root entry or {@code null}
      * @throws IOException if an error occurs
      */
     Entry getJcrRoot() throws IOException;
@@ -79,7 +79,7 @@ public interface Archive {
     /**
      * Returns the entry specified by path.
      * @param path the path
-     * @return the entry or <code>null</code> if not found.
+     * @return the entry or {@code null} if not found.
      * @throws IOException if an error occurs
      */
     Entry getEntry(String path) throws IOException;
@@ -90,8 +90,8 @@ public interface Archive {
      * closed automatically if they base is closed.
      * 
      * @param root root path
-     * @param asJcrRoot if <code>true</code> the given root is the jcr_root
-     * @return the archive or <code>null</code> if entry specified by root
+     * @param asJcrRoot if {@code true} the given root is the jcr_root
+     * @return the archive or {@code null} if entry specified by root
      *         does not exist.
      * @throws IOException if an error occurs
      */
@@ -114,8 +114,8 @@ public interface Archive {
         public String getName();
 
         /**
-         * Returns <code>true</code> if the entry designates a directory.
-         * @return <code>true</code> if the entry designates a directory.
+         * Returns {@code true} if the entry designates a directory.
+         * @return {@code true} if the entry designates a directory.
          */
         public boolean isDirectory();
 
@@ -128,7 +128,7 @@ public interface Archive {
         /**
          * Returns the child entry with the given name.
          * @param name name of the child entry
-         * @return the entry or <code>null</code> if does not exist.
+         * @return the entry or {@code null} if does not exist.
          */
         public Entry getChild(String name);
     }

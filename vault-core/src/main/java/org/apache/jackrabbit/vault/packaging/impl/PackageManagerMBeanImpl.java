@@ -45,7 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>PackageManagerMBeanImpl</code> provide a MBean that lists all available packages as tabular data.
+ * {@code PackageManagerMBeanImpl} provide a MBean that lists all available packages as tabular data.
  */
 @Component()
 @Property(name = "jmx.objectname", value="org.apache.jackrabbit.vault.packaging:type=manager")

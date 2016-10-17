@@ -44,6 +44,7 @@ public interface DocViewAdapter {
     /**
      * Is called by the importer if the adapter is no longer used and must finalize the import.
      * @throws SAXException if an error occurrs.
+     * @return The paths that were created.
      */
     public List<String> close() throws SAXException;
 

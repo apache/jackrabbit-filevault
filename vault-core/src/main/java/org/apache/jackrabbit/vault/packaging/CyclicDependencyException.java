@@ -18,7 +18,7 @@
 package org.apache.jackrabbit.vault.packaging;
 
 /**
- * <code>CyclicDependencyException</code>...
+ * {@code CyclicDependencyException}...
  */
 public class CyclicDependencyException extends PackageException {
 

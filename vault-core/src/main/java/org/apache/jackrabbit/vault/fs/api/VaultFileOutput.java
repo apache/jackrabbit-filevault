@@ -23,7 +23,7 @@ import java.io.OutputStream;
 import javax.jcr.RepositoryException;
 
 /**
- * <code>VaultFileOutput</code>...
+ * {@code VaultFileOutput}...
  */
 public interface VaultFileOutput {
     OutputStream getOutputStream() throws IOException;

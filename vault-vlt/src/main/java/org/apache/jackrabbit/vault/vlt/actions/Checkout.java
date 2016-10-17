@@ -33,7 +33,7 @@ import org.apache.jackrabbit.vault.vlt.VltDirectory;
 import org.apache.jackrabbit.vault.vlt.VltException;
 
 /**
- * <code>Checkout</code>...
+ * {@code Checkout}...
  *
  */
 public class Checkout extends AbstractAction {

@@ -19,10 +19,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -48,7 +45,6 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Text;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -72,45 +68,6 @@ public class TestUserContentPackage extends IntegrationTestBase {
     private static final String NAME_PROFILE_NODE = "profile";
     private static final String NAME_PROFILE_PICTURE_NODE = "profile/picture.txt";
     private static final String NAME_PROFILE_PRIVATE_NODE = "profile_private";
-
-    private Set<String> preTestAuhorizables;
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        preTestAuhorizables = getAllAuthorizableIds();
-    }
-
-    private Set<String> getAllAuthorizableIds() throws RepositoryException {
-        Set<String> ret = new HashSet<String>();
-        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
-        Iterator<Authorizable> auths = mgr.findAuthorizables("rep:principalName", null);
-        while (auths.hasNext()) {
-            ret.add(auths.next().getID());
-        }
-        return ret;
-    }
-
-    @Override
-    public void tearDown() throws Exception {
-        // remove test authorizables
-        admin.refresh(false);
-        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
-        for (String id: getAllAuthorizableIds()) {
-            if (!preTestAuhorizables.remove(id)) {
-                removeAuthorizable(mgr, id);
-            }
-        }
-        admin.save();
-        super.tearDown();
-    }
-
-    private void removeAuthorizable(UserManager mgr, String name) throws RepositoryException {
-        Authorizable a = mgr.getAuthorizable(name);
-        if (a != null) {
-            a.remove();
-        }
-    }
 
     @Test
     public void installUserA() throws RepositoryException, IOException, PackageException {
@@ -389,6 +346,52 @@ public class TestUserContentPackage extends IntegrationTestBase {
     public void install_moved_user_with_rep_cache_merge() throws RepositoryException, IOException, PackageException {
         Assume.assumeTrue(isOak());
         install_moved_user_with_rep_cache(ImportMode.MERGE);
+    }
+
+    /**
+     * Tests if installing a package using {@link ImportMode#UPDATE} with a package that contains a rep:cache node
+     * and another childnode works (JCRVLT-137).
+     */
+    @Test
+    public void install_user_with_rep_cache_update() throws RepositoryException, IOException, PackageException {
+        Assume.assumeTrue(isOak());
+        install_user_with_rep_cache(ImportMode.UPDATE);
+    }
+
+    /**
+     * Tests if installing a package using {@link ImportMode#REPLACE} with a package that contains a rep:cache node
+     * and another childnode works (JCRVLT-137).
+     */
+    @Test
+    public void install_user_with_rep_cache_replace() throws RepositoryException, IOException, PackageException {
+        Assume.assumeTrue(isOak());
+        install_user_with_rep_cache(ImportMode.REPLACE);
+    }
+
+    /**
+     * Tests if installing a package using {@link ImportMode#MERGE} with a package that contains a rep:cache node
+     * and another childnode works (JCRVLT-137).
+     */
+    @Test
+    public void install_user_with_rep_cache_merge() throws RepositoryException, IOException, PackageException {
+        Assume.assumeTrue(isOak());
+        install_user_with_rep_cache(ImportMode.MERGE);
+    }
+
+    private void install_user_with_rep_cache(ImportMode mode) throws RepositoryException, IOException, PackageException {
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
+
+        // install user package
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_with_rep_cache.zip"), false);
+        assertNotNull(pack);
+        ImportOptions opts = getDefaultOptions();
+        opts.setImportMode(mode);
+        pack.install(opts);
+
+        // check if user exists
+        User userA = (User) mgr.getAuthorizable(ID_TEST_USER_A);
+        assertNotNull("test-user-a must exist", userA);
     }
 
     private void install_moved_user_with_rep_cache(ImportMode mode) throws RepositoryException, IOException, PackageException {

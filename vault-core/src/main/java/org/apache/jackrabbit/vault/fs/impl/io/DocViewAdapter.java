@@ -33,19 +33,19 @@ public interface DocViewAdapter {
      * @param node the node
      * @throws SAXException if an error occurrs
      */
-    public void startNode(DocViewNode node) throws SAXException;
+    void startNode(DocViewNode node) throws SAXException;
 
     /**
      * Ends node is invoked when the importer ascends from an element.
      * @throws SAXException if an error occurrs.
      */
-    public void endNode() throws SAXException;
+    void endNode() throws SAXException;
 
     /**
      * Is called by the importer if the adapter is no longer used and must finalize the import.
      * @throws SAXException if an error occurrs.
      * @return The paths that were created.
      */
-    public List<String> close() throws SAXException;
+    List<String> close() throws SAXException;
 
 }

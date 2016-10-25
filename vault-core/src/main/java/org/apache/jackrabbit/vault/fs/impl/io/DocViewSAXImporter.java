@@ -658,8 +658,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
      * Handle an authorizable node
      * @param node the parent node
      * @param ni doc view node of the authorizable
-     * @throws RepositoryException
-     * @throws SAXException
+     * @throws RepositoryException if an error accessing the repository occurrs.
+     * @throws SAXException if an XML parsing error occurrs.
      */
     private void handleAuthorizable(Node node, DocViewNode ni) throws RepositoryException, SAXException {
         String id = userManagement.getAuthorizableId(ni);

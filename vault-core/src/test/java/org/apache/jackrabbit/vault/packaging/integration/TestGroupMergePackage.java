@@ -22,7 +22,6 @@ import java.io.IOException;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
-import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
@@ -54,13 +53,6 @@ public class TestGroupMergePackage extends IntegrationTestBase {
         removeAuthorizable(mgr, "test-user-c");
         admin.save();
         super.tearDown();
-    }
-
-    private void removeAuthorizable(UserManager mgr, String name) throws RepositoryException {
-        Authorizable a = mgr.getAuthorizable(name);
-        if (a != null) {
-            a.remove();
-        }
     }
 
     /**

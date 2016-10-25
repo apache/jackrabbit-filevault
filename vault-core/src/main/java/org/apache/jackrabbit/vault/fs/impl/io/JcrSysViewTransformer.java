@@ -17,7 +17,10 @@
 package org.apache.jackrabbit.vault.fs.impl.io;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.Stack;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
@@ -64,6 +67,10 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
     private final String existingPath;
 
+    private final Set<String> excludedNodeNames = new HashSet<String>();
+
+    private long ignoreLevel = 0;
+
     public JcrSysViewTransformer(Node node) throws SAXException, RepositoryException {
         this(node, null);
     }
@@ -90,6 +97,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
             recovery = new ChildNodeStash(session).excludeName("rep:cache");
             recovery.stashChildren(existingPath);
         }
+        excludeNode("rep:cache");
     }
 
     public List<String> close() throws SAXException {
@@ -130,6 +138,17 @@ public class JcrSysViewTransformer implements DocViewAdapter {
     }
 
     public void startNode(DocViewNode ni) throws SAXException {
+        if (ignoreLevel > 0) {
+            DocViewSAXImporter.log.debug("ignoring child node of excluded node: {}", ni.name);
+            ignoreLevel++;
+            return;
+        }
+        if (excludedNodeNames.contains(ni.name)) {
+            DocViewSAXImporter.log.debug("Ignoring excluded node {}", ni.name);
+            ignoreLevel = 1;
+            return;
+        }
+
         DocViewSAXImporter.log.debug("Transforming element to sysview {}", ni.name);
 
         AttributesImpl attrs = new AttributesImpl();
@@ -163,6 +182,15 @@ public class JcrSysViewTransformer implements DocViewAdapter {
     }
 
     public void endNode() throws SAXException {
+        if (ignoreLevel > 0) {
+            ignoreLevel--;
+            return;
+        }
         handler.endElement(Name.NS_SV_URI, "node", "sv:node");
+    }
+
+    public JcrSysViewTransformer excludeNode(String name) {
+        excludedNodeNames.add(name);
+        return this;
     }
 }

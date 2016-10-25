@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -43,8 +44,11 @@ import javax.jcr.security.Privilege;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlEntry;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
+import org.apache.jackrabbit.api.security.user.Authorizable;
+import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
 import org.apache.jackrabbit.core.RepositoryImpl;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
@@ -76,6 +80,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
@@ -103,7 +108,7 @@ public class IntegrationTestBase  {
     private static final File DIR_DATA_STORE = new File(REPO_HOME + "/datastore");
     private static final File DIR_BLOB_STORE = new File(REPO_HOME + "/blobstore");
 
-    @Rule
+    @ClassRule
     public static TemporaryFolder tempFolder = new TemporaryFolder();
 
     private static FileStore fileStore = null;
@@ -113,6 +118,8 @@ public class IntegrationTestBase  {
     protected Session admin;
 
     protected JcrPackageManager packMgr;
+
+    protected Set<String> preTestAuthorizables;
 
     @BeforeClass
     public static void initRepository() throws RepositoryException, IOException, InvalidFileStoreVersionException {
@@ -204,6 +211,27 @@ public class IntegrationTestBase  {
         clean("/testroot");
 
         packMgr = new JcrPackageManagerImpl(admin);
+
+        preTestAuthorizables = getAllAuthorizableIds();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        // remove test authorizables
+        admin.refresh(false);
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        for (String id: getAllAuthorizableIds()) {
+            if (!preTestAuthorizables.remove(id)) {
+                removeAuthorizable(mgr, id);
+            }
+        }
+        admin.save();
+
+        packMgr = null;
+        if (admin != null) {
+            admin.logout();
+            admin = null;
+        }
     }
 
     public static boolean isOak() {
@@ -218,12 +246,20 @@ public class IntegrationTestBase  {
             // ignore
         }
     }
-    @After
-    public void tearDown() throws Exception {
-        packMgr = null;
-        if (admin != null) {
-            admin.logout();
-            admin = null;
+    public final Set<String> getAllAuthorizableIds() throws RepositoryException {
+        Set<String> ret = new HashSet<String>();
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        Iterator<Authorizable> auths = mgr.findAuthorizables("rep:principalName", null);
+        while (auths.hasNext()) {
+            ret.add(auths.next().getID());
+        }
+        return ret;
+    }
+
+    public final void removeAuthorizable(UserManager mgr, String name) throws RepositoryException {
+        Authorizable a = mgr.getAuthorizable(name);
+        if (a != null) {
+            a.remove();
         }
     }
 

@@ -25,13 +25,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jcr.Binary;
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
@@ -272,11 +272,9 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         JcrPackage jcrPack = null;
         try {
             jcrPack = createNew(parent, pid, bin, archive);
-            if (jcrPack != null) {
-                JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
-                if (state != null) {
-                    def.setState(state);
-                }
+            JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
+            if (state != null) {
+                def.setState(state);
             }
             return jcrPack;
         } finally {
@@ -354,11 +352,9 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         JcrPackage jcrPack = null;
         try {
             jcrPack = createNew(parent, pid, pack, false);
-            if (jcrPack != null) {
-                JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
-                if (state != null) {
-                    def.setState(state);
-                }
+            JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
+            if (state != null) {
+                def.setState(state);
             }
             return jcrPack;
         } finally {
@@ -423,7 +419,8 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      *
      * @since 2.3.0
      */
-    public JcrPackage createNew(Node parent, PackageId pid, VaultPackage pack, boolean autoSave)
+    @Nonnull
+    public JcrPackage createNew(@Nonnull Node parent, @Nonnull PackageId pid, @Nullable VaultPackage pack, boolean autoSave)
             throws RepositoryException, IOException {
         Node node = parent.addNode(Text.getName(pid.getInstallationPath() + ".zip"), JcrConstants.NT_FILE);
         Node content = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
@@ -469,7 +466,8 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      *
      * @since 3.1
      */
-    public JcrPackage createNew(Node parent, PackageId pid, Binary bin, MemoryArchive archive)
+    @Nonnull
+    public JcrPackage createNew(@Nonnull Node parent, @Nonnull PackageId pid, @Nonnull Binary bin, @Nonnull MemoryArchive archive)
             throws RepositoryException, IOException {
         Node node = parent.addNode(Text.getName(pid.getInstallationPath() + ".zip"), JcrConstants.NT_FILE);
         Node content = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);

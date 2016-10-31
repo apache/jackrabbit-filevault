@@ -23,6 +23,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -43,7 +46,8 @@ public interface JcrPackageManager extends PackageManager {
      * @throws RepositoryException if an error occurs
      * @since 2.3.22
      */
-    JcrPackage open(PackageId id) throws RepositoryException;
+    @CheckForNull
+    JcrPackage open(@Nonnull PackageId id) throws RepositoryException;
 
     /**
      * Opens a package that is based on the given node.
@@ -53,7 +57,8 @@ public interface JcrPackageManager extends PackageManager {
      *         valid.
      * @throws RepositoryException if an error occurs
      */
-    JcrPackage open(Node node) throws RepositoryException;
+    @CheckForNull
+    JcrPackage open(@Nonnull Node node) throws RepositoryException;
 
     /**
      * Opens a package that is based on the given node. If {@code allowInvalid}
@@ -67,7 +72,8 @@ public interface JcrPackageManager extends PackageManager {
      *         valid unless {@code allowInvalid} is {@code true}.
      * @throws RepositoryException if an error occurs
      */
-    JcrPackage open(Node node, boolean allowInvalid) throws RepositoryException;
+    @CheckForNull
+    JcrPackage open(@Nonnull Node node, boolean allowInvalid) throws RepositoryException;
 
     /**
      * Finds the id of the package that matches the given dependency best.
@@ -81,7 +87,8 @@ public interface JcrPackageManager extends PackageManager {
      *
      * @since 2.4.6
      */
-    PackageId resolve(Dependency dependency, boolean onlyInstalled) throws RepositoryException;
+    @CheckForNull
+    PackageId resolve(@Nonnull Dependency dependency, boolean onlyInstalled) throws RepositoryException;
 
     /**
      * Returns the package ids of installed packages that depend on the given package.
@@ -92,7 +99,8 @@ public interface JcrPackageManager extends PackageManager {
      *
      * @since 3.1.32
      */
-    PackageId[] usage(PackageId id) throws RepositoryException;
+    @Nonnull
+    PackageId[] usage(@Nonnull PackageId id) throws RepositoryException;
 
     /**
      * Uploads a package. The location is chosen from the installation path of
@@ -106,11 +114,12 @@ public interface JcrPackageManager extends PackageManager {
      *        deleted when the package is closed
      * @param replace if {@code true} existing packages are replaced.
      * @param nameHint hint for the name if package does not provide one
-     * @return the new jcr package or {@code null} if not installed
+     * @return the new jcr package
      * @throws RepositoryException if an error occurrs
      * @throws IOException if an I/O error occurrs
      */
-    JcrPackage upload(File file, boolean isTmpFile, boolean replace, String nameHint)
+    @Nonnull
+    JcrPackage upload(@Nonnull File file, boolean isTmpFile, boolean replace, @Nullable String nameHint)
             throws RepositoryException, IOException;
 
     /**
@@ -131,7 +140,8 @@ public interface JcrPackageManager extends PackageManager {
      * @throws RepositoryException if an error occurrs
      * @throws IOException if an I/O error occurrs
      */
-    JcrPackage upload(File file, boolean isTmpFile, boolean replace, String nameHint, boolean strict)
+    @Nonnull
+    JcrPackage upload(@Nonnull File file, boolean isTmpFile, boolean replace, @Nullable String nameHint, boolean strict)
             throws RepositoryException, IOException;
 
     /**
@@ -148,7 +158,8 @@ public interface JcrPackageManager extends PackageManager {
      * @throws RepositoryException if an error occurrs
      * @throws IOException if an I/O error occurrs
      */
-    JcrPackage upload(InputStream in, boolean replace) throws RepositoryException, IOException;
+    @Nonnull
+    JcrPackage upload(@Nonnull InputStream in, boolean replace) throws RepositoryException, IOException;
 
     /**
      * Uploads a package. The location is chosen from the installation path of
@@ -165,18 +176,20 @@ public interface JcrPackageManager extends PackageManager {
      * @throws RepositoryException if an error occurrs
      * @throws IOException if an I/O error occurrs
      */
-    JcrPackage upload(InputStream in, boolean replace, boolean strict) throws RepositoryException, IOException;
+    @Nonnull
+    JcrPackage upload(@Nonnull InputStream in, boolean replace, boolean strict) throws RepositoryException, IOException;
 
     /**
      * Creates a new package below the given folder.
      *
-     * @param folder parent folder
+     * @param folder parent folder or {@code null} for the package root
      * @param name name of the new package
      * @return a new jcr package
      * @throws RepositoryException if a repository error occurrs
      * @throws IOException if an I/O exception occurs
      */
-    JcrPackage create(Node folder, String name)
+    @Nonnull
+    JcrPackage create(@Nullable Node folder, @Nonnull String name)
             throws RepositoryException, IOException;
 
     /**
@@ -189,7 +202,8 @@ public interface JcrPackageManager extends PackageManager {
      * @throws IOException if an I/O exception occurs
      * @since 2.2.5
      */
-    JcrPackage create(String group, String name)
+    @Nonnull
+    JcrPackage create(@Nonnull String group, @Nonnull String name)
             throws RepositoryException, IOException;
 
     /**
@@ -203,16 +217,17 @@ public interface JcrPackageManager extends PackageManager {
      * @throws IOException if an I/O exception occurs
      * @since 2.3
      */
-    JcrPackage create(String group, String name, String version)
+    @Nonnull
+    JcrPackage create(@Nonnull String group, @Nonnull String name, @Nullable String version)
             throws RepositoryException, IOException;
 
     /**
-     * Removes a package and its snaphost if present.
+     * Removes a package and its snapshots if present.
      * @param pack the package to remove
      * @throws RepositoryException if a repository error occurrs
      * @since 2.2.7
      */
-    void remove(JcrPackage pack) throws RepositoryException;
+    void remove(@Nonnull JcrPackage pack) throws RepositoryException;
 
     /**
      * Renames the given package with a new group id and name. Please note that
@@ -228,7 +243,8 @@ public interface JcrPackageManager extends PackageManager {
      *
      * @since 2.0
      */
-    JcrPackage rename(JcrPackage pack, String groupId, String name)
+    @Nonnull
+    JcrPackage rename(@Nonnull JcrPackage pack, @Nullable String groupId, @Nullable String name)
             throws PackageException, RepositoryException;
 
     /**
@@ -246,7 +262,8 @@ public interface JcrPackageManager extends PackageManager {
      *
      * @since 2.3
      */
-    JcrPackage rename(JcrPackage pack, String groupId, String name, String version)
+    @Nonnull
+    JcrPackage rename(@Nonnull JcrPackage pack, @Nullable String groupId, @Nullable String name, @Nullable String version)
             throws PackageException, RepositoryException;
 
     /**
@@ -257,7 +274,7 @@ public interface JcrPackageManager extends PackageManager {
      * @throws RepositoryException if a repository error occurs
      * @throws IOException if an I/O error occurs
      */
-    void assemble(JcrPackage pack, ProgressTrackerListener listener)
+    void assemble(@Nonnull JcrPackage pack, @Nullable ProgressTrackerListener listener)
             throws PackageException, RepositoryException, IOException;
 
     /**
@@ -269,8 +286,7 @@ public interface JcrPackageManager extends PackageManager {
      * @throws RepositoryException if a repository error occurs
      * @throws IOException if an I/O error occurs
      */
-    void assemble(Node packNode, JcrPackageDefinition definition,
-                         ProgressTrackerListener listener)
+    void assemble(@Nonnull Node packNode, @Nonnull JcrPackageDefinition definition, @Nullable ProgressTrackerListener listener)
             throws PackageException, RepositoryException, IOException;
 
     /**
@@ -282,8 +298,7 @@ public interface JcrPackageManager extends PackageManager {
      * @throws IOException if an I/O error occurs
      * @throws PackageException if a package error occurs
      */
-    void assemble(JcrPackageDefinition definition,
-                         ProgressTrackerListener listener, OutputStream out)
+    void assemble(@Nonnull JcrPackageDefinition definition, @Nullable ProgressTrackerListener listener, @Nonnull OutputStream out)
             throws IOException, RepositoryException, PackageException;
 
     /**
@@ -294,7 +309,7 @@ public interface JcrPackageManager extends PackageManager {
      * @throws RepositoryException if a repository error occurs
      * @throws IOException if an I/O error occurs
      */
-    void rewrap(JcrPackage pack, ProgressTrackerListener listener)
+    void rewrap(@Nonnull JcrPackage pack, @Nullable ProgressTrackerListener listener)
             throws PackageException, RepositoryException, IOException;
 
     /**
@@ -302,6 +317,7 @@ public interface JcrPackageManager extends PackageManager {
      * @return the package root node
      * @throws RepositoryException if an error occurs
      */
+    @Nonnull
     Node getPackageRoot() throws RepositoryException;
 
     /**
@@ -310,6 +326,7 @@ public interface JcrPackageManager extends PackageManager {
      * @return the package root node or {@code null} if not present and noCreate is {@code true}.
      * @throws RepositoryException if an error occurs
      */
+    @CheckForNull
     Node getPackageRoot(boolean noCreate) throws RepositoryException;
 
     /**
@@ -318,6 +335,7 @@ public interface JcrPackageManager extends PackageManager {
      * @return a list of packages
      * @throws RepositoryException if an error occurs
      */
+    @Nonnull
     List<JcrPackage> listPackages() throws RepositoryException;
 
     /**
@@ -328,8 +346,8 @@ public interface JcrPackageManager extends PackageManager {
      * @return a list of packages
      * @throws RepositoryException if an error occurs
      */
-    List<JcrPackage> listPackages(WorkspaceFilter filter) throws RepositoryException;
-
+    @Nonnull
+    List<JcrPackage> listPackages(@Nullable WorkspaceFilter filter) throws RepositoryException;
 
     /**
      * Returns the list of all packages installed below the package root that
@@ -341,5 +359,6 @@ public interface JcrPackageManager extends PackageManager {
      * @return the list of packages
      * @throws RepositoryException if an error occurs
      */
-    List<JcrPackage> listPackages(String group, boolean built) throws RepositoryException;
+    @Nonnull
+    List<JcrPackage> listPackages(@Nullable String group, boolean built) throws RepositoryException;
 }

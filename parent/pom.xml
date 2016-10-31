@@ -181,6 +181,7 @@
                             <exclude>.idea/**</exclude>
                             <exclude>.gitignore</exclude>
                             <exclude>derby.log</exclude>
+                            <exclude>**/*.zip/**</exclude>
                         </excludes>
                     </configuration>
                 </plugin>

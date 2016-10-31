@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -73,15 +74,19 @@ import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction;
 import org.apache.jackrabbit.oak.spi.xml.ImportBehavior;
 import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
+import org.apache.jackrabbit.vault.fs.io.FileArchive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
+import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
+import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -284,6 +289,39 @@ public class IntegrationTestBase  {
         return tmpFile;
     }
 
+    public VaultPackage loadVaultPackage(String name) throws IOException {
+        final URL packageURL = getClass().getResource(name);
+        final String filename = packageURL.getFile();
+        final File file = new File(filename);
+        return new ZipVaultPackage(new FileArchive(file), true);
+    }
+
+    public VaultPackage extractVaultPackage(String name) throws IOException, PackageException, RepositoryException {
+        return extractVaultPackage(name, null);
+    }
+
+    public VaultPackage extractVaultPackage(String name, ImportOptions opts) throws IOException, PackageException, RepositoryException {
+        if (opts == null) {
+            opts = getDefaultOptions();
+        }
+        VaultPackage pack = loadVaultPackage(name);
+        pack.extract(admin, opts);
+        return pack;
+    }
+
+    public JcrPackage installPackage(String name) throws IOException, RepositoryException, PackageException {
+        return installPackage(name, null);
+    }
+
+    public JcrPackage installPackage(String name, ImportOptions opts) throws IOException, RepositoryException, PackageException {
+        if (opts == null) {
+            opts = getDefaultOptions();
+        }
+        JcrPackage pack = packMgr.upload(getStream(name), false);
+        assertNotNull(pack);
+        pack.install(opts);
+        return pack;
+    }
 
     public ImportOptions getDefaultOptions() {
         ImportOptions opts = new ImportOptions();

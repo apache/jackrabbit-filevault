@@ -53,16 +53,16 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
     private Archive archive;
 
-    protected ZipVaultPackage(File file, boolean isTmpFile) throws IOException {
+    public ZipVaultPackage(File file, boolean isTmpFile) throws IOException {
         this(file, isTmpFile, false);
     }
 
-    protected ZipVaultPackage(File file, boolean isTmpFile, boolean strict)
+    public ZipVaultPackage(File file, boolean isTmpFile, boolean strict)
             throws IOException {
         this(new ZipArchive(file, isTmpFile), strict);
     }
 
-    protected ZipVaultPackage(Archive archive, boolean strict)
+    public ZipVaultPackage(Archive archive, boolean strict)
             throws IOException {
         this.archive = archive;
         if (strict) {

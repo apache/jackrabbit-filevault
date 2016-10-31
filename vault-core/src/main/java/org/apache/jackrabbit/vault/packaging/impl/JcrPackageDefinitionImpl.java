@@ -24,6 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
@@ -68,21 +70,24 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     /**
      * underlying node
      */
+    @Nonnull
     private Node defNode;
 
+    @Nullable
     private String userId;
 
     /**
      * Creates a new definition base on the underlying node.
      * @param definitionNode the definition node
      */
-    public JcrPackageDefinitionImpl(Node definitionNode) {
+    public JcrPackageDefinitionImpl(@Nonnull Node definitionNode) {
         this.defNode = definitionNode;
     }
 
     /**
      * {@inheritDoc}
      */
+    @Nonnull
     public Node getNode() {
         return defNode;
     }
@@ -838,9 +843,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     private String getUserId() {
         if (userId == null) {
             try {
-                if (defNode != null) {
-                    userId = defNode.getSession().getUserID();
-                }
+                userId = defNode.getSession().getUserID();
             } catch (RepositoryException e) {
                 // ignore
             }

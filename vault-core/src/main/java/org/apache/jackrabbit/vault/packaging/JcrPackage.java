@@ -19,6 +19,8 @@ package org.apache.jackrabbit.vault.packaging;
 
 import java.io.IOException;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
@@ -56,6 +58,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      *         not valid.
      * @throws RepositoryException if an error occurrs
      */
+    @CheckForNull
     JcrPackageDefinition getDefinition() throws RepositoryException;
 
     /**
@@ -68,6 +71,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      * Returns the underlying node
      * @return the node
      */
+    @CheckForNull
     Node getNode();
 
     /**
@@ -83,6 +87,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      * @throws RepositoryException if an error occurs
      * @throws IOException if an I/O error occurs
      */
+    @Nonnull
     VaultPackage getPackage() throws RepositoryException, IOException;
 
     /**
@@ -95,7 +100,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      * @throws IOException if an I/O error occurs
      * @since 2.3.14
      */
-    void extract(ImportOptions opts)
+    void extract(@Nonnull ImportOptions opts)
             throws RepositoryException, PackageException, IOException;
 
     /**
@@ -110,7 +115,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      *
      * @since 2.3.14
      */
-    void install(ImportOptions opts)
+    void install(@Nonnull ImportOptions opts)
             throws RepositoryException, PackageException, IOException;
 
     /**
@@ -120,6 +125,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      * @throws RepositoryException if an error accessing the repository occurrs
      * @since 3.1.32
      */
+    @Nonnull
     Dependency[] getUnresolvedDependencies() throws RepositoryException;
 
     /**
@@ -128,6 +134,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      * @throws RepositoryException if an error accessing the repository occurrs
      * @since 3.1.32
      */
+    @Nonnull
     PackageId[] getResolvedDependencies() throws RepositoryException;
 
     /**
@@ -135,7 +142,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      *
      * @param opts export options
      * @param replace if {@code true} any existing snapshot is replaced.
-     * @return a package that represents the snapshot of this package.
+     * @return a package that represents the snapshot of this package or {@code null} if it wasn't created.
      * @throws RepositoryException if a repository error during installation occurs.
      * @throws PackageException if an error during packaging occurs
      * @throws IllegalStateException if the package is not valid.
@@ -143,7 +150,8 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      *
      * @since 2.0
      */
-    JcrPackage snapshot(ExportOptions opts, boolean replace)
+    @CheckForNull
+    JcrPackage snapshot(@Nonnull ExportOptions opts, boolean replace)
             throws RepositoryException, PackageException, IOException;
 
     /**
@@ -153,6 +161,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      *
      * @since 2.0
      */
+    @CheckForNull
     JcrPackage getSnapshot() throws RepositoryException;
 
     /**
@@ -168,7 +177,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      *
      * @since 2.3.14
      */
-    void uninstall(ImportOptions opts)
+    void uninstall(@Nonnull ImportOptions opts)
             throws RepositoryException, PackageException, IOException;
 
     /**
@@ -213,6 +222,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      * @return the jcr:data property
      * @throws RepositoryException if an error occurrs
      */
+    @CheckForNull
     Property getData() throws RepositoryException;
 
     /**
@@ -220,6 +230,7 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      * @return the definition node.
      * @throws RepositoryException if an error occurrs
      */
+    @CheckForNull
     Node getDefNode() throws RepositoryException;
 
 }

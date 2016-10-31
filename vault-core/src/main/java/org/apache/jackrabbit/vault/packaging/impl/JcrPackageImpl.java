@@ -28,6 +28,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -45,13 +48,13 @@ import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.CyclicDependencyException;
 import org.apache.jackrabbit.vault.packaging.Dependency;
+import org.apache.jackrabbit.vault.packaging.DependencyException;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
 import org.apache.jackrabbit.vault.packaging.DependencyUtil;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
-import org.apache.jackrabbit.vault.packaging.DependencyException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
@@ -80,35 +83,30 @@ public class JcrPackageImpl implements JcrPackage {
     /**
      * underlying node
      */
+    @Nullable
     private Node node;
 
     /**
      * underlying package
      */
+    @Nullable
     private ZipVaultPackage pack;
 
     /**
      * underlying definition
      */
+    @Nullable
     private JcrPackageDefinitionImpl def;
 
-    public JcrPackageImpl(JcrPackageManagerImpl mgr, Node node) throws RepositoryException {
+    public JcrPackageImpl(@Nonnull JcrPackageManagerImpl mgr, @Nullable Node node) throws RepositoryException {
         this.mgr = mgr;
         this.node = node;
     }
 
-    protected JcrPackageImpl(JcrPackageManagerImpl mgr, Node node, ZipVaultPackage pack) throws RepositoryException {
+    protected JcrPackageImpl(@Nonnull JcrPackageManagerImpl mgr, @Nullable Node node, @Nullable ZipVaultPackage pack) throws RepositoryException {
         this.mgr = mgr;
         this.node = node;
         this.pack = pack;
-    }
-
-    protected JcrPackageImpl(JcrPackageManagerImpl mgr, Node node, ZipVaultPackage pack, JcrPackageDefinitionImpl def)
-            throws RepositoryException {
-        this.mgr = mgr;
-        this.node = node;
-        this.pack = pack;
-        this.def = def;
     }
 
     /**
@@ -184,10 +182,8 @@ public class JcrPackageImpl implements JcrPackage {
             if (getSize() == 0) {
                 return false;
             }
-            if (getDefinition() == null) {
-                return true;
-            }
-            return !def.isModified();
+            final JcrPackageDefinition def = getDefinition();
+            return def == null || !def.isModified();
         } catch (RepositoryException e) {
             log.warn("Error during isSealed()", e);
             return false;
@@ -203,6 +199,9 @@ public class JcrPackageImpl implements JcrPackage {
         JcrPackageDefinition jDef = getDefinition();
         if (jDef == null) {
             return true;
+        }
+        if (node == null) {
+            return false;
         }
         PackageId id = jDef.getId();
         PackageId cId = new PackageId(node.getPath());
@@ -232,8 +231,14 @@ public class JcrPackageImpl implements JcrPackage {
         if (isValid()) {
             return;
         }
+        if (node == null) {
+            return;
+        }
         VaultPackage pack = getPackage();
         Node content = getContent();
+        if (content == null) {
+            return;
+        }
         boolean ok = false;
         try {
             content.addMixin(NT_VLT_PACKAGE);
@@ -272,6 +277,7 @@ public class JcrPackageImpl implements JcrPackage {
      * @throws RepositoryException If a repository error occurrs.
      * @throws IOException if an i/o error occurrs.
      */
+    @Nonnull
     protected VaultPackage getPackage(boolean forceFileArchive) throws RepositoryException, IOException {
         if (forceFileArchive && pack != null && !(pack.getArchive() instanceof ZipArchive)) {
             pack.close();
@@ -496,7 +502,7 @@ public class JcrPackageImpl implements JcrPackage {
         for (Dependency dep: def.getDependencies()) {
             if (mgr.resolve(dep, true) == null) {
                 unresolved.add(dep);
-            };
+            }
         }
         return unresolved.toArray(new Dependency[unresolved.size()]);
     }
@@ -515,7 +521,7 @@ public class JcrPackageImpl implements JcrPackage {
             PackageId id = mgr.resolve(dep, true);
             if (id != null) {
                 resolved.add(id);
-            };
+            }
         }
         return resolved.toArray(new PackageId[resolved.size()]);
     }
@@ -526,6 +532,9 @@ public class JcrPackageImpl implements JcrPackage {
      */
     private void installDependencies(Set<PackageId> processed, ImportOptions opts, boolean createSnapshot, boolean replaceSnapshot)
             throws PackageException, RepositoryException, IOException {
+        if (def == null) {
+            return;
+        }
         List<Dependency> unresolved = new LinkedList<Dependency>();
         List<JcrPackageImpl> uninstalled = new LinkedList<JcrPackageImpl>();
         for (Dependency dep: def.getDependencies()) {
@@ -577,6 +586,9 @@ public class JcrPackageImpl implements JcrPackage {
      */
     private void uninstallUsages(Set<PackageId> processed, ImportOptions opts)
             throws PackageException, RepositoryException, IOException {
+        if (def == null) {
+            return;
+        }
         PackageId[] usage = mgr.usage(getDefinition().getId());
         if (usage.length > 0 && opts.getDependencyHandling() == DependencyHandling.STRICT) {
             String msg = String.format("Refusing to uninstall package %s. it is still used by: %s", def.getId(), Arrays.toString(usage));
@@ -615,8 +627,12 @@ public class JcrPackageImpl implements JcrPackage {
      * @throws PackageException if an error occurrs.
      * @throws IOException if an error occurrs.
      */
-    private JcrPackage snapshot(ExportOptions opts, boolean replace, AccessControlHandling acHandling)
+    @CheckForNull
+    private JcrPackage snapshot(@Nonnull ExportOptions opts, boolean replace, @Nullable AccessControlHandling acHandling)
             throws RepositoryException, PackageException, IOException {
+        if (node == null) {
+            return null;
+        }
         PackageId id = getSnapshotId();
         Node packNode = getPackageNode(id);
         if (packNode != null) {
@@ -658,7 +674,11 @@ public class JcrPackageImpl implements JcrPackage {
      * @return the package node
      * @throws RepositoryException if an error occurs
      */
+    @CheckForNull
     private Node getPackageNode(PackageId id) throws RepositoryException {
+        if (node == null) {
+            return null;
+        }
         if (node.getSession().nodeExists(id.getInstallationPath())) {
             return node.getSession().getNode(id.getInstallationPath());
         } else if (node.getSession().nodeExists(id.getInstallationPath() + ".zip")) {
@@ -803,23 +823,27 @@ public class JcrPackageImpl implements JcrPackage {
      * @return the jcr:content node
      * @throws RepositoryException if an error occurrs
      */
+    @CheckForNull
     private Node getContent() throws RepositoryException {
-        return node.getNode(JcrConstants.JCR_CONTENT);
+        return node == null ? null : node.getNode(JcrConstants.JCR_CONTENT);
     }
 
     /**
      * {@inheritDoc}
      */
+    @CheckForNull
     public Property getData() throws RepositoryException {
-        return getContent().getProperty(JcrConstants.JCR_DATA);
+        Node content = getContent();
+        return content == null ? null : content.getProperty(JcrConstants.JCR_DATA);
     }
 
     /**
      * {@inheritDoc}
      */
+    @CheckForNull
     public Node getDefNode() throws RepositoryException {
         Node content = getContent();
-        return content.hasNode(NN_VLT_DEFINITION)
+        return content != null && content.hasNode(NN_VLT_DEFINITION)
                 ? content.getNode(NN_VLT_DEFINITION)
                 : null;
     }

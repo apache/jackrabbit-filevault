@@ -47,7 +47,6 @@ public enum DependencyHandling {
      * Full dependency checks are enforced. Packages with missing or uninstalled dependencies are not installed and
      * packages that are dependencies of other packages cannot be un-installed.
      */
-    STRICT,
-
+    STRICT
 
 }

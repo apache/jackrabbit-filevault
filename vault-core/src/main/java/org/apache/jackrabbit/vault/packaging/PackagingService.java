@@ -22,10 +22,8 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageDefinitionImpl;
-import org.apache.jackrabbit.vault.packaging.impl.JcrPackageImpl;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
-import org.apache.jackrabbit.vault.util.JcrConstants;
 
 /**
  * Default access point to package managers for non OSGi clients.
@@ -80,15 +78,7 @@ public class PackagingService {
      */
     public static JcrPackage open(Node node, boolean allowInvalid)
             throws RepositoryException {
-        JcrPackage pack = new JcrPackageImpl(node);
-        if (pack.isValid()) {
-            return pack;
-        } else if (allowInvalid
-                && node.isNodeType(JcrConstants.NT_HIERARCHYNODE)
-                && node.hasProperty(JcrConstants.JCR_CONTENT + "/" + JcrConstants.JCR_DATA)) {
-            return pack;
-        } else {
-            return null;
-        }
+        JcrPackageManager pMgr = getPackageManager(node.getSession());
+        return pMgr.open(node, allowInvalid);
     }
 }

@@ -84,6 +84,17 @@ public interface JcrPackageManager extends PackageManager {
     PackageId resolve(Dependency dependency, boolean onlyInstalled) throws RepositoryException;
 
     /**
+     * Returns the package ids of installed packages that depend on the given package.
+     *
+     * @param id the package id to search for
+     * @return the array of package ids.
+     * @throws RepositoryException if an error occurs
+     *
+     * @since 3.1.32
+     */
+    PackageId[] usage(PackageId id) throws RepositoryException;
+
+    /**
      * Uploads a package. The location is chosen from the installation path of
      * the package. if the package does not provide such a path, the nameHint
      * is respected and the package is placed below the package root.

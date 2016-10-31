@@ -37,146 +37,146 @@ public interface JcrPackageDefinition {
     /**
      * Property name of the last unpacked date
      */
-    public static final String PN_LAST_UNPACKED = "lastUnpacked";
+    String PN_LAST_UNPACKED = "lastUnpacked";
 
     /**
      * Property name of the last unpacked user id
      */
-    public static final String PN_LAST_UNPACKED_BY = "lastUnpackedBy";
+    String PN_LAST_UNPACKED_BY = "lastUnpackedBy";
 
     /**
      * Property name of the creation date
      */
-    public static final String PN_CREATED = "jcr:created";
+    String PN_CREATED = "jcr:created";
 
     /**
      * Property name of the creation user id
      */
-    public static final String PN_CREATED_BY = "jcr:createdBy";
+    String PN_CREATED_BY = "jcr:createdBy";
 
     /**
      * Property name of the last modification date
      */
-    public static final String PN_LASTMODIFIED = "jcr:lastModified";
+    String PN_LASTMODIFIED = "jcr:lastModified";
 
     /**
      * Property name of the last modification user id
      */
-    public static final String PN_LASTMODIFIED_BY = "jcr:lastModifiedBy";
+    String PN_LASTMODIFIED_BY = "jcr:lastModifiedBy";
 
     /**
      * Property name of the last wrapped date
      * @since 2.2.22
      */
-    public static final String PN_LAST_WRAPPED = "lastWrapped";
+    String PN_LAST_WRAPPED = "lastWrapped";
 
     /**
      * Property name of the last wrapped user id
      * @since 2.2.22
      */
-    public static final String PN_LAST_WRAPPED_BY = "lastWrappedBy";
+    String PN_LAST_WRAPPED_BY = "lastWrappedBy";
 
     /**
      * Property name of the package description
      */
-    public static final String PN_DESCRIPTION = "jcr:description";
+    String PN_DESCRIPTION = "jcr:description";
 
     /**
      * Property name of the package version
      */
-    public static final String PN_VERSION = "version";
+    String PN_VERSION = "version";
 
     /**
      * Property name of the build count
      */
-    public static final String PN_BUILD_COUNT = "buildCount";
+    String PN_BUILD_COUNT = "buildCount";
 
     /**
      * Property name of the 'name'
      * @since 2.2
      */
-    public static final String PN_NAME = "name";
+    String PN_NAME = "name";
 
     /**
      * Property name of the 'group'
      * @since 2.2
      */
-    public static final String PN_GROUP = "group";
+    String PN_GROUP = "group";
 
     /**
      * Property name of the "requires root" flag
      */
-    public static final String PN_REQUIRES_ROOT = "requiresRoot";
+    String PN_REQUIRES_ROOT = "requiresRoot";
 
     /**
      * Property name of the "require restart" flag
      */
-    public static final String PN_REQUIRES_RESTART = "requiresRestart";
+    String PN_REQUIRES_RESTART = "requiresRestart";
 
     /**
      * Property name of the package dependencies
      */
-    public static final String PN_DEPENDENCIES = "dependencies";
+    String PN_DEPENDENCIES = "dependencies";
 
     /**
      * Property name of the sub packages (only used in snapshots)
      */
-    public static final String PN_SUB_PACKAGES = "subPackages";
+    String PN_SUB_PACKAGES = "subPackages";
 
     /**
      * Property name of the last unwrapped date
      */
-    public static final String PN_LAST_UNWRAPPED = "lastUnwrapped";
+    String PN_LAST_UNWRAPPED = "lastUnwrapped";
 
     /**
      * Property name of the last unwrapped user id
      */
-    public static final String PN_LAST_UNWRAPPED_BY = "lastUnwrappedBy";
+    String PN_LAST_UNWRAPPED_BY = "lastUnwrappedBy";
 
     /**
      * Property name of the access control handling mode
      */
-    public static final String PN_AC_HANDLING = "acHandling";
+    String PN_AC_HANDLING = "acHandling";
 
     /**
      * Property name of the cnd pattern filter
      */
-    public static final String PN_CND_PATTERN = "cndPattern";
+    String PN_CND_PATTERN = "cndPattern";
 
     /**
      * Node name of the filter node
      */
-    public static final String NN_FILTER = "filter";
+    String NN_FILTER = "filter";
 
     /**
      * Property name of the filter root
      */
-    public static final String PN_ROOT = "root";
+    String PN_ROOT = "root";
 
     /**
      * Property name of the filter root
      */
-    public static final String PN_MODE = "mode";
+    String PN_MODE = "mode";
 
     /**
      * Property name of the filter rules
      */
-    public static final String PN_RULES = "rules";
+    String PN_RULES = "rules";
 
     /**
      * Property name of the rule type
      */
-    public static final String PN_TYPE = "type";
+    String PN_TYPE = "type";
 
     /**
      * Property name of the rule pattern
      */
-    public static final String PN_PATTERN = "pattern";
+    String PN_PATTERN = "pattern";
 
     /**
      * Property name of the disable intermediate save flag
      */
-    public static final String PN_DISABLE_INTERMEDIATE_SAVE = "noIntermediateSaves";
+    String PN_DISABLE_INTERMEDIATE_SAVE = "noIntermediateSaves";
 
     /**
      * Returns the underlying node

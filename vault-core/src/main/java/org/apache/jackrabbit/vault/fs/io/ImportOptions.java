@@ -26,6 +26,7 @@ import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.packaging.DependencyHandling;
 
 /**
  * Option that control the package import.
@@ -60,6 +61,8 @@ public class ImportOptions {
 
     private PathMapping pathMapping = null;
 
+    private DependencyHandling dependencyHandling = null;
+
     /**
      * Default constructor.
      */
@@ -88,6 +91,7 @@ public class ImportOptions {
             filter = base.filter;
             hookClassLoader = base.hookClassLoader;
             pathMapping = base.pathMapping;
+            dependencyHandling = base.dependencyHandling;
         }
     }
 
@@ -111,6 +115,7 @@ public class ImportOptions {
         ret.filter = filter;
         ret.hookClassLoader = hookClassLoader;
         ret.pathMapping = pathMapping;
+        ret.dependencyHandling = dependencyHandling;
         return ret;
     }
 
@@ -359,5 +364,23 @@ public class ImportOptions {
      */
     public void setPathMapping(PathMapping pathMapping) {
         this.pathMapping = pathMapping;
+    }
+
+    /**
+     * Defines how package dependencies affect package installation and un-installation.
+     * @return the dependency handling.
+     */
+    public DependencyHandling getDependencyHandling() {
+        return dependencyHandling;
+    }
+
+    /**
+     * Sets the dependency handling.
+     * @param dependencyHandling the dependency handling.
+     * @see #getDependencyHandling()
+     * @since 3.1.32
+     */
+    public void setDependencyHandling(DependencyHandling dependencyHandling) {
+        this.dependencyHandling = dependencyHandling;
     }
 }

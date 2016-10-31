@@ -56,7 +56,6 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      *         not valid.
      * @throws RepositoryException if an error occurrs
      */
-
     JcrPackageDefinition getDefinition() throws RepositoryException;
 
     /**
@@ -113,6 +112,23 @@ public interface JcrPackage extends Comparable<JcrPackage> {
      */
     void install(ImportOptions opts)
             throws RepositoryException, PackageException, IOException;
+
+    /**
+     * Returns the dependencies that are not resolved. If the {@link DependencyHandling} is set to strict, the package
+     * will not installed if any unresolved dependencies are listed.
+     * @return the array of unresolved dependencies.
+     * @throws RepositoryException if an error accessing the repository occurrs
+     * @since 3.1.32
+     */
+    Dependency[] getUnresolvedDependencies() throws RepositoryException;
+
+    /**
+     * Returns a list of the installed packages that this package depends on.
+     * @return the array of resolved dependencies
+     * @throws RepositoryException if an error accessing the repository occurrs
+     * @since 3.1.32
+     */
+    PackageId[] getResolvedDependencies() throws RepositoryException;
 
     /**
      * Creates a snapshot of this package.

@@ -27,12 +27,11 @@ import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.Packaging;
-import org.apache.jackrabbit.vault.util.JcrConstants;
 
 /**
  * {@code PackagingImpl}...
  */
-@Component(metatype = false, immediate = true)
+@Component(immediate = true)
 @Service(value = Packaging.class)
 public class PackagingImpl implements Packaging {
 
@@ -66,15 +65,7 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackage open(Node node, boolean allowInvalid) throws RepositoryException {
-        JcrPackage pack = new JcrPackageImpl(node);
-        if (pack.isValid()) {
-            return pack;
-        } else if (allowInvalid
-                && node.isNodeType(JcrConstants.NT_HIERARCHYNODE)
-                && node.hasProperty(JcrConstants.JCR_CONTENT + "/" + JcrConstants.JCR_DATA)) {
-            return pack;
-        } else {
-            return null;
-        }
+        JcrPackageManager pMgr = getPackageManager(node.getSession());
+        return pMgr.open(node, allowInvalid);
     }
 }

@@ -1,0 +1,19 @@
+<'rep'='internal'>
+
+[rep:Privileges]
+  - rep:next (long) mandatory protected multiple
+  + * (rep:Privilege) = rep:Privilege protected abort
+
+[rep:Privilege]
+  - rep:isAbstract (boolean) protected
+  - rep:aggregates (name) protected multiple
+  - rep:bits (long) mandatory protected multiple
+
+[rep:Restrictions]
+  - * (undefined) protected
+  - * (undefined) protected multiple
+
+[rep:RepoAccessControllable]
+  mixin
+  + rep:repoPolicy (rep:Policy) protected ignore
+

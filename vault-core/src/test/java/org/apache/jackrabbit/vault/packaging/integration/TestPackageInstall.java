@@ -20,15 +20,12 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import java.io.File;
 import java.io.IOException;
 
-import javax.jcr.Binary;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.derby.impl.load.Import;
-import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;

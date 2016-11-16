@@ -44,6 +44,10 @@ public class VersionTest extends TestCase {
         compare("1.1", "1.1-SNAPSHOT", 1);
         compare("1.1-SNAPSHOT", "1.1-R12345", 1);
         compare("2.1.492-NPR-12954-R012", "2.1.476", 1);
+        compare("6.1.58", "6.1.58-FP3", 1);
+        compare("6.1.58", "6.1.58.FP3", -1);
+        compare("6.1.59", "6.1.58.FP3", 1);
+        compare("6.1.58-FP3", "6.1.58-FP2", 1);
     }
 
     public void testOsgiCompare() {

@@ -62,6 +62,12 @@ public class VersionRange {
      * @throws IllegalArgumentException if bounds are not valid
      */
     public VersionRange(Version low, boolean lowIncl, Version high, boolean highIncl) {
+        if (low == Version.EMPTY) {
+            low = null;
+        }
+        if (high == Version.EMPTY) {
+            high = null;
+        }
         // check if range is valid
         if (low != null && high != null) {
             int comp = low.compareTo(high);

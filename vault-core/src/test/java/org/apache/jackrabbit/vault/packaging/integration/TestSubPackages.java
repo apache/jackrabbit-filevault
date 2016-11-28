@@ -22,10 +22,13 @@ import java.io.IOException;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -59,6 +62,17 @@ public class TestSubPackages extends IntegrationTestBase {
 
         assertNodeMissing("/tmp/a");
         assertNodeMissing("/tmp/b");
+
+        // check for sub packages dependency
+        String expected = new Dependency(pack.getDefinition().getId()).toString();
+
+        JcrPackage p1 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_a.zip"));
+        assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
+        assertEquals("has dependency to parent package", expected, p1.getDefinition().getDependencies()[0].toString());
+        JcrPackage p2 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_b.zip"));
+        assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
+        assertEquals("has dependency to parent package", expected, p2.getDefinition().getDependencies()[0].toString());
+
     }
 
     /**
@@ -312,6 +326,118 @@ public class TestSubPackages extends IntegrationTestBase {
         assertTrue(packMgr.open(admin.getNode("/etc/packages/my_packages/subtest_test_version-1.0.zip")).isInstalled());
         assertNodeExists("/tmp/a");
 
+    }
+
+    /**
+     * Test if subpackage extraction works
+     */
+    @Test
+    public void testPackageExtract() throws IOException, RepositoryException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        assertNotNull(pack);
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        PackageId[] ids = pack.extractSubpackages(opts);
+
+        // check for sub packages
+        assertNodeExists("/etc/packages/my_packages/sub_a.zip");
+        assertNodeExists("/etc/packages/my_packages/sub_b.zip");
+
+        assertEquals("Package Id", ids[0].toString(), "my_packages:sub_a");
+        assertEquals("Package Id", ids[1].toString(), "my_packages:sub_b");
+    }
+
+    /**
+     * Test if extracted sub-packages have their parent package as dependency, even if not specified in their properties.
+     */
+    @Test
+    public void testSubPackageDependency() throws IOException, RepositoryException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        assertNotNull(pack);
+        PackageId pId = pack.getDefinition().getId();
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        pack.extractSubpackages(opts);
+
+        // check for sub packages dependency
+        String expected = new Dependency(pId).toString();
+
+        JcrPackage p1 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_a.zip"));
+        assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
+        assertEquals("has dependency to parent package", expected, p1.getDefinition().getDependencies()[0].toString());
+        JcrPackage p2 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_b.zip"));
+        assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
+        assertEquals("has dependency to parent package", expected, p2.getDefinition().getDependencies()[0].toString());
+    }
+
+    /**
+     * Test if subpackage extraction works recursively
+     */
+    @Test
+    public void testRecursivePackageExtract() throws IOException, RepositoryException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subsubtest.zip"), false);
+        assertNotNull(pack);
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        opts.setNonRecursive(false);
+        PackageId[] ids = pack.extractSubpackages(opts);
+
+        // check for sub packages
+        assertNodeExists("/etc/packages/my_packages/subtest.zip");
+        assertNodeExists("/etc/packages/my_packages/sub_a.zip");
+        assertNodeExists("/etc/packages/my_packages/sub_b.zip");
+
+        assertEquals("Package Id", ids[0].toString(), "my_packages:sub_a");
+        assertEquals("Package Id", ids[1].toString(), "my_packages:sub_b");
+        assertEquals("Package Id", ids[2].toString(), "my_packages:subtest");
+    }
+
+    /**
+     * Test if subpackage extraction works non-recursively
+     */
+    @Test
+    public void testNonRecursivePackageExtract() throws IOException, RepositoryException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subsubtest.zip"), false);
+        assertNotNull(pack);
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        opts.setNonRecursive(true);
+        PackageId[] ids = pack.extractSubpackages(opts);
+
+        // check for sub packages
+        assertNodeExists("/etc/packages/my_packages/subtest.zip");
+        assertNodeMissing("/etc/packages/my_packages/sub_a.zip");
+        assertNodeMissing("/etc/packages/my_packages/sub_b.zip");
+
+        assertEquals("Package Id", ids[0].toString(), "my_packages:subtest");
+    }
+
+    @Test
+    public void testSubPackageDependency2() throws IOException, RepositoryException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subsubtest.zip"), false);
+        assertNotNull(pack);
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        pack.extractSubpackages(opts);
+
+        JcrPackage p0 = packMgr.open(admin.getNode("/etc/packages/my_packages/subtest.zip"));
+        assertEquals("has 1 dependency", 1, p0.getDefinition().getDependencies().length);
+        assertEquals("has dependency to parent package",
+                new Dependency(pack.getDefinition().getId()), p0.getDefinition().getDependencies()[0]);
+
+        // check for sub packages dependency
+        String expected = new Dependency(p0.getDefinition().getId()).toString();
+        JcrPackage p1 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_a.zip"));
+        assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
+        assertEquals("has dependency to parent package", expected, p1.getDefinition().getDependencies()[0].toString());
+        JcrPackage p2 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_b.zip"));
+        assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
+        assertEquals("has dependency to parent package", expected, p2.getDefinition().getDependencies()[0].toString());
     }
 
 }

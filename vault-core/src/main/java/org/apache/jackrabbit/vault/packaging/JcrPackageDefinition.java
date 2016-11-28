@@ -242,6 +242,14 @@ public interface JcrPackageDefinition {
     Dependency[] getDependencies();
 
     /**
+     * Sets the dependencies to this definition and stores it in a node representation.
+     * @param dependencies the package dependencies
+     * @param autoSave if {@code true} the modifications are saved automatically.
+     * @since 3.1.32
+     */
+    void setDependencies(@Nonnull Dependency[] dependencies, boolean autoSave);
+
+    /**
      * Generic method to retrieve a string property of this definition.
      * @param name the name of the property.
      * @return the property value or {@code null} if it does not exist.

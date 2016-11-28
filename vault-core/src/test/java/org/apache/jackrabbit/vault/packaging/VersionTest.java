@@ -48,6 +48,10 @@ public class VersionTest extends TestCase {
         compare("6.1.58", "6.1.58.FP3", -1);
         compare("6.1.59", "6.1.58.FP3", 1);
         compare("6.1.58-FP3", "6.1.58-FP2", 1);
+        compare("6.1.58-FP3", "6.1.58.FP3", -1);  // expected -1
+        compare("6.1.58-FP3", "6.1.58.FP4", -1);  // expected –1
+        compare("6.1.58.FP3", "6.1.58-FP4", 1);  // expected 1
+        compare("6.1.58.FP3", "6.1.58.FP4", -1);  // expected -1
     }
 
     public void testOsgiCompare() {

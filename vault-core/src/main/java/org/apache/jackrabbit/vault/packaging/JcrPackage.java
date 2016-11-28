@@ -119,6 +119,24 @@ public interface JcrPackage extends Comparable<JcrPackage> {
             throws RepositoryException, PackageException, IOException;
 
     /**
+     * Processes this package and extracts all sub packages. No content of this package or its sub packages is extracted
+     * and not snapshots are taken. If {@link ImportOptions#isNonRecursive()} is {@code true}, then only the direct
+     * sub packages are extracted. The extraction ensures that the sub packages have a dependency to their parent package.
+     *
+     * @param opts import options
+     * @return the list of subpackages that were extracted
+     * @throws RepositoryException if a repository error during installation occurs.
+     * @throws PackageException if an error during packaging occurs
+     * @throws IllegalStateException if the package is not valid.
+     * @throws IOException if an I/O error occurs
+     *
+     * @since 3.1.32
+     */
+    @Nonnull
+    PackageId[] extractSubpackages(@Nonnull ImportOptions opts)
+            throws RepositoryException, PackageException, IOException;
+
+    /**
      * Returns the dependencies that are not resolved. If the {@link DependencyHandling} is set to strict, the package
      * will not installed if any unresolved dependencies are listed.
      * @return the array of unresolved dependencies.

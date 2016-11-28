@@ -42,7 +42,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
+import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
@@ -404,6 +406,13 @@ public class JcrPackageImpl implements JcrPackage {
                     JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) p.getDefinition();
                     def.clearLastUnpacked(false);
 
+                    // add dependency to the parent package if required
+                    Dependency[] oldDeps = def.getDependencies();
+                    Dependency[] newDeps = DependencyUtil.addExact(oldDeps, pack.getId());
+                    if (oldDeps != newDeps) {
+                        def.setDependencies(newDeps, false);
+                    }
+
                     PackageId pId = def.getId();
                     String pName = pId.getName();
                     Version pVersion = pId.getVersion();
@@ -424,7 +433,8 @@ public class JcrPackageImpl implements JcrPackage {
                         // check that the listed package is actually from same name (so normally only version would differ)
                         // if that package is valid, installed, and the version is more recent than the one in our sub package
                         // then we can stop the loop here
-                        if (pName.equals(listedPackageId.getName()) && listedPackage.isValid() && listedPackage.isInstalled() && listedPackageId.getVersion().compareTo(pVersion) > 0) {
+                        if (pName.equals(listedPackageId.getName()) && listedPackage.isValid() && listedPackage.isInstalled()
+                                && listedPackageId.getVersion().compareTo(pVersion) > 0) {
                             newerPackageId = listedPackageId;
                             break;
                         }
@@ -485,6 +495,77 @@ public class JcrPackageImpl implements JcrPackage {
             if (snap != null) {
                 snap.getDefinition().getNode().setProperty(JcrPackageDefinition.PN_SUB_PACKAGES, subIds.toArray(new String[subIds.size()]));
                 s.save();
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Nonnull
+    @Override
+    public PackageId[] extractSubpackages(@Nonnull ImportOptions opts)
+            throws RepositoryException, PackageException, IOException {
+        Set<PackageId> processed = new HashSet<PackageId>();
+        extractSubpackages(opts, processed);
+        PackageId[] ret = processed.toArray(new PackageId[processed.size()]);
+        Arrays.sort(ret);
+        return ret;
+    }
+
+    private void extractSubpackages(@Nonnull ImportOptions opts, @Nonnull Set<PackageId> processed)
+            throws RepositoryException, PackageException, IOException {
+        VaultPackage pack = getPackage();
+
+        Archive a = pack.getArchive();
+        Archive.Entry packages = a.getEntry("/jcr_root/etc/packages");
+        if (packages == null) {
+            return;
+        }
+        List<Archive.Entry> entries = new LinkedList<Archive.Entry>();
+        findSubPackageEntries(entries, packages);
+
+        for (Archive.Entry e: entries) {
+            VaultInputSource in = a.getInputSource(e);
+            InputStream ins = null;
+            try {
+                ins = in.getByteStream();
+                JcrPackageImpl subPackage = (JcrPackageImpl) mgr.upload(ins, false, true);
+
+                // add dependency to this package
+                Dependency[] oldDeps = subPackage.getDefinition().getDependencies();
+                Dependency[] newDeps = DependencyUtil.addExact(oldDeps, pack.getId());
+                if (oldDeps != newDeps) {
+                    subPackage.getDefinition().setDependencies(newDeps, true);
+                }
+
+                PackageId id = subPackage.getDefinition().getId();
+                processed.add(id);
+                log.info("Extracted sub-package: {}", id);
+
+                if (!opts.isNonRecursive()) {
+                    subPackage.extractSubpackages(opts, processed);
+                }
+            } finally {
+                if (ins != null) {
+                    ins.close();
+                }
+            }
+        }
+    }
+
+    private void findSubPackageEntries(@Nonnull List<Archive.Entry> entries, @Nonnull Archive.Entry folder) {
+        for (Archive.Entry e: folder.getChildren()) {
+            final String name = e.getName();
+            if (e.isDirectory()) {
+                if (!".snapshot".equals(name)) {
+                    findSubPackageEntries(entries, e);
+                }
+            } else {
+                // only process files with .zip extension
+                if (name.endsWith(".zip")) {
+                    entries.add(e);
+                }
             }
         }
     }

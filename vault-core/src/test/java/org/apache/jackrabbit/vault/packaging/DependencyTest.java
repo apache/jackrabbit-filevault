@@ -86,6 +86,12 @@ public class DependencyTest extends TestCase {
         assertEquals("group:name", d.toString());
     }
 
+    public void testToString5() {
+        PackageId id = new PackageId("group", "name", Version.EMPTY);
+        Dependency d = new Dependency(id);
+        assertEquals("group:name", d.toString());
+    }
+
     public void testParse() {
         Dependency[] d = Dependency.parse("name1,group2:name2,group3:name3:1.0,group4:name4:[1.0,2.0],:name5:[1.0,2.0]");
         assertEquals(5,d.length);

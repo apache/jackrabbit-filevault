@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.jcr.RepositoryException;
 
 import org.slf4j.Logger;
@@ -119,6 +120,37 @@ public class DependencyUtil {
                 }
             }
         }
+    }
+
+    /**
+     * Checks if any of the dependencies matches the given id
+     * @param deps the list of dependencies
+     * @param id the id
+     * @return {@code true} if matches
+     */
+    public static boolean matches(@Nonnull Dependency[] deps, @Nonnull PackageId id) {
+        for (Dependency dep: deps) {
+            if (dep.matches(id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Adds and exact dependency to the give package if it is not alreadyl contained in the given list.
+     * @param deps the original dependencies
+     * @param id the id to add
+     * @return the new array of dependencies, or {@code deps} if nothing changed.
+     */
+    public static Dependency[] addExact(@Nonnull Dependency[] deps, @Nonnull PackageId id) {
+        if (matches(deps, id)) {
+            return deps;
+        }
+        Dependency[] newDeps = new Dependency[deps.length + 1];
+        System.arraycopy(deps, 0, newDeps, 0, deps.length);
+        newDeps[deps.length] = new Dependency(id);
+        return newDeps;
     }
 
 }

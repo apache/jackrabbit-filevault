@@ -31,6 +31,7 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.ValueFactory;
 
 import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.Mounter;
@@ -325,6 +326,25 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             log.error("Error during getDependencies()", e);
         }
         return Dependency.EMPTY;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setDependencies(@Nonnull Dependency[] dependencies, boolean autoSave) {
+        try {
+            final Value[] values = new Value[dependencies.length];
+            final ValueFactory fac = defNode.getSession().getValueFactory();
+            for (int i=0; i<dependencies.length; i++) {
+                values[i] = fac.createValue(dependencies[i].toString());
+            }
+            defNode.setProperty(PN_DEPENDENCIES, values);
+            if (autoSave) {
+                defNode.getSession().save();
+            }
+        } catch (RepositoryException e) {
+            log.error("Error during setDependencies()", e);
+        }
     }
 
     /**

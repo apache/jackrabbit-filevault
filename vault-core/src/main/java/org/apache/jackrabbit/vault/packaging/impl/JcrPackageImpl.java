@@ -515,8 +515,8 @@ public class JcrPackageImpl implements JcrPackage {
 
     private void extractSubpackages(@Nonnull ImportOptions opts, @Nonnull Set<PackageId> processed)
             throws RepositoryException, PackageException, IOException {
-        VaultPackage pack = getPackage();
-
+        final VaultPackage pack = getPackage();
+        final PackageId pId = pack.getId();
         Archive a = pack.getArchive();
         Archive.Entry packages = a.getEntry("/jcr_root/etc/packages");
         if (packages == null) {
@@ -524,7 +524,10 @@ public class JcrPackageImpl implements JcrPackage {
         }
         List<Archive.Entry> entries = new LinkedList<Archive.Entry>();
         findSubPackageEntries(entries, packages);
-
+        if (entries.isEmpty()) {
+            log.info("Package {} contains no sub-packages.", pId);
+            return;
+        }
         for (Archive.Entry e: entries) {
             VaultInputSource in = a.getInputSource(e);
             InputStream ins = null;
@@ -534,14 +537,14 @@ public class JcrPackageImpl implements JcrPackage {
 
                 // add dependency to this package
                 Dependency[] oldDeps = subPackage.getDefinition().getDependencies();
-                Dependency[] newDeps = DependencyUtil.addExact(oldDeps, pack.getId());
+                Dependency[] newDeps = DependencyUtil.addExact(oldDeps, pId);
                 if (oldDeps != newDeps) {
                     subPackage.getDefinition().setDependencies(newDeps, true);
                 }
 
                 PackageId id = subPackage.getDefinition().getId();
                 processed.add(id);
-                log.info("Extracted sub-package: {}", id);
+                log.info("Package {}: Extracted sub-package: {}", pId, id);
 
                 if (!opts.isNonRecursive()) {
                     subPackage.extractSubpackages(opts, processed);

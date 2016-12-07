@@ -533,7 +533,13 @@ public class JcrPackageImpl implements JcrPackage {
             InputStream ins = null;
             try {
                 ins = in.getByteStream();
-                JcrPackageImpl subPackage = (JcrPackageImpl) mgr.upload(ins, false, true);
+                JcrPackageImpl subPackage;
+                try {
+                    subPackage = (JcrPackageImpl) mgr.upload(ins, true, true);
+                } catch (RepositoryException e1) {
+                    log.error("Package {}: Error while extracting subpackage {}: {}", pId, in.getSystemId());
+                    continue;
+                }
 
                 // add dependency to this package
                 Dependency[] oldDeps = subPackage.getDefinition().getDependencies();

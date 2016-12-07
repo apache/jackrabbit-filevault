@@ -349,6 +349,31 @@ public class TestSubPackages extends IntegrationTestBase {
     }
 
     /**
+     * Test if subpackage extraction works twice
+     */
+    @Test
+    public void testPackageExtractTwice() throws IOException, RepositoryException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        assertNotNull(pack);
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        PackageId[] ids = pack.extractSubpackages(opts);
+        PackageId pid = ids[0];
+        JcrPackage subPackage = packMgr.open(pid);
+        subPackage.install(opts);
+        assertTrue("Package is installed", subPackage.isInstalled());
+
+        ids = pack.extractSubpackages(opts);
+        assertEquals("Package Id", ids[0].toString(), "my_packages:sub_a");
+        assertEquals("Package Id", ids[1].toString(), "my_packages:sub_b");
+
+        subPackage = packMgr.open(pid);
+        subPackage.install(opts);
+        assertTrue("Package is still installed", subPackage.isInstalled());
+    }
+
+    /**
      * Test if extracted sub-packages have their parent package as dependency, even if not specified in their properties.
      */
     @Test

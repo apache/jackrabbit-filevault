@@ -390,11 +390,41 @@ public class TestSubPackages extends IntegrationTestBase {
         String expected = new Dependency(pId).toString();
 
         JcrPackage p1 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_a.zip"));
+        assertEquals("has 0 dependency", 0, p1.getDefinition().getDependencies().length);
+
+        JcrPackage p2 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_b.zip"));
+        assertEquals("has 0 dependency", 0, p2.getDefinition().getDependencies().length);
+
+        // parent package should be installed.
+        assertEquals("Parent package with not content should not be marked as installed.", true, pack.isInstalled());
+    }
+
+    /**
+     * Test if extracted sub-packages have their parent package as dependency, even if not specified in their properties.
+     * but only if the parent package has content
+     */
+    @Test
+    public void testSubPackageWithContentDependency() throws IOException, RepositoryException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest_with_content.zip"), false);
+        assertNotNull(pack);
+        PackageId pId = pack.getDefinition().getId();
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        pack.extractSubpackages(opts);
+
+        // check for sub packages dependency
+        String expected = new Dependency(pId).toString();
+
+        JcrPackage p1 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_a.zip"));
         assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
         assertEquals("has dependency to parent package", expected, p1.getDefinition().getDependencies()[0].toString());
         JcrPackage p2 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_b.zip"));
         assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
         assertEquals("has dependency to parent package", expected, p2.getDefinition().getDependencies()[0].toString());
+
+        // parent package should not be installed.
+        assertEquals("Parent package with content should not be marked as installed.", false, pack.isInstalled());
     }
 
     /**
@@ -451,9 +481,7 @@ public class TestSubPackages extends IntegrationTestBase {
         pack.extractSubpackages(opts);
 
         JcrPackage p0 = packMgr.open(admin.getNode("/etc/packages/my_packages/subtest.zip"));
-        assertEquals("has 1 dependency", 1, p0.getDefinition().getDependencies().length);
-        assertEquals("has dependency to parent package",
-                new Dependency(pack.getDefinition().getId()), p0.getDefinition().getDependencies()[0]);
+        assertEquals("has 0 dependency", 0, p0.getDefinition().getDependencies().length);
 
         // check for sub packages dependency
         String expected = new Dependency(p0.getDefinition().getId()).toString();

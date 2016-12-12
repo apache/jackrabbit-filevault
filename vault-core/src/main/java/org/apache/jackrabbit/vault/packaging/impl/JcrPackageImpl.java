@@ -41,6 +41,7 @@ import javax.jcr.Value;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
+import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
@@ -528,6 +529,18 @@ public class JcrPackageImpl implements JcrPackage {
             log.info("Package {} contains no sub-packages.", pId);
             return;
         }
+
+        // check if filter has root outside /etc/packages
+        boolean hasOwnContent = false;
+        for (PathFilterSet root: a.getMetaInf().getFilter().getFilterSets()) {
+            if (!Text.isDescendantOrEqual("/etc/packages", root.getRoot())) {
+                log.info("Package {}: contains content outside /etc/packages. Sub packages will have a dependency to it", pId);
+                hasOwnContent = true;
+                break;
+            }
+        }
+
+        // process the discovered sub-packages
         for (Archive.Entry e: entries) {
             VaultInputSource in = a.getInputSource(e);
             InputStream ins = null;
@@ -541,11 +554,13 @@ public class JcrPackageImpl implements JcrPackage {
                     continue;
                 }
 
-                // add dependency to this package
-                Dependency[] oldDeps = subPackage.getDefinition().getDependencies();
-                Dependency[] newDeps = DependencyUtil.addExact(oldDeps, pId);
-                if (oldDeps != newDeps) {
-                    subPackage.getDefinition().setDependencies(newDeps, true);
+                if (hasOwnContent) {
+                    // add dependency to this package
+                    Dependency[] oldDeps = subPackage.getDefinition().getDependencies();
+                    Dependency[] newDeps = DependencyUtil.addExact(oldDeps, pId);
+                    if (oldDeps != newDeps) {
+                        subPackage.getDefinition().setDependencies(newDeps, true);
+                    }
                 }
 
                 PackageId id = subPackage.getDefinition().getId();
@@ -559,6 +574,15 @@ public class JcrPackageImpl implements JcrPackage {
                 if (ins != null) {
                     ins.close();
                 }
+            }
+        }
+
+        // if no content, mark as installed
+        if (!entries.isEmpty() && !hasOwnContent) {
+            log.info("Package {}: is pure container package. marking as installed.", pId);
+            getDefinition();
+            if (def != null && !opts.isDryRun()) {
+                def.touchLastUnpacked(null, true);
             }
         }
     }

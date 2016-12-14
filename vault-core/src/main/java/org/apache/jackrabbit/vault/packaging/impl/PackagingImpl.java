@@ -21,12 +21,14 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.Packaging;
+import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 
 /**
  * {@code PackagingImpl}...
@@ -35,10 +37,17 @@ import org.apache.jackrabbit.vault.packaging.Packaging;
 @Service(value = Packaging.class)
 public class PackagingImpl implements Packaging {
 
+    @Reference
+    private PackageEventDispatcher eventDispatcher;
+
     /**
      * package manager is a singleton
      */
-    private final PackageManager pkgManager = new PackageManagerImpl();
+    private final PackageManagerImpl pkgManager = new PackageManagerImpl();
+
+    public PackagingImpl() {
+        pkgManager.setDispatcher(eventDispatcher);
+    }
 
     /**
      * {@inheritDoc}
@@ -51,7 +60,9 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackageManager getPackageManager(Session session) {
-        return new JcrPackageManagerImpl(session);
+        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session);
+        mgr.setDispatcher(eventDispatcher);
+        return mgr;
     }
 
     /**

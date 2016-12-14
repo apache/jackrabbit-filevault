@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
@@ -44,15 +46,24 @@ import org.apache.jackrabbit.vault.fs.impl.AggregateManagerImpl;
 import org.apache.jackrabbit.vault.fs.io.JarExporter;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
+import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
+import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.util.Constants;
 
 /**
  * Implements the package manager
  */
 public class PackageManagerImpl implements PackageManager {
+
+    /**
+     * event dispatcher
+     */
+    @Nullable
+    private PackageEventDispatcher dispatcher;
 
     /**
      * {@inheritDoc}
@@ -154,7 +165,9 @@ public class PackageManagerImpl implements PackageManager {
             rewrap(opts, src, out);
             IOUtils.closeQuietly(out);
             success = true;
-            return new ZipVaultPackage(file, isTmp);
+            VaultPackage pack =  new ZipVaultPackage(file, isTmp);
+            dispatch(PackageEvent.Type.REWRAPP, pack.getId(), null);
+            return pack;
         } finally {
             IOUtils.closeQuietly(out);
             if (isTmp && !success) {
@@ -224,5 +237,22 @@ public class PackageManagerImpl implements PackageManager {
         }
         exporter.close();
     }
+
+    @Nullable
+    PackageEventDispatcher getDispatcher() {
+        return dispatcher;
+    }
+
+    void setDispatcher(@Nullable PackageEventDispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+    }
+
+    void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId related) {
+        if (dispatcher == null) {
+            return;
+        }
+        dispatcher.dispatch(type, id, related);
+    }
+
 
 }

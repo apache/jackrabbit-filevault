@@ -57,6 +57,8 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.Version;
+import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
+import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
@@ -276,6 +278,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             if (state != null) {
                 def.setState(state);
             }
+            dispatch(PackageEvent.Type.UPLOAD, pid, null);
             return jcrPack;
         } finally {
             bin.dispose();
@@ -356,6 +359,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             if (state != null) {
                 def.setState(state);
             }
+            dispatch(PackageEvent.Type.UPLOAD, pid, null);
             return jcrPack;
         } finally {
             if (jcrPack == null) {
@@ -450,6 +454,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         } finally {
             IOUtils.closeQuietly(in);
         }
+        dispatch(PackageEvent.Type.CREATE, pid, null);
         return new JcrPackageImpl(this, node, (ZipVaultPackage) pack);
     }
 
@@ -482,6 +487,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         content.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
         content.setProperty(JcrConstants.JCR_DATA, bin);
         def.unwrap(archive, false);
+        dispatch(PackageEvent.Type.CREATE, pid, null);
         return new JcrPackageImpl(this, node);
     }
 
@@ -491,12 +497,14 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      */
     @Override
     public void remove(JcrPackage pack) throws RepositoryException {
+        PackageId pid = pack.getDefinition().getId();
         JcrPackage snap = pack.getSnapshot();
         if (snap != null) {
             snap.getNode().remove();
         }
         pack.getNode().remove();
         session.save();
+        dispatch(PackageEvent.Type.REMOVE, pid, null);
     }
 
     /**
@@ -550,6 +558,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
 
         session.save();
         Node newNode = session.getNode(dstPath);
+        dispatch(PackageEvent.Type.RENAME, id, newId);
         return open(newNode);
     }
 
@@ -581,6 +590,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         opts.setPostProcessor(def.getInjectProcessor());
 
         VaultPackage pack = assemble(packNode.getSession(), opts, (File) null);
+        PackageId id = pack.getId();
 
         // update this content
         Node contentNode = packNode.getNode(JcrConstants.JCR_CONTENT);
@@ -597,6 +607,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         contentNode.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
         packNode.getSession().save();
         pack.close();
+        dispatch(PackageEvent.Type.ASSEMBLE, id, null);
     }
 
     /**

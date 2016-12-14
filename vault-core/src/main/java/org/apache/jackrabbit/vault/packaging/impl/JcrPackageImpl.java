@@ -63,6 +63,7 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.Version;
+import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
@@ -498,6 +499,12 @@ public class JcrPackageImpl implements JcrPackage {
                 s.save();
             }
         }
+
+        if (createSnapshot) {
+            mgr.dispatch(PackageEvent.Type.INSTALL, def.getId(), null);
+        } else {
+            mgr.dispatch(PackageEvent.Type.EXTRACT, def.getId(), null);
+        }
     }
 
     /**
@@ -509,6 +516,7 @@ public class JcrPackageImpl implements JcrPackage {
             throws RepositoryException, PackageException, IOException {
         Set<PackageId> processed = new HashSet<PackageId>();
         extractSubpackages(opts, processed);
+        mgr.dispatch(PackageEvent.Type.EXTRACT_SUB_PACKAGES, getDefinition().getId(), null);
         PackageId[] ret = processed.toArray(new PackageId[processed.size()]);
         Arrays.sort(ret);
         return ret;
@@ -779,6 +787,7 @@ public class JcrPackageImpl implements JcrPackage {
         }
         packMgr.assemble(snap.getNode(), snapDef, opts.getListener());
         log.info("Creating snapshot for {} completed.", id);
+        mgr.dispatch(PackageEvent.Type.SNAPSHOT, id, null);
         return snap;
     }
 
@@ -906,6 +915,9 @@ public class JcrPackageImpl implements JcrPackage {
         // revert installed flags on this package
         JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) getDefinition();
         def.clearLastUnpacked(true);
+
+        mgr.dispatch(PackageEvent.Type.UNINSTALL, def.getId(), null);
+
     }
 
     /**

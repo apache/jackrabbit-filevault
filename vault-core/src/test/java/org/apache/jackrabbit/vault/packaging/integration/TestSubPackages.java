@@ -428,6 +428,34 @@ public class TestSubPackages extends IntegrationTestBase {
     }
 
     /**
+     * Test if extracted sub-packages have their parent package as dependency, even if not specified in their properties.
+     * but only if the parent package has nodetypes
+     */
+    @Test
+    public void testSubPackageWithNodeTypesDependency() throws IOException, RepositoryException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest_with_nodetypes.zip"), false);
+        assertNotNull(pack);
+        PackageId pId = pack.getDefinition().getId();
+
+        // install
+        ImportOptions opts = getDefaultOptions();
+        pack.extractSubpackages(opts);
+
+        // check for sub packages dependency
+        String expected = new Dependency(pId).toString();
+
+        JcrPackage p1 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_a.zip"));
+        assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
+        assertEquals("has dependency to parent package", expected, p1.getDefinition().getDependencies()[0].toString());
+        JcrPackage p2 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_b.zip"));
+        assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
+        assertEquals("has dependency to parent package", expected, p2.getDefinition().getDependencies()[0].toString());
+
+        // parent package should not be installed.
+        assertEquals("Parent package with content should not be marked as installed.", false, pack.isInstalled());
+    }
+
+    /**
      * Test if subpackage extraction works recursively
      */
     @Test

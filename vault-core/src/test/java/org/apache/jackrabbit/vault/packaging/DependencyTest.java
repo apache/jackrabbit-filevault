@@ -107,4 +107,22 @@ public class DependencyTest extends TestCase {
         Dependency d = Dependency.fromString("apache/jackrabbit/product:jcr-content:[5.5.0,)");
         assertTrue(d.matches(id));
     }
+
+    public void testAddDependency() {
+        Dependency[] d = Dependency.parse("n1,g2:n2,g3:n3:1,g4:n4:[1,2]");
+        String expected = "n1,g2:n2,g3:n3:1,g4:n4:[1,2],n5:g5:[1,2]";
+        assertEquals(expected, Dependency.toString(DependencyUtil.add(d, Dependency.fromString("n5:g5:[1,2]"))));
+    }
+
+    public void testAddDependencyExisting() {
+        Dependency[] d = Dependency.parse("n1,g2:n2,g3:n3:1,g4:n4:[1,2]");
+        String expected = "n1,g2:n2,g3:n3:1,g4:n4:[1,2]";
+        assertEquals(expected, Dependency.toString(DependencyUtil.add(d, Dependency.fromString("g3:n3"))));
+    }
+
+    public void testAddDependencyNullName() {
+        Dependency[] d = Dependency.parse("n1,g2:n2,g3:n3:1,g4:n4:[1,2]");
+        String expected = "n1,g2:n2,g3:n3:1,g4:n4:[1,2],g3";
+        assertEquals(expected, Dependency.toString(DependencyUtil.add(d, Dependency.fromString("g3"))));
+    }
 }

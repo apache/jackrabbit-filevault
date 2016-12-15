@@ -597,6 +597,16 @@ public class JcrPackageImpl implements JcrPackage {
                     if (oldDeps != newDeps) {
                         subPackage.getDefinition().setDependencies(newDeps, true);
                     }
+                } else {
+                    // add parent dependencies to this package
+                    Dependency[] oldDeps = subPackage.getDefinition().getDependencies();
+                    Dependency[] newDeps = oldDeps;
+                    for (Dependency d: getDefinition().getDependencies()) {
+                        newDeps = DependencyUtil.add(newDeps, d);
+                    }
+                    if (oldDeps != newDeps) {
+                        subPackage.getDefinition().setDependencies(newDeps, true);
+                    }
                 }
 
                 PackageId id = subPackage.getDefinition().getId();

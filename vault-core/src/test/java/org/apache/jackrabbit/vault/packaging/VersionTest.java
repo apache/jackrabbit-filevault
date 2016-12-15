@@ -67,6 +67,8 @@ public class VersionTest extends TestCase {
         osgiCompare("1.11-SNAPSHOT", "1.9", 1);
         osgiCompare("1.1", "1.1-SNAPSHOT", -1);
         osgiCompare("1.1-SNAPSHOT", "1.1-R12345", 1);
+        osgiCompare("6.1.0", "6.1-FP3", -1);
+        osgiCompare("6.1", "6.1-FP3", -1);
     }
 
     private void compare(String v1, String v2, int comp) {
@@ -84,6 +86,7 @@ public class VersionTest extends TestCase {
         }
         fail(v1 + " compare to " + v2 + " must return " + comp);
     }
+
     private void osgiCompare(String v1, String v2, int comp) {
         Version vv1 = Version.create(v1);
         Version vv2 = Version.create(v2);

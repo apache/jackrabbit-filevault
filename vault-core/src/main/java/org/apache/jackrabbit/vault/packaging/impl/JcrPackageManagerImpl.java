@@ -58,7 +58,6 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.Version;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
-import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
@@ -558,7 +557,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
 
         session.save();
         Node newNode = session.getNode(dstPath);
-        dispatch(PackageEvent.Type.RENAME, id, newId);
+        dispatch(PackageEvent.Type.RENAME, id, new PackageId[]{newId});
         return open(newNode);
     }
 

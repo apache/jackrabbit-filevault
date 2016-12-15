@@ -63,7 +63,8 @@ public class PackageEventDispatcherImpl implements PackageEventDispatcher {
      * @param listener the processor
      * @param props service properties
      */
-    protected void bindPackageEventListener(PackageEventListener listener, Map<String, Object> props) {
+    public void bindPackageEventListener(PackageEventListener listener, Map<String, Object> props) {
+        // public for testing
         listeners.put(props.get("component.id"), listener);
         log.info("Registering package event listener {}", listener.getClass().getName());
     }
@@ -81,7 +82,7 @@ public class PackageEventDispatcherImpl implements PackageEventDispatcher {
         }
     }
 
-    public void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId related) {
+    public void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId[] related) {
         final EventImpl event = new EventImpl(type, id, related);
         for (PackageEventListener l: listeners.values()) {
             try {
@@ -98,9 +99,9 @@ public class PackageEventDispatcherImpl implements PackageEventDispatcher {
 
         private final PackageId id;
 
-        private final PackageId related;
+        private final PackageId[] related;
 
-        public EventImpl(Type type, PackageId id, PackageId related) {
+        public EventImpl(Type type, PackageId id, PackageId[] related) {
             this.type = type;
             this.id = id;
             this.related = related;
@@ -120,7 +121,7 @@ public class PackageEventDispatcherImpl implements PackageEventDispatcher {
 
         @CheckForNull
         @Override
-        public PackageId getRelatedId() {
+        public PackageId[] getRelatedIds() {
             return related;
         }
     }

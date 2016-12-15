@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -80,6 +81,8 @@ import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcherImpl;
+import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.junit.After;
@@ -122,7 +125,7 @@ public class IntegrationTestBase  {
 
     protected Session admin;
 
-    protected JcrPackageManager packMgr;
+    protected JcrPackageManagerImpl packMgr;
 
     protected Set<String> preTestAuthorizables;
 
@@ -216,6 +219,10 @@ public class IntegrationTestBase  {
         clean("/testroot");
 
         packMgr = new JcrPackageManagerImpl(admin);
+
+        PackageEventDispatcherImpl dispatcher = new PackageEventDispatcherImpl();
+        dispatcher.bindPackageEventListener(new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));
+        packMgr.setDispatcher(dispatcher);
 
         preTestAuthorizables = getAllAuthorizableIds();
     }

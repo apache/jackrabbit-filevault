@@ -243,11 +243,11 @@ public class PackageManagerImpl implements PackageManager {
         return dispatcher;
     }
 
-    void setDispatcher(@Nullable PackageEventDispatcher dispatcher) {
+    public void setDispatcher(@Nullable PackageEventDispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
 
-    void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId related) {
+    void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId[] related) {
         if (dispatcher == null) {
             return;
         }

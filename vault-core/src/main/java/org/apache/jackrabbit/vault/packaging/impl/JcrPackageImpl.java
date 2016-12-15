@@ -521,9 +521,9 @@ public class JcrPackageImpl implements JcrPackage {
             throws RepositoryException, PackageException, IOException {
         Set<PackageId> processed = new HashSet<PackageId>();
         extractSubpackages(opts, processed);
-        mgr.dispatch(PackageEvent.Type.EXTRACT_SUB_PACKAGES, getDefinition().getId(), null);
         PackageId[] ret = processed.toArray(new PackageId[processed.size()]);
         Arrays.sort(ret);
+        mgr.dispatch(PackageEvent.Type.EXTRACT_SUB_PACKAGES, getDefinition().getId(), ret);
         return ret;
     }
 

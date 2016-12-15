@@ -34,8 +34,8 @@ public interface PackageEventDispatcher {
      * Dispatches the events to the listeners.
      * @param type Event type
      * @param id package id
-     * @param related related id
+     * @param related related ids
      */
-    void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId related);
+    void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId[] related);
 
 }

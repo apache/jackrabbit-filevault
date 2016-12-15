@@ -375,19 +375,22 @@ public class TestSubPackages extends IntegrationTestBase {
 
     /**
      * Test if extracted sub-packages have their parent package as dependency, even if not specified in their properties.
+     * but not, if the parent package has no content or no nodetypes.
      */
     @Test
     public void testSubPackageDependency() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        // install other package that provides sling node type
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_a-1.0.zip"), false);
+        ImportOptions opts = getDefaultOptions();
+        pack.install(opts);
+        assertTrue(admin.getWorkspace().getNodeTypeManager().hasNodeType("sling:Folder"));
+
+        pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
         assertNotNull(pack);
-        PackageId pId = pack.getDefinition().getId();
 
         // install
-        ImportOptions opts = getDefaultOptions();
+        opts = getDefaultOptions();
         pack.extractSubpackages(opts);
-
-        // check for sub packages dependency
-        String expected = new Dependency(pId).toString();
 
         JcrPackage p1 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_a.zip"));
         assertEquals("has 0 dependency", 0, p1.getDefinition().getDependencies().length);
@@ -395,8 +398,41 @@ public class TestSubPackages extends IntegrationTestBase {
         JcrPackage p2 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_b.zip"));
         assertEquals("has 0 dependency", 0, p2.getDefinition().getDependencies().length);
 
-        // parent package should be installed.
-        assertEquals("Parent package with not content should not be marked as installed.", true, pack.isInstalled());
+        // parent package should node be be installed.
+        assertEquals("Parent package with not content should be marked as installed.", true, pack.isInstalled());
+    }
+
+    /**
+     * Test if extracted sub-packages inherit the dependencies of their parent packages.
+     */
+    @Test
+    public void testSubPackageInheritDependency() throws IOException, RepositoryException, PackageException {
+        // install other package that provides sling node type
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_a-1.0.zip"), false);
+        ImportOptions opts = getDefaultOptions();
+        pack.install(opts);
+        assertTrue(admin.getWorkspace().getNodeTypeManager().hasNodeType("sling:Folder"));
+
+        pack = packMgr.upload(getStream("testpackages/subtest_inherit_dep.zip"), false);
+        assertNotNull(pack);
+
+        // install
+        opts = getDefaultOptions();
+        pack.extractSubpackages(opts);
+
+        // check for sub packages dependency
+        String expected = "testGroup:testName:[1.0,2.0]";
+
+        JcrPackage p1 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_a.zip"));
+        assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
+        assertEquals("has dep inherited from parent", expected, p1.getDefinition().getDependencies()[0].toString());
+
+        JcrPackage p2 = packMgr.open(admin.getNode("/etc/packages/my_packages/sub_b.zip"));
+        assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
+        assertEquals("has dep inherited from parent", expected, p2.getDefinition().getDependencies()[0].toString());
+
+        // parent package should node be be installed.
+        assertEquals("Parent package with not content should be marked as installed.", true, pack.isInstalled());
     }
 
     /**

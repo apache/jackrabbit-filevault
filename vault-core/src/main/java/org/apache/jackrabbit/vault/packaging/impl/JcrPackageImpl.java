@@ -32,14 +32,18 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.jcr.Binary;
+import javax.jcr.NamespaceException;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.nodetype.NodeTypeManager;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -49,6 +53,7 @@ import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
+import org.apache.jackrabbit.vault.fs.spi.NodeTypeSet;
 import org.apache.jackrabbit.vault.packaging.CyclicDependencyException;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.DependencyException;
@@ -545,6 +550,29 @@ public class JcrPackageImpl implements JcrPackage {
                 log.info("Package {}: contains content outside /etc/packages. Sub packages will have a dependency to it", pId);
                 hasOwnContent = true;
                 break;
+            }
+        }
+        // check if package has nodetype no installed in the repository
+        if (!hasOwnContent) {
+            DefaultNamePathResolver npResolver = new DefaultNamePathResolver(getNode().getSession());
+            NodeTypeManager ntMgr = getNode().getSession().getWorkspace().getNodeTypeManager();
+            loop0: for (NodeTypeSet cnd: a.getMetaInf().getNodeTypes()) {
+                for (Name name: cnd.getNodeTypes().keySet()) {
+                    String jcrName;
+                    try {
+                        jcrName = npResolver.getJCRName(name);
+                    } catch (NamespaceException e) {
+                        // in case the uri is not registered. we also break here
+                        log.info("Package {}: contains namespace not installed in the repository: {}. Sub packages will have a dependency to it", pId, name.getNamespaceURI());
+                        hasOwnContent = true;
+                        break loop0;
+                    }
+                    if (!ntMgr.hasNodeType(jcrName)) {
+                        log.info("Package {}: contains nodetype not installed in the repository: {}. Sub packages will have a dependency to it", pId, jcrName);
+                        hasOwnContent = true;
+                        break loop0;
+                    }
+                }
             }
         }
 

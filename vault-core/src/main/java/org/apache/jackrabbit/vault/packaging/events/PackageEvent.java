@@ -33,23 +33,79 @@ public interface PackageEvent {
      * Event type
      */
     enum Type {
-        UPLOAD,
-        INSTALL,
-        EXTRACT,
-        UNINSTALL,
+
+        /**
+         * Package was created
+         */
         CREATE,
+
+        /**
+         * Package was uploaded
+         */
+        UPLOAD,
+
+        /**
+         * Package was installed (snapshot + extract)
+         */
+        INSTALL,
+
+        /**
+         * Package was extracted
+         */
+        EXTRACT,
+
+        /**
+         * Package was uninstalled
+         */
+        UNINSTALL,
+
+        /**
+         * Package was removed
+         */
         REMOVE,
+
+        /**
+         * Package was assembled
+         */
         ASSEMBLE,
+
+        /**
+         * Package was rewrapped
+         */
         REWRAPP,
+
+        /**
+         * Package was renamed. {@link PackageEvent#getRelatedIds()} will contain the original package id/
+         */
         RENAME,
+
+        /**
+         * Packages extracted the subpackages
+         */
         EXTRACT_SUB_PACKAGES,
+
+        /**
+         * Package snapshot was taken.
+         */
         SNAPSHOT
     }
 
+    /**
+     * Returns the type of the event
+     * @return the type.
+     */
     @Nonnull Type getType();
 
+    /**
+     * Returns the id of the package
+     * @return the id.
+     */
     @Nonnull PackageId getId();
 
-    @CheckForNull PackageId getRelatedId();
+    /**
+     * Returns the related ids for certain events.
+     * @return the related ids.
+     */
+    @CheckForNull PackageId[] getRelatedIds();
 
 }

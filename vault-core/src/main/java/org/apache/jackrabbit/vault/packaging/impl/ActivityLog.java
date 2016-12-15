@@ -22,6 +22,7 @@ import javax.annotation.Nonnull;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Service;
+import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEventListener;
 import org.slf4j.Logger;
@@ -47,8 +48,8 @@ public class ActivityLog implements PackageEventListener {
     @Override
     public void onPackageEvent(@Nonnull PackageEvent event) {
         String msg;
-        if (event.getRelatedId() != null) {
-            msg = String.format("%s: %s (%s)", event.getId(), event.getType(), event.getRelatedId());
+        if (event.getRelatedIds() != null) {
+            msg = String.format("%s: %s (%s)", event.getId(), event.getType(), PackageId.toString(event.getRelatedIds()));
         } else {
             msg = String.format("%s: %s", event.getId(), event.getType());
         }

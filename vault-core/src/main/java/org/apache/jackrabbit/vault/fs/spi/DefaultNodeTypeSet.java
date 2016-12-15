@@ -100,7 +100,7 @@ public class DefaultNodeTypeSet implements NodeTypeSet {
                 String uri = mapping.getURI(pfx);
                 nsMapping.setMapping(pfx, uri);
             } catch (NamespaceException e) {
-                throw new IllegalStateException("Error while transfering mappings.", e);
+                throw new IllegalStateException("Error while transferring mappings.", e);
             }
         }
     }

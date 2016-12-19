@@ -18,8 +18,9 @@
 package org.apache.jackrabbit.vault.packaging;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.jackrabbit.vault.util.Text;
 
@@ -46,16 +47,17 @@ public class Version implements Comparable<Version> {
 
     /**
      * Creates a new version from the given string.
+     *
      * @param str the version string.
      * @return the new version or {@link Version#EMPTY} if {@code str} is an empty string.
      * @since 2.2.4
      */
-    public static Version create(String str) {
+    @Nonnull
+    public static Version create(@Nullable String str) {
         if (str == null || str.length() == 0) {
             return Version.EMPTY;
-        }else {
-            return new Version(str, Text.explode(str, '.'));
         }
+        return Version.create(Text.explode(str, '.'));
     }
 
     /**
@@ -64,12 +66,38 @@ public class Version implements Comparable<Version> {
      * @return the new version or {@link Version#EMPTY} if {@code segments} is empty.
      * @since 2.2.4
      */
-    public static Version create(String[] segments) {
+    @Nonnull
+    public static Version create(@Nullable String[] segments) {
         if (segments == null || segments.length == 0) {
             return Version.EMPTY;
-        } else {
-            return new Version(Text.implode(segments, "."), segments);
         }
+        ArrayList<String> segs = new ArrayList<String>(segments.length+1);
+        StringBuilder str = new StringBuilder();
+        boolean hasQualifier = false;
+        for (String s: segments) {
+            // reconstruct version string
+            if (str.length() > 0) {
+                str.append('.');
+            }
+            str.append(s);
+
+            // split first qualifier
+            if (hasQualifier) {
+                segs.add(s);
+            } else {
+                int dash = s.indexOf('-');
+                if (dash < 0) {
+                    segs.add(s);
+                } else if (dash > 0) {
+                    hasQualifier = true;
+                    segs.add(s.substring(0, dash));
+                    if (dash < s.length() - 1) {
+                        segs.add(s.substring(dash + 1));
+                    }
+                }
+            }
+        }
+        return new Version(str.toString(), segs.toArray(new String[segs.size()]));
     }
 
     /**
@@ -77,10 +105,7 @@ public class Version implements Comparable<Version> {
      * @param str string
      * @param segments segments
      */
-    private Version(String str, String[] segments) {
-        if (str == null) {
-            throw new NullPointerException("Version String must not be null.");
-        }
+    private Version(@Nonnull String str, @Nonnull String[] segments) {
         this.str = str;
         this.segments = segments;
     }
@@ -111,70 +136,6 @@ public class Version implements Comparable<Version> {
     }
 
     /**
-     * Compares this version to the given one, segment by segment with a special
-     * "SNAPSHOT" handling.
-     *
-     * <pre>
-     * Examples:
-     * "1" &lt; "2"
-     * "1.0" &lt; "2"
-     * "2.0.1" &lt; "2.1"
-     * "2.1" &lt; "2.1.1"
-     * "2.9" &lt; "2.11"
-     * "2.1" &lt; "2.1-SNAPSHOT"
-     * "2.1" &gt; "2.1-R1234556"
-     * "2.1-R12345" &lt; "2.1-SNAPSHOT"
-     * </pre>
-     *
-     * @param o the other version
-     * @return  a negative integer, zero, or a positive integer as this version
-     *		is less than, equal to, or greater than the specified version.
-     */
-    public int compareTo(Version o) {
-        String[] oSegs = o.getNormalizedSegments();
-        for (int i=0; i< Math.min(segments.length, oSegs.length); i++) {
-            String s1 = segments[i];
-            String s2 = oSegs[i];
-            if (s1.equals(s2)) {
-                continue;
-            }
-            try {
-                int v1 = Integer.parseInt(segments[i]);
-                int v2 = Integer.parseInt(oSegs[i]);
-                if (v1 != v2) {
-                    return v1 - v2;
-                }
-            } catch (NumberFormatException e) {
-                // ignore
-            }
-            String ss1[] = Text.explode(s1,'-');
-            String ss2[] = Text.explode(s2,'-');
-            for (int j=0; j< Math.min(ss1.length, ss2.length); j++) {
-                String c1 = ss1[j];
-                String c2 = ss2[j];
-                try {
-                    int v1 = Integer.parseInt(c1);
-                    int v2 = Integer.parseInt(c2);
-                    if (v1 != v2) {
-                        return v1 - v2;
-                    }
-                } catch (NumberFormatException e) {
-                    // ignore
-                }
-                int c = c1.compareTo(c2);
-                if (c!=0) {
-                    return c;
-                }
-            }
-            int c = ss1.length - ss2.length;
-            if (c != 0) {
-                return -c;
-            }
-        }
-        return segments.length - oSegs.length;
-    }
-
-    /**
      * Compares this version to the given one, segment by segment without any special
      * "SNAPSHOT" handling.
      *
@@ -194,35 +155,36 @@ public class Version implements Comparable<Version> {
      * @return  a negative integer, zero, or a positive integer as this version
      *		is less than, equal to, or greater than the specified version.
      */
-    public int osgiCompareTo(Version o) {
-        // first convert into 'osgi' form
-        List<String> segs0 = new ArrayList<String>();
-        List<String> segs1 = new ArrayList<String>();
-        for (String s: segments) {
-            segs0.addAll(Arrays.asList(Text.explode(s, '-')));
-        }
-        for (String s: o.getNormalizedSegments()) {
-            segs1.addAll(Arrays.asList(Text.explode(s, '-')));
-        }
-        int len = Math.min(segs0.size(), segs1.size());
-        for (int i=0; i<len; i++) {
-            String s1 = segs0.get(i);
-            String s2 = segs1.get(i);
-            int c = s1.compareTo(s2);
-            if (c == 0) {
+    public int compareTo(Version o) {
+        String[] oSegs = o.getNormalizedSegments();
+        for (int i=0; i< Math.min(segments.length, oSegs.length); i++) {
+            String s1 = segments[i];
+            String s2 = oSegs[i];
+            int strCompare = s1.compareTo(s2);
+            if (strCompare == 0) {
                 continue;
             }
             try {
-                int v1 = Integer.parseInt(s1);
-                int v2 = Integer.parseInt(s2);
-                if (v1 != v2) {
-                    return v1 - v2;
-                }
+                int v1 = Integer.parseInt(segments[i]);
+                int v2 = Integer.parseInt(oSegs[i]);
+                return v1 - v2;
             } catch (NumberFormatException e) {
-                // ignore
+                // no numbers, use string compare
+                return strCompare;
             }
-            return c;
         }
-        return segs0.size() - segs1.size();
+        return segments.length - oSegs.length;
+    }
+
+    /**
+     * Same as with {@link #compareTo(Version)}.
+     * 
+     * @param o the other version
+     * @return  a negative integer, zero, or a positive integer as this version is less than, equal to, or greater than the specified version.
+     * @deprecated since 3.1.32. use {@link #compareTo(Version)}. See JCRVLT-146
+     */
+    @Deprecated
+    public int osgiCompareTo(Version o) {
+        return compareTo(o);
     }
 }

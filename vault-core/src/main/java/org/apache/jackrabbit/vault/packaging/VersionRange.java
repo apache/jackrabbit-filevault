@@ -173,13 +173,13 @@ public class VersionRange {
      */
     public boolean isInRange(Version v) {
         if (low != null) {
-            int comp = v.osgiCompareTo(low);
+            int comp = v.compareTo(low);
             if (comp < 0 || comp == 0 && !lowIncl) {
                 return false;
             }
         }
         if (high != null) {
-            int comp = v.osgiCompareTo(high);
+            int comp = v.compareTo(high);
             if (comp > 0 || comp == 0 && !highIncl) {
                 return false;
             }

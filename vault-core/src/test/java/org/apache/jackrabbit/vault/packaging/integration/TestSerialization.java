@@ -27,10 +27,12 @@ import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
+import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.Ignore;
@@ -38,6 +40,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * {@code TestEmptyPackage}...
@@ -45,7 +48,6 @@ import static org.junit.Assert.assertNotNull;
 public class TestSerialization extends IntegrationTestBase {
 
     @Test
-    @Ignore("JCRVLT-147")
     public void exportJcrXmlTest() throws RepositoryException, IOException, PackageException {
         Node testRoot = admin.getRootNode().addNode("testroot", NodeType.NT_UNSTRUCTURED);
         Node nodeA = testRoot.addNode("a", NodeType.NT_UNSTRUCTURED);
@@ -76,11 +78,11 @@ public class TestSerialization extends IntegrationTestBase {
                         "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
                         "    jcr:primaryType=\"nt:unstructured\">\n" +
                         "    <a jcr:primaryType=\"nt:unstructured\">\n" +
-                        "        <jcr:xmltext \n" +
+                        "        <jcr:xmltext\n" +
                         "            jcr:primaryType=\"nt:unstructured\"\n" +
-                        "            jcr:xmlcharacters=\"Hello, World.\" />\n" +
+                        "            jcr:xmlcharacters=\"Hello, World.\"/>\n" +
                         "    </a>\n" +
-                "</jcr:root>";
+                        "</jcr:root>\n";
         assertEquals("content.xml must be correct", expected, src);
         pkg.close();
         tmpFile.delete();

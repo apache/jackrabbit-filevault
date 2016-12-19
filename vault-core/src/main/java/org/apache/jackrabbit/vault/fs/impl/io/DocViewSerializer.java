@@ -59,7 +59,6 @@ public class DocViewSerializer implements Serializer {
         oFmt.setBreakEachAttribute(true);
         XMLSerializer ser = new XMLSerializer(out, oFmt);
         DocViewSAXFormatter fmt = new DocViewSAXFormatter(aggregate, ser);
-        fmt.setUseJcrRoot(true);
         aggregate.walk(fmt);
     }
 

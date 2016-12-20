@@ -22,6 +22,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.BitSet;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jcr.Credentials;
 import javax.jcr.SimpleCredentials;
 
@@ -68,7 +71,7 @@ public class RepositoryAddress {
      * @param uri the uri
      * @throws URISyntaxException if the uri is not valid
      */
-    public RepositoryAddress(String uri) throws URISyntaxException {
+    public RepositoryAddress(@Nonnull String uri) throws URISyntaxException {
         this(new URI(uri));
     }
 
@@ -77,14 +80,14 @@ public class RepositoryAddress {
      * @param uri the uri
      * @throws URISyntaxException if the uri is not valid
      */
-    public RepositoryAddress(URI uri) throws URISyntaxException {
+    public RepositoryAddress(@Nonnull URI uri) throws URISyntaxException {
         // decode uri
         String path = uri.getPath();
         String workspace;
         String prefix = "/";
         String localPath = "/";
 
-        if (path.length() == 0 || path.equals("/")) {
+        if (path.length() == 0 || "/".equals(path)) {
             workspace = "-";
             localPath = "/";
         } else if (!uri.isAbsolute()) {
@@ -115,7 +118,7 @@ public class RepositoryAddress {
             if (idx3 < 0) {
                 // no jcr_root found
                 // special case for rmi backward compatibility
-                if (uri.getScheme() != null && uri.getScheme().equals("rmi")) {
+                if (uri.getScheme() != null && "rmi".equals(uri.getScheme())) {
                     idx1 = path.indexOf('/', 1);
                     idx2 = path.indexOf('/', idx1 + 1);
                     if (idx2 < 0) {
@@ -148,7 +151,7 @@ public class RepositoryAddress {
         }
         // sanitize HTTP address (probably wrong place)
         if (uri.getScheme() != null && uri.getScheme().startsWith("http")) {
-            if (prefix.equals("/") || prefix.equals("/crx")) {
+            if ("/".equals(prefix) || "/crx".equals(prefix)) {
                 prefix = "/crx/server";
                 workspace = "-";
             }
@@ -159,13 +162,13 @@ public class RepositoryAddress {
         this.path = localPath;
         this.workspace = workspace;
         this.specific = uri.resolve(prefix);
-        StringBuffer buf = new StringBuffer(specific.toString());
+        StringBuilder buf = new StringBuilder(specific.toString());
         if (buf.charAt(buf.length() - 1) != '/') {
             buf.append('/');
         }
         buf.append(workspace);
         buf.append(JCR_ROOT);
-        if (!localPath.equals("/")) {
+        if (!"/".equals(localPath)) {
             buf.append(escapePath(localPath));
         }
         this.uri = new URI(buf.toString());
@@ -178,7 +181,7 @@ public class RepositoryAddress {
      * @param workspace the workspace
      * @param path the path
      */
-    private RepositoryAddress(URI uri, URI specific, String workspace, String path) {
+    private RepositoryAddress(@Nonnull URI uri, @Nonnull URI specific, @Nullable String workspace, @Nonnull String path) {
         this.uri = uri;
         this.specific = specific;
         this.workspace = workspace;
@@ -190,6 +193,7 @@ public class RepositoryAddress {
      * Returns the uri of this address
      * @return the uri of this address
      */
+    @Nonnull
     public URI getURI() {
         return uri;
     }
@@ -199,11 +203,12 @@ public class RepositoryAddress {
      * @param path the path to include in the new address
      * @return a new repository address
      */
-    public RepositoryAddress resolve(String path) {
-        if (path == null || path.length() == 0 || path.equals(".") || path.equals("./")) {
+    @Nonnull
+    public RepositoryAddress resolve(@CheckForNull String path) {
+        if (path == null || path.length() == 0 || ".".equals(path) || "./".equals(path)) {
             return this;
         }
-        StringBuffer newPath = new StringBuffer(specific.getPath());
+        StringBuilder newPath = new StringBuilder(specific.getPath());
         newPath.append("/");
         newPath.append(workspace);
         newPath.append(JCR_ROOT);
@@ -224,6 +229,7 @@ public class RepositoryAddress {
      * workspace is used.
      * @return the name of the workspace or {@code null}
      */
+    @CheckForNull
     public String getWorkspace() {
         return "-".equals(workspace) ? null : workspace;
     }
@@ -233,6 +239,7 @@ public class RepositoryAddress {
      * actually connect to the repository
      * @return the specific part
      */
+    @Nonnull
     public URI getSpecificURI() {
         return specific;
     }
@@ -242,6 +249,7 @@ public class RepositoryAddress {
      * by this address the root path '/' is returned.
      * @return the path to a repository item.
      */
+    @Nonnull
     public String getPath() {
         return path;
     }
@@ -251,6 +259,7 @@ public class RepositoryAddress {
      * is specified.
      * @return the creds
      */
+    @CheckForNull
     public Credentials getCredentials() {
         String userinfo = uri.getUserInfo();
         if (userinfo == null) {
@@ -273,6 +282,8 @@ public class RepositoryAddress {
      *
      * @return same as {@link #getURI() getURI().toString()}
      */
+    @Override
+    @Nonnull
     public String toString() {
         return getURI().toString();
     }
@@ -280,6 +291,7 @@ public class RepositoryAddress {
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode() {
         return getURI().hashCode();
     }
@@ -287,6 +299,7 @@ public class RepositoryAddress {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -337,10 +350,11 @@ public class RepositoryAddress {
      * @return the escaped string
      * @throws NullPointerException if {@code string} is @{code null}.
      */
-    private static String escapePath(String string) {
+    @Nonnull
+    private static String escapePath(@Nonnull String string) {
         try {
             byte[] bytes = string.getBytes("utf-8");
-            StringBuffer out = new StringBuffer(bytes.length);
+            StringBuilder out = new StringBuilder(bytes.length);
             for (byte aByte : bytes) {
                 int c = aByte & 0xff;
                 if (URISaveEx.get(c) && c != '%') {

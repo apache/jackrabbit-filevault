@@ -66,12 +66,12 @@
                 </executions>
                 <configuration>
                     <licenseHeaderFile>${basedir}/src/main/appassembler/license-header.txt</licenseHeaderFile>
-                    <unixScriptTemplate>${basedir}/src/main/appassembler/unix-template</unixScriptTemplate>
-                    <windowsScriptTemplate>${basedir}/src/main/appassembler/windows-template</windowsScriptTemplate>
+                    <unixScriptTemplate>${basedir}/src/main/appassembler/unix-template.sh</unixScriptTemplate>
+                    <windowsScriptTemplate>${basedir}/src/main/appassembler/windows-template.bat</windowsScriptTemplate>
                     <repositoryLayout>flat</repositoryLayout>
                     <repositoryName>lib</repositoryName>
                     <includeConfigurationDirectoryInClasspath>false</includeConfigurationDirectoryInClasspath>
-                    <extraJvmArguments>-Xms500m -Xmx500m -XX:PermSize=128m -XX:-UseGCOverheadLimit</extraJvmArguments>
+                    <extraJvmArguments>-Xms500m -Xmx500m</extraJvmArguments>
                     <programs>
                         <program>
                             <mainClass>org.apache.jackrabbit.vault.cli.VaultFsApp</mainClass>
@@ -113,8 +113,8 @@
                 <artifactId>apache-rat-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <exclude>src/main/appassembler/unix-template</exclude>
-                        <exclude>src/main/appassembler/windows-template</exclude>
+                        <exclude>src/main/appassembler/unix-template.sh</exclude>
+                        <exclude>src/main/appassembler/windows-template.bat</exclude>
                     </excludes>
                 </configuration>
             </plugin>

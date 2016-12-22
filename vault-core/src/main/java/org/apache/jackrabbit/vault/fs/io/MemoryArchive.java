@@ -20,8 +20,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -29,13 +27,14 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
-import org.apache.jackrabbit.vault.fs.spi.CNDReader;
-import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.Text;
@@ -43,7 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@code MemoryArchive}...
+ * Implements a input stream pump that analyzes the stream copies the stream content into memory.
+ * The memory archive is initialized via the {@link #run(InputStream)}.
  */
 public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pump {
 
@@ -58,12 +58,21 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
 
     private boolean cacheMetaOnly = false;
 
+    /**
+     * Creates new memory archive.
+     * @param metaOnly if {@code true} only the meta info content is cached.
+     * @throws IOException if an I/O error occurrs
+     */
     public MemoryArchive(boolean metaOnly) throws IOException {
         this.cacheMetaOnly = metaOnly;
         root = new VirtualEntry(null, "", 0, null);
         inf = new DefaultMetaInf();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void run(InputStream in) throws Exception {
         // scan the zip and copy data to temporary file
         ZipInputStream zin = new ZipInputStream(
@@ -94,37 +103,7 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
                     }
                 }
                 if (isMeta) {
-                    String path = "InputStream:" + name;
-                    name = name.substring((Constants.META_DIR + "/").length());
-                    if (name.equals(Constants.FILTER_XML)) {
-                        // load filter
-                        inf.loadFilter(new ByteArrayInputStream(data), path);
-                    } else if (name.equals(Constants.CONFIG_XML)) {
-                        // load config
-                        inf.loadConfig(new ByteArrayInputStream(data), path);
-                    } else if (name.equals(Constants.SETTINGS_XML)) {
-                        // load settings
-                        inf.loadSettings(new ByteArrayInputStream(data), path);
-                    } else if (name.equals(Constants.PROPERTIES_XML)) {
-                        // load properties
-                        inf.loadProperties(new ByteArrayInputStream(data), path);
-                    } else if (name.equals(Constants.PRIVILEGES_XML)) {
-                        // load privileges
-                        inf.loadPrivileges(new ByteArrayInputStream(data), path);
-                    } else if (name.equals(Constants.PACKAGE_DEFINITION_XML)) {
-                        inf.setHasDefinition(true);
-                        log.debug("Contains package definition {}.", path);
-                    } else if (name.endsWith(".cnd")) {
-                        try {
-                            Reader r = new InputStreamReader(new ByteArrayInputStream(data), "utf8");
-                            CNDReader reader = ServiceProviderFactory.getProvider().getCNDReader();
-                            reader.read(r, entry.getName(), null);
-                            inf.getNodeTypes().add(reader);
-                            log.debug("Loaded nodetypes from {}.", path);
-                        } catch (IOException e1) {
-                            log.error("Error while reading CND: {}", e1.toString());
-                        }
-                    }
+                    inf.load(data == null ? null : new ByteArrayInputStream(data), "inputstream://" + name);
                 }
             }
         }
@@ -139,9 +118,17 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void open(boolean strict) throws IOException {
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public InputStream openInputStream(Entry entry) throws IOException {
         VirtualEntry ve = (VirtualEntry) entry;
         if (ve == null || ve.data == null) {
@@ -150,6 +137,10 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
         return new ByteArrayInputStream(ve.data);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public VaultInputSource getInputSource(Entry entry) throws IOException {
         final VirtualEntry ve = (VirtualEntry) entry;
         if (ve == null) {
@@ -188,17 +179,32 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
         };
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Entry getRoot() throws IOException {
         return root;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public MetaInf getMetaInf() {
         return inf;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void close() {
     }
 
+    /**
+     * Implements a entry for this archive
+     */
     private static class VirtualEntry implements Entry {
 
         private final VirtualEntry parent;
@@ -218,31 +224,57 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
             this.data = data;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public String getName() {
             return name;
         }
 
+        @Nonnull
         public String getPath() {
             return getPath(new StringBuilder()).toString();
         }
 
-        private StringBuilder getPath(StringBuilder sb) {
+        @Nonnull
+        private StringBuilder getPath(@Nonnull StringBuilder sb) {
             return parent == null ? sb : parent.getPath(sb).append('/').append(name);
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public boolean isDirectory() {
             return data == null;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Collection<? extends Entry> getChildren() {
             return children == null ? Collections.<Entry>emptyList() : children.values();
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Entry getChild(String name) {
             return children == null ? null : children.get(name);
         }
 
-        public VirtualEntry add(String name, long time, byte[] data) {
+        /**
+         * Adds a new child entry.
+         * @param name name
+         * @param time timestamp
+         * @param data data or {@code null}
+         * @return the new entry
+         */
+        @Nonnull
+        public VirtualEntry add(@Nonnull String name, long time, @Nullable byte[] data) {
             if (children != null) {
                 VirtualEntry ret = children.get(name);
                 if (ret != null) {

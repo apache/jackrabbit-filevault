@@ -25,7 +25,7 @@ import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 
 /**
- * {@code SubArchive}...
+ * Implements an archive that is based on a sub-tree of another archive
  */
 public class SubArchive extends AbstractArchive {
 
@@ -45,10 +45,17 @@ public class SubArchive extends AbstractArchive {
         inf.setConfig(base.getMetaInf().getConfig());
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Entry getRoot() throws IOException {
         return root;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Entry getJcrRoot() throws IOException {
         if (isJcrRoot) {
@@ -58,22 +65,42 @@ public class SubArchive extends AbstractArchive {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void open(boolean strict) throws IOException {
         // assume open
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public MetaInf getMetaInf() {
         return inf;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void close() {
         base = null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public InputStream openInputStream(Entry entry) throws IOException {
         return base.openInputStream(entry);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public VaultInputSource getInputSource(Entry entry) throws IOException {
         return base.getInputSource(entry);
     }

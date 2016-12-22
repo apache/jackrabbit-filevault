@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -32,48 +33,75 @@ import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.FileInputSource;
 
 /**
- * {@code FileArchive}...
+ * Implements an archived based on the file system
  */
 public class FileArchive extends AbstractArchive {
 
-    private final File file;
+    /**
+     * the root directory
+     */
+    private final File rootDirectory;
 
     private ExportRoot eRoot;
 
     private OsEntry jcrRoot;
 
-    public FileArchive(File file) {
-        this.file = file;
+    public FileArchive(File rootDirectory) {
+        this.rootDirectory = rootDirectory;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void open(boolean strict) throws IOException {
         if (jcrRoot != null) {
             return;
         }
-        eRoot = ExportRoot.findRoot(file);
+        eRoot = ExportRoot.findRoot(rootDirectory);
         if (!eRoot.isValid()) {
             throw new IOException("No " + Constants.ROOT_DIR + " found.");
         }
         jcrRoot = new OsEntry(eRoot.getJcrRoot());
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void close() {
         eRoot = null;
         jcrRoot = null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Entry getJcrRoot() {
         return jcrRoot;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Entry getRoot() throws IOException {
         return new OsEntry(eRoot.getRoot());
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public MetaInf getMetaInf() {
         return eRoot.getMetaInf();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public InputStream openInputStream(Entry entry) throws IOException {
         File file = entry == null ? null : ((OsEntry) entry).file;
         if (file == null || !file.isFile() || !file.canRead()) {
@@ -82,6 +110,10 @@ public class FileArchive extends AbstractArchive {
         return FileUtils.openInputStream(file);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public VaultInputSource getInputSource(Entry entry) throws IOException {
         File file = entry == null ? null : ((OsEntry) entry).file;
         if (file == null || !file.isFile() || !file.canRead()) {
@@ -98,18 +130,30 @@ public class FileArchive extends AbstractArchive {
             this.file = file;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public String getName() {
             return file.getName();
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public boolean isDirectory() {
             return file.isDirectory();
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Collection<Entry> getChildren() {
             File[] files = file.listFiles();
             if (files == null || files.length == 0) {
-                return null;
+                return Collections.emptyList();
             }
             List<Entry> ret = new ArrayList<Entry>(files.length);
             for (File file: files) {
@@ -118,6 +162,10 @@ public class FileArchive extends AbstractArchive {
             return ret;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Entry getChild(String name) {
             File child = new File(file, name);
             return child.exists() ? new OsEntry(child) : null;

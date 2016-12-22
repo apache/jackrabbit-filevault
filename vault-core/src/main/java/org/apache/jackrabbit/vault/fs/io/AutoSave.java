@@ -20,6 +20,8 @@ package org.apache.jackrabbit.vault.fs.io;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
@@ -98,7 +100,7 @@ public class AutoSave {
         return ret;
     }
 
-    public void setTracker(ProgressTracker tracker) {
+    public void setTracker(@Nullable ProgressTracker tracker) {
         this.tracker = tracker;
     }
 
@@ -137,7 +139,7 @@ public class AutoSave {
      * @param session the session to save. can be {@code null}
      * @throws RepositoryException if an error occurs.
      */
-    public void save(Session session) throws RepositoryException {
+    public void save(@Nullable Session session) throws RepositoryException {
         if (threshold == Integer.MAX_VALUE) {
             log.debug("Save disabled.");
             return;
@@ -206,11 +208,11 @@ public class AutoSave {
         return needsSave();
     }
 
-    public void markMissing(String path) {
+    public void markMissing(@Nonnull String path) {
         missingMandatory.add(path);
     }
 
-    public void markResolved(String path) {
+    public void markResolved(@Nonnull String path) {
         missingMandatory.remove(path);
     }
 

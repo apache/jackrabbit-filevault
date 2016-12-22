@@ -22,8 +22,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -36,8 +34,6 @@ import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
-import org.apache.jackrabbit.vault.fs.spi.CNDReader;
-import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,42 +88,8 @@ public class ZipArchive extends AbstractArchive {
                 String name = entry.getName();
 
                 // check for meta inf
-                if (!name.startsWith(Constants.META_DIR + "/")) {
-                    continue;
-                }
-                String path = zipFile.getPath() + ":" + name;
-                name = name.substring((Constants.META_DIR + "/").length());
-                if (name.equals(Constants.FILTER_XML)) {
-                    // load filter
-                    inf.loadFilter(new CloseShieldInputStream(zin), path);
-                } else if (name.equals(Constants.CONFIG_XML)) {
-                    // load config
-                    inf.loadConfig(new CloseShieldInputStream(zin), path);
-                } else if (name.equals(Constants.SETTINGS_XML)) {
-                    // load settings
-                    inf.loadSettings(new CloseShieldInputStream(zin), path);
-                } else if (name.equals(Constants.PROPERTIES_XML)) {
-                    // load properties
-                    inf.loadProperties(new CloseShieldInputStream(zin), path);
-                } else if (name.equals(Constants.PRIVILEGES_XML)) {
-                    // load privileges
-                    inf.loadPrivileges(new CloseShieldInputStream(zin), path);
-                } else if (name.equals(Constants.PACKAGE_DEFINITION_XML)) {
-                    inf.setHasDefinition(true);
-                    log.debug("Contains package definition {}.", path);
-                } else if (name.endsWith(".cnd")) {
-                    try {
-                        Reader r = new InputStreamReader(new CloseShieldInputStream(zin), "utf8");
-                        CNDReader reader = ServiceProviderFactory.getProvider().getCNDReader();
-                        reader.read(r, entry.getName(), null);
-                        inf.getNodeTypes().add(reader);
-                        log.debug("Loaded nodetypes from {}.", path);
-                    } catch (IOException e1) {
-                        log.error("Error while reading CND: {}", e1.toString());
-                        if (strict) {
-                            throw e1;
-                        }
-                    }
+                if (name.startsWith(Constants.META_DIR + "/")) {
+                    inf.load(new CloseShieldInputStream(zin), zipFile.getPath() + ":" + name);
                 }
             }
             if (inf.getFilter() == null) {
@@ -154,9 +116,7 @@ public class ZipArchive extends AbstractArchive {
             throw e;
         } catch (ConfigurationException e) {
             log.error("Error while loading zip {}.", zipFile.getPath());
-            IOException io = new IOException(e.toString());
-            io.initCause(e);
-            throw io;
+            throw new IOException(e);
         } finally {
             IOUtils.closeQuietly(zin);
         }

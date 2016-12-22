@@ -20,17 +20,18 @@ package org.apache.jackrabbit.vault.fs.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import javax.annotation.Nonnull;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 
 /**
  * {@code Serializer}...
- *
  */
 public interface Serializer {
 
-    public void writeContent(OutputStream out) throws IOException, RepositoryException;
+    void writeContent(@Nonnull OutputStream out) throws IOException, RepositoryException;
 
-    public SerializationType getType();
+    @Nonnull
+    SerializationType getType();
 }

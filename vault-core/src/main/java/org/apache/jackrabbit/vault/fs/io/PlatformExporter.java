@@ -99,7 +99,7 @@ public class PlatformExporter extends AbstractExporter {
         }
         for (File file: files) {
             String name = file.getName();
-            if (name.equals(".svn") || name.equals(".vlt")) {
+            if (".svn".equals(name) || ".vlt".equals(name)) {
                 continue;
             }
             if (file.isDirectory()) {

@@ -21,11 +21,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 
 /**
- * Specifies a read-only archive.
+ * Specifies a filevault archive.
  */
 public interface Archive {
 
@@ -40,18 +44,20 @@ public interface Archive {
     /**
      * Opens an input stream for the given entry
      * @param entry the entry
-     * @return the input stream
+     * @return the input stream or {@code null} if the entry can't be read
      * @throws IOException if an error occurs
      */
-    InputStream openInputStream(Entry entry) throws IOException;
+    @CheckForNull
+    InputStream openInputStream(@Nullable Entry entry) throws IOException;
 
     /**
      * Returns an input source for the given entry
      * @param entry the entry
-     * @return the input source
+     * @return the input source or {@code null} if the entry can't be read
      * @throws IOException if an error occurs
      */
-    VaultInputSource getInputSource(Entry entry) throws IOException;
+    @CheckForNull
+    VaultInputSource getInputSource(@Nullable Entry entry) throws IOException;
 
     /**
      * Returns the entry that specifies the "jcr_root". if no such
@@ -59,6 +65,7 @@ public interface Archive {
      * @return the jcr_root entry or {@code null}
      * @throws IOException if an error occurs
      */
+    @CheckForNull
     Entry getJcrRoot() throws IOException;
 
     /**
@@ -66,6 +73,7 @@ public interface Archive {
      * @return the root entry.
      * @throws IOException if an error occurs
      */
+    @Nonnull
     Entry getRoot() throws IOException;
 
     /**
@@ -74,6 +82,7 @@ public interface Archive {
      *
      * @return the meta inf.
      */
+    @Nonnull
     MetaInf getMetaInf();
 
     /**
@@ -82,7 +91,8 @@ public interface Archive {
      * @return the entry or {@code null} if not found.
      * @throws IOException if an error occurs
      */
-    Entry getEntry(String path) throws IOException;
+    @CheckForNull
+    Entry getEntry(@Nonnull String path) throws IOException;
     
     /**
      * Returns a sub archive that is rooted at the given path.
@@ -95,7 +105,8 @@ public interface Archive {
      *         does not exist.
      * @throws IOException if an error occurs
      */
-    Archive getSubArchive(String root, boolean asJcrRoot) throws IOException;
+    @CheckForNull
+    Archive getSubArchive(@Nonnull String root, boolean asJcrRoot) throws IOException;
 
     /**
      * closes the archive
@@ -111,26 +122,29 @@ public interface Archive {
          * Returns the (file) name of the entry
          * @return the name
          */
-        public String getName();
+        @Nonnull
+        String getName();
 
         /**
          * Returns {@code true} if the entry designates a directory.
          * @return {@code true} if the entry designates a directory.
          */
-        public boolean isDirectory();
+        boolean isDirectory();
 
         /**
          * Returns a collection of child entries.
          * @return a collection of child entries.
          */
-        public Collection<? extends Entry> getChildren();
+        @Nonnull
+        Collection<? extends Entry> getChildren();
 
         /**
          * Returns the child entry with the given name.
          * @param name name of the child entry
          * @return the entry or {@code null} if does not exist.
          */
-        public Entry getChild(String name);
+        @CheckForNull
+        Entry getChild(@Nonnull String name);
     }
 
 }

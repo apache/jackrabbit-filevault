@@ -20,6 +20,9 @@ package org.apache.jackrabbit.vault.fs.config;
 import java.util.Collection;
 import java.util.Properties;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeSet;
@@ -34,29 +37,29 @@ public interface MetaInf {
      * Format Version 1. Used for content assembled until Vault 1.2.8
      * @since 2.0
      */
-    public static int FORMAT_VERSION_1 = 1;
+    int FORMAT_VERSION_1 = 1;
 
     /**
      * Format Version 2. Used for content assembled since Vault 1.2.9
      * @since 2.0
      */
-    public static int FORMAT_VERSION_2 = 2;
+    int FORMAT_VERSION_2 = 2;
 
     /**
      * Name of the package format version
      * @since 2.0
      */
-    public static String PACKAGE_FORMAT_VERSION = "packageFormatVersion";
+    String PACKAGE_FORMAT_VERSION = "packageFormatVersion";
 
     /**
      * Name of the 'created' property
      */
-    public static String CREATED = "created";
+    String CREATED = "created";
 
     /**
      * Name of the 'created by' property
      */
-    public static String CREATED_BY = "createdBy";
+    String CREATED_BY = "createdBy";
     
     /**
      * Returns the package format version of this package. If the package
@@ -72,30 +75,35 @@ public interface MetaInf {
      * Returns the vault settings.
      * @return the vault settings.
      */
+    @CheckForNull
     VaultSettings getSettings();
 
     /**
      * Returns the workspace filter.
      * @return the workspace filter.
      */
+    @CheckForNull
     WorkspaceFilter getFilter();
 
     /**
      * Returns the vault config
      * @return the vault config
      */
+    @CheckForNull
     VaultFsConfig getConfig();
 
     /**
      * Returns the properties
      * @return the properties
      */
+    @CheckForNull
     Properties getProperties();
 
     /**
      * Returns the node types
      * @return the node types
      */
+    @Nonnull
     Collection<NodeTypeSet> getNodeTypes();
 
     /**
@@ -103,6 +111,7 @@ public interface MetaInf {
      * @return a collection of custom privileges.
      * @since 3.0
      */
+    @CheckForNull
     PrivilegeDefinitions getPrivileges();
     
     /**

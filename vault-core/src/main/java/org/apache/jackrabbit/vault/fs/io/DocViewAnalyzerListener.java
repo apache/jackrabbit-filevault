@@ -17,9 +17,15 @@
 
 package org.apache.jackrabbit.vault.fs.io;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import aQute.bnd.annotation.ConsumerType;
+
 /**
  * {@code DocViewAnalyzerListener}...
  */
+@ConsumerType
 public interface DocViewAnalyzerListener {
 
     /**
@@ -29,5 +35,5 @@ public interface DocViewAnalyzerListener {
      * @param intermediate {@code true} if intermediate node
      * @param nodeType the primary type of the node or {@code null} if empty.
      */
-    void onNode(String path, boolean intermediate, String nodeType);
+    void onNode(@Nonnull String path, boolean intermediate, @Nullable String nodeType);
 }

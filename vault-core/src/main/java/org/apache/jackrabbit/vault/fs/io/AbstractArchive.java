@@ -23,10 +23,11 @@ import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.Text;
 
 /**
- * {@code AbstractArchive}...
+ * Base class for archives
  */
 abstract class AbstractArchive implements Archive {
 
+    @Override
     public Entry getEntry(String path) throws IOException {
         String[] segs = Text.explode(path, '/');
         Entry root = getRoot();
@@ -39,10 +40,12 @@ abstract class AbstractArchive implements Archive {
         return root;
     }
 
+    @Override
     public Entry getJcrRoot() throws IOException {
         return getRoot().getChild(Constants.ROOT_DIR);
     }
-    
+
+    @Override
     public Archive getSubArchive(String rootPath, boolean asJcrRoot) throws IOException {
         Entry root = getEntry(rootPath);
         return root == null ? null : new SubArchive(this, root, asJcrRoot);

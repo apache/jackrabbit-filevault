@@ -20,6 +20,8 @@ package org.apache.jackrabbit.vault.fs.io;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.annotation.Nonnull;
+
 import org.apache.jackrabbit.vault.util.PathComparator;
 
 /**
@@ -38,7 +40,7 @@ public class ExportInfo {
         NOP
     }
 
-    public void update(Type type, String path) {
+    public void update(@Nonnull Type type, @Nonnull String path) {
         Entry e = entries.get(path);
         if (e == null) {
             e = new Entry(type, path);
@@ -49,6 +51,7 @@ public class ExportInfo {
         entries.put(path, e);
     }
 
+    @Nonnull
     public Map<String, Entry> getEntries() {
         return entries;
     }

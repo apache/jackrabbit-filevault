@@ -19,8 +19,6 @@ package org.apache.jackrabbit.vault.fs.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -39,8 +38,6 @@ import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
-import org.apache.jackrabbit.vault.fs.spi.CNDReader;
-import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
@@ -66,13 +63,23 @@ public class JcrArchive extends AbstractArchive {
 
     private Entry jcrRoot;
 
+    // the 'chrooted' root. currently not used.
     private String chRoot;
 
-    public JcrArchive(Node archiveRoot, String rootPath) {
+    /**
+     * Creates a new JCR archive rooted at the given node.
+     * @param archiveRoot root node for this archive
+     * @param rootPath root path
+     */
+    public JcrArchive(@Nonnull Node archiveRoot, @Nonnull String rootPath) {
         this.archiveRoot = archiveRoot;
         this.rootPath = rootPath;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void open(boolean strict) throws IOException {
         if (jcrRoot != null) {
             return;
@@ -84,9 +91,7 @@ public class JcrArchive extends AbstractArchive {
                 jcrRoot = new JcrEntry(archiveRoot, archiveRoot.getName(), true);
             }
             if (archiveRoot.hasNode(Constants.META_DIR)) {
-                inf = loadMetaInf(
-                        new JcrEntry(archiveRoot.getNode(Constants.META_DIR), Constants.META_DIR, true),
-                        strict);
+                inf = loadMetaInf(new JcrEntry(archiveRoot.getNode(Constants.META_DIR), Constants.META_DIR, true));
             } else {
                 inf = new DefaultMetaInf();
                 inf.setSettings(VaultSettings.createDefault());
@@ -95,7 +100,7 @@ public class JcrArchive extends AbstractArchive {
                 filter.add(filterSet);
                 inf.setFilter(filter);
 
-                // if archive is rooted, create intermediate entries
+                // if archive is ch-rooted, create intermediate entries
                 if (chRoot != null && chRoot.length() > 0) {
                     String[] roots = Text.explode(rootPath, '/');
                     if (roots.length > 0) {
@@ -113,56 +118,18 @@ public class JcrArchive extends AbstractArchive {
                     }
                 }
             }
-        } catch (RepositoryException e) {
-            IOException ie = new IOException("Error while opening JCR archive.");
-            ie.initCause(e);
-            throw ie;
-        } catch (ConfigurationException e) {
-            IOException ie = new IOException("Error while opening JCR archive.");
-            ie.initCause(e);
-            throw ie;
+        } catch (RepositoryException | ConfigurationException e) {
+            throw new IOException("Error while opening JCR archive.", e);
         }
     }
 
-    private DefaultMetaInf loadMetaInf(Entry dir, boolean strict)
+    private DefaultMetaInf loadMetaInf(Entry dir)
             throws IOException, ConfigurationException {
         DefaultMetaInf inf = new DefaultMetaInf();
         // filter
         for (Entry entry: dir.getChildren()) {
-            String name = entry.getName();
             VaultInputSource src = getInputSource(entry);
-            if (name.equals(Constants.FILTER_XML)) {
-                // load filter
-                inf.loadFilter(src.getByteStream(), src.getSystemId());
-            } else if (name.equals(Constants.CONFIG_XML)) {
-                // load config
-                inf.loadConfig(src.getByteStream(), src.getSystemId());
-            } else if (name.equals(Constants.SETTINGS_XML)) {
-                // load settings
-                inf.loadSettings(src.getByteStream(), src.getSystemId());
-            } else if (name.equals(Constants.PROPERTIES_XML)) {
-                // load properties
-                inf.loadProperties(src.getByteStream(), src.getSystemId());
-            } else if (name.equals(Constants.PRIVILEGES_XML)) {
-                // load privileges
-                inf.loadPrivileges(src.getByteStream(), src.getSystemId());
-            } else if (name.equals(Constants.PACKAGE_DEFINITION_XML)) {
-                inf.setHasDefinition(true);
-                log.info("Contains package definition {}.", src.getSystemId());
-            } else if (name.endsWith(".cnd")) {
-                try {
-                    Reader r = new InputStreamReader(src.getByteStream(), "utf8");
-                    CNDReader reader = ServiceProviderFactory.getProvider().getCNDReader();
-                    reader.read(r, entry.getName(), null);
-                    inf.getNodeTypes().add(reader);
-                    log.info("Loaded nodetypes from {}.", src.getSystemId());
-                } catch (IOException e1) {
-                    log.error("Error while reading CND: {}", e1.toString());
-                    if (strict) {
-                        throw e1;
-                    }
-                }
-            }
+            inf.load(src.getByteStream(), src.getSystemId());
         }
         if (inf.getFilter() == null) {
             log.info("Archive {} does not contain filter definition.", this);
@@ -185,23 +152,43 @@ public class JcrArchive extends AbstractArchive {
         return inf;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void close() {
         archiveRoot = null;
         jcrRoot = null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Entry getJcrRoot() {
         return jcrRoot;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Entry getRoot() throws IOException {
         return new JcrEntry(archiveRoot, "", true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public MetaInf getMetaInf() {
         return inf;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public InputStream openInputStream(Entry entry) throws IOException {
         if (entry == null || entry.isDirectory()) {
             return null;
@@ -210,12 +197,14 @@ public class JcrArchive extends AbstractArchive {
             Node content = ((JcrEntry) entry).node.getNode(JcrConstants.JCR_CONTENT);
             return content.getProperty(JcrConstants.JCR_DATA).getBinary().getStream();
         } catch (RepositoryException e) {
-            IOException e1 = new IOException("Unable to open input source.");
-            e1.initCause(e);
-            throw e1;
+            throw new IOException("Unable to open input source.", e);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public VaultInputSource getInputSource(final Entry entry) throws IOException {
         if (entry == null || entry.isDirectory()) {
             return null;
@@ -266,9 +255,7 @@ public class JcrArchive extends AbstractArchive {
             };
 
         } catch (RepositoryException e) {
-            IOException e1 = new IOException("Unable to open input source.");
-            e1.initCause(e);
-            throw e1;
+            throw new IOException("Unable to open input source.", e);
         }
     }
 
@@ -281,6 +268,9 @@ public class JcrArchive extends AbstractArchive {
         }
     }
 
+    /**
+     * Implements a virtual entry for the intermediate directories
+     */
     private static class VirtualEntry implements Entry {
 
         private final String name;
@@ -291,23 +281,42 @@ public class JcrArchive extends AbstractArchive {
             this.name = name;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public String getName() {
             return name;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public boolean isDirectory() {
             return true;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Collection<? extends Entry> getChildren() {
             return children.values();
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Entry getChild(String name) {
             return children.get(name);
         }
     }
 
+    /**
+     * Implements an archive entry that is based on a JCR node
+     */
     private static class JcrEntry implements Entry {
 
         private final Node node;
@@ -322,14 +331,26 @@ public class JcrArchive extends AbstractArchive {
             this.name = name;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public String getName() {
             return name;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public boolean isDirectory() {
             return isDir;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Collection<Entry> getChildren() {
             if (isDir) {
                 try {
@@ -342,7 +363,7 @@ public class JcrArchive extends AbstractArchive {
                     while (iter.hasNext()) {
                         Node child = iter.nextNode();
                         String name = child.getName();
-                        if (name.equals(".svn")) {
+                        if (".svn".equals(name)) {
                             // skip already
                             continue;
                         }
@@ -366,9 +387,13 @@ public class JcrArchive extends AbstractArchive {
             return Collections.emptyList();
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Entry getChild(String name) {
             try {
-                if (isDir && node.hasNode(name) && !name.equals(".svn")) {
+                if (isDir && node.hasNode(name) && !".svn".equals(name)) {
                     Node child = node.getNode(name);
                     boolean isDir;
                     if (child.isNodeType("nt:folder")) {

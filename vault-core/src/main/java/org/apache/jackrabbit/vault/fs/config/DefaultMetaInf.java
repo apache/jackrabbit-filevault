@@ -29,6 +29,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jcr.NamespaceException;
 
 import org.apache.commons.io.FileUtils;
@@ -42,6 +44,7 @@ import org.apache.jackrabbit.vault.fs.spi.NodeTypeSet;
 import org.apache.jackrabbit.vault.fs.spi.PrivilegeDefinitions;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +63,7 @@ public class DefaultMetaInf implements MetaInf {
 
     private Properties properties;
 
-    private Collection<NodeTypeSet> cnds = new LinkedList<NodeTypeSet>();
+    private Collection<NodeTypeSet> cnds = new LinkedList<>();
 
     private PrivilegeDefinitions privileges = new PrivilegeDefinitions();
 
@@ -88,7 +91,59 @@ public class DefaultMetaInf implements MetaInf {
         return FORMAT_VERSION_2;
     }
 
-    public void loadFilter(InputStream in, String systemId)
+    /**
+     * Loads a setting based on the name of the system id.
+     * @param systemId the system id of the setting to load
+     * @param in the input stream
+     * @return {@code true} if the setting was loaded.
+     * @throws IOException if an I/O error occurrs
+     * @throws ConfigurationException if a configuration error occurrs
+     *
+     * @since 3.1.32
+     */
+    public boolean load(@Nullable InputStream in, @Nonnull String systemId) throws IOException, ConfigurationException {
+        if (systemId.endsWith("/" + Constants.PACKAGE_DEFINITION_XML)) {
+            setHasDefinition(true);
+            log.debug("Contains package definition {}.", systemId);
+            return true;
+        }
+        if (in == null) {
+            return false;
+        }
+
+        final String name = Text.getName(systemId);
+        if (Constants.FILTER_XML.equals(name)) {
+            // load filter
+            loadFilter(in, systemId);
+            return true;
+        } else if (Constants.CONFIG_XML.equals(name)) {
+            // load config
+            loadConfig(in, systemId);
+            return true;
+        } else if (Constants.SETTINGS_XML.equals(name)) {
+            // load settings
+            loadSettings(in, systemId);
+            return true;
+        } else if (Constants.PROPERTIES_XML.equals(name)) {
+            // load properties
+            loadProperties(in, systemId);
+            return true;
+        } else if (Constants.PRIVILEGES_XML.equals(name)) {
+            // load privileges
+            loadPrivileges(in, systemId);
+            return true;
+        } else if (name.endsWith(".cnd")) {
+            Reader r = new InputStreamReader(in, "utf8");
+            CNDReader reader = ServiceProviderFactory.getProvider().getCNDReader();
+            reader.read(r, systemId, null);
+            getNodeTypes().add(reader);
+            log.debug("Loaded nodetypes from {}.", systemId);
+            return true;
+        }
+        return false;
+    }
+
+    public void loadFilter(@Nonnull InputStream in, @Nonnull String systemId)
             throws ConfigurationException, IOException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.load(in);
@@ -96,14 +151,14 @@ public class DefaultMetaInf implements MetaInf {
         log.debug("Loaded filter from {}.", systemId);
     }
 
-    public void loadConfig(InputStream in, String systemId)
+    public void loadConfig(@Nonnull InputStream in, @Nonnull String systemId)
             throws ConfigurationException, IOException {
         VaultFsConfig config = AbstractVaultFsConfig.load(in, systemId);
         setConfig(config);
         log.debug("Loaded config from {}.", systemId);
     }
 
-    public void loadSettings(InputStream in, String systemId)
+    public void loadSettings(@Nonnull InputStream in, @Nonnull String systemId)
             throws ConfigurationException, IOException {
         VaultSettings settings = new VaultSettings();
         settings.load(in);
@@ -111,7 +166,7 @@ public class DefaultMetaInf implements MetaInf {
         log.debug("Loaded settings from {}.", systemId);
     }
 
-    public void loadProperties(InputStream in, String systemId)
+    public void loadProperties(@Nonnull InputStream in, @Nonnull String systemId)
             throws IOException {
         Properties props = new Properties();
         props.loadFromXML(in);
@@ -119,7 +174,7 @@ public class DefaultMetaInf implements MetaInf {
         log.debug("Loaded properties from {}.", systemId);
     }
 
-    public void loadPrivileges(InputStream in, String systemId)
+    public void loadPrivileges(@Nonnull InputStream in, @Nonnull String systemId)
             throws IOException {
         try {
             PrivilegeDefinitionReader reader = new PrivilegeDefinitionReader(in, "text/xml");
@@ -127,21 +182,14 @@ public class DefaultMetaInf implements MetaInf {
             for (Map.Entry<String, String> e: reader.getNamespaces().entrySet()) {
                 privileges.getNamespaceMapping().setMapping(e.getKey(), e.getValue());
             }
-        } catch (ParseException e) {
+        } catch (ParseException | NamespaceException e) {
             log.error("Error while reading Privileges: {}", e.toString());
-            IOException io = new IOException("Error while reading privileges.");
-            io.initCause(e);
-            throw io;
-        } catch (NamespaceException e) {
-            log.error("Error while reading Privileges: {}", e.toString());
-            IOException io = new IOException("Error while reading privileges.");
-            io.initCause(e);
-            throw io;
+            throw new IOException("Error while reading privileges.", e);
         }
         log.debug("Loaded privileges from {}.", systemId);
     }
 
-    public void save(File metaDir) throws IOException {
+    public void save(@Nonnull File metaDir) throws IOException {
         if (metaDir.isDirectory()) {
             saveConfig(metaDir);
             saveFilter(metaDir);
@@ -152,6 +200,10 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public VaultSettings getSettings() {
         return settings;
     }
@@ -160,6 +212,10 @@ public class DefaultMetaInf implements MetaInf {
         this.settings = settings;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public WorkspaceFilter getFilter() {
         return filter;
     }
@@ -168,6 +224,10 @@ public class DefaultMetaInf implements MetaInf {
         this.filter = filter;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public VaultFsConfig getConfig() {
         return config;
     }
@@ -176,6 +236,10 @@ public class DefaultMetaInf implements MetaInf {
         this.config = config;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Properties getProperties() {
         return properties;
     }
@@ -184,10 +248,18 @@ public class DefaultMetaInf implements MetaInf {
         this.properties = properties;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Collection<NodeTypeSet> getNodeTypes() {
         return cnds;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public PrivilegeDefinitions getPrivileges() {
         return privileges;
     }
@@ -196,6 +268,10 @@ public class DefaultMetaInf implements MetaInf {
         this.cnds = cnds;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean hasDefinition() {
         return hasDefinition;
     }
@@ -204,7 +280,7 @@ public class DefaultMetaInf implements MetaInf {
         this.hasDefinition = hasDefinition;
     }
 
-    protected void loadSettings(File metaDir)
+    protected void loadSettings(@Nonnull File metaDir)
             throws ConfigurationException, IOException {
         File file = new File(metaDir, Constants.SETTINGS_XML);
         if (file.isFile()) {
@@ -216,14 +292,14 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void saveSettings(File metaDir) throws IOException {
+    protected void saveSettings(@Nonnull File metaDir) throws IOException {
         if (settings != null) {
             File file = new File(metaDir, Constants.SETTINGS_XML);
             settings.save(file);
         }
     }
 
-    protected void loadConfig(File metaDir)
+    protected void loadConfig(@Nonnull File metaDir)
             throws ConfigurationException, IOException {
         File file = new File(metaDir, Constants.CONFIG_XML);
         if (file.isFile()) {
@@ -231,7 +307,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void saveConfig(File metaDir)
+    protected void saveConfig(@Nonnull File metaDir)
             throws IOException {
         if (config != null) {
             File file = new File(metaDir, Constants.CONFIG_XML);
@@ -242,7 +318,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void loadFilter(File metaDir, boolean vltMode)
+    protected void loadFilter(@Nonnull File metaDir, boolean vltMode)
             throws ConfigurationException, IOException {
         File file = new File(metaDir, Constants.FILTER_XML);
         if (vltMode) {
@@ -259,7 +335,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void saveFilter(File metaDir)
+    protected void saveFilter(@Nonnull File metaDir)
             throws IOException {
         if (filter != null) {
             File file = new File(metaDir, Constants.FILTER_XML);
@@ -270,7 +346,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void loadProperties(File metaDir) throws IOException {
+    protected void loadProperties(@Nonnull File metaDir) throws IOException {
         File file = new File(metaDir, Constants.PROPERTIES_XML);
         if (file.isFile()) {
             Properties properties = new Properties();
@@ -279,7 +355,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void saveProperties(File metaDir) throws IOException {
+    protected void saveProperties(@Nonnull File metaDir) throws IOException {
         if (properties != null) {
             File file = new File(metaDir, Constants.PROPERTIES_XML);
             properties.storeToXML(
@@ -288,7 +364,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void loadPrivileges(File metaDir) throws IOException {
+    protected void loadPrivileges(@Nonnull File metaDir) throws IOException {
         File file = new File(metaDir, Constants.PRIVILEGES_XML);
         if (file.isFile()) {
             InputStream in = FileUtils.openInputStream(file);
@@ -300,8 +376,12 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void loadCNDs(File metaDir) throws IOException {
-        for (File file: metaDir.listFiles()) {
+    protected void loadCNDs(@Nonnull File metaDir) throws IOException {
+        File[] files = metaDir.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File file: files) {
             if (file.getName().endsWith(".cnd")) {
                 Reader r = null;
                 try {
@@ -311,9 +391,7 @@ public class DefaultMetaInf implements MetaInf {
                     cnds.add(reader);
                 } catch (IOException e) {
                     log.error("Error while reading CND: {}", e.toString());
-                    IOException io = new IOException("Error while reading CND.");
-                    io.initCause(e);
-                    throw io;
+                    throw new IOException("Error while reading CND.", e);
                 } finally {
                     IOUtils.closeQuietly(r);
                 }

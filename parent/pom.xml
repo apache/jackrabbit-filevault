@@ -40,7 +40,7 @@
     </description>
 
     <properties>
-        <jackrabbit.version>2.11.3</jackrabbit.version>
+        <jackrabbit.version>2.13.7</jackrabbit.version>
         <oak.version>1.5.9</oak.version>
     </properties>
 
@@ -338,12 +338,12 @@
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.2</version>
+                <version>1.10</version>
             </dependency>
             <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <version>3.1</version>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpmime</artifactId>
+                <version>4.5.2</version>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>

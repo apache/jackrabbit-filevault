@@ -84,6 +84,11 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>jcl-over-slf4j</artifactId>
                 </exclusion>
+                <exclusion>
+                    <!-- exclude legacy http client to be included (see JCRVLT-148) -->
+                    <groupId>commons-httpclient</groupId>
+                    <artifactId>commons-httpclient</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

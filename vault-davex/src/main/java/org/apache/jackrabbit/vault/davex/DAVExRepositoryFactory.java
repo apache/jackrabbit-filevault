@@ -21,10 +21,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,12 +30,6 @@ import javax.jcr.NamespaceException;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.params.DefaultHttpParams;
-import org.apache.commons.httpclient.params.DefaultHttpParamsFactory;
-import org.apache.commons.httpclient.params.HostParams;
-import org.apache.commons.httpclient.params.HttpParams;
-import org.apache.commons.httpclient.params.HttpParamsFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.client.RepositoryFactoryImpl;
 import org.apache.jackrabbit.jcr2spi.Jcr2spiRepositoryFactory;
@@ -64,11 +56,6 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
      * Name of the system property that controls the spi log.
      */
     public static final String PARAM_JCR_REMOTING_SPILOG = "jcr.remoting.spilog";
-
-    /**
-     * Name of the system property that controls the referer header.
-     */
-    public static final String PARAM_JCR_REMOTING_REFERER = "jcr.remoting.referer";
 
     private static final Set<String> SCHEMES = new HashSet<String>();
     static {
@@ -115,12 +102,6 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
                 );
             }
 
-            // set default params for httpclient that will be used in jackrabbit's webdav client
-            // this is to provide a referer header for all POST and PUT requests.
-            DefaultHttpParams.setHttpParamsFactory(new MyHttpParamsFactory(
-                    System.getProperty(PARAM_JCR_REMOTING_REFERER, "http://localhost/")
-            ));
-
             // explicit set workspace (JCRVLT-144)
             String workspace = address.getWorkspace();
             parameters.put(Spi2davexRepositoryServiceFactory.PARAM_WORKSPACE_NAME_DEFAULT, workspace == null ? "" : workspace);
@@ -153,23 +134,5 @@ class DefaultBatchReadConfig implements BatchReadConfig {
 
     public void setDefaultDepth(int defaultDepth) {
         this.defaultDepth = defaultDepth;
-    }
-}
-
-class MyHttpParamsFactory implements HttpParamsFactory {
-
-    private final HttpParams params;
-
-    MyHttpParamsFactory(String referer) {
-        params = new DefaultHttpParamsFactory().getDefaultParams();
-        List<Header> headers = new ArrayList<Header>();
-        if (referer != null && referer.length() > 0) {
-            headers.add(new Header("Referer", referer));
-        }
-        params.setParameter(HostParams.DEFAULT_HEADERS, headers);
-    }
-
-    public HttpParams getDefaultParams() {
-        return params;
     }
 }

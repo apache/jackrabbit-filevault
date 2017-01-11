@@ -600,7 +600,7 @@ public class AggregateManagerImpl implements AggregateManager {
                         .append(numPrepared).append(" of ")
                         .append(numCreated).append(" prepared, ")
                         .append(numCollected).append(" collected").toString();
-                log.debug("- {}", str);
+                log.trace("- {}", str);
                 if (tracker != null) {
                     tracker.onMessage(ProgressTrackerListener.Mode.TEXT, "-", str);
                 }

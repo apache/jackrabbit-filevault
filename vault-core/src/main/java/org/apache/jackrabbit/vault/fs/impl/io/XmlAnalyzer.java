@@ -89,7 +89,7 @@ public class XmlAnalyzer {
         } finally {
             IOUtils.closeQuietly(r);
         }
-        log.debug("Analyzed {}. Type = {}", source.getSystemId(), type);
+        log.trace("Analyzed {}. Type = {}", source.getSystemId(), type);
         return type;
     }
 

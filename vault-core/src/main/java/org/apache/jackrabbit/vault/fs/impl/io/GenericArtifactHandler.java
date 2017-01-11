@@ -80,9 +80,9 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
                     // do import the content if node is an authorizable or ACL
                     Node newNode = parent.getNode(name);
                     if (userManagement.isAuthorizableNodeType(newNode.getPrimaryNodeType().getName())) {
-                        log.debug("don't skip authorizable node on MERGE: {}", path);
+                        log.trace("don't skip authorizable node on MERGE: {}", path);
                     } else if (aclManagement.isACLNode(newNode)) {
-                        log.debug("don't skip policy node on MERGE: {}", path);
+                        log.trace("don't skip policy node on MERGE: {}", path);
                     } else {
                         info.onNop(path);
                         return info;

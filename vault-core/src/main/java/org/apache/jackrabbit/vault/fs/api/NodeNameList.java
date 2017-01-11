@@ -74,7 +74,7 @@ public class NodeNameList {
         while (iter.hasPrevious()) {
             String prev = iter.previous();
             if (parent.hasNode(prev)) {
-                log.debug("ordering {} before {}", prev, last);
+                log.trace("ordering {} before {}", prev, last);
                 try {
                     parent.orderBefore(prev, last);
                 } catch (Exception e) {

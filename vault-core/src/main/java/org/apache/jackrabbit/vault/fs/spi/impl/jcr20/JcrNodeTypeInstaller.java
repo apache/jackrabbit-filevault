@@ -74,7 +74,7 @@ public class JcrNodeTypeInstaller implements NodeTypeInstaller {
         } else {
             set = new DefaultNodeTypeSet(types);
         }
-        log.debug("Removing registered nodetypes");
+        log.trace("Removing registered nodetypes");
         DefaultNamePathResolver npResolver = new DefaultNamePathResolver(session);
         NodeTypeIterator iter = ntMgr.getAllNodeTypes();
         while (iter.hasNext()) {

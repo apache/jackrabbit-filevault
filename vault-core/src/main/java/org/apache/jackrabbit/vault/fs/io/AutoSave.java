@@ -128,7 +128,7 @@ public class AutoSave {
     public boolean needsSave() {
         boolean res = (numModified - lastSave) >= threshold;
         if (res && !missingMandatory.isEmpty()) {
-            log.info("Threshold of {} reached but still unresolved mandatory items.", threshold);
+            log.debug("Threshold of {} reached but still unresolved mandatory items.", threshold);
             res = false;
         }
         return res;
@@ -141,11 +141,11 @@ public class AutoSave {
      */
     public void save(@Nullable Session session) throws RepositoryException {
         if (threshold == Integer.MAX_VALUE) {
-            log.debug("Save disabled.");
+            log.trace("Save disabled.");
             return;
         }
         int diff = numModified - lastSave;
-        log.info("Threshold of {} reached. {} approx {} transient changes. {} unresolved", new Object[]{
+        log.debug("Threshold of {} reached. {} approx {} transient changes. {} unresolved", new Object[]{
                 threshold,
                 dryRun ? "dry run, reverting" : "saving",
                 diff,

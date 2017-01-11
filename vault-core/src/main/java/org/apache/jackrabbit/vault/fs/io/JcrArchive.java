@@ -132,22 +132,22 @@ public class JcrArchive extends AbstractArchive {
             inf.load(src.getByteStream(), src.getSystemId());
         }
         if (inf.getFilter() == null) {
-            log.info("Archive {} does not contain filter definition.", this);
+            log.debug("Archive {} does not contain filter definition.", this);
         }
         if (inf.getConfig() == null) {
-            log.info("Archive {} does not contain vault config.", this);
+            log.debug("Archive {} does not contain vault config.", this);
         }
         if (inf.getSettings() == null) {
-            log.info("Archive {} does not contain vault settings. using default.", this);
+            log.debug("Archive {} does not contain vault settings. using default.", this);
             VaultSettings settings = new VaultSettings();
             settings.getIgnoredNames().add(".svn");
             inf.setSettings(settings);
         }
         if (inf.getProperties() == null) {
-            log.info("Archive {} does not contain properties.", this);
+            log.debug("Archive {} does not contain properties.", this);
         }
         if (inf.getNodeTypes().isEmpty()) {
-            log.info("Archive {} does not contain nodetypes.", this);
+            log.debug("Archive {} does not contain nodetypes.", this);
         }
         return inf;
     }
@@ -373,7 +373,7 @@ public class JcrArchive extends AbstractArchive {
                         } else if (child.isNodeType("nt:file")) {
                             isDir = false;
                         } else {
-                            log.info("Skipping node {} with unknown type {}.", child.getPath(), child.getPrimaryNodeType().getName());
+                            log.debug("Skipping node {} with unknown type {}.", child.getPath(), child.getPrimaryNodeType().getName());
                             continue;
                         }
                         ret.add(new JcrEntry(child, name, isDir));
@@ -401,7 +401,7 @@ public class JcrArchive extends AbstractArchive {
                     } else if (child.isNodeType("nt:file")) {
                         isDir = false;
                     } else {
-                        log.info("Skipping node {} with unknown type {}.", child.getPath(), child.getPrimaryNodeType().getName());
+                        log.debug("Skipping node {} with unknown type {}.", child.getPath(), child.getPrimaryNodeType().getName());
                         return null;
                     }
                     return new JcrEntry(child, name, isDir);

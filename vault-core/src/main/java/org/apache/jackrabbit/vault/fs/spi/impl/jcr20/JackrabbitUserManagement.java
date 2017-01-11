@@ -123,10 +123,10 @@ public class JackrabbitUserManagement implements UserManagement {
                     String memberId = member.getID();
                     try {
                         if (grp.isDeclaredMember(member)) {
-                            log.info("ignoring to add authorizable '{}' to group '{}'. Already member.", memberId, id);
+                            log.debug("ignoring to add authorizable '{}' to group '{}'. Already member.", memberId, id);
                         } else {
                             grp.addMember(member);
-                            log.info("added authorizable '{}' to group '{}'.", memberId, id);
+                            log.debug("added authorizable '{}' to group '{}'.", memberId, id);
                         }
                     } catch (RepositoryException e) {
                         log.error("Error while adding authorizable '{}' to group '{}': {}", new Object[]{memberId, id, e});

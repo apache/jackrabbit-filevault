@@ -540,7 +540,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         );
         String dstPath = newId.getInstallationPath() + ".zip";
         if (id.equals(newId) && pack.getNode().getPath().equals(dstPath)) {
-            log.info("Package id not changed. won't rename.");
+            log.debug("Package id not changed. won't rename.");
             return pack;
         }
         def.setId(newId, false);

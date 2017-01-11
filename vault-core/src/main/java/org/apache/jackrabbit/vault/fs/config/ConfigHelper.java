@@ -153,10 +153,10 @@ public class ConfigHelper {
             throws ConfigurationException {
         String setter = getMethodName("set", name);
         if (getMethod(obj, setter, Object.class) != null) {
-            log.debug("Has setter {} on {}" , name, obj);
+            log.trace("Has setter {} on {}" , name, obj);
             return true;
         } else {
-            log.debug("{} has no setter for {}" , obj, name);
+            log.trace("{} has no setter for {}" , obj, name);
             return false;
         }
     }
@@ -175,7 +175,7 @@ public class ConfigHelper {
                 throw new ConfigurationException(obj + " has not setter for " + name);
             }
             m.invoke(obj, value);
-            log.debug("Setting {} on {}" , name, obj);
+            log.trace("Setting {} on {}" , name, obj);
             return true;
         } catch (IllegalAccessException e) {
             throw new ConfigurationException("Unable to set " + setter + " of " + obj , e);
@@ -196,7 +196,7 @@ public class ConfigHelper {
                 return null;
             }
         } catch (NoSuchMethodException e) {
-            log.debug("{} has no field {} or type " + T, obj, name);
+            log.trace("{} has no field {} or type " + T, obj, name);
             return null;
         } catch (IllegalAccessException e) {
             throw new ConfigurationException("Unable to get list " + name + " of " + obj);

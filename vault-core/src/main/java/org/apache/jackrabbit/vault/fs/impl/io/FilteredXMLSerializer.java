@@ -57,7 +57,7 @@ public class FilteredXMLSerializer extends XMLSerializer {
 
     public void startElement(String namespaceURI, String localName, String rawName, Attributes attrs) throws SAXException {
         if (filter.isFilteredNamespace(namespaceURI) || filter.isFilteredRawName(rawName)) {
-            log.debug("Filtering: {" + namespaceURI + "}" + localName + " -> " + rawName);
+            log.trace("Filtering: {" + namespaceURI + "}" + localName + " -> " + rawName);
         } else {
             AttributesImpl fAttrs = new AttributesImpl(attrs);
             for (int i = 0; i < fAttrs.getLength(); i++) {
@@ -72,7 +72,7 @@ public class FilteredXMLSerializer extends XMLSerializer {
 
     public void endElement(String namespaceURI, String localName, String rawName) throws SAXException {
         if (filter.isFilteredNamespace(namespaceURI) || filter.isFilteredRawName(rawName)) {
-            log.debug("Filtering: {" + namespaceURI + "}" + localName + " -> " + rawName);
+            log.trace("Filtering: {" + namespaceURI + "}" + localName + " -> " + rawName);
         } else {
             super.endElement(namespaceURI, localName, rawName);
         }
@@ -80,7 +80,7 @@ public class FilteredXMLSerializer extends XMLSerializer {
 
     public void endElementIO(String namespaceURI, String localName, String rawName) throws IOException {
         if (filter.isFilteredNamespace(namespaceURI) || filter.isFilteredRawName(rawName)) {
-            log.debug("Filtering: {" + namespaceURI + "}" + localName + " -> " + rawName);
+            log.trace("Filtering: {" + namespaceURI + "}" + localName + " -> " + rawName);
         } else {
             super.endElementIO(namespaceURI, localName, rawName);
         }

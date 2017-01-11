@@ -210,7 +210,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         if (!force && isUnwrapped()) {
             return;
         }
-        log.info("unwrapping package {}", pack == null ? "(unknown)" : pack.getId());
+        log.debug("unwrapping package {}", pack == null ? "(unknown)" : pack.getId());
         long now = System.currentTimeMillis();
         unwrap(pack == null ? null : pack.getArchive(), autoSave);
         if (log.isDebugEnabled()) {

@@ -448,7 +448,7 @@ public class JcrPackageImpl implements JcrPackage {
                     }
                     // if a more recent version of that subpackage was found we don't need to add it to the list of sub packages to eventually extract later on.
                     if (newerPackageId != null) {
-                        log.info("Skipping installation if subpackage '{}' due to newer installed version: '{}'", pId, newerPackageId);
+                        log.debug("Skipping installation if subpackage '{}' due to newer installed version: '{}'", pId, newerPackageId);
                     } else {
                         subPacks.add(p);
                     }
@@ -486,7 +486,7 @@ public class JcrPackageImpl implements JcrPackage {
                 if (options.getListener() != null) {
                     options.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, msg, "");
                 } else {
-                    log.info(msg);
+                    log.debug(msg);
                 }
                 if (!skip) {
                     if (createSnapshot && option == SubPackageHandling.Option.INSTALL) {
@@ -539,7 +539,7 @@ public class JcrPackageImpl implements JcrPackage {
         List<Archive.Entry> entries = new LinkedList<Archive.Entry>();
         findSubPackageEntries(entries, packages);
         if (entries.isEmpty()) {
-            log.info("Package {} contains no sub-packages.", pId);
+            log.debug("Package {} contains no sub-packages.", pId);
             return;
         }
 
@@ -547,7 +547,7 @@ public class JcrPackageImpl implements JcrPackage {
         boolean hasOwnContent = false;
         for (PathFilterSet root: a.getMetaInf().getFilter().getFilterSets()) {
             if (!Text.isDescendantOrEqual("/etc/packages", root.getRoot())) {
-                log.info("Package {}: contains content outside /etc/packages. Sub packages will have a dependency to it", pId);
+                log.debug("Package {}: contains content outside /etc/packages. Sub packages will have a dependency to it", pId);
                 hasOwnContent = true;
                 break;
             }
@@ -563,12 +563,12 @@ public class JcrPackageImpl implements JcrPackage {
                         jcrName = npResolver.getJCRName(name);
                     } catch (NamespaceException e) {
                         // in case the uri is not registered. we also break here
-                        log.info("Package {}: contains namespace not installed in the repository: {}. Sub packages will have a dependency to it", pId, name.getNamespaceURI());
+                        log.debug("Package {}: contains namespace not installed in the repository: {}. Sub packages will have a dependency to it", pId, name.getNamespaceURI());
                         hasOwnContent = true;
                         break loop0;
                     }
                     if (!ntMgr.hasNodeType(jcrName)) {
-                        log.info("Package {}: contains nodetype not installed in the repository: {}. Sub packages will have a dependency to it", pId, jcrName);
+                        log.debug("Package {}: contains nodetype not installed in the repository: {}. Sub packages will have a dependency to it", pId, jcrName);
                         hasOwnContent = true;
                         break loop0;
                     }
@@ -611,7 +611,7 @@ public class JcrPackageImpl implements JcrPackage {
 
                 PackageId id = subPackage.getDefinition().getId();
                 processed.add(id);
-                log.info("Package {}: Extracted sub-package: {}", pId, id);
+                log.debug("Package {}: Extracted sub-package: {}", pId, id);
 
                 if (!opts.isNonRecursive()) {
                     subPackage.extractSubpackages(opts, processed);
@@ -625,7 +625,7 @@ public class JcrPackageImpl implements JcrPackage {
 
         // if no content, mark as installed
         if (!entries.isEmpty() && !hasOwnContent) {
-            log.info("Package {}: is pure container package. marking as installed.", pId);
+            log.debug("Package {}: is pure container package. marking as installed.", pId);
             getDefinition();
             if (def != null && !opts.isDryRun()) {
                 def.touchLastUnpacked(null, true);
@@ -797,14 +797,14 @@ public class JcrPackageImpl implements JcrPackage {
         Node packNode = getPackageNode(id);
         if (packNode != null) {
             if (!replace) {
-                log.warn("Refusing to recreate snapshot {}, already exists.", id);
+                log.debug("Refusing to recreate snapshot {}, already exists.", id);
                 return null;
             } else {
                 packNode.remove();
                 node.getSession().save();
             }
         }
-        log.info("Creating snapshot for {}.", id);
+        log.debug("Creating snapshot for {}.", id);
         JcrPackageManagerImpl packMgr = new JcrPackageManagerImpl(node.getSession());
         String path = id.getInstallationPath();
         String parentPath = Text.getRelativeParent(path, 1);
@@ -824,7 +824,7 @@ public class JcrPackageImpl implements JcrPackage {
             opts.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, "Creating snapshot for package " + myDef.getId(), "");
         }
         packMgr.assemble(snap.getNode(), snapDef, opts.getListener());
-        log.info("Creating snapshot for {} completed.", id);
+        log.debug("Creating snapshot for {} completed.", id);
         mgr.dispatch(PackageEvent.Type.SNAPSHOT, id, null);
         return snap;
     }

@@ -79,7 +79,7 @@ public class DefaultNodeTypeSet implements NodeTypeSet {
 
     public void add(NodeTypeSet set) {
         for (QNodeTypeDefinition tpl: set.getNodeTypes().values()) {
-            log.debug("adding {}", tpl.getName());
+            log.trace("adding {}", tpl.getName());
             nodeTypes.put(tpl.getName(), tpl);
         }
         add(set.getNamespaceMapping());
@@ -87,7 +87,7 @@ public class DefaultNodeTypeSet implements NodeTypeSet {
 
     public void add(Collection<QNodeTypeDefinition> set, NamespaceMapping nsMapping) {
         for (QNodeTypeDefinition tpl: set) {
-            log.debug("adding {}", tpl.getName());
+            log.trace("adding {}", tpl.getName());
             nodeTypes.put(tpl.getName(), tpl);
         }
         add(nsMapping);
@@ -110,7 +110,7 @@ public class DefaultNodeTypeSet implements NodeTypeSet {
         QNodeTypeDefinition tpl = nodeTypes.remove(name);
         if (tpl != null) {
             removed.put(tpl.getName(), tpl);
-            log.debug("removing registered {}", tpl.getName());
+            log.trace("removing registered {}", tpl.getName());
         }
         return tpl;
     }

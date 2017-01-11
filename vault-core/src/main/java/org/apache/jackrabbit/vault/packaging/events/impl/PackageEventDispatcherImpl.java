@@ -66,7 +66,7 @@ public class PackageEventDispatcherImpl implements PackageEventDispatcher {
     public void bindPackageEventListener(PackageEventListener listener, Map<String, Object> props) {
         // public for testing
         listeners.put(props.get("component.id"), listener);
-        log.info("Registering package event listener {}", listener.getClass().getName());
+        log.debug("Registering package event listener {}", listener.getClass().getName());
     }
 
     /**
@@ -76,7 +76,7 @@ public class PackageEventDispatcherImpl implements PackageEventDispatcher {
      */
     protected void unbindPackageEventListener(PackageEventListener listener, Map<String, Object> props) {
         if (listeners.remove(props.get("component.id")) != null) {
-            log.info("Unregistering package event listener {}", listener.getClass().getName());
+            log.debug("Unregistering package event listener {}", listener.getClass().getName());
         } else {
             log.warn("unable to unregister package event listener {}", listener.getClass().getName());
         }

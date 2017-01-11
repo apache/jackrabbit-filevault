@@ -221,7 +221,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
     protected void extract(InstallContextImpl ctx,
                            List<String> subPackages)
             throws RepositoryException, PackageException {
-        log.info("Extracting {}", getId());
+        log.debug("Extracting {}", getId());
         InstallHookProcessor hooks = ctx.getHooks();
         Importer importer = ctx.getImporter();
         try {
@@ -252,7 +252,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         if (subPackages != null) {
             subPackages.addAll(importer.getSubPackages());
         }
-        log.info("Extracting {} completed.", getId());
+        log.debug("Extracting {} completed.", getId());
     }
 
     @Override

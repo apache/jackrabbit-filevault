@@ -104,7 +104,7 @@ public class DefaultMetaInf implements MetaInf {
     public boolean load(@Nullable InputStream in, @Nonnull String systemId) throws IOException, ConfigurationException {
         if (systemId.endsWith("/" + Constants.PACKAGE_DEFINITION_XML)) {
             setHasDefinition(true);
-            log.debug("Contains package definition {}.", systemId);
+            log.trace("Contains package definition {}.", systemId);
             return true;
         }
         if (in == null) {
@@ -137,7 +137,7 @@ public class DefaultMetaInf implements MetaInf {
             CNDReader reader = ServiceProviderFactory.getProvider().getCNDReader();
             reader.read(r, systemId, null);
             getNodeTypes().add(reader);
-            log.debug("Loaded nodetypes from {}.", systemId);
+            log.trace("Loaded nodetypes from {}.", systemId);
             return true;
         }
         return false;
@@ -148,14 +148,14 @@ public class DefaultMetaInf implements MetaInf {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.load(in);
         setFilter(filter);
-        log.debug("Loaded filter from {}.", systemId);
+        log.trace("Loaded filter from {}.", systemId);
     }
 
     public void loadConfig(@Nonnull InputStream in, @Nonnull String systemId)
             throws ConfigurationException, IOException {
         VaultFsConfig config = AbstractVaultFsConfig.load(in, systemId);
         setConfig(config);
-        log.debug("Loaded config from {}.", systemId);
+        log.trace("Loaded config from {}.", systemId);
     }
 
     public void loadSettings(@Nonnull InputStream in, @Nonnull String systemId)
@@ -163,7 +163,7 @@ public class DefaultMetaInf implements MetaInf {
         VaultSettings settings = new VaultSettings();
         settings.load(in);
         setSettings(settings);
-        log.debug("Loaded settings from {}.", systemId);
+        log.trace("Loaded settings from {}.", systemId);
     }
 
     public void loadProperties(@Nonnull InputStream in, @Nonnull String systemId)
@@ -171,7 +171,7 @@ public class DefaultMetaInf implements MetaInf {
         Properties props = new Properties();
         props.loadFromXML(in);
         setProperties(props);
-        log.debug("Loaded properties from {}.", systemId);
+        log.trace("Loaded properties from {}.", systemId);
     }
 
     public void loadPrivileges(@Nonnull InputStream in, @Nonnull String systemId)
@@ -186,7 +186,7 @@ public class DefaultMetaInf implements MetaInf {
             log.error("Error while reading Privileges: {}", e.toString());
             throw new IOException("Error while reading privileges.", e);
         }
-        log.debug("Loaded privileges from {}.", systemId);
+        log.trace("Loaded privileges from {}.", systemId);
     }
 
     public void save(@Nonnull File metaDir) throws IOException {
@@ -325,7 +325,7 @@ public class DefaultMetaInf implements MetaInf {
             File altFile = new File(metaDir, Constants.FILTER_VLT_XML);
             if (altFile.isFile()) {
                 file = altFile;
-                log.info("Using alternative filter from {}", altFile.getPath());
+                log.debug("Using alternative filter from {}", altFile.getPath());
             }
         }
         if (file.isFile()) {

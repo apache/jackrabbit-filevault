@@ -139,17 +139,17 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
     public void startNode(DocViewNode ni) throws SAXException {
         if (ignoreLevel > 0) {
-            DocViewSAXImporter.log.debug("ignoring child node of excluded node: {}", ni.name);
+            DocViewSAXImporter.log.trace("ignoring child node of excluded node: {}", ni.name);
             ignoreLevel++;
             return;
         }
         if (excludedNodeNames.contains(ni.name)) {
-            DocViewSAXImporter.log.debug("Ignoring excluded node {}", ni.name);
+            DocViewSAXImporter.log.trace("Ignoring excluded node {}", ni.name);
             ignoreLevel = 1;
             return;
         }
 
-        DocViewSAXImporter.log.debug("Transforming element to sysview {}", ni.name);
+        DocViewSAXImporter.log.trace("Transforming element to sysview {}", ni.name);
 
         AttributesImpl attrs = new AttributesImpl();
 

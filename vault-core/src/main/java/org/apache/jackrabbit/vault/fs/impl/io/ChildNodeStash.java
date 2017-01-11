@@ -110,7 +110,7 @@ public class ChildNodeStash {
                 Node child = iter.nextNode();
                 String name = child.getName();
                 if (excludedNodeName.contains(name)) {
-                    log.info("skipping excluded child node from stash: {}", child.getPath());
+                    log.debug("skipping excluded child node from stash: {}", child.getPath());
                     continue;
                 }
                 Node tmp = getOrCreateTemporaryNode();

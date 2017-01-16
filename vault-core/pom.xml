@@ -70,7 +70,6 @@
                 <configuration>
                     <instructions>
                         <Bundle-Build>${buildNumber}</Bundle-Build>
-                        <Bundle-Category>jcr,granite</Bundle-Category>
                         <Import-Package>
                             org.apache.jackrabbit.*;version=!,
                             org.apache.sling.jcr.api;resolution:=optional,

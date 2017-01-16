@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.30
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.34
 
 Introduction
 ------------
@@ -8,6 +8,36 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.1.34
+--------------------------------------
+
+Bug Fixes:
+* [JCRVLT-128] - System maintained cache nodes should be ignored
+* [JCRVLT-137] - Importing packages with users that contain a rep:cache node fails
+* [JCRVLT-143] - JcrPackage.extractSubpackages() aborts if subpackage already exists
+* [JCRVLT-144] - Unable to perform checkout due to wrong default workspace handling
+* [JCRVLT-146] - Package Manager should use osgiCompare to determine version order
+* [JCRVLT-147] - Remove unused special jcr:xmltext handling in DocViewSAXFormatter
+* [JCRVLT-149] - PermSize deprecation warning for java 1.8
+
+New Features:
+* [JCRVLT-139] - Add support for package installation listeners
+* [JCRVLT-140] - Add support for extract subpackages without installing content
+* [JCRVLT-136] - Add import option flags to enforce dependency checks
+
+Improvements:
+* [JCRVLT-133] - Avoid node.refresh()
+* [JCRVLT-138] - Unzip test-packages for easier maintenance
+* [JCRVLT-145] - Subpackage extraction should not add parent dependency if no content
+* [JCRVLT-148] - Migrate org.apache.jackrabbit.vault.vault-davex to httpclient 4.x
+* [JCRVLT-150] - Require min JDK 1.7
+* [JCRVLT-152] - Reduce verbosity of package installation
+* [JCRVLT-153] - Enable baseline checking to enforce better export package checks
+
+Changes in Jackrabbit FileVault 3.1.32
+--------------------------------------
+(version skipped)
 
 Changes in Jackrabbit FileVault 3.1.30
 --------------------------------------

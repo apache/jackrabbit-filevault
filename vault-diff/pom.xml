@@ -25,7 +25,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.1.33-SNAPSHOT</version>
+        <version>3.1.34</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -35,7 +35,7 @@
     <name>Apache Jackrabbit FileVault Diff (Diff utilities)</name>
     <description>Provides Classes for diff and diff3.
     </description>
-    <version>3.1.33-SNAPSHOT</version>
+    <version>3.1.34</version>
     <packaging>bundle</packaging>
 
     <!-- ====================================================================== -->
@@ -60,9 +60,9 @@
     <!-- S C M  D E F I N I T I O N                                             -->
     <!-- ====================================================================== -->
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-diff</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-diff</developerConnection>
-        <url>http://svn.apache.org/viewvc/asf/jackrabbit/commons/filevault/trunk/vault-diff</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.1.34/vault-diff</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.1.34/vault-diff</developerConnection>
+        <url>http://svn.apache.org/viewvc/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.1.34/vault-diff</url>
     </scm>
 
     <!-- ====================================================================== -->

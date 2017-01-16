@@ -140,8 +140,42 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>2.4.0</version>
+                    <version>3.0.1</version>
                     <inherited>true</inherited>
+                    <configuration>
+                        <outputDirectory>${basedir}/target/classes</outputDirectory>
+                        <obrRepository>NONE</obrRepository>
+                        <instructions>
+                            <Bundle-Category>jackrabbit</Bundle-Category>
+                            <Bundle-DocURL>http://jackrabbit.apache.org/filevault/</Bundle-DocURL>
+                            <Bundle-Vendor>The Apache Software Foundation</Bundle-Vendor>
+                            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                            <_provider-policy>[$(version;===;$(@)),$(version;=+;$(@)))</_provider-policy>
+                            <_consumer-policy>[$(version;===;$(@)),$(version;+;$(@)))</_consumer-policy>
+                            <_removeheaders>
+                                ReleaseRepository-Id,
+                                ReleaseRepository-Name,
+                                ReleaseRepository-URL,
+                                SnapshotRepository-Id,
+                                SnapshotRepository-Name,
+                                SnapshotRepository-URL,
+                                Include-Resource,
+                                Private-Package
+                            </_removeheaders>
+                        </instructions>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>baseline</id>
+                            <goals>
+                                <goal>baseline</goal>
+                            </goals>
+                            <configuration>
+                                <failOnError>false</failOnError>
+                                <comparisonVersion>3.1.30</comparisonVersion>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <!-- ====================================================================== -->
                 <!-- S U R E F I R E   P L U G I N                                          -->

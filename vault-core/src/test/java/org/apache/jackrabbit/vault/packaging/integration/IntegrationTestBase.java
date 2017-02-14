@@ -163,6 +163,7 @@ public class IntegrationTestBase  {
 
             repository = jcr
                     .with(new SecurityProviderImpl(ConfigurationParameters.of(securityProps)))
+                    .withAtomicCounter()
                     .createRepository();
 
             // setup default read ACL for everyone

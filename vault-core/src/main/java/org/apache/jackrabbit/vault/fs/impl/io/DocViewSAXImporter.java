@@ -125,6 +125,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         props.add(JcrConstants.JCR_PREDECESSORS);
         props.add(JcrConstants.JCR_SUCCESSORS);
         props.add(JcrConstants.JCR_VERSIONHISTORY);
+        props.add("oak:counter");
         PROTECTED_PROPERTIES = Collections.unmodifiableSet(props);
     }
 
@@ -760,7 +761,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         // find old node
         Node oldNode = null;
         Node node = null;
-        if (ni.label.equals("")) {
+        if ("".equals(ni.label)) {
             // special case for root node update
             node = currentNode;
         } else if (ni.uuid == null) {
@@ -886,12 +887,17 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
             // adjust mixins
             Set<String> newMixins = new HashSet<String>();
+            boolean isAtomicCounter = false;
             if (ni.mixins != null) {
                 for (String mixin : ni.mixins) {
                     // omit name if mix:AccessControllable and CLEAR
                     if (!aclManagement.isAccessControllableMixin(mixin)
                             || aclHandling != AccessControlHandling.CLEAR) {
                         newMixins.add(mixin);
+
+                        if ("mix:atomicCounter".equals(mixin)) {
+                            isAtomicCounter = true;
+                        }
                     }
                 }
             }
@@ -950,6 +956,22 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     }
                 }
             }
+            // adjust oak atomic counter
+            if (isAtomicCounter) {
+                long previous = 0;
+                if (node.hasProperty("oak:counter")) {
+                    previous = node.getProperty("oak:counter").getLong();
+                }
+                long counter = 0;
+                try {
+                    counter = Long.valueOf(ni.getValue("oak:counter"));
+                } catch (NumberFormatException e) {
+                    // ignore
+                }
+                node.setProperty("oak:increment", counter - previous);
+                modified = true;
+            }
+
             if (modified) {
                 if (node.isNodeType(JcrConstants.NT_RESOURCE)) {
                     if (!node.hasProperty(JcrConstants.JCR_DATA)) {
@@ -1057,6 +1079,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     throw e;
                 }
             }
+
             // handle non protected properties
             for (DocViewProperty p : ni.props.values()) {
                 if (p != null && p.values != null) {
@@ -1069,6 +1092,20 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     }
                 }
             }
+
+            // check for atomic counter
+            if (ni.mixins != null) {
+                for (String mixin : ni.mixins) {
+                    if ("mix:atomicCounter".equals(mixin)) {
+                        String counter = ni.getValue("oak:counter");
+                        if (counter != null) {
+                            node.setProperty("oak:increment", counter, PropertyType.LONG);
+                        }
+                        break;
+                    }
+                }
+            }
+
             // remove mix referenceable if it was temporarily added
             if (addMixRef) {
                 node.removeMixin(JcrConstants.MIX_REFERENCEABLE);

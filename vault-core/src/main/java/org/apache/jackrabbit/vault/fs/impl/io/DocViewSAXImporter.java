@@ -115,6 +115,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
     static final Set<String> PROTECTED_PROPERTIES;
 
+    static final Set<String> IGNORED_PROPERTIES;
+
     static {
         Set<String> props = new HashSet<String>();
         props.add(JcrConstants.JCR_PRIMARYTYPE);
@@ -127,6 +129,12 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         props.add(JcrConstants.JCR_VERSIONHISTORY);
         props.add("oak:counter");
         PROTECTED_PROPERTIES = Collections.unmodifiableSet(props);
+    }
+
+    static {
+        Set<String> props = new HashSet<String>();
+        props.add("oak:counter");
+        IGNORED_PROPERTIES = Collections.unmodifiableSet(props);
     }
 
     /**
@@ -1038,7 +1046,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             for (DocViewProperty p : ni.props.values()) {
                 if (p != null && p.values != null) {
                     // only pass 'protected' properties to the import
-                    if (PROTECTED_PROPERTIES.contains(p.name)) {
+                    if (PROTECTED_PROPERTIES.contains(p.name) && !IGNORED_PROPERTIES.contains(p.name)) {
                         attrs = new AttributesImpl();
                         attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", p.name);
                         attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", "CDATA", PropertyType.nameFromValue(p.type));

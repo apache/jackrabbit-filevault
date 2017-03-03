@@ -25,8 +25,6 @@
             <outputDirectory></outputDirectory>
             <excludes>
                 <exclude>**/target/**</exclude>
-                <exclude>**/.*/**</exclude>
-                <exclude>.*/**</exclude>
             </excludes>
         </fileSet>
     </fileSets>

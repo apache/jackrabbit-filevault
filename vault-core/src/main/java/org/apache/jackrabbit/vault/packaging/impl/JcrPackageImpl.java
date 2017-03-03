@@ -80,6 +80,11 @@ import org.slf4j.LoggerFactory;
 public class JcrPackageImpl implements JcrPackage {
 
     /**
+     * max allowed package size for using a memory archive
+     */
+    public static final long MAX_MEMORY_ARCHIVE_SIZE = 1024*1024;
+
+    /**
      * default logger
      */
     private static final Logger log = LoggerFactory.getLogger(JcrPackageImpl.class);
@@ -300,7 +305,7 @@ public class JcrPackageImpl implements JcrPackage {
             } catch (RepositoryException e) {
                 // ignore
             }
-            if (!forceFileArchive && size >= 0 && size < 1024*1024) {
+            if (!forceFileArchive && size >= 0 && size < MAX_MEMORY_ARCHIVE_SIZE) {
                 MemoryArchive archive = new MemoryArchive(false);
                 InputStream in = getData().getStream();
                 try {
@@ -433,7 +438,11 @@ public class JcrPackageImpl implements JcrPackage {
 
                     // loop in the list of packages returned previously by package manager
                     for (JcrPackage listedPackage: listPackages) {
-                        PackageId listedPackageId = listedPackage.getPackage().getId();
+                        JcrPackageDefinition listedPackageDef = listedPackage.getDefinition();
+                        if (listedPackageDef == null) {
+                            continue;
+                        }
+                        PackageId listedPackageId = listedPackageDef.getId();
                         if (listedPackageId.equals(pId)) {
                             continue;
                         }
@@ -469,7 +478,7 @@ public class JcrPackageImpl implements JcrPackage {
             SubPackageHandling sb = pack.getSubPackageHandling();
             for (JcrPackageImpl p: subPacks) {
                 boolean skip = false;
-                PackageId id = p.getPackage().getId();
+                PackageId id = p.getDefinition().getId();
                 SubPackageHandling.Option option = sb.getOption(id);
                 String msg;
                 if (option == SubPackageHandling.Option.ADD || option == SubPackageHandling.Option.IGNORE) {

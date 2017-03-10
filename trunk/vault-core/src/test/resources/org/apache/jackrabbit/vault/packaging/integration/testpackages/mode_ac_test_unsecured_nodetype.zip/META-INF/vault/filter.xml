@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/testroot/secured" >
+	<exclude pattern="/testroot/secured/.*"/>
+    </filter>
+    <filter root="/testroot/tmpcontent" />
+</workspaceFilter>

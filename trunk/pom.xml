@@ -1,0 +1,243 @@
+<?xml version="1.0"?><!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
+    <modelVersion>4.0.0</modelVersion>
+    <!-- ====================================================================== -->
+    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
+    <!-- ====================================================================== -->
+    <parent>
+        <groupId>org.apache.jackrabbit.vault</groupId>
+        <artifactId>parent</artifactId>
+        <relativePath>parent/pom.xml</relativePath>
+        <version>3.1.36</version>
+    </parent>
+
+    <!-- ====================================================================== -->
+    <!-- P R O J E C T  D E S C R I P T I O N                                   -->
+    <!-- ====================================================================== -->
+    <artifactId>jackrabbit-filevault</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Apache Jackrabbit FileVault (Reactor Project)</name>
+
+    <!-- ====================================================================== -->
+    <!-- S C M  D E F I N I T I O N                                             -->
+    <!-- ====================================================================== -->
+    <scm>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.1.36</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.1.36</developerConnection>
+        <url>http://svn.apache.org/viewvc/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.1.36</url>
+    </scm>
+
+    <!-- ====================================================================== -->
+    <!-- M O D U L E S                                                          -->
+    <!-- ====================================================================== -->
+    <modules>
+        <module>parent</module>
+        <module>vault-core</module>
+        <module>vault-diff</module>
+        <module>vault-rcp</module>
+        <module>vault-davex</module>
+        <module>vault-doc</module>
+        <module>vault-vlt</module>
+        <module>vault-cli</module>
+        <module>vault-hook-example</module>
+        <module>vault-hook-externalclass-test</module>
+        <module>vault-sync</module>
+    </modules>
+
+    <!-- ====================================================================== -->
+    <!-- B U I L D                                                              -->
+    <!-- ====================================================================== -->
+    <build>
+        <plugins>
+            <!-- ====================================================================== -->
+            <!-- J A V A D O C   P L U G I N                                            -->
+            <!-- ====================================================================== -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <!-- Default configuration for all reports -->
+                    <windowtitle>Apache Jackrabbit FileVault ${project.version} API</windowtitle>
+                    <doctitle>Apache Jackrabbit FileVault ${project.version} API</doctitle>
+                    <excludePackageNames>
+                        org.apache.jackrabbit.vault.cli*,org.apache.jackrabbit.vault.davex,*.impl*,org.apache.jackrabbit.vault.util.xml,org.apache.jackrabbit.vault.vlt.actions,org.apache.jackrabbit.vault.vlt.meta.*,org.apache.jackrabbit.vault.packaging.hotfix
+                    </excludePackageNames>
+                    <reportOutputDirectory>${basedir}/vault-doc/target/site</reportOutputDirectory>
+                    <additionalparam>-notimestamp</additionalparam>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>aggregate</id>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                        <phase>site</phase>
+                    </execution>
+                    <execution>
+                        <id>aggregate-jar</id>
+                        <goals>
+                            <goal>aggregate-jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- ====================================================================== -->
+    <!-- R E P O R T I N G                                                      -->
+    <!-- ====================================================================== -->
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <!-- ====================================================================== -->
+    <!-- P R O F I L E S                                                        -->
+    <!-- ====================================================================== -->
+    <profiles>
+        <profile>
+            <id>apache-release</id>
+            <properties>
+                <username>${user.name}</username>
+                <keyfile>${user.home}/.ssh/id_rsa</keyfile>
+                <passphrase />
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>assembly.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>source-release-assembly</id>
+                                <configuration>
+                                    <skipAssembly>true</skipAssembly>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- JCR-2455: Automatic staging of non-Maven release artifacts -->
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>deploy</phase>
+                                <configuration>
+                                    <tasks>
+                                        <mkdir dir="${basedir}/target/${project.version}" />
+                                        <copy todir="${basedir}/target/${project.version}" flatten="true">
+                                            <fileset dir="${basedir}">
+                                                <include name="RELEASE-NOTES.txt" />
+                                                <include name="target/*-src.zip*" />
+                                            </fileset>
+                                        </copy>
+                                        <checksum algorithm="MD5" fileext=".md5">
+                                            <fileset dir="${basedir}/target/${project.version}">
+                                                <include name="*.zip" />
+                                            </fileset>
+                                        </checksum>
+                                        <checksum algorithm="SHA1" fileext=".sha">
+                                            <fileset dir="${basedir}/target/${project.version}">
+                                                <include name="*.zip" />
+                                            </fileset>
+                                        </checksum>
+                                        <checksum file="${basedir}/target/${project.version}/jackrabbit-filevault-${project.version}-src.zip" algorithm="SHA1" property="checksum" />
+                                        <echo file="${basedir}/target/vote.txt">
+From: ${username}@apache.org
+To: dev@jackrabbit.apache.org
+Subject: [VOTE] Release Apache Jackrabbit Filevault ${project.version}
+
+A candidate for the Jackrabbit Filevault ${project.version} release is available at:
+
+https://dist.apache.org/repos/dist/dev/jackrabbit/filevault/${project.version}/
+
+The release candidate is a zip archive of the sources in:
+
+https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-${project.version}/
+
+The SHA1 checksum of the archive is ${checksum}.
+
+A staged Maven repository is available for review at:
+
+https://repository.apache.org/
+
+Please vote on releasing this package as Apache Jackrabbit Filevault ${project.version}.
+The vote is open for the next 72 hours and passes if a majority of at
+least three +1 Jackrabbit PMC votes are cast.
+
+[ ] +1 Release this package as Apache Jackrabbit Filevault ${project.version}
+[ ] -1 Do not release this package because...${line.separator}
+                                        </echo>
+                                        <echo />
+                                        <echo>
+The release candidate has been prepared in:
+
+${basedir}/target/${project.version}
+
+Please deploy it to https://dist.apache.org/repos/dist/dev/jackrabbit/filevault:
+
+cd /path/to/jackrabbit-dev/filevault
+mv ${basedir}/target/${project.version} ${project.version}
+svn add ${project.version}
+svn commit -m 'Apache Jackrabbit Filevault ${project.version} release candidate' ${project.version}
+
+A release vote template has been generated for you:
+
+file://${basedir}/target/vote.txt
+                                        </echo>
+                                        <echo />
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.ant</groupId>
+                                <artifactId>ant-nodeps</artifactId>
+                                <version>1.8.1</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

@@ -1,0 +1,68 @@
+--- .mine
++++ .theirs
+@@ -3,2 +2,0 @@
+-C
+-D
+@@ -17,3 +15 @@
+-C
+-D
+-E
++C1
+@@ -23 +19 @@
+-this ist the first line.
++this is the first line.
+@@ -25,0 +22 @@
++some new on the left
+@@ -30 +26,0 @@
+-import java.io.FileReader;
+@@ -32,0 +29,2 @@
++added
++two lines.
+@@ -34,0 +33 @@
++same mod
+@@ -36 +35 @@
+-import javax.sound.midi.Patch;
++import javax.sound.midi.Patsch;
+@@ -40,2 +38,0 @@
+-C
+-D
+@@ -48,4 +44,0 @@
+-C
+-D
+-E
+-F
+@@ -56,2 +49,2 @@
+-C
+-D
++B'
++B''
+@@ -64,3 +56,0 @@
+-C
+-D
+-E
+@@ -72,0 +63 @@
++C'
+@@ -80,4 +71,2 @@
+-C
+-D
+-E
+-F
++C1
++C2
+@@ -86 +75 @@
+-intermediate base.
++intermediate left.
+@@ -90,4 +79,2 @@
+-C
+-D
+-E
+-F
++B'
++B''
+@@ -97,3 +83,0 @@
+-B
+-C
+-D
+@@ -105 +89 @@
+-last change
++last change.

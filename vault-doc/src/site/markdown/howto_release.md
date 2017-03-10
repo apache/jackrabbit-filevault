@@ -44,8 +44,8 @@ Release management tasks
     details. Make sure you have added the pgp key information in you maven settings file, especially if you have 
     more than one key installed locally. See [Appendix B](#B) for the details.
     
-    0. (optional, prepare your environment. e.g.: `$ export version=3.1.12`)
-    1. Execute `mvn release:prepare -DreleaseVersion=$version`. This will update the POM files and tag the release in svn.
+    0. (optional, prepare your environment. e.g.: `$ export version=3.1.36`)
+    1. Execute `mvn release:prepare`. This will update the POM files and tag the release in svn (btw: specifying the release version on the commandline doesn't update the module poms anymore lately).
     2. Execute `mvn release:perform -Papache-release`. This will build the tagged release and deploy the artifacts to
         a new staging repository on _repository.apache.org_. 
         After the build, login to [https://repository.apache.org/][2] and you should see it there.

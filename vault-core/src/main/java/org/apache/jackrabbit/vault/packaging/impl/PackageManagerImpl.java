@@ -133,7 +133,7 @@ public class PackageManagerImpl implements PackageManager {
         }
 
         VaultFileSystem jcrfs = Mounter.mount(config, metaInf.getFilter(), addr, opts.getRootPath(), s);
-        JarExporter exporter = new JarExporter(out);
+        JarExporter exporter = new JarExporter(out, opts.getCompressionLevel());
         exporter.setProperties(metaInf.getProperties());
         if (opts.getListener() != null) {
             exporter.setVerbose(opts.getListener());
@@ -185,7 +185,7 @@ public class PackageManagerImpl implements PackageManager {
         if (metaInf == null) {
             metaInf = new DefaultMetaInf();
         }
-        JarExporter exporter = new JarExporter(out);
+        JarExporter exporter = new JarExporter(out, opts.getCompressionLevel());
         exporter.open();
         exporter.setProperties(metaInf.getProperties());
         ProgressTracker tracker = null;

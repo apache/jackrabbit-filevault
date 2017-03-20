@@ -112,11 +112,9 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testUnresolved() throws IOException, RepositoryException {
-        JcrPackage a1 = packMgr.upload(getStream(TEST_PACKAGE_A_10), false);
-        assertNotNull(a1);
+        JcrPackage a1 = uploadPackage(TEST_PACKAGE_A_10);
         Dependency[] deps = a1.getUnresolvedDependencies();
         assertEquals("package must report unresolved dependencies", "my_packages:test_b,my_packages:test_c:[1.0,2.0)", Dependency.toString(deps));
-
     }
 
     /**
@@ -124,9 +122,7 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testInstallDepMissing() throws IOException, RepositoryException, PackageException {
-        JcrPackage b1 = packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
-        assertNotNull(b1);
-
+        JcrPackage b1 = uploadPackage(TEST_PACKAGE_B_10);
         ImportOptions opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.STRICT);
         try {
@@ -142,11 +138,8 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testInstallDepMissingRequired() throws IOException, RepositoryException, PackageException {
-        JcrPackage b1 = packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
-        assertNotNull(b1);
-
-        JcrPackage a1 = packMgr.upload(getStream(TEST_PACKAGE_A_10), false);
-        assertNotNull(a1);
+        uploadPackage(TEST_PACKAGE_B_10);
+        JcrPackage a1 = uploadPackage(TEST_PACKAGE_A_10);
 
         ImportOptions opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.REQUIRED);
@@ -163,10 +156,9 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testInstallDepUninstalled() throws IOException, RepositoryException, PackageException {
-        packMgr.upload(getStream(TEST_PACKAGE_C_10), false);
+        uploadPackage(TEST_PACKAGE_C_10);
         assertNodeMissing("/tmp/c/");
-        JcrPackage b1 = packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
-        assertNotNull(b1);
+        JcrPackage b1 = uploadPackage(TEST_PACKAGE_B_10);
 
         ImportOptions opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.STRICT);
@@ -184,9 +176,9 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testInstallDepInstallsRequired() throws IOException, RepositoryException, PackageException {
-        packMgr.upload(getStream(TEST_PACKAGE_C_10), false);
+        uploadPackage(TEST_PACKAGE_C_10);
         assertNodeMissing("/tmp/c/");
-        JcrPackage b1 = packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
+        JcrPackage b1 = uploadPackage(TEST_PACKAGE_B_10);
         assertNotNull(b1);
 
         ImportOptions opts = getDefaultOptions();
@@ -202,13 +194,13 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testInstallDepInstallsAll() throws IOException, RepositoryException, PackageException {
-        packMgr.upload(getStream(TEST_PACKAGE_C_10), false);
-        packMgr.upload(getStream(TEST_PACKAGE_C_11), false);
-        packMgr.upload(getStream(TEST_PACKAGE_C_20), false);
-        packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
+        uploadPackage(TEST_PACKAGE_C_10);
+        uploadPackage(TEST_PACKAGE_C_11);
+        uploadPackage(TEST_PACKAGE_C_20);
+        uploadPackage(TEST_PACKAGE_B_10);
         assertNodeMissing("/tmp/b/");
         assertNodeMissing("/tmp/c/");
-        JcrPackage a2 = packMgr.upload(getStream(TEST_PACKAGE_A_20), false);
+        JcrPackage a2 = uploadPackage(TEST_PACKAGE_A_20);
         assertNotNull(a2);
 
         ImportOptions opts = getDefaultOptions();
@@ -225,12 +217,11 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testInstallDeep() throws IOException, RepositoryException, PackageException {
-        packMgr.upload(getStream(TEST_PACKAGE_C_10), false);
-        packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
+        uploadPackage(TEST_PACKAGE_C_10);
+        uploadPackage(TEST_PACKAGE_B_10);
         assertNodeMissing("/tmp/b/");
         assertNodeMissing("/tmp/c/");
-        JcrPackage d1 = packMgr.upload(getStream(TEST_PACKAGE_D_10), false);
-        assertNotNull(d1);
+        JcrPackage d1 = uploadPackage(TEST_PACKAGE_D_10);
 
         ImportOptions opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.BEST_EFFORT);
@@ -246,11 +237,10 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testInstallCyclicFails() throws IOException, RepositoryException, PackageException {
-        packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
-        packMgr.upload(getStream(TEST_PACKAGE_C_10), false);
-        packMgr.upload(getStream(TEST_PACKAGE_E_10), false);
-        JcrPackage d1 = packMgr.upload(getStream(TEST_PACKAGE_D_10), false);
-        assertNotNull(d1);
+        uploadPackage(TEST_PACKAGE_B_10);
+        uploadPackage(TEST_PACKAGE_C_10);
+        uploadPackage(TEST_PACKAGE_E_10);
+        JcrPackage d1 = uploadPackage(TEST_PACKAGE_D_10);
 
         ImportOptions opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.REQUIRED);
@@ -268,11 +258,10 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testInstallCyclicSucceeds() throws IOException, RepositoryException, PackageException {
-        packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
-        packMgr.upload(getStream(TEST_PACKAGE_C_10), false);
-        packMgr.upload(getStream(TEST_PACKAGE_E_10), false);
-        JcrPackage d1 = packMgr.upload(getStream(TEST_PACKAGE_D_10), false);
-        assertNotNull(d1);
+        uploadPackage(TEST_PACKAGE_B_10);
+        uploadPackage(TEST_PACKAGE_C_10);
+        uploadPackage(TEST_PACKAGE_E_10);
+        JcrPackage d1 = uploadPackage(TEST_PACKAGE_D_10);
 
         ImportOptions opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.BEST_EFFORT);
@@ -289,19 +278,18 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testInstallDepInstallsCorrectVersion() throws IOException, RepositoryException, PackageException {
-        packMgr.upload(getStream(TEST_PACKAGE_C_10), false);
-        packMgr.upload(getStream(TEST_PACKAGE_C_11), false);
-        packMgr.upload(getStream(TEST_PACKAGE_C_20), false);
-        packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
+        uploadPackage(TEST_PACKAGE_C_10);
+        uploadPackage(TEST_PACKAGE_C_11);
+        uploadPackage(TEST_PACKAGE_C_20);
+        uploadPackage(TEST_PACKAGE_B_10);
         assertNodeMissing("/tmp/b/");
         assertNodeMissing("/tmp/c/");
-        JcrPackage b1 = packMgr.upload(getStream(TEST_PACKAGE_A_10), false);
-        assertNotNull(b1);
+        JcrPackage a1 = uploadPackage(TEST_PACKAGE_A_10);
 
         ImportOptions opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.REQUIRED);
 
-        b1.install(opts);
+        a1.install(opts);
         assertProperty("/tmp/a/version", "1.0");
         assertProperty("/tmp/b/version", "1.0");
         assertProperty("/tmp/c/version", "1.1");
@@ -312,15 +300,15 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
      */
     @Test
     public void testInstallDepInstallsBestEffort() throws IOException, RepositoryException, PackageException {
-        packMgr.upload(getStream(TEST_PACKAGE_C_10), false);
+        uploadPackage(TEST_PACKAGE_C_10);
         assertNodeMissing("/tmp/c/");
-        JcrPackage b1 = packMgr.upload(getStream(TEST_PACKAGE_A_10), false);
-        assertNotNull(b1);
+        JcrPackage a1 = uploadPackage(TEST_PACKAGE_A_10);
+        assertNotNull(a1);
 
         ImportOptions opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.BEST_EFFORT);
 
-        b1.install(opts);
+        a1.install(opts);
         assertProperty("/tmp/a/version", "1.0");
         assertProperty("/tmp/c/version", "1.0");
     }
@@ -332,7 +320,7 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
     public void testInstallDepInstalled() throws IOException, RepositoryException, PackageException {
         installPackage(TEST_PACKAGE_C_10);
         assertProperty("/tmp/c/version", "1.0");
-        JcrPackage b1 = packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
+        JcrPackage b1 = uploadPackage(TEST_PACKAGE_B_10);
         assertNotNull(b1);
 
         ImportOptions opts = getDefaultOptions();
@@ -349,8 +337,7 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
         installPackage(TEST_PACKAGE_C_10);
         assertProperty("/tmp/c/version", "1.0");
 
-        JcrPackage a2 = packMgr.upload(getStream(TEST_PACKAGE_A_20), false);
-        assertNotNull(a2);
+        JcrPackage a2 = uploadPackage(TEST_PACKAGE_A_20);
 
         ImportOptions opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.STRICT);
@@ -373,8 +360,7 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
         installPackage(TEST_PACKAGE_C_11);
         assertProperty("/tmp/c/version", "1.1");
 
-        JcrPackage a1 = packMgr.upload(getStream(TEST_PACKAGE_A_10), false);
-        assertNotNull(a1);
+        JcrPackage a1 = uploadPackage(TEST_PACKAGE_A_10);
 
         ImportOptions opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.STRICT);

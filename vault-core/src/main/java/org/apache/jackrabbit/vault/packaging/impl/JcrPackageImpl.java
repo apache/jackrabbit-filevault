@@ -370,6 +370,7 @@ public class JcrPackageImpl implements JcrPackage {
     private void extract(Set<PackageId> processed, ImportOptions options, boolean createSnapshot, boolean replaceSnapshot)
             throws RepositoryException, PackageException, IOException {
         getPackage();
+        getDefinition();
         if (def != null) {
             processed.add(def.getId());
         }
@@ -394,7 +395,6 @@ public class JcrPackageImpl implements JcrPackage {
         }
         List<String> subPackages = new ArrayList<String>();
         pack.extract(ctx, subPackages);
-        getDefinition();
         if (def != null && !opts.isDryRun()) {
             def.touchLastUnpacked(null, true);
         }
@@ -903,6 +903,7 @@ public class JcrPackageImpl implements JcrPackage {
      * {@inheritDoc}
      */
     private void uninstall(Set<PackageId> processed, ImportOptions opts) throws RepositoryException, PackageException, IOException {
+        getDefinition();
         if (def != null) {
             processed.add(def.getId());
         }

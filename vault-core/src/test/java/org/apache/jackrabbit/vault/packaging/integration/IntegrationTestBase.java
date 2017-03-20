@@ -80,6 +80,7 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcherImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
@@ -315,6 +316,19 @@ public class IntegrationTestBase  {
         VaultPackage pack = loadVaultPackage(name);
         pack.extract(admin, opts);
         return pack;
+    }
+
+    /**
+     * Uploads, closes, and reopens the package
+     */
+    public JcrPackage uploadPackage(String name) throws RepositoryException, IOException {
+        JcrPackage jcrPackage = packMgr.upload(getStream(name), false);
+        assertNotNull(jcrPackage);
+        PackageId pid = jcrPackage.getDefinition().getId();
+        jcrPackage.close();
+        jcrPackage = packMgr.open(pid);
+        assertNotNull(jcrPackage);
+        return jcrPackage;
     }
 
     public JcrPackage installPackage(String name) throws IOException, RepositoryException, PackageException {

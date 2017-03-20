@@ -22,6 +22,7 @@ Bug Fixes:
 * [JCRVLT-149] - PermSize deprecation warning for java 1.8
 * [JCRVLT-157] - Package import does not handle "Atomic Counter"
 * [JCRVLT-162] - package installation should not fully open the package when retrieving the package id
+* [JCRVLT-169] - Dependency handling doesn't work when package definition not loaded
 
 New Features:
 * [JCRVLT-139] - Add support for package installation listeners
@@ -38,6 +39,7 @@ Improvements:
 * [JCRVLT-150] - Require min JDK 1.7
 * [JCRVLT-152] - Reduce verbosity of package installation
 * [JCRVLT-165] - Replace proprietary diffing for vlt client with google's diffutils
+* [JCRVLT-168] - Update dependencies to stable versions
 
 Changes in Jackrabbit FileVault 3.1.34
 --------------------------------------

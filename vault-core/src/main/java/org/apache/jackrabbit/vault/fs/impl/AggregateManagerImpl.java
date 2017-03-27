@@ -156,7 +156,6 @@ public class AggregateManagerImpl implements AggregateManager {
                                          RepositoryAddress mountpoint,
                                          Session session)
             throws RepositoryException {
-        assert mountpoint.getWorkspace().equals(session.getWorkspace().getName());
         if (config == null) {
             config = getDefaultConfig();
         }

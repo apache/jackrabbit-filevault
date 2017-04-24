@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.jcr.Credentials;
+
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Reference;
@@ -63,11 +65,11 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         return Collections.unmodifiableMap(tasks);
     }
 
-    public RcpTask addTask(RepositoryAddress src, String dst, String id) {
+    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id) {
         if (id != null && id.length() > 0 && tasks.containsKey(id)) {
             throw new IllegalArgumentException("Task with id " + id + " already exists.");
         }
-        RcpTask task = new RcpTask(this, src, dst, id);
+        RcpTask task = new RcpTask(this, src, srcCreds, dst, id);
         tasks.put(task.getId(), task);
         return task;
     }

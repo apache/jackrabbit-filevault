@@ -16,7 +16,6 @@
  */
 package org.apache.jackrabbit.vault.rcp.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -64,11 +63,11 @@ public class RcpTask implements Runnable {
 
     private final RepositoryAddress src;
 
+    private final Credentials srcCreds;
+
     private final String dst;
 
     private boolean recursive;
-
-    private File logFile;
 
     private volatile STATE state = STATE.NEW;
 
@@ -82,10 +81,11 @@ public class RcpTask implements Runnable {
 
     private Session dstSession;
 
-    public RcpTask(RcpTaskManagerImpl mgr, RepositoryAddress src, String dst, String id) {
+    public RcpTask(RcpTaskManagerImpl mgr, RepositoryAddress src, Credentials srcCreds, String dst, String id) {
         this.mgr = mgr;
         this.src = src;
         this.dst = dst;
+        this.srcCreds = srcCreds;
         this.id = id == null || id.length() == 0
                 ? UUID.randomUUID().toString()
                 : id;
@@ -178,7 +178,6 @@ public class RcpTask implements Runnable {
             throw e;
         }
         try {
-            Credentials srcCreds = src.getCredentials();
             String wsp = src.getWorkspace();
             if (wsp == null) {
                 return srcRepo.login(srcCreds);

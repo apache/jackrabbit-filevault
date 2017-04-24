@@ -364,4 +364,10 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "/-/jcr:root/foo/bar", ra.toString());
     }
 
+    public void testCopyIsSame() throws Exception {
+        String uri = "http://admin:admin@localhost:4502/crx/server/-/jcr:root/content/dam/my-site";
+        RepositoryAddress ra = new RepositoryAddress(uri);
+        RepositoryAddress ra1 = new RepositoryAddress(ra.getURI());
+        assertEquals("uri", uri, ra1.getURI().toString());
+    }
 }

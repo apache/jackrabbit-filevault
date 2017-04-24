@@ -18,8 +18,11 @@
 package org.apache.jackrabbit.vault.rcp.impl;
 
 import java.io.IOException;
+import java.net.URI;
 
+import javax.jcr.Credentials;
 import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -46,6 +49,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
     private static final long serialVersionUID = -4571680968447024900L;
     public static final String PARAM_SRC = "src";
+    public static final String PARAM_SRC_CREDS = "srcCreds";
     public static final String PARAM_DST = "dst";
     public static final String PARAM_ID = "id";
     public static final String PARAM_BATCHSIZE = "batchsize";
@@ -117,15 +121,36 @@ public class RcpServlet extends SlingAllMethodsServlet {
             return;
         }
         String cmd = data.optString(PARAM_CMD, "");
-        RcpTask task = null;
+        RcpTask task;
         try {
             // --------------------------------------------------------------------------------------------< create >---
             if ("create".equals(cmd)) {
                 String src = data.optString(PARAM_SRC, "");
                 String dst = data.optString(PARAM_DST, "");
                 String id = data.optString(PARAM_ID, null);
+                String srcCreds = data.optString(PARAM_SRC_CREDS, null);
+
                 RepositoryAddress address = new RepositoryAddress(src);
-                task = taskMgr.addTask(address, dst, id);
+                Credentials creds = address.getCredentials();
+                if (creds != null) {
+                    // remove creds from repository address to prevent logging
+                    URI uri = address.getURI();
+                    address = new RepositoryAddress(
+                            new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment())
+                    );
+                }
+                if (srcCreds != null && srcCreds.length() > 0) {
+                    int idx = srcCreds.indexOf(':');
+                    if (idx < 0) {
+                        creds = new SimpleCredentials(srcCreds, new char[0]);
+                    } else {
+                        creds = new SimpleCredentials(
+                                srcCreds.substring(0, idx),
+                                srcCreds.substring(idx+1).toCharArray());
+                    }
+                }
+
+                task = taskMgr.addTask(address, creds, dst, id);
 
                 // add additional data
                 if (data.has(PARAM_BATCHSIZE)) {
@@ -197,9 +222,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
             w.setTidy(true);
             w.object();
             w.key("status").value("ok");
-            if (task != null) {
-                w.key("id").value(task.getId());
-            }
+            w.key("id").value(task.getId());
             w.endObject();
 
         } catch (Exception e) {

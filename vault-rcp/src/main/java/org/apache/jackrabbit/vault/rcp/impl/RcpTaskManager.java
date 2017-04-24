@@ -18,6 +18,8 @@ package org.apache.jackrabbit.vault.rcp.impl;
 
 import java.util.Map;
 
+import javax.jcr.Credentials;
+
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 
 /**
@@ -29,6 +31,6 @@ public interface RcpTaskManager {
 
     Map<String, RcpTask> getTasks();
 
-    RcpTask addTask(RepositoryAddress src, String dst, String id);
+    RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id);
 
 }

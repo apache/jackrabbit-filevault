@@ -280,12 +280,18 @@ public class RepositoryAddress {
     /**
      * {@inheritDoc}
      *
-     * @return same as {@link #getURI() getURI().toString()}
+     * @return same as {@link #getURI() getURI().toString()} with obfuscated user info
      */
     @Override
     @Nonnull
     public String toString() {
-        return getURI().toString();
+        final URI uri = getURI();
+        final String userInfo = uri.getRawUserInfo();
+        if (userInfo != null) {
+            return uri.toString().replace(userInfo, "******:******");
+        } else {
+            return uri.toString();
+        }
     }
 
     /**

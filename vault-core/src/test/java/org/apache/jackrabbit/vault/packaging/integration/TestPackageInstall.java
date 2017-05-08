@@ -38,6 +38,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 /**
@@ -80,6 +81,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testUnwrapPreserveInstall() throws RepositoryException, IOException, PackageException {
+        
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), true, true);
         assertNotNull(pack);
         assertTrue(pack.isValid());
@@ -103,6 +105,12 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertTrue(pack.isValid());
         assertTrue(pack.isInstalled());
         assertEquals(lastUnpacked, pack.getDefinition().getLastUnpacked().getTimeInMillis());
+        
+        // a package with a different created date should not preserve the status!
+        pack = packMgr.upload(getStream("testpackages/tmp_with_modified_created_date.zip"), true, true);
+        assertNotNull(pack);
+        assertTrue(pack.isValid());
+        assertFalse(pack.isInstalled());
     }
 
     /**

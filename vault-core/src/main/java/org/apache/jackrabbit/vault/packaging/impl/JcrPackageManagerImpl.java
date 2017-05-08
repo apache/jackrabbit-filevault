@@ -256,12 +256,14 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
 
         // remember installation state properties (GRANITE-2018)
         JcrPackageDefinitionImpl.State state = null;
+        Calendar oldCreatedDate = null;
 
         if (parent.hasNode(name)) {
             JcrPackage oldPackage = new JcrPackageImpl(this, parent.getNode(name));
             JcrPackageDefinitionImpl oldDef = (JcrPackageDefinitionImpl) oldPackage.getDefinition();
             if (oldDef != null) {
                 state = oldDef.getState();
+                oldCreatedDate = oldDef.getCreated();
             }
 
             if (replace) {
@@ -274,7 +276,8 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         try {
             jcrPack = createNew(parent, pid, bin, archive);
             JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
-            if (state != null) {
+            // only transfer the old package state to the new state in case both packages have the same create date
+            if (state != null && oldCreatedDate != null && oldCreatedDate.compareTo(def.getCreated()) == 0) {
                 def.setState(state);
             }
             dispatch(PackageEvent.Type.UPLOAD, pid, null);

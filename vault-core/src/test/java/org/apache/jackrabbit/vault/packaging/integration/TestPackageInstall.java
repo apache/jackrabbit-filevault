@@ -24,6 +24,7 @@ import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -264,6 +265,32 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertNotNull(pack);
 
         pack.install(getDefaultOptions());
+    }
+
+    /**
+     * Installs a package with non-child filter doesn't remove the root.
+     *
+     * <pre>
+     *   <workspaceFilter version="1.0">
+     *   <filter root="/etc">
+     *     <include pattern="/etc"/>
+     *     <include pattern="/etc/clientlibs"/>
+     *     <include pattern="/etc/clientlibs/granite"/>
+     *     <include pattern="/etc/clientlibs/granite/test(/.*)?"/>
+     *   </filter>
+     *  </workspaceFilter>
+     */
+    @Test
+    @Ignore("JCRVLT-176")
+    public void testNoChildFilter() throws RepositoryException, IOException, PackageException {
+        File tmpFile = File.createTempFile("vlttest", "zip");
+        IOUtils.copy(getStream("testpackages/test-package-with-etc.zip"), FileUtils.openOutputStream(tmpFile));
+        JcrPackage pack = packMgr.upload(tmpFile, true, true, "test-package-with-etc", false);
+        assertNodeExists("/etc");
+        admin.getNode("/etc").addNode("foo", NodeType.NT_FOLDER);
+        admin.save();
+        pack.install(getDefaultOptions());
+        assertNodeExists("/etc/foo");
     }
 
     @Test

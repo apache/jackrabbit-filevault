@@ -899,16 +899,17 @@ public class Importer {
                 }
             }
         } else if (info.artifacts.getDirectory() != null) {
+            String prefix = info.parent == null ? info.name : info.name + "/";
             for (TxInfo child: info.children().values()) {
                 // add the directory artifacts as hint to this one.
                 if (child.artifacts == null) {
                     // in this case it's some deleted intermediate directory???
-                    String path = info.name + "/" + child.name;
+                    String path = prefix + child.name;
                     info.artifacts.add(new HintArtifact(path));
 
                 } else {
                     for (Artifact a: child.artifacts.values()) {
-                        String path = info.name + "/" + a.getRelativePath();
+                        String path = prefix + a.getRelativePath();
                         info.artifacts.add(new HintArtifact(path));
                     }
                 }

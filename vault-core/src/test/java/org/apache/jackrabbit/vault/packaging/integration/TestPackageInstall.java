@@ -281,7 +281,6 @@ public class TestPackageInstall extends IntegrationTestBase {
      *  </workspaceFilter>
      */
     @Test
-    @Ignore("JCRVLT-176")
     public void testNoChildFilter() throws RepositoryException, IOException, PackageException {
         File tmpFile = File.createTempFile("vlttest", "zip");
         IOUtils.copy(getStream("testpackages/test-package-with-etc.zip"), FileUtils.openOutputStream(tmpFile));

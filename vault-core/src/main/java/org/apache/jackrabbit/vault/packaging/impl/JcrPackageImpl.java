@@ -457,7 +457,7 @@ public class JcrPackageImpl implements JcrPackage {
                     }
                     // if a more recent version of that subpackage was found we don't need to add it to the list of sub packages to eventually extract later on.
                     if (newerPackageId != null) {
-                        log.debug("Skipping installation if subpackage '{}' due to newer installed version: '{}'", pId, newerPackageId);
+                        log.debug("Skipping installation of subpackage '{}' due to newer installed version: '{}'", pId, newerPackageId);
                     } else {
                         subPacks.add(p);
                     }

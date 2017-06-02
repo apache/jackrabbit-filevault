@@ -19,15 +19,19 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.annotation.Nonnull;
@@ -44,7 +48,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.fs.impl.SubPackageFilterArchive;
+import org.apache.jackrabbit.vault.fs.io.Archive;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
+import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
@@ -88,6 +96,11 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * root path for packages
      */
     private final static String PACKAGE_ROOT_PATH = "/etc/packages";
+
+    /**
+     * root path for packages
+     */
+    public final static String ARCHIVE_PACKAGE_ROOT_PATH = "/jcr_root/etc/packages";
 
     /**
      * internal session
@@ -295,11 +308,56 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     /**
      * {@inheritDoc}
      */
+    @Nonnull
+    @Override
+    public PackageId[] extract(@Nonnull Archive archive, @Nonnull ImportOptions options, boolean replace)
+            throws RepositoryException, PackageException, IOException {
+
+        SubPackageFilterArchive spfArchive = null;
+        if (!options.isNonRecursive()) {
+            spfArchive = new SubPackageFilterArchive(archive);
+            archive = spfArchive;
+        }
+        ZipVaultPackage pkg = new ZipVaultPackage(archive, true);
+
+        PackageId pid = pkg.getId();
+        JcrPackage jcrPack = upload(pkg, replace, null, true, false);
+        jcrPack = new JcrPackageImpl(this, jcrPack.getNode(), pkg);
+        jcrPack.extract(options);
+
+        Set<PackageId> ids = new HashSet<>();
+        ids.add(pid);
+
+        if (spfArchive != null) {
+            for (Archive.Entry e: spfArchive.getSubPackageEntries()) {
+                InputStream in = spfArchive.openInputStream(e);
+                // todo: create StreamArchive
+                File tmpFile = File.createTempFile("vaultpack", ".zip");
+                FileOutputStream out = FileUtils.openOutputStream(tmpFile);
+                IOUtils.copy(in, out);
+                IOUtils.closeQuietly(in);
+                IOUtils.closeQuietly(out);
+                ZipArchive zipArchive = new ZipArchive(tmpFile, true);
+                PackageId[] subIds = extract(zipArchive, options, replace);
+                ids.addAll(Arrays.asList(subIds));
+                zipArchive.close();
+            }
+        }
+
+        pkg.close();
+        jcrPack.close();
+        return ids.toArray(new PackageId[ids.size()]);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JcrPackage upload(File file, boolean isTmpFile, boolean replace, String nameHint)
             throws RepositoryException, IOException {
         return upload(file, isTmpFile, replace, nameHint, false);
     }
+
 
     /**
      * {@inheritDoc}
@@ -307,18 +365,23 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     @Override
     public JcrPackage upload(File file, boolean isTmpFile, boolean replace, String nameHint, boolean strict)
             throws RepositoryException, IOException {
+        ZipVaultPackage pack = new ZipVaultPackage(file, isTmpFile, strict);
+        return upload(pack, replace, nameHint, strict, true);
+    }
+
+    private JcrPackage upload(ZipVaultPackage pkg, boolean replace, String nameHint, boolean strict, boolean store)
+            throws RepositoryException, IOException {
 
         // open zip packages
-        ZipVaultPackage pack = new ZipVaultPackage(file, isTmpFile, strict);
-        if (pack.getArchive().getJcrRoot() == null) {
+        if (pkg.getArchive().getJcrRoot() == null) {
             String msg = "Zip File is not a content package. Missing 'jcr_root'.";
             log.error(msg);
-            pack.close();
+            pkg.close();
             throw new IOException(msg);
         }
 
         // invalidate pid if path is unknown
-        PackageId pid = pack.getId();
+        PackageId pid = pkg.getId();
         if (pid != null && pid.getInstallationPath().equals(ZipVaultPackage.UNKNOWN_PATH)) {
             pid = null;
         }
@@ -356,7 +419,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         }
         JcrPackage jcrPack = null;
         try {
-            jcrPack = createNew(parent, pid, pack, false);
+            jcrPack = createNew(parent, pid, store ? pkg : null, false);
             JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
             if (state != null) {
                 def.setState(state);

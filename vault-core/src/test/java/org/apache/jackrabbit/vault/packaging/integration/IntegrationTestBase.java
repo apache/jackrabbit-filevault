@@ -75,8 +75,10 @@ import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction;
 import org.apache.jackrabbit.oak.spi.xml.ImportBehavior;
 import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
+import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.FileArchive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageException;
@@ -298,11 +300,19 @@ public class IntegrationTestBase  {
         return tmpFile;
     }
 
-    public VaultPackage loadVaultPackage(String name) throws IOException {
+    public Archive getFileArchive(String name) {
         final URL packageURL = getClass().getResource(name);
         final String filename = packageURL.getFile();
         final File file = new File(filename);
-        return new ZipVaultPackage(new FileArchive(file), true);
+        if (file.isDirectory()) {
+            return new FileArchive(file);
+        } else {
+            return new ZipArchive(file);
+        }
+    }
+
+    public VaultPackage loadVaultPackage(String name) throws IOException {
+        return new ZipVaultPackage(getFileArchive(name), true);
     }
 
     public VaultPackage extractVaultPackage(String name) throws IOException, PackageException, RepositoryException {

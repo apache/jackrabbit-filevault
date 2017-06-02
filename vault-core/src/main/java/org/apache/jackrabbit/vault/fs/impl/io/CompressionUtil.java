@@ -91,7 +91,7 @@ public final class CompressionUtil {
      *
      * @param artifact the artifact to be tested for compressibility
      * @return A negative integer, a positive integer or zero depending on whether the artifact
-     *         is estimated to be incompressible, compressible or if the estimate did not run.
+     * is estimated to be incompressible, compressible or if the estimate did not run.
      */
     public static int isCompressible(@Nonnull Artifact artifact) {
 
@@ -136,7 +136,7 @@ public final class CompressionUtil {
     }
 
     static boolean isCompressibleContentType(@Nonnull String mimeType) {
-        return  mimeType.startsWith("text/") || COMPRESSIBLE_MIME_TYPES.contains(mimeType);
+        return mimeType.startsWith("text/") || COMPRESSIBLE_MIME_TYPES.contains(mimeType);
     }
 
     static boolean isIncompressibleContentType(@Nonnull String mimeType) {
@@ -159,16 +159,16 @@ public final class CompressionUtil {
 
     /**
      * This algorithm estimates the entropy of the high nibbles.
-     *
+     * <p>
      * Credits to Thomas Mueller's for this solution, shared on StackOverflow at
      * <a href="http://bit.ly/2mKsp0v">How To Efficiently Predict If Data Is Compressible</a>
      *
      * @param data the data to be tested for compressibility
-     * @param len the length of the data to be tested
+     * @param len  the length of the data to be tested
      * @return {@code true} if the data sample is compressible,
-     *         {@code false} otherwise.
+     * {@code false} otherwise.
      */
-    static boolean isCompressible(byte[] data, int len) {
+    private static boolean isCompressible(byte[] data, int len) {
         // the number of bytes with
         // high nibble 0, 1,.., 15
         int[] sum = new int[16];

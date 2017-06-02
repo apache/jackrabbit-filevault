@@ -225,6 +225,14 @@ public interface JcrPackage extends Comparable<JcrPackage> {
     boolean isInstalled() throws RepositoryException;
 
     /**
+     * Checks if the package has content.
+     * @return {@code true} if this package doesn't have content
+     *
+     * @since 3.1.40
+     */
+    boolean isEmpty();
+
+    /**
      * Returns the size of the underlying package.
      * @return the size in bytes or -1 if not valid.
      */

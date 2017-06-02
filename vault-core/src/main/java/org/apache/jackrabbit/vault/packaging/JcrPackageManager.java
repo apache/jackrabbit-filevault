@@ -32,6 +32,8 @@ import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.io.Archive;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 
 /**
  * Extends the {@link PackageManager} by repository specific operations.
@@ -220,6 +222,34 @@ public interface JcrPackageManager extends PackageManager {
     @Nonnull
     JcrPackage create(@Nonnull String group, @Nonnull String name, @Nullable String version)
             throws RepositoryException, IOException;
+
+    /**
+     * Extracts a package directly from the given archive without uploading it to the repository first.
+     * if {@code registerPackage} is {@code true} a package node is created but w/o any content.
+     * The resulting package cannot be downloaded, uninstalled or re-installed.
+     * <p>
+     * If the package defines unsatisfied dependencies {@link DependencyHandling} might cause the extraction to fail.
+     * <p>
+     * If the package contains sub-packages, they will follow the same behaviour, i.e. they will not be uploaded to the
+     * repository but directly installed unless {@link ImportOptions#setNonRecursive(boolean)} is set to true, in which
+     * case the sub packages will be uploaded.
+     * <p>
+     * The method will throw an {@link ItemExistsException} if a package with the same id already exists, unless
+     * {@code replace} is set to {@code true}.
+     * <p>
+     *
+     * @param archive the input archive that contains the package.
+     * @param options the import options
+     * @param replace if {@code true} existing packages are replaced.
+     * @return an array of the package(s) that were extracted.
+     * @throws RepositoryException if an error occurs
+     * @throws IOException if an I/O error occurrs
+     * @throws ItemExistsException if the package was already present in the repository.
+     * @throws IOException if an I/O exception occurs
+     */
+    @Nonnull
+    PackageId[] extract(@Nonnull Archive archive, @Nonnull ImportOptions options, boolean replace)
+            throws RepositoryException, PackageException, IOException;
 
     /**
      * Removes a package and its snapshots if present.

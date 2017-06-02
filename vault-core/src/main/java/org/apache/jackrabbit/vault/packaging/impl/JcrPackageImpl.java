@@ -74,6 +74,8 @@ import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl.ARCHIVE_PACKAGE_ROOT_PATH;
+
 /**
  * Implements a JcrPackage
  */
@@ -176,6 +178,14 @@ public class JcrPackageImpl implements JcrPackage {
     public boolean isInstalled() throws RepositoryException {
         JcrPackageDefinition def = getDefinition();
         return def != null && def.getLastUnpacked() != null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isEmpty() {
+        return getSize() <= 0;
     }
 
     /**
@@ -541,7 +551,7 @@ public class JcrPackageImpl implements JcrPackage {
         final VaultPackage pack = getPackage();
         final PackageId pId = pack.getId();
         Archive a = pack.getArchive();
-        Archive.Entry packages = a.getEntry("/jcr_root/etc/packages");
+        Archive.Entry packages = a.getEntry(ARCHIVE_PACKAGE_ROOT_PATH);
         if (packages == null) {
             return;
         }

@@ -46,16 +46,15 @@ import static java.util.zip.Deflater.NO_COMPRESSION;
 /**
  * Implements a Vault filesystem exporter that exports Vault files to a jar file.
  * The entries are stored compressed in the jar (as {@link ZipEntry} zip entries.
- *
+ * <p>
  * The exporter can optimize the export throughput for binaries, by avoiding to
  * compress incompressible binaries.
  * The optimization is enabled for all {@link Deflater} compression levels but
  * {@link Deflater#DEFAULT_COMPRESSION}, {@link Deflater#NO_COMPRESSION} and
  * {@link Deflater#BEST_COMPRESSION}.
- *
+ * <p>
  * The exporter uses the {@link PlatformNameFormat} for formatting the jcr file
  * names to local ones.
- *
  */
 public class JarExporter extends AbstractExporter {
 
@@ -64,7 +63,7 @@ public class JarExporter extends AbstractExporter {
      * independently of their actual compressibility.
      */
     private static final Set<Integer> COMPRESSED_LEVELS = new HashSet<Integer>(Arrays.asList(
-                    DEFAULT_COMPRESSION, NO_COMPRESSION, BEST_COMPRESSION));
+            DEFAULT_COMPRESSION, NO_COMPRESSION, BEST_COMPRESSION));
 
     private JarOutputStream jOut;
 
@@ -78,6 +77,7 @@ public class JarExporter extends AbstractExporter {
 
     /**
      * Constructs a new jar exporter that writes to the given file.
+     *
      * @param jarFile the jar file
      */
     public JarExporter(File jarFile) {
@@ -86,8 +86,9 @@ public class JarExporter extends AbstractExporter {
 
     /**
      * Constructs a new jar exporter that writes to the given file.
+     *
      * @param jarFile the jar file
-     * @param level level the compression level
+     * @param level   level the compression level
      */
     public JarExporter(File jarFile, int level) {
         compressedLevel = COMPRESSED_LEVELS.contains(level);
@@ -98,6 +99,7 @@ public class JarExporter extends AbstractExporter {
 
     /**
      * Constructs a new jar exporter that writes to the output stream.
+     *
      * @param out the output stream
      */
     public JarExporter(OutputStream out) {
@@ -106,9 +108,9 @@ public class JarExporter extends AbstractExporter {
 
     /**
      * Constructs a new jar exporter that writes to the output stream.
-     * @param out the output stream
-     * @param level level the compression level
      *
+     * @param out   the output stream
+     * @param level level the compression level
      */
     public JarExporter(OutputStream out, int level) {
         compressedLevel = COMPRESSED_LEVELS.contains(level);
@@ -118,6 +120,7 @@ public class JarExporter extends AbstractExporter {
 
     /**
      * Opens the exporter and initializes the undelying structures.
+     *
      * @throws IOException if an I/O error occurs
      */
     public void open() throws IOException {
@@ -162,7 +165,7 @@ public class JarExporter extends AbstractExporter {
         ZipEntry e = new ZipEntry(getPlatformFilePath(file, relPath));
         Artifact a = file.getArtifact();
         boolean compress = compressedLevel || CompressionUtil.isCompressible(a) >= 0;
-        if (! compress) {
+        if (!compress) {
             jOut.setLevel(NO_COMPRESSION);
         }
         if (a.getLastModified() > 0) {
@@ -188,7 +191,7 @@ public class JarExporter extends AbstractExporter {
                 break;
         }
         jOut.closeEntry();
-        if (! compress) {
+        if (!compress) {
             jOut.setLevel(level);
         }
     }
@@ -206,7 +209,7 @@ public class JarExporter extends AbstractExporter {
 
     public void write(ZipFile zip, ZipEntry entry) throws IOException {
         track("A", entry.getName());
-        if (! compressedLevel) {
+        if (!compressedLevel) {
             // The entry to be written is assumed to be incompressible
             jOut.setLevel(NO_COMPRESSION);
         }
@@ -221,7 +224,7 @@ public class JarExporter extends AbstractExporter {
             in.close();
         }
         jOut.closeEntry();
-        if (! compressedLevel) {
+        if (!compressedLevel) {
             jOut.setLevel(level);
         }
     }

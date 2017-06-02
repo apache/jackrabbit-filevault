@@ -35,6 +35,8 @@ public class ExportOptions {
 
     private String mountPath;
 
+    private int compressionLevel = -1;
+
     /**
      * Returns the progress tracker listener.
      * @return the progress tracker listener.
@@ -121,5 +123,21 @@ public class ExportOptions {
      */
     public void setMountPath(String mountPath) {
         this.mountPath = mountPath;
+    }
+
+    /**
+     * Defines the compression level for the export.
+     * @param compressionLevel the compression level
+     */
+    public void setCompressionLevel(int compressionLevel) {
+        this.compressionLevel = compressionLevel;
+    }
+
+    /**
+     * Returns the compression level
+     * @return the compression level
+     */
+    public int getCompressionLevel() {
+        return compressionLevel;
     }
 }

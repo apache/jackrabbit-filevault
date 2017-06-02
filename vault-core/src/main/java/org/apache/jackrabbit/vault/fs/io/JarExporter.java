@@ -22,7 +22,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.JarOutputStream;
+import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -32,15 +36,35 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
+import org.apache.jackrabbit.vault.fs.impl.io.CompressionUtil;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
+
+import static java.util.zip.Deflater.BEST_COMPRESSION;
+import static java.util.zip.Deflater.DEFAULT_COMPRESSION;
+import static java.util.zip.Deflater.NO_COMPRESSION;
 
 /**
  * Implements a Vault filesystem exporter that exports Vault files to a jar file.
- * It uses the {@link PlatformNameFormat} for formatting the jcr file
+ * The entries are stored compressed in the jar (as {@link ZipEntry} zip entries.
+ *
+ * The exporter can optimize the export throughput for binaries, by avoiding to
+ * compress incompressible binaries.
+ * The optimization is enabled for all {@link Deflater} compression levels but
+ * {@link Deflater#DEFAULT_COMPRESSION}, {@link Deflater#NO_COMPRESSION} and
+ * {@link Deflater#BEST_COMPRESSION}.
+ *
+ * The exporter uses the {@link PlatformNameFormat} for formatting the jcr file
  * names to local ones.
  *
  */
 public class JarExporter extends AbstractExporter {
+
+    /**
+     * Contains the compression levels for which the binaries are always compressed
+     * independently of their actual compressibility.
+     */
+    private static final Set<Integer> COMPRESSED_LEVELS = new HashSet<Integer>(Arrays.asList(
+                    DEFAULT_COMPRESSION, NO_COMPRESSION, BEST_COMPRESSION));
 
     private JarOutputStream jOut;
 
@@ -48,12 +72,28 @@ public class JarExporter extends AbstractExporter {
 
     private File jarFile;
 
+    private final int level;
+
+    private final boolean compressedLevel;
+
     /**
      * Constructs a new jar exporter that writes to the given file.
      * @param jarFile the jar file
      */
     public JarExporter(File jarFile) {
+        this(jarFile, DEFAULT_COMPRESSION);
+    }
+
+    /**
+     * Constructs a new jar exporter that writes to the given file.
+     * @param jarFile the jar file
+     * @param level level the compression level
+     */
+    public JarExporter(File jarFile, int level) {
+        compressedLevel = COMPRESSED_LEVELS.contains(level);
         this.jarFile = jarFile;
+        this.level = level;
+
     }
 
     /**
@@ -61,7 +101,19 @@ public class JarExporter extends AbstractExporter {
      * @param out the output stream
      */
     public JarExporter(OutputStream out) {
+        this(out, DEFAULT_COMPRESSION);
+    }
+
+    /**
+     * Constructs a new jar exporter that writes to the output stream.
+     * @param out the output stream
+     * @param level level the compression level
+     *
+     */
+    public JarExporter(OutputStream out, int level) {
+        compressedLevel = COMPRESSED_LEVELS.contains(level);
         this.out = out;
+        this.level = level;
     }
 
     /**
@@ -72,8 +124,10 @@ public class JarExporter extends AbstractExporter {
         if (jOut == null) {
             if (jarFile != null) {
                 jOut = new JarOutputStream(new FileOutputStream(jarFile));
+                jOut.setLevel(level);
             } else if (out != null) {
                 jOut = new JarOutputStream(out);
+                jOut.setLevel(level);
             } else {
                 throw new IllegalArgumentException("Either out or jarFile needs to be set.");
             }
@@ -107,6 +161,10 @@ public class JarExporter extends AbstractExporter {
             throws RepositoryException, IOException {
         ZipEntry e = new ZipEntry(getPlatformFilePath(file, relPath));
         Artifact a = file.getArtifact();
+        boolean compress = compressedLevel || CompressionUtil.isCompressible(a) >= 0;
+        if (! compress) {
+            jOut.setLevel(NO_COMPRESSION);
+        }
         if (a.getLastModified() > 0) {
             e.setTime(a.getLastModified());
         }
@@ -130,9 +188,13 @@ public class JarExporter extends AbstractExporter {
                 break;
         }
         jOut.closeEntry();
+        if (! compress) {
+            jOut.setLevel(level);
+        }
     }
 
     public void writeFile(InputStream in, String relPath) throws IOException {
+        // The file input stream to be written is assumed to be compressible
         ZipEntry e = new ZipEntry(relPath);
         exportInfo.update(ExportInfo.Type.ADD, e.getName());
         jOut.putNextEntry(e);
@@ -144,8 +206,13 @@ public class JarExporter extends AbstractExporter {
 
     public void write(ZipFile zip, ZipEntry entry) throws IOException {
         track("A", entry.getName());
+        if (! compressedLevel) {
+            // The entry to be written is assumed to be incompressible
+            jOut.setLevel(NO_COMPRESSION);
+        }
         exportInfo.update(ExportInfo.Type.ADD, entry.getName());
         ZipEntry copy = new ZipEntry(entry);
+        copy.setCompressedSize(-1);
         jOut.putNextEntry(copy);
         if (!entry.isDirectory()) {
             // copy
@@ -154,6 +221,9 @@ public class JarExporter extends AbstractExporter {
             in.close();
         }
         jOut.closeEntry();
+        if (! compressedLevel) {
+            jOut.setLevel(level);
+        }
     }
 
 

@@ -27,6 +27,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -36,6 +39,7 @@ import javax.jcr.nodetype.NodeTypeManager;
 
 import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.api.AggregateManager;
+import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.SimplePathMapping;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
@@ -44,9 +48,17 @@ import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.spi.CNDWriter;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
+import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_DEPENDENCIES;
+import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_DESCRIPTION;
+import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_GROUP;
+import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_NAME;
+import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_VERSION;
 
 /**
  * Generic context for exporters
@@ -58,6 +70,27 @@ public abstract class AbstractExporter {
      * default logger
      */
     private static final Logger log = LoggerFactory.getLogger(AbstractExporter.class);
+
+    /**
+     * name of the manifest property for the package id
+     */
+    private static final String MF_PACKAGE_ID = "Content-Package-Id";
+
+    /**
+     * name of the manifest property for the package dependencies
+     */
+    private static final String MF_PACKAGE_DEPENDENCIES = "Content-Package-Dependencies";
+
+    /**
+     * name of the manifest property for the package roots
+     */
+    private static final String MF_PACKAGE_ROOTS = "Content-Package-Roots";
+
+    /**
+     * name of the manifest property for the package description
+     */
+    private static final String MF_PACKAGE_DESC = "Content-Package-Description";
+
 
     private ProgressTracker tracker;
 
@@ -159,38 +192,67 @@ public abstract class AbstractExporter {
         AggregateManager mgr = parent.getFileSystem().getAggregateManager();
         mgr.startTracking(tracker == null ? null : tracker.getListener());
         if (!noMetaInf) {
-            createDirectory(Constants.META_INF);
-            createDirectory(Constants.META_DIR);
-            // add some 'fake' tracking
-            track("A", Constants.META_INF);
-            track("A", Constants.META_DIR);
-            track("A", Constants.META_DIR + "/" + Constants.CONFIG_XML);
-            track("A", Constants.META_DIR + "/" + Constants.FILTER_XML);
-            track("A", Constants.META_DIR + "/" + Constants.NODETYPES_CND);
-            track("A", Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
-            writeFile(mgr.getConfig().getSource(), Constants.META_DIR + "/" + Constants.CONFIG_XML);
+            // update properties
+            setProperty(MetaInf.CREATED, Calendar.getInstance());
+            setProperty(MetaInf.CREATED_BY, mgr.getUserId());
+            setProperty(MetaInf.PACKAGE_FORMAT_VERSION, String.valueOf(MetaInf.FORMAT_VERSION_2));
+
             // get filter and translate if necessary
             WorkspaceFilter filter = mgr.getWorkspaceFilter();
             String mountPath = mgr.getRoot().getPath();
             String rootPath = parent.getPath();
-            if (rootPath.equals("/")) {
+            if ("/".equals(rootPath)) {
                 rootPath = "";
             }
             if (mountPath.length() > 0 || rootPath.length() > 0) {
                 filter = filter.translate(new SimplePathMapping(mountPath, rootPath));
             }
+
+            // write Manifest
+            Manifest mf = new Manifest();
+            mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+            String version = properties.getProperty(NAME_VERSION);
+            if (version == null) {
+                version = "";
+            }
+            String group = properties.getProperty(NAME_GROUP);
+            String name = properties.getProperty(NAME_NAME);
+            PackageId id = new PackageId(group, name, version);
+            Set<String> rts = new HashSet<String>();
+            for (PathFilterSet p: filter.getFilterSets()) {
+                rts.add(p.getRoot());
+            }
+            String[] filterRoots = rts.toArray(new String[rts.size()]);
+            addManifestAttribute(mf, MF_PACKAGE_ID, id.toString());
+            addManifestAttribute(mf, MF_PACKAGE_DESC, properties.getProperty(NAME_DESCRIPTION));
+            addManifestAttribute(mf, MF_PACKAGE_ROOTS, Text.implode(filterRoots, ","));
+            addManifestAttribute(mf, MF_PACKAGE_DEPENDENCIES, properties.getProperty(NAME_DEPENDENCIES));
+            ByteArrayOutputStream tmpOut = new ByteArrayOutputStream();
+            mf.write(tmpOut);
+            writeFile(new ByteArrayInputStream(tmpOut.toByteArray()), JarFile.MANIFEST_NAME);
+
+            createDirectory(Constants.META_INF);
+            createDirectory(Constants.META_DIR);
+            // add some 'fake' tracking
+            track("A", Constants.META_INF);
+            track("A", JarFile.MANIFEST_NAME);
+            track("A", Constants.META_DIR);
+            track("A", Constants.META_DIR + "/" + Constants.CONFIG_XML);
+            track("A", Constants.META_DIR + "/" + Constants.FILTER_XML);
+            track("A", Constants.META_DIR + "/" + Constants.NODETYPES_CND);
+            track("A", Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
+
+            // write properties
+            tmpOut = new ByteArrayOutputStream();
+            properties.storeToXML(tmpOut, "FileVault Package Properties", "utf-8");
+            writeFile(new ByteArrayInputStream(tmpOut.toByteArray()), Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
+            writeFile(mgr.getConfig().getSource(), Constants.META_DIR + "/" + Constants.CONFIG_XML);
             writeFile(filter.getSource(), Constants.META_DIR + "/" + Constants.FILTER_XML);
         }
         export(parent, "");
         if (!noMetaInf) {
+            // write node types last, as they are calculated during export.
             writeFile(getNodeTypes(mgr.getSession(), mgr.getNodeTypes()), Constants.META_DIR + "/" + Constants.NODETYPES_CND);
-            // update properties
-            setProperty(MetaInf.CREATED, Calendar.getInstance());
-            setProperty(MetaInf.CREATED_BY, mgr.getUserId());
-            setProperty(MetaInf.PACKAGE_FORMAT_VERSION, String.valueOf(MetaInf.FORMAT_VERSION_2));
-            ByteArrayOutputStream tmpOut = new ByteArrayOutputStream();
-            properties.storeToXML(tmpOut, "FileVault Package Properties", "utf-8");
-            writeFile(new ByteArrayInputStream(tmpOut.toByteArray()), Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
         }
         if (!noClose) {
             close();
@@ -281,6 +343,19 @@ public abstract class AbstractExporter {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Adds a new attribute to the given manifest.
+     * @param manifest the manifest
+     * @param key attribute name
+     * @param value attribute value
+     */
+    private void addManifestAttribute(Manifest manifest, String key, String value) {
+        if (value != null && value.length() > 0) {
+            Attributes.Name name = new Attributes.Name(key);
+            manifest.getMainAttributes().put(name, value);
         }
     }
 

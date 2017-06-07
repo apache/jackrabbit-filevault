@@ -229,6 +229,6 @@ public interface PackageProperties {
      * @param name the property name
      * @return the property value or {@code null}
      */
-    public String getProperty(String name);
+    String getProperty(String name);
 
 }

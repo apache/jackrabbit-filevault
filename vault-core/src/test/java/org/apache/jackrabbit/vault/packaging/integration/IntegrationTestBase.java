@@ -28,9 +28,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarFile;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -88,6 +90,7 @@ import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcherI
 import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
+import org.apache.jackrabbit.vault.util.Text;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -609,4 +612,21 @@ public class IntegrationTestBase  {
             actions.put(path, "E");
         }
     }
+
+    void verifyManifest(File testPackageFile, Set<String> ignoredEntries, String expected) throws IOException {
+        JarFile jar = new JarFile(testPackageFile);
+
+        List<String> entries = new ArrayList<String>();
+        for (Map.Entry<Object, Object> e: jar.getManifest().getMainAttributes().entrySet()) {
+            String key = e.getKey().toString();
+            if (ignoredEntries.contains(key)) {
+                continue;
+            }
+            entries.add(e.getKey() + ":" + e.getValue());
+        }
+        Collections.sort(entries);
+        String result = Text.implode(entries.toArray(new String[entries.size()]),"\n");
+        assertEquals("Manifest", expected, result);
+    }
+
 }

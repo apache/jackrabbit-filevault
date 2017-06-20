@@ -81,6 +81,7 @@ import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.FileArchive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
+import org.apache.jackrabbit.vault.fs.io.ZipStreamArchive;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageException;
@@ -311,6 +312,17 @@ public class IntegrationTestBase  {
             return new FileArchive(file);
         } else {
             return new ZipArchive(file);
+        }
+    }
+
+    public Archive getStreamArchive(String name, int size) throws IOException {
+        final URL packageURL = getClass().getResource(name);
+        final String filename = packageURL.getFile();
+        final File file = new File(filename);
+        if (file.isDirectory()) {
+            throw new IllegalArgumentException("Can't create stream archive from directory");
+        } else {
+            return new ZipStreamArchive(FileUtils.openInputStream(file), size);
         }
     }
 

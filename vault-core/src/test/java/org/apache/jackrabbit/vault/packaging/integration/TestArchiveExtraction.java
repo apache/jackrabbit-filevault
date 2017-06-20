@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,10 +28,13 @@ import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.fs.io.ZipStreamArchive;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -40,13 +44,47 @@ import static org.junit.Assert.fail;
 /**
  * Test cases for shallow package installation
  */
+@RunWith(Parameterized.class)
 public class TestArchiveExtraction extends IntegrationTestBase {
+
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{{0, false}, {1000, false}, {1024*1024, true}});
+    }
+
+    private final int streamBufferSize;
+
+    private final boolean isBuffered;
+
+    public TestArchiveExtraction(int streamBufferSize, boolean isBuffered) {
+        this.streamBufferSize = streamBufferSize;
+        this.isBuffered = isBuffered;
+    }
+
+    @Override
+    public Archive getFileArchive(String name) {
+        if (streamBufferSize > 0) {
+            try {
+                return super.getStreamArchive(name, streamBufferSize);
+            } catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+        return super.getFileArchive(name);
+    }
+
+    private void validateArchive(Archive a) {
+        if (a instanceof ZipStreamArchive) {
+            assertEquals("isBuffered", isBuffered, ((ZipStreamArchive) a).isBuffered());
+        }
+    }
 
     @Test
     public void testDefaultArchiveInstall() throws RepositoryException, IOException, PackageException {
         Archive a = getFileArchive("testpackages/tmp.zip");
         ImportOptions opts = getDefaultOptions();
         PackageId[] ids = packMgr.extract(a, opts, true);
+        validateArchive(a);
         assertEquals(1, ids.length);
         assertEquals(new PackageId("my_packages", "tmp", ""), ids[0]);
         assertNodeExists("/tmp/foo/bar/tobi");

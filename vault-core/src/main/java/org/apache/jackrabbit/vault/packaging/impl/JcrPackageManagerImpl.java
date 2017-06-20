@@ -53,6 +53,7 @@ import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
+import org.apache.jackrabbit.vault.fs.io.ZipStreamArchive;
 import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
@@ -331,16 +332,10 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         if (spfArchive != null) {
             for (Archive.Entry e: spfArchive.getSubPackageEntries()) {
                 InputStream in = spfArchive.openInputStream(e);
-                // todo: create StreamArchive
-                File tmpFile = File.createTempFile("vaultpack", ".zip");
-                FileOutputStream out = FileUtils.openOutputStream(tmpFile);
-                IOUtils.copy(in, out);
-                IOUtils.closeQuietly(in);
-                IOUtils.closeQuietly(out);
-                ZipArchive zipArchive = new ZipArchive(tmpFile, true);
-                PackageId[] subIds = extract(zipArchive, options, replace);
+                Archive subArchive = new ZipStreamArchive(in);
+                PackageId[] subIds = extract(subArchive, options, replace);
                 ids.addAll(Arrays.asList(subIds));
-                zipArchive.close();
+                subArchive.close();
             }
         }
 

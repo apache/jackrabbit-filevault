@@ -28,6 +28,7 @@ Improvements:
 * [JCRVLT-174] - Add support to pass source credentials in RcpServlet
 * [JCRVLT-175] - Ensure RcpTask is clearing out sensitive data in toString statement
 * [JCRVLT-181] - Create ZipStreamArchive
+* [JCRVLT-183] - Switch to OSGi annotations
 
 Changes in Jackrabbit FileVault 3.1.38
 --------------------------------------

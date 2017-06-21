@@ -19,20 +19,22 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import javax.annotation.Nonnull;
 
-import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Service;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEventListener;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Listener that receive packaging events and logs them to the activity log.
  */
-@Component(immediate = true)
-@Service(value = PackageEventListener.class)
+@Component(
+        service = PackageEventListener.class,
+        immediate = true,
+        property = {"service.vendor=The Apache Software Foundation"}
+)
 public class ActivityLog implements PackageEventListener {
 
     /**

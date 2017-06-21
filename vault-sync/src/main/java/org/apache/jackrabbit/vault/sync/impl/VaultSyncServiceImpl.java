@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -34,21 +33,26 @@ import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
 
-import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Property;
-import org.apache.felix.scr.annotations.Reference;
 import org.apache.jackrabbit.util.Text;
-import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.jcr.api.SlingRepository;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * {@code VaultSyncServiceImpl}...
  */
-@Component(label = "Vault Sync Service", metatype = true, immediate = true)
+@Component(
+        immediate = true,
+        property = {"service.vendor=The Apache Software Foundation"}
+)
+@Designate(ocd = VaultSyncServiceImpl.Config.class)
 public class VaultSyncServiceImpl implements EventListener, Runnable {
 
     /**
@@ -56,15 +60,8 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
      */
     private static final Logger log = LoggerFactory.getLogger(VaultSyncServiceImpl.class);
 
-    private static final String[] DEFAULT_SYNC_SPECS = {};
-
-    @Property(label = "Sync filesystem directories", cardinality = 100)
     public static final String SYNC_SPECS = "vault.sync.syncroots";
 
-    @Property(label = "FS check interval (seconds)", intValue = 5)
-    public static final String SYNC_FS_CHECK_INTERVAL = "vault.sync.fscheckinterval";
-
-    @Property(label = "Enabled", boolValue = false)
     public static final String SYNC_ENABLED = "vault.sync.enabled";
 
     @Reference
@@ -84,18 +81,40 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
 
     private final Condition waitCondition = waitLock.newCondition();
 
+    @ObjectClassDefinition(
+            name = "Vault Sync Service"
+    )
+    @interface Config {
+
+        @AttributeDefinition(
+                name = "Sync filesystem directories"
+        )
+        String[] vault_sync_syncroots() default {};
+
+        @AttributeDefinition(
+                name = "FS check interval (seconds)"
+        )
+        int vault_sync_fscheckinterval() default 5;
+
+        @AttributeDefinition(
+                name = "Enabled"
+        )
+        boolean vault_sync_enabled() default false;
+
+
+    }
+
     @Activate
-    protected void activate(Map<String, Object> props) throws RepositoryException {
+    protected void activate(Config config) throws RepositoryException {
         List<SyncHandler> newSyncSpecs = new LinkedList<SyncHandler>();
-        String[] syncRoots = OsgiUtil.toStringArray(props.get(SYNC_SPECS), DEFAULT_SYNC_SPECS);
-        for (String def : syncRoots) {
+        for (String def : config.vault_sync_syncroots()) {
             SyncHandler spec = new SyncHandler(new File(def));
             newSyncSpecs.add(spec);
             log.info("Added sync specification: {}", spec);
         }
         syncHandlers = newSyncSpecs.toArray(new SyncHandler[newSyncSpecs.size()]);
-        enabled = OsgiUtil.toBoolean(props.get(SYNC_ENABLED), false);
-        checkDelay = OsgiUtil.toLong(props.get(SYNC_FS_CHECK_INTERVAL), 5) * 1000;
+        enabled = config.vault_sync_enabled();
+        checkDelay = config.vault_sync_fscheckinterval() * 1000;
 
         log.info("Vault Sync service is {}", enabled ? "enabled" : "disabled");
         if (enabled) {

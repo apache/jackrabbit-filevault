@@ -18,4 +18,4 @@
 @Version("2.5.0")
 package org.apache.jackrabbit.vault.fs.io;
 
-import aQute.bnd.annotation.Version;
+import org.osgi.annotation.versioning.Version;

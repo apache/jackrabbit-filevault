@@ -23,12 +23,11 @@ import java.net.URI;
 import javax.jcr.Credentials;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -37,14 +36,19 @@ import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.json.io.JSONWriter;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  */
-@SlingServlet(paths = {
-        "/system/jackrabbit/filevault/rcp"
-})
+@Component(service = Servlet.class,
+        property = {
+                "service.vendor=The Apache Software Foundation",
+                "sling.servlet.paths=/system/jackrabbit/filevault/rcp"
+        }
+)
 public class RcpServlet extends SlingAllMethodsServlet {
 
     private static final long serialVersionUID = -4571680968447024900L;

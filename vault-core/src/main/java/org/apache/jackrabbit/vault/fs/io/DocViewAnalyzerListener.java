@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.fs.io;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import aQute.bnd.annotation.ConsumerType;
+import org.osgi.annotation.versioning.ConsumerType;
 
 /**
  * {@code DocViewAnalyzerListener}...

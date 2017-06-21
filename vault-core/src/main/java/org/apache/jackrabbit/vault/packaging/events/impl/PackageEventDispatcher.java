@@ -21,8 +21,7 @@ import javax.annotation.Nullable;
 
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
-
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Internal service that is used to dispatch packaging events.

@@ -23,29 +23,33 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
-import org.apache.felix.scr.annotations.ReferencePolicy;
-import org.apache.felix.scr.annotations.References;
-import org.apache.felix.scr.annotations.Service;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEventListener;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Packaging observation helper
  */
-@Component(immediate=true)
-@References({
-        @Reference(name="packageEventListener",
-                referenceInterface = PackageEventListener.class,
-                cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE,
-                policy = ReferencePolicy.DYNAMIC)
-})
-@Service
+@Component(
+        service = PackageEventDispatcher.class,
+        property = {"service.vendor=The Apache Software Foundation"},
+        reference = {
+                @Reference(
+                        name="packageEventListener",
+                        service = PackageEventListener.class,
+                        cardinality = ReferenceCardinality.MULTIPLE,
+                        policy = ReferencePolicy.DYNAMIC,
+                        bind = "bindPackageEventListener",
+                        unbind = "unbindPackageEventListener"
+                )
+        }
+)
 public class PackageEventDispatcherImpl implements PackageEventDispatcher {
 
     /**

@@ -18,9 +18,8 @@ package org.apache.jackrabbit.vault.packaging.events;
 
 import javax.annotation.Nonnull;
 
-import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.osgi.annotation.versioning.ConsumerType;
 
-import aQute.bnd.annotation.ConsumerType;
 
 /**
  * Listener that can receive packaging events. Listeners are registered via OSGi.

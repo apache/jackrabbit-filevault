@@ -22,20 +22,21 @@ import java.util.Map;
 
 import javax.jcr.Credentials;
 
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.Service;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * {@code RcpTaskManager}...
  */
-@Component
-@Service(value = RcpTaskManager.class)
+@Component(
+        immediate = true,
+        property = {"service.vendor=The Apache Software Foundation"}
+)
 public class RcpTaskManagerImpl implements RcpTaskManager {
 
     /**

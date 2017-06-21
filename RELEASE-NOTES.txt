@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.38
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.40
 
 Introduction
 ------------
@@ -8,6 +8,26 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.1.40
+--------------------------------------
+
+Bug Fixes:
+* [JCRVLT-155] - JcrPackage.isInstalled does not return false in case the package has been overwritten
+* [JCRVLT-158] - Assert causing a NPE if executed
+* [JCRVLT-176] - Package with non-deep filter removes node
+* [JCRVLT-177] - jcr:content and its children not overwritten during installation of Simple File Aggregate
+
+New Features:
+* [JCRVLT-50] - Add support for "hollow" packages
+
+Improvements:
+* [JCRVLT-32] - Store package properties in the MANIFEST.MF for faster access
+* [JCRVLT-163] - Avoid compressing incompressible binaries
+* [JCRVLT-164] - Allow to define default compression level
+* [JCRVLT-174] - Add support to pass source credentials in RcpServlet
+* [JCRVLT-175] - Ensure RcpTask is clearing out sensitive data in toString statement
+* [JCRVLT-181] - Create ZipStreamArchive
 
 Changes in Jackrabbit FileVault 3.1.38
 --------------------------------------

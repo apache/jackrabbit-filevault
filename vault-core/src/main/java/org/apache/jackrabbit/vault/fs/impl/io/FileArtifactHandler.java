@@ -27,6 +27,7 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
+import javax.jcr.nodetype.NodeType;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -179,12 +180,18 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                             Node fileNode = parent.getNode(fileName);
                             // check import mode, only replace if not MERGE
                             if (wspFilter.getImportMode(fileNode.getPath()) != ImportMode.MERGE) {
-                                if (!fileNode.hasNode(JcrConstants.JCR_CONTENT)) {
+                                if (!fileNode.hasNode(Node.JCR_CONTENT)) {
                                     // apparently no nt:file, recreate file node
                                     fileNode.remove();
-                                    importFile(info, parent, file);
+                                    importFile(info, parent, file, fileName, parent.hasNode(fileName));
                                 } else {
-                                    if (!importNtResource(info, fileNode.getNode(JcrConstants.JCR_CONTENT), file)) {
+                                    Node contentNode = fileNode.getNode(Node.JCR_CONTENT);
+                                    if (isModifiedNtResource(contentNode)) {
+                                        contentNode.remove();
+                                        contentNode = fileNode.addNode(Node.JCR_CONTENT, NodeType.NT_RESOURCE);
+                                        info.onReplaced(contentNode.getPath());
+                                    }
+                                    if (!importNtResource(info, contentNode, file)) {
                                         info.onNop(fileNode.getPath());
                                     }
                                 }
@@ -265,13 +272,27 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
         }
         return info;
     }
-    private Node importFile(ImportInfo info, Node parent, Artifact primary)
-            throws RepositoryException, IOException {
-        String name = primary.getRelativePath();
-        return importFile(info, parent, primary, name, parent.hasNode(name));
+
+    /**
+     * Checks if the given node is a nt_resource like structure that was modified. this is to test if a single
+     * file artifact needs to recreate existing content of a sub-typed jcr:content node. see JCRVLT-177
+     *
+     * @param content the content node
+     * @return {@code true} if modified
+     * @throws RepositoryException if an error occurrs
+     */
+    private boolean isModifiedNtResource(Node content) throws RepositoryException {
+        if (content.getMixinNodeTypes().length > 0) {
+            return true;
+        }
+        if (content.isNodeType(NodeType.NT_RESOURCE)) {
+            return false;
+        }
+        // allow nt:unstructured with no child nodes
+        return content.hasNodes();
     }
 
-    private Node importFile(ImportInfo info, Node parent, Artifact primary, String name, boolean exists)
+    private void importFile(ImportInfo info, Node parent, Artifact primary, String name, boolean exists)
             throws RepositoryException, IOException {
         Node fileNode;
         Node contentNode;
@@ -292,7 +313,6 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
             info.onCreated(contentNode.getPath());
         }
         importNtResource(info, contentNode, primary);
-        return fileNode;
     }
 
     private ImportInfoImpl importDocView(Node parent, InputSource source,

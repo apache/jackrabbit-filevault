@@ -225,8 +225,8 @@ public interface JcrPackageManager extends PackageManager {
 
     /**
      * Extracts a package directly from the given archive without uploading it to the repository first.
-     * if {@code registerPackage} is {@code true} a package node is created but w/o any content.
-     * The resulting package cannot be downloaded, uninstalled or re-installed.
+     * A package node is created but w/o any content. The resulting package cannot be downloaded, uninstalled or
+     * re-installed.
      * <p>
      * If the package defines unsatisfied dependencies {@link DependencyHandling} might cause the extraction to fail.
      * <p>

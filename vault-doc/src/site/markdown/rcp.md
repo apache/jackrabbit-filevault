@@ -49,6 +49,11 @@ Options:
   <dst>                               the repository address of the destination node
 ````
 
+### Exclusion patterns
+
+Please note that vlt uses the [java regexp](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html) to
+process the exclusion patterns. The patterns have to patch the entire path of the node in order to be excluded. For
+example this regexp `\p{ASCII}*([^\p{ASCII}]\p{ASCII}*)+` excludes all paths containing non-ascii characters.
 
 Vault RCP Server Bundle
 -----------------------
@@ -119,7 +124,7 @@ Creates a new task.
 | newer        | - | **true** to respect _lastModified_ properties for update. Default is _false_. |
 | throttle     | - | Number of seconds to sleep after each intermediate save. Default is _0_. |
 | resumeFrom   | - | Source path to resume a prior aborted copy. Note that the algorithm simply skips all source nodes until the _resumeFrom_ path is found. It is necessary that the content structure of the source repository does not change in between runs, and that content already needs to be present in the detination location. |
-| excludes     | - | Array of regular expressions that exclude source paths. |
+| excludes     | - | Array of java regular expressions that exclude source paths. |
 
 
 ##### Example

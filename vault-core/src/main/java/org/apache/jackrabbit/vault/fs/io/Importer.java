@@ -84,6 +84,8 @@ import org.apache.jackrabbit.vault.util.Tree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl.PACKAGE_ROOT_PATH_PREFIX;
+
 /**
  * {@code AbstractImporter}
  *
@@ -669,7 +671,8 @@ public class Importer {
                         continue;
                     }
                 }
-                if (repoPath.startsWith("/etc/packages/") && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
+                // todo: find better way to detect sub-packages
+                if (repoPath.startsWith(PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
                     subPackages.add(repoPath);
                 }
 
@@ -697,7 +700,7 @@ public class Importer {
                 SerializationType serType = SerializationType.GENERIC;
                 ArtifactType type = ArtifactType.PRIMARY;
                 VaultInputSource is = archive.getInputSource(file);
-                if (ext.equals(".xml")) {
+                if (".xml".equals(ext)) {
                     // this can either be an generic exported docview or a 'user-xml' that is imported as file
                     // btw: this only works for input sources that can refetch their input stream
                     serType = XmlAnalyzer.analyze(is);

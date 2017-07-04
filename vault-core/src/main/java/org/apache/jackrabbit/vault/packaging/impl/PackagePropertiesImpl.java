@@ -36,8 +36,6 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
 
     private static final Logger log = LoggerFactory.getLogger(PackagePropertiesImpl.class);
 
-    public static final String UNKNOWN_PATH = "/etc/packages/unknown";
-
     private PackageId id;
 
     public PackageId getId() {
@@ -52,13 +50,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
             if (group != null && name != null) {
                 id = new PackageId(group, name, version);
             } else {
-                // check for legacy packages that only contains a 'path' property
-                String path = getProperty("path");
-                if (path == null || path.length() == 0) {
-                    log.warn("Package does not specify a path. setting to 'unknown'");
-                    path = UNKNOWN_PATH;
-                }
-                id = new PackageId(path, version);
+                log.warn("Package properties not valid. need group and name property.");
             }
         }
         return id;

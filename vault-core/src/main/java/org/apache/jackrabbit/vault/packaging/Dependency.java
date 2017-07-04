@@ -113,7 +113,10 @@ public class Dependency {
     /**
      * Returns the installation path of this dependency
      * @return the installation path;
+     *
+     * @deprecated As of 3.1.42, the storage location is implementation details.
      */
+    @Deprecated
     public String getPath() {
         StringBuilder b = new StringBuilder();
         if (groupId.length() > 0) {

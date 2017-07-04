@@ -49,8 +49,6 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
     private static final Logger log = LoggerFactory.getLogger(ZipVaultPackage.class);
 
-    public static final String UNKNOWN_PATH = "/etc/packages/unknown";
-
     private Archive archive;
 
     public ZipVaultPackage(File file, boolean isTmpFile) throws IOException {

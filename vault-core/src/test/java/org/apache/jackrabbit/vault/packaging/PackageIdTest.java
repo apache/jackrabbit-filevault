@@ -29,11 +29,13 @@ public class PackageIdTest extends TestCase {
         assertEquals("group:name:version", packId.toString());
     }
 
+    @SuppressWarnings("deprecation")
     public void testToInstallPath() {
         PackageId packId = new PackageId("group", "name", "version");
         assertEquals("/etc/packages/group/name-version", packId.getInstallationPath());
     }
 
+    @SuppressWarnings("deprecation")
     public void testToInstallPath1() {
         PackageId packId = new PackageId("group", "name", "");
         assertEquals("/etc/packages/group/name", packId.getInstallationPath());

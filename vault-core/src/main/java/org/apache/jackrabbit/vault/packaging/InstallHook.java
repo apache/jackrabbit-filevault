@@ -17,6 +17,8 @@
 
 package org.apache.jackrabbit.vault.packaging;
 
+import org.osgi.annotation.versioning.ConsumerType;
+
 /**
  * An install hook is used to do some pre and post work during a package
  * install. the hooks need to have at least one class that implements this
@@ -33,6 +35,7 @@ package org.apache.jackrabbit.vault.packaging;
  * phase is aborted and all hooks (also the failing one) are called again with
  * the respective "fail" phase.
  */
+@ConsumerType
 public interface InstallHook {
 
     /**

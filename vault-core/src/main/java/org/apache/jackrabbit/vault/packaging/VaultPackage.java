@@ -18,15 +18,14 @@
 package org.apache.jackrabbit.vault.packaging;
 
 import java.io.File;
-import java.util.Calendar;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
-import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Defines a vault package. A vault package is a binary assembled representation
@@ -34,7 +33,8 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
  * <p>
  * Note that VaultPackage currently extends from PackageProperties to keep the interface backwards compatible.
  */
-public interface VaultPackage extends PackageProperties {
+@ProviderType
+public interface VaultPackage extends PackageProperties, AutoCloseable {
 
     /**
      * Returns the id of this package or {@code null} if the id can't

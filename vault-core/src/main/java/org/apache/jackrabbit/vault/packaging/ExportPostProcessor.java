@@ -18,10 +18,12 @@
 package org.apache.jackrabbit.vault.packaging;
 
 import org.apache.jackrabbit.vault.fs.io.AbstractExporter;
+import org.osgi.annotation.versioning.ConsumerType;
 
 /**
  * Defines a post processor that is invoked after a package is assembled.
  */
+@ConsumerType
 public interface ExportPostProcessor {
 
     /**

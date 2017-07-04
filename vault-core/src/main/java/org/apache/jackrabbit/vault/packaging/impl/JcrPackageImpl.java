@@ -317,13 +317,10 @@ public class JcrPackageImpl implements JcrPackage {
             }
             if (!forceFileArchive && size >= 0 && size < MAX_MEMORY_ARCHIVE_SIZE) {
                 MemoryArchive archive = new MemoryArchive(false);
-                InputStream in = getData().getStream();
-                try {
+                try (InputStream in = getData().getStream()) {
                     archive.run(in);
                 } catch (Exception e) {
                     throw new IOException("Error while reading stream", e);
-                } finally {
-                    in.close();
                 }
                 pack = new ZipVaultPackage(archive, true);
             } else {

@@ -149,8 +149,8 @@
                                 <goal>baseline</goal>
                             </goals>
                             <configuration>
-                                <failOnError>false</failOnError>
-                                <comparisonVersion>3.1.30</comparisonVersion>
+                                <failOnError>true</failOnError>
+                                <comparisonVersion>LATEST</comparisonVersion>
                             </configuration>
                         </execution>
                     </executions>

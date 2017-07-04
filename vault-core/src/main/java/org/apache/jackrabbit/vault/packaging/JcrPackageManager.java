@@ -34,10 +34,12 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Extends the {@link PackageManager} by repository specific operations.
  */
+@ProviderType
 public interface JcrPackageManager extends PackageManager {
 
     /**

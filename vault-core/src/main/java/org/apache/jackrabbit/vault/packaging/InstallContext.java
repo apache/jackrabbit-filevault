@@ -20,11 +20,13 @@ package org.apache.jackrabbit.vault.packaging;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The install context is passed to {@link InstallHook}s during the different
  * phases of a package installation.
  */
+@ProviderType
 public interface InstallContext {
 
     /**

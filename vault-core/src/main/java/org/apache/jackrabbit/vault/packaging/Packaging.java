@@ -21,10 +21,13 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Default access point to package managers.
  * @since 2.4.0
  */
+@ProviderType
 public interface Packaging {
 
     /**

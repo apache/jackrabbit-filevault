@@ -30,10 +30,12 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Specifies the interface of a package definition stored in the repository.
  */
+@ProviderType
 public interface JcrPackageDefinition {
 
     /**

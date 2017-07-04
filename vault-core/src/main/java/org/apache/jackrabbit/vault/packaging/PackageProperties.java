@@ -21,6 +21,7 @@ import java.util.Calendar;
 
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The package properties provide extra/meta information about the package to install. The properties are usually
@@ -28,6 +29,7 @@ import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
  *
  * @since 3.1
  */
+@ProviderType
 public interface PackageProperties {
 
     /**

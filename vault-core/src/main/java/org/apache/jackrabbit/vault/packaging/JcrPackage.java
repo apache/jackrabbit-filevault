@@ -26,11 +26,13 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Specifies the interface of a vault package stored in the repository.
  */
-public interface JcrPackage extends Comparable<JcrPackage> {
+@ProviderType
+public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
 
     /**
      * Nodetype name of a package node

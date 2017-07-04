@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The package manager is used to deal with packages. the following operations
  * are defined:
@@ -67,6 +69,7 @@ import javax.jcr.Session;
  *
  * </dl>
  */
+@ProviderType
 public interface PackageManager {
 
     /**

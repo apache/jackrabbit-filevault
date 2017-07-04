@@ -28,8 +28,18 @@ import org.apache.jackrabbit.vault.util.Text;
  */
 public class PackageId implements Comparable<PackageId> {
 
+    /**
+     * The root path of the packages storage location.
+     * @deprecated As of 3.1.42, the storage location is implementation details.
+     */
+    @Deprecated
     public static final String ETC_PACKAGES = "/etc/packages";
 
+    /**
+     * The root path prefix of the packages storage location.
+     * @deprecated As of 3.1.42, the storage location is implementation details.
+     */
+    @Deprecated
     public static final String ETC_PACKAGES_PREFIX = "/etc/packages/";
 
     public static final PackageId[] EMPTY = new PackageId[0];
@@ -47,14 +57,17 @@ public class PackageId implements Comparable<PackageId> {
     /**
      * Creates a new package id
      * @param path path of the package
+     *
+     * @deprecated As of 3.1.42, the storage location is implementation details.
      */
+    @Deprecated
     public PackageId(String path) {
         fromPath = true;
         path = path.trim();
         int idx = path.lastIndexOf('.');
         if (idx > 0) {
             String ext = path.substring(idx);
-            if (ext.equalsIgnoreCase(".zip") || ext.equalsIgnoreCase(".jar")) {
+            if (".zip".equalsIgnoreCase(ext) || ".jar".equalsIgnoreCase(ext)) {
                 path = path.substring(0, idx);
             }
         }
@@ -90,7 +103,7 @@ public class PackageId implements Comparable<PackageId> {
             // check if starts with a letter'
             if (Character.isJavaIdentifierStart(segs[i].charAt(0))) {
                 // then need a digit
-                if (segs[i].length() == 1 || !Character.isDigit(segs[i].charAt(1)) && !segs[i].equals("SNAPSHOT")) {
+                if (segs[i].length() == 1 || !Character.isDigit(segs[i].charAt(1)) && !"SNAPSHOT".equals(segs[i])) {
                     break;
                 }
             }
@@ -124,7 +137,10 @@ public class PackageId implements Comparable<PackageId> {
      * Creates a new package id
      * @param path path of the package
      * @param version version of the package
+     *
+     * @deprecated As of 3.1.42, the storage location is implementation details.
      */
+    @Deprecated
     public PackageId(String path, String version) {
         this(path, Version.create(version));
     }
@@ -133,14 +149,17 @@ public class PackageId implements Comparable<PackageId> {
      * Creates a new package id
      * @param path path of the package
      * @param version version of the package
+     *
+     * @deprecated As of 3.1.42, the storage location is implementation details.
      */
+    @Deprecated
     public PackageId(String path, Version version) {
         fromPath = true;
         path = path.trim();
         int idx = path.lastIndexOf('.');
         if (idx > 0) {
             String ext = path.substring(idx);
-            if (ext.equalsIgnoreCase(".zip") || ext.equalsIgnoreCase(".jar")) {
+            if (".zip".equalsIgnoreCase(ext) || ".jar".equalsIgnoreCase(ext)) {
                 path = path.substring(0, idx);
             }
         }
@@ -257,7 +276,9 @@ public class PackageId implements Comparable<PackageId> {
      * @return {@code true} if constructed from path.
      *
      * @since 2.2.26
+     * @deprecated As of 3.1.42, the storage location is implementation details.
      */
+    @Deprecated
     public boolean isFromPath() {
         return fromPath;
     }
@@ -268,7 +289,9 @@ public class PackageId implements Comparable<PackageId> {
      *
      * @return the path of this package
      * @since 2.2
+     * @deprecated As of 3.1.42, the storage location is implementation details.
      */
+    @Deprecated
     public String getInstallationPath() {
         StringBuilder b = new StringBuilder(ETC_PACKAGES_PREFIX);
         if (group.length() > 0) {
@@ -512,7 +535,7 @@ public class PackageId implements Comparable<PackageId> {
                         // More detailed validity checks (is it well formed,
                         // registered, etc.) are not needed here.
                         state = STATE_NAME_START;
-                    } else if (tmp.equals("internal")) {
+                    } else if ("internal".equals(tmp)) {
                         // As a special Jackrabbit backwards compatibility
                         // feature, support {internal} as a valid URI prefix
                         state = STATE_NAME_START;

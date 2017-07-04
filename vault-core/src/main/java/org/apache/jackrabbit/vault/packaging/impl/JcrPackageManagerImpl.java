@@ -96,7 +96,12 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     /**
      * root path for packages
      */
-    private final static String PACKAGE_ROOT_PATH = "/etc/packages";
+    final static String PACKAGE_ROOT_PATH = "/etc/packages";
+
+    /**
+     * root path prefix for packages
+     */
+    public final static String PACKAGE_ROOT_PATH_PREFIX = "/etc/packages/";
 
     /**
      * root path for packages
@@ -125,7 +130,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
 
     @Override
     public JcrPackage open(PackageId id) throws RepositoryException {
-        String path = id.getInstallationPath();
+        String path = getInstallationPath(id);
         String[] exts = new String[]{"", ".zip", ".jar"};
         for (String ext: exts) {
             if (session.nodeExists(path + ext)) {
@@ -254,7 +259,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         PackageId pid = props.getId();
 
         // invalidate pid if path is unknown
-        if (pid == null || pid.getInstallationPath().equals(ZipVaultPackage.UNKNOWN_PATH)) {
+        if (pid == null) {
             bin.dispose();
             throw new IOException("Package does not contain a path specification or valid package id.");
         }
@@ -263,7 +268,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         }
 
         // create parent node
-        String path = pid.getInstallationPath() + ".zip";
+        String path = getInstallationPath(pid) + ".zip";
         String parentPath = Text.getRelativeParent(path, 1);
         String name = Text.getName(path);
         Node parent = mkdir(parentPath, false);
@@ -377,9 +382,6 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
 
         // invalidate pid if path is unknown
         PackageId pid = pkg.getId();
-        if (pid != null && pid.getInstallationPath().equals(ZipVaultPackage.UNKNOWN_PATH)) {
-            pid = null;
-        }
         if (pid == null) {
             if (nameHint == null || nameHint.length() == 0) {
                 throw new IOException("Package does not contain a path specification and not name hint is given.");
@@ -391,7 +393,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         }
 
         // create parent node
-        String path = pid.getInstallationPath() + ".zip";
+        String path = getInstallationPath(pid) + ".zip";
         String parentPath = Text.getRelativeParent(path, 1);
         String name = Text.getName(path);
         Node parent = mkdir(parentPath, false);
@@ -466,7 +468,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             throw new RepositoryException("Unable to create package. Illegal package name.");
         }
         PackageId pid = new PackageId(group, name, version);
-        Node folder = mkdir(Text.getRelativeParent(pid.getInstallationPath(), 1), false);
+        Node folder = mkdir(Text.getRelativeParent(getInstallationPath(pid), 1), false);
         return createNew(folder, pid, null, true);
     }
 
@@ -486,7 +488,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     @Nonnull
     public JcrPackage createNew(@Nonnull Node parent, @Nonnull PackageId pid, @Nullable VaultPackage pack, boolean autoSave)
             throws RepositoryException, IOException {
-        Node node = parent.addNode(Text.getName(pid.getInstallationPath() + ".zip"), JcrConstants.NT_FILE);
+        Node node = parent.addNode(Text.getName(getInstallationPath(pid) + ".zip"), JcrConstants.NT_FILE);
         Node content = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
         content.addMixin(JcrPackage.NT_VLT_PACKAGE);
         Node defNode = content.addNode(JcrPackage.NN_VLT_DEFINITION);
@@ -534,7 +536,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     @Nonnull
     public JcrPackage createNew(@Nonnull Node parent, @Nonnull PackageId pid, @Nonnull Binary bin, @Nonnull MemoryArchive archive)
             throws RepositoryException, IOException {
-        Node node = parent.addNode(Text.getName(pid.getInstallationPath() + ".zip"), JcrConstants.NT_FILE);
+        Node node = parent.addNode(Text.getName(getInstallationPath(pid) + ".zip"), JcrConstants.NT_FILE);
         Node content = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
         content.addMixin(JcrPackage.NT_VLT_PACKAGE);
         Node defNode = content.addNode(JcrPackage.NN_VLT_DEFINITION);
@@ -599,7 +601,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
                 name == null ? id.getName() : name,
                 version == null ? id.getVersion() : Version.create(version)
         );
-        String dstPath = newId.getInstallationPath() + ".zip";
+        String dstPath = getInstallationPath(newId) + ".zip";
         if (id.equals(newId) && pack.getNode().getPath().equals(dstPath)) {
             log.debug("Package id not changed. won't rename.");
             return pack;
@@ -954,4 +956,30 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             }
         }
     }
+
+    /**
+     * Returns the path of this package. please note that since 2.3 this also
+     * includes the version, but never the extension (.zip).
+     *
+     * Note that the exact storage location is implementation detail and this method should only be used internally for
+     * backward compatibility use cases.
+     *
+     * @param pid the package id
+     * @return the path of this package
+     */
+    public static String getInstallationPath(PackageId pid) {
+        StringBuilder b = new StringBuilder(PACKAGE_ROOT_PATH_PREFIX);
+        String group = pid.getGroup();
+        if (group.length() > 0) {
+            b.append(group);
+            b.append("/");
+        }
+        b.append(pid.getName());
+        String version = pid.getVersion().toString();
+        if (version.length() > 0) {
+            b.append("-").append(version);
+        }
+        return b.toString();
+    }
+
 }

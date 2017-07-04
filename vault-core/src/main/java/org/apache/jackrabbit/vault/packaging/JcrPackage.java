@@ -210,7 +210,10 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * @throws RepositoryException if an error occurs.
      *
      * @since 2.2.18
+     *
+     * @deprecated As of 3.1.42, the storage location is implementation details.
      */
+    @Deprecated
     boolean verifyId(boolean autoFix, boolean autoSave) throws RepositoryException;
 
     /**

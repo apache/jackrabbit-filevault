@@ -48,6 +48,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.fs.impl.ArchiveWrapper;
 import org.apache.jackrabbit.vault.fs.impl.SubPackageFilterArchive;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -323,11 +324,13 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         if (!options.isNonRecursive()) {
             spfArchive = new SubPackageFilterArchive(archive);
             archive = spfArchive;
+        } else {
+            archive = new ArchiveWrapper(archive);
         }
         ZipVaultPackage pkg = new ZipVaultPackage(archive, true);
 
         PackageId pid = pkg.getId();
-        JcrPackage jcrPack = upload(pkg, replace, null, true, false);
+        JcrPackage jcrPack = upload(pkg, replace, null);
         jcrPack = new JcrPackageImpl(this, jcrPack.getNode(), pkg);
         jcrPack.extract(options);
 
@@ -366,10 +369,10 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     public JcrPackage upload(File file, boolean isTmpFile, boolean replace, String nameHint, boolean strict)
             throws RepositoryException, IOException {
         ZipVaultPackage pack = new ZipVaultPackage(file, isTmpFile, strict);
-        return upload(pack, replace, nameHint, strict, true);
+        return upload(pack, replace, nameHint);
     }
 
-    private JcrPackage upload(ZipVaultPackage pkg, boolean replace, String nameHint, boolean strict, boolean store)
+    private JcrPackage upload(ZipVaultPackage pkg, boolean replace, String nameHint)
             throws RepositoryException, IOException {
 
         // open zip packages
@@ -416,7 +419,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         }
         JcrPackage jcrPack = null;
         try {
-            jcrPack = createNew(parent, pid, store ? pkg : null, false);
+            jcrPack = createNew(parent, pid, pkg, false);
             JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
             if (state != null) {
                 def.setState(state);

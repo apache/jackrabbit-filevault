@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
@@ -48,6 +49,7 @@ import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
+import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -311,7 +313,8 @@ public class JcrPackageImpl implements JcrPackage {
         if (pack == null) {
             long size = -1;
             try {
-                size = getData().getLength();
+                Property data = getData();
+                size = data == null ? -1 : data.getLength();
             } catch (RepositoryException e) {
                 // ignore
             }
@@ -321,6 +324,14 @@ public class JcrPackageImpl implements JcrPackage {
                     archive.run(in);
                 } catch (Exception e) {
                     throw new IOException("Error while reading stream", e);
+                }
+                // workaround for shallow packages that don't have a meta-inf anymore (JCRVLT-188)
+                Properties props = archive.getMetaInf().getProperties();
+                if (props == null || props.isEmpty()) {
+                    JcrPackageDefinition def = getDefinition();
+                    if (def != null) {
+                        ((DefaultMetaInf) archive.getMetaInf()).setProperties(def.getMetaInf().getProperties());
+                    }
                 }
                 pack = new ZipVaultPackage(archive, true);
             } else {

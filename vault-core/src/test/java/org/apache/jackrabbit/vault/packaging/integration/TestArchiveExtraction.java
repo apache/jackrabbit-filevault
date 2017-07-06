@@ -37,6 +37,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -97,6 +98,10 @@ public class TestArchiveExtraction extends IntegrationTestBase {
         assertTrue("Package should be marked as installed", pack.isInstalled());
         assertTrue("Package should be marked as empty", pack.isEmpty());
         assertNull("Package should not have a snapshot", pack.getSnapshot());
+        assertNotNull("Package should have a definition", pack.getDefinition());
+        assertNotNull("Package should have a definition creation date", pack.getDefinition().getCreated());
+        assertNotNull("Package should have properties", pack.getPackage().getProperties());
+        assertNotNull("Package should have a properties creation date", pack.getPackage().getCreated());
 
         try {
             pack.install(getDefaultOptions());

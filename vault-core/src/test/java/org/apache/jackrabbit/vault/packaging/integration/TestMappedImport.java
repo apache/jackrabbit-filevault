@@ -22,12 +22,15 @@ import java.io.IOException;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.MultiPathMapping;
+import org.apache.jackrabbit.vault.fs.api.RegexpPathMapping;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  */
@@ -167,7 +170,6 @@ public class TestMappedImport extends IntegrationTestBase {
      * Tests if a non-trivial rename remapping works.
      * This is currently not supported
      */
-    @Ignore("JCRVLT-78")
     @Test
     public void testNonRename() throws RepositoryException, IOException, PackageException {
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), false);
@@ -178,7 +180,28 @@ public class TestMappedImport extends IntegrationTestBase {
         opts.setPathMapping(mapping);
         pack.extract(opts);
 
-        assertNodeExists("/tmp/foo");
+        assertNodeMissing("/tmp/foo");
         assertNodeExists("/libs/foo");
     }
+
+    /**
+     * Tests if regexp remap works
+     */
+    @Test
+    public void  testInstallWithRegexp() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/test_version.zip"), false);
+        assertNotNull(pack);
+
+        ImportOptions opts = getDefaultOptions();
+        RegexpPathMapping pathMapping = new RegexpPathMapping();
+        pathMapping.addMapping("/testroot/(.*)", "/root/$1");
+        opts.setPathMapping(pathMapping);
+
+        pack.install(opts);
+
+        assertNodeExists("/root/a");
+        assertNodeMissing("/testroot/a");
+    }
+
+
 }

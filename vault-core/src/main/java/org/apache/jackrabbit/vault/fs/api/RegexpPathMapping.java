@@ -43,6 +43,7 @@ public final class RegexpPathMapping implements PathMapping {
      * @param pathsMappingMap the data structure containing the mapping
      * @return this
      */
+    @Nonnull
     public <K, V> RegexpPathMapping addAllMappings(@Nonnull Map<K, V> pathsMappingMap) {
         for (Entry<K, V> entry : pathsMappingMap.entrySet()) {
             final K key = entry.getKey();
@@ -87,7 +88,13 @@ public final class RegexpPathMapping implements PathMapping {
     @Override
     @Nonnull
     public String map(@Nonnull String path) {
-        return map(path, false);
+        for (Entry<Pattern, String> pathMapping : pathsMapping.entrySet()) {
+            Matcher matcher = pathMapping.getKey().matcher(path);
+            if (matcher.matches()) {
+                return matcher.replaceAll(pathMapping.getValue());
+            }
+        }
+        return path;
     }
 
     /**
@@ -97,16 +104,9 @@ public final class RegexpPathMapping implements PathMapping {
     @Nonnull
     public String map(@Nonnull String path, boolean reverse) {
         if (reverse) {
-            throw new IllegalArgumentException("path mapping cannot be reversed with the regexp mapping");
-        } else {
-            for (Entry<Pattern, String> pathMapping : pathsMapping.entrySet()) {
-                Matcher matcher = pathMapping.getKey().matcher(path);
-                if (matcher.matches()) {
-                    return matcher.replaceAll(pathMapping.getValue());
-                }
-            }
-            return path;
+            throw new IllegalArgumentException("No reverse mapping not supported with regexp mapping");
         }
+        return map(path);
     }
 
 }

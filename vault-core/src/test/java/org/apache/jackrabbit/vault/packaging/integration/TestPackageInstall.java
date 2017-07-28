@@ -82,7 +82,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testUnwrapPreserveInstall() throws RepositoryException, IOException, PackageException {
-        
+
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), true, true);
         assertNotNull(pack);
         assertTrue(pack.isValid());
@@ -106,7 +106,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertTrue(pack.isValid());
         assertTrue(pack.isInstalled());
         assertEquals(lastUnpacked, pack.getDefinition().getLastUnpacked().getTimeInMillis());
-        
+
         // a package with a different created date should not preserve the status!
         pack = packMgr.upload(getStream("testpackages/tmp_with_modified_created_date.zip"), true, true);
         assertNotNull(pack);

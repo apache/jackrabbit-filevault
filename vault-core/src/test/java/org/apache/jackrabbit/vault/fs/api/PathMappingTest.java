@@ -77,4 +77,19 @@ public class PathMappingTest {
         assertEquals("/dest/foo/1/top/flop", map.map("/test/flop", true));
 
     }
+
+    @Test
+    public void testRegexpIdentityMapping() {
+        RegexpPathMapping pathMapping = new RegexpPathMapping();
+        assertEquals("/etc/my/fake/data", pathMapping.map("/etc/my/fake/data"));
+    }
+
+    @Test
+    public void testRegexpCorrectMapping() {
+        RegexpPathMapping pathMapping = new RegexpPathMapping();
+        pathMapping.addMapping("/etc/(.*)", "/dummy/$1/custom");
+
+        assertEquals("/dummy/my/fake/data/custom", pathMapping.map("/etc/my/fake/data"));
+    }
+
 }

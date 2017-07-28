@@ -227,11 +227,6 @@ public class Importer {
     private final ImportOptions opts;
 
     /**
-     * path mapping from the import options
-     */
-    private PathMapping pathMapping;
-
-    /**
      * the checkpoint state of the autosave. used for recovering from stale item errors during install.
      */
     private AutoSave cpAutosave;
@@ -366,11 +361,11 @@ public class Importer {
         }
 
         // check path remapping
-        pathMapping = opts.getPathMapping();
+        PathMapping pathMapping = opts.getPathMapping();
         if (pathMapping != null) {
             filter = filter.translate(pathMapping);
-        } else {
-            pathMapping = PathMapping.IDENTITY;
+            this.archive = archive = new MappedArchive(archive, pathMapping);
+            this.archive.open(true);
         }
 
         // set import mode if possible
@@ -594,9 +589,7 @@ public class Importer {
     private void prepare(Archive.Entry directory, TxInfo parentInfo, NamespaceResolver resolver)
             throws IOException, RepositoryException {
         Collection<? extends Archive.Entry> files = directory.getChildren();
-        if (files == null) {
-            return;
-        }
+
         // first process the directories
         for (Archive.Entry file: files) {
             if (file.isDirectory()) {
@@ -610,19 +603,6 @@ public class Importer {
                     // fix repo path
                     repoName = repoName.substring(0, repoName.length() - 4);
                     repoPath = parentInfo.path + "/" + repoName;
-                }
-
-                // remap if needed
-                String mappedPath = pathMapping.map(repoPath);
-                if (!mappedPath.equals(repoPath)) {
-                    String mappedParent = Text.getRelativeParent(mappedPath, 1);
-                    if (!mappedParent.equals(parentInfo.path)) {
-                        log.warn("remapping other than renames not supported yet ({} -> {}).", repoPath, mappedPath);
-                    } else {
-                        log.debug("remapping detected {} -> {}", repoPath, mappedPath);
-                        repoPath = mappedPath;
-                        repoName = Text.getName(repoPath);
-                    }
                 }
 
                 TxInfo info = parentInfo.addChild(new TxInfo(parentInfo, repoPath));
@@ -674,19 +654,6 @@ public class Importer {
                 // todo: find better way to detect sub-packages
                 if (repoPath.startsWith(PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
                     subPackages.add(repoPath);
-                }
-
-                // remap if needed
-                String mappedPath = pathMapping.map(repoPath);
-                if (!mappedPath.equals(repoPath)) {
-                    String mappedParent = Text.getRelativeParent(mappedPath, 1);
-                    if (!mappedParent.equals(parentInfo.path)) {
-                        log.warn("remapping other than renames not supported yet ({} -> {}).", repoPath, mappedPath);
-                    } else {
-                        log.debug("remapping detected {} -> {}", repoPath, mappedPath);
-                        repoPath = mappedPath;
-                        repoName = Text.getName(repoPath);
-                    }
                 }
 
                 String repoBase = repoName;

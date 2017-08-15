@@ -568,15 +568,14 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
      * {@inheritDoc}
      */
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
         // special handling for root node
-        if (stack.isRoot()) {
-            if (localName.equals(NameConstants.JCR_ROOT.getLocalName())
-                    && uri.equals(NameConstants.JCR_ROOT.getNamespaceURI())) {
-                qName = rootNodeName;
-            }
-        }
         String label = ISO9075.decode(qName);
+        if (stack.isRoot()
+                && localName.equals(NameConstants.JCR_ROOT.getLocalName())
+                && uri.equals(NameConstants.JCR_ROOT.getNamespaceURI())) {
+                label = rootNodeName;
+        }
         String name = label;
         log.trace("-> element {}", label);
         boolean snsNode = false;

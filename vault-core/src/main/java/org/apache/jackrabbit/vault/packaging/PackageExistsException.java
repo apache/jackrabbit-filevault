@@ -15,7 +15,40 @@
  * limitations under the License.
  */
 
-@Version("2.6.0")
 package org.apache.jackrabbit.vault.packaging;
 
-import org.osgi.annotation.versioning.Version;
+import javax.annotation.Nullable;
+
+/**
+ * Exception thrown if a specified package already exist.
+ */
+public class PackageExistsException extends PackageException {
+
+    private PackageId id;
+
+    public PackageExistsException() {
+        super();
+    }
+
+    public PackageExistsException(String message) {
+        super(message);
+    }
+
+    public PackageExistsException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public PackageExistsException(Throwable cause) {
+        super(cause);
+    }
+
+    @Nullable
+    public PackageId getId() {
+        return id;
+    }
+
+    public PackageExistsException setId(PackageId id) {
+        this.id = id;
+        return this;
+    }
+}

@@ -18,7 +18,7 @@
 package org.apache.jackrabbit.vault.packaging;
 
 /**
- * {@code PackageException}...
+ * Generic exception for package related operations.
  */
 public class PackageException extends Exception {
 

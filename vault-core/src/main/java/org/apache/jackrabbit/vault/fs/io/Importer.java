@@ -77,14 +77,13 @@ import org.apache.jackrabbit.vault.fs.spi.PrivilegeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
+import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.apache.jackrabbit.vault.util.Text;
 import org.apache.jackrabbit.vault.util.Tree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl.PACKAGE_ROOT_PATH_PREFIX;
 
 /**
  * {@code AbstractImporter}
@@ -652,7 +651,7 @@ public class Importer {
                     }
                 }
                 // todo: find better way to detect sub-packages
-                if (repoPath.startsWith(PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
+                if (repoPath.startsWith(JcrPackageRegistry.PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
                     subPackages.add(repoPath);
                 }
 
@@ -679,7 +678,7 @@ public class Importer {
                         serType = SerializationType.GENERIC;
                         type = ArtifactType.FILE;
                     }
-                } else if (ext.equals(".cnd")) {
+                } else if (".cnd".equals(ext)) {
                     if (opts.getCndPattern().matcher(repoPath).matches()) {
                         InputStream in = is.getByteStream();
                         try {
@@ -697,10 +696,10 @@ public class Importer {
                     }
                     ext = "";
                     type = ArtifactType.FILE;
-                } else if (ext.equals(".xcnd")) {
+                } else if (".xcnd".equals(ext)) {
                     serType = SerializationType.CND;
                     repoName = repoBase;
-                } else if (ext.equals(".binary")) {
+                } else if (".binary".equals(ext)) {
                     serType = SerializationType.GENERIC;
                     type = ArtifactType.BINARY;
                     repoName = repoBase;

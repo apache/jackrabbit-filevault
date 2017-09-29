@@ -14,8 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.packaging.registry;
 
-@Version("2.6.0")
-package org.apache.jackrabbit.vault.packaging;
+import java.util.List;
 
-import org.osgi.annotation.versioning.Version;
+import javax.annotation.Nonnull;
+
+import org.osgi.annotation.versioning.ProviderType;
+
+/**
+ * Holds a list of tasks that perform package installation related operations.
+ */
+@ProviderType
+public interface ExecutionPlan {
+
+    /**
+     * An id of the execution plan.
+     * @return the id.
+     */
+    @Nonnull
+    String getId();
+
+    /**
+     * Retrieves the list of all tasks
+     * @return the tasks.
+     */
+    @Nonnull
+    List<PackageTask> getTasks();
+
+    /**
+     * Checks if this plan has finished.
+     * @return {@code true} if executed.
+     */
+    boolean isExecuted();
+
+    /**
+     * checks if this plan has error
+     * @return {@code true} if it has errors.
+     */
+    boolean hasErrors();
+}

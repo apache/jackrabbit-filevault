@@ -14,8 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.packaging.registry;
 
-@Version("2.6.0")
-package org.apache.jackrabbit.vault.packaging;
+import javax.annotation.Nonnull;
 
-import org.osgi.annotation.versioning.Version;
+import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.osgi.annotation.versioning.ProviderType;
+
+/**
+ * {@code ExecutionTaskBuilder}...
+ */
+@ProviderType
+public interface PackageTaskBuilder {
+
+    /**
+     * Sets the package id of this task.
+     * @param id the package id
+     * @return this.
+     */
+    @Nonnull
+    PackageTaskBuilder with(@Nonnull PackageId id);
+
+    /**
+     * Sets the type of this task
+     * @param type the type
+     * @return this.
+     */
+    @Nonnull
+    ExecutionPlanBuilder with(@Nonnull PackageTask.Type type);
+
+}

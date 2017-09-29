@@ -121,6 +121,8 @@ public class TestArchiveExtraction extends IntegrationTestBase {
             fail("extract w/o replace should fail.");
         } catch (ItemExistsException e) {
             // expected
+        } catch (PackageException e) {
+            // expected
         }
     }
 

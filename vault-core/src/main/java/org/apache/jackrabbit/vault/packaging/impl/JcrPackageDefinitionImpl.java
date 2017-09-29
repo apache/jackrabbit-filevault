@@ -878,7 +878,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      * Returns a new state object that can be used to save modification information.
      * @return a new state object.
      */
-    protected State getState() {
+    public State getState() {
         return new State().load(this);
     }
 
@@ -886,11 +886,11 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      * Sets the information stored in the state object back to this definition.
      * @param state the sate
      */
-    protected void setState(State state) {
+    public void setState(State state) {
         state.save(this);
     }
 
-    protected static class State {
+    public static class State {
 
         private final String[] PROPERTY_NAMES = {
                 PN_LAST_UNPACKED,    PN_LAST_UNWRAPPED,    PN_LASTMODIFIED,    PN_LAST_WRAPPED,

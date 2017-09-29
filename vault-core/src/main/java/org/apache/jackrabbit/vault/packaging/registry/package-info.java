@@ -14,8 +14,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@Version("2.6.0")
-package org.apache.jackrabbit.vault.packaging;
-
-import org.osgi.annotation.versioning.Version;
+@org.osgi.annotation.versioning.Version("1.0.0")
+package org.apache.jackrabbit.vault.packaging.registry;

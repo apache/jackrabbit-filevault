@@ -15,7 +15,40 @@
  * limitations under the License.
  */
 
-@Version("2.6.0")
 package org.apache.jackrabbit.vault.packaging;
 
-import org.osgi.annotation.versioning.Version;
+import javax.annotation.Nullable;
+
+/**
+ * Exception for errors where a specified package does not exist
+ */
+public class NoSuchPackageException extends PackageException {
+
+    private PackageId id;
+
+    public NoSuchPackageException() {
+        super();
+    }
+
+    public NoSuchPackageException(String message) {
+        super(message);
+    }
+
+    public NoSuchPackageException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public NoSuchPackageException(Throwable cause) {
+        super(cause);
+    }
+
+    @Nullable
+    public PackageId getId() {
+        return id;
+    }
+
+    public NoSuchPackageException setId(PackageId id) {
+        this.id = id;
+        return this;
+    }
+}

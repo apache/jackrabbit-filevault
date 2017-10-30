@@ -27,6 +27,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeSet;
 import org.apache.jackrabbit.vault.fs.spi.PrivilegeDefinitions;
+import org.apache.jackrabbit.vault.packaging.PackageType;
 
 /**
  * Abstracts the way of accessing the vault specific meta-info of a checkout.

@@ -19,6 +19,8 @@ package org.apache.jackrabbit.vault.packaging;
 
 import java.util.Calendar;
 
+import javax.annotation.Nullable;
+
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.osgi.annotation.versioning.ProviderType;
@@ -137,6 +139,11 @@ public interface PackageProperties {
     String NAME_USE_BINARY_REFERENCES = VaultFsConfig.NAME_USE_BINARY_REFERENCES;
 
     /**
+     * Name of the package-type property
+     */
+    String NAME_PACKAGE_TYPE = "packageType";
+
+    /**
      * the prefix for an install hook property. eg:
      * 'installhook.test1.class = ....'
      */
@@ -233,4 +240,9 @@ public interface PackageProperties {
      */
     String getProperty(String name);
 
+    /**
+     * Returns the package type or {@code null} if not package type was specified for this package.
+     */
+    @Nullable
+    PackageType getPackageType();
 }

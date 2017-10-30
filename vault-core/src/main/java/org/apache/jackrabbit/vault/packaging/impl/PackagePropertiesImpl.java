@@ -20,11 +20,14 @@ package org.apache.jackrabbit.vault.packaging.impl;
 import java.util.Calendar;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
 
     private PackageId id;
 
+    @Override
     public PackageId getId() {
         if (id == null) {
             String version = getProperty(NAME_VERSION);
@@ -59,6 +63,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Calendar getLastModified() {
         return getDateProperty(NAME_LAST_MODIFIED);
     }
@@ -66,6 +71,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getLastModifiedBy() {
         return getProperty(NAME_LAST_MODIFIED_BY);
     }
@@ -73,6 +79,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Calendar getCreated() {
         return getDateProperty(NAME_CREATED);
     }
@@ -80,6 +87,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getCreatedBy() {
         return getProperty(NAME_CREATED_BY);
     }
@@ -87,6 +95,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Calendar getLastWrapped() {
         return getDateProperty(NAME_LAST_WRAPPED);
     }
@@ -94,6 +103,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getLastWrappedBy() {
         return getProperty(NAME_LAST_WRAPPED_BY);
     }
@@ -101,6 +111,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getDescription() {
         return getProperty(NAME_DESCRIPTION);
     }
@@ -108,6 +119,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public AccessControlHandling getACHandling() {
         String ac = getProperty(NAME_AC_HANDLING);
         if (ac == null) {
@@ -125,6 +137,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public SubPackageHandling getSubPackageHandling() {
         return SubPackageHandling.fromString(getProperty(NAME_SUB_PACKAGE_HANDLING));
     }
@@ -132,6 +145,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean requiresRoot() {
         return "true".equals(getProperty(NAME_REQUIRES_ROOT));
     }
@@ -139,6 +153,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Dependency[] getDependencies() {
         String deps = getProperty(NAME_DEPENDENCIES);
         if (deps == null) {
@@ -151,6 +166,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Calendar getDateProperty(String name) {
         try {
             String p = getProperty(name);
@@ -166,6 +182,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getProperty(String name) {
         try {
             Properties props = getPropertiesMap();
@@ -173,6 +190,23 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Nullable
+    @Override
+    public PackageType getPackageType() {
+        final String pt = getProperty(NAME_PACKAGE_TYPE);
+        if (pt != null) {
+            try {
+                return PackageType.valueOf(pt.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("invalid package type configured: {}", pt);
+            }
+        }
+        return null;
     }
 
     protected abstract Properties getPropertiesMap();

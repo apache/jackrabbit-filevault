@@ -54,7 +54,6 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     public void noPropertyFiltered() throws IOException, RepositoryException, PackageException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));
-        filter.addPropertyFilterSet(new PathFilterSet("/tmp"));
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
@@ -68,11 +67,10 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     @Test
     public void filterPropertyP1OnFoo() throws IOException, RepositoryException, PackageException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
-        filter.add(new PathFilterSet("/tmp"));
 
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p1"));
-        filter.addPropertyFilterSet(properties);
+        filter.add(new PathFilterSet("/tmp"), properties);
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
@@ -87,11 +85,10 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     @Test
     public void filterPropertyPxOnFoo() throws IOException, RepositoryException, PackageException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
-        filter.add(new PathFilterSet("/tmp"));
 
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
-        filter.addPropertyFilterSet(properties);
+        filter.add(new PathFilterSet("/tmp"), properties);
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
@@ -107,12 +104,10 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/foo"));
-        filter.addPropertyFilterSet(new PathFilterSet("/foo"));
-        filter.add(new PathFilterSet("/tmp"));
 
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
-        filter.addPropertyFilterSet(properties);
+        filter.add(new PathFilterSet("/tmp"), properties);
 
         // export and extract
         File pkgFile = assemblePackage(filter);
@@ -150,11 +145,10 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     @Test
     public void filterRelativeProperties() throws IOException, RepositoryException, PackageException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
-        filter.add(new PathFilterSet("/tmp"));
 
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter(".*/p1"));
-        filter.addPropertyFilterSet(properties);
+        filter.add(new PathFilterSet("/tmp"), properties);
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");

@@ -97,18 +97,22 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
     /**
      * Add a #PathFilterSet for nodes items.
+     * Generate appropriate #PathFilterSet for corresponding properties items.
      * @param set the set of filters to add.
      */
     public void add(PathFilterSet set) {
         nodesFilterSets.add(set);
+        propsFilterSets.add(new PathFilterSet(set.getRoot()));
     }
 
     /**
-     * Add a #PathFilterSet for properties items.
-     * @param set the set of filters to add.
+     * Add #PathFilterSet for nodes items and properties items.
+     * @param nodesFilterSet the set of node filters to add.
+     * @param propertiesFilterSet the set of property filters to add.
      */
-    public void addPropertyFilterSet(PathFilterSet set) {
-        propsFilterSets.add(set);
+    public void add(PathFilterSet nodesFilterSet, PathFilterSet propertiesFilterSet) {
+        nodesFilterSets.add(nodesFilterSet);
+        propsFilterSets.add(propertiesFilterSet);
     }
 
     /**
@@ -228,10 +232,10 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             mapped.setGlobalIgnored(globalIgnored.translate(mapping));
         }
         for (PathFilterSet set: nodesFilterSets) {
-            mapped.add(set.translate(mapping));
+            mapped.nodesFilterSets.add(set.translate(mapping));
         }
         for (PathFilterSet set: propsFilterSets) {
-            mapped.addPropertyFilterSet(set.translate(mapping));
+            mapped.propsFilterSets.add(set.translate(mapping));
         }
         return mapped;
     }
@@ -356,8 +360,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
                 }
             }
         }
-        add(nodeFilters);
-        addPropertyFilterSet(propFilters);
+        add(nodeFilters, propFilters);
     }
 
     protected PathFilter readFilter(Element elem) throws ConfigurationException {

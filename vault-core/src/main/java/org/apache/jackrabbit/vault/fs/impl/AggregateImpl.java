@@ -572,15 +572,6 @@ public class AggregateImpl implements Aggregate {
         }
     }
 
-    private boolean includesProperty(String propertyPath) {
-        for (PathFilterSet filterSet: mgr.getWorkspaceFilter().getPropertyFilterSets()) {
-            if (!filterSet.contains(propertyPath)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private void addNamespace(Set<String> prefixes, String name) throws RepositoryException {
         int idx = name.indexOf(':');
         if (idx > 0) {
@@ -685,7 +676,8 @@ public class AggregateImpl implements Aggregate {
         while (pIter.hasNext()) {
             Property p = pIter.nextProperty();
             String path = p.getPath();
-            if (aggregator.includes(getNode(), node, p, path) && includesProperty(path)) {
+            if (aggregator.includes(getNode(), node, p, path) &&
+                    mgr.getWorkspaceFilter().containsProperty(path)) {
                 include(node, p, path);
             }
         }

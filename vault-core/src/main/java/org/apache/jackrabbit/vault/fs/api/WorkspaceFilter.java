@@ -67,6 +67,16 @@ public interface WorkspaceFilter extends Dumpable {
     boolean contains(String path);
 
     /**
+     * Checks if the given path of a node's property is contained in this workspace filter.
+     * It returns {@code true} if any of the filter sets contain the path
+     * and it's not globally ignored.
+     *
+     * @param path to check
+     * @return {@code true} if the given path is included in this filter.
+     */
+    boolean containsProperty(String path);
+
+    /**
      * Checks if the given node path is covered in this workspace filter.
      * It only returns {@code true} if at least one of the sets covers
      * the path and is not globally ignored.

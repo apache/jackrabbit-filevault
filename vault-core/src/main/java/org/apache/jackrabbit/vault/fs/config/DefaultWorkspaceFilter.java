@@ -173,6 +173,18 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     /**
      * {@inheritDoc}
      */
+    public boolean containsProperty(String path) {
+        for (PathFilterSet set: propsFilterSets) {
+            if (set.contains(path)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean covers(String path) {
         if (isGloballyIgnored(path)) {
             return false;

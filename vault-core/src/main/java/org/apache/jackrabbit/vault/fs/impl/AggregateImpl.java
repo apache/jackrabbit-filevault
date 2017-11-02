@@ -37,16 +37,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
 import org.apache.jackrabbit.api.ReferenceBinary;
-import org.apache.jackrabbit.vault.fs.api.Aggregate;
-import org.apache.jackrabbit.vault.fs.api.Aggregator;
-import org.apache.jackrabbit.vault.fs.api.Artifact;
-import org.apache.jackrabbit.vault.fs.api.ArtifactSet;
-import org.apache.jackrabbit.vault.fs.api.ArtifactType;
-import org.apache.jackrabbit.vault.fs.api.DumpContext;
-import org.apache.jackrabbit.vault.fs.api.ImportInfo;
-import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
-import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
-import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
+import org.apache.jackrabbit.vault.fs.api.*;
 import org.apache.jackrabbit.vault.fs.impl.io.AggregateWalkListener;
 import org.apache.jackrabbit.vault.util.NodeNameComparator;
 import org.apache.jackrabbit.vault.util.PathUtil;
@@ -668,16 +659,21 @@ public class AggregateImpl implements Aggregate {
 
     private void prepare(Node node, boolean descend)
             throws RepositoryException {
+        WorkspaceFilter workspaceFilter = mgr.getWorkspaceFilter();
+        String nodePath = node.getPath();
         if (log.isDebugEnabled()) {
-            log.trace("descending into {} (descend={})", node.getPath(), descend);
+            log.trace("descending into {} (descend={})", nodePath, descend);
         }
         // add "our" properties to the include set
         PropertyIterator pIter = node.getProperties();
+        // filter root is considered as an ancestor. We don't want this behaviour here.
+        boolean nodeIsAncestor = !workspaceFilter.covers(nodePath) &&
+                workspaceFilter.isAncestor(nodePath);
         while (pIter.hasNext()) {
             Property p = pIter.nextProperty();
             String path = p.getPath();
             if (aggregator.includes(getNode(), node, p, path) &&
-                    mgr.getWorkspaceFilter().containsProperty(path)) {
+                    (nodeIsAncestor || workspaceFilter.containsProperty(path))) {
                 include(node, p, path);
             }
         }
@@ -687,9 +683,9 @@ public class AggregateImpl implements Aggregate {
         while (nIter.hasNext()) {
             Node n = nIter.nextNode();
             String path = n.getPath();
-            PathFilterSet coverSet = mgr.getWorkspaceFilter().getCoveringFilterSet(path);
-            boolean isAncestor = mgr.getWorkspaceFilter().isAncestor(path);
-            boolean isIncluded = mgr.getWorkspaceFilter().contains(path);
+            PathFilterSet coverSet = workspaceFilter.getCoveringFilterSet(path);
+            boolean isAncestor = workspaceFilter.isAncestor(path);
+            boolean isIncluded = workspaceFilter.contains(path);
             if (coverSet == null && !isAncestor) {
                 continue;
             }

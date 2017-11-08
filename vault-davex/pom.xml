@@ -80,11 +80,6 @@
             <artifactId>jackrabbit-webdav</artifactId>
             <exclusions>
                 <exclusion>
-                    <!-- jackrabbit webdav has slf4j 1.6.1 which we don't want -->
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>jcl-over-slf4j</artifactId>
-                </exclusion>
-                <exclusion>
                     <!-- exclude legacy http client to be included (see JCRVLT-148) -->
                     <groupId>commons-httpclient</groupId>
                     <artifactId>commons-httpclient</artifactId>
@@ -95,12 +90,6 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.5.8</version>
-            <scope>compile</scope>
         </dependency>
 
         <!-- JCR Stuff -->

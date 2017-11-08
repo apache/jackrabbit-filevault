@@ -17,6 +17,7 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -27,6 +28,7 @@ import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
@@ -49,9 +51,10 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void noPropertyFiltered() throws IOException, RepositoryException, PackageException {
+    public void noPropertyFiltered_deprecated() throws IOException, RepositoryException, PackageException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));
+        filter.addPropertyFilterSet(new PathFilterSet("/tmp"));
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
@@ -59,6 +62,40 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // validate the extracted content
         assertPropertiesExist("/tmp", "p1", "p2", "p3");
         assertPropertiesExist("/tmp/foo", "p1", "p2", "p3");
+        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+    }
+
+    @Test
+    public void noPropertyFiltered() throws IOException, RepositoryException, PackageException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/tmp"));
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertPropertiesExist("/tmp/foo", "p1", "p2", "p3");
+        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+    }
+
+    @Test
+    public void filterPropertyP1OnFoo_deprecated() throws IOException, RepositoryException, PackageException {
+        PathFilterSet properties = new PathFilterSet("/tmp");
+        properties.addExclude(new DefaultPathFilter("/tmp/foo/p1"));
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/tmp"), properties);
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertPropertiesExist("/tmp/foo", "p2", "p3");
+        assertPropertiesMissg("/tmp/foo", "p1");
         assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
     }
 
@@ -82,7 +119,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyPxOnFoo() throws IOException, RepositoryException, PackageException {
+    public void filterPropertyPxOnFoo_deprecated() throws IOException, RepositoryException, PackageException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));
 
@@ -100,13 +137,117 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativeProperties() throws IOException, RepositoryException, PackageException {
+    public void filterPropertyPxOnFoo() throws IOException, RepositoryException, PackageException {
+
+        PathFilterSet properties = new PathFilterSet("/tmp");
+        properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/tmp"), properties);
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
+        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+    }
+
+    @Test
+    public void filterPropertyWithTwoRoots_deprecated() throws IOException, RepositoryException, PackageException {
+        PathFilterSet properties = new PathFilterSet("/tmp");
+        properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/foo"));
+        filter.add(new PathFilterSet("/tmp"), properties);
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
+        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+    }
+
+    @Test
+    public void filterPropertyWithTwoRoots() throws IOException, RepositoryException, PackageException {
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/foo"));
+        filter.addPropertyFilterSet(new PathFilterSet("/foo"));
+        filter.add(new PathFilterSet("/tmp"));
+
+        PathFilterSet properties = new PathFilterSet("/tmp");
+        properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
+        filter.addPropertyFilterSet(properties);
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
+        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+    }
+
+    @Test
+    public void filterPropertyFromSource() throws IOException, RepositoryException, PackageException, ConfigurationException {
+        String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<workspaceFilter version=\"1.0\">\n" +
+                "    <filter root=\"/foo\"/>\n" +
+                "    <filter root=\"/tmp\">\n" +
+                "        <exclude pattern=\"/tmp/foo/p.*\" matchProperties=\"true\"/>\n" +
+                "    </filter>\n" +
+                "</workspaceFilter>";
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.load(new ByteArrayInputStream(src.getBytes("utf-8")));
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
+        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+    }
+
+    @Test
+    public void filterRelativeProperties_deprecated() throws IOException, RepositoryException, PackageException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));
 
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter(".*/p1"));
         filter.addPropertyFilterSet(properties);
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p2", "p3");
+        assertPropertiesMissg("/tmp", "p1");
+        assertPropertiesExist("/tmp/foo", "p2", "p3");
+        assertPropertiesMissg("/tmp/foo", "p1");
+        assertPropertiesExist("/tmp/foo/bar", "p2", "p3");
+        assertPropertiesMissg("/tmp/foo/bar", "p1");
+    }
+
+    @Test
+    public void filterRelativeProperties() throws IOException, RepositoryException, PackageException {
+        PathFilterSet properties = new PathFilterSet("/tmp");
+        properties.addExclude(new DefaultPathFilter(".*/p1"));
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/tmp"), properties);
+
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
@@ -129,7 +270,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         Node root = session.getRootNode();
         Node tmp = setupProperties(root.addNode("tmp"));
         Node foo = setupProperties(tmp.addNode("foo"));
-        Node bar = setupProperties(foo.addNode("bar"));
+        setupProperties(foo.addNode("bar"));
     }
 
     private Node setupProperties(Node node)

@@ -1,0 +1,2 @@
+.ratignore
+src/test/resources/org/apache/jackrabbit/vault/fs/filter/workspacefilters/complex-expected.xml

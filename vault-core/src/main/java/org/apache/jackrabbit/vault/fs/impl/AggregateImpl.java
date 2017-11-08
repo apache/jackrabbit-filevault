@@ -47,6 +47,7 @@ import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.io.AggregateWalkListener;
 import org.apache.jackrabbit.vault.util.NodeNameComparator;
 import org.apache.jackrabbit.vault.util.PathUtil;
@@ -572,13 +573,26 @@ public class AggregateImpl implements Aggregate {
         }
     }
 
-    private boolean includesProperty(String propertyPath) {
-        for (PathFilterSet filterSet: mgr.getWorkspaceFilter().getPropertyFilterSets()) {
-            if (!filterSet.contains(propertyPath)) {
-                return false;
+    /**
+     * Tests if the given workspace filter includes the given property. If the filter does not cover the property,
+     * it returns {@code true}.
+     *
+     * @param filter the workspace filter
+     * @param propertyPath the path to the property
+     * @return {@code true} if the property is included in the aggregate
+     */
+    private boolean includesProperty(WorkspaceFilter filter, String propertyPath) {
+        if (!filter.covers(propertyPath)) {
+            // include all properties that are not covered by any filter. this is to ensure that the ancestor paths
+            // have at least jcr:primary type.
+            return true;
+        }
+        for (PathFilterSet filterSet: filter.getPropertyFilterSets()) {
+            if (filterSet.contains(propertyPath)) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     private void addNamespace(Set<String> prefixes, String name) throws RepositoryException {
@@ -680,12 +694,13 @@ public class AggregateImpl implements Aggregate {
         if (log.isDebugEnabled()) {
             log.trace("descending into {} (descend={})", node.getPath(), descend);
         }
+        final WorkspaceFilter filter = mgr.getWorkspaceFilter();
         // add "our" properties to the include set
         PropertyIterator pIter = node.getProperties();
         while (pIter.hasNext()) {
             Property p = pIter.nextProperty();
             String path = p.getPath();
-            if (aggregator.includes(getNode(), node, p, path) && includesProperty(path)) {
+            if (aggregator.includes(getNode(), node, p, path) && includesProperty(filter, path)) {
                 include(node, p, path);
             }
         }
@@ -695,9 +710,9 @@ public class AggregateImpl implements Aggregate {
         while (nIter.hasNext()) {
             Node n = nIter.nextNode();
             String path = n.getPath();
-            PathFilterSet coverSet = mgr.getWorkspaceFilter().getCoveringFilterSet(path);
-            boolean isAncestor = mgr.getWorkspaceFilter().isAncestor(path);
-            boolean isIncluded = mgr.getWorkspaceFilter().contains(path);
+            PathFilterSet coverSet = filter.getCoveringFilterSet(path);
+            boolean isAncestor = filter.isAncestor(path);
+            boolean isIncluded = filter.contains(path);
             if (coverSet == null && !isAncestor) {
                 continue;
             }

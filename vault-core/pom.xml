@@ -97,6 +97,26 @@
                     <excludePackageNames>org.apache.jackrabbit.vault.util.xml.*</excludePackageNames>
                 </configuration>
             </plugin>
+            <!-- ====================================================================== -->
+            <!-- R A T   P L U G I N                                                    -->
+            <!-- ====================================================================== -->
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>0.12</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <basedir>${project.basedir}</basedir>
+                            <excludesFile>${project.basedir}/.ratignore</excludesFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

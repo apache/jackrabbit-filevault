@@ -101,13 +101,36 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
      */
     public void add(PathFilterSet set) {
         nodesFilterSets.add(set);
+        propsFilterSets.add(set);
+    }
+
+    /**
+     * Add a #PathFilterSet for node and property items.
+     * @param nodeFilter the set of filters to add.
+     * @param propFilter the set of filters to add.
+     */
+    public void add(PathFilterSet nodeFilter, PathFilterSet propFilter) {
+        nodesFilterSets.add(nodeFilter);
+        propsFilterSets.add(propFilter);
     }
 
     /**
      * Add a #PathFilterSet for properties items.
      * @param set the set of filters to add.
+     *
+     * @deprecated use {@link #add(PathFilterSet, PathFilterSet)} instead.
      */
+    @Deprecated
     public void addPropertyFilterSet(PathFilterSet set) {
+        // minimal backward compatibility: replace the props filter with the same root
+        Iterator<PathFilterSet> iter = propsFilterSets.iterator();
+        while (iter.hasNext()) {
+            PathFilterSet filterSet = iter.next();
+            if (filterSet.getRoot().equals(set.getRoot())) {
+                iter.remove();
+                break;
+            }
+        }
         propsFilterSets.add(set);
     }
 
@@ -216,10 +239,10 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             mapped.setGlobalIgnored(globalIgnored.translate(mapping));
         }
         for (PathFilterSet set: nodesFilterSets) {
-            mapped.add(set.translate(mapping));
+            mapped.nodesFilterSets.add(set.translate(mapping));
         }
         for (PathFilterSet set: propsFilterSets) {
-            mapped.addPropertyFilterSet(set.translate(mapping));
+            mapped.propsFilterSets.add(set.translate(mapping));
         }
         return mapped;
     }
@@ -332,26 +355,35 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         for (int i=0; i<n1.getLength(); i++) {
             Node child = n1.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE) {
-                Element element = (Element) child;
-                boolean matchProperties = Boolean.valueOf(element.getAttribute("matchProperties"));
-                PathFilterSet set =  (matchProperties) ? propFilters : nodeFilters;
+                final PathFilter filter = readFilter((Element) child);
                 if ("include".equals(child.getNodeName())) {
-                    set.addInclude(readFilter((Element) child));
+                    propFilters.addInclude(filter);
+                    if (!(filter instanceof DefaultPropertyPathFilter)) {
+                        // also add non property filters to the node filters
+                        nodeFilters.addInclude(filter);
+                    }
                 } else if ("exclude".equals(child.getNodeName())) {
-                    set.addExclude(readFilter((Element) child));
+                    propFilters.addExclude(filter);
+                    if (!(filter instanceof DefaultPropertyPathFilter)) {
+                        // also add non property filters to the node filters
+                        nodeFilters.addExclude(filter);
+                    }
                 } else {
                     throw new ConfigurationException("either <include> or <exclude> expected.");
                 }
             }
         }
-        add(nodeFilters);
-        addPropertyFilterSet(propFilters);
+        add(nodeFilters, propFilters);
     }
 
     protected PathFilter readFilter(Element elem) throws ConfigurationException {
         String pattern = elem.getAttribute("pattern");
         if (pattern == null || "".equals(pattern)) {
             throw new ConfigurationException("Filter pattern must not be empty");
+        }
+        boolean matchProperties = Boolean.valueOf(elem.getAttribute("matchProperties"));
+        if (matchProperties) {
+            return new DefaultPropertyPathFilter(pattern);
         }
         return new DefaultPathFilter(pattern);
     }
@@ -387,7 +419,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             AttributesImpl attrs = new AttributesImpl();
             attrs.addAttribute(null, null, ATTR_VERSION, "CDATA", String.valueOf(version));
             ser.startElement(null, null, "workspaceFilter", attrs);
-            for (PathFilterSet set: nodesFilterSets) {
+            for (PathFilterSet set: propsFilterSets) {
                 attrs = new AttributesImpl();
                 attrs.addAttribute(null, null, "root", "CDATA", set.getRoot());
                 if (set.getImportMode() != ImportMode.REPLACE) {
@@ -399,8 +431,10 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
                     PathFilter filter = entry.getFilter();
                     if (filter instanceof DefaultPathFilter) {
                         attrs = new AttributesImpl();
-                        attrs.addAttribute(null, null, "pattern", "CDATA",
-                                ((DefaultPathFilter) filter).getPattern());
+                        attrs.addAttribute(null, null, "pattern", "CDATA", ((DefaultPathFilter) filter).getPattern());
+                        if (filter instanceof DefaultPropertyPathFilter) {
+                            attrs.addAttribute(null, null, "matchProperties", "CDATA", "true");
+                        }
                         if (entry.isInclude()) {
                             ser.startElement(null, null, "include", attrs);
                             ser.endElement("include");
@@ -481,5 +515,25 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         }
     }
 
+    /**
+     * internal class to mark the property filter entries. eventually promote to outer class and adjust the 'contains'
+     * code accordingly. But since the filter set are publicly accessible, this would introduce backward compatbility
+     * issues for code that is reading those directly.
+     */
+    private static class DefaultPropertyPathFilter extends DefaultPathFilter {
+
+        private DefaultPropertyPathFilter(String pattern) {
+            super(pattern);
+        }
+
+        @Override
+        public PathFilter translate(PathMapping mapping) {
+            DefaultPathFilter mapped =  (DefaultPathFilter) super.translate(mapping);
+            if (mapped != this) {
+                mapped = new DefaultPropertyPathFilter(mapped.getPattern());
+            }
+            return mapped;
+        }
+    }
 
 }

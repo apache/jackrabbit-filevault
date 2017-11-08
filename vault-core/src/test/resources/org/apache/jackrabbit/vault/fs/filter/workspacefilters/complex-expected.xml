@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/bar" mode="merge"/>
+    <filter root="/tmp">
+        <include pattern="/a/b.*"/>
+        <include pattern="/a/c.*"/>
+        <include pattern="/a/.*" matchProperties="true"/>
+    </filter>
+    <filter root="/var/foo/bar">
+        <exclude pattern="^.*/node1"/>
+        <exclude pattern="^.*/prop1" matchProperties="true"/>
+    </filter>
+</workspaceFilter>

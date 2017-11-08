@@ -27,6 +27,7 @@ import org.apache.jackrabbit.vault.fs.api.SimplePathMapping;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.tika.io.IOUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -132,9 +133,20 @@ public class WorkspaceFilterTest {
         PathFilterSet propertyFilterSet = propertyFilterSets.get(0);
         assertEquals("/var/foo/bar", propertyFilterSet.getRoot());
         List<FilterSet.Entry<PathFilter>> propertyFilters = propertyFilterSet.getEntries();
-        assertEquals(1, propertyFilters.size());
+        assertEquals(2, propertyFilters.size());
         FilterSet.Entry<PathFilter> propertyFilter = propertyFilters.get(0);
         assertFalse(propertyFilter.isInclude());
+    }
 
+    @Test
+    public void testToSource() throws IOException, ConfigurationException {
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.load(getClass().getResourceAsStream("workspacefilters/complex.xml"));
+        filter.resetSource();
+
+        String expected = IOUtils.toString(getClass().getResourceAsStream("workspacefilters/complex-expected.xml"));
+
+        assertEquals("Filter source", expected, filter.getSourceAsString());
     }
 }

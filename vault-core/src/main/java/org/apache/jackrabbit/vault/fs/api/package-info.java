@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-@Version("2.5.1")
+@Version("2.6.0")
 package org.apache.jackrabbit.vault.fs.api;
 
 import org.osgi.annotation.versioning.Version;

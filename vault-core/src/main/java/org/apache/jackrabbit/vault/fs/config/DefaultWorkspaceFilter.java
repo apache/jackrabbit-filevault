@@ -350,6 +350,12 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             nodeFilters.setImportMode(importMode);
             propFilters.setImportMode(importMode);
         }
+        String type = elem.getAttribute("type");
+        if (type != null && type.length() > 0) {
+            nodeFilters.setType(type);
+            propFilters.setType(type);
+        }
+
         // check for filters
         NodeList n1 = elem.getChildNodes();
         for (int i=0; i<n1.getLength(); i++) {
@@ -424,6 +430,9 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
                 attrs.addAttribute(null, null, "root", "CDATA", set.getRoot());
                 if (set.getImportMode() != ImportMode.REPLACE) {
                     attrs.addAttribute(null, null, "mode", "CDATA", set.getImportMode().name().toLowerCase());
+                }
+                if (set.getType() != null) {
+                    attrs.addAttribute(null, null, "type", "CDATA", set.getType());
                 }
                 ser.startElement(null, null, "filter", attrs);
                 for (PathFilterSet.Entry<PathFilter> entry: set.getEntries()) {

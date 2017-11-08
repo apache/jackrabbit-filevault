@@ -69,6 +69,7 @@ public class TestManifestCreationExport extends IntegrationTestBase {
                 "Content-Package-Description:This is a test package.\n" +
                 "Content-Package-Id:jackrabbit/test:test-package\n" +
                 "Content-Package-Roots:/tmp/foo/bar,/tmp/foo/zoo\n" +
+                "Content-Package-Type:content\n" +
                 "Manifest-Version:1.0";
         verifyManifest(tmpFile, Collections.<String>emptySet(), expected);
         tmpFile.delete();

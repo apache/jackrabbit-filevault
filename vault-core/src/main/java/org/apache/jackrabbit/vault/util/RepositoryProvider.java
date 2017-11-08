@@ -23,9 +23,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.Set;
 
-import javax.imageio.spi.ServiceRegistry;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 
@@ -42,8 +42,7 @@ public class RepositoryProvider {
 
     protected static Logger log = LoggerFactory.getLogger(RepositoryProvider.class);
 
-    private Map<RepositoryAddress, Repository> repos
-            = new HashMap<RepositoryAddress, Repository>();
+    private Map<RepositoryAddress, Repository> repos = new HashMap<RepositoryAddress, Repository>();
 
     public Repository getRepository(RepositoryAddress address)
             throws RepositoryException {
@@ -57,7 +56,8 @@ public class RepositoryProvider {
 
     private Repository createRepository(RepositoryAddress address)
             throws RepositoryException {
-        Iterator<RepositoryFactory> iter = ServiceRegistry.lookupProviders(RepositoryFactory.class);
+        ServiceLoader<RepositoryFactory> loader = ServiceLoader.load(RepositoryFactory.class);
+        Iterator<RepositoryFactory> iter = loader.iterator();
         Set<String> supported = new HashSet<String>();
         while (iter.hasNext()) {
             RepositoryFactory fac = iter.next();

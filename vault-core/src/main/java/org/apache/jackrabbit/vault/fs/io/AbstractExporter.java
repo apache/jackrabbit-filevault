@@ -49,6 +49,7 @@ import org.apache.jackrabbit.vault.fs.spi.CNDWriter;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
@@ -58,6 +59,7 @@ import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_DEPEN
 import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_DESCRIPTION;
 import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_GROUP;
 import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_NAME;
+import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_PACKAGE_TYPE;
 import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_VERSION;
 
 /**
@@ -91,6 +93,10 @@ public abstract class AbstractExporter {
      */
     private static final String MF_PACKAGE_DESC = "Content-Package-Description";
 
+    /**
+     * name of the manifest property for the package type
+     */
+    private static final String MF_PACKAGE_TYPE = "Content-Package-Type";
 
     private ProgressTracker tracker;
 
@@ -208,6 +214,11 @@ public abstract class AbstractExporter {
                 filter = filter.translate(new SimplePathMapping(mountPath, rootPath));
             }
 
+            // check for package type
+            if (!properties.containsKey(NAME_PACKAGE_TYPE)) {
+                properties.setProperty(NAME_PACKAGE_TYPE, detectPackageType(filter).name().toLowerCase());
+            }
+
             // write Manifest
             Manifest mf = new Manifest();
             mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -227,6 +238,7 @@ public abstract class AbstractExporter {
             addManifestAttribute(mf, MF_PACKAGE_DESC, properties.getProperty(NAME_DESCRIPTION));
             addManifestAttribute(mf, MF_PACKAGE_ROOTS, Text.implode(filterRoots, ","));
             addManifestAttribute(mf, MF_PACKAGE_DEPENDENCIES, properties.getProperty(NAME_DEPENDENCIES));
+            addManifestAttribute(mf, MF_PACKAGE_TYPE, properties.getProperty(NAME_PACKAGE_TYPE));
             ByteArrayOutputStream tmpOut = new ByteArrayOutputStream();
             mf.write(tmpOut);
             writeFile(new ByteArrayInputStream(tmpOut.toByteArray()), JarFile.MANIFEST_NAME);
@@ -352,11 +364,38 @@ public abstract class AbstractExporter {
      * @param key attribute name
      * @param value attribute value
      */
-    private void addManifestAttribute(Manifest manifest, String key, String value) {
+    private static void addManifestAttribute(Manifest manifest, String key, String value) {
         if (value != null && value.length() > 0) {
             Attributes.Name name = new Attributes.Name(key);
             manifest.getMainAttributes().put(name, value);
         }
+    }
+
+    /**
+     * Detects the package type based on the workspace filter.
+     * @param filter the workspace filter
+     * @return the package type
+     */
+    private static PackageType detectPackageType(WorkspaceFilter filter)  {
+        boolean hasApps = false;
+        boolean hasOther = false;
+        for (PathFilterSet p: filter.getFilterSets()) {
+            if ("cleanup".equals(p.getType())) {
+                continue;
+            }
+            String root = p.getRoot();
+            if ("/apps".equals(root) || root.startsWith("/apps/") || "/libs".equals(root) || root.startsWith("/libs/")) {
+                hasApps = true;
+            } else {
+                hasOther = true;
+            }
+        }
+        if (hasApps && !hasOther) {
+            return PackageType.APPLICATION;
+        } else if (hasOther && !hasApps) {
+            return PackageType.CONTENT;
+        }
+        return PackageType.MIXED;
     }
 
     /**

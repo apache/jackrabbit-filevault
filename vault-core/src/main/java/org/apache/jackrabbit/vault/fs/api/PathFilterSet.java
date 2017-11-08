@@ -19,6 +19,9 @@ package org.apache.jackrabbit.vault.fs.api;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * The path filter set holds a set of path filters each attributes as include
  * or exclude filter. The evaluation of the set allows included paths and
@@ -48,6 +51,11 @@ public class PathFilterSet extends FilterSet<PathFilter> {
      * specifies if only relative patters are included in this filter ser
      */
     private boolean onlyRelativePatterns;
+
+    /**
+     * specifies the filter type.
+     */
+    private String type;
 
     /**
      * Default constructor. initializes the root path to "/"
@@ -141,5 +149,25 @@ public class PathFilterSet extends FilterSet<PathFilter> {
     public boolean hasOnlyRelativePatterns() {
         seal();
         return onlyRelativePatterns;
+    }
+
+    /**
+     * Returns the filter type or {@code null}
+     * @return the filter type.
+     */
+    @Nullable
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Sets the filter type
+     * @param type the type
+     * @return this.
+     */
+    @Nonnull
+    public PathFilterSet setType(@Nullable String type) {
+        this.type = type;
+        return this;
     }
 }

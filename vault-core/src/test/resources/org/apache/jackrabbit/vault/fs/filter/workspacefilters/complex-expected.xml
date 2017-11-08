@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
-    <filter root="/bar" mode="merge"/>
+    <filter root="/bar" mode="merge" type="cleanup"/>
     <filter root="/tmp">
         <include pattern="/a/b.*"/>
         <include pattern="/a/c.*"/>

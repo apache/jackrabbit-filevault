@@ -202,7 +202,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
             }
         }
 
-        return new InstallContextImpl(session.getRootNode(), this, importer, hooks);
+        return new InstallContextImpl(session, "/", this, importer, hooks);
     }
 
     /**
@@ -229,7 +229,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 throw new PackageException("Import aborted during prepare phase.");
             }
             try {
-                importer.run(archive, ctx.getImportRoot());
+                importer.run(archive, ctx.getSession(), ctx.getImportRootPath());
             } catch (Exception e) {
                 log.error("Error during install.", e);
                 ctx.setPhase(InstallContext.Phase.INSTALL_FAILED);

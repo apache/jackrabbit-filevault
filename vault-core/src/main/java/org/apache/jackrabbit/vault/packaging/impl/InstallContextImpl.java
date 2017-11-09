@@ -17,7 +17,6 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
@@ -34,7 +33,7 @@ public class InstallContextImpl implements InstallContext {
 
     private final Session session;
 
-    private final Node importRoot;
+    private final String importRootPath;
 
     private final VaultPackage pack;
 
@@ -44,11 +43,11 @@ public class InstallContextImpl implements InstallContext {
 
     private final InstallHookProcessor hooks;
 
-    public InstallContextImpl(Node importRoot, VaultPackage pack,
+    public InstallContextImpl(Session session, String importRootPath, VaultPackage pack,
                               Importer importer, InstallHookProcessor hooks)
             throws RepositoryException {
-        this.session = importRoot.getSession();
-        this.importRoot = importRoot;
+        this.session = session;
+        this.importRootPath = importRootPath;
         this.pack = pack;
         this.importer = importer;
         this.hooks = hooks;
@@ -82,7 +81,7 @@ public class InstallContextImpl implements InstallContext {
         return hooks;
     }
 
-    protected Node getImportRoot() {
-        return importRoot;
+    protected String getImportRootPath() {
+        return importRootPath;
     }
 }

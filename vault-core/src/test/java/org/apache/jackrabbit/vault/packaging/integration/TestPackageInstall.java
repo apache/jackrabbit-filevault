@@ -19,19 +19,30 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.Principal;
 
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
 import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jackrabbit.api.JackrabbitSession;
+import org.apache.jackrabbit.api.security.user.User;
+import org.apache.jackrabbit.api.security.user.UserManager;
+import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.fs.io.Importer;
+import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.tika.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -574,6 +585,91 @@ public class TestPackageInstall extends IntegrationTestBase {
 
         assertProperty("/testroot/a/test", "123");
         assertProperty("/testroot/a/jcr:isCheckedOut", "false");
+    }
+
+    /**
+     * Tests if package installation works w/o RW access to / and /tmp.
+     * this currently fails, due to the creation of the snapshot.
+     * also see {@link TestNoRootAccessExport#exportNoRootAccess()}
+     */
+    @Test
+    @Ignore("JCRVLT-100")
+    public void testInstallWithoutRootAndTmpAccess() throws IOException, RepositoryException, ConfigurationException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), true, true);
+        assertNotNull(pack);
+        assertTrue(pack.isValid());
+        PackageId id = pack.getPackage().getId();
+        pack.close();
+
+        // Create test user
+        UserManager userManager = ((JackrabbitSession)admin).getUserManager();
+        String userId = "user1";
+        String userPwd = "pwd1";
+        User user1 = userManager.createUser(userId, userPwd);
+        Principal principal1 = user1.getPrincipal();
+
+        // Create /tmp folder
+        admin.getRootNode().addNode("tmp").addNode("foo");
+        admin.save();
+
+        // Setup test user ACLs such that the
+        // root node is not accessible
+        AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, false);
+        AccessControlUtils.addAccessControlEntry(admin, "/etc/packages", principal1, new String[]{"jcr:all"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, "/tmp/foo", principal1, new String[]{"jcr:all"}, true);
+        admin.save();
+
+        Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
+        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session);
+        pack = userPackMgr.open(id);
+        ImportOptions opts = getDefaultOptions();
+        pack.install(opts);
+        pack.close();
+        session.logout();
+
+        assertNodeExists("/tmp/foo/bar/tobi");
+    }
+
+    /**
+     * Test if package extraction works w/o RW access to / and /tmp.
+     */
+    @Test
+    public void testExtractWithoutRootAndTmpAccess() throws IOException, RepositoryException, ConfigurationException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), true, true);
+        assertNotNull(pack);
+        assertTrue(pack.isValid());
+        PackageId id = pack.getPackage().getId();
+        pack.close();
+
+        // Create test user
+        UserManager userManager = ((JackrabbitSession)admin).getUserManager();
+        String userId = "user1";
+        String userPwd = "pwd1";
+        User user1 = userManager.createUser(userId, userPwd);
+        Principal principal1 = user1.getPrincipal();
+
+        // Create /tmp folder
+        admin.getRootNode().addNode("tmp").addNode("foo");
+        admin.save();
+
+        // Setup test user ACLs such that the
+        // root node is not accessible
+        AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, false);
+        AccessControlUtils.addAccessControlEntry(admin, "/etc/packages", principal1, new String[]{"jcr:all"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, "/tmp/foo", principal1, new String[]{"jcr:all"}, true);
+        admin.save();
+
+        Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
+        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session);
+        pack = userPackMgr.open(id);
+        ImportOptions opts = getDefaultOptions();
+        pack.extract(opts);
+        pack.close();
+        session.logout();
+
+        assertNodeExists("/tmp/foo/bar/tobi");
     }
 
 

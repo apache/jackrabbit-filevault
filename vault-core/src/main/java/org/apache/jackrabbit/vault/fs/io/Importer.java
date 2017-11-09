@@ -298,7 +298,6 @@ public class Importer {
     }
 
     /**
-     /**
      * Runs the importer
      *
      * @param archive the archive to import
@@ -311,6 +310,23 @@ public class Importer {
      * @since 2.3.20
      */
     public void run(Archive archive, Node importRoot)
+            throws IOException, RepositoryException, ConfigurationException {
+        run(archive, importRoot.getSession(), importRoot.getPath());
+    }
+
+    /**
+     * Runs the importer with the given session.
+     *
+     * @param archive the archive to import
+     * @param session the session importing the archive
+     * @param parentPath the repository parent path where the archive will be imported
+     * @throws IOException if an I/O error occurs
+     * @throws RepositoryException if a repository error occurs
+     * @throws ConfigurationException if the importer is not properly configured
+     *
+     * @since 2.7.0
+     */
+    public void run(Archive archive, Session session,  String parentPath)
             throws IOException, RepositoryException, ConfigurationException {
         this.archive = archive;
 
@@ -380,13 +396,11 @@ public class Importer {
             filterTree.put(set.getRoot(), set);
         }
 
-        String parentPath = importRoot.getPath();
-        if (parentPath.equals("/")) {
+        if ("/".equals(parentPath)) {
             parentPath = "";
         }
 
         track("Collecting import information...", "");
-        Session session = importRoot.getSession();
         TxInfo root = prepare(archive.getJcrRoot(), parentPath, new SessionNamespaceResolver(session));
         if (filter!=null && filter.getFilterSets() != null && filter.getFilterSets().size() > 0 ) {
             root = postFilter(root);

@@ -279,13 +279,11 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         filter.add(new PathFilterSet(rootPath));
 
         try {
-            Node rootNode = session.getNode(rootPath);
-
             Importer importer = new Importer();
             // disable saving
             importer.getOptions().setAutoSaveThreshold(Integer.MAX_VALUE);
             importer.getOptions().setFilter(filter);
-            importer.run(archive, rootNode);
+            importer.run(archive, session, rootPath);
 
             // refresh defNode if it was replaced during unwrap
             defNode = session.getNode(rootPath);

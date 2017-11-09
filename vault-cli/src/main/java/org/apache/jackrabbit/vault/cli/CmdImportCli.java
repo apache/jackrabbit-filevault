@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.InputStream;
 
 import javax.jcr.ImportUUIDBehavior;
-import javax.jcr.Node;
 import javax.jcr.Session;
 
 import org.apache.commons.cli2.Argument;
@@ -115,8 +114,7 @@ public class CmdImportCli extends AbstractVaultCommand {
                 importer.getOptions().setListener(new DefaultProgressListener());
             }
             Session s = vaultFile.getFileSystem().getAggregateManager().getSession();
-            Node importRoot = s.getNode(vaultFile.getPath());
-            importer.run(archive, importRoot);
+            importer.run(archive, s, vaultFile.getPath());
         } finally {
             archive.close();
         }

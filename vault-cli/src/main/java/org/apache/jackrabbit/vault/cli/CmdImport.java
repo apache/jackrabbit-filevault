@@ -19,7 +19,6 @@ package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
 
-import javax.jcr.Node;
 import javax.jcr.Session;
 
 import org.apache.commons.cli2.Argument;
@@ -71,8 +70,7 @@ public class CmdImport extends AbstractJcrFsCommand {
         }
 
         Session s = vaultFile.getFileSystem().getAggregateManager().getSession();
-        Node importRoot = s.getNode(vaultFile.getPath());
-        importer.run(archive, importRoot);
+        importer.run(archive, s, vaultFile.getPath());
         VaultFsApp.log.info("Importing done.");
     }
 

@@ -173,7 +173,12 @@
                                                 <include name="*.zip" />
                                             </fileset>
                                         </checksum>
-                                        <checksum algorithm="SHA1" fileext=".sha">
+                                        <checksum algorithm="SHA1" fileext=".sha1">
+                                            <fileset dir="${basedir}/target/${project.version}">
+                                                <include name="*.zip" />
+                                            </fileset>
+                                        </checksum>
+                                        <checksum algorithm="SHA-512" fileext=".sha512">
                                             <fileset dir="${basedir}/target/${project.version}">
                                                 <include name="*.zip" />
                                             </fileset>
@@ -193,6 +198,9 @@ The release candidate is a zip archive of the sources in:
 https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-${project.version}/
 
 The SHA1 checksum of the archive is ${checksum}.
+
+The command for running automated checks against this release candidate is:
+$ sh check-release.sh filevault ${project.version} ${checksum}
 
 A staged Maven repository is available for review at:
 

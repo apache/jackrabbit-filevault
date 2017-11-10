@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.40
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.42
 
 Introduction
 ------------
@@ -8,6 +8,36 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
+
+
+Changes in Jackrabbit FileVault 3.1.42
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.1.42
+
+Bug Fixes:
+* [JCRVLT-185] - JcrPackageManagerImpl#extract() javadoc mentions not existent "register" property
+* [JCRVLT-186] - rcp fails to copy binaries correctly
+* [JCRVLT-197] - AggregateImpl.includesProperty fails with multiple filter roots
+* [JCRVLT-198] - Creating a package with specific path fails to import
+* [JCRVLT-225] - vlt doesn't work anymore with latest jackrabbit
+* [JCRVLT-226] - vlt doesn't work with java 9
+* [JCRVLT-227] - Import fails if user does not have access to the root path
+
+Improvements:
+* [JCRVLT-170] - Introduce the concept of package types
+* [JCRVLT-171] - Introduce the concept of Package Registry
+* [JCRVLT-172] - Introduce Package Persistence Layer
+* [JCRVLT-188] - Ensure that hollow packages still provide PackageProperties and JcrPackageDefinition.
+* [JCRVLT-190] - Provide mechanism to install several packages at once
+* [JCRVLT-191] - Make VaultPackage and JcrPackage AutoCloseable
+* [JCRVLT-192] - Deprecated exact storage location (/etc/packages)
+* [JCRVLT-196] - Add remapping support for other than renames
+* [JCRVLT-220] - Include package type when assembling a package
+
+Wont't Fix:
+* [JCRVLT-200] - Vault should support suppressSnapshots property
+
 
 Changes in Jackrabbit FileVault 3.1.40
 --------------------------------------

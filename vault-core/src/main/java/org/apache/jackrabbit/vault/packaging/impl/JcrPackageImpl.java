@@ -49,6 +49,7 @@ import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
@@ -858,6 +859,13 @@ public class JcrPackageImpl implements JcrPackage {
                 node.getSession().save();
             }
         }
+        JcrPackageDefinitionImpl myDef = (JcrPackageDefinitionImpl) getDefinition();
+        WorkspaceFilter filter = myDef.getMetaInf().getFilter();
+        if (filter == null || filter.getFilterSets().isEmpty()) {
+            log.info("Refusing to create snapshot {} due to empty filters", id);
+            return null;
+        }
+        
         log.debug("Creating snapshot for {}.", id);
         JcrPackageManagerImpl packMgr = new JcrPackageManagerImpl(node.getSession());
         String path = JcrPackageRegistry.getInstallationPath(id);
@@ -865,9 +873,8 @@ public class JcrPackageImpl implements JcrPackage {
         Node folder = packMgr.mkdir(parentPath, true);
         JcrPackage snap = mgr.createNew(folder, id, null, true);
         JcrPackageDefinitionImpl snapDef = (JcrPackageDefinitionImpl) snap.getDefinition();
-        JcrPackageDefinitionImpl myDef = (JcrPackageDefinitionImpl) getDefinition();
         snapDef.setId(id, false);
-        snapDef.setFilter(myDef.getMetaInf().getFilter(), false);
+        snapDef.setFilter(filter, false);
         snapDef.set(JcrPackageDefinition.PN_DESCRIPTION, "Snapshot of package " + myDef.getId().toString(), false);
         if (acHandling == null) {
             snapDef.set(JcrPackageDefinition.PN_AC_HANDLING, myDef.get(JcrPackageDefinition.PN_AC_HANDLING), false);

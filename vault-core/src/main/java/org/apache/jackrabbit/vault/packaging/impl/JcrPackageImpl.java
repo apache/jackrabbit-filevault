@@ -865,6 +865,12 @@ public class JcrPackageImpl implements JcrPackage {
             log.info("Refusing to create snapshot {} due to empty filters", id);
             return null;
         }
+        for (PathFilterSet set: filter.getFilterSets()) {
+            if (("".equals(set.getRoot()) || "/".equals(set.getRoot())) && set.getEntries().isEmpty()) {
+                log.info("Refusing to create snapshot {} due to / only filter", id);
+                return null;
+            }
+        }
         
         log.debug("Creating snapshot for {}.", id);
         JcrPackageManagerImpl packMgr = new JcrPackageManagerImpl(node.getSession());

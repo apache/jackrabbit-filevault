@@ -40,6 +40,7 @@ import javax.jcr.Session;
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.impl.ArchiveWrapper;
 import org.apache.jackrabbit.vault.fs.impl.SubPackageFilterArchive;
 import org.apache.jackrabbit.vault.fs.io.Archive;
@@ -61,6 +62,8 @@ import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 
+import static org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
+
 /**
  * Extends the {@code PackageManager} by JCR specific methods
  */
@@ -77,12 +80,17 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     private final JcrPackageRegistry registry;
 
     /**
-     * Creates a new package manager using the given session.
+     * Creates a new package manager using the given session. This method allows to specify one more or package
+     * registry root paths, where the first will be the primary when installing new packages. The others server as
+     * backward compatibility to read existing packages.
      *
      * @param session repository session
+     * @param roots the root paths to store the packages.
+     *
+     * @see JcrPackageRegistry(Session, String ...)
      */
-    public JcrPackageManagerImpl(Session session) {
-        this(new JcrPackageRegistry(session));
+    public JcrPackageManagerImpl(Session session, String[] roots) {
+        this(new JcrPackageRegistry(session, roots));
     }
 
     private JcrPackageManagerImpl(JcrPackageRegistry registry) {
@@ -96,6 +104,9 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         return new RepositoryException(e);
     }
 
+    public JcrPackageRegistry getRegistry() {
+        return registry;
+    }
 
     /**
      * {@inheritDoc}
@@ -322,10 +333,24 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         validateSubPackages(def);
         def.sealForAssembly(now, true);
 
+        DefaultMetaInf inf = (DefaultMetaInf) def.getMetaInf();
+        CompositeExportProcessor processor = new CompositeExportProcessor();
+
+        // tweak filter for primary root, in case it contains sub-packages
+        if (!registry.getPackRootPaths()[0].equals(DEFAULT_PACKAGE_ROOT_PATH)) {
+            SubPackageExportProcessor sp = new SubPackageExportProcessor(this, packNode.getSession());
+            WorkspaceFilter newFilter = sp.prepare(inf.getFilter());
+            if (newFilter != null) {
+                inf.setFilter(newFilter);
+                processor.addProcessor(sp);
+            }
+        }
+
         ExportOptions opts = new ExportOptions();
-        opts.setMetaInf(def.getMetaInf());
+        opts.setMetaInf(inf);
         opts.setListener(listener);
-        opts.setPostProcessor(def.getInjectProcessor());
+        processor.addProcessor(def.getInjectProcessor());
+        opts.setPostProcessor(processor);
 
         VaultPackage pack = assemble(packNode.getSession(), opts, (File) null);
         PackageId id = pack.getId();
@@ -441,7 +466,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      */
     @Override
     public Node getPackageRoot() throws RepositoryException {
-        return registry.getPackageRoot(false);
+        return registry.getPrimaryPackageRoot(true);
     }
 
     /**
@@ -449,7 +474,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      */
     @Override
     public Node getPackageRoot(boolean noCreate) throws RepositoryException {
-        return registry.getPackageRoot(noCreate);
+        return registry.getPrimaryPackageRoot(!noCreate);
     }
 
     /**
@@ -465,15 +490,12 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      */
     @Override
     public List<JcrPackage> listPackages(WorkspaceFilter filter) throws RepositoryException {
-        Node root = getPackageRoot(true);
-        if (root == null) {
-            return Collections.emptyList();
-        } else {
-            List<JcrPackage> packages = new LinkedList<JcrPackage>();
+        List<JcrPackage> packages = new LinkedList<JcrPackage>();
+        for (Node root: registry.getPackageRoots()) {
             listPackages(root, packages, filter, false, false);
-            Collections.sort(packages);
-            return packages;
         }
+        Collections.sort(packages);
+        return packages;
     }
 
     /**
@@ -481,36 +503,45 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      */
     @Override
     public List<JcrPackage> listPackages(String group, boolean built) throws RepositoryException {
-        Node pRoot = getPackageRoot(true);
-        if (pRoot == null) {
-            return Collections.emptyList();
-        }
         List<JcrPackage> packages = new LinkedList<JcrPackage>();
-        if (group == null) {
-            listPackages(pRoot, packages, null, built, false);
+        for (Node root: registry.getPackageRoots()) {
+            listPackages(root, packages, group, built);
+        }
+        Collections.sort(packages);
+        return packages;
+    }
+
+    /**
+     * internally lists all the packages below the given package root and adds them to the given list.
+     * @param pkgRoot the package root
+     * @param packages the list of packages
+     * @param group optional group to search below
+     * @param built if {@code true} only packages with size > 0 are returned
+     * @throws RepositoryException if an error occurrs
+     */
+    private void listPackages(Node pkgRoot, List<JcrPackage> packages, String group, boolean built) throws RepositoryException {
+        if (group == null || group.length() == 0) {
+            listPackages(pkgRoot, packages, null, built, false);
         } else {
-            Node root = pRoot;
+            if (group.equals(pkgRoot.getPath())) {
+                group = "";
+            } else if (group.startsWith(pkgRoot.getPath() + "/")) {
+                group = group.substring(pkgRoot.getPath().length() + 1);
+            }
+            if (group.startsWith("/")) {
+                // don't scan outside the roots
+                return;
+            }
+            Node root = pkgRoot;
             if (group.length() > 0) {
-                if (group.equals(pRoot.getPath())) {
-                    group = "";
-                } else if (group.startsWith(pRoot.getPath() + "/")) {
-                    group = group.substring(pRoot.getPath().length() + 1);
-                }
-                if (group.startsWith("/")) {
-                    // don't scan outside /etc/packages
-                    return packages;
-                } else if (group.length() > 0) {
-                    if (root.hasNode(group)) {
-                        root = root.getNode(group);
-                    } else {
-                        return packages;
-                    }
+                if (root.hasNode(group)) {
+                    root = root.getNode(group);
+                } else {
+                    return;
                 }
             }
             listPackages(root, packages, null, built, true);
         }
-        Collections.sort(packages);
-        return packages;
     }
 
     /**

@@ -235,6 +235,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             return this;
         }
         DefaultWorkspaceFilter mapped = new DefaultWorkspaceFilter();
+        mapped.importMode = importMode;
         if (globalIgnored != null) {
             mapped.setGlobalIgnored(globalIgnored.translate(mapping));
         }

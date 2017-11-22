@@ -87,11 +87,11 @@ public class TestArchiveExtraction extends IntegrationTestBase {
         PackageId[] ids = packMgr.extract(a, opts, true);
         validateArchive(a);
         assertEquals(1, ids.length);
-        assertEquals(new PackageId("my_packages", "tmp", ""), ids[0]);
+        assertEquals(TMP_PACKAGE_ID, ids[0]);
         assertNodeExists("/tmp/foo/bar/tobi");
-        assertNodeExists("/etc/packages/my_packages/tmp.zip");
+        assertPackageNodeExists(TMP_PACKAGE_ID);
         // check if size is 0
-        long size = admin.getProperty("/etc/packages/my_packages/tmp.zip/jcr:content/jcr:data").getLength();
+        long size = admin.getProperty(getInstallationPath(TMP_PACKAGE_ID) + "/jcr:content/jcr:data").getLength();
         assertEquals("package binary size", 0, size);
 
         JcrPackage pack = packMgr.open(ids[0]);
@@ -148,13 +148,13 @@ public class TestArchiveExtraction extends IntegrationTestBase {
         assertEquals(new PackageId("my_packages", "subtest", ""), ids[0]);
 
         // check for sub packages
-        assertNodeExists("/etc/packages/my_packages/sub_a.zip");
-        long size = admin.getProperty("/etc/packages/my_packages/sub_a.zip/jcr:content/jcr:data").getLength();
+        assertPackageNodeExists(PACKAGE_ID_SUB_A);
+        long size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_A)+ "/jcr:content/jcr:data").getLength();
         assertTrue("sub package must have data", size > 0);
         assertNodeMissing("/tmp/a");
 
-        assertNodeExists("/etc/packages/my_packages/sub_b.zip");
-        size = admin.getProperty("/etc/packages/my_packages/sub_b.zip/jcr:content/jcr:data").getLength();
+        assertPackageNodeExists(PACKAGE_ID_SUB_B);
+        size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_B)+ "/jcr:content/jcr:data").getLength();
         assertTrue("sub package must have data", size > 0);
         assertNodeMissing("/tmp/b");
     }
@@ -169,17 +169,17 @@ public class TestArchiveExtraction extends IntegrationTestBase {
         assertEquals(3, ids.length);
         Set<PackageId> testSet = new HashSet<>(Arrays.asList(ids));
         assertTrue(testSet.contains(new PackageId("my_packages", "subtest", "")));
-        assertTrue(testSet.contains(new PackageId("my_packages", "sub_a", "")));
-        assertTrue(testSet.contains(new PackageId("my_packages", "sub_b", "")));
+        assertTrue(testSet.contains(PACKAGE_ID_SUB_A));
+        assertTrue(testSet.contains(PACKAGE_ID_SUB_B));
 
         // check for sub packages
-        assertNodeExists("/etc/packages/my_packages/sub_a.zip");
-        long size = admin.getProperty("/etc/packages/my_packages/sub_a.zip/jcr:content/jcr:data").getLength();
+        assertPackageNodeExists(PACKAGE_ID_SUB_A);
+        long size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_A)+ "/jcr:content/jcr:data").getLength();
         assertEquals("sub package must no data", 0, size);
         assertNodeExists("/tmp/a");
 
-        assertNodeExists("/etc/packages/my_packages/sub_b.zip");
-        size = admin.getProperty("/etc/packages/my_packages/sub_b.zip/jcr:content/jcr:data").getLength();
+        assertPackageNodeExists(PACKAGE_ID_SUB_B);
+        size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_B)+ "/jcr:content/jcr:data").getLength();
         assertEquals("sub package must no data", 0, size);
         assertNodeExists("/tmp/b");
     }

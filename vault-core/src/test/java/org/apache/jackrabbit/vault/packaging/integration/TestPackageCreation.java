@@ -22,6 +22,7 @@ import java.io.IOException;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.junit.Test;
 
 import static org.junit.Assert.fail;
@@ -43,7 +44,7 @@ public class TestPackageCreation extends IntegrationTestBase {
     public void testCreateGroup() throws RepositoryException, IOException, PackageException {
         for (String name: GROUP_NAMES) {
             packMgr.create(name, "bar");
-            assertNodeExists("/etc/packages/" + name + "/bar.zip");
+            assertPackageNodeExists(new PackageId(name, "bar", ""));
         }
     }
 
@@ -51,14 +52,14 @@ public class TestPackageCreation extends IntegrationTestBase {
     public void testCreate() throws RepositoryException, IOException, PackageException {
         for (String name: PACKAGE_NAMES) {
             packMgr.create("foo", name);
-            assertNodeExists("/etc/packages/foo/" + name + ".zip");
+            assertPackageNodeExists(new PackageId("foo", name, ""));
         }
     }
 
     @Test
     public void testCreateWithVersion() throws RepositoryException, IOException, PackageException {
         packMgr.create("foo", "bar", "3.1.2");
-        assertNodeExists("/etc/packages/foo/bar-3.1.2.zip");
+        assertPackageNodeExists(new PackageId("foo", "bar", "3.1.2"));
     }
 
     @Test

@@ -19,7 +19,9 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.packaging.Dependency;
@@ -45,24 +47,7 @@ import static org.junit.Assert.fail;
  */
 public class TestPackageRegistry extends IntegrationTestBase {
 
-    private static final PackageId TMP_PACKAGE_ID = new PackageId("my_packages", "tmp", "");
-
-    /**
-     * Test package A-1.0. Depends on B and C-1.X
-     */
-    private static String TEST_PACKAGE_A_10 = "testpackages/test_a-1.0.zip";
-
-    /**
-     * Test package B-1.0. Depends on C
-     */
-    private static String TEST_PACKAGE_B_10 = "testpackages/test_b-1.0.zip";
-
-    /**
-     * Test package C-1.0
-     */
-    private static String TEST_PACKAGE_C_10 = "testpackages/test_c-1.0.zip";
-
-    private PackageRegistry registry;
+    private JcrPackageRegistry registry;
 
     @Override
     @Before
@@ -210,6 +195,27 @@ public class TestPackageRegistry extends IntegrationTestBase {
     }
 
     /**
+     * test packages set with multiple roots
+     */
+    @Test
+    public void testPackagesMultiRoot() throws IOException, PackageException, RepositoryException {
+        assertTrue("initially the packages set is empty", registry.packages().isEmpty());
+        registry.register(getStream(TEST_PACKAGE_A_10), false);
+        registry.register(getStream(TEST_PACKAGE_B_10), false);
+        assertEquals("packages contains 2 elements", 2, registry.packages().size());
+        JcrPackageRegistry multiReg = new JcrPackageRegistry(admin, "/var/packages" , "/etc/packages");
+        assertEquals("packages contains 2 elements", 2, multiReg.packages().size());
+
+        // install 3rd package in /var
+        registry.register(getStream(TEST_PACKAGE_C_10), false);
+        assertEquals("packages contains 3 elements", 3, multiReg.packages().size());
+
+        assertTrue("contains new packages", multiReg.packages().contains(TEST_PACKAGE_A_10_ID));
+        assertTrue("contains new packages", multiReg.packages().contains(TEST_PACKAGE_B_10_ID));
+        assertTrue("contains new packages", multiReg.packages().contains(TEST_PACKAGE_C_10_ID));
+    }
+
+    /**
      * test if remove non existing should fail
      */
     @Test
@@ -298,4 +304,67 @@ public class TestPackageRegistry extends IntegrationTestBase {
 
         assertEquals("usage", "my_packages:test_b:1.0", PackageId.toString(registry.usage(idC)));
     }
+
+    @Test
+    public void testAlternativeRoot() throws IOException, PackageException, RepositoryException {
+        JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages" , "/etc/packages");
+        File file = getTempFile("testpackages/tmp.zip");
+        PackageId id = reg.register(file, false);
+        assertEquals("package id", TMP_PACKAGE_ID, id);
+        file.delete();
+
+        assertNodeExists("/var/packages/my_packages/tmp.zip");
+    }
+
+    @Test
+    public void testAlternativeRootBackwardCompat() throws IOException, PackageException, RepositoryException {
+        // install with default registry
+        PackageId idB = registry.register(getStream(TEST_PACKAGE_B_10), false);
+        assertNodeExists("/etc/packages/my_packages/test_b-1.0.zip");
+
+        JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages", "/etc/packages");
+        PackageId id = reg.register(getStream("testpackages/tmp.zip"), false);
+
+        assertNodeExists("/var/packages/my_packages/tmp.zip");
+
+        assertTrue("alternative registry must find packages on old location", reg.contains(idB));
+        assertFalse("old registry must not find packages at new location", registry.contains(id));
+    }
+
+    @Test
+    public void testPackageRootNoCreate() throws RepositoryException {
+        assertTrue("no nodes, no roots", registry.getPackageRoots().isEmpty());
+    }
+
+    @Test
+    public void testPrimaryPackageRootNoCreate() throws RepositoryException {
+        assertNull("no node, no root", registry.getPrimaryPackageRoot(false));
+    }
+
+    @Test
+    public void testPrimaryPackageRootCreatesLegacy() throws RepositoryException {
+        Node root = registry.getPrimaryPackageRoot(true);
+        assertEquals("root has legacy path", "/etc/packages", root.getPath());
+    }
+
+    @Test
+    public void testAlternativePackageRootCreatesOnlyOneNode() throws RepositoryException {
+        JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages", "/etc/packages");
+        Node root = reg.getPrimaryPackageRoot(true);
+        assertEquals("root has correct path", "/var/packages", root.getPath());
+        List<Node> roots = reg.getPackageRoots();
+        assertEquals("Has 1 package root", 1, roots.size());
+    }
+
+    @Test
+    public void testAlternativePackageRootReportsBothNodes() throws RepositoryException {
+        registry.getPrimaryPackageRoot(true); // create legacy path
+        JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages", "/etc/packages");
+        reg.getPrimaryPackageRoot(true); // create new path
+        List<Node> roots = reg.getPackageRoots();
+        assertEquals("Has 2 package root", 2, roots.size());
+        assertEquals("primary root has correct path", "/var/packages", roots.get(0).getPath());
+        assertEquals("secondary root has legacy path", "/etc/packages", roots.get(1).getPath());
+    }
+
 }

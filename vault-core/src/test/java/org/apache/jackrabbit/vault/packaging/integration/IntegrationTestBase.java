@@ -123,6 +123,36 @@ public class IntegrationTestBase  {
     private static final File DIR_DATA_STORE = new File(REPO_HOME + "/datastore");
     private static final File DIR_BLOB_STORE = new File(REPO_HOME + "/blobstore");
 
+    public static final PackageId TMP_PACKAGE_ID = new PackageId("my_packages", "tmp", "");
+
+    public static final PackageId TMP_SNAPSHOT_PACKAGE_ID = PackageId.fromString("my_packages/.snapshot:tmp");
+
+    public static final PackageId TEST_PACKAGE_A_10_ID = new PackageId("my_packages", "test_a", "1.0");
+
+    public static final PackageId TEST_PACKAGE_B_10_ID = new PackageId("my_packages", "test_b", "1.0");
+
+    public static final PackageId TEST_PACKAGE_C_10_ID = new PackageId("my_packages", "test_c", "1.0");
+
+    public static final PackageId PACKAGE_ID_SUB_A = PackageId.fromString("my_packages:sub_a");
+
+    public static final PackageId PACKAGE_ID_SUB_B = PackageId.fromString("my_packages:sub_b");
+
+    /**
+     * Test package A-1.0. Depends on B and C-1.X
+     */
+    public static String TEST_PACKAGE_A_10 = "testpackages/test_a-1.0.zip";
+
+    /**
+     * Test package B-1.0. Depends on C
+     */
+    public static String TEST_PACKAGE_B_10 = "testpackages/test_b-1.0.zip";
+
+    /**
+     * Test package C-1.0
+     */
+    public static String TEST_PACKAGE_C_10 = "testpackages/test_c-1.0.zip";
+
+
     @ClassRule
     public static TemporaryFolder tempFolder = new TemporaryFolder();
 
@@ -223,10 +253,11 @@ public class IntegrationTestBase  {
 
         // ensure not packages or tmp
         clean("/etc");
+        clean("/var");
         clean("/tmp");
         clean("/testroot");
 
-        packMgr = new JcrPackageManagerImpl(admin);
+        packMgr = new JcrPackageManagerImpl(admin, new String[0]);
 
         PackageEventDispatcherImpl dispatcher = new PackageEventDispatcherImpl();
         dispatcher.bindPackageEventListener(new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));
@@ -382,6 +413,24 @@ public class IntegrationTestBase  {
             }
         });
         return opts;
+    }
+
+    /**
+     * Returns the installation path of the package including the ".zip" extension.
+     * @param id the package id
+     * @return the path
+     */
+    public String getInstallationPath(PackageId id) {
+        // make sure we use the one from the test parameter
+        return packMgr.getRegistry().getInstallationPath(id) + ".zip";
+    }
+
+    public void assertPackageNodeExists(PackageId id) throws RepositoryException {
+        assertNodeExists(getInstallationPath(id));
+    }
+
+    public void assertPackageNodeMissing(PackageId id) throws RepositoryException {
+        assertNodeMissing(getInstallationPath(id));
     }
 
     public void assertNodeExists(String path) throws RepositoryException {

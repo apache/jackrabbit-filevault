@@ -44,6 +44,7 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.tika.io.IOUtils;
+import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -65,10 +66,10 @@ public class TestPackageInstall extends IntegrationTestBase {
     public void testUpload() throws RepositoryException, IOException, PackageException {
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
         assertNotNull(pack);
-        assertNodeExists("/etc/packages/my_packages/tmp.zip");
+        assertPackageNodeExists(TMP_PACKAGE_ID);
 
         // upload already unrwapps it, so check if definition is ok
-        assertNodeExists("/etc/packages/my_packages/tmp.zip/jcr:content/vlt:definition");
+        assertNodeExists(getInstallationPath(TMP_PACKAGE_ID) + "/jcr:content/vlt:definition");
 
         // todo: check definition props
 
@@ -97,7 +98,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), true, true);
         assertNotNull(pack);
         assertTrue(pack.isValid());
-        assertNodeExists("/etc/packages/my_packages/tmp.zip");
+        assertPackageNodeExists(TMP_PACKAGE_ID);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo");
 
@@ -132,10 +133,10 @@ public class TestPackageInstall extends IntegrationTestBase {
     public void testUploadWithThumbnail() throws RepositoryException, IOException, PackageException {
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_with_thumbnail.zip"), false);
         assertNotNull(pack);
-        assertNodeExists("/etc/packages/my_packages/tmp.zip");
+        assertPackageNodeExists(TMP_PACKAGE_ID);
 
         // upload already unrwapps it, so check if definition is ok
-        assertNodeExists("/etc/packages/my_packages/tmp.zip/jcr:content/vlt:definition/thumbnail.png");
+        assertNodeExists(getInstallationPath(TMP_PACKAGE_ID) + "/jcr:content/vlt:definition/thumbnail.png");
     }
 
     /**
@@ -362,7 +363,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
-        assertNodeExists("/etc/packages/my_packages/.snapshot/tmp.zip");
+        assertPackageNodeExists(TMP_SNAPSHOT_PACKAGE_ID);
         assertNodeExists("/tmp/foo/bar/tobi");
     }
 
@@ -391,7 +392,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         // extract should not generate snapshots
         pack.extract(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
-        assertNodeMissing("/etc/packages/my_packages/.snapshot/tmp.zip");
+        assertPackageNodeMissing(TMP_SNAPSHOT_PACKAGE_ID);
 
         pack.uninstall(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
@@ -408,7 +409,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         // extract should not generate snapshots
         pack.extract(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
-        assertNodeMissing("/etc/packages/my_packages/.snapshot/tmp.zip");
+        assertPackageNodeMissing(TMP_SNAPSHOT_PACKAGE_ID);
 
         ImportOptions opts = getDefaultOptions();
         opts.setStrict(true);
@@ -512,7 +513,7 @@ public class TestPackageInstall extends IntegrationTestBase {
     public void testNodeTypeChange() throws RepositoryException, IOException, PackageException {
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
         assertNotNull(pack);
-        assertNodeExists("/etc/packages/my_packages/tmp.zip");
+        assertPackageNodeExists(TMP_PACKAGE_ID);
 
         ImportOptions opts = getDefaultOptions();
         pack.install(opts);
@@ -522,7 +523,7 @@ public class TestPackageInstall extends IntegrationTestBase {
 
         pack = packMgr.upload(getStream("testpackages/tmp_nt_folder.zip"), false);
         assertNotNull(pack);
-        assertNodeExists("/etc/packages/my_packages/tmp.zip");
+        assertPackageNodeExists(TMP_PACKAGE_ID);
 
         pack.install(opts);
 
@@ -616,12 +617,12 @@ public class TestPackageInstall extends IntegrationTestBase {
         // root node is not accessible
         AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
         AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, false);
-        AccessControlUtils.addAccessControlEntry(admin, "/etc/packages", principal1, new String[]{"jcr:all"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, packMgr.getRegistry().getPackRootPaths()[0], principal1, new String[]{"jcr:all"}, true);
         AccessControlUtils.addAccessControlEntry(admin, "/tmp/foo", principal1, new String[]{"jcr:all"}, true);
         admin.save();
 
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session);
+        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0]);
         pack = userPackMgr.open(id);
         ImportOptions opts = getDefaultOptions();
         pack.install(opts);
@@ -636,6 +637,8 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testExtractWithoutRootAndTmpAccess() throws IOException, RepositoryException, ConfigurationException, PackageException {
+        Assume.assumeTrue(!isOak());
+
         JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), true, true);
         assertNotNull(pack);
         assertTrue(pack.isValid());
@@ -657,12 +660,12 @@ public class TestPackageInstall extends IntegrationTestBase {
         // root node is not accessible
         AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
         AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, false);
-        AccessControlUtils.addAccessControlEntry(admin, "/etc/packages", principal1, new String[]{"jcr:all"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, packMgr.getRegistry().getPackRootPaths()[0], principal1, new String[]{"jcr:all"}, true);
         AccessControlUtils.addAccessControlEntry(admin, "/tmp/foo", principal1, new String[]{"jcr:all"}, true);
         admin.save();
 
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session);
+        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0]);
         pack = userPackMgr.open(id);
         ImportOptions opts = getDefaultOptions();
         pack.extract(opts);

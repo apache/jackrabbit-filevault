@@ -41,6 +41,7 @@ import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.fs.io.JcrArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -276,6 +277,8 @@ public class ImportTests extends IntegrationTestBase {
 
     @Test
     public void testImportWithoutRootAccess() throws IOException, RepositoryException, ConfigurationException {
+        Assume.assumeTrue(!isOak());
+
         // Create test user
         UserManager userManager = ((JackrabbitSession)admin).getUserManager();
         String userId = "user1";
@@ -308,6 +311,8 @@ public class ImportTests extends IntegrationTestBase {
 
     @Test
     public void testImportWithoutRootAndTmpAccess() throws IOException, RepositoryException, ConfigurationException {
+        Assume.assumeTrue(!isOak());
+
         // Create test user
         UserManager userManager = ((JackrabbitSession)admin).getUserManager();
         String userId = "user1";

@@ -24,6 +24,8 @@ import javax.jcr.Session;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageDefinitionImpl;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default access point to package managers for non OSGi clients.
@@ -31,6 +33,11 @@ import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
  * @since 2.0
  */
 public class PackagingService {
+
+    /**
+     * default logger
+     */
+    private static final Logger log = LoggerFactory.getLogger(PackagingService.class);
 
     /**
      * Returns a non-repository based package manager.
@@ -46,7 +53,14 @@ public class PackagingService {
      * @return the package manager
      */
     public static JcrPackageManager getPackageManager(Session session) {
-        return new JcrPackageManagerImpl(session);
+        try {
+            throw new IllegalStateException();
+        } catch (IllegalStateException e) {
+            log.warn("JcrPackageManager acquired w/o service! Alternate package roots will not be respected.", e);
+        }
+
+        // todo: should somehow pass the package roots
+        return new JcrPackageManagerImpl(session, new String[0]);
     }
 
     /**

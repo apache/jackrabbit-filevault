@@ -665,7 +665,7 @@ public class Importer {
                     }
                 }
                 // todo: find better way to detect sub-packages
-                if (repoPath.startsWith(JcrPackageRegistry.PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
+                if (repoPath.startsWith(JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
                     subPackages.add(repoPath);
                 }
 

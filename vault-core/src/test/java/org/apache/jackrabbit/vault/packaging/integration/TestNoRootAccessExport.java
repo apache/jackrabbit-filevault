@@ -46,7 +46,7 @@ public class TestNoRootAccessExport extends IntegrationTestBase {
     @Ignore("JCRVLT-100")
     public void exportNoRootAccess() throws RepositoryException, IOException, PackageException {
         // setup access control
-        Node packageRoot = new JcrPackageManagerImpl(admin).getPackageRoot();
+        Node packageRoot = new JcrPackageManagerImpl(admin, new String[0]).getPackageRoot();
         AccessControlManager acMgr = admin.getAccessControlManager();
         JackrabbitAccessControlList acl = AccessControlUtils.getAccessControlList(acMgr, "/");
         acMgr.removePolicy(acl.getPath(), acl);
@@ -54,7 +54,7 @@ public class TestNoRootAccessExport extends IntegrationTestBase {
         AccessControlUtils.getAccessControlList(acMgr, packageRoot.getPath());
         AccessControlUtils.allow(packageRoot, org.apache.jackrabbit.oak.spi.security.principal.EveryonePrincipal.NAME, Privilege.JCR_ALL);
 
-        Node tmpNode = new JcrPackageManagerImpl(admin).getPackageRoot();
+        Node tmpNode = new JcrPackageManagerImpl(admin, new String[0]).getPackageRoot();
         AccessControlUtils.getAccessControlList(acMgr, tmpNode.getPath());
         AccessControlUtils.allow(tmpNode, org.apache.jackrabbit.oak.spi.security.principal.EveryonePrincipal.NAME, Privilege.JCR_ALL);
 
@@ -69,7 +69,7 @@ public class TestNoRootAccessExport extends IntegrationTestBase {
 
         // login as guest an
         Session anonymous = repository.login(new GuestCredentials());
-        JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(anonymous);
+        JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(anonymous, new String[0]);
         pack = jcrPackageManager.open(id);
         jcrPackageManager.assemble(pack, null);
     }

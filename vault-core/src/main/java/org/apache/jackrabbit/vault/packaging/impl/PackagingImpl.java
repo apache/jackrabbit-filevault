@@ -16,6 +16,8 @@
  */
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import java.util.Arrays;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -26,8 +28,14 @@ import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.Packaging;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@code PackagingImpl}...
@@ -37,7 +45,13 @@ import org.osgi.service.component.annotations.Reference;
         immediate = true,
         property = {"service.vendor=The Apache Software Foundation"}
 )
+@Designate(ocd = PackagingImpl.Config.class)
 public class PackagingImpl implements Packaging {
+
+    /**
+     * default logger
+     */
+    private static final Logger log = LoggerFactory.getLogger(PackagingImpl.class);
 
     @Reference
     private PackageEventDispatcher eventDispatcher;
@@ -47,8 +61,28 @@ public class PackagingImpl implements Packaging {
      */
     private final PackageManagerImpl pkgManager = new PackageManagerImpl();
 
+    private String[] packageRoots = new String[0];
+
     public PackagingImpl() {
         pkgManager.setDispatcher(eventDispatcher);
+    }
+
+    @ObjectClassDefinition(
+            name = "Apache Jackrabbit Packaging Service"
+    )
+    @interface Config {
+
+        /**
+         * Defines the package roots of the package manager
+         */
+        @AttributeDefinition
+        String[] packageRoots() default {"/etc/packages"};
+    }
+
+    @Activate
+    private void activate(Config config) {
+        this.packageRoots = config.packageRoots();
+        log.info("Jackrabbit Filevault Packaging initialized with roots {}", Arrays.toString(packageRoots));
     }
 
     /**
@@ -62,7 +96,7 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackageManager getPackageManager(Session session) {
-        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session);
+        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, packageRoots);
         mgr.setDispatcher(eventDispatcher);
         return mgr;
     }

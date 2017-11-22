@@ -19,7 +19,9 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -870,6 +872,37 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             }
         }
         return userId;
+    }
+
+    /**
+     * Returns the list of sub packages set on the definition node via the {@link #PN_SUB_PACKAGES} property.
+     * @return the list of sub package ids
+     * @throws RepositoryException if an error occurs.
+     */
+    protected List<PackageId> getSubPackages() throws RepositoryException {
+        LinkedList<PackageId> subPackages = new LinkedList<PackageId>();
+        if (defNode.hasProperty(PN_SUB_PACKAGES)) {
+            Value[] subIds = defNode.getProperty(PN_SUB_PACKAGES).getValues();
+            for (Value v : subIds) {
+                // reverse installation order
+                subPackages.add(PackageId.fromString(v.getString()));
+            }
+        }
+        return subPackages;
+    }
+
+    /**
+     * Sets the package Ids to the definition node
+     * @param subPackageIds the package Ids
+     * @throws RepositoryException if an error occurs
+     */
+    protected void setSubPackages(Collection<PackageId> subPackageIds) throws RepositoryException {
+        String[] subIds = new String[subPackageIds.size()];
+        int i =0;
+        for (PackageId subId: subPackageIds) {
+            subIds[i++] = subId.toString();
+        }
+        defNode.setProperty(PN_SUB_PACKAGES, subIds);
     }
 
     /**

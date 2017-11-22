@@ -105,7 +105,7 @@ public class PackageManagerMBeanImpl extends StandardMBean implements PackageMan
 
     @Override
     protected String getDescription(MBeanAttributeInfo info) {
-        if (info.getName().equals("Packages")) {
+        if ("Packages".equals(info.getName())) {
             return "Available Packages";
         }
         return super.getDescription(info);
@@ -122,7 +122,8 @@ public class PackageManagerMBeanImpl extends StandardMBean implements PackageMan
             Session session = null;
             try {
                 session = repository.loginAdministrative(null);
-                JcrPackageManager pkgMgr = new JcrPackageManagerImpl(session);
+                // todo: find a way to use the sling packaging service instead
+                JcrPackageManager pkgMgr = new JcrPackageManagerImpl(session, new String[0]);
                 for (JcrPackage pkg: pkgMgr.listPackages()) {
                     try {
                         Object[] values = {

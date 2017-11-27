@@ -56,7 +56,7 @@ public class PackagingService {
         try {
             throw new IllegalStateException();
         } catch (IllegalStateException e) {
-            log.warn("JcrPackageManager acquired w/o service! Alternate package roots will not be respected.", e);
+            log.info("JcrPackageManager acquired w/o service! Alternate package roots will not be respected.", e);
         }
 
         // todo: should somehow pass the package roots

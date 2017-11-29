@@ -200,7 +200,12 @@ public class ZipArchive extends AbstractArchive {
              * {@inheritDoc}
              */
             public long getLastModified() {
-                return ze.getTime();
+                try {
+                    return ze.getTime();
+                } catch (Exception e1) {
+                    // see: http://bugs.java.com/view_bug.do?bug_id=JDK-8184940
+                    return 0;
+                }
             }
 
         };

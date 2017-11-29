@@ -157,7 +157,7 @@ public class ZipStreamArchive extends AbstractArchive {
                             // copy stream
                             long pos = getPosition();
                             long len = copy(zin);
-                            je = je.add(new EntryImpl(names[i], entry.getTime(), pos, len));
+                            je = je.add(new EntryImpl(names[i], safeGetTime(entry), pos, len));
                         } else {
                             je = je.add(names[i]);
                         }
@@ -497,5 +497,20 @@ public class ZipStreamArchive extends AbstractArchive {
             return children == null ? null : children.get(name);
         }
 
+    }
+
+    /**
+     * Safely returns the modification time of the zip entry or 0, if reading the time would
+     * result in an error. for example due to http://bugs.java.com/view_bug.do?bug_id=JDK-8184940
+     *
+     * @param e the zip entry
+     * @return the modification time
+     */
+    private static long safeGetTime(ZipEntry e) {
+        try {
+            return e.getTime();
+        } catch (Exception e1) {
+            return 0;
+        }
     }
 }

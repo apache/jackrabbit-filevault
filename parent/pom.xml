@@ -40,9 +40,11 @@
     </description>
 
     <properties>
-        <jackrabbit.version>2.14.2</jackrabbit.version>
+        <jackrabbit.version>2.16.0</jackrabbit.version>
         <oak.version>1.6.1</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
+        <test.oak>false</test.oak>
+        <test.vm.options>-Doak=$test.oak}</test.vm.options>
     </properties>
 
     <!-- ====================================================================== -->
@@ -170,6 +172,7 @@
                                 <value>target/derby.log</value>
                             </property>
                         </systemProperties>
+                        <argLine>${test.vm.options}</argLine>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
@@ -421,6 +424,15 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+             <id>java9</id>
+             <activation>
+                <jdk>9</jdk>
+             </activation>
+             <properties>
+                <test.vm.options>--add-modules=java.se.ee -Doak=${test.oak}</test.vm.options>
+             </properties>
         </profile>
     </profiles>
 

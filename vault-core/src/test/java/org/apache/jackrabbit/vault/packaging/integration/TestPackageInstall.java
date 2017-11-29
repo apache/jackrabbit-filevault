@@ -17,9 +17,15 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.security.Principal;
+import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
@@ -675,6 +681,36 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertNodeExists("/tmp/foo/bar/tobi");
     }
 
+    /**
+     * Tests if installing a package with a 0-mtime entry works with java9.
+     * see http://bugs.java.com/view_bug.do?bug_id=JDK-8184940
+     */
+    @Test
+    public void testPackageInstallWith0MtimeZipEntry() throws IOException, RepositoryException, NoSuchFieldException, IllegalAccessException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ZipOutputStream zout = new ZipOutputStream(out);
+        Properties p = new Properties();
+        p.setProperty("name", TMP_PACKAGE_ID.getName());
+        p.setProperty("group", TMP_PACKAGE_ID.getGroup());
+        p.setProperty("version", TMP_PACKAGE_ID.getVersionString());
+        ZipEntry e = new ZipEntry("META-INF/vault/properties.xml");
+
+        Field field = ZipEntry.class.getDeclaredField("xdostime");
+        field.setAccessible(true);
+        field.setLong(e, 0);
+        zout.putNextEntry(e);
+        p.storeToXML(zout, "", "utf-8");
+        zout.closeEntry();
+
+        zout.putNextEntry(new ZipEntry("jcr_root/"));
+        zout.closeEntry();
+
+        zout.close();
+        out.close();
+
+        JcrPackage pack = packMgr.upload(new ByteArrayInputStream(out.toByteArray()), true);
+        assertEquals("packageid", TMP_PACKAGE_ID, pack.getDefinition().getId());
+    }
 
     // todo: upload with version
     // todo: rename

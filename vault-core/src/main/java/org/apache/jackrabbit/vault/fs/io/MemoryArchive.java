@@ -93,7 +93,7 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
                     VirtualEntry je = root;
                     for (int i=0; i<names.length; i++) {
                         if (i == names.length -1 && !entry.isDirectory()) {
-                            je = je.add(names[i], entry.getTime(), data);
+                            je = je.add(names[i], safeGetTime(entry), data);
                         } else {
                             je = je.add(names[i], 0, null);
                         }
@@ -287,6 +287,21 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
             }
             children.put(name, ve);
             return ve;
+        }
+    }
+
+    /**
+     * Safely returns the modification time of the zip entry or 0, if reading the time would
+     * result in an error. for example due to http://bugs.java.com/view_bug.do?bug_id=JDK-8184940
+     *
+     * @param e the zip entry
+     * @return the modification time
+     */
+    private static long safeGetTime(ZipEntry e) {
+        try {
+            return e.getTime();
+        } catch (Exception e1) {
+            return 0;
         }
     }
 }

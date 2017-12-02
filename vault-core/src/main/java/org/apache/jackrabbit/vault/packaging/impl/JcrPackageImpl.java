@@ -414,6 +414,8 @@ public class JcrPackageImpl implements JcrPackage {
             snap = snapshot(eOpts, replaceSnapshot, opts.getAccessControlHandling());
         }
         List<String> subPackages = new ArrayList<String>();
+        String userData = pack.getProperty(PROP_USERDATA);
+        node.getSession().getWorkspace().getObservationManager().setUserData(userData);
         pack.extract(ctx, subPackages);
         if (def != null && !opts.isDryRun()) {
             def.touchLastUnpacked(null, true);
@@ -499,6 +501,8 @@ public class JcrPackageImpl implements JcrPackage {
             for (JcrPackageImpl p: subPacks) {
                 boolean skip = false;
                 PackageId id = p.getDefinition().getId();
+                String userSessionData = p.getPackage().getProperty(PROP_USERDATA);
+                s.getWorkspace().getObservationManager().setUserData(userSessionData);
                 SubPackageHandling.Option option = sb.getOption(id);
                 String msg;
                 if (option == SubPackageHandling.Option.ADD || option == SubPackageHandling.Option.IGNORE) {

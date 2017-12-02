@@ -54,6 +54,12 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      */
     String MIME_TYPE = "application/zip";
 
+    
+    /**
+     * Configuration property which is passed as userdata in observation events
+     */
+    String PROP_USERDATA = "eventUserData";
+    
     /**
      * Returns the package definition of this package
      * @return the package definition or {@code null} if this package is

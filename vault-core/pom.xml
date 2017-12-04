@@ -175,6 +175,11 @@
             <groupId>org.osgi</groupId>
             <artifactId>osgi.annotation</artifactId>
         </dependency>
+        <!-- OSGi core -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+        </dependency>
         <!-- Declarative Service Annotations -->
         <dependency>
             <groupId>org.osgi</groupId>

@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.jar.JarFile;
@@ -40,6 +42,10 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.Text;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +59,13 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
      */
     private static final Logger log = LoggerFactory.getLogger(InstallHookProcessorImpl.class);
 
-    private final TreeMap<String, Hook> hooks = new TreeMap<String, Hook>();
+    private final TreeMap<String, Hook> hooks = new TreeMap<>();
+
+    private final BundleContext ctx;
+
+    public InstallHookProcessorImpl(BundleContext ctx) {
+        this.ctx = ctx;
+    }
 
     public void registerHooks(Archive archive, ClassLoader classLoader) throws PackageException {
         try {
@@ -125,11 +137,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
     private void initHook(Hook hook) throws IOException, PackageException {
         try {
             hook.init();
-        } catch (IOException e) {
-            log.error("Error while initializing hook: {}", e.toString());
-            hook.destroy();
-            throw e;
-        } catch (PackageException e) {
+        } catch (IOException | PackageException e) {
             log.error("Error while initializing hook: {}", e.toString());
             hook.destroy();
             throw e;
@@ -144,17 +152,19 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
     
     public boolean execute(InstallContext context) {
         for (Hook hook : hooks.values()) {
-            try {
-                hook.getHook().execute(context);
-            } catch (PackageException e) {
-                // abort processing only for prepare phase
-                if (context.getPhase() == InstallContext.Phase.PREPARE) {
-                    log.warn("Hook " + hook.name +" threw package exception. Prepare aborted.", e);
-                    return false;
+            for (InstallHook iHook: hook.getHooks()) {
+                try {
+                    iHook.execute(context);
+                } catch (PackageException e) {
+                    // abort processing only for prepare phase
+                    if (context.getPhase() == InstallContext.Phase.PREPARE) {
+                        log.warn("Hook " + hook.name +" threw package exception. Prepare aborted.", e);
+                        return false;
+                    }
+                    log.warn("Hook " + hook.name +" threw package exception. Ignored", e);
+                } catch (Throwable e) {
+                    log.warn("Hook " + hook.name +" threw runtime exception.", e);
                 }
-                log.warn("Hook " + hook.name +" threw package exception. Ignored", e);
-            } catch (Throwable e) {
-                log.warn("Hook " + hook.name +" threw runtime exception.", e);
             }
             // if in end phase, shutdown hooks
             if (context.getPhase() == InstallContext.Phase.END) {
@@ -172,9 +182,15 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
 
         private ClassLoader parentClassLoader;
 
-        private InstallHook hook;
+        private List<InstallHook> hooks = new LinkedList<>();
+
+        private List<ServiceReference<?>> hookServiceRefs = new LinkedList<>();
 
         private String mainClassName;
+
+        private String bundleName;
+
+        private Bundle bundle;
 
         private Hook(String name, String mainClassName, ClassLoader parentClassLoader) {
             this.name = name;
@@ -190,8 +206,20 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
         }
 
         private void destroy() {
+            hooks.clear();
+            if (bundle != null) {
+                for (ServiceReference<?> ref: hookServiceRefs) {
+                    ctx.ungetService(ref);
+                }
+                hookServiceRefs.clear();
+                try {
+                    bundle.uninstall();
+                } catch (BundleException e) {
+                    log.warn("error while uninstalling hook bundle: " + bundleName, e);
+                }
+            }
+            bundle = null;
             parentClassLoader = null;
-            hook = null;
             if (jarFile != null) {
                 FileUtils.deleteQuietly(jarFile);
             }
@@ -206,7 +234,45 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
 	                if (mf == null) {
 	                    throw new PackageException("hook jar file does not have a manifest: " + name);
 	                }
-	                mainClassName = mf.getMainAttributes().getValue("Main-Class");
+	                bundleName = mf.getMainAttributes().getValue("Bundle-SymbolicName");
+                    mainClassName = mf.getMainAttributes().getValue("Main-Class");
+
+	                if (bundleName != null && bundleName.length() > 0) {
+	                    if (ctx == null) {
+	                        if (mainClassName == null) {
+                                throw new PackageException("unable to register hook bundle since not running in OSGi context");
+                            }
+                        } else {
+                            // assume jar is bundle and try to register it
+                            try {
+                                bundle = ctx.installBundle(jarFile.getAbsolutePath(), FileUtils.openInputStream(jarFile));
+                                bundle.start();
+                                if (bundle.getState() != Bundle.ACTIVE) {
+                                    throw new PackageException("install hook bundle isn't fully resolved. async hooks are not supported yet. state is: " + bundle.getState());
+                                }
+                                ServiceReference<?>[] refs = bundle.getRegisteredServices();
+                                if (refs != null) {
+                                    for (ServiceReference<?> ref: refs) {
+                                        log.info("install hook provides service: {}", ref);
+                                        if (ref.isAssignableTo(ctx.getBundle(), InstallHook.class.getName())) {
+                                            InstallHook hook = (InstallHook) ctx.getService(ref);
+                                            hookServiceRefs.add(ref);
+                                            hooks.add(hook);
+                                            log.info("install hook service registered: {}", hook);
+                                        }
+                                    }
+                                }
+                                if (hooks.isEmpty()) {
+                                    throw new PackageException("Install hook bundle doesn't provide any " + InstallHook.class.getName() + " service.");
+                                }
+                                return;
+                            } catch (BundleException e) {
+                                log.error("Unable to install or start bundle: " + bundleName, e);
+                                throw new PackageException("unable to install or start hook bundle: " + bundleName);
+                            }
+                        }
+                    }
+
 	                if (mainClassName == null) {
 	                    throw new PackageException("hook manifest file does not have a Main-Class entry: " + name);
 	                }
@@ -258,14 +324,14 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             }
             // create instance
             try {
-                hook = (InstallHook) clazz.newInstance();
+                hooks.add((InstallHook) clazz.newInstance());
             } catch (Exception e) {
                 throw new PackageException("hook's main class " + mainClassName + " could not be instantiated.", e);
             }
         }
 
-        public InstallHook getHook() {
-            return hook;
+        public List<InstallHook> getHooks() {
+            return hooks;
         }
     }
 }

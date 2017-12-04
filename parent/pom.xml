@@ -342,6 +342,13 @@
                 <version>6.0.1</version>
                 <scope>provided</scope>
             </dependency>
+            <!-- OSGi core -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.core</artifactId>
+                <version>6.0.0</version>
+                <scope>provided</scope>
+            </dependency>
             <!-- Declarative Service Annotations -->
             <dependency>
                 <groupId>org.osgi</groupId>

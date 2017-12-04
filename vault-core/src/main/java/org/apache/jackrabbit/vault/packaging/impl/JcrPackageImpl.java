@@ -387,7 +387,7 @@ public class JcrPackageImpl implements JcrPackage {
             // MAX_VALUE disables saving completely, therefore we have to use a lower value!
             opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
         }
-        InstallContextImpl ctx = pack.prepareExtract(node.getSession(), opts);
+        InstallContextImpl ctx = pack.prepareExtract(node.getSession(), opts, mgr.getBundleContext());
         JcrPackage snap = null;
         if (!opts.isDryRun() && createSnapshot) {
             ExportOptions eOpts = new ExportOptions();
@@ -450,7 +450,7 @@ public class JcrPackageImpl implements JcrPackage {
                     Version pVersion = pId.getVersion();
 
                     // get the list of packages available in the same group
-                    JcrPackageManager pkgMgr = new JcrPackageManagerImpl(s, mgr.getPackRootPaths()); // todo: use registry instead ?
+                    JcrPackageManager pkgMgr = new JcrPackageManagerImpl(s, mgr.getBundleContext(), mgr.getPackRootPaths()); // todo: use registry instead ?
                     List<JcrPackage> listPackages = pkgMgr.listPackages(pId.getGroup(), true);
 
                     // keep some status variable if a more recent is found in the next loop
@@ -875,7 +875,7 @@ public class JcrPackageImpl implements JcrPackage {
         }
         
         log.debug("Creating snapshot for {}.", id);
-        JcrPackageManagerImpl packMgr = new JcrPackageManagerImpl(node.getSession(), mgr.getPackRootPaths());
+        JcrPackageManagerImpl packMgr = new JcrPackageManagerImpl(node.getSession(), mgr.getBundleContext(), mgr.getPackRootPaths());
         String path = mgr.getInstallationPath(id);
         String parentPath = Text.getRelativeParent(path, 1);
         Node folder = packMgr.mkdir(parentPath, true);
@@ -988,7 +988,7 @@ public class JcrPackageImpl implements JcrPackage {
             Session s = getNode().getSession();
             // check for recursive uninstall
             if (!opts.isNonRecursive() && subPackages.size() > 0) {
-                JcrPackageManagerImpl packMgr = new JcrPackageManagerImpl(s, mgr.getPackRootPaths());
+                JcrPackageManagerImpl packMgr = new JcrPackageManagerImpl(s, mgr.getBundleContext(), mgr.getPackRootPaths());
                 for (PackageId id : subPackages) {
                     JcrPackage pack = packMgr.open(id);
                     if (pack != null) {

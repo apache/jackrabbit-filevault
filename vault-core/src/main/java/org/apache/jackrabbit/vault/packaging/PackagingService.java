@@ -60,7 +60,7 @@ public class PackagingService {
         }
 
         // todo: should somehow pass the package roots
-        return new JcrPackageManagerImpl(session, new String[0]);
+        return new JcrPackageManagerImpl(session, null, new String[0]);
     }
 
     /**

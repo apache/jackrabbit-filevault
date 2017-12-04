@@ -39,6 +39,7 @@ import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,7 +150,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * {@inheritDoc}
      */
     public void extract(Session session, ImportOptions opts) throws RepositoryException, PackageException {
-        extract(prepareExtract(session, opts), null);
+        extract(prepareExtract(session, opts, null), null);
     }
 
     /**
@@ -170,14 +171,14 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws IllegalStateException if the package is not valid.
      * @return installation context
      */
-    protected InstallContextImpl prepareExtract(Session session, ImportOptions opts) throws RepositoryException, PackageException {
+    protected InstallContextImpl prepareExtract(Session session, ImportOptions opts, BundleContext bundleContext) throws RepositoryException, PackageException {
         if (!isValid()) {
             throw new IllegalStateException("Package not valid.");
         }
         // try to find any hooks
         InstallHookProcessor hooks = opts instanceof InstallHookProcessorFactory ?
                 ((InstallHookProcessorFactory) opts).createInstallHookProcessor()
-                : new InstallHookProcessorImpl();
+                : new InstallHookProcessorImpl(bundleContext);
         if (!opts.isDryRun()) {
             hooks.registerHooks(archive, opts.getHookClassLoader());
         }

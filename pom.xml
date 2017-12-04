@@ -56,6 +56,7 @@
         <module>vault-vlt</module>
         <module>vault-cli</module>
         <module>vault-hook-example</module>
+        <module>vault-hook-example-bundle</module>
         <module>vault-hook-externalclass-test</module>
         <module>vault-sync</module>
     </modules>

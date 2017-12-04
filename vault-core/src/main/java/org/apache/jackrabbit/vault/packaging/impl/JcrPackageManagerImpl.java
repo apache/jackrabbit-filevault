@@ -61,6 +61,7 @@ import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
+import org.osgi.framework.BundleContext;
 
 import static org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
 
@@ -85,12 +86,17 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * backward compatibility to read existing packages.
      *
      * @param session repository session
+     * @param ctx the bundle context
      * @param roots the root paths to store the packages.
      *
      * @see JcrPackageRegistry(Session, String ...)
      */
-    public JcrPackageManagerImpl(Session session, String[] roots) {
-        this(new JcrPackageRegistry(session, roots));
+    public JcrPackageManagerImpl(Session session, BundleContext ctx, String[] roots) {
+        this(new JcrPackageRegistry(session, ctx, roots));
+    }
+
+    protected JcrPackageManagerImpl(Session session, String[] roots) {
+        this(new JcrPackageRegistry(session, null, roots));
     }
 
     private JcrPackageManagerImpl(JcrPackageRegistry registry) {

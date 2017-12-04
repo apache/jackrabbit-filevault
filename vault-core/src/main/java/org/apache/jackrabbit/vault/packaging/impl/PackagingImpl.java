@@ -28,6 +28,7 @@ import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.Packaging;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -63,6 +64,8 @@ public class PackagingImpl implements Packaging {
 
     private String[] packageRoots = new String[0];
 
+    private BundleContext bundleContext;
+
     public PackagingImpl() {
         pkgManager.setDispatcher(eventDispatcher);
     }
@@ -80,8 +83,9 @@ public class PackagingImpl implements Packaging {
     }
 
     @Activate
-    private void activate(Config config) {
+    private void activate(BundleContext bundleContext, Config config) {
         this.packageRoots = config.packageRoots();
+        this.bundleContext = bundleContext;
         log.info("Jackrabbit Filevault Packaging initialized with roots {}", Arrays.toString(packageRoots));
     }
 
@@ -96,7 +100,7 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackageManager getPackageManager(Session session) {
-        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, packageRoots);
+        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, bundleContext, packageRoots);
         mgr.setDispatcher(eventDispatcher);
         return mgr;
     }

@@ -71,6 +71,7 @@ import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
+import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,13 +128,17 @@ public class JcrPackageRegistry implements PackageRegistry {
      */
     private final String primaryPackRootPathPrefix;
 
+    /**
+     * The bundle context if running in an OSGi environment
+     */
+    private final BundleContext bundleContext;
 
     /**
      * Creates a new JcrPackageRegistry based on the given session.
      * @param session the JCR session that is used to access the repository.
      * @param roots the root paths to store the packages.
      */
-    public JcrPackageRegistry(@Nonnull Session session, @Nullable String ... roots) {
+    public JcrPackageRegistry(@Nonnull Session session, @Nullable BundleContext ctx, @Nullable String ... roots) {
         this.session = session;
         if (roots == null || roots.length == 0) {
             packRootPaths = new String[]{DEFAULT_PACKAGE_ROOT_PATH};
@@ -142,7 +147,17 @@ public class JcrPackageRegistry implements PackageRegistry {
         }
         packRoots = new Node[packRootPaths.length];
         primaryPackRootPathPrefix = packRootPaths[0] + "/";
+        bundleContext = ctx;
         initNodeTypes();
+    }
+
+    /**
+     * Returns the bundle context
+     * @return the bundle context
+     */
+    @Nullable
+    public BundleContext getBundleContext() {
+        return bundleContext;
     }
 
     /**

@@ -19,9 +19,9 @@ package org.apache.jackrabbit.vault.fs.io;
 import static java.util.zip.Deflater.BEST_COMPRESSION;
 import static java.util.zip.Deflater.BEST_SPEED;
 import static java.util.zip.Deflater.NO_COMPRESSION;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,14 +36,21 @@ import org.apache.jackrabbit.vault.fs.api.AccessType;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
-import org.junit.Ignore;
 import org.junit.Test;
-
 
 public class JarExporterTest {
 
+    /**
+     * This test verifies that writing entries that can be compressed together with entries that are already compressed according to
+     * {@link org.apache.jackrabbit.vault.fs.impl.io.CompressionUtil} to the same file does result in a readable jar.
+     * <p/>
+     * There are certain environments that don't support changing the compression level for individual entries due to defects in the jdk
+     * and breaking changes made in recent zlib versions.
+     *
+     * @throws RepositoryException
+     * @throws IOException
+     */
     @Test
-    @Ignore("JCRVLT-257")
     public void testEntriesWithSuppressedCompression() throws RepositoryException, IOException {
         Mocks m = new Mocks("org/apache/jackrabbit/vault/fs/io/JarExporter/testEntriesWithSuppressedCompression");
         for (int level : new int[] { NO_COMPRESSION, BEST_COMPRESSION, BEST_SPEED }) {
@@ -62,7 +69,7 @@ public class JarExporterTest {
                 archive = new ZipStreamArchive(new FileInputStream(target));
                 archive.open(false); // this will throw, when the zip file is corrupt
                 // 8 entries including root and jcr_root
-                assertEquals("Wrong entry count for level " + level, 8,  countEntries(archive.getRoot()));
+                assertEquals("Wrong entry count for level " + level, 8, countEntries(archive.getRoot()));
             } catch (ZipException ex) {
                 throw new AssertionError("Zip failed for level " + level, ex);
             } finally {
@@ -91,7 +98,7 @@ public class JarExporterTest {
         }
 
         private VaultFile mockFile(String relPath, String contentType) throws RepositoryException, IOException {
-            InputStream in = this.getClass().getClassLoader().getResourceAsStream(basePath + '/'+ relPath);
+            InputStream in = this.getClass().getClassLoader().getResourceAsStream(basePath + '/' + relPath);
             Artifact a = mockArtifact(in, contentType);
             VaultFile vaultFile = mock(VaultFile.class);
             when(vaultFile.getPath()).thenReturn("/" + relPath);

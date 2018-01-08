@@ -17,6 +17,8 @@
 
 package org.apache.jackrabbit.vault.fs.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -29,6 +31,8 @@ import java.util.jar.JarOutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import javax.jcr.RepositoryException;
 
@@ -42,6 +46,8 @@ import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import static java.util.zip.Deflater.BEST_COMPRESSION;
 import static java.util.zip.Deflater.DEFAULT_COMPRESSION;
 import static java.util.zip.Deflater.NO_COMPRESSION;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements a Vault filesystem exporter that exports Vault files to a jar file.
@@ -58,12 +64,19 @@ import static java.util.zip.Deflater.NO_COMPRESSION;
  */
 public class JarExporter extends AbstractExporter {
 
+    private static final Logger LOG = LoggerFactory.getLogger(JarExporter.class);
+
     /**
      * Contains the compression levels for which the binaries are always compressed
      * independently of their actual compressibility.
      */
     private static final Set<Integer> COMPRESSED_LEVELS = new HashSet<Integer>(Arrays.asList(
             DEFAULT_COMPRESSION, NO_COMPRESSION, BEST_COMPRESSION));
+
+    /**
+     * If set to true the compression level can be changed for individual jar entries, otherwise false.
+     */
+    private static final boolean ENV_SUPPORTS_COMPRESSION_LEVEL_CHANGE;
 
     private JarOutputStream jOut;
 
@@ -74,6 +87,50 @@ public class JarExporter extends AbstractExporter {
     private final int level;
 
     private final boolean compressedLevel;
+
+    static {
+        // here we check if writing a JarOutputStream supports switching the compression level for individual
+        // JarEntries. There are known issues with recent zlib versions and java which might result in broken
+        // packages being exported, when they contain already compressed binary entries according to CompressionUtil.
+        //
+        // for more information see:
+        // https://issues.apache.org/jira/browse/JCRVLT-257
+        // https://github.com/madler/zlib/issues/305
+        Exception exception = null;
+        ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
+        byte[] nullBytes = new byte[1024 * 1024];
+        try (ZipOutputStream zipOut = new ZipOutputStream(byteArrayOut)) {
+            zipOut.setLevel(Deflater.BEST_SPEED);
+            zipOut.putNextEntry(new ZipEntry("deflated.bin"));
+            zipOut.write(nullBytes);
+            zipOut.closeEntry();
+            zipOut.putNextEntry(new ZipEntry("stored.bin"));
+            zipOut.setLevel(Deflater.BEST_COMPRESSION);
+            zipOut.write(nullBytes);
+            zipOut.closeEntry();
+        } catch (IOException e) {
+            exception = e;
+        }
+        if (exception == null) {
+            try (ZipInputStream zipIn = new ZipInputStream(new ByteArrayInputStream(byteArrayOut.toByteArray()))) {
+                for (int i = 0; i < 2; i++) {
+                    zipIn.getNextEntry();
+                    while (zipIn.read(nullBytes) >= 0) {
+                    }
+                }
+            } catch (IOException e) {
+                exception = e;
+            }
+        }
+
+        if (exception != null) {
+            LOG.warn("The current environment doesn't support switching compression level for individual JarEntries, see "
+                    + "https://issues.apache.org/jira/browse/JCRVLT-257");
+            ENV_SUPPORTS_COMPRESSION_LEVEL_CHANGE = false;
+        } else {
+            ENV_SUPPORTS_COMPRESSION_LEVEL_CHANGE = true;
+        }
+    }
 
     /**
      * Constructs a new jar exporter that writes to the given file.
@@ -164,7 +221,7 @@ public class JarExporter extends AbstractExporter {
             throws RepositoryException, IOException {
         ZipEntry e = new ZipEntry(getPlatformFilePath(file, relPath));
         Artifact a = file.getArtifact();
-        boolean compress = compressedLevel || CompressionUtil.isCompressible(a) >= 0;
+        boolean compress = compressedLevel || CompressionUtil.isCompressible(a) >= 0 || !ENV_SUPPORTS_COMPRESSION_LEVEL_CHANGE;
         if (!compress) {
             jOut.setLevel(NO_COMPRESSION);
         }
@@ -209,7 +266,8 @@ public class JarExporter extends AbstractExporter {
 
     public void write(ZipFile zip, ZipEntry entry) throws IOException {
         track("A", entry.getName());
-        if (!compressedLevel) {
+        boolean changeCompressionLevel = !compressedLevel && ENV_SUPPORTS_COMPRESSION_LEVEL_CHANGE;
+        if (changeCompressionLevel) {
             // The entry to be written is assumed to be incompressible
             jOut.setLevel(NO_COMPRESSION);
         }
@@ -224,7 +282,7 @@ public class JarExporter extends AbstractExporter {
             in.close();
         }
         jOut.closeEntry();
-        if (!compressedLevel) {
+        if (changeCompressionLevel) {
             jOut.setLevel(level);
         }
     }

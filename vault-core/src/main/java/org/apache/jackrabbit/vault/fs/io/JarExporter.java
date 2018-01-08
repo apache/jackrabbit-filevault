@@ -92,6 +92,10 @@ public class JarExporter extends AbstractExporter {
         // here we check if writing a JarOutputStream supports switching the compression level for individual
         // JarEntries. There are known issues with recent zlib versions and java which might result in broken
         // packages being exported, when they contain already compressed binary entries according to CompressionUtil.
+        //
+        // for more information see:
+        // https://issues.apache.org/jira/browse/JCRVLT-257
+        // https://github.com/madler/zlib/issues/305
         Exception exception = null;
         ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
         byte[] nullBytes = new byte[1024 * 1024];
@@ -120,7 +124,8 @@ public class JarExporter extends AbstractExporter {
         }
 
         if (exception != null) {
-            LOG.warn("The current environment doesn't support switching compression level for individual JarEntries, see JCRVLT-257");
+            LOG.warn("The current environment doesn't support switching compression level for individual JarEntries, see "
+                    + "https://issues.apache.org/jira/browse/JCRVLT-257");
             ENV_SUPPORTS_COMPRESSION_LEVEL_CHANGE = false;
         } else {
             ENV_SUPPORTS_COMPRESSION_LEVEL_CHANGE = true;

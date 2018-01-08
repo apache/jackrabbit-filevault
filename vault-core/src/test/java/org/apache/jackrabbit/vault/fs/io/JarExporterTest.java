@@ -47,6 +47,8 @@ public class JarExporterTest {
      * There are certain environments that don't support changing the compression level for individual entries due to defects in the jdk
      * and breaking changes made in recent zlib versions.
      *
+     * @see https://issues.apache.org/jira/browse/JCRVLT-257
+     * @see https://github.com/madler/zlib/issues/305
      * @throws RepositoryException
      * @throws IOException
      */

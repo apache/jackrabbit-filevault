@@ -37,7 +37,7 @@ public class ExportOptions {
 
     private String mountPath;
 
-    private int compressionLevel = Deflater.NO_COMPRESSION;
+    private int compressionLevel = Deflater.DEFAULT_COMPRESSION;
 
     /**
      * Returns the progress tracker listener.
@@ -130,6 +130,9 @@ public class ExportOptions {
     /**
      * Defines the compression level for the export.
      * @param compressionLevel the compression level
+     *
+     * @see Deflater#setLevel(int)
+     * @see Deflater#DEFAULT_COMPRESSION
      * @see Deflater#NO_COMPRESSION
      */
     public void setCompressionLevel(int compressionLevel) {
@@ -137,8 +140,11 @@ public class ExportOptions {
     }
 
     /**
-     * Returns the compression level
+     * Returns the compression level. Defaults to {@link Deflater#DEFAULT_COMPRESSION}
      * @return the compression level
+     *
+     * @see Deflater#setLevel(int)
+     * @see Deflater#DEFAULT_COMPRESSION
      * @see Deflater#NO_COMPRESSION
      */
     public int getCompressionLevel() {

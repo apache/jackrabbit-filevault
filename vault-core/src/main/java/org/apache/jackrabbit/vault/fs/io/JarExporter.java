@@ -164,7 +164,9 @@ public class JarExporter extends AbstractExporter {
             throws RepositoryException, IOException {
         ZipEntry e = new ZipEntry(getPlatformFilePath(file, relPath));
         Artifact a = file.getArtifact();
-        boolean compress = compressedLevel || CompressionUtil.isCompressible(a) >= 0;
+        boolean compress = compressedLevel
+                || !CompressionUtil.ENV_SUPPORTS_COMPRESSION_LEVEL_CHANGE
+                || CompressionUtil.isCompressible(a) >= 0;
         if (!compress) {
             jOut.setLevel(NO_COMPRESSION);
         }
@@ -209,7 +211,8 @@ public class JarExporter extends AbstractExporter {
 
     public void write(ZipFile zip, ZipEntry entry) throws IOException {
         track("A", entry.getName());
-        if (!compressedLevel) {
+        boolean changeCompressionLevel = !compressedLevel && CompressionUtil.ENV_SUPPORTS_COMPRESSION_LEVEL_CHANGE;
+        if (changeCompressionLevel) {
             // The entry to be written is assumed to be incompressible
             jOut.setLevel(NO_COMPRESSION);
         }
@@ -224,7 +227,7 @@ public class JarExporter extends AbstractExporter {
             in.close();
         }
         jOut.closeEntry();
-        if (!compressedLevel) {
+        if (changeCompressionLevel) {
             jOut.setLevel(level);
         }
     }

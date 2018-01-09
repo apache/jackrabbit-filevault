@@ -16,11 +16,17 @@
  */
 package org.apache.jackrabbit.vault.fs.impl.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Nonnull;
 import javax.jcr.RepositoryException;
@@ -41,6 +47,11 @@ public final class CompressionUtil {
      * default logger
      */
     private static final Logger log = LoggerFactory.getLogger(CompressionUtil.class);
+
+    /**
+     * If set to true the compression level can be changed for individual jar entries, otherwise false.
+     */
+    public static final boolean ENV_SUPPORTS_COMPRESSION_LEVEL_CHANGE = checkEnvironmentSupportsCompressionSwitch();
 
     /**
      * Minimum length to run the auto-detection algorithm in Byte.
@@ -185,4 +196,49 @@ public final class CompressionUtil {
         return len * r < 438 * len;
     }
 
+    /**
+     * Check if writing a JarOutputStream supports switching the compression level for individual
+     * JarEntries. There are known issues with recent zlib versions and java which might result in broken
+     * packages being exported, when they contain already compressed binary entries according to CompressionUtil.
+     * <p/>
+     * for more information see:
+     * https://issues.apache.org/jira/browse/JCRVLT-257
+     * https://github.com/madler/zlib/issues/305
+     *
+     * @return {@code true} if the environment supports switching compression levels
+     */
+    private static boolean checkEnvironmentSupportsCompressionSwitch() {
+        Throwable exception = null;
+        ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
+        byte[] nullBytes = new byte[1024 * 1024];
+        try (ZipOutputStream zipOut = new ZipOutputStream(byteArrayOut)) {
+            zipOut.setLevel(Deflater.BEST_SPEED);
+            zipOut.putNextEntry(new ZipEntry("deflated.bin"));
+            zipOut.write(nullBytes);
+            zipOut.closeEntry();
+            zipOut.putNextEntry(new ZipEntry("stored.bin"));
+            zipOut.setLevel(Deflater.BEST_COMPRESSION);
+            zipOut.write(nullBytes);
+            zipOut.closeEntry();
+        } catch (Throwable e) {
+            exception = e;
+        }
+        if (exception == null) {
+            try (ZipInputStream zipIn = new ZipInputStream(new ByteArrayInputStream(byteArrayOut.toByteArray()))) {
+                for (int i = 0; i < 2; i++) {
+                    zipIn.getNextEntry();
+                    while (zipIn.read(nullBytes) >= 0) {
+                    }
+                }
+            } catch (Throwable e) {
+                exception = e;
+            }
+        }
+
+        if (exception != null) {
+            log.info("The current environment doesn't support switching compression level for individual JarEntries, see JCRVLT-257");
+            return false;
+        }
+        return true;
+    }
 }

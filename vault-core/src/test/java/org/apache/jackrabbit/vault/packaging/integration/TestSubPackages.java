@@ -30,6 +30,7 @@ import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.Dependency;
+import org.apache.jackrabbit.vault.packaging.DependencyHandling;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
@@ -698,5 +699,34 @@ public class TestSubPackages extends IntegrationTestBase {
                 "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/\n" +
                 "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/_vlt_definition/\n" +
                 "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/_vlt_definition/.content.xml\n", result.toString());
+    }
+
+    /**
+     * Test extracts a multipackage-a-1.0 which contains content and a subpackage. The subpackage will add a dependency
+     * on the parent package. later installs newer version multi-package-a-2.0 which will try to reinstall the subpackage,
+     * but the dependency needs to update. see JCRVLT-264
+     */
+    @Test
+    public void testMixedPackageUpdatesCorrectly() throws Exception {
+       // install 1.0
+        JcrPackage pack = packMgr.upload(getStream("testpackages/multipackage-a-1.0.zip"), false);
+        assertNotNull(pack);
+
+        ImportOptions opts = getDefaultOptions();
+        pack.install(opts);
+
+        assertNodeExists("/tmp/testroot/sub");
+        assertProperty("/apps/test/version","1.0");
+
+        // install 2.0
+        pack = packMgr.upload(getStream("testpackages/multipackage-a-2.0.zip"), false);
+        assertNotNull(pack);
+        opts = getDefaultOptions();
+        opts.setDependencyHandling(DependencyHandling.REQUIRED);
+        pack.install(opts);
+
+        assertNodeExists("/tmp/testroot/sub");
+        assertProperty("/apps/test/version","2.0");
+
     }
 }

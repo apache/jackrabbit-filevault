@@ -33,6 +33,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.io.FileUtils;
@@ -44,6 +45,7 @@ import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
+import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
@@ -54,6 +56,7 @@ import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.apache.jackrabbit.vault.packaging.JcrPackageDefinition.PN_DEPENDENCIES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -592,6 +595,41 @@ public class TestPackageInstall extends IntegrationTestBase {
 
         assertProperty("/testroot/a/test", "123");
         assertProperty("/testroot/a/jcr:isCheckedOut", "false");
+    }
+
+    /**
+     * Installs a package with invalid dependency strings. see JCRVLT-265
+     */
+    @Test
+    public void testInvalidDependenciesInProperties() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/null-dependency-test.zip"), false);
+        assertNotNull(pack);
+        for (Dependency dep: pack.getDefinition().getDependencies()) {
+            assertNotNull("dependency element", dep);
+        }
+    }
+
+    /**
+     * Creates a package definition with invalid dependencies. see JCRVLT-265
+     */
+    @Test
+    public void testInvalidDependenciesInDefinition() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("testpackages/null-dependency-test.zip"), false);
+        assertNotNull(pack);
+        Dependency[] deps = {new Dependency(TMP_PACKAGE_ID), null};
+        pack.getDefinition().setDependencies(deps, true);
+        for (Dependency dep: pack.getDefinition().getDependencies()) {
+            assertNotNull("dependency element", dep);
+        }
+
+        Value[] values = {admin.getValueFactory().createValue("")};
+        pack.getDefNode().setProperty(PN_DEPENDENCIES, values);
+        admin.save();
+
+        pack = packMgr.open(pack.getDefinition().getId());
+        for (Dependency dep: pack.getDefinition().getDependencies()) {
+            assertNotNull("dependency element", dep);
+        }
     }
 
     /**

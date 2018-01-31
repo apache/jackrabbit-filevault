@@ -315,10 +315,16 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
                 List<Dependency> deps = new LinkedList<Dependency>();
                 if (p.getDefinition().isMultiple()) {
                     for (Value v: p.getValues()) {
-                        deps.add(Dependency.fromString(v.getString()));
+                        Dependency dep = Dependency.fromString(v.getString());
+                        if (dep != null) {
+                            deps.add(dep);
+                        }
                     }
                 } else {
-                    deps.add(Dependency.fromString(p.getString()));
+                    Dependency dep = Dependency.fromString(p.getString());
+                    if (dep != null) {
+                        deps.add(dep);
+                    }
                 }
                 return deps.toArray(new Dependency[deps.size()]);
             }
@@ -333,12 +339,14 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      */
     public void setDependencies(@Nonnull Dependency[] dependencies, boolean autoSave) {
         try {
-            final Value[] values = new Value[dependencies.length];
+            final List<Value> values = new ArrayList<>(dependencies.length);
             final ValueFactory fac = defNode.getSession().getValueFactory();
-            for (int i=0; i<dependencies.length; i++) {
-                values[i] = fac.createValue(dependencies[i].toString());
+            for (Dependency d: dependencies) {
+                if (d != null) {
+                    values.add(fac.createValue(d.toString()));
+                }
             }
-            defNode.setProperty(PN_DEPENDENCIES, values);
+            defNode.setProperty(PN_DEPENDENCIES, values.toArray(new Value[values.size()]));
             if (autoSave) {
                 defNode.getSession().save();
             }
@@ -428,12 +436,13 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
                 defNode.getProperty(PN_DEPENDENCIES).remove();
             }
             if (deps != null) {
-                Dependency[] d = Dependency.parse(deps);
-                String[] ds = new String[d.length];
-                for (int i=0; i<ds.length; i++) {
-                    ds[i] = d[i].toString();
+                List<String> ds = new ArrayList<>();
+                for (Dependency d: Dependency.parse(deps)) {
+                    if (d != null) {
+                        ds.add(d.toString());
+                    }
                 }
-                defNode.setProperty(PN_DEPENDENCIES, ds);
+                defNode.setProperty(PN_DEPENDENCIES, ds.toArray(new String[ds.size()]));
             }
             defNode.setProperty(PN_DESCRIPTION, props.getProperty(VaultPackage.NAME_DESCRIPTION));
             defNode.setProperty(PN_REQUIRES_ROOT, Boolean.valueOf(props.getProperty(VaultPackage.NAME_REQUIRES_ROOT, "false")));

@@ -20,6 +20,9 @@ package org.apache.jackrabbit.vault.packaging;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Implements a package dependency reference.
  * @since 2.0
@@ -57,7 +60,7 @@ public class Dependency {
      * @param name name
      * @param range version range
      */
-    public Dependency(String groupId, String name, VersionRange range) {
+    public Dependency(@Nonnull String groupId, @Nonnull String name, @Nullable VersionRange range) {
         if (groupId.startsWith(PackageId.ETC_PACKAGES_PREFIX)) {
             groupId = groupId.substring(PackageId.ETC_PACKAGES_PREFIX.length());
         }
@@ -81,7 +84,7 @@ public class Dependency {
      * Creates a new dependency to the specified package id
      * @param id package id.
      */
-    public Dependency(PackageId id) {
+    public Dependency(@Nonnull PackageId id) {
         this(id.getGroup(), id.getName(), new VersionRange(id.getVersion()));
     }
 
@@ -90,6 +93,7 @@ public class Dependency {
      * @return the group id
      * @since 2.4
      */
+    @Nonnull
     public String getGroup() {
         return groupId;
     }
@@ -98,6 +102,7 @@ public class Dependency {
      * Returns the name of the dependency
      * @return the name
      */
+    @Nonnull
     public String getName() {
         return name;
     }
@@ -106,6 +111,7 @@ public class Dependency {
      * Returns the version range
      * @return the version range
      */
+    @Nonnull
     public VersionRange getRange() {
         return range;
     }
@@ -117,6 +123,7 @@ public class Dependency {
      * @deprecated As of 3.1.42, the storage location is implementation details.
      */
     @Deprecated
+    @Nonnull
     public String getPath() {
         StringBuilder b = new StringBuilder();
         if (groupId.length() > 0) {
@@ -137,7 +144,7 @@ public class Dependency {
      * @param id the package id
      * @return {@code true} if matches
      */
-    public boolean matches(PackageId id) {
+    public boolean matches(@Nonnull PackageId id) {
         return groupId.equals(id.getGroup())
                 && name.equals(id.getName())
                 && range.isInRange(id.getVersion());
@@ -149,7 +156,8 @@ public class Dependency {
      * @param str the string
      * @return the dependency
      */
-    public static Dependency fromString(String str) {
+    @Nullable
+    public static Dependency fromString(@Nullable String str) {
         if (str == null || str.length() == 0) {
             return null;
         }
@@ -198,8 +206,9 @@ public class Dependency {
      * @param str serialized string
      * @return array of dependency references
      */
-    public static Dependency[] parse(String str) {
-        List<Dependency> deps = new ArrayList<Dependency>();
+    @Nonnull
+    public static Dependency[] parse(@Nonnull String str) {
+        List<Dependency> deps = new ArrayList<>();
         boolean inRange = false;
         int start = 0;
         boolean wasSeg = false;
@@ -220,7 +229,10 @@ public class Dependency {
             wasSeg = c == ':';
         }
         if (start < str.length()) {
-            deps.add(Dependency.fromString(str.substring(start)));
+            Dependency dep = Dependency.fromString(str.substring(start));
+            if (dep != null) {
+                deps.add(dep);
+            }
         }
         return deps.toArray(new Dependency[deps.size()]);
     }
@@ -230,12 +242,16 @@ public class Dependency {
      * @param str the strings
      * @return the dependencies
      */
-    public static Dependency[] fromString(String ... str) {
-        Dependency[] ret = new Dependency[str.length];
-        for (int i=0; i<str.length;i++) {
-            ret[i] = Dependency.fromString(str[i]);
+    @Nonnull
+    public static Dependency[] fromString(@Nonnull String ... str) {
+        List<Dependency> deps = new ArrayList<>(str.length);
+        for (String s : str) {
+            Dependency dep = Dependency.fromString(s);
+            if (dep != null) {
+                deps.add(dep);
+            }
         }
-        return ret;
+        return deps.toArray(new Dependency[deps.size()]);
     }
 
     /**
@@ -243,23 +259,27 @@ public class Dependency {
      * @param deps the dependencies
      * @return the strings
      */
-    public static String toString(Dependency ... deps) {
+    @Nonnull
+    public static String toString(@Nonnull Dependency ... deps) {
         String delim = "";
         StringBuilder b = new StringBuilder();
         for (Dependency dep: deps) {
-            b.append(delim).append(dep);
-            delim=",";
+            if (dep != null) {
+                b.append(delim).append(dep);
+                delim=",";
+            }
         }
         return b.toString();
     }
 
     @Override
+    @Nonnull
     public String toString() {
         return str;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         return this == obj ||
                 obj instanceof Dependency && str.equals(obj.toString());
     }

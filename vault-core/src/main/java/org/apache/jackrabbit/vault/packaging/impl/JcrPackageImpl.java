@@ -397,7 +397,7 @@ public class JcrPackageImpl implements JcrPackage {
         List<String> subPackages = new ArrayList<String>();
         pack.extract(ctx, subPackages);
         if (def != null && !opts.isDryRun()) {
-            def.touchLastUnpacked(null, true);
+            def.touchLastUnpacked();
         }
 
         // process sub packages
@@ -668,7 +668,7 @@ public class JcrPackageImpl implements JcrPackage {
             log.debug("Package {}: is pure container package. marking as installed.", pId);
             getDefinition();
             if (def != null && !opts.isDryRun()) {
-                def.touchLastUnpacked(null, true);
+                def.touchLastUnpacked();
             }
         }
     }

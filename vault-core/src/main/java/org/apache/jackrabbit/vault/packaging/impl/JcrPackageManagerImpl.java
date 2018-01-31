@@ -331,7 +331,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         Calendar now = Calendar.getInstance();
         JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) definition;
         validateSubPackages(def);
-        def.sealForAssembly(now, true);
+        def.sealForAssembly(now);
 
         DefaultMetaInf inf = (DefaultMetaInf) def.getMetaInf();
         CompositeExportProcessor processor = new CompositeExportProcessor();
@@ -401,7 +401,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) definition;
         validateSubPackages(def);
         Calendar now = Calendar.getInstance();
-        def.sealForAssembly(now, true);
+        def.sealForAssembly(now);
 
         ExportOptions opts = new ExportOptions();
         opts.setMetaInf(def.getMetaInf());
@@ -422,7 +422,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         Calendar now = Calendar.getInstance();
         pack.verifyId(true, false);
         JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) pack.getDefinition();
-        def.sealForRewrap(now, true);
+        def.sealForRewrap(now);
 
         ExportOptions opts = new ExportOptions();
         opts.setMetaInf(def.getMetaInf());

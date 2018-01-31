@@ -12,6 +12,12 @@
 #  VLT_OPTS - parameters passed to the Java VM when running Vault
 #    e.g. to debug vault itself, use
 #      set VLT_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
+#
+#    LINE SEPARATOR
+#    To force vault to use a particular line separator regardless of the operating system's native line separator (default), you
+#    can inject -Dline.separator=$'\r'$'\n' or -Dline.separator=$'\n' into the exec line where VLT_OPTS is used; it might
+#    also be possible to embed that in the VLT_OPTS variable but that has proven problematic.  Perhaps VLT will support such a
+#    configuration as a native option in the future and call System.setProperties("line.separator",lsep) which also works
 #----------------------------------------------------------------------------
 
 if [ -f /etc/vaultrc ] ; then
@@ -122,6 +128,7 @@ if [ -n "$COLS" ]; then
 fi
 
 JAVA_VER=$($JAVACMD -version 2>&1 | sed 's/.*version "\(.*\)\.\(.*\)\..*"/\1\2/; 1q')
+JAVA_VER="${JAVA_VER//[[:space:]]/}"
 
 if [ "$JAVA_VER" -lt 18 ]; then
     EXTRA_JVM_ARGUMENTS="$EXTRA_JVM_ARGUMENTS -XX:PermSize=128m -XX:-UseGCOverheadLimit"

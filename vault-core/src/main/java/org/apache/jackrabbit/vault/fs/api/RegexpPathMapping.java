@@ -22,8 +22,6 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.jackrabbit.vault.fs.api.PathMapping;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -33,7 +31,8 @@ import javax.annotation.Nullable;
  */
 public final class RegexpPathMapping implements PathMapping {
 
-    private final Map<Pattern, String> pathsMapping = new HashMap<Pattern, String>();
+    @Nonnull
+    private final Map<Pattern, String> pathsMapping = new HashMap<>();
 
     /**
      * Allows importing mappings specified in data structure such as Map or Properties.

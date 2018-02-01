@@ -55,6 +55,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
     /**
      * specifies the filter type.
      */
+    @Nullable
     private String type;
 
     /**
@@ -68,7 +69,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
      * Creates a new path filter set and sets the respective root path
      * @param root path
      */
-    public PathFilterSet(String root) {
+    public PathFilterSet(@Nonnull String root) {
         super(root);
     }
 
@@ -83,7 +84,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
      * @param path the path to check
      * @return {@code true} if this set matches the item
      */
-    public boolean contains(String path) {
+    public boolean contains(@Nonnull String path) {
         if (!covers(path)) {
             return false;
         }
@@ -102,6 +103,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
     }
 
     @Override
+    @Nonnull
     public FilterSet seal() {
         if (!isSealed()) {
             super.seal();
@@ -123,7 +125,8 @@ public class PathFilterSet extends FilterSet<PathFilter> {
      * @return the new filter
      * @since 2.4.10
      */
-    public PathFilterSet translate(PathMapping mapping) {
+    @Nonnull
+    public PathFilterSet translate(@Nullable PathMapping mapping) {
         if (mapping == null) {
             return this;
         }

@@ -17,6 +17,9 @@
 
 package org.apache.jackrabbit.vault.fs.api;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * The item filter is used to include or exclude a set of paths.
  * It is usually part of a {@link PathFilterSet}.
@@ -27,7 +30,7 @@ public interface PathFilter extends Filter {
     /**
      * The "Catch all" item filter.
      */
-    public static final PathFilter ALL = new PathFilter() {
+    PathFilter ALL = new PathFilter() {
 
         /**
          * Returns always {@code true}
@@ -61,7 +64,7 @@ public interface PathFilter extends Filter {
     /**
      * The "Miss all" item filter.
      */
-    public static final PathFilter NONE = new PathFilter() {
+    PathFilter NONE = new PathFilter() {
 
         /**
          * Returns always {@code false}
@@ -99,7 +102,7 @@ public interface PathFilter extends Filter {
      * @return {@code true} if this filter matches the criteria;
      *         {@code false} otherwise.
      */
-    boolean matches(String path);
+    boolean matches(@Nonnull String path);
 
     /**
      * Checks if the pattern is absolute, i.e. does not start with a wildcard.
@@ -113,5 +116,6 @@ public interface PathFilter extends Filter {
      * @return the new filter
      * @since 2.4.10
      */
-    PathFilter translate(PathMapping mapping);
+    @Nonnull
+    PathFilter translate(@Nullable PathMapping mapping);
 }

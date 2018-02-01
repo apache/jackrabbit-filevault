@@ -16,6 +16,8 @@
  */
 package org.apache.jackrabbit.vault.fs.api;
 
+import javax.annotation.Nonnull;
+
 /**
  * Provides an interface for a general path mapping.
  *
@@ -44,7 +46,8 @@ public interface PathMapping {
      * @param path the path
      * @return the mapped path.
      */
-    String map(String path);
+    @Nonnull
+    String map(@Nonnull String path);
 
     /**
      * Maps the given path to a new location.
@@ -52,7 +55,8 @@ public interface PathMapping {
      * @param reverse if {@code true} a reverse mapping is applied
      * @return the mapped path.
      */
-    String map(String path, boolean reverse);
+    @Nonnull
+    String map(@Nonnull String path, boolean reverse);
 
 
 }

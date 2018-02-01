@@ -123,6 +123,23 @@ public class VaultFsApp extends AbstractApplication {
     private Console console;
 
     public static void main(String[] args) {
+	String vltSep = System.getProperty("vlt.line.separator");
+	if ( vltSep != null ) {
+	  System.out.println("Attempting to set line separator property to: " + vltSep);
+	  if ( vltSep.equals("LF") ) {
+	    System.out.println("Attempting to set line separator property to newline");
+	    System.setProperty("line.separator","\n");
+	  }
+	  else if ( vltSep.equals("CRLF") ) {
+	    System.out.println("Attempting to set line separator property to carriage return + newline");
+	    System.setProperty("line.separator","\r\n");
+	  }
+	  else {
+	    System.out.println("Invalid vlt.line.separator - supported options: LF, CRLF");
+	    System.exit(1);
+	  }
+    	}
+
         new VaultFsApp().run(args);
     }
 

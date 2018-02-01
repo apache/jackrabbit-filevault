@@ -13,12 +13,13 @@
 #    e.g. to debug vault itself, use
 #      set VLT_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
 #
-#    LINE SEPARATOR
-#    To force vault to use a particular line separator regardless of the operating system's native line separator (default), you
-#    can inject -Dline.separator=$'\r'$'\n' or -Dline.separator=$'\n' into the exec line where VLT_OPTS is used; it might
-#    also be possible to embed that in the VLT_OPTS variable but that has proven problematic.  Perhaps VLT will support such a
-#    configuration as a native option in the future and call System.setProperties("line.separator",lsep) which also works
-#----------------------------------------------------------------------------
+# LINE SEPARATOR
+# Because it can be pretty tricky to shove a newline character into a batch or shell script and the text "\n" doesn't get
+# interpreted as what you might think by Java, vlt will instead look for LF | CRLF in a system property called vlt.line.separator
+# and if it exists, it will set the appropriate Java System property accordingly, e.g. -Dvlt.line.separator=LF
+# ----------------------------------------------------------------------------
+
+VLT_OPTS=-Dvlt.line.separator=LF
 
 if [ -f /etc/vaultrc ] ; then
   . /etc/vaultrc

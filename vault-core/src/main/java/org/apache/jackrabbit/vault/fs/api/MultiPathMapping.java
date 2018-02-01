@@ -19,17 +19,20 @@ package org.apache.jackrabbit.vault.fs.api;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.jackrabbit.vault.util.Text;
 
 /**
- * Implements a path mapping that supports multiple synlinks
+ * Implements a path mapping that supports multiple symlinks
  * @since 3.1.10
  */
 public class MultiPathMapping implements PathMapping {
 
-    private final Map<String, String> links = new HashMap<String, String>();
+    private final Map<String, String> links = new HashMap<>();
 
-    private final Map<String, String> reverseLinks = new HashMap<String, String>();
+    private final Map<String, String> reverseLinks = new HashMap<>();
 
     /**
      * Creates a new link from the path {@code src} to the path {@code dst}
@@ -37,7 +40,7 @@ public class MultiPathMapping implements PathMapping {
      * @param dst destination path
      * @return this
      */
-    public MultiPathMapping link(String src, String dst) {
+    public MultiPathMapping link(@Nonnull String src, @Nonnull String dst) {
         links.put(src, dst);
         reverseLinks.put(dst, src);
         return this;
@@ -48,7 +51,8 @@ public class MultiPathMapping implements PathMapping {
      * @param base base mapping
      * @return this
      */
-    public MultiPathMapping merge(MultiPathMapping base) {
+    @Nonnull
+    public MultiPathMapping merge(@Nullable MultiPathMapping base) {
         if (base != null) {
             this.links.putAll(base.links);
             this.reverseLinks.putAll(base.reverseLinks);
@@ -60,7 +64,8 @@ public class MultiPathMapping implements PathMapping {
      * {@inheritDoc}
      */
     @Override
-    public String map(String path) {
+    @Nonnull
+    public String map(@Nonnull String path) {
         return map(path, false);
     }
 
@@ -68,8 +73,9 @@ public class MultiPathMapping implements PathMapping {
      * {@inheritDoc}
      */
     @Override
-    public String map(String path, boolean reverse) {
-        if (path == null || path.length() == 0 || "/".equals(path)) {
+    @Nonnull
+    public String map(@Nonnull String path, boolean reverse) {
+        if (path.length() == 0 || "/".equals(path)) {
             return path;
         }
         Map<String, String> lookup = reverse ? reverseLinks : links;

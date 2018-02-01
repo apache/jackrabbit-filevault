@@ -16,14 +16,18 @@
  */
 package org.apache.jackrabbit.vault.fs.api;
 
+import javax.annotation.Nonnull;
+
 /**
  * Implements a simple path mapping that strips and prefixes a path.
  * @since 2.4.10
  */
 public class SimplePathMapping implements PathMapping {
 
+    @Nonnull
     private final String strip;
 
+    @Nonnull
     private final String root;
 
     /**
@@ -31,7 +35,7 @@ public class SimplePathMapping implements PathMapping {
      * @param strip the string to strip from the beginning of the path
      * @param root the prefix to add to the path.
      */
-    public SimplePathMapping(String strip, String root) {
+    public SimplePathMapping(@Nonnull String strip, @Nonnull String root) {
         this.strip = strip;
         this.root = root;
     }
@@ -40,7 +44,8 @@ public class SimplePathMapping implements PathMapping {
      * {@inheritDoc}
      */
     @Override
-    public String map(String path) {
+    @Nonnull
+    public String map(@Nonnull String path) {
         return map(path, false);
     }
 
@@ -48,13 +53,12 @@ public class SimplePathMapping implements PathMapping {
      * {@inheritDoc}
      */
     @Override
-    public String map(String path, boolean reverse) {
+    @Nonnull
+    public String map(@Nonnull String path, boolean reverse) {
         String strip = reverse ? this.root : this.strip;
         String root = reverse ? this.strip : this.root;
         if (path.startsWith(strip)) {
-            StringBuilder b = new StringBuilder(root);
-            b.append(path.substring(strip.length()));
-            return b.toString();
+            return root + path.substring(strip.length());
         } else {
             return path;
         }

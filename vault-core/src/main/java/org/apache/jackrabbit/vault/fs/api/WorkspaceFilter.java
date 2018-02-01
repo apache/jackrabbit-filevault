@@ -20,6 +20,8 @@ package org.apache.jackrabbit.vault.fs.api;
 import java.io.InputStream;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -33,12 +35,14 @@ public interface WorkspaceFilter extends Dumpable {
      * Returns a list of path filter sets for node items.
      * @return the list of path filter sets.
      */
+    @Nonnull
     List<PathFilterSet> getFilterSets();
 
     /**
      * Returns a list of path filter sets for property items.
      * @return the list of path filter sets.
      */
+    @Nonnull
     List<PathFilterSet> getPropertyFilterSets();
 
     /**
@@ -46,7 +50,8 @@ public interface WorkspaceFilter extends Dumpable {
      * @param path the path
      * @return the filter set or {@code null}
      */
-    PathFilterSet getCoveringFilterSet(String path);
+    @Nullable
+    PathFilterSet getCoveringFilterSet(@Nonnull String path);
 
     /**
      * Returns the import mode for the given node path.
@@ -54,7 +59,8 @@ public interface WorkspaceFilter extends Dumpable {
      * @return the import mode or {@link ImportMode#REPLACE} if the given path
      *         is not covered by this filter.
      */
-    ImportMode getImportMode(String path);
+    @Nonnull
+    ImportMode getImportMode(@Nonnull String path);
 
     /**
      * Checks if the given node path is contained in this workspace filter.
@@ -64,7 +70,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @param path to check
      * @return {@code true} if the given path is included in this filter.
      */
-    boolean contains(String path);
+    boolean contains(@Nonnull String path);
 
     /**
      * Checks if the given node path is covered in this workspace filter.
@@ -74,7 +80,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @param path the pathto check
      * @return {@code true} if the given path is covered by this filter.
      */
-    boolean covers(String path);
+    boolean covers(@Nonnull String path);
 
     /**
      * Checks if the given node path is an ancestor of any of the filter sets.
@@ -82,7 +88,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @param path the item to check
      * @return {@code true} if the given item is an ancestor
      */
-    boolean isAncestor(String path);
+    boolean isAncestor(@Nonnull String path);
 
     /**
      * Checks if the given node path is globally ignored.
@@ -90,18 +96,20 @@ public interface WorkspaceFilter extends Dumpable {
      * @param path the path to check.
      * @return {@code true} if the item is globally ignored.
      */
-    boolean isGloballyIgnored(String path);
+    boolean isGloballyIgnored(@Nonnull String path);
 
     /**
      * Returns the source xml that constructs this filter
      * @return the source xml
      */
+    @Nonnull
     InputStream getSource();
 
     /**
      * Returns the source xml that constructs this filter
      * @return the source xml
      */
+    @Nonnull
     String getSourceAsString();
 
     /**
@@ -111,7 +119,8 @@ public interface WorkspaceFilter extends Dumpable {
      * @return a new workspace filter
      * @since 2.4.10
      */
-    WorkspaceFilter translate(PathMapping mapping);
+    @Nonnull
+    WorkspaceFilter translate(@Nullable PathMapping mapping);
 
     /**
      * Dumps the coverage of this filter against the given node to the listener.
@@ -119,7 +128,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @param listener listener
      * @throws RepositoryException if an error occurs
      */
-    void dumpCoverage(Node rootNode, ProgressTrackerListener listener)
+    void dumpCoverage(@Nonnull Node rootNode, @Nonnull ProgressTrackerListener listener)
             throws RepositoryException;
 
     /**
@@ -132,6 +141,6 @@ public interface WorkspaceFilter extends Dumpable {
      * @param skipJcrContent {@code true} to skip jcr:content nodes
      * @throws RepositoryException if an error occurs
      */
-    void dumpCoverage(Session session, ProgressTrackerListener listener, boolean skipJcrContent)
+    void dumpCoverage(@Nonnull Session session, @Nonnull ProgressTrackerListener listener, boolean skipJcrContent)
             throws RepositoryException;
 }

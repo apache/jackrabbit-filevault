@@ -153,12 +153,20 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
     protected void startNamespaceDeclarations()
             throws RepositoryException, SAXException {
         // start namespace declarations
+        boolean mandatoryJcrNamespaceDeclared = false;
         for (String prefix: aggregate.getNamespacePrefixes()) {
             if (Name.NS_XML_PREFIX.equals(prefix)) {
                 // skip 'xml' prefix as this would be an illegal namespace declaration
                 continue;
             }
+            else if (Name.NS_JCR_PREFIX.equals(prefix)) {
+                mandatoryJcrNamespaceDeclared = true;
+            }
             contentHandler.startPrefixMapping(prefix, aggregate.getNamespaceURI(prefix));
+        }
+        // always declare mandatory "jcr" namespace prefix (used by e.g. jcr:root elements) 
+        if (!mandatoryJcrNamespaceDeclared) {
+            contentHandler.startPrefixMapping(Name.NS_JCR_PREFIX, Name.NS_JCR_URI);
         }
     }
 

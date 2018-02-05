@@ -150,12 +150,16 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      * @throws RepositoryException if a repository error occurs
      * @throws SAXException if the underlying content handler throws a sax exception
      */
-    protected void startNamespaceDeclarations()
-            throws RepositoryException, SAXException {
-        // start namespace declarations
+    private void startNamespaceDeclarations() throws RepositoryException, SAXException {
+        // always include jcr namespace (see JCRVLT-266)
+        contentHandler.startPrefixMapping(Name.NS_JCR_PREFIX, Name.NS_JCR_URI);
+
         for (String prefix: aggregate.getNamespacePrefixes()) {
             if (Name.NS_XML_PREFIX.equals(prefix)) {
                 // skip 'xml' prefix as this would be an illegal namespace declaration
+                continue;
+            }
+            if (Name.NS_JCR_PREFIX.equals(prefix)) {
                 continue;
             }
             contentHandler.startPrefixMapping(prefix, aggregate.getNamespaceURI(prefix));
@@ -168,12 +172,16 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      * @throws RepositoryException if a repository error occurs
      * @throws SAXException if the underlying content handler throws a sax exception
       */
-    protected void endNamespaceDeclarations()
-            throws RepositoryException, SAXException {
-        // end namespace declarations
+    private void endNamespaceDeclarations() throws RepositoryException, SAXException {
+        // always include jcr namespace (see JCRVLT-266)
+        contentHandler.endPrefixMapping(Name.NS_JCR_PREFIX);
+
         for (String prefix: aggregate.getNamespacePrefixes()) {
             if (Name.NS_XML_PREFIX.equals(prefix)) {
                 // skip 'xml' prefix as this would be an illegal namespace declaration
+                continue;
+            }
+            if (Name.NS_JCR_PREFIX.equals(prefix)) {
                 continue;
             }
             contentHandler.endPrefixMapping(prefix);

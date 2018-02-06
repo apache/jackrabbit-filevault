@@ -414,7 +414,7 @@ public class JcrPackageRegistry implements PackageRegistry {
 
         if (archive.getJcrRoot() == null) {
             String msg = "Stream is not a content package. Missing 'jcr_root'.";
-            log.error(msg);
+            log.info(msg);
             bin.dispose();
             throw new IOException(msg);
         }

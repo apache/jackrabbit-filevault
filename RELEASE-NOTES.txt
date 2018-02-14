@@ -28,6 +28,9 @@ Bug Fixes:
 * [JCRVLT-265] - JcrPackageDefinition.getDependencies() might return an array with a null element
 * [JCRVLT-266] - DocViewSaxFormatter does not always emit namespace declaration for "jcr"
 
+Improvements:
+* [JCRVLT-270] - Use Jackrabbit 2.16.1
+
 Won't Fix:
 * [JCRVLT-267] - Changing log level to info from error in JcrPackageregistry upload method in case a .jar resource doesn't contains jcr_root
 

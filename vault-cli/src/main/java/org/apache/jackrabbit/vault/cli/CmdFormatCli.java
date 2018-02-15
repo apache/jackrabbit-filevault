@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.BufferedInputStream;
@@ -16,15 +33,19 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
+import org.apache.commons.cli2.Argument;
 import org.apache.commons.cli2.CommandLine;
+import org.apache.commons.cli2.Option;
 import org.apache.commons.cli2.builder.ArgumentBuilder;
 import org.apache.commons.cli2.builder.CommandBuilder;
+import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.option.Command;
 import org.apache.commons.io.IOUtils;
@@ -33,8 +54,6 @@ import org.apache.jackrabbit.vault.util.console.CliCommand;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 import org.apache.jackrabbit.vault.util.console.commands.AbstractCommand;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -42,16 +61,26 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 public class CmdFormatCli extends AbstractCommand {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CmdFormatCli.class);
+    private static final Option OPT_CHECK_ONLY = new DefaultOptionBuilder()
+            .withShortName("c")
+            .withLongName("check-only")
+            .withDescription("Only check the format.")
+            .create();
+    private static final Argument ARG_PATTERN = new ArgumentBuilder()
+            .withName("pattern")
+            .withDescription("Regular expression matched against file names.")
+            .withMinimum(1)
+            .create();
 
     @Override protected void doExecute(ExecutionContext ctx, CommandLine cl) throws Exception {
+        boolean checkOnly = cl.hasOption(OPT_CHECK_ONLY);
         boolean verbose = cl.hasOption(OPT_VERBOSE);
-        List<String> givenPatterns = cl.getValues("pattern");
+        List<String> givenPatterns = (List<String>) cl.getValues(ARG_PATTERN);
         List<Pattern> parsedPatterns = new ArrayList<>(givenPatterns.size());
 
         for (String pattern : givenPatterns) {
             if (verbose) {
-                LOG.info("parsing pattern: {}", pattern);
+                System.out.println("parsing pattern: " + pattern);
             }
             parsedPatterns.add(Pattern.compile(pattern));
         }
@@ -60,7 +89,12 @@ public class CmdFormatCli extends AbstractCommand {
             throw new IllegalArgumentException("No pattern given");
         }
 
-        Files.walkFileTree(Paths.get(""), new Visitor(parsedPatterns, verbose));
+        Visitor visitor = new Visitor(parsedPatterns, checkOnly, verbose);
+        Files.walkFileTree(Paths.get(""), visitor);
+
+        if (checkOnly && !visitor.malformedFiles.isEmpty()) {
+            throw new IllegalStateException("One or more files are malformed. Malformed files: " + visitor.malformedFiles.toString());
+        }
     }
 
     @Override
@@ -70,11 +104,8 @@ public class CmdFormatCli extends AbstractCommand {
                 .withDescription(getShortDescription())
                 .withChildren(new GroupBuilder()
                         .withOption(CliCommand.OPT_VERBOSE)
-                        .withOption(new ArgumentBuilder()
-                                .withName("pattern")
-                                .withDescription("Regular expression matched against file names.")
-                                .withMinimum(1)
-                                .create())
+                        .withOption(OPT_CHECK_ONLY)
+                        .withOption(ARG_PATTERN)
                         .create())
                 .create();
     }
@@ -87,23 +118,32 @@ public class CmdFormatCli extends AbstractCommand {
     private static class Visitor extends SimpleFileVisitor<Path> {
 
         private final boolean verbose;
+        private final boolean checkOnly;
         private final List<Pattern> patterns;
         private final ByteArrayOutputStream buffer;
         private final XMLSerializer serializer;
+        private final List<String> malformedFiles = new LinkedList<>();
 
-        Visitor(List<Pattern> patterns, boolean verbose) {
+        Visitor(List<Pattern> patterns, boolean checkOnly, boolean verbose) {
             this.patterns = patterns;
             this.buffer = new ByteArrayOutputStream();
             this.verbose = verbose;
+            this.checkOnly = checkOnly;
             this.serializer = new XMLSerializer(DocViewSerializer.FORMAT);
         }
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
             if (Files.isRegularFile(file) && isIncluded(file)) {
+                if (verbose) {
+                    System.out.println("process " + file.toString());
+                }
+
                 format(file);
-            } else if (verbose) {
-                LOG.info("exclude {}", file.toString());
+            } else {
+                if (verbose) {
+                    System.out.println("exclude " + file.toString());
+                }
             }
 
             return super.visitFile(file, attrs);
@@ -135,11 +175,15 @@ public class CmdFormatCli extends AbstractCommand {
             }
 
             if (formattedChecksum.getValue() != readChecksum.getValue()) {
-                if (verbose) {
-                    LOG.info("formatting {}", file.toString());
-                }
-                try (OutputStream out = new BufferedOutputStream(new FileOutputStream(file.toFile()))) {
-                    IOUtils.copy(new ByteArrayInputStream(buffer.toByteArray()), out);
+                if (checkOnly) {
+                    malformedFiles.add(file.toString());
+                } else {
+                    if (verbose) {
+                        System.out.println("formatting " + file.toString());
+                    }
+                    try (OutputStream out = new BufferedOutputStream(new FileOutputStream(file.toFile()))) {
+                        IOUtils.copy(new ByteArrayInputStream(buffer.toByteArray()), out);
+                    }
                 }
             }
 

@@ -21,7 +21,6 @@ Bug Fixes:
 * [JCRVLT-235] - Refuse to create snapshot for empty or root filters.
 * [JCRVLT-247] - Java 9 Support
 * [JCRVLT-250] - Test class "SimpleFileAggregateInPackage" not executed by default in maven-surefire-plugin
-* [JCRVLT-251] - Child nodes mentioned in parent node's docview xml are not cleared correctly during installation
 * [JCRVLT-255] - ImportModes act on file serialization level not on node level
 * [JCRVLT-257] - ZipException: invalid code lengths set
 * [JCRVLT-258] - Default compression level incorrectly set to NO_COMPRESSION (0)
@@ -30,9 +29,11 @@ Bug Fixes:
 
 Improvements:
 * [JCRVLT-270] - Use Jackrabbit 2.16.1
+* [JCRVLT-132] - Document enhanced document view format
 
 Won't Fix:
 * [JCRVLT-267] - Changing log level to info from error in JcrPackageregistry upload method in case a .jar resource doesn't contains jcr_root
+* [JCRVLT-251] - Child nodes mentioned in parent node's docview xml are not cleared correctly during installation
 
 
 Changes in Jackrabbit FileVault 3.1.42

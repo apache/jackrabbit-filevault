@@ -24,7 +24,7 @@ import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Test;
 
-public class SimpleFileAggregateInPackage extends IntegrationTestBase {
+public class TestSimpleFileAggregateInPackage extends IntegrationTestBase {
 
     @Test
     public void testSimpleFileAggregateOverwritesChildNodes()

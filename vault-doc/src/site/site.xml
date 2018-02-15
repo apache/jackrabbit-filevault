@@ -29,6 +29,7 @@
     <menu name="Concepts and architecture">
       <item href="overview.html" name="Overview" />
       <item href="vaultfs.html" name="Vault FS" />
+      <item href="docview.html" name="Document View" />
     </menu>
     <menu name="Using Filevault">
       <item href="usage.html" name="Getting Started" />

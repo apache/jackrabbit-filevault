@@ -70,6 +70,14 @@ Merging Group Members
 ---------------------
 `ImportMode.MERGE` has special semantics for Groups. In this case, the group members of the package are merged with the existing group members in the repository. This is especially useful when adding a new authorizable including its group membership.
 
+Merging of normal content
+-------------------------
+`ImportMode.MERGE` is not implemented completely (see [JCRVLT-255]). Merging works for generic artifacts (docview xmls) that represent authorizable or policy nodes (see aboce). Other generic artifacts are ignored when merging, which causes the entire subtree not to be updated. eg:
+
+if `foo.xml` contains `/foo/bar/a` and the repository already contains `/foo/bar/b` and the import mode is MERGE on `/foo`, then the content is not imported, i.e. `/foo/bar/a` is not created. however, if the import mode is MERGE on only on `/foo/bar` then `/foo/bar/a` is imported. Although it then rather behaves like UPDATE.
+ 
+The merging import mode is also respected for pure file artifacts, so that the node is not removed if the file is missing in the import.
+
 
 Scope of the workspace filter
 -----------------------------
@@ -81,3 +89,4 @@ However, the importer keeps track of potential remapping of existing users and t
 [api.WorkspaceFilter]: apidocs/org/apache/jackrabbit/vault/fs/api/WorkspaceFilter.html
 [api.ImportMode]: apidocs/org/apache/jackrabbit/vault/fs/api/ImportMode.html
 [api.ImportOptions]: apidocs/org/apache/jackrabbit/vault/fs/io/ImportOptions.html
+[JCRVLT-255]: https://issues.apache.org/jira/browse/JCRVLT-255

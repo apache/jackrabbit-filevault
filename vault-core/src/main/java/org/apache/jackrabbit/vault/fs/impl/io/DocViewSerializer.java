@@ -26,6 +26,7 @@ import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.impl.AggregateImpl;
 import org.apache.jackrabbit.vault.fs.io.Serializer;
+import org.apache.jackrabbit.vault.util.xml.serialize.AttributeNameComparator;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 
@@ -42,6 +43,7 @@ public class DocViewSerializer implements Serializer {
         FORMAT.setIndent(4);
         FORMAT.setLineWidth(0);
         FORMAT.setBreakEachAttribute(true);
+        FORMAT.setSortAttributeNamessBy(AttributeNameComparator.INSTANCE);
     }
 
     /**

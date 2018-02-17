@@ -25,9 +25,8 @@ import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.impl.AggregateImpl;
+import org.apache.jackrabbit.vault.fs.io.DocViewFormat;
 import org.apache.jackrabbit.vault.fs.io.Serializer;
-import org.apache.jackrabbit.vault.util.xml.serialize.AttributeNameComparator;
-import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 
 /**
@@ -35,16 +34,6 @@ import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 *
 */
 public class DocViewSerializer implements Serializer {
-
-    public static final OutputFormat FORMAT;
-
-    static {
-        FORMAT = new OutputFormat("xml", "UTF-8", true);
-        FORMAT.setIndent(4);
-        FORMAT.setLineWidth(0);
-        FORMAT.setBreakEachAttribute(true);
-        FORMAT.setSortAttributeNamessBy(AttributeNameComparator.INSTANCE);
-    }
 
     /**
      * the export context
@@ -64,7 +53,7 @@ public class DocViewSerializer implements Serializer {
      */
     public void writeContent(OutputStream out) throws IOException, RepositoryException {
         // build content handler and add filter in case of original xml files
-        XMLSerializer ser = new XMLSerializer(out, FORMAT);
+        XMLSerializer ser = new XMLSerializer(out, DocViewFormat.getXmlOutputFormat());
         DocViewSAXFormatter fmt = new DocViewSAXFormatter(aggregate, ser);
         aggregate.walk(fmt);
     }

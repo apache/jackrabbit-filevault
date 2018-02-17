@@ -1134,64 +1134,44 @@ public class XMLSerializer extends BaseMarkupSerializer {
     }
 
     private Attributes sortAttributes(Attributes attributeList) {
-        class Attribute {
-            String lname;
-            String qname;
-            String value;
-            String type;
-            String uri;
-        }
-
         Comparator<String> cmp = _format.getSortAttributeNamesBy();
 
         if (cmp == null) {
             return attributeList;
         }
 
-        Map<String, Attribute> attributes = new TreeMap<>(cmp);
+        Map<String, Integer> attributes = new TreeMap<>(cmp);
         for (int i = 0, c = attributeList.getLength(); i < c; i++) {
-            Attribute attribute = new Attribute();
-            attribute.lname = attributeList.getLocalName(i);
-            attribute.qname = attributeList.getQName(i);
-            attribute.type = attributeList.getType(i);
-            attribute.value = attributeList.getValue(i);
-            attribute.uri = attributeList.getURI(i);
-            attributes.put(attribute.qname, attribute);
+            String qname = attributeList.getQName(i);
+            attributes.put(qname, i);
         }
 
         AttributesImpl sortedAttributes = new AttributesImpl();
-        for (Attribute nextAttribute : attributes.values()) {
-            sortedAttributes.addAttribute(nextAttribute.uri, nextAttribute.lname, nextAttribute.qname, nextAttribute.type, nextAttribute.value);
+        for (Integer nextIndex: attributes.values()) {
+            sortedAttributes.addAttribute(attributeList.getURI(nextIndex), attributeList.getLocalName(nextIndex),
+                    attributeList.getQName(nextIndex), attributeList.getType(nextIndex), attributeList.getValue(nextIndex));
         }
 
         return sortedAttributes;
     }
 
     private AttributeList sortAttributes(AttributeList attributeList) {
-        class Attribute {
-            String name;
-            String value;
-            String type;
-        }
-
         Comparator<String> cmp = _format.getSortAttributeNamesBy();
 
         if (cmp == null) {
             return attributeList;
         }
 
-        Map<String, Attribute> attributes = new TreeMap<>(cmp);
+        Map<String, Integer> attributes = new TreeMap<>(cmp);
         for (int i = 0, c = attributeList.getLength(); i < c; i++) {
-            Attribute attribute = new Attribute();
-            attribute.name = attributeList.getName(i);
-            attribute.type = attributeList.getType(i);
-            attribute.value = attributeList.getValue(i);
-            attributes.put(attribute.name, attribute);
+            String name = attributeList.getName(i);
+            attributes.put(name, i);
         }
 
         AttributeListImpl sortedAttributes = new AttributeListImpl();
-        for (Attribute nextAttribute : attributes.values()) {
-            sortedAttributes.addAttribute(nextAttribute.name, nextAttribute.type, nextAttribute.value);
+        for (Integer nextIndex: attributes.values()) {
+            sortedAttributes.addAttribute(attributeList.getName(nextIndex), attributeList.getType(nextIndex),
+                    attributeList.getValue(nextIndex));
         }
 
         return sortedAttributes;

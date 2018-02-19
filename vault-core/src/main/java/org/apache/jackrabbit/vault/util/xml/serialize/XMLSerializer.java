@@ -38,6 +38,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -641,7 +642,7 @@ public class XMLSerializer extends BaseMarkupSerializer {
     protected void serializeElement(Element elem)
             throws IOException {
         Attr attr;
-        List<Node> attrMap;
+        Iterable<Node> attrMap;
         int i;
         Node child;
         ElementState state;
@@ -698,14 +699,9 @@ public class XMLSerializer extends BaseMarkupSerializer {
         // This only happens in endElement().
         fPreserveSpace = state.preserveSpace;
 
-
-        int length = 0;
-        attrMap = null;
         // retrieve attributes
-        if (elem.hasAttributes()) {
-            attrMap = sortAttributes(elem.getAttributes());
-            length = attrMap.size();
-        }
+        attrMap = elem.hasAttributes() ? sortAttributes(elem.getAttributes()) : Collections.<Node>emptyList();
+
 
         if (!fNamespaces) { // no namespace fixup should be performed
 
@@ -717,8 +713,8 @@ public class XMLSerializer extends BaseMarkupSerializer {
             // For each attribute print it's name and value as one part,
             // separated with a space so the element can be broken on
             // multiple lines.
-            for (i = 0; i < length; ++i) {
-                attr = (Attr) attrMap.get(i);
+            for (Node node : attrMap) {
+                attr = (Attr) node;
                 name = attr.getName();
                 value = attr.getValue();
                 if (value == null)
@@ -736,9 +732,9 @@ public class XMLSerializer extends BaseMarkupSerializer {
             // before attempting to fix element's namespace
             // ---------------------------------------
 
-            for (i = 0; i < length; i++) {
+            for (Node node : attrMap) {
 
-                attr = (Attr) attrMap.get(i);
+                attr = (Attr) node;
                 uri = attr.getNamespaceURI();
                 // check if attribute is a namespace decl
                 if (uri != null && uri.equals(NamespaceContext.XMLNS_URI)) {
@@ -894,9 +890,9 @@ public class XMLSerializer extends BaseMarkupSerializer {
             // check if prefix/namespace is correct the attributes
             // -----------------------------------------
 
-            for (i = 0; i < length; i++) {
+            for (Node node : attrMap) {
 
-                attr = (Attr) attrMap.get(i);
+                attr = (Attr) node;
                 value = attr.getValue();
                 name = attr.getNodeName();
 
@@ -1109,26 +1105,34 @@ public class XMLSerializer extends BaseMarkupSerializer {
         _printer.printText('"');
     }
 
-    private List<Node> sortAttributes(NamedNodeMap attributeList) {
+    private Iterable<Node> sortAttributes(final NamedNodeMap attributeList) {
         final Comparator<String> cmp = _format.getSortAttributeNamesBy();
+
+        if (cmp == null) {
+            return new Iterable<Node>() {
+                @Override public Iterator<Node> iterator() {
+                    return new NamedNodeMapIterator(attributeList);
+                }
+            };
+        }
+
         List<Node> attrs = new ArrayList<>(attributeList.getLength());
 
         for (int i = 0, c = attributeList.getLength(); i < c; i++) {
             attrs.add(attributeList.item(i));
         }
 
-        if (cmp != null) {
-            Collections.sort(attrs, new Comparator<Node>() {
-                @Override public int compare(Node attr1, Node attr2) {
+
+        Collections.sort(attrs, new Comparator<Node>() {
+            @Override public int compare(Node attr1, Node attr2) {
                     return cmp.compare(getNameOf(attr1), getNameOf(attr2));
                 }
 
-                String getNameOf(Node attr) {
-                    String uri = attr.getNamespaceURI();
-                    return uri != null && uri.length() == 0 ? attr.getLocalName() : attr.getNodeName();
-                }
-            });
-        }
+            String getNameOf(Node attr) {
+                String uri = attr.getNamespaceURI();
+                return uri != null && uri.length() == 0 ? attr.getLocalName() : attr.getNodeName();
+            }
+        });
 
         return attrs;
     }
@@ -1520,6 +1524,29 @@ public class XMLSerializer extends BaseMarkupSerializer {
         return true;
     }
 
+    private static class NamedNodeMapIterator implements Iterator<Node> {
+
+        private final NamedNodeMap nodeMap;
+        private int index = 0;
+        private final int length;
+
+        NamedNodeMapIterator(NamedNodeMap nodeMap) {
+            this.nodeMap = nodeMap;
+            this.length = nodeMap.getLength();
+        }
+
+        @Override public boolean hasNext() {
+            return index < length;
+        }
+
+        @Override public Node next() {
+            return this.nodeMap.item(index++);
+        }
+
+        @Override public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
 }
 
 

@@ -53,7 +53,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
- * Singleton class providing access to the commonly used doc view xml format and functionality that checks files for the format or reformats
+ * This class provides access to the commonly used doc view xml format and functionality that checks files for the format or reformats
  * them accordingly.
  */
 public class DocViewFormat {

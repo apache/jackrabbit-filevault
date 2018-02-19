@@ -68,14 +68,15 @@ public class CmdFormatCli extends AbstractCommand {
         }
 
         File currentDir = Paths.get("").toFile();
+        DocViewFormat format = new DocViewFormat();
 
         if (checkOnly) {
-            List<String> malformedFiles = DocViewFormat.checkFormat(currentDir, parsedPatterns);
+            List<String> malformedFiles = format.checkFormat(currentDir, parsedPatterns);
             if (!malformedFiles.isEmpty()) {
                 throw new IllegalStateException("One or more files are malformed. Malformed files: " + malformedFiles.toString());
             }
         } else {
-            DocViewFormat.format(currentDir, parsedPatterns);
+            format.format(currentDir, parsedPatterns);
         }
     }
 

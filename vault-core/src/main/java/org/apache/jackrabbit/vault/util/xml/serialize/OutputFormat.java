@@ -814,7 +814,7 @@ public class OutputFormat {
      *
      * @param sortAttributeNamesBy
      */
-    public void setSortAttributeNamessBy(Comparator<String> sortAttributeNamesBy) {
+    public void setSortAttributeNamesBy(Comparator<String> sortAttributeNamesBy) {
         this._sortAttributeNamesBy = sortAttributeNamesBy;
     }
 

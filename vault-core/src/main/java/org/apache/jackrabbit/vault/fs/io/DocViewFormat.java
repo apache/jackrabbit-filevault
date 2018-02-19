@@ -67,7 +67,7 @@ public class DocViewFormat {
         format.setIndent(4);
         format.setLineWidth(0);
         format.setBreakEachAttribute(true);
-        format.setSortAttributeNamessBy(AttributeNameComparator.INSTANCE);
+        format.setSortAttributeNamesBy(AttributeNameComparator.INSTANCE);
     }
 
     /**

@@ -71,8 +71,9 @@ public class DocViewFormatTest {
     @Test
     public void testFormatting() throws IOException {
         List<Pattern> patterns = Arrays.asList(Pattern.compile(".+\\.xml"));
-        assertFalse("malformed.xml is expected to be malformed", DocViewFormat.checkFormat(dir, patterns).isEmpty());
-        DocViewFormat.format(dir, patterns);
-        assertTrue("malformed.xml is expected to be formatted", DocViewFormat.checkFormat(dir, patterns).isEmpty());
+        DocViewFormat format = new DocViewFormat();
+        assertFalse("malformed.xml is expected to be malformed", format.checkFormat(dir, patterns).isEmpty());
+        format.format(dir, patterns);
+        assertTrue("malformed.xml is expected to be formatted", format.checkFormat(dir, patterns).isEmpty());
     }
 }

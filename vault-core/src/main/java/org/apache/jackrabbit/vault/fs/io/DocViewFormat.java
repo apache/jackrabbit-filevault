@@ -56,22 +56,18 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * Singleton class providing access to the commonly used doc view xml format and functionality that checks files for the format or reformats
  * them accordingly.
  */
-public final class DocViewFormat {
+public class DocViewFormat {
 
     private static final Logger LOG = LoggerFactory.getLogger(DocViewFormat.class);
-    private static final OutputFormat FORMAT;
-    private static WeakReference<ByteArrayOutputStream> FORMATTING_BUFFER;
+    private final OutputFormat format;
+    private WeakReference<ByteArrayOutputStream> formattingBuffer;
 
-    static {
-        FORMAT = new OutputFormat("xml", "UTF-8", true);
-        FORMAT.setIndent(4);
-        FORMAT.setLineWidth(0);
-        FORMAT.setBreakEachAttribute(true);
-        FORMAT.setSortAttributeNamessBy(AttributeNameComparator.INSTANCE);
-    }
-
-    private DocViewFormat() {
-        super();
+    public DocViewFormat() {
+        format = new OutputFormat("xml", "UTF-8", true);
+        format.setIndent(4);
+        format.setLineWidth(0);
+        format.setBreakEachAttribute(true);
+        format.setSortAttributeNamessBy(AttributeNameComparator.INSTANCE);
     }
 
     /**
@@ -80,8 +76,8 @@ public final class DocViewFormat {
      *
      * @return
      */
-    public static OutputFormat getXmlOutputFormat() {
-        return FORMAT;
+    public OutputFormat getXmlOutputFormat() {
+        return format;
     }
 
     /**
@@ -90,7 +86,7 @@ public final class DocViewFormat {
      * @param file the given file.
      * @return true when the file is in the doc view format, false otherwise or in case of an IOException.
      */
-    public static boolean checkFormat(File file) {
+    public boolean checkFormat(File file) {
         try {
             CRC32 originalCrc32 = new CRC32();
             CRC32 formattedCrc32 = new CRC32();
@@ -113,7 +109,7 @@ public final class DocViewFormat {
      * @return as list of relative paths of those files which are not formatted correctly according to {@link DocViewFormat#checkFormat(File)}
      * @throws IOException in case there is an exception during traversal
      */
-    public static List<String> checkFormat(File file, List<Pattern> filenamePatterns) throws IOException {
+    public List<String> checkFormat(File file, List<Pattern> filenamePatterns) throws IOException {
         final List<String> malformedFiles = new LinkedList<>();
         Files.walkFileTree(file.toPath(), new AbstractFormattingVisitor(filenamePatterns) {
             @Override protected void process(File file) {
@@ -133,7 +129,7 @@ public final class DocViewFormat {
      * @param file
      * @throws IOException
      */
-    public static void format(File file) throws IOException {
+    public void format(File file) throws IOException {
         CRC32 originalCrc32 = new CRC32();
         CRC32 formattedCrc32 = new CRC32();
         byte[] formatted = format(file, originalCrc32, formattedCrc32);
@@ -153,7 +149,7 @@ public final class DocViewFormat {
      * @param filenamePatterns
      * @throws IOException in case there is an exception during traversal or formatting. That means formatting will fail on the first error that appeared
      */
-    public static void format(File file, List<Pattern> filenamePatterns) throws IOException {
+    public void format(File file, List<Pattern> filenamePatterns) throws IOException {
         Files.walkFileTree(file.toPath(), new AbstractFormattingVisitor(filenamePatterns) {
             @Override protected void process(File file) throws IOException {
                 format(file);
@@ -161,17 +157,17 @@ public final class DocViewFormat {
         });
     }
 
-    private static synchronized byte[] format(File file, Checksum original, Checksum formatted) throws IOException {
+    private byte[] format(File file, Checksum original, Checksum formatted) throws IOException {
         try (InputStream in = new CheckedInputStream(new BufferedInputStream(new FileInputStream(file)), original)) {
-            ByteArrayOutputStream buffer = FORMATTING_BUFFER != null ? FORMATTING_BUFFER.get() : null;
+            ByteArrayOutputStream buffer = formattingBuffer != null ? formattingBuffer.get() : null;
             if (buffer == null) {
                 buffer = new ByteArrayOutputStream();
-                FORMATTING_BUFFER = new WeakReference<>(buffer);
+                formattingBuffer = new WeakReference<>(buffer);
             } else {
                 buffer.reset();
             }
 
-            XMLSerializer serializer = new XMLSerializer(new CheckedOutputStream(buffer, formatted), FORMAT);
+            XMLSerializer serializer = new XMLSerializer(new CheckedOutputStream(buffer, formatted), format);
             XMLReader reader = XMLReaderFactory.createXMLReader();
             reader.setContentHandler(serializer);
             reader.setDTDHandler(serializer);

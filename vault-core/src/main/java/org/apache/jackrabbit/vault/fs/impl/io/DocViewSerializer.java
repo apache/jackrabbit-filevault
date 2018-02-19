@@ -53,7 +53,7 @@ public class DocViewSerializer implements Serializer {
      */
     public void writeContent(OutputStream out) throws IOException, RepositoryException {
         // build content handler and add filter in case of original xml files
-        XMLSerializer ser = new XMLSerializer(out, DocViewFormat.getXmlOutputFormat());
+        XMLSerializer ser = new XMLSerializer(out, new DocViewFormat().getXmlOutputFormat());
         DocViewSAXFormatter fmt = new DocViewSAXFormatter(aggregate, ser);
         aggregate.walk(fmt);
     }

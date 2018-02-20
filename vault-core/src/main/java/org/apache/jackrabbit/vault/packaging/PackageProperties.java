@@ -242,6 +242,7 @@ public interface PackageProperties {
 
     /**
      * Returns the package type or {@code null} if not package type was specified for this package.
+     * @return the package type
      */
     @Nullable
     PackageType getPackageType();

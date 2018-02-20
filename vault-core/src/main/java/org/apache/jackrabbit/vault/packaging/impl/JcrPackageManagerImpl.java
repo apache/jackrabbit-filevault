@@ -86,8 +86,6 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      *
      * @param session repository session
      * @param roots the root paths to store the packages.
-     *
-     * @see JcrPackageRegistry(Session, String ...)
      */
     public JcrPackageManagerImpl(Session session, String[] roots) {
         this(new JcrPackageRegistry(session, roots));

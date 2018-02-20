@@ -246,7 +246,7 @@ public interface JcrPackageManager extends PackageManager {
      * @return an array of the package(s) that were extracted.
      * @throws RepositoryException if an error occurs
      * @throws IOException if an I/O error occurrs
-     * @throws ItemExistsException if the package was already present in the repository.
+     * @throws PackageException if an internal error occurrs
      * @throws IOException if an I/O exception occurs
      */
     @Nonnull

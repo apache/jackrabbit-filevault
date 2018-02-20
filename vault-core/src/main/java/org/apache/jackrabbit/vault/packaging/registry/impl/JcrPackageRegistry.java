@@ -812,6 +812,7 @@ public class JcrPackageRegistry implements PackageRegistry {
      * Returns the primary path of this package. please note that since 2.3 this also
      * includes the version, but never the extension (.zip).
      *
+     * @param id the package id
      * @return the path of this package
      * @since 2.2
      */
@@ -823,6 +824,7 @@ public class JcrPackageRegistry implements PackageRegistry {
      * Returns the relative path of this package. please note that since 2.3 this also
      * includes the version, but never the extension (.zip).
      *
+     * @param id the package id
      * @return the relative path of this package
      * @since 2.2
      */

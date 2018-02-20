@@ -40,6 +40,8 @@ public final class RegexpPathMapping implements PathMapping {
      * All null entries (both keys and values) are ignored.
      *
      * @param pathsMappingMap the data structure containing the mapping
+     * @param <V> Value type
+     * @param <K> KEey type
      * @return this
      */
     @Nonnull

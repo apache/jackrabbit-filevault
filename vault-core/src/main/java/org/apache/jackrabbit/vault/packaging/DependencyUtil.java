@@ -42,6 +42,7 @@ public class DependencyUtil {
     /**
      * Sorts the packages by the dependency order
      * @param packages packages to sort
+     * @param <T> Type of the collection.
      * @throws CyclicDependencyException if a cyclic dependency is detected
      */
     public static <T extends VaultPackage> void sort(Collection<T> packages) throws CyclicDependencyException {
@@ -60,6 +61,7 @@ public class DependencyUtil {
     /**
      * Sorts the packages by the dependency order
      * @param packages packages to sort
+     * @param <T> Type of the collection.
      * @throws CyclicDependencyException if a cyclic dependency is detected
      * @throws javax.jcr.RepositoryException if an repository error occurs
      */

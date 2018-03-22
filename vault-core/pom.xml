@@ -81,10 +81,6 @@
                             javax.jcr.version,
                             *
                         </Import-Package>
-                        <Embed-Dependency>
-                            jackrabbit-spi-commons,
-                            jackrabbit-spi
-                        </Embed-Dependency>
                         <!-- to load hook classes through this bundle's classloader -->
                         <DynamicImport-Package>*</DynamicImport-Package>
                     </instructions>

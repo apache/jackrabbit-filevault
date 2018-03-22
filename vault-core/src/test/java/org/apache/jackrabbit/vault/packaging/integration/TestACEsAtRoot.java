@@ -48,6 +48,7 @@ import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -57,6 +58,7 @@ public class TestACEsAtRoot extends IntegrationTestBase {
     @Test
     public void export() throws RepositoryException, IOException, PackageException, ConfigurationException {
 
+        // todo: check why this is not working as expected
 
         UserManager userManager = ((JackrabbitSession)admin).getUserManager();
 
@@ -71,6 +73,8 @@ public class TestACEsAtRoot extends IntegrationTestBase {
         String repPolicyPath = String.format("%s/rep:policy", userPath);
         String profilePath = admin.getNode(userPath).addNode("profile").getPath();
         admin.save();
+
+        assertNodeExists(userPath);
 
         // Setup ACEs at the root path, for the user
 
@@ -92,15 +96,17 @@ public class TestACEsAtRoot extends IntegrationTestBase {
 //        filter.addPropertyFilterSet(pfilterSet);
 
         PathFilterSet userFilterSet = new PathFilterSet(userPath);
-        userFilterSet.addInclude(new DefaultPathFilter(userPath));
+//        userFilterSet.addInclude(new DefaultPathFilter(userPath));
+//        userFilterSet.addInclude(new DefaultPathFilter(profilePath + "(/.*)?"));
+//        userFilterSet.addInclude(new DefaultPathFilter(repPolicyPath + "(/.*)?"));
         filter.add(userFilterSet);
 
-        PathFilterSet profileSet = new PathFilterSet(profilePath);
-        profileSet.addInclude(new DefaultPathFilter(profilePath));
-        filter.add(profileSet);
-
-        PathFilterSet repPolicySet = new PathFilterSet(repPolicyPath);
-        filter.add(repPolicySet);
+//        PathFilterSet profileSet = new PathFilterSet(profilePath);
+//        profileSet.addInclude(new DefaultPathFilter(profilePath));
+//        filter.add(profileSet);
+//
+//        PathFilterSet repPolicySet = new PathFilterSet(repPolicyPath);
+//        filter.add(repPolicySet);
 
         inf.setFilter(filter);
         Properties props = new Properties();
@@ -115,10 +121,10 @@ public class TestACEsAtRoot extends IntegrationTestBase {
         opts.setRootPath("/");
         opts.setCompressionLevel(Deflater.BEST_SPEED);
 
-        File tmpFile = File.createTempFile("vaulttest", "zip");
+        File tmpFile = File.createTempFile("vaulttest", ".zip");
         OutputStream os = new FileOutputStream(tmpFile);
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        packMgr.assemble(session, opts, os);
+        packMgr.assemble(admin, opts, os);
         os.close();
         session.logout();
 
@@ -127,7 +133,7 @@ public class TestACEsAtRoot extends IntegrationTestBase {
         clean(userPath);
 
         ImportOptions importOptions = new ImportOptions();
-        importOptions.setImportMode(ImportMode.UPDATE);
+//        importOptions.setImportMode(ImportMode.UPDATE);
         importOptions.setAccessControlHandling(AccessControlHandling.OVERWRITE);
         importOptions.setPatchKeepInRepo(false);
 

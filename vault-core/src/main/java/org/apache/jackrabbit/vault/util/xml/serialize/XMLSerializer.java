@@ -35,6 +35,13 @@ package org.apache.jackrabbit.vault.util.xml.serialize;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.jackrabbit.vault.util.xml.xerces.dom.DOMMessageFormatter;
 import org.apache.jackrabbit.vault.util.xml.xerces.util.NamespaceSupport;
@@ -51,6 +58,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.AttributeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributeListImpl;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -315,6 +323,7 @@ public class XMLSerializer extends BaseMarkupSerializer {
             // separated with a space so the element can be broken on
             // multiple lines.
             if (attrs != null) {
+                attrs = sortAttributes(attrs);
                 // added by tripod@apache.org
                 boolean breakEachAttr = _format.getBreakEachAttribute()
                         && attrs.getLength() + (_prefixes == null ? 0 : _prefixes.size()) != 1
@@ -486,6 +495,7 @@ public class XMLSerializer extends BaseMarkupSerializer {
             // separated with a space so the element can be broken on
             // multiple lines.
             if (attrs != null) {
+                attrs = sortAttributes(attrs);
                 for (i = 0; i < attrs.getLength(); ++i) {
                     _printer.printSpace();
                     name = attrs.getName(i);
@@ -632,7 +642,6 @@ public class XMLSerializer extends BaseMarkupSerializer {
     protected void serializeElement(Element elem)
             throws IOException {
         Attr attr;
-        NamedNodeMap attrMap;
         int i;
         Node child;
         ElementState state;
@@ -689,14 +698,11 @@ public class XMLSerializer extends BaseMarkupSerializer {
         // This only happens in endElement().
         fPreserveSpace = state.preserveSpace;
 
-
-        int length = 0;
-        attrMap = null;
         // retrieve attributes
-        if (elem.hasAttributes()) {
-            attrMap = elem.getAttributes();
-            length = attrMap.getLength();
-        }
+        final Iterable<Node> attrMap = elem.hasAttributes()
+                ? sortAttributes(elem.getAttributes())
+                : Collections.<Node>emptyList();
+
 
         if (!fNamespaces) { // no namespace fixup should be performed
 
@@ -708,8 +714,8 @@ public class XMLSerializer extends BaseMarkupSerializer {
             // For each attribute print it's name and value as one part,
             // separated with a space so the element can be broken on
             // multiple lines.
-            for (i = 0; i < length; ++i) {
-                attr = (Attr) attrMap.item(i);
+            for (Node node: attrMap) {
+                attr = (Attr) node;
                 name = attr.getName();
                 value = attr.getValue();
                 if (value == null)
@@ -727,9 +733,8 @@ public class XMLSerializer extends BaseMarkupSerializer {
             // before attempting to fix element's namespace
             // ---------------------------------------
 
-            for (i = 0; i < length; i++) {
-
-                attr = (Attr) attrMap.item(i);
+            for (Node node: attrMap) {
+                attr = (Attr) node;
                 uri = attr.getNamespaceURI();
                 // check if attribute is a namespace decl
                 if (uri != null && uri.equals(NamespaceContext.XMLNS_URI)) {
@@ -885,9 +890,8 @@ public class XMLSerializer extends BaseMarkupSerializer {
             // check if prefix/namespace is correct the attributes
             // -----------------------------------------
 
-            for (i = 0; i < length; i++) {
-
-                attr = (Attr) attrMap.item(i);
+            for (Node node: attrMap) {
+                attr = (Attr) node;
                 value = attr.getValue();
                 name = attr.getNodeName();
 
@@ -1100,6 +1104,81 @@ public class XMLSerializer extends BaseMarkupSerializer {
         _printer.printText('"');
     }
 
+    private Iterable<Node> sortAttributes(final NamedNodeMap attributeList) {
+        final Comparator<String> cmp = _format.getSortAttributeNamesBy();
+
+        if (cmp == null) {
+            return new Iterable<Node>() {
+                @Override public Iterator<Node> iterator() {
+                    return new NamedNodeMapIterator(attributeList);
+                }
+            };
+        }
+
+        List<Node> attrs = new ArrayList<>(attributeList.getLength());
+
+        for (int i = 0, c = attributeList.getLength(); i < c; i++) {
+            attrs.add(attributeList.item(i));
+        }
+
+
+        Collections.sort(attrs, new Comparator<Node>() {
+            @Override public int compare(Node attr1, Node attr2) {
+                    return cmp.compare(getNameOf(attr1), getNameOf(attr2));
+                }
+
+            String getNameOf(Node attr) {
+                String uri = attr.getNamespaceURI();
+                return uri != null && uri.length() == 0 ? attr.getLocalName() : attr.getNodeName();
+            }
+        });
+
+        return attrs;
+    }
+
+    private Attributes sortAttributes(Attributes attributeList) {
+        Comparator<String> cmp = _format.getSortAttributeNamesBy();
+
+        if (cmp == null) {
+            return attributeList;
+        }
+
+        Map<String, Integer> attributes = new TreeMap<>(cmp);
+        for (int i = 0, c = attributeList.getLength(); i < c; i++) {
+            String qname = attributeList.getQName(i);
+            attributes.put(qname, i);
+        }
+
+        AttributesImpl sortedAttributes = new AttributesImpl();
+        for (Integer nextIndex: attributes.values()) {
+            sortedAttributes.addAttribute(attributeList.getURI(nextIndex), attributeList.getLocalName(nextIndex),
+                    attributeList.getQName(nextIndex), attributeList.getType(nextIndex), attributeList.getValue(nextIndex));
+        }
+
+        return sortedAttributes;
+    }
+
+    private AttributeList sortAttributes(AttributeList attributeList) {
+        Comparator<String> cmp = _format.getSortAttributeNamesBy();
+
+        if (cmp == null) {
+            return attributeList;
+        }
+
+        Map<String, Integer> attributes = new TreeMap<>(cmp);
+        for (int i = 0, c = attributeList.getLength(); i < c; i++) {
+            String name = attributeList.getName(i);
+            attributes.put(name, i);
+        }
+
+        AttributeListImpl sortedAttributes = new AttributeListImpl();
+        for (Integer nextIndex: attributes.values()) {
+            sortedAttributes.addAttribute(attributeList.getName(nextIndex), attributeList.getType(nextIndex),
+                    attributeList.getValue(nextIndex));
+        }
+
+        return sortedAttributes;
+    }
 
     /**
      * Prints attribute.
@@ -1444,6 +1523,29 @@ public class XMLSerializer extends BaseMarkupSerializer {
         return true;
     }
 
+    private static class NamedNodeMapIterator implements Iterator<Node> {
+
+        private final NamedNodeMap nodeMap;
+        private int index = 0;
+        private final int length;
+
+        NamedNodeMapIterator(NamedNodeMap nodeMap) {
+            this.nodeMap = nodeMap;
+            this.length = nodeMap.getLength();
+        }
+
+        @Override public boolean hasNext() {
+            return index < length;
+        }
+
+        @Override public Node next() {
+            return this.nodeMap.item(index++);
+        }
+
+        @Override public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
 }
 
 

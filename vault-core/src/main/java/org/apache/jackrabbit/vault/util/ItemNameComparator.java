@@ -22,6 +22,8 @@ import java.util.Comparator;
 import javax.jcr.Item;
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.vault.util.xml.serialize.AttributeNameComparator;
+
 /**
  * {@code ItemNameComparator}...
  */
@@ -32,17 +34,9 @@ public class ItemNameComparator implements Comparator<Item> {
     public int compare(Item o1, Item o2) {
         try {
             // sort namespaced first
-            String n1 = o1.getName().toLowerCase();
-            String n2 = o2.getName().toLowerCase();
-            int i1 = n1.indexOf(':');
-            int i2 = n2.indexOf(':');
-            if (i1 >=0 && i2 < 0) {
-                return -1;
-            } else if (i1 < 0 && i2 >=0) {
-                return 1;
-            } else {
-                return n1.compareTo(n2);
-            }
+            String n1 = o1.getName();
+            String n2 = o2.getName();
+            return AttributeNameComparator.INSTANCE.compare(n1, n2);
         } catch (RepositoryException e) {
             throw new IllegalStateException(e);
         }

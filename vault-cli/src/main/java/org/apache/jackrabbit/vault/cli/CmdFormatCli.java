@@ -49,16 +49,26 @@ public class CmdFormatCli extends AbstractVaultCommand {
         boolean checkOnly = cl.hasOption(optCheckOnly);
         boolean verbose = cl.hasOption(OPT_VERBOSE);
         List<String> givenPatterns = (List<String>) cl.getValues(optPatterns);
-        List<Pattern> parsedPatterns = new ArrayList<>(givenPatterns.size());
+        List<String> localPaths = new LinkedList<String>(cl.getValues(argPaths));
 
+        List<Pattern> parsedPatterns = new ArrayList<>(givenPatterns.size());
+        boolean hasArgSeparator = false;
         for (String pattern : givenPatterns) {
-            parsedPatterns.add(Pattern.compile(pattern));
+            if ("--".equals(pattern)) {
+                // little hack to separate the patterns from the files
+                hasArgSeparator = true;
+            } else {
+                if (hasArgSeparator) {
+                    localPaths.add(0, pattern);
+                } else {
+                    parsedPatterns.add(Pattern.compile(pattern));
+                }
+            }
         }
         if (parsedPatterns.isEmpty()) {
             parsedPatterns.add(DEFAULT_PATTERN);
         }
 
-        List<String> localPaths = cl.getValues(argPaths);
         List<File> localFiles = app.getPlatformFiles(localPaths, true);
         if (localFiles.isEmpty()) {
             localFiles.add(app.getPlatformFile(".", true));
@@ -122,6 +132,7 @@ public class CmdFormatCli extends AbstractVaultCommand {
                                 .withDescription("pattern for recursive format. defaults to match all xml files.")
                                 .withArgument(new ArgumentBuilder()
                                         .withMinimum(0)
+                                        .withConsumeRemaining("**dummy**")
                                         .create())
                                 .create())
                         .withOption(argPaths = new ArgumentBuilder()
@@ -143,8 +154,10 @@ public class CmdFormatCli extends AbstractVaultCommand {
     public String getLongDescription() {
         return  "Formats the file specified by <path> according to the vault specific docview format." +
                 "If the <path> points at a directory, the files matching the patterns are processed recursively.\n\n" +
-                "Example:\n" +
-                "  vlt format -c -p '\\\\.content\\\\.xml' content/jcr_root\n\n";
+                "Examples:\n" +
+                "  vlt format -c -p '\\.content\\.xml' content/jcr_root\n\n" +
+                "" +
+                "  vlt format -p \\.content\\.xml -p _jcr_content\\.xml -- apps/";
     }
 
 }

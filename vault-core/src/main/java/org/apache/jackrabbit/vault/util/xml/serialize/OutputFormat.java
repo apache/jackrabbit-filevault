@@ -28,6 +28,7 @@ package org.apache.jackrabbit.vault.util.xml.serialize;
 
 
 import java.io.UnsupportedEncodingException;
+import java.util.Comparator;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -235,6 +236,10 @@ public class OutputFormat {
      * serialized. Defaults to false for backwards compatibility.
      */
     private boolean _preserveEmptyAttributes = false;
+    /**
+     * If set the comparator is used to sort the attributes. If not set the order is preserved as it is.
+     */
+    private Comparator<String> _sortAttributeNamesBy = null;
 
     /**
      * Constructs a new output format with the default values.
@@ -793,6 +798,24 @@ public class OutputFormat {
      */
     public void setPreserveEmptyAttributes(boolean preserve) {
         _preserveEmptyAttributes = preserve;
+    }
+
+    /**
+     * Returns the {@link Comparator} used to apply an order to attribute names.
+     *
+     * @return
+     */
+    public Comparator<String> getSortAttributeNamesBy() {
+        return _sortAttributeNamesBy;
+    }
+
+    /**
+     * Sets the comparator to use for applying an order to attribute names. If set to null, the original order is preserved.
+     *
+     * @param sortAttributeNamesBy
+     */
+    public void setSortAttributeNamesBy(Comparator<String> sortAttributeNamesBy) {
+        this._sortAttributeNamesBy = sortAttributeNamesBy;
     }
 
     /**

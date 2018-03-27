@@ -51,6 +51,7 @@ public class VltExecutionContext extends ExecutionContext {
         installCommand(new CmdDiff());
         installCommand(new CmdRcp());
         installCommand(new CmdSync());
+        installCommand(new CmdFormatCli());
 
         //installCommand(new CmdVaultDebug());
     }

@@ -67,6 +67,8 @@ public class Diff {
 
     /**
      * Compute the difference between the 2 arrays.
+     * @param reverse Indicates reverse diff
+     * @return the change
      */
     public Change diff_2(final boolean reverse) {
         Change prev = new Change(0,0,0,0, null);

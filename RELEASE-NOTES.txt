@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.1.44
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.2.2
 
 Introduction
 ------------
@@ -8,6 +8,20 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.2.2
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.2.2
+
+Important Changes:
+For the fix of JCRVLT-282 the embedded dependencies of jackrabbit-spi and jackrabbit-spi-commons were removed from the
+vault-core bundle. This was required to keep the bundle Java 1.7 compatible and rather consume the libraries from the
+running system. Since some of the exported APIs already contain references to the Jackrabbit SPI this was necessary.
+
+Bug Fixes:
+* [JCRVLT-282] - Filevault bundle should be Java 1.7 Compatible
+
 
 
 Changes in Jackrabbit FileVault 3.1.44

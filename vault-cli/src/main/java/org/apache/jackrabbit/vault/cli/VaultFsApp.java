@@ -225,7 +225,7 @@ public class VaultFsApp extends AbstractApplication {
 
     @Override
     public String getCopyrightLine() {
-        return "Copyright 2013 by Apache Software Foundation. See LICENSE.txt for more information.";
+        return "Copyright 2018 by Apache Software Foundation. See LICENSE.txt for more information.";
     }
 
     protected void mount(String creds, String wsp, String root, String config,

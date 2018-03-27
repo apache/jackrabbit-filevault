@@ -27,7 +27,7 @@ The console tool is called `vlt` and has the following usage:
     $vlt --help
     
     ----------------------------------------------------------------------------------------------
-    Jackrabbit FileVault [version 3.0.0] Copyright 2013 by Apache Software Foundation.
+    Jackrabbit FileVault [version 3.2.2] Copyright 2018 by Apache Software Foundation.
     See LICENSE.txt for more information.
     ----------------------------------------------------------------------------------------------
     Usage:
@@ -38,6 +38,8 @@ The console tool is called `vlt` and has the following usage:
       -Xjcrlog <arg>           Extended JcrLog options (omit argument for help)
       -Xdavex <arg>            Extended JCR remoting options (omit argument for help)
       --credentials <arg>      The default credentials to use
+      --update-credentials     if present the credentials-to-host list is updated in the
+                               ~/.vault/auth.xml
       --config <arg>           The JcrFs config to use
       -v (--verbose)           verbose output
       -q (--quiet)             print as little as possible
@@ -62,6 +64,7 @@ The console tool is called `vlt` and has the following usage:
       diff (di)                Display the differences between two paths.
       rcp                      Remote copy of repository content.
       sync                     Control vault sync service
+      format                   Formats vault docview files.
       console                  Run an interactive console
     ----------------------------------------------------------------------------------------------
 

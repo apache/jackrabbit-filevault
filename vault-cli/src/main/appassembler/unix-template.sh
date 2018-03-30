@@ -12,7 +12,14 @@
 #  VLT_OPTS - parameters passed to the Java VM when running Vault
 #    e.g. to debug vault itself, use
 #      set VLT_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
-#----------------------------------------------------------------------------
+#
+# LINE SEPARATOR
+# Because it can be pretty tricky to shove a newline character into a batch or shell script and the text "\n" doesn't get
+# interpreted as what you might think by Java, vlt will instead look for LF | CRLF in a system property called vlt.line.separator
+# and if it exists, it will set the appropriate Java System property accordingly, e.g. -Dvlt.line.separator=LF
+# ----------------------------------------------------------------------------
+
+VLT_OPTS=-Dvlt.line.separator=LF
 
 if [ -f /etc/vaultrc ] ; then
   . /etc/vaultrc
@@ -122,6 +129,7 @@ if [ -n "$COLS" ]; then
 fi
 
 JAVA_VER=$($JAVACMD -version 2>&1 | sed 's/.*version "\(.*\)\.\(.*\)\..*"/\1\2/; 1q')
+JAVA_VER="${JAVA_VER//[[:space:]]/}"
 
 if [ "$JAVA_VER" -lt 18 ]; then
     EXTRA_JVM_ARGUMENTS="$EXTRA_JVM_ARGUMENTS -XX:PermSize=128m -XX:-UseGCOverheadLimit"

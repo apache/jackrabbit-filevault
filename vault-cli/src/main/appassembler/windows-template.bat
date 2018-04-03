@@ -11,6 +11,11 @@
 @REM VLT_OPTS - parameters passed to the Java VM when running vlt
 @REM     e.g. to debug vlt itself, use
 @REM set VLT_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
+@REM
+@REM LINE SEPARATOR
+@REM Because it can be pretty tricky to shove a newline character into a batch or shell script and the text "\n" doesn't get
+@REM interpreted as what you might think by Java, vlt will instead look for LF | CRLF in a system property called vlt.line.separator
+@REM and if it exists, it will set the appropriate Java System property accordingly, e.g. -Dvlt.line.separator=LF
 @REM ----------------------------------------------------------------------------
 
 @REM Begin all REM lines with '@' in case VLT_BATCH_ECHO is 'on'

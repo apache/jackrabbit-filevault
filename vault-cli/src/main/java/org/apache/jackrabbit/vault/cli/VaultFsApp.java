@@ -126,7 +126,6 @@ public class VaultFsApp extends AbstractApplication {
         new VaultFsApp().run(args);
     }
 
-
     public VaultFsApp() {
     }
 
@@ -460,6 +459,7 @@ public class VaultFsApp extends AbstractApplication {
      */
     protected void init() {
         super.init();
+        initLineSeparator();
 
         // init providers
         repProvider = new RepositoryProvider();
@@ -506,6 +506,29 @@ public class VaultFsApp extends AbstractApplication {
 
     public CredentialsStore getCredentialsStore() {
         return credentialsStore;
+    }
+
+    /**
+     * initializes the process wide line separator based on the {@code vlt.line.separator} system property. This helps
+     * supporting windows batch files, where passing a different line separator is very difficult via script.
+     *
+     * <ul>
+     * <li>if {@code vlt.line.separator} is {@code "LF"}, the java system property {@code line.separator} will be set to {@code "\n"}.</li>
+     * <li>if {@code vlt.line.separator} is {@code "CRLF"}, the java system property {@code line.separator} will be set to {@code "\r\n"}.</li>
+     * <li>if {@code vlt.line.separator} is missing, the system property will not be altered.</li>
+     * </ul>
+     */
+    private static void initLineSeparator() {
+        final String vltSep = System.getProperty("vlt.line.separator");
+        if (vltSep != null) {
+            if ("LF".equals(vltSep)) {
+                System.setProperty("line.separator","\n");
+            } else if ("CRLF".equals(vltSep)) {
+                System.setProperty("line.separator","\r\n");
+            } else {
+                log.warn("Warning, invalid vtl.line.separator value '{}' ignored", vltSep);
+            }
+        }
     }
 
     /**

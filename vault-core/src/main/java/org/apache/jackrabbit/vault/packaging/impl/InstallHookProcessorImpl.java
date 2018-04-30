@@ -34,6 +34,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
+import org.apache.jackrabbit.vault.packaging.InstallContext.Phase;
 import org.apache.jackrabbit.vault.packaging.InstallHook;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.PackageException;
@@ -147,9 +148,9 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             try {
                 hook.getHook().execute(context);
             } catch (PackageException e) {
-                // abort processing only for prepare phase
-                if (context.getPhase() == InstallContext.Phase.PREPARE) {
-                    log.warn("Hook " + hook.name +" threw package exception. Prepare aborted.", e);
+                // abort processing only for prepare and installed phase
+                if (context.getPhase() == InstallContext.Phase.PREPARE || context.getPhase() == InstallContext.Phase.INSTALLED) {
+                    log.warn("Hook " + hook.name +" threw package exception. {} aborted.", context.getPhase(), e);
                     return false;
                 }
                 log.warn("Hook " + hook.name +" threw package exception. Ignored", e);

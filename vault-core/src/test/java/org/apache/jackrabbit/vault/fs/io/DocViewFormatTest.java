@@ -25,13 +25,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.util.ISO8601;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +44,8 @@ public class DocViewFormatTest {
     @Before
     public void setup() throws IOException {
         String tempDir = System.getProperty("java.io.tmpdir");
-        dir = new File(tempDir + File.separator + "DocViewFormatTest" + new Date().toString());
+        dir = new File(tempDir + File.separator + "DocViewFormatTest-"
+                + ISO8601.format(Calendar.getInstance()).replace(":", "").replace(".", "").replace("-", ""));
         assert dir.mkdir();
         docViewFile = new File(dir.getPath() + File.separator + "malformed.xml");
         assert docViewFile.createNewFile();
@@ -59,12 +60,14 @@ public class DocViewFormatTest {
 
     @After
     public void tearDown() {
-        if (!docViewFile.delete()) {
-            docViewFile.deleteOnExit();
-            dir.deleteOnExit();
-        } else {
-            if (!dir.delete()) {
+        if (docViewFile != null) {
+            if (!docViewFile.delete()) {
+                docViewFile.deleteOnExit();
                 dir.deleteOnExit();
+            } else {
+                if (!dir.delete()) {
+                    dir.deleteOnExit();
+                }
             }
         }
     }

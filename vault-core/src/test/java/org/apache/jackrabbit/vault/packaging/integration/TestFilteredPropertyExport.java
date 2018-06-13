@@ -35,6 +35,7 @@ import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -260,6 +261,51 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         assertPropertiesExist("/tmp/foo/bar", "p2", "p3");
         assertPropertiesMissg("/tmp/foo/bar", "p1");
     }
+
+
+    @Test
+    public void filterRelativePropertiesSingleSet_NotDeep_no_propertyFilter_sourceCheck() throws IOException, RepositoryException, PackageException {
+        String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<workspaceFilter version=\"1.0\">\n" +
+                "    <filter root=\"/tmp\">\n" +
+                "        <include pattern=\"/tmp\"/>\n" +
+                "    </filter>\n" +
+                "</workspaceFilter>\n";
+
+        PathFilterSet props = new PathFilterSet("/tmp");
+        PathFilterSet nodes = new PathFilterSet("/tmp");
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        nodes.addInclude(new DefaultPathFilter("/tmp"));
+
+        filter.add(nodes, props);
+
+        String filterString = filter.getSourceAsString();
+
+        Assert.assertEquals(src, filterString);
+
+    }
+
+    @Test
+    public void filterRelativePropertiesSingleSet_NotDeep_no_propertyFilter_addNodes() throws IOException, RepositoryException, PackageException {
+        PathFilterSet nodes = new PathFilterSet("/tmp");
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        nodes.addInclude(new DefaultPathFilter("/tmp"));
+
+        filter.add(nodes);
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertNodeMissing("/tmp/foo");
+        assertNodeMissing("/tmp/foo/bar");
+
+    }
+
 
 
     /**

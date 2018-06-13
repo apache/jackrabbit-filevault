@@ -89,5 +89,7 @@ public class SubPackageHandlingTest extends TestCase {
         assertEquals("foo:bar", SubPackageHandling.fromString("foo:bar;illegal").getString());
         assertEquals("foo:bar", SubPackageHandling.fromString("foo:bar;install").getString());
         assertEquals("*:*,foo:bar;add", SubPackageHandling.fromString("*;install,foo:bar;add").getString());
+        assertEquals("*:*;install_always", SubPackageHandling.fromString("*;install_always").getString());
+        assertEquals("*:*;extract_always", SubPackageHandling.fromString("*;extract_always").getString());
     }
 }

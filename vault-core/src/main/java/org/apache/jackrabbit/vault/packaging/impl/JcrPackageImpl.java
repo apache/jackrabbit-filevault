@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -403,6 +405,8 @@ public class JcrPackageImpl implements JcrPackage {
         // process sub packages
         Session s = node.getSession();
         List<JcrPackageImpl> subPacks = new LinkedList<JcrPackageImpl>();
+        // contains a value only if a more recent version of the package with the given id (from the key) is already installed
+        Map<PackageId, PackageId> newerPackageIdPerSubPackage = new HashMap<PackageId, PackageId>();
         for (String path: subPackages) {
             if (s.nodeExists(path)) {
                 JcrPackageImpl p = new JcrPackageImpl(mgr, s.getNode(path));
@@ -453,9 +457,6 @@ public class JcrPackageImpl implements JcrPackage {
                     JcrPackageManager pkgMgr = new JcrPackageManagerImpl(s, mgr.getPackRootPaths()); // todo: use registry instead ?
                     List<JcrPackage> listPackages = pkgMgr.listPackages(pId.getGroup(), true);
 
-                    // keep some status variable if a more recent is found in the next loop
-                    PackageId newerPackageId = null;
-
                     // loop in the list of packages returned previously by package manager
                     for (JcrPackage listedPackage: listPackages) {
                         JcrPackageDefinition listedPackageDef = listedPackage.getDefinition();
@@ -471,16 +472,11 @@ public class JcrPackageImpl implements JcrPackage {
                         // then we can stop the loop here
                         if (pName.equals(listedPackageId.getName()) && listedPackage.isValid() && listedPackage.isInstalled()
                                 && listedPackageId.getVersion().compareTo(pVersion) > 0) {
-                            newerPackageId = listedPackageId;
+                            newerPackageIdPerSubPackage.put(pId, listedPackageId);
                             break;
                         }
                     }
-                    // if a more recent version of that subpackage was found we don't need to add it to the list of sub packages to eventually extract later on.
-                    if (newerPackageId != null) {
-                        log.debug("Skipping installation of subpackage '{}' due to newer installed version: '{}'", pId, newerPackageId);
-                    } else {
-                        subPacks.add(p);
-                    }
+                    subPacks.add(p);
                 }
             }
         }
@@ -500,14 +496,25 @@ public class JcrPackageImpl implements JcrPackage {
                 boolean skip = false;
                 PackageId id = p.getDefinition().getId();
                 SubPackageHandling.Option option = sb.getOption(id);
-                String msg;
-                if (option == SubPackageHandling.Option.ADD || option == SubPackageHandling.Option.IGNORE) {
-                    msg = "skipping installation of subpackage " + id + " due to option " + option;
-                    skip = true;
-                } else if (option == SubPackageHandling.Option.INSTALL) {
-                    msg = "Starting installation of subpackage " + id;
-                } else {
-                    msg = "Starting extraction of subpackage " + id;
+                String msg = null;
+                // should the package be skipped due to a newer version already installed?
+                if (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.EXTRACT) {
+                    PackageId newerPackageId = newerPackageIdPerSubPackage.get(id);
+                    if (newerPackageId != null) {
+                        msg = "Skipping installation of subpackage " + id + " due to newer installed version: '" + newerPackageId + "'";
+                        skip = true;
+                    }
+                }
+                
+                if (msg == null) {
+                    if (option == SubPackageHandling.Option.ADD || option == SubPackageHandling.Option.IGNORE) {
+                        msg = "skipping installation of subpackage " + id + " due to option " + option;
+                        skip = true;
+                    } else if (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.INSTALL_ALWAYS) {
+                        msg = "Starting installation of subpackage " + id;
+                    } else {
+                        msg = "Starting extraction of subpackage " + id;
+                    }
                 }
                 if (options.isDryRun()) {
                     msg = "Dry run: " + msg;
@@ -518,7 +525,7 @@ public class JcrPackageImpl implements JcrPackage {
                     log.debug(msg);
                 }
                 if (!skip) {
-                    if (createSnapshot && option == SubPackageHandling.Option.INSTALL) {
+                    if (createSnapshot && (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.INSTALL_ALWAYS)) {
                         p.extract(options, true, true);
                         subIds.add(id);
                     } else {

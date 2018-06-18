@@ -36,6 +36,7 @@ import java.util.jar.JarFile;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.Property;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -460,6 +461,18 @@ public class IntegrationTestBase  {
 
     public void assertPropertyMissing(String path) throws RepositoryException {
         assertFalse(path + " should not exist", admin.propertyExists(path));
+    }
+
+    public void assertPropertyMissingOrEmpty(String path) throws RepositoryException {
+        if (!admin.propertyExists(path)) {
+            return;
+        }
+        Property p = admin.getProperty(path);
+        if (p.isMultiple()) {
+            assertTrue(path + " should not exist or be empty", p.getValues().length == 0);
+        } else {
+            assertTrue(path + " should not exist or be empty", p.getString().length() == 0);
+        }
     }
 
     public void createNodes(Node parent, int maxDepth, int nodesPerFolder) throws RepositoryException {

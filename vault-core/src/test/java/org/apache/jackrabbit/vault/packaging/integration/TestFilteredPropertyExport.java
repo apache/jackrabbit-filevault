@@ -261,6 +261,60 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         assertPropertiesMissg("/tmp/foo/bar", "p1");
     }
 
+    @Test
+    public void filterRelativePropertiesDeepNoPropertyFilter() throws IOException, RepositoryException, PackageException {
+        PathFilterSet props = new PathFilterSet("/tmp");
+        PathFilterSet nodes = new PathFilterSet("/tmp");
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(nodes, props);
+
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertPropertiesExist("/tmp/foo", "p1", "p2", "p3");
+        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+    }
+
+    @Test
+    public void filterRelativePropertiesShallowNoPropertyFilter() throws IOException, RepositoryException, PackageException {
+        PathFilterSet nodes = new PathFilterSet("/tmp");
+        nodes.addInclude(new DefaultPathFilter("/tmp"));
+
+        PathFilterSet props = new PathFilterSet("/tmp");
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(nodes, props);
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertNodeMissing("/tmp/foo");
+        assertNodeMissing("/tmp/foo/bar");
+    }
+
+    @Test
+    public void filterRelativePropertiesShallowWithPropertyFilter() throws IOException, RepositoryException, PackageException {
+        PathFilterSet props = new PathFilterSet("/tmp");
+        props.addExclude(new DefaultPathFilter(".*/p1"));
+
+        PathFilterSet nodes = new PathFilterSet("/tmp");
+        nodes.addInclude(new DefaultPathFilter("/tmp"));
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(nodes, props);
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p2", "p3");
+        assertPropertiesMissg("/tmp", "p1");
+        assertNodeMissing("/tmp/foo");
+        assertNodeMissing("/tmp/foo/bar");
+    }
 
     /**
      * Setup the path /tmp/foo/bar with properties set at each level

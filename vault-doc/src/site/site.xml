@@ -33,6 +33,7 @@
     </menu>
     <menu name="Using Filevault">
       <item href="usage.html" name="Getting Started" />
+      <item href="properties.html" name="Package Properties"/>
       <item href="filter.html" name="Workspace Filter" />
       <item href="importmode.html" name="Import Mode" />
       <item href="rcp.html" name="Vault Remote Copy" />

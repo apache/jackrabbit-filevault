@@ -241,7 +241,7 @@
     <!-- ====================================================================== -->
     <profiles>
         <profile>
-            <id>oak</id>
+            <id>test-oak</id>
             <build>
                 <plugins>
                     <plugin>
@@ -249,6 +249,58 @@
                         <configuration>
                             <argLine>-Doak=true -Xmx1024m</argLine>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>test-jackrabbit</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Doak=true -Xmx1024m</argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>test-both</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>oak</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <argLine>-Doak=true -Xmx1024m</argLine>
+                                    <reportNameSuffix>OAK</reportNameSuffix>
+                                    <skip>false</skip>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>jr</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <reportNameSuffix>JR</reportNameSuffix>
+                                    <skip>false</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

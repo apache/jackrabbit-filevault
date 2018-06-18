@@ -114,6 +114,7 @@ public class RCPTest extends IntegrationTestBase {
         admin.save();
         // removing a mixing should remove the undeclared properties
         assertPropertyMissing(SRC_TEST_NODE_PATH + "/jcr:title");
+        assertPropertyMissingOrEmpty(SRC_TEST_NODE_PATH + "/jcr:mixinTypes");
 
         rcp = new RepositoryCopier();
         rcp.setOnlyNewer(false);
@@ -121,8 +122,8 @@ public class RCPTest extends IntegrationTestBase {
         rcp.copy(admin, SRC_PATH, admin, DST_PATH, true);
 
         assertNodeExists(DST_TEST_NODE_PATH);
-        assertPropertyMissing(DST_TEST_NODE_PATH + "/jcr:mixinTypes");
         assertPropertyMissing(DST_TEST_NODE_PATH + "/jcr:title");
+        assertPropertyMissingOrEmpty(DST_TEST_NODE_PATH + "/jcr:mixinTypes");
     }
 
     @Test
@@ -209,7 +210,7 @@ public class RCPTest extends IntegrationTestBase {
         // property should still be the old value, since src is not "newer"
         assertProperty(DST_TEST_NODE_PATH + "/jcr:content/p0", "0");
         // mixin should already be gone, since file does not have a lastModified.
-        assertPropertyMissing(DST_TEST_NODE_PATH + "/jcr:mixinTypes");
+        assertPropertyMissingOrEmpty(DST_TEST_NODE_PATH + "/jcr:mixinTypes");
         assertPropertyMissing(DST_TEST_NODE_PATH + "/jcr:title");
 
         // now update last modified

@@ -48,6 +48,7 @@ public class AdminPermissionCheckerTest extends IntegrationTestBase {
     @After
     public void after() throws RepositoryException {
         JackrabbitSession jackrabbitSession = (JackrabbitSession) admin;
+        jackrabbitSession.refresh(false);
         Authorizable vip = jackrabbitSession.getUserManager().getAuthorizable(TEST_USER);
         if (vip != null) {
             vip.remove();

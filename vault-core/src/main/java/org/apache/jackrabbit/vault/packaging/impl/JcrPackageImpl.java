@@ -501,16 +501,16 @@ public class JcrPackageImpl implements JcrPackage {
                 if (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.EXTRACT) {
                     PackageId newerPackageId = newerPackageIdPerSubPackage.get(id);
                     if (newerPackageId != null) {
-                        msg = "Skipping installation of subpackage " + id + " due to newer installed version: '" + newerPackageId + "'";
+                        msg = String.format("Skipping installation of subpackage '%s' due to newer installed version: '%s'", id, newerPackageId);
                         skip = true;
                     }
                 }
                 
-                if (msg == null) {
+                if (!skip) {
                     if (option == SubPackageHandling.Option.ADD || option == SubPackageHandling.Option.IGNORE) {
-                        msg = "skipping installation of subpackage " + id + " due to option " + option;
+                        msg = "Skipping installation of subpackage " + id + " due to option " + option;
                         skip = true;
-                    } else if (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.INSTALL_ALWAYS) {
+                    } else if (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.FORCE_INSTALL) {
                         msg = "Starting installation of subpackage " + id;
                     } else {
                         msg = "Starting extraction of subpackage " + id;
@@ -525,7 +525,7 @@ public class JcrPackageImpl implements JcrPackage {
                     log.debug(msg);
                 }
                 if (!skip) {
-                    if (createSnapshot && (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.INSTALL_ALWAYS)) {
+                    if (createSnapshot && (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.FORCE_INSTALL)) {
                         p.extract(options, true, true);
                         subIds.add(id);
                     } else {

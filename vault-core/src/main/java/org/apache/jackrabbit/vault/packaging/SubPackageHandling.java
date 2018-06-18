@@ -77,13 +77,13 @@ public class SubPackageHandling {
          * adds and installs the package using {@link JcrPackage#install(org.apache.jackrabbit.vault.fs.io.ImportOptions)} even in case a newer version has already been installed
          * (allows downgrades)
          */
-        INSTALL_ALWAYS,
+        FORCE_INSTALL,
         
         /**
          * adds and extracts the package using {@link JcrPackage#extract(org.apache.jackrabbit.vault.fs.io.ImportOptions)} even in case a newer version has already been installed
          * (allows downgrades)
          */
-        EXTRACT_ALWAYS
+        FORCE_EXTRACT
     }
 
     public static class Entry {

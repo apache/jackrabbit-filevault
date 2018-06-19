@@ -358,10 +358,25 @@ public class IntegrationTestBase  {
         }
     }
 
+    /**
+     * Returns a ZipVaultPackage from either a directory (exploded package) or a package zip file
+     * @param name
+     * @return VaultPackage
+     * @throws IOException
+     */
     public VaultPackage loadVaultPackage(String name) throws IOException {
         return new ZipVaultPackage(getFileArchive(name), true);
     }
 
+    /**
+     * Returns an ZipVaultPackage which has been extracted in the repository.
+     * 
+     * @param name either the name of a zip file or the name of a directory which contains an exploded package
+     * @return an extracted vault package
+     * @throws IOException
+     * @throws PackageException
+     * @throws RepositoryException
+     */
     public VaultPackage extractVaultPackage(String name) throws IOException, PackageException, RepositoryException {
         return extractVaultPackage(name, null);
     }

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -379,6 +380,34 @@ public class TestSubPackages extends IntegrationTestBase {
         packOlder.install(opts);
         assertPackageNodeExists(PACKAGE_ID_SUB_TEST_10);
         assertTrue(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_10))).isInstalled());
+        assertNodeExists("/tmp/a");
+    }
+
+    @Test
+    public void testDowngradeInstallationOfSubpackages() throws PathNotFoundException, RepositoryException, IOException, PackageException {
+        try (JcrPackage packNewer = packMgr.upload(getStream("testpackages/subtest_extract_contains_newer_version.zip"), false)) {
+            assertNotNull(packNewer);
+    
+            // install package that contains newer version of the sub package first
+            ImportOptions opts = getDefaultOptions();
+            packNewer.install(opts);
+        }
+        // check for sub packages version 1.0.1 exists
+        assertPackageNodeExists(PACKAGE_ID_SUB_TEST_101);
+        try (JcrPackage subPackage = packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_101)))) {
+            assertTrue(subPackage.isInstalled());
+        }
+        assertNodeExists("/tmp/b");
+        
+        // now install package which is supposed to downgrade
+        try (JcrPackage packOlder = packMgr.upload(getStream("testpackages/subtest_extract_contains_older_version_force_downgrade.zip"), false)) {
+            assertNotNull(packOlder);
+            packOlder.install(getDefaultOptions());
+        }
+        assertPackageNodeExists(PACKAGE_ID_SUB_TEST_10);
+        try (JcrPackage subPackage = packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_10)))) {
+            assertTrue("Older Subpackage is not installed, although it is explicitly requested to downgrade", subPackage.isInstalled());
+        }
         assertNodeExists("/tmp/a");
     }
 

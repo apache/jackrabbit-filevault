@@ -40,7 +40,12 @@ import org.apache.jackrabbit.util.Text;
  *
  *  Note that 'ignore' is currently not really supported as sub packages are part of the normal package content and
  *  behaves the same as 'add'. Future implementations will transport the sub packages outside of the normal package
- *  content, e.g. in a META-INF/vault/subpackages/ folder (see JCRVLT-33).
+ *  content, e.g. in a META-INF/vault/subpackages/ folder (see <a href="https://issues.apache.org/jira/browse/JCRVLT-33">JCRVLT-33</a>).
+ *  
+ *  <p>
+ *  The sub package handling is being specified in the package properties xml within property {@link PackageProperties#NAME_SUB_PACKAGE_HANDLING}.
+ *  </p>
+ *  @see PackageProperties
  */
 public class SubPackageHandling {
 
@@ -49,12 +54,12 @@ public class SubPackageHandling {
      */
     public enum Option {
         /**
-         * adds and installs the package using {@link JcrPackage#install(org.apache.jackrabbit.vault.fs.io.ImportOptions)}
+         * adds and installs the package using {@link JcrPackage#install(org.apache.jackrabbit.vault.fs.io.ImportOptions)} in case a newer version has not already been installed
          */
         INSTALL,
 
         /**
-         * adds and extracts the package using {@link JcrPackage#extract(org.apache.jackrabbit.vault.fs.io.ImportOptions)}
+         * adds and extracts the package using {@link JcrPackage#extract(org.apache.jackrabbit.vault.fs.io.ImportOptions)} in case a newer version has not already been installed
          */
         EXTRACT,
 
@@ -66,7 +71,19 @@ public class SubPackageHandling {
         /**
          * ignores the sub package completely
          */
-        IGNORE
+        IGNORE,
+        
+        /**
+         * adds and installs the package using {@link JcrPackage#install(org.apache.jackrabbit.vault.fs.io.ImportOptions)} even in case a newer version has already been installed
+         * (allows downgrades)
+         */
+        FORCE_INSTALL,
+        
+        /**
+         * adds and extracts the package using {@link JcrPackage#extract(org.apache.jackrabbit.vault.fs.io.ImportOptions)} even in case a newer version has already been installed
+         * (allows downgrades)
+         */
+        FORCE_EXTRACT
     }
 
     public static class Entry {

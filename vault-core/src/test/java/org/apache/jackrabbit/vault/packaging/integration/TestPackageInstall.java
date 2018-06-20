@@ -276,6 +276,21 @@ public class TestPackageInstall extends IntegrationTestBase {
     }
 
     /**
+     * Installs a package with an external hook which throws an exception in the INSTALLED phase
+     */
+    @Test
+    public void testExternalHookFailsInInstalledPhase() throws RepositoryException, IOException, PackageException {
+        try {
+            extractVaultPackage("testpackages/external_hook_failing_in_installed_phase.zip");
+            fail("Package install should fail due to installhook exception.");
+        } catch (PackageException e) {
+            // ok
+        }
+        // although there was some exception, this has only been triggered after the package has been extracted!
+        assertNodeExists("/testroot");
+    }
+
+    /**
      * Installs a package with no properties
      */
     @Test

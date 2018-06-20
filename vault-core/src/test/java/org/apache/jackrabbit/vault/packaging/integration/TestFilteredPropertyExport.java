@@ -354,6 +354,54 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
 
 
 
+    @Test
+    public void filterRelativePropertiesSingleSet_NotDeep_no_propertyFilter_addNodesExclude2() throws IOException, RepositoryException, PackageException {
+
+        PathFilterSet nodes = new PathFilterSet("/tmp");
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        nodes.addInclude(new DefaultPathFilter("/tmp/p1"));
+        nodes.addExclude(new DefaultPathFilter(".*/p.*"));
+
+
+        filter.add(nodes);
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertNodeExists("/tmp");
+        assertPropertiesMissg("/tmp", "p1", "p2", "p3");
+
+    }
+
+
+
+    @Test
+    public void filterRelativePropertiesSingleSet_NotDeep_no_propertyFilter_addNodesAndPropertiesExclude2() throws IOException, RepositoryException, PackageException {
+
+        PathFilterSet props = new PathFilterSet("/tmp");
+        PathFilterSet nodes = new PathFilterSet("/tmp");
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        nodes.addInclude(new DefaultPathFilter("/tmp/p1"));
+        nodes.addExclude(new DefaultPathFilter(".*/p.*"));
+
+
+        filter.add(nodes, props);
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertNodeExists("/tmp");
+        assertPropertiesMissg("/tmp", "p1", "p2", "p3");
+    }
+
+
+
 
     /**
      * Setup the path /tmp/foo/bar with properties set at each level

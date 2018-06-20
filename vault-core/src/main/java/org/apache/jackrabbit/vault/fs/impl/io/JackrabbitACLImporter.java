@@ -134,16 +134,6 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         states.push(state);
     }
 
-    private static ACE addACE(Map<String, List<ACE>> map, ACE ace) {
-        List<ACE> list = map.get(ace.principalName);
-        if (list == null) {
-            list = new ArrayList<ACE>();
-            map.put(ace.principalName, list);
-        }
-        list.add(ace);
-        return ace;
-    }
-
     public void endNode() throws SAXException {
         State state = states.pop();
         importPolicy.endNode(state);
@@ -177,14 +167,11 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         abstract void apply(List<String> paths) throws RepositoryException;
 
         Principal getPrincipal(final String principalName) {
-            Principal principal = pMgr.getPrincipal(principalName);
-            if (principal == null) {
-                principal = new Principal() {
-                    public String getName() {
-                        return principalName;
-                    }
-                };
-            }
+            Principal principal = new Principal() {
+                public String getName() {
+                    return principalName;
+                }
+            };
             return principal;
         }
 
@@ -214,7 +201,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
     private final class ImportedAcList extends ImportedPolicy<JackrabbitAccessControlList> {
 
-        private Map<String, List<ACE>> aceMap = new LinkedHashMap<String, List<ACE>>();
+        private List<ACE> aceList = new ArrayList<>();
         private ACE currentACE;
 
         private ImportedAcList() {
@@ -224,7 +211,8 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         State append(State state, DocViewNode childNode) {
             if (state == State.ACL) {
                 try {
-                    currentACE = addACE(aceMap, new ACE(childNode));
+                    currentACE = new ACE(childNode);
+                    aceList.add(currentACE);
                     return State.ACE;
                 } catch (IllegalArgumentException e) {
                     log.error("Error while reading access control content: {}", e);
@@ -272,9 +260,9 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         // clear all ACEs of the package principals for merge (VLT-94), otherwise the `acl.addEntry()` below
         // might just combine the privileges.
         if (aclHandling == AccessControlHandling.MERGE) {
-            for (String name: aceMap.keySet()) {
+            for (ACE entry : aceList) {
                 for (AccessControlEntry ace : acl.getAccessControlEntries()) {
-                    if (ace.getPrincipal().getName().equals(name)) {
+                    if (ace.getPrincipal().getName().equals(entry.principalName)) {
                         acl.removeAccessControlEntry(ace);
                     }
                 }
@@ -282,38 +270,36 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         }
 
             // apply ACEs of package
-            for (Map.Entry<String, List<ACE>> entry: aceMap.entrySet()) {
-                final String principalName = entry.getKey();
+            for (ACE ace : aceList) {
+                final String principalName = ace.principalName;
                 if (aclHandling == AccessControlHandling.MERGE_PRESERVE && existingPrincipals.contains(principalName)) {
                     // skip principal if it already has an ACL
                     continue;
                 }
                 Principal principal = getPrincipal(principalName);
 
-                for (ACE ace: entry.getValue()) {
-                    Privilege[] privileges = new Privilege[ace.privileges.length];
-                    for (int i = 0; i < privileges.length; i++) {
-                        privileges[i] = acMgr.privilegeFromName(ace.privileges[i]);
-                    }
-                    Map<String, Value> svRestrictions = new HashMap<String, Value>();
-                    Map<String, Value[]> mvRestrictions = new HashMap<String, Value[]>();
-                    for (String restName : acl.getRestrictionNames()) {
-                        DocViewProperty restriction = ace.restrictions.get(restName);
-                        if (restriction != null) {
-                            Value[] values = new Value[restriction.values.length];
-                            int type = acl.getRestrictionType(restName);
-                            for (int i=0; i<values.length; i++) {
-                                values[i] = valueFactory.createValue(restriction.values[i], type);
-                            }
-                            if (restriction.isMulti) {
-                                mvRestrictions.put(restName, values);
-                            } else {
-                                svRestrictions.put(restName, values[0]);
-                            }
+                Privilege[] privileges = new Privilege[ace.privileges.length];
+                for (int i = 0; i < privileges.length; i++) {
+                    privileges[i] = acMgr.privilegeFromName(ace.privileges[i]);
+                }
+                Map<String, Value> svRestrictions = new HashMap<String, Value>();
+                Map<String, Value[]> mvRestrictions = new HashMap<String, Value[]>();
+                for (String restName : acl.getRestrictionNames()) {
+                    DocViewProperty restriction = ace.restrictions.get(restName);
+                    if (restriction != null) {
+                        Value[] values = new Value[restriction.values.length];
+                        int type = acl.getRestrictionType(restName);
+                        for (int i=0; i<values.length; i++) {
+                            values[i] = valueFactory.createValue(restriction.values[i], type);
+                        }
+                        if (restriction.isMulti) {
+                            mvRestrictions.put(restName, values);
+                        } else {
+                            svRestrictions.put(restName, values[0]);
                         }
                     }
-                    acl.addEntry(principal, privileges, ace.allow, svRestrictions, mvRestrictions);
                 }
+                acl.addEntry(principal, privileges, ace.allow, svRestrictions, mvRestrictions);
             }
             acMgr.setPolicy(accessControlledPath, acl);
 

@@ -31,9 +31,9 @@ import org.osgi.annotation.versioning.ConsumerType;
  * and are executed in alphabetical sequence for each installation phase.
  * A hook can throw a {@link PackageException} to abort the current phase,
  * but this has currently only an effect in the
- * {@link InstallContext.Phase#PREPARE} phase. If a hook fails, the current
- * phase is aborted and all hooks (also the failing one) are called again with
- * the respective "fail" phase.
+ * {@link InstallContext.Phase#PREPARE} and {@link InstallContext.Phase#INSTALLED}
+ * phase. If a hook fails, the current phase is aborted and all hooks 
+ * (also the failing one) are called again with the respective "fail" phase.
  */
 @ConsumerType
 public interface InstallHook {

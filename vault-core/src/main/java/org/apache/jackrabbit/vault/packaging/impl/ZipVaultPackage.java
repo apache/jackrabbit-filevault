@@ -227,7 +227,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
             if (!hooks.execute(ctx)) {
                 ctx.setPhase(InstallContext.Phase.PREPARE_FAILED);
                 hooks.execute(ctx);
-                throw new PackageException("Import aborted during prepare phase.");
+                throw new PackageException("Error while executing an install hook during prepare phase.");
             }
             try {
                 importer.run(archive, ctx.getSession(), ctx.getImportRootPath());
@@ -238,7 +238,11 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 throw new PackageException(e);
             }
             ctx.setPhase(InstallContext.Phase.INSTALLED);
-            hooks.execute(ctx);
+            if (!hooks.execute(ctx)) {
+                ctx.setPhase(InstallContext.Phase.INSTALL_FAILED);
+                hooks.execute(ctx);
+                throw new PackageException("Error while executing an install hook during installed phase.");
+            }
             if (importer.hasErrors() && ctx.getOptions().isStrict()) {
                 ctx.setPhase(InstallContext.Phase.INSTALL_FAILED);
                 hooks.execute(ctx);

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -67,6 +66,8 @@ public class JcrNodeTypeInstaller implements NodeTypeInstaller {
         // register node types
         NodeTypeManager ntMgr = session.getWorkspace().getNodeTypeManager();
 
+        JcrNamespaceHelper nsHelper = new JcrNamespaceHelper(session, tracker);
+
         // filter out registered
         DefaultNodeTypeSet set;
         if (types instanceof DefaultNodeTypeSet) {
@@ -88,20 +89,7 @@ public class JcrNodeTypeInstaller implements NodeTypeInstaller {
         }
 
         // register namespaces
-        Map<String, String> pfxToURI = set.getNamespaceMapping().getPrefixToURIMapping();
-        if (!pfxToURI.isEmpty()) {
-            for (Object o : pfxToURI.keySet()) {
-                String prefix = (String) o;
-                String uri = (String) pfxToURI.get(prefix);
-                try {
-                    session.getNamespacePrefix(uri);
-                    track(tracker, "-", prefix + " -> " + uri);
-                } catch (RepositoryException e) {
-                    session.getWorkspace().getNamespaceRegistry().registerNamespace(prefix, uri);
-                    track(tracker, "A", prefix + " -> " + uri);
-                }
-            }
-        }
+        nsHelper.registerNamespaces(set.getNamespaceMapping().getPrefixToURIMapping());
 
         // register node types
         NodeTypeDefinitionFactory fac = new NodeTypeDefinitionFactory(session);

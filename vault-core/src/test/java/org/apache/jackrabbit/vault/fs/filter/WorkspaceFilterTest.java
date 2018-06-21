@@ -133,7 +133,7 @@ public class WorkspaceFilterTest {
         PathFilterSet propertyFilterSet = propertyFilterSets.get(0);
         assertEquals("/var/foo/bar", propertyFilterSet.getRoot());
         List<FilterSet.Entry<PathFilter>> propertyFilters = propertyFilterSet.getEntries();
-        assertEquals(2, propertyFilters.size());
+        assertEquals(1, propertyFilters.size());
         FilterSet.Entry<PathFilter> propertyFilter = propertyFilters.get(0);
         assertFalse(propertyFilter.isInclude());
     }
@@ -149,4 +149,47 @@ public class WorkspaceFilterTest {
 
         assertEquals("Filter source", expected, filter.getSourceAsString());
     }
+
+    @Test
+    public void testGeneratedSourceFromCode()  {
+        String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<workspaceFilter version=\"1.0\">\n" +
+                "    <filter root=\"/tmp\">\n" +
+                "        <include pattern=\"/tmp\"/>\n" +
+                "    </filter>\n" +
+                "</workspaceFilter>\n";
+
+        PathFilterSet props = new PathFilterSet("/tmp");
+        PathFilterSet nodes = new PathFilterSet("/tmp");
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        nodes.addInclude(new DefaultPathFilter("/tmp"));
+
+        filter.add(nodes, props);
+
+        assertEquals(expected, filter.getSourceAsString());
+
+    }
+
+    @Test
+    public void testGeneratedSourceFromCodeWithProps()  {
+        String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<workspaceFilter version=\"1.0\">\n" +
+                "    <filter root=\"/foo\"/>\n" +
+                "    <filter root=\"/tmp\">\n" +
+                "        <exclude pattern=\"/tmp/foo/p.*\" matchProperties=\"true\"/>\n" +
+                "    </filter>\n" +
+                "</workspaceFilter>\n";
+
+        PathFilterSet properties = new PathFilterSet("/tmp");
+        properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/foo"));
+        filter.add(new PathFilterSet("/tmp"), properties);
+
+        assertEquals(expected, filter.getSourceAsString());
+
+    }
+
 }

@@ -44,6 +44,7 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlan;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
+import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTaskBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
@@ -81,7 +82,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
 
     private final List<TaskBuilder> tasks = new LinkedList<TaskBuilder>();
 
-    private final JcrPackageRegistry registry;
+    private final PackageRegistry registry;
 
     private Session session;
 
@@ -89,7 +90,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
 
     private ExecutionPlanImpl plan;
 
-    ExecutionPlanBuilderImpl(JcrPackageRegistry registry) {
+    ExecutionPlanBuilderImpl(PackageRegistry registry) {
         this.registry = registry;
     }
 

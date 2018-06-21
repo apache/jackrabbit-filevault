@@ -44,6 +44,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeInstaller;
@@ -77,7 +78,7 @@ import org.slf4j.LoggerFactory;
 /**
  * {@code JcrPackagePersistence}...
  */
-public class JcrPackageRegistry implements PackageRegistry {
+public class JcrPackageRegistry implements PackageRegistry, InternalPackageRegistry {
 
     /**
      * default logger
@@ -854,6 +855,27 @@ public class JcrPackageRegistry implements PackageRegistry {
     @Override
     public ExecutionPlanBuilder createExecutionPlan() {
         return new ExecutionPlanBuilderImpl(this);
+    }
+    
+    @Override
+    public void installPackage(RegisteredPackage pkg, ImportOptions opts, boolean extract) throws IOException, PackageException {
+        try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()){
+            if (extract) {
+                jcrPkg.extract(opts);
+            } else {
+                jcrPkg.install(opts);
+            }
+        } catch (RepositoryException e) {
+            throw new IOException(e);
+    }
+}
+    @Override
+    public void uninstallPackage(RegisteredPackage pkg, ImportOptions opts) throws IOException, PackageException {
+          try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()){
+          jcrPkg.uninstall(opts);
+      } catch (RepositoryException e) {
+          throw new IOException(e);
+      }  
     }
 
 }

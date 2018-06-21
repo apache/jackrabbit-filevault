@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -73,21 +72,10 @@ public class JackrabbitPrivilegeInstaller implements PrivilegeInstaller {
             mode = tracker.setMode(ProgressTrackerListener.Mode.TEXT);
         }
 
+        JcrNamespaceHelper nsHelper = new JcrNamespaceHelper(session, tracker);
+
         // register namespaces
-        Map<String, String> pfxToURI = defs.getNamespaceMapping().getPrefixToURIMapping();
-        if (!pfxToURI.isEmpty()) {
-            for (Object o : pfxToURI.keySet()) {
-                String prefix = (String) o;
-                String uri = pfxToURI.get(prefix);
-                try {
-                    session.getNamespacePrefix(uri);
-                    track(tracker, "-", prefix + " -> " + uri);
-                } catch (RepositoryException e) {
-                    session.getWorkspace().getNamespaceRegistry().registerNamespace(prefix, uri);
-                    track(tracker, "A", prefix + " -> " + uri);
-                }
-            }
-        }
+        nsHelper.registerNamespaces(defs.getNamespaceMapping().getPrefixToURIMapping());
 
         // register node types
         List<Privilege> registeredPrivs = new LinkedList<Privilege>();

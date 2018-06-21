@@ -62,6 +62,7 @@ import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.JcrNamespaceHelper;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.util.JcrConstants;
@@ -225,6 +226,11 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
     private final boolean snsSupported;
 
     /**
+     * helper for namespace registration
+     */
+    private final JcrNamespaceHelper nsHelper;
+
+    /**
      * Creates a new importer that will receive SAX events and imports the
      * items below the given root.
      *
@@ -247,6 +253,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         this.userManagement = ServiceProviderFactory.getProvider().getUserManagement();
         this.snsSupported = session.getRepository().
                 getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED).getBoolean();
+        this.nsHelper = new JcrNamespaceHelper(session, null);
 
         String rootPath = parentNode.getPath();
         if (!rootPath.equals("/")) {
@@ -506,11 +513,10 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         } catch (NamespaceException e) {
             // assume uri never registered
             try {
-                session.getWorkspace().getNamespaceRegistry().registerNamespace(prefix, uri);
+                oldPrefix = nsHelper.registerNamespace(prefix, uri);
             } catch (RepositoryException e1) {
                 throw new SAXException(e);
             }
-            oldPrefix = prefix;
         } catch (RepositoryException e) {
             throw new SAXException(e);
         }

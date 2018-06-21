@@ -156,7 +156,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyWithTwoRoots_deprecated() throws IOException, RepositoryException, PackageException {
+    public void filterPropertyWithTwoRoots() throws IOException, RepositoryException, PackageException {
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
 
@@ -175,7 +175,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyWithTwoRoots() throws IOException, RepositoryException, PackageException {
+    public void filterPropertyWithTwoRoots_deprecated() throws IOException, RepositoryException, PackageException {
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/foo"));
@@ -316,6 +316,47 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         assertNodeMissing("/tmp/foo/bar");
     }
 
+    @Test
+    public void filterRelativePropertiesSingleSet_NotDeep_no_propertyFilter_addNodes() throws IOException, RepositoryException, PackageException {
+        PathFilterSet nodes = new PathFilterSet("/tmp");
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        nodes.addInclude(new DefaultPathFilter("/tmp"));
+
+        filter.add(nodes);
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertNodeMissing("/tmp/foo");
+        assertNodeMissing("/tmp/foo/bar");
+    }
+
+    @Test
+    public void filterRelativePropertiesSingleSet_NotDeep_with_xml() throws IOException, RepositoryException, PackageException, ConfigurationException {
+        String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<workspaceFilter version=\"1.0\">\n" +
+                "    <filter root=\"/tmp\">\n" +
+                "        <include pattern=\"/tmp\"/>\n" +
+                "    </filter>\n" +
+                "</workspaceFilter>\n";
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.load(new ByteArrayInputStream(src.getBytes("utf-8")));
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        clean("/tmp");
+        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        // validate the extracted content
+        assertPropertiesExist("/tmp", "p1", "p2", "p3");
+        assertNodeMissing("/tmp/foo");
+        assertNodeMissing("/tmp/foo/bar");
+    }
+
     /**
      * Setup the path /tmp/foo/bar with properties set at each level
      */
@@ -338,7 +379,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     private File assemblePackage(WorkspaceFilter filter)
             throws IOException, RepositoryException {
 
-        File tmpFile = File.createTempFile("vaulttest", "zip");
+        File tmpFile = File.createTempFile("vaulttest", ".zip");
 
         ExportOptions options = new ExportOptions();
         DefaultMetaInf meta = new DefaultMetaInf();

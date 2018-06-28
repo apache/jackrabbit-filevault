@@ -36,9 +36,11 @@ import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 public class FSRegisteredPackage implements RegisteredPackage {
 
     private VaultPackage vltPkg;
+    private FSPackageRegistry registry;
 
-    public FSRegisteredPackage(VaultPackage vltPkg) throws IOException, RepositoryException {
+    public FSRegisteredPackage(FSPackageRegistry registry, VaultPackage vltPkg) throws IOException, RepositoryException {
         this.vltPkg = vltPkg;
+        this.registry = registry;
     }
 
     @Nonnull
@@ -55,8 +57,8 @@ public class FSRegisteredPackage implements RegisteredPackage {
 
     @Override
     public boolean isInstalled() {
-      //TODO @suess - how to persist installation state: 
-      return true;
+      FSPackageStatus status = registry.getInstallStatus(getId());
+      return FSPackageStatus.INSTALLED.equals(status) ;
     }
 
     @Override

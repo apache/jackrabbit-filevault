@@ -858,7 +858,7 @@ public class JcrPackageRegistry implements PackageRegistry, InternalPackageRegis
     }
     
     @Override
-    public void installPackage(RegisteredPackage pkg, ImportOptions opts, boolean extract) throws IOException, PackageException {
+    public void installPackage(Session session, RegisteredPackage pkg, ImportOptions opts, boolean extract) throws IOException, PackageException {
         try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()){
             if (extract) {
                 jcrPkg.extract(opts);
@@ -870,7 +870,7 @@ public class JcrPackageRegistry implements PackageRegistry, InternalPackageRegis
     }
 }
     @Override
-    public void uninstallPackage(RegisteredPackage pkg, ImportOptions opts) throws IOException, PackageException {
+    public void uninstallPackage(Session session, RegisteredPackage pkg, ImportOptions opts) throws IOException, PackageException {
           try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()){
           jcrPkg.uninstall(opts);
       } catch (RepositoryException e) {

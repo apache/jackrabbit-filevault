@@ -16,19 +16,11 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
-import java.io.IOException;
-
-import javax.jcr.Session;
-
-import org.apache.jackrabbit.vault.fs.io.ImportOptions;
-import org.apache.jackrabbit.vault.packaging.PackageException;
-import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
-import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
-
-public interface InternalPackageRegistry extends PackageRegistry {
+public enum FSPackageStatus {
     
-    void installPackage(Session session, RegisteredPackage pkg, ImportOptions opts, boolean extract)
-            throws IOException, PackageException;
-    void uninstallPackage(Session session, RegisteredPackage pkg, ImportOptions opts) throws IOException, PackageException ;
+    REGISTERED,
+    EXTRACTED,
+    INSTALLED,
+    REMOVED
 
 }

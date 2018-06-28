@@ -92,6 +92,7 @@ import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcherI
 import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
+import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.Text;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -438,7 +439,7 @@ public class IntegrationTestBase  {
      */
     public String getInstallationPath(PackageId id) {
         // make sure we use the one from the test parameter
-        return packMgr.getRegistry().getInstallationPath(id) + ".zip";
+        return ((JcrPackageRegistry)packMgr.getRegistry()).getInstallationPath(id) + ".zip";
     }
 
     public void assertPackageNodeExists(PackageId id) throws RepositoryException {

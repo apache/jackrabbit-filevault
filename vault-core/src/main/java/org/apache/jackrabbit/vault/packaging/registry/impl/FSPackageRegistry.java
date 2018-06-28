@@ -17,11 +17,22 @@
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -30,11 +41,13 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import javax.jcr.Session;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.packaging.Dependency;
-import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
@@ -74,43 +87,61 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
      */
     public static final String DEFAULT_PACKAGE_ROOT_PATH_PREFIX = DEFAULT_PACKAGE_ROOT_PATH + "/";
 
-    /**
-     * suggested folder types
-     */
-    private final static String[] FOLDER_TYPES = { "sling:Folder", "nt:folder", "nt:unstructured", null };
-
-    /**
-     * internal session
-     */
-    private final Session session;
+    private final String[] SUFFIXES = {"zip"};
+    
 
     @Nullable
     private PackageEventDispatcher dispatcher;
 
+    private static File homeDir;
+    private static File statusFile;
+    
+    private volatile Map<String, InstallState> statusList = Collections.emptyMap();
+
+    public File getHomeDir() {
+        return homeDir;
+    }
+    
+    
+
     /**
-     * Creates a new JcrPackageRegistry based on the given session.
+     * Creates a new FSPackageRegistry based on the given session.
      * 
      * @param session
      *            the JCR session that is used to access the repository.
      * @param roots
      *            the root paths to store the packages.
+     * @throws IOException
      */
-    public FSPackageRegistry() {
-        this.session = null;
+    @SuppressWarnings("unchecked")
+    public FSPackageRegistry(@Nonnull File homeDir) throws IOException {
+        FSPackageRegistry.homeDir = homeDir;
+        if (homeDir.exists()) {
+            FSPackageRegistry.statusFile = new File(homeDir, "registrystatus.ser");
+            if (statusFile.exists()) {
+                FileInputStream fis = null;
+                ObjectInputStream ois = null;
+                try {
+                    fis = new FileInputStream("hashmap.ser");
+                    ois = new ObjectInputStream(fis);
+                    statusList = (HashMap<String, InstallState>) ois.readObject();
+                } catch (ClassNotFoundException e) {
+                    throw new IOException("Couldn't unserialize HashMap containing unknown classes", e);
+                } finally {
+                    if (ois != null) {
+                        ois.close();
+                    }
+                    if (fis != null) {
+                        fis.close();
+                    }
+                }
+            }
+        } else {
+            throw new IOException("homeDir given doesn't exist");
+        }
     }
 
-    /**
-     * Creates a new JcrPackageRegistry based on the given session.
-     * 
-     * @param session
-     *            the JCR session that is used to access the repository.
-     * @param roots
-     *            the root paths to store the packages.
-     */
-    public FSPackageRegistry(@Nonnull Session session, @Nullable String... roots) {
-        this.session = session;
-    }
-
+    
     /**
      * Sets the event dispatcher
      * 
@@ -143,7 +174,7 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
     public RegisteredPackage open(@Nonnull PackageId id) throws IOException {
         try {
             File pkg = getPackageFile(id);
-            return pkg == null ? null : new FSRegisteredPackage(open(pkg));
+            return pkg.exists() ? new FSRegisteredPackage(this, open(pkg)) : null;
         } catch (RepositoryException e) {
             throw new IOException(e);
         }
@@ -151,19 +182,14 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
 
     @Override
     public boolean contains(@Nonnull PackageId id) throws IOException {
-            return getPackageFile(id) != null;
+        File pkg = getPackageFile(id);
+        return pkg.exists() && pkg.isFile();
     }
 
     @Nullable
     private File getPackageFile(@Nonnull PackageId id) {
         String path = getInstallationPath(id);
-
-        String[] exts = new String[] { "", ".zip", ".jar" };
-        for (String ext : exts) {
-            return new File(path + ext);
-        }
-
-        return null;
+        return new File(getHomeDir(),path + ".zip");
     }
 
     /**
@@ -171,7 +197,7 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
      */
     public VaultPackage open(File pkg) throws RepositoryException {
         try {
-            return new ZipVaultPackage(pkg, false);
+            return new ZipVaultPackage(pkg, false, true);
         } catch (IOException e) {
             log.error("Cloud not open file {} as ZipVaultPackage.", pkg.getAbsolutePath(), e);
             return null;
@@ -186,7 +212,7 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
     public PackageId resolve(Dependency dependency, boolean onlyInstalled) throws IOException {
         PackageId bestId = null;
         for (PackageId id : packages()) {
-            if (isInstalled(id)) {
+            if (!onlyInstalled || isInstalled(id)) {
                 if (dependency.matches(id)) {
                     if (bestId == null || id.getVersion().compareTo(bestId.getVersion()) > 0) {
                         bestId = id;
@@ -262,59 +288,66 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
             throws IOException, PackageExistsException {
 
         MemoryArchive archive = new MemoryArchive(true);
-        long startTime = System.nanoTime();
-        InputStreamPump pump = new InputStreamPump(in, archive);
-
-        // this will cause the input stream to be consumed and the memory
-        // archive being initialized.
+        File tempFile = File.createTempFile("upload", ".zip");
+        
+        InputStreamPump pump = new InputStreamPump(in , archive);
         try {
-            archive.run(in);
-        } catch (Exception e) {
-            String msg = "Stream could be read successfully.";
-            log.error(msg);
-            throw new IOException(msg, e);
-        }
+            // this will cause the input stream to be consumed and the memory
+            // archive being initialized.
+            try {
 
-        if (archive.getJcrRoot() == null) {
-            String msg = "Stream is not a content package. Missing 'jcr_root'.";
-            log.error(msg);
-            throw new IOException(msg);
-        }
-
-        final MetaInf inf = archive.getMetaInf();
-        PackagePropertiesImpl props = new PackagePropertiesImpl() {
-            @Override
-            protected Properties getPropertiesMap() {
-                return inf.getProperties();
+                FileUtils.copyInputStreamToFile(pump, tempFile);
+            } catch (Exception e) {
+                String msg = "Stream could be read successfully.";
+                log.error(msg);
+                throw new IOException(msg, e);
             }
-        };
-        PackageId pid = props.getId();
-
-        // invalidate pid if path is unknown
-        if (pid == null) {
-            pid = createRandomPid();
-        }
-        if (!pid.isValid()) {
-            throw new IllegalArgumentException("Unable to create package. Illegal package name.");
-        }
-
-        File oldPkgFile = getPackageFile(pid);
-        String path = oldPkgFile.exists() ? oldPkgFile.getAbsolutePath() : getInstallationPath(pid);
-        String name = Text.getName(path);
-
-        // TODO: @suess : capture installation state
-
-        if (oldPkgFile.exists()) {
-            if (replace) {
-                oldPkgFile.delete();
-            } else {
-                throw new PackageExistsException("Package already exists: " + pid).setId(pid);
+    
+            if (archive.getJcrRoot() == null) {
+                String msg = "Stream is not a content package. Missing 'jcr_root'.";
+                log.error(msg);
+                throw new IOException(msg);
             }
+    
+            final MetaInf inf = archive.getMetaInf();
+            PackagePropertiesImpl props = new PackagePropertiesImpl() {
+                @Override
+                protected Properties getPropertiesMap() {
+                    return inf.getProperties();
+                }
+            };
+            PackageId pid = props.getId();
+    
+            // invalidate pid if path is unknown
+            if (pid == null) {
+                pid = createRandomPid();
+            }
+            if (!pid.isValid()) {
+                throw new IllegalArgumentException("Unable to create package. Illegal package name.");
+            }
+    
+            File oldPkgFile = getPackageFile(pid);
+            String path = oldPkgFile.exists() ? oldPkgFile.getAbsolutePath() : getInstallationPath(pid);
+            String name = Text.getName(path);
+    
+            // TODO: @suess : capture installation state
+    
+            if (oldPkgFile.exists()) {
+                if (replace) {
+                    oldPkgFile.delete();
+                } else {
+                    throw new PackageExistsException("Package already exists: " + pid).setId(pid);
+                }
+            }
+            
+            ZipVaultPackage pkg = new ZipVaultPackage(archive, true);
+            File pkgFile = getPackageFile(pid);
+            FileUtils.moveFile(tempFile, pkgFile);
+            dispatch(PackageEvent.Type.UPLOAD, pid, null);
+            return pkg;
+        } finally {
+            pump.close();
         }
-
-        ZipVaultPackage pkg = new ZipVaultPackage(archive, true);
-        dispatch(PackageEvent.Type.UPLOAD, pid, null);
-        return pkg;
 
     }
 
@@ -322,7 +355,15 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
     @Override
     public PackageId register(@Nonnull File file, boolean replace) throws IOException, PackageExistsException {
         ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
-        // TODO: @suess - save in cache directory
+        File pkgFile = getPackageFile(pack.getId());
+        if (pkgFile.exists()) {
+            if (replace) {
+                pkgFile.delete();
+            } else {
+                throw new PackageExistsException("Package already exists: " + pack.getId()).setId(pack.getId());
+            }
+        }
+        FileUtils.copyFile(file, pkgFile);
         return pack.getId();
     }
 
@@ -350,17 +391,27 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
     @Nonnull
     @Override
     public Set<PackageId> packages() throws IOException {
-        try {
-            Set<PackageId> packages = listPackages();
-            return packages;
-        } catch (RepositoryException e) {
-            throw new IOException(e);
+        Set<PackageId> packageIds = new HashSet<>();
+        
+        // TODO @suess add mapped/external packages 
+
+        Collection<File> files = FileUtils.listFiles(getHomeDir(), SUFFIXES, true);
+        for (File file : files) {
+            VaultPackage pkg = null;
+            try {
+                pkg = new ZipVaultPackage(file, false, true);
+                PackageId id = pkg.getId();
+                if (id != null) {
+                    packageIds.add(id);
+                }
+            } finally {
+                if (pkg != null && !pkg.isClosed()) {
+                    pkg.close();
+                }
+            }
+
         }
-    }
-
-    Set<PackageId> listPackages() throws RepositoryException {
-
-        // TODO @suess return packages from fs location / mapped packages -
+         
         // can't go through JcrPackageImpl as being JCR dependant but has to
         // load metadata otherways (e.g. extract from file initially)
 
@@ -375,7 +426,7 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
         // }
         // }
         // }
-        return Collections.emptySet();
+        return packageIds;
     }
 
     /**
@@ -428,12 +479,12 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
     }
 
     @Override
-    public void installPackage(RegisteredPackage pkg, ImportOptions opts, boolean extract) throws IOException, PackageException {
+    public void installPackage(Session session, RegisteredPackage pkg, ImportOptions opts, boolean extract) throws IOException, PackageException {
 
         if (session == null){
             log.error("Installation of packages only supported when session is set.");
         }
-        // TODO: @suess - replace by logic to trigger install from FS registry
+        // TODO: @suess - replace by logic to trigger install from FS registry (everythign beyond extraction)
         VaultPackage vltPkg = pkg.getPackage();
         if (vltPkg instanceof ZipVaultPackage) {
             if (!extract) {
@@ -444,17 +495,76 @@ public class FSPackageRegistry implements PackageRegistry, InternalPackageRegist
             } catch (RepositoryException e) {
                 throw new IOException(e);
             }
-            // TODO: @suess - capture installation state for registry handling
+            FSPackageStatus targetStatus = extract ? FSPackageStatus.EXTRACTED : FSPackageStatus.INSTALLED;
+            updateInstallState(vltPkg.getId(), targetStatus);
         }
     }
-    
+
     @Override
-    public void uninstallPackage(RegisteredPackage pkg, ImportOptions opts) throws IOException, PackageException {
+    public void uninstallPackage(Session session, RegisteredPackage pkg, ImportOptions opts) throws IOException, PackageException {
      // TODO: @suess - replace by logic to trigger uninstall from FS registry (identify & restore snapshot) 
-//        try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()){
+        updateInstallState(pkg.getId(), FSPackageStatus.REMOVED);
+        //        try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()){
 //          jcrPkg.uninstall(opts);
 //      } catch (RepositoryException e) {
 //          throw new IOException(e);
 //      }  
     }
+
+    public void updateInstallState(PackageId pid, FSPackageStatus targetStatus) throws IOException {
+        String packageId = pid.toString();
+        Map<String, InstallState> cloned = new HashMap<>(statusList);
+        if (targetStatus.equals(FSPackageStatus.REMOVED)) {
+            cloned.remove(packageId);
+        } else {
+            String mappedExternalPath = cloned.containsKey(packageId)
+                    ? statusList.get(packageId).getMappedExternalPath() : null;
+            cloned.put(packageId, new InstallState(targetStatus, mappedExternalPath));
+        }
+        FileOutputStream fos = null;
+        ObjectOutputStream oos = null;
+        try {
+            fos = new FileOutputStream(statusFile);
+            oos = new ObjectOutputStream(fos);
+            oos.writeObject(cloned);
+        } finally {
+            if (oos != null) {
+                oos.close();
+            }
+            if (fos != null) {
+                fos.close();
+            }
+        }
+
+        this.statusList = Collections.unmodifiableMap(cloned);
+    }
+    
+
+    public FSPackageStatus getInstallStatus(PackageId pid) {
+        return statusList.containsKey(pid.toString()) ? statusList.get(pid.toString()).getStatus() : FSPackageStatus.REMOVED;
+    }
 }
+
+    class InstallState implements Serializable{
+
+        /**
+         * Generated serialVersionUID
+         */
+        private static final long serialVersionUID = -775058845683056675L;
+        
+        private FSPackageStatus status;
+        private String mappedExternalPath;
+        
+        public InstallState(@Nonnull FSPackageStatus status,@Nullable String mappedExternalPath) {
+            this.status = status;
+            this.mappedExternalPath = mappedExternalPath;
+        }
+        
+        public String getMappedExternalPath() {
+            return mappedExternalPath;
+        }
+
+        public FSPackageStatus getStatus() {
+            return status;
+        }
+    }

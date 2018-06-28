@@ -155,7 +155,7 @@ public class PackageTaskImpl implements PackageTask {
             }
             PackageRegistry registry = plan.getRegistry();
             if (registry instanceof InternalPackageRegistry) {
-              ((InternalPackageRegistry)registry).uninstallPackage(pkg, opts);
+              ((InternalPackageRegistry)registry).uninstallPackage(plan.getSession(), pkg, opts);
             }
         }
     }
@@ -178,7 +178,7 @@ public class PackageTaskImpl implements PackageTask {
             }
             PackageRegistry registry = plan.getRegistry();
             if (registry instanceof InternalPackageRegistry) {
-              ((InternalPackageRegistry)registry).installPackage(pkg, opts, extract);
+              ((InternalPackageRegistry)registry).installPackage(plan.getSession(), pkg, opts, extract);
             }
         }
     }

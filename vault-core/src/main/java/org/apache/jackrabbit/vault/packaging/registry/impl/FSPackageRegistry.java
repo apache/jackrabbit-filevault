@@ -372,7 +372,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     public void installPackage(Session session, RegisteredPackage pkg, ImportOptions opts, boolean extract) throws IOException, PackageException {
 
         if (session == null){
-            log.error("Installation of packages only supported when session is set.");
+            String msg = "Installation of packages only supported when session is set.";
+            log.error(msg);
+            throw new PackageException(msg);
         }
         
         // TODO: @suess - replace by logic to trigger install from FS registry (everythign beyond extraction)

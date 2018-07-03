@@ -21,6 +21,6 @@ public enum FSPackageStatus {
     REGISTERED,
     EXTRACTED,
     INSTALLED,
-    REMOVED
+    NOTREGISTERED
 
 }

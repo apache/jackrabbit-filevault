@@ -29,11 +29,18 @@ import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@code JcrRegisteredPackage}...
  */
 public class FSRegisteredPackage implements RegisteredPackage {
+
+    /**
+     * default logger
+     */
+    private static final Logger log = LoggerFactory.getLogger(FSPackageRegistry.class);
 
     private VaultPackage vltPkg;
     private FSPackageRegistry registry;
@@ -57,8 +64,14 @@ public class FSRegisteredPackage implements RegisteredPackage {
 
     @Override
     public boolean isInstalled() {
-      FSPackageStatus status = registry.getInstallStatus(getId());
-      return FSPackageStatus.INSTALLED.equals(status) ;
+        InstallState status;
+        try {
+            status = registry.getInstallState(getId());
+            return FSPackageStatus.INSTALLED.equals(status.getStatus());
+        } catch (IOException e) {
+            log.error("Packagestate couldn't be read for package {}", getId().toString(), e);
+            return false;
+        }
     }
 
     @Override

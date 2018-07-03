@@ -60,7 +60,11 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        FileUtils.cleanDirectory(DIR_REGISTRY_HOME);
+        if (DIR_REGISTRY_HOME.exists()) {
+            FileUtils.cleanDirectory(DIR_REGISTRY_HOME);
+        } else {
+            DIR_REGISTRY_HOME.mkdir();
+        }
         registry = new FSPackageRegistry(DIR_REGISTRY_HOME);
     }
 

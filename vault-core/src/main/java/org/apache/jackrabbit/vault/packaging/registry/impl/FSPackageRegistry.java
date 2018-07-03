@@ -375,8 +375,6 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             log.error("Installation of packages only supported when session is set.");
         }
         
-        InstallState state = getInstallState(pkg.getId());
-        
         // TODO: @suess - replace by logic to trigger install from FS registry (everythign beyond extraction)
         VaultPackage vltPkg = pkg.getPackage();
         if (vltPkg instanceof ZipVaultPackage) {

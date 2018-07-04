@@ -64,14 +64,12 @@ public class FSRegisteredPackage implements RegisteredPackage {
 
     @Override
     public boolean isInstalled() {
-        InstallState status;
-        try {
-            status = registry.getInstallState(getId());
-            return FSPackageStatus.INSTALLED.equals(status.getStatus());
-        } catch (IOException e) {
-            log.error("Packagestate couldn't be read for package {}", getId().toString(), e);
-            return false;
-        }
+            try {
+                return registry.isInstalled(getId());
+            } catch (IOException e) {
+                log.error("Packagestate couldn't be read for package {}", getId().toString(), e);
+                return false;
+            }
     }
 
     @Override

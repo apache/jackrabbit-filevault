@@ -208,9 +208,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         return bestId;
     }
 
-    boolean isInstalled(PackageId id) {
-        // TODO @suess - how to capture installation state
-        return false;
+    boolean isInstalled(PackageId id) throws IOException {
+        FSPackageStatus status = getInstallState(id).getStatus();
+        return FSPackageStatus.EXTRACTED.equals(status) || FSPackageStatus.INSTALLED.equals(status);
     }
 
     @Nonnull
@@ -377,12 +377,14 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             throw new PackageException(msg);
         }
         
-        // TODO: @suess - replace by logic to trigger install from FS registry (everythign beyond extraction)
+        // For now FS based persistence only supports extraction but no reversible installation
+        if (!extract) {
+            String msg = "Only extraction supported by FS based registry";
+            log.error(msg);
+            throw new PackageException(msg);
+        }
         VaultPackage vltPkg = pkg.getPackage();
         if (vltPkg instanceof ZipVaultPackage) {
-            if (!extract) {
-                // TODO: @suess - snapshot handling in FS 
-            }
             try {
                 ((ZipVaultPackage)vltPkg).extract(session, opts);
             } catch (RepositoryException e) {
@@ -395,8 +397,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     @Override
     public void uninstallPackage(Session session, RegisteredPackage pkg, ImportOptions opts) throws IOException, PackageException {
-     // TODO: @suess - missing logik to perform uninstatllation
-        updateInstallState(pkg.getId(), FSPackageStatus.REGISTERED);
+        String msg = "Uninstallation not supported by FS based registry";
+        log.error(msg);
+        throw new PackageException(msg);
     }
     
     private void updateInstallState(PackageId pid, FSPackageStatus targetStatus) throws IOException {

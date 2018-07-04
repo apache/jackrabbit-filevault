@@ -30,6 +30,7 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
+import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlan;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
@@ -291,8 +292,8 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
             }
         });
 
-        builder.addTask().with(idA).with(PackageTask.Type.INSTALL);
-        builder.addTask().with(idB).with(PackageTask.Type.INSTALL);
+        builder.addTask().with(idA).with(PackageTask.Type.EXTRACT);
+        builder.addTask().with(idB).with(PackageTask.Type.EXTRACT);
         try {
             builder.with(admin).execute();
             fail("registering the package with missing dependencies should fail");
@@ -305,8 +306,9 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
                 PackageId.toString(report.getResolvedDependencies()));
         assertEquals("unresolved dependencies", "", Dependency.toString(report.getUnresolvedDependencies()));
 
-        builder.addTask().with(idC).with(PackageTask.Type.INSTALL);
-        builder.with(admin).execute();
+        builder.addTask().with(idC).with(PackageTask.Type.EXTRACT);
+        ExecutionPlan plan  = builder.with(admin).execute();
+        assertFalse(plan.hasErrors());
 
         assertTrue(registry.open(idA).isInstalled());
         assertTrue(registry.open(idB).isInstalled());
@@ -331,9 +333,10 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
             }
         });
 
-        builder.addTask().with(idB).with(PackageTask.Type.INSTALL);
-        builder.addTask().with(idC).with(PackageTask.Type.INSTALL);
-        builder.with(admin).execute();
+        builder.addTask().with(idB).with(PackageTask.Type.EXTRACT);
+        builder.addTask().with(idC).with(PackageTask.Type.EXTRACT);
+        ExecutionPlan plan  = builder.with(admin).execute();
+        assertFalse(plan.hasErrors());
 
         assertEquals("usage", "my_packages:test_b:1.0", PackageId.toString(registry.usage(idC)));
     }

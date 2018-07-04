@@ -48,11 +48,18 @@ import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
+import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -64,6 +71,12 @@ import org.xml.sax.helpers.AttributesImpl;
  * FileSystem based registry not depending on a JCR Session. All metadata is stored in Filesystem and can be prepared and used without a running JCR repository
  * Only methods to install or uninstall packages require an active {@code Session} object of running jcr instance to perform the actual installation tasks 
  */
+@Component(
+        service = PackageRegistry.class,
+        configurationPolicy = ConfigurationPolicy.REQUIRE,
+        property = {"service.vendor=The Apache Software Foundation"}
+)
+@Designate(ocd = FSPackageRegistry.Config.class)
 public class FSPackageRegistry extends AbstractPackageRegistry {
 
     /**
@@ -89,13 +102,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Nullable
     private PackageEventDispatcher dispatcher;
 
-    private static File homeDir;
+    private File homeDir;
     
     public File getHomeDir() {
         return homeDir;
     }
-    
-    
 
     /**
      * Creates a new FSPackageRegistry based on the given home directory.
@@ -104,7 +115,24 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException
      */
     public FSPackageRegistry(@Nonnull File homeDir) throws IOException {
-        FSPackageRegistry.homeDir = homeDir;
+        this.homeDir = homeDir;
+    }
+    
+    @ObjectClassDefinition(
+            name = "Apache Jackrabbit FS Package Registry Service"
+    )
+    @interface Config {
+        
+        @AttributeDefinition
+        String homePath() default "packageregistry";
+    }
+
+    @Activate
+    private void activate(Config config) {
+        
+        // TODO: clarify how e.g. sling.home would be injected for relative homepath - oak works with framework property (repository.home)
+        this.homeDir = new File(config.homePath());
+        log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
     }
 
     /**

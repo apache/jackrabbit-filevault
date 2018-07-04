@@ -394,11 +394,4 @@ public interface JcrPackageManager extends PackageManager {
      */
     @Nonnull
     List<JcrPackage> listPackages(@Nullable String group, boolean built) throws RepositoryException;
-    
-    /**
-     * Returns the registry used to track the status of packages
-     * @return {@code PackageRegistry} instance being used 
-     */
-    @Nonnull
-    PackageRegistry getRegistry();
 }

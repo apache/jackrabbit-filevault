@@ -261,9 +261,28 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
 
     }
 
-    /**
-     * TODO @suess
-     */
+    @Test
+    public void testUnsupportedInstallTasks() throws IOException, PackageException, RepositoryException {
+        // a depends on b and c
+        PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
+
+        ExecutionPlanBuilder builder = registry.createExecutionPlan();
+        builder.with(new ProgressTrackerListener() {
+            public void onMessage(Mode mode, String action, String path) {
+                log.info("{} {}", action, path);
+            }
+
+            public void onError(Mode mode, String path, Exception e) {
+                log.info("E {} {}", path, e.toString());
+            }
+        });
+
+        builder.addTask().with(idC).with(PackageTask.Type.INSTALL);
+        ExecutionPlan plan  = builder.with(admin).execute();
+        assertTrue(plan.hasErrors());
+        assertFalse(registry.open(idC).isInstalled());
+    }
+
     @Test
     public void testExecutionPlanInstallation() throws IOException, PackageException, RepositoryException {
         // a depends on b and c

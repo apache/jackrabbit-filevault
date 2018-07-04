@@ -258,7 +258,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     
             // invalidate pid if path is unknown
             if (pid == null) {
-                pid = createRandomPid();
+                throw new IllegalArgumentException("Unable to create package. No package pid set.");
             }
             if (!pid.isValid()) {
                 throw new IllegalArgumentException("Unable to create package. Illegal package name.");

@@ -23,6 +23,7 @@ import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
+import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.DependencyException;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
@@ -332,6 +333,14 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         assertTrue(registry.open(idA).isInstalled());
         assertTrue(registry.open(idB).isInstalled());
         assertTrue(registry.open(idC).isInstalled());
+    }
+    
+    @Test
+    public void testExtractSubPackage() throws IOException, PackageException, RepositoryException {
+        registry.register(getStream("testpackages/subtest.zip"), false);
+
+        assertTrue(registry.contains(PACKAGE_ID_SUB_A));
+        assertTrue(registry.contains(PACKAGE_ID_SUB_B));
     }
 
     @Test

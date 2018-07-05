@@ -36,6 +36,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.packaging.Dependency;
@@ -51,6 +52,7 @@ import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
+import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
@@ -252,15 +254,39 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Override
     public PackageId register(@Nonnull InputStream in, boolean replace) throws IOException, PackageExistsException {
         ZipVaultPackage pkg = upload(in, replace);
+        
+        extractSubPackages(pkg.getArchive(), replace);
         File pkgFile = buildPackageFile(pkg.getId());
         setInstallState(pkg.getId(), FSPackageStatus.REGISTERED, pkgFile.getPath(), false);
         return pkg.getId();
+    }
+    
+    private void extractSubPackages(Archive archive, boolean replace)
+            throws IOException, PackageExistsException {
+        extractSubPackages(archive, archive.getRoot(), "", replace);
+    }
+    private void extractSubPackages(Archive archive, Archive.Entry directory, String parentPath, boolean replace)
+            throws IOException, PackageExistsException {
+        Collection<? extends Archive.Entry> files = directory.getChildren();
+
+        for (Archive.Entry file: files) {
+            String fileName = file.getName();
+            String repoName = PlatformNameFormat.getRepositoryName(fileName);
+            String repoPath = parentPath + "/" + repoName;
+            if (file.isDirectory()) {
+                extractSubPackages(archive, file, repoPath, replace);
+            } else {
+                if (repoPath.startsWith(JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
+                    register(archive.openInputStream(file), replace);
+                }
+            }
+        }
     }
 
     public ZipVaultPackage upload(InputStream in, boolean replace)
             throws IOException, PackageExistsException {
 
-        MemoryArchive archive = new MemoryArchive(true);
+        MemoryArchive archive = new MemoryArchive(false);
         File tempFile = File.createTempFile("upload", ".zip");
         
         InputStreamPump pump = new InputStreamPump(in , archive);
@@ -311,6 +337,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             }
             
             ZipVaultPackage pkg = new ZipVaultPackage(archive, true);
+            extractSubPackages(pkg.getArchive(), replace);
             File pkgFile = buildPackageFile(pid);
             FileUtils.moveFile(tempFile, pkgFile);
             dispatch(PackageEvent.Type.UPLOAD, pid, null);
@@ -334,6 +361,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     throw new PackageExistsException("Package already exists: " + pack.getId()).setId(pack.getId());
                 }
             }
+            extractSubPackages(pack.getArchive(), replace);
             FileUtils.copyFile(file, pkgFile);
             setInstallState(pack.getId(), FSPackageStatus.REGISTERED, pkgFile.getPath(), false);
             return pack.getId();

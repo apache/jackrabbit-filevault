@@ -118,6 +118,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         this.homeDir = homeDir;
     }
     
+    /**
+     * Deafult constructor for OSGi initialization (homeDir defined via activator)
+     */
+    public FSPackageRegistry() {
+    }
+    
+    
     @ObjectClassDefinition(
             name = "Apache Jackrabbit FS Package Registry Service"
     )

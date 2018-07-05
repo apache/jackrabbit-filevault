@@ -24,7 +24,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.2.0-SNAPSHOT</version>
+        <version>3.2.0-FSR.1-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.2.0-SNAPSHOT</version>
+            <version>3.2.0-FSR.1-SNAPSHOT</version>
         </dependency>
 
         <!-- JCR Stuff -->

@@ -64,6 +64,7 @@ import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -90,6 +91,8 @@ import org.xml.sax.helpers.AttributesImpl;
 )
 @Designate(ocd = FSPackageRegistry.Config.class)
 public class FSPackageRegistry extends AbstractPackageRegistry {
+
+    private static final String REPOSITORY_HOME = "repository.home";
 
     /**
      * default logger
@@ -153,10 +156,12 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Activate
-    private void activate(Config config) {
-        
-        // TODO: clarify how e.g. sling.home would be injected for relative homepath - oak works with framework property (repository.home)
-        this.homeDir = new File(config.homePath());
+    private void activate(BundleContext context, Config config) {
+        String repoHome = context.getProperty(REPOSITORY_HOME);
+        this.homeDir = new File(repoHome + "/" + config.homePath());
+        if (!homeDir.exists()) {
+            homeDir.mkdirs();
+        }
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
     }
 

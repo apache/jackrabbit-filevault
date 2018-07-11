@@ -22,9 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +66,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -120,7 +119,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     private boolean packagesInitializied = false; 
 
-    @Nullable
+    @Reference
     private PackageEventDispatcher dispatcher;
 
     private File homeDir;
@@ -513,6 +512,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         if (vltPkg instanceof ZipVaultPackage) {
             try {
                 ((ZipVaultPackage)vltPkg).extract(session, opts);
+                dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
             } catch (RepositoryException e) {
                 throw new IOException(e);
             }

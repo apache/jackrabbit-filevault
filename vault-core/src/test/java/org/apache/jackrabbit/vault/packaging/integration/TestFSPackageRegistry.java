@@ -35,6 +35,7 @@ import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlan;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
+import org.apache.jackrabbit.vault.packaging.registry.PackageTask.Type;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -182,7 +183,87 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         registry.register(file, true);
         file.delete();
     }
+    
+    /**
+     * registers a file as external package twice (replace = true)
+     */
+    @Test
+    public void testRegisterExternalFileTwiceFails() throws IOException, PackageException {
+        File file = getTempFile("testpackages/tmp.zip");
+        PackageId id = registry.registerExternal(file, false);
+        assertEquals("package id", TMP_PACKAGE_ID, id);
 
+        try (RegisteredPackage pkg = registry.open(id)) {
+            assertEquals("package id of registered is correct", TMP_PACKAGE_ID, pkg.getId());
+            assertFalse("Package is not installed", pkg.isInstalled());
+        }
+
+        file = getTempFile("testpackages/tmp.zip");
+        try {
+            registry.registerExternal(file, false);
+            fail("registering the package twice should fail");
+        } catch (PackageExistsException e) {
+            // expected
+            assertEquals("colliding pid must be correct", id, e.getId());
+        }
+    }
+
+    /**
+     * registers a file as external package twice (replace = true)
+     */
+    @Test
+    public void testRegisterExternalFileTwiceSucceeds() throws IOException, PackageException {
+        File file = getTempFile("testpackages/tmp.zip");
+        PackageId id = registry.registerExternal(file, false);
+        assertEquals("package id", TMP_PACKAGE_ID, id);
+        assertTrue("file should still exist", file.exists());
+        registry.registerExternal(file, true);
+        file.delete();
+    }
+    
+    /**
+     * registers a file as external package with subpackages (replace = true)
+     */
+    @Test
+    public void testRegisterExternalWithSubPackages() throws IOException, PackageException {
+        File file = getTempFile("testpackages/subtest.zip");
+        registry.registerExternal(file, false);
+
+        assertTrue(registry.contains(PACKAGE_ID_SUB_A));
+        assertTrue(registry.contains(PACKAGE_ID_SUB_B));
+    }
+    
+    /**
+     * installs a file as external package with subpackages
+     */
+    @Test
+    public void testInstallExternalWithSubPackages() throws IOException, PackageException {
+        File file = getTempFile("testpackages/subtest.zip");
+        PackageId parentPkg = registry.registerExternal(file, false);
+        
+        ExecutionPlanBuilder builder = registry.createExecutionPlan();
+        builder.with(new ProgressTrackerListener() {
+            public void onMessage(Mode mode, String action, String path) {
+                log.info("{} {}", action, path);
+            }
+
+            public void onError(Mode mode, String path, Exception e) {
+                log.info("E {} {}", path, e.toString());
+            }
+        });
+        builder.addTask().with(parentPkg).with(Type.EXTRACT);
+        ExecutionPlan plan  = builder.with(admin).execute();
+        assertFalse(plan.hasErrors());
+        
+        assertTrue(registry.open(PACKAGE_ID_SUB_A).isInstalled());
+        assertTrue(registry.open(PACKAGE_ID_SUB_B).isInstalled());
+    }
+    
+    /**
+     * registers a file as external package twice (replace = true)
+     */
+    
+    
     /**
      * test if package removal works
      */

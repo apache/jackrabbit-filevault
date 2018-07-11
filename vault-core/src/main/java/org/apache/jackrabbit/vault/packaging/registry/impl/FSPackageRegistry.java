@@ -574,7 +574,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                         }
                         installPackage(session, open(subPackId), opts, extract);
                     }
-                    dispatcher.dispatch(Type.EXTRACT_SUB_PACKAGES, pkg.getId(), sortedSubPackages.toArray(new PackageId[sortedSubPackages.size()]));
+                    dispatch(Type.EXTRACT_SUB_PACKAGES, pkg.getId(), sortedSubPackages.toArray(new PackageId[sortedSubPackages.size()]));
                   }
 
                 ((ZipVaultPackage)vltPkg).extract(session, opts);

@@ -19,6 +19,8 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
+
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
@@ -37,6 +39,8 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask.Type;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageRegistry;
+import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageStatus;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -70,7 +74,7 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         }
         registry = new FSPackageRegistry(DIR_REGISTRY_HOME);
     }
-
+    
     /**
      * checks is a non existent package is really not there
      */
@@ -449,5 +453,91 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
 
         assertEquals("usage", "my_packages:test_b:1.0", PackageId.toString(registry.usage(idC)));
     }
+    
+    @Test
+    public void testInstalledDependencies() throws Exception {
+        PackageId idB = registry.register(getStream(TEST_PACKAGE_B_10), false);
+        PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
 
+        assertEquals("usage", "", PackageId.toString(registry.usage(idC)));
+
+        ExecutionPlanBuilder builder = registry.createExecutionPlan();
+        builder.with(new ProgressTrackerListener() {
+            public void onMessage(Mode mode, String action, String path) {
+                log.info("{} {}", action, path);
+            }
+
+            public void onError(Mode mode, String path, Exception e) {
+                log.info("E {} {}", path, e.toString());
+            }
+        });
+
+        builder.addTask().with(idC).with(PackageTask.Type.EXTRACT);
+        ExecutionPlan plan  = builder.with(admin).execute();
+        assertFalse(plan.hasErrors());
+
+        Dependency depB = new Dependency(idB);
+        Dependency depC = new Dependency(idC);
+        assertNull("Dependency B should not resolve", registry.resolve(depB, true));
+        assertEquals("Dependency C should resovle to package C", idC, registry.resolve(depC, true));
+    }
+    
+    
+    @Test
+    public void testInstallTime() throws Exception {
+
+        PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
+
+        assertNull(registry.open(idC).getInstallationTime());
+        
+        ExecutionPlanBuilder builder = registry.createExecutionPlan();
+        builder.with(new ProgressTrackerListener() {
+            public void onMessage(Mode mode, String action, String path) {
+                log.info("{} {}", action, path);
+            }
+
+            public void onError(Mode mode, String path, Exception e) {
+                log.info("E {} {}", path, e.toString());
+            }
+        });
+
+        builder.addTask().with(idC).with(PackageTask.Type.EXTRACT);
+        Calendar before = Calendar.getInstance();
+        ExecutionPlan plan = builder.with(admin).execute();
+        Calendar after = Calendar.getInstance();
+        assertFalse(plan.hasErrors());
+
+        assertTrue("Installation time for idC too late", registry.open(idC).getInstallationTime().compareTo(after) < 0);
+        assertTrue("Installation time for idC too early", registry.open(idC).getInstallationTime().compareTo(before) > 0);
+
+    }
+    
+    @Test
+    public void testUnsupportedUninstall() throws Exception {
+        PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
+
+        assertNull(registry.open(idC).getInstallationTime());
+        
+        ExecutionPlanBuilder builder = registry.createExecutionPlan();
+        builder.with(new ProgressTrackerListener() {
+            public void onMessage(Mode mode, String action, String path) {
+                log.info("{} {}", action, path);
+            }
+
+            public void onError(Mode mode, String path, Exception e) {
+                log.info("E {} {}", path, e.toString());
+            }
+        });
+
+        builder.addTask().with(idC).with(PackageTask.Type.EXTRACT);
+        ExecutionPlan plan = builder.with(admin).execute();
+        assertFalse(plan.hasErrors());
+
+        try{
+            registry.uninstallPackage(admin, registry.open(idC), null);
+            fail("uninstall attempt should fail.");
+        } catch (PackageException ex) {
+            //expected
+        }
+    }
 }

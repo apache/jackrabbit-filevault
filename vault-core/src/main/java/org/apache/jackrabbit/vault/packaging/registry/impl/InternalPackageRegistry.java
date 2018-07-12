@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import java.io.IOException;
 
+import javax.annotation.Nonnull;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -26,9 +27,11 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 
 public interface InternalPackageRegistry extends PackageRegistry {
-    
-    void installPackage(Session session, RegisteredPackage pkg, ImportOptions opts, boolean extract)
+
+    void installPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts,
+            boolean extract) throws IOException, PackageException;
+
+    void uninstallPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts)
             throws IOException, PackageException;
-    void uninstallPackage(Session session, RegisteredPackage pkg, ImportOptions opts) throws IOException, PackageException ;
 
 }

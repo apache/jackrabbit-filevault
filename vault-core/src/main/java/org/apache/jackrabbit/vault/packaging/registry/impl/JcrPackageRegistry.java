@@ -769,10 +769,11 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     public String getInstallationPath(PackageId id) {
         return packRootPaths[0] + getRelativeInstallationPath(id);
     }
-    
+
     @Override
-    public void installPackage(Session session, RegisteredPackage pkg, ImportOptions opts, boolean extract) throws IOException, PackageException {
-        try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()){
+    public void installPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts,
+            boolean extract) throws IOException, PackageException {
+        try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()) {
             if (extract) {
                 jcrPkg.extract(opts);
             } else {
@@ -780,15 +781,17 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             }
         } catch (RepositoryException e) {
             throw new IOException(e);
+        }
     }
-}
+
     @Override
-    public void uninstallPackage(Session session, RegisteredPackage pkg, ImportOptions opts) throws IOException, PackageException {
-          try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()){
-          jcrPkg.uninstall(opts);
-      } catch (RepositoryException e) {
-          throw new IOException(e);
-      }  
+    public void uninstallPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts)
+            throws IOException, PackageException {
+        try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()) {
+            jcrPkg.uninstall(opts);
+        } catch (RepositoryException e) {
+            throw new IOException(e);
+        }
     }
 
 }

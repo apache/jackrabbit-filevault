@@ -80,8 +80,20 @@ public class FSRegisteredPackage implements RegisteredPackage {
     @CheckForNull
     @Override
     public Calendar getInstallationTime() {
-        //TODO @suess - how to persist installation state (incl install time)
-        return null;
+        Calendar cal = Calendar.getInstance();
+        Long installTime;
+        try {
+            installTime = registry.getInstallState(getId()).getInstallationTime();
+            if (installTime == null) {
+                cal = null;
+            } else{
+                cal.setTimeInMillis(installTime);
+            }
+        } catch (IOException e) {
+            log.error("Could not read package state for package {}.", getId(), e);
+            cal = null;
+        }
+        return cal;
     }
 
     @Override

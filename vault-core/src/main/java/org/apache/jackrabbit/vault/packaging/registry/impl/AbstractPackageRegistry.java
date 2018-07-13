@@ -39,37 +39,80 @@ import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 
+/**
+ * Abstraction for shared methods of PackageRegistry & InternalPackageRegistry implementations
+ */
 public abstract class AbstractPackageRegistry implements PackageRegistry, InternalPackageRegistry {
 
+    /**
+     * default root path for packages
+     */
+    public static final String DEFAULT_PACKAGE_ROOT_PATH = "/etc/packages";
+
+    /**
+     * default root path prefix for packages
+     */
+    public static final String DEFAULT_PACKAGE_ROOT_PATH_PREFIX = DEFAULT_PACKAGE_ROOT_PATH + "/";
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public abstract void installPackage(Session session, RegisteredPackage pkg, ImportOptions opts, boolean extract)
             throws IOException, PackageException;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public abstract void uninstallPackage(Session session, RegisteredPackage pkg, ImportOptions opts)
             throws IOException, PackageException;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public abstract boolean contains(PackageId id) throws IOException;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public abstract Set<PackageId> packages() throws IOException;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public abstract RegisteredPackage open(PackageId id) throws IOException;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public abstract PackageId register(InputStream in, boolean replace) throws IOException, PackageExistsException;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public abstract PackageId register(File file, boolean replace) throws IOException, PackageExistsException;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public abstract PackageId registerExternal(File file, boolean replace) throws IOException, PackageExistsException;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public abstract void remove(PackageId id) throws IOException, NoSuchPackageException;
 
+    /**
+     * {@inheritDoc}
+     */
     @Nonnull
     @Override
     public DependencyReport analyzeDependencies(@Nonnull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException {
@@ -95,6 +138,9 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public abstract PackageId resolve(Dependency dependency, boolean onlyInstalled) throws IOException;
 
@@ -121,9 +167,10 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
         }
         return usages.toArray(new PackageId[usages.size()]);
     }
-    
-    
 
+    /**
+     * {@inheritDoc}
+     */
     @Nonnull
     @Override
     public ExecutionPlanBuilder createExecutionPlan() {

@@ -89,16 +89,6 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     private static final String DEFAULT_NODETYPES = "nodetypes.cnd";
 
     /**
-     * default root path for packages
-     */
-    public static final String DEFAULT_PACKAGE_ROOT_PATH = "/etc/packages";
-
-    /**
-     * default root path prefix for packages
-     */
-    public static final String DEFAULT_PACKAGE_ROOT_PATH_PREFIX = DEFAULT_PACKAGE_ROOT_PATH + "/";
-
-    /**
      * suggested folder types
      */
     private final static String[] FOLDER_TYPES = {"sling:Folder", "nt:folder", "nt:unstructured", null};

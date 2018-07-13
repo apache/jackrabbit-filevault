@@ -16,7 +16,6 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -24,8 +23,6 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.jcr.RepositoryException;
 
-import org.apache.jackrabbit.vault.packaging.JcrPackage;
-import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;

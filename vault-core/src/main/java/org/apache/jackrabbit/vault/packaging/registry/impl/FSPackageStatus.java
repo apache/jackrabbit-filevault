@@ -16,11 +16,13 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
+/**
+ * Internal Status a package may have in {@code FSPackageRegistry}
+ */
 public enum FSPackageStatus {
     
     REGISTERED,
     EXTRACTED,
-    INSTALLED,
     NOTREGISTERED
 
 }

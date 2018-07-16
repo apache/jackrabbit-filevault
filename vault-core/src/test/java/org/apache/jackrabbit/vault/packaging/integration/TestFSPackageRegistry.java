@@ -18,11 +18,16 @@
 package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Calendar;
+import java.util.HashMap;
 
 import javax.jcr.RepositoryException;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.io.Archive;
@@ -38,6 +43,7 @@ import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask.Type;
+import org.apache.jackrabbit.vault.packaging.registry.impl.FSInstallState;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageStatus;
 import org.junit.After;
@@ -539,5 +545,25 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         } catch (PackageException ex) {
             //expected
         }
+    }
+    
+    @Test
+    public void testNonMetaXmlFile() throws Exception {
+        PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
+
+        assertEquals(idC, registry.getInstallState(idC).getPackageId());
+        assertEquals(FSPackageStatus.REGISTERED, registry.getInstallState(idC).getStatus());
+        
+        Field stateCache = registry.getClass().getDeclaredField("stateCache");
+        stateCache.setAccessible(true);
+        stateCache.set(registry, new HashMap<String, FSInstallState>()  );
+        Method getPackageMetaDataFile = registry.getClass().getDeclaredMethod("getPackageMetaDataFile", new Class<?>[]{idC.getClass()});
+        getPackageMetaDataFile.setAccessible(true);
+        Method loadPackageCache = registry.getClass().getDeclaredMethod("loadPackageCache");
+        loadPackageCache.setAccessible(true);
+        File metaFile = (File)getPackageMetaDataFile.invoke(registry, idC);
+        FileUtils.copyToFile(getStream("repository.xml"), metaFile);
+        loadPackageCache.invoke(registry);
+        assertEquals(FSPackageStatus.NOTREGISTERED, registry.getInstallState(idC).getStatus());
     }
 }

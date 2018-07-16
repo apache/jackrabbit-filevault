@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -126,7 +125,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      */
     private final String[] META_SUFFIXES = {"xml"};
     
-    private Map<PackageId, InstallState> stateCache = new ConcurrentHashMap<>();
+    private Map<PackageId, FSInstallState> stateCache = new ConcurrentHashMap<>();
 
     private boolean packagesInitializied = false; 
 
@@ -221,7 +220,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Nullable
     private File getPackageFile(@Nonnull PackageId id) {
         try {
-            InstallState state = getInstallState(id);
+            FSInstallState state = getInstallState(id);
             if (FSPackageStatus.NOTREGISTERED.equals(state.getStatus())) {
                 return buildPackageFile(id);
             } else {
@@ -265,7 +264,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     public DependencyReport analyzeDependencies(@Nonnull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException {
         List<Dependency> unresolved = new LinkedList<Dependency>();
         List<PackageId> resolved = new LinkedList<PackageId>();
-        InstallState state = getInstallState(id);
+        FSInstallState state = getInstallState(id);
         if (FSPackageStatus.NOTREGISTERED.equals(state.getStatus())) {
             throw new NoSuchPackageException().setId(id);
         }
@@ -274,7 +273,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         Set<Dependency> allDependencies = new HashSet<>();
         allDependencies.addAll(state.getDependencies());
         for (PackageId subId :state.getSubPackages()) {
-            InstallState subState = getInstallState(subId);
+            FSInstallState subState = getInstallState(subId);
             allDependencies.addAll(subState.getDependencies());
         }
 
@@ -436,7 +435,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             }
     
             File oldPkgFile = getPackageFile(pid);
-            InstallState state = getInstallState(pid);
+            FSInstallState state = getInstallState(pid);
 
             if (oldPkgFile.exists()) {
                 if (replace && !state.isExternal()) {
@@ -492,7 +491,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
         try {
             
-            InstallState state = getInstallState(pack.getId());
+            FSInstallState state = getInstallState(pack.getId());
             if (!FSPackageStatus.NOTREGISTERED.equals(state.getStatus())) {
                 if (replace) {
                     try {
@@ -520,7 +519,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      */
     @Override
     public void remove(@Nonnull PackageId id) throws IOException, NoSuchPackageException {
-        InstallState state = getInstallState(id);
+        FSInstallState state = getInstallState(id);
         File metaData = getPackageMetaDataFile(id);
         
         if (!metaData.exists()) {
@@ -551,14 +550,16 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException
      */
     private Set<PackageId> loadPackageCache() throws IOException {
-        Map<PackageId, InstallState> cacheEntries = new HashMap<>();
-        
+        Map<PackageId, FSInstallState> cacheEntries = new HashMap<>();
+
         Collection<File> files = FileUtils.listFiles(getHomeDir(), META_SUFFIXES, true);
         for (File file : files) {
-            InstallState state = getInstallState(file);
-            PackageId id = state.getPackageId();
-            if (id != null) {
-                cacheEntries.put(id, state);
+            FSInstallState state = getInstallState(file);
+            if (state != null) {
+                PackageId id = state.getPackageId();
+                if (id != null) {
+                    cacheEntries.put(id, state);
+                }
             }
         }
         stateCache.putAll(cacheEntries);
@@ -595,13 +596,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             try {
 
                 
-                InstallState state = getInstallState(vltPkg.getId());
+                FSInstallState state = getInstallState(vltPkg.getId());
                 //Calculate if subpackage dependencies would be satisfied
                 
                 Set<PackageId> sortedSubPackages = new TreeSet<>(new Comparator<PackageId>() {
                     @Override
                     public int compare(PackageId id1, PackageId id2) {
-                        InstallState state1;
+                        FSInstallState state1;
                         try {
                             state1 = getInstallState(id1);
                             Set<Dependency> deps = state1.getDependencies();
@@ -653,7 +654,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException
      */
     private void updateInstallState(PackageId pid, FSPackageStatus targetStatus) throws IOException {
-        InstallState state = getInstallState(pid);
+        FSInstallState state = getInstallState(pid);
         Long installTime = state.getInstallationTime();
         if (FSPackageStatus.EXTRACTED.equals(targetStatus)) {
             installTime = Calendar.getInstance().getTimeInMillis();
@@ -726,28 +727,28 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException
      */
     @Nonnull
-    public InstallState getInstallState(PackageId pid) throws IOException {
+    public FSInstallState getInstallState(PackageId pid) throws IOException {
         if(stateCache.containsKey(pid)) {
             return stateCache.get(pid);
         } else {
             File metaFile = getPackageMetaDataFile(pid);
-            InstallState state = getInstallState(metaFile);
+            FSInstallState state = getInstallState(metaFile);
             if (state != null) {
                 //theoretical file - should only be feasible when manipulating on filesystem, writing metafile automatically updates cache
                 stateCache.put(pid, state);
             }
-            return state != null ? state : new InstallState(pid, FSPackageStatus.NOTREGISTERED, null, false, null, null, null);
+            return state != null ? state : new FSInstallState(pid, FSPackageStatus.NOTREGISTERED, null, false, null, null, null);
         }
     }
 
     /**
      * Parses {@code InstallState} from metafile.
      * @param metaFile
-     * @return
-     * @throws IOException
+     * @return {@code InstallState} or null if file is not metafile format
+     * @throws IOException in case root tag is correct but structure not parsable as expected
      */
     @Nullable
-    private InstallState getInstallState(File metaFile) throws IOException {
+    private FSInstallState getInstallState(File metaFile) throws IOException {
         if (metaFile.exists()) {
             try {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -757,7 +758,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 Document document = builder.parse(metaFile);
                 Element doc = document.getDocumentElement();
                 if (!TAG_REGISTRY_METADATA.equals(doc.getNodeName())) {
-                    throw new IOException("<" + TAG_REGISTRY_METADATA + "> expected.");
+                    return null;
                 }
                 String packageId = doc.getAttribute(ATTR_PACKAGE_ID);
                 String filePath = doc.getAttribute(ATTR_FILE_PATH);
@@ -783,7 +784,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                         }
                     }
                 }
-                return new InstallState(PackageId.fromString(packageId), status, filePath, external, dependencies, subPackages, installTime);
+                return new FSInstallState(PackageId.fromString(packageId), status, filePath, external, dependencies, subPackages, installTime);
             } catch (ParserConfigurationException e) {
                 throw new IOException("Unable to create configuration XML parser", e);
             } catch (SAXException e) {
@@ -799,63 +800,5 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     
     private PackageId readPackageId(Element child) {
         return PackageId.fromString(child.getAttribute(ATTR_PACKAGE_ID));
-    }
-}
-
-/**
- * Internal (immutable) State object to cache and pass the relevant metadata around.
- */
-class InstallState {
-
-    private PackageId packageId;
-    private FSPackageStatus status;
-    private String filePath;
-    private boolean external;
-    private Set<Dependency> dependencies = Collections.emptySet();
-    private Set<PackageId> subPackages = Collections.emptySet();
-    private Long installTime;
-
-    public InstallState(@Nonnull PackageId packageId, @Nonnull FSPackageStatus status, @Nullable String filePath,
-            boolean external, @Nullable Set<Dependency> dependencies, @Nullable Set<PackageId> subPackages, @Nullable Long installTime) {
-        this.packageId = packageId;
-        this.status = status;
-        this.filePath = filePath;
-        this.external = external;
-        if (dependencies != null) {
-            this.dependencies = Collections.unmodifiableSet(dependencies);
-        }
-        this.dependencies = dependencies;
-        this.installTime = installTime;
-        if (subPackages != null) {
-            this.subPackages = Collections.unmodifiableSet(subPackages);
-        }
-    }
-
-    public Long getInstallationTime() {
-        return installTime;
-    }
-
-    public Set<PackageId> getSubPackages() {
-        return subPackages;
-    }
-
-    public PackageId getPackageId() {
-        return packageId;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public boolean isExternal() {
-        return external;
-    }
-
-    public FSPackageStatus getStatus() {
-        return status;
-    }
-
-    public Set<Dependency> getDependencies() {
-        return dependencies;
     }
 }

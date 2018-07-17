@@ -137,9 +137,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Activate
     private void activate(BundleContext context, Config config) {
         String repoHome = context.getProperty(REPOSITORY_HOME);
-        this.homeDir = new File(repoHome + "/" + config.homePath());
-        if (!homeDir.exists()) {
-            homeDir.mkdirs();
+        if (repoHome == null) {
+            this.homeDir = context.getDataFile(config.homePath());
+        } else {
+            this.homeDir = new File(repoHome + "/" + config.homePath());
+            if (!homeDir.exists()) {
+                homeDir.mkdirs();
+            }
         }
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
     }

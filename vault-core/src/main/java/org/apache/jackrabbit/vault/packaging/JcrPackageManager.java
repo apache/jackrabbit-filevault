@@ -34,7 +34,6 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
-import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**

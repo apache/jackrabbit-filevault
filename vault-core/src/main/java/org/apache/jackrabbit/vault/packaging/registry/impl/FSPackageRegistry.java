@@ -191,7 +191,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     private File getPackageFile(@Nonnull PackageId id) {
         try {
             FSInstallState state = getInstallState(id);
-            if (FSPackageStatus.NOTREGISTERED.equals(state.getStatus())) {
+            if (FSPackageStatus.NOTREGISTERED == state.getStatus()) {
                 return buildPackageFile(id);
             } else {
                 return new File(state.getFilePath());
@@ -241,7 +241,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         List<Dependency> unresolved = new LinkedList<>();
         List<PackageId> resolved = new LinkedList<>();
         FSInstallState state = getInstallState(id);
-        if (FSPackageStatus.NOTREGISTERED.equals(state.getStatus())) {
+        if (FSPackageStatus.NOTREGISTERED == state.getStatus()) {
             throw new NoSuchPackageException().setId(id);
         }
 
@@ -296,7 +296,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      */
     boolean isInstalled(PackageId id) throws IOException {
         FSPackageStatus status = getInstallState(id).getStatus();
-        return FSPackageStatus.EXTRACTED.equals(status);
+        return FSPackageStatus.EXTRACTED == status;
     }
 
     /**
@@ -499,7 +499,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         try {
 
             FSInstallState state = getInstallState(pack.getId());
-            if (!FSPackageStatus.NOTREGISTERED.equals(state.getStatus())) {
+            if (!(FSPackageStatus.NOTREGISTERED == state.getStatus())) {
                 if (replace) {
                     try {
                         remove(pack.getId());
@@ -600,12 +600,10 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             throw new PackageException(msg);
         }
         try (VaultPackage vltPkg = pkg.getPackage()) {
-            if (vltPkg instanceof ZipVaultPackage) {
-                vltPkg.extract(session, opts);
+            vltPkg.extract(session, opts);
+            dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
+            updateInstallState(vltPkg.getId(), FSPackageStatus.EXTRACTED);
 
-                dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
-                updateInstallState(vltPkg.getId(), FSPackageStatus.EXTRACTED);
-            }
         } catch (RepositoryException e) {
             throw new IOException(e);
         }
@@ -631,7 +629,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     private void updateInstallState(PackageId pid, FSPackageStatus targetStatus) throws IOException {
         FSInstallState state = getInstallState(pid);
         Long installTime = state.getInstallationTime();
-        if (FSPackageStatus.EXTRACTED.equals(targetStatus)) {
+        if (FSPackageStatus.EXTRACTED == targetStatus) {
             installTime = Calendar.getInstance().getTimeInMillis();
         }
         setInstallState(pid, targetStatus, state.getFilePath(), state.isExternal(), state.getDependencies(), state.getSubPackages(), installTime);
@@ -652,7 +650,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     private void setInstallState(@Nonnull PackageId pid, @Nonnull FSPackageStatus targetStatus, @Nonnull String filePath, @Nonnull boolean external, @Nullable Set<Dependency> dependencies, @Nullable Map<PackageId, SubPackageHandling.Option> subPackages, @Nullable Long installTimeStamp) throws IOException {
         File metaData = getPackageMetaDataFile(pid);
 
-        if (targetStatus.equals(FSPackageStatus.NOTREGISTERED)) {
+        if (targetStatus == FSPackageStatus.NOTREGISTERED) {
             metaData.delete();
             stateCache.remove(pid);
         } else {

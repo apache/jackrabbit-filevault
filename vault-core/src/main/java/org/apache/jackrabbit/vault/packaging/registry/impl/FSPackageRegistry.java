@@ -104,7 +104,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     private File homeDir;
 
-    public File getHomeDir() {
+    private File getHomeDir() {
         return homeDir;
     }
 
@@ -112,7 +112,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * Creates a new FSPackageRegistry based on the given home directory.
      *
      * @param homeDir the directory in which packages and their metadata is stored
-     * @throws IOException
+     * @throws IOException If an I/O error occurs.
      */
     public FSPackageRegistry(@Nonnull File homeDir) throws IOException {
         this.homeDir = homeDir;
@@ -283,12 +283,12 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     /**
-     * Returns {@code true} when state {@code FSPackageStatus.EXTRACTED} is recorded for given {@code PackageId}
+     * Returns {@code true} when state {@link FSPackageStatus#EXTRACTED} is recorded for given {@code PackageId}
      *
-     * @param id
-     * @return {@code true} if package is in state {@code FSPackageStatus.EXTRACTED}
+     * @param id PackageId of the package to test.
+     * @return {@code true} if package is in state {@link FSPackageStatus#EXTRACTED}
      *
-     * @throws IOException
+     * @throws IOException If an I/O error occurs.
      */
     boolean isInstalled(PackageId id) throws IOException {
         FSPackageStatus status = getInstallState(id).getStatus();
@@ -313,8 +313,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     /**
      * Registers subpackages in registry
      *
-     * @param pkg
-     * @param replace
+     * @param pkg The package to regist
+     * @param replace {@code true} to replace
      * @return {@code Set} of {@code PackageId}s registered from a given {@code VaultPackage}
      *
      * @throws IOException
@@ -356,8 +356,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 registerSubPackages(archive, file, repoPath, replace, subpackages);
             } else {
                 if (repoPath.startsWith(DEFAULT_PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
-                    try {
-                        subpackages.add(register(archive.openInputStream(file), replace));
+                    try (InputStream in = archive.openInputStream(file)) {
+                        if (in == null) {
+                            throw new IOException("Unable to open archive input stream of " + file);
+                        }
+                        subpackages.add(register(in, replace));
                     } catch (PackageExistsException e) {
                         log.info("Subpackage already registered, skipping subpackage extraction.");
                     }
@@ -514,8 +517,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Nonnull
     @Override
     public Set<PackageId> packages() throws IOException {
-        Set<PackageId> packageIds = packagesInitializied ? stateCache.keySet() : loadPackageCache();
-        return packageIds;
+        return packagesInitializied ? stateCache.keySet() : loadPackageCache();
     }
 
     /**
@@ -523,7 +525,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      *
      * @return {@code Set} of all cached {@code PackageId}s
      *
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     private Set<PackageId> loadPackageCache() throws IOException {
         Map<PackageId, FSInstallState> cacheEntries = new HashMap<>();
@@ -567,9 +569,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             log.error(msg);
             throw new PackageException(msg);
         }
-        VaultPackage vltPkg = pkg.getPackage();
-        if (vltPkg instanceof ZipVaultPackage) {
-            try {
+        try (VaultPackage vltPkg = pkg.getPackage()) {
+            if (vltPkg instanceof ZipVaultPackage) {
                 FSInstallState state = getInstallState(vltPkg.getId());
                 //Calculate if subpackage dependencies would be satisfied
 
@@ -592,11 +593,16 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     for (PackageId subPackId : sortedSubPackages) {
                         DependencyReport report = analyzeDependencies(subPackId, false);
                         if (report.getUnresolvedDependencies().length > 0) {
-                            String msg = String.format("Refusing to install subpackage %s. required dependencies missing: %s - intercepting installation of package %s", subPackId, report.getUnresolvedDependencies(), vltPkg.getId());
+                            String msg = String.format("Refusing to install subpackage %s. required dependencies missing: %s - intercepting installation of package %s",
+                                    subPackId, Arrays.toString(report.getUnresolvedDependencies()), vltPkg.getId());
                             log.error(msg);
                             throw new DependencyException(msg);
                         }
-                        installPackage(session, open(subPackId), opts, extract);
+                        RegisteredPackage regPkg = open(subPackId);
+                        if (regPkg == null) {
+                            throw new IOException("Internal error while reading sub-package: " + subPackId);
+                        }
+                        installPackage(session, regPkg, opts, true);
                     }
                     dispatch(Type.EXTRACT_SUB_PACKAGES, pkg.getId(), sortedSubPackages.toArray(new PackageId[sortedSubPackages.size()]));
                 }
@@ -605,9 +611,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
                 dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
                 updateInstallState(vltPkg.getId(), FSPackageStatus.EXTRACTED);
-            } catch (RepositoryException e) {
-                throw new IOException(e);
             }
+        } catch (RepositoryException e) {
+            throw new IOException(e);
         }
     }
 
@@ -624,9 +630,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     /**
      * Shortcut to just change the status of a package - implicitly sets the installtime when switching to EXTRACTED
      *
-     * @param pid
-     * @param targetStatus
-     * @throws IOException
+     * @param pid PackageId of the package to update
+     * @param targetStatus Status to update
+     * @throws IOException If an I/O error occurs.
      */
     private void updateInstallState(PackageId pid, FSPackageStatus targetStatus) throws IOException {
         FSInstallState state = getInstallState(pid);

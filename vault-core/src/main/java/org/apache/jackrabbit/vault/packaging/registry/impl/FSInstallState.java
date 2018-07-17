@@ -20,7 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -33,6 +35,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
@@ -64,16 +67,18 @@ public class FSInstallState {
 
     private static final String ATTR_INSTALLATION_TIME = "installtime";
 
+    private static final String ATTR_SUBPACKAGE_HANDLING_OPTION = "sphoption";
+
     private PackageId packageId;
     private FSPackageStatus status;
     private String filePath;
     private boolean external;
     private Set<Dependency> dependencies = Collections.emptySet();
-    private Set<PackageId> subPackages = Collections.emptySet();
+    private Map<PackageId, SubPackageHandling.Option> subPackages = Collections.emptyMap();
     private Long installTime;
 
     public FSInstallState(@Nonnull PackageId packageId, @Nonnull FSPackageStatus status, @Nullable String filePath,
-                          boolean external, @Nullable Set<Dependency> dependencies, @Nullable Set<PackageId> subPackages,
+                          boolean external, @Nullable Set<Dependency> dependencies, @Nullable Map<PackageId, SubPackageHandling.Option> subPackages,
                           @Nullable Long installTime) {
         this.packageId = packageId;
         this.status = status;
@@ -85,7 +90,7 @@ public class FSInstallState {
         this.dependencies = dependencies;
         this.installTime = installTime;
         if (subPackages != null) {
-            this.subPackages = Collections.unmodifiableSet(subPackages);
+            this.subPackages = Collections.unmodifiableMap(subPackages);
         }
     }
 
@@ -123,7 +128,7 @@ public class FSInstallState {
             FSPackageStatus status = FSPackageStatus.valueOf(doc.getAttribute(ATTR_PACKAGE_STATUS).toUpperCase());
             NodeList nl = doc.getChildNodes();
             Set<Dependency> dependencies = new HashSet<>();
-            Set<PackageId> subPackages = new HashSet<>();
+            Map<PackageId, SubPackageHandling.Option> subPackages = new HashMap<>();
             for (int i = 0; i < nl.getLength(); i++) {
                 Node child = nl.item(i);
                 if (child.getNodeType() == Node.ELEMENT_NODE) {
@@ -131,7 +136,7 @@ public class FSInstallState {
                     if (TAG_DEPENDENCY.equals(childName)) {
                         dependencies.add(readDependency((Element) child));
                     } else if (TAG_SUBPACKAGE.equals(childName)) {
-                        subPackages.add(readPackageId((Element) child));
+                        subPackages.put(readPackageId((Element) child), readSubPackgeHandlingOption((Element) child));
                     } else {
                         throw new IOException("<" + TAG_DEPENDENCY + "> or <" + TAG_SUBPACKAGE + "> expected.");
                     }
@@ -149,6 +154,10 @@ public class FSInstallState {
         return Dependency.fromString(child.getAttribute(ATTR_PACKAGE_ID));
     }
 
+    private static SubPackageHandling.Option readSubPackgeHandlingOption(Element child) {
+        return SubPackageHandling.Option.valueOf(ATTR_SUBPACKAGE_HANDLING_OPTION);
+    }
+    
     private static PackageId readPackageId(Element child) {
         return PackageId.fromString(child.getAttribute(ATTR_PACKAGE_ID));
     }
@@ -181,9 +190,10 @@ public class FSInstallState {
                 }
             }
             if (subPackages != null) {
-                for (PackageId subPackId : subPackages) {
+                for (PackageId subPackId : subPackages.keySet()) {
                     attrs = new AttributesImpl();
                     attrs.addAttribute(null, null, ATTR_PACKAGE_ID, "CDATA", subPackId.toString());
+                    attrs.addAttribute(null, null, ATTR_SUBPACKAGE_HANDLING_OPTION, "CDATA", subPackages.get(subPackId).toString());
                     ser.startElement(null, null, TAG_SUBPACKAGE, attrs);
                     ser.endElement(TAG_SUBPACKAGE);
                 }
@@ -201,7 +211,7 @@ public class FSInstallState {
         return installTime;
     }
 
-    public Set<PackageId> getSubPackages() {
+    public Map<PackageId, SubPackageHandling.Option> getSubPackages() {
         return subPackages;
     }
 

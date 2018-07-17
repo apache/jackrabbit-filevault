@@ -47,6 +47,7 @@ import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent.Type;
@@ -243,7 +244,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         // Make sure that also dependencies of contained packages are considered as packages will be installed in a joined sequence.
         Set<Dependency> allDependencies = new HashSet<>();
         allDependencies.addAll(state.getDependencies());
-        for (PackageId subId : state.getSubPackages()) {
+        for (PackageId subId : state.getSubPackages().keySet()) {
             FSInstallState subState = getInstallState(subId);
             allDependencies.addAll(subState.getDependencies());
         }
@@ -310,7 +311,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     private PackageId register(@Nonnull InputStream in, boolean replace, Dependency autoDependency) throws IOException, PackageExistsException {
         ZipVaultPackage pkg = upload(in, replace);
 
-        Set<PackageId> subpackages = registerSubPackages(pkg, replace);
+        Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pkg, replace);
         File pkgFile = buildPackageFile(pkg.getId());
         HashSet<Dependency> dependencies = new HashSet<>();
         dependencies.addAll(Arrays.asList(pkg.getDependencies()));
@@ -327,17 +328,17 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      *
      * @param pkg The package to regist
      * @param replace {@code true} to replace
-     * @return {@code Set} of {@code PackageId}s registered from a given {@code VaultPackage}
+     * @return {@code Map} of {@code PackageId}s along with the corresponding {@code SubPackageHandling.Option} registered from a given {@code VaultPackage}
      *
      * @throws IOException
      * @throws PackageExistsException
      */
-    private Set<PackageId> registerSubPackages(VaultPackage pkg, boolean replace)
+    private Map<PackageId, SubPackageHandling.Option> registerSubPackages(VaultPackage pkg, boolean replace)
             throws IOException, PackageExistsException {
-        Set<PackageId> subpackages = new HashSet<>();
+        Map<PackageId, SubPackageHandling.Option> subpackages = new HashMap<>();
 
         Archive.Entry packagesRoot = pkg.getArchive().getEntry(ARCHIVE_PACKAGE_ROOT_PATH);
-        if (packagesRoot != null) {
+        if (packagesRoot != null) { 
             // As for JcrPackageImpl subpackages need to get an implicit autoDependency to the parent in case they have own content
             boolean hasOwnContent = false;
             for (PathFilterSet root : pkg.getArchive().getMetaInf().getFilter().getFilterSets()) {
@@ -350,8 +351,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 }
             }
             Dependency autoDependency = hasOwnContent ? new Dependency(pkg.getId()) : null;
-            registerSubPackages(pkg.getArchive(), packagesRoot, DEFAULT_PACKAGE_ROOT_PATH, replace, subpackages, autoDependency);
-            dispatch(Type.EXTRACT_SUB_PACKAGES, pkg.getId(), subpackages.toArray(new PackageId[subpackages.size()]));
+            registerSubPackages(pkg, packagesRoot, DEFAULT_PACKAGE_ROOT_PATH, replace, subpackages, autoDependency);
+            dispatch(Type.EXTRACT_SUB_PACKAGES, pkg.getId(), subpackages.keySet().toArray(new PackageId[subpackages.size()]));
         }
         return subpackages;
     }
@@ -367,7 +368,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException
      * @throws PackageExistsException
      */
-    private void registerSubPackages(Archive archive, Archive.Entry directory, String parentPath, boolean replace, Set<PackageId> subpackages, Dependency autoDependency)
+    private void registerSubPackages(VaultPackage vltPkg, Archive.Entry directory, String parentPath, boolean replace, Map<PackageId, SubPackageHandling.Option> subpackages, Dependency autoDependency)
             throws IOException, PackageExistsException {
         Collection<? extends Archive.Entry> files = directory.getChildren();
 
@@ -376,14 +377,16 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             String repoName = PlatformNameFormat.getRepositoryName(fileName);
             String repoPath = parentPath + "/" + repoName;
             if (file.isDirectory()) {
-                registerSubPackages(archive, file, repoPath, replace, subpackages, autoDependency);
+                registerSubPackages(vltPkg, file, repoPath, replace, subpackages, autoDependency);
             } else {
                 if (repoPath.startsWith(DEFAULT_PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
-                    try (InputStream in = archive.openInputStream(file)) {
+                    try (InputStream in = vltPkg.getArchive().openInputStream(file)) {
                         if (in == null) {
                             throw new IOException("Unable to open archive input stream of " + file);
                         }
-                        subpackages.add(register(in, replace));
+                        PackageId id = register(in, replace);
+                        SubPackageHandling.Option option = vltPkg.getSubPackageHandling().getOption(id);
+                        subpackages.put(id, option);
                     } catch (PackageExistsException e) {
                         log.info("Subpackage already registered, skipping subpackage extraction.");
                     }
@@ -473,7 +476,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     throw new PackageExistsException("Package already exists: " + pack.getId()).setId(pack.getId());
                 }
             }
-            Set<PackageId> subpackages = registerSubPackages(pack, replace);
+            Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pack, replace);
             FileUtils.copyFile(file, pkgFile);
             Collection<Dependency> dependencies = Arrays.asList(pack.getDependencies());
             setInstallState(pack.getId(), FSPackageStatus.REGISTERED, pkgFile.getPath(), false, new HashSet<>(dependencies), subpackages, null);
@@ -503,7 +506,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     throw new PackageExistsException("Package already exists: " + pack.getId()).setId(pack.getId());
                 }
             }
-            Set<PackageId> subpackages = registerSubPackages(pack, replace);
+            Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pack, replace);
             Collection<Dependency> dependencies = Arrays.asList(pack.getDependencies());
             setInstallState(pack.getId(), FSPackageStatus.REGISTERED, file.getPath(), true, new HashSet<>(dependencies), subpackages, null);
             return pack.getId();
@@ -594,7 +597,6 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         }
         try (VaultPackage vltPkg = pkg.getPackage()) {
             if (vltPkg instanceof ZipVaultPackage) {
-                FSInstallState state = getInstallState(vltPkg.getId());
                 vltPkg.extract(session, opts);
 
                 dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
@@ -643,7 +645,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param installTimeStamp
      * @throws IOException
      */
-    private void setInstallState(@Nonnull PackageId pid, @Nonnull FSPackageStatus targetStatus, @Nonnull String filePath, @Nonnull boolean external, @Nullable Set<Dependency> dependencies, @Nullable Set<PackageId> subPackages, @Nullable Long installTimeStamp) throws IOException {
+    private void setInstallState(@Nonnull PackageId pid, @Nonnull FSPackageStatus targetStatus, @Nonnull String filePath, @Nonnull boolean external, @Nullable Set<Dependency> dependencies, @Nullable Map<PackageId, SubPackageHandling.Option> subPackages, @Nullable Long installTimeStamp) throws IOException {
         File metaData = getPackageMetaDataFile(pid);
 
         if (targetStatus.equals(FSPackageStatus.NOTREGISTERED)) {

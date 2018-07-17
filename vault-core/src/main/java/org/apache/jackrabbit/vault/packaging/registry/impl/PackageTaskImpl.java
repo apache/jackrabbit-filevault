@@ -20,11 +20,9 @@ import java.io.IOException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
-import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;

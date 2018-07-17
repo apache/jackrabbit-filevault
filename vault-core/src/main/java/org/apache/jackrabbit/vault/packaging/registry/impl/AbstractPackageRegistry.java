@@ -50,6 +50,11 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
     public static final String DEFAULT_PACKAGE_ROOT_PATH = "/etc/packages";
 
     /**
+     * Archive root path for packages
+     */
+    public final static String ARCHIVE_PACKAGE_ROOT_PATH = "/jcr_root" + DEFAULT_PACKAGE_ROOT_PATH;
+    
+    /**
      * default root path prefix for packages
      */
     public static final String DEFAULT_PACKAGE_ROOT_PATH_PREFIX = DEFAULT_PACKAGE_ROOT_PATH + "/";

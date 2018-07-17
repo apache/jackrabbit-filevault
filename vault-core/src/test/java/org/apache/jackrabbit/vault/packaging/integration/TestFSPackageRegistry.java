@@ -244,7 +244,8 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
     }
     
     /**
-     * installs a file as external package with subpackages
+     * installs a file as external package with subpackages 
+     * Subpackages are only installed if either explicitly added to executionPlan or another package depends on them.
      */
     @Test
     public void testInstallExternalWithSubPackages() throws IOException, PackageException {
@@ -265,15 +266,11 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         ExecutionPlan plan  = builder.with(admin).execute();
         assertFalse(plan.hasErrors());
         
-        assertTrue(registry.open(PACKAGE_ID_SUB_A).isInstalled());
-        assertTrue(registry.open(PACKAGE_ID_SUB_B).isInstalled());
+        assertFalse(registry.open(PACKAGE_ID_SUB_A).isInstalled());
+        assertFalse(registry.open(PACKAGE_ID_SUB_B).isInstalled());
     }
     
-    /**
-     * registers a file as external package twice (replace = true)
-     */
-    
-    
+
     /**
      * test if package removal works
      */

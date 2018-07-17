@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
@@ -39,12 +37,12 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.packaging.Dependency;
-import org.apache.jackrabbit.vault.packaging.DependencyException;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
@@ -60,6 +58,7 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
+import org.apache.jackrabbit.vault.util.Text;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -301,12 +300,25 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Nonnull
     @Override
     public PackageId register(@Nonnull InputStream in, boolean replace) throws IOException, PackageExistsException {
+      return register(in, replace, null);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Nonnull
+    private PackageId register(@Nonnull InputStream in, boolean replace, Dependency autoDependency) throws IOException, PackageExistsException {
         ZipVaultPackage pkg = upload(in, replace);
 
         Set<PackageId> subpackages = registerSubPackages(pkg, replace);
         File pkgFile = buildPackageFile(pkg.getId());
-        Collection<Dependency> dependencies = Arrays.asList(pkg.getDependencies());
-        setInstallState(pkg.getId(), FSPackageStatus.REGISTERED, pkgFile.getPath(), false, new HashSet<>(dependencies), subpackages, null);
+        HashSet<Dependency> dependencies = new HashSet<>();
+        dependencies.addAll(Arrays.asList(pkg.getDependencies()));
+        if (autoDependency != null) {
+            dependencies.add(autoDependency);
+        }
+        setInstallState(pkg.getId(), FSPackageStatus.REGISTERED, pkgFile.getPath(), false, dependencies, subpackages,
+                null);
         return pkg.getId();
     }
 
@@ -323,12 +335,23 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     private Set<PackageId> registerSubPackages(VaultPackage pkg, boolean replace)
             throws IOException, PackageExistsException {
         Set<PackageId> subpackages = new HashSet<>();
-        try {
-            Archive.Entry packagesRoot = pkg.getArchive().getJcrRoot().getChild("etc").getChild("packages");
 
-            registerSubPackages(pkg.getArchive(), packagesRoot, DEFAULT_PACKAGE_ROOT_PATH, replace, subpackages);
-        } catch (NullPointerException e) {
-            // nothing to do - expected if subpath isn't available
+        Archive.Entry packagesRoot = pkg.getArchive().getEntry(ARCHIVE_PACKAGE_ROOT_PATH);
+        if (packagesRoot != null) {
+            // As for JcrPackageImpl subpackages need to get an implicit autoDependency to the parent in case they have own content
+            boolean hasOwnContent = false;
+            for (PathFilterSet root : pkg.getArchive().getMetaInf().getFilter().getFilterSets()) {
+                // todo: find better way to detect subpackages
+                if (!Text.isDescendantOrEqual(DEFAULT_PACKAGE_ROOT_PATH, root.getRoot())) {
+                    log.debug(
+                            "Package {}: contains content outside /etc/packages. Sub packages will have a dependency to it",
+                            pkg.getId());
+                    hasOwnContent = true;
+                }
+            }
+            Dependency autoDependency = hasOwnContent ? new Dependency(pkg.getId()) : null;
+            registerSubPackages(pkg.getArchive(), packagesRoot, DEFAULT_PACKAGE_ROOT_PATH, replace, subpackages, autoDependency);
+            dispatch(Type.EXTRACT_SUB_PACKAGES, pkg.getId(), subpackages.toArray(new PackageId[subpackages.size()]));
         }
         return subpackages;
     }
@@ -344,7 +367,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException
      * @throws PackageExistsException
      */
-    private void registerSubPackages(Archive archive, Archive.Entry directory, String parentPath, boolean replace, Set<PackageId> subpackages)
+    private void registerSubPackages(Archive archive, Archive.Entry directory, String parentPath, boolean replace, Set<PackageId> subpackages, Dependency autoDependency)
             throws IOException, PackageExistsException {
         Collection<? extends Archive.Entry> files = directory.getChildren();
 
@@ -353,7 +376,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             String repoName = PlatformNameFormat.getRepositoryName(fileName);
             String repoPath = parentPath + "/" + repoName;
             if (file.isDirectory()) {
-                registerSubPackages(archive, file, repoPath, replace, subpackages);
+                registerSubPackages(archive, file, repoPath, replace, subpackages, autoDependency);
             } else {
                 if (repoPath.startsWith(DEFAULT_PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
                     try (InputStream in = archive.openInputStream(file)) {
@@ -572,41 +595,6 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         try (VaultPackage vltPkg = pkg.getPackage()) {
             if (vltPkg instanceof ZipVaultPackage) {
                 FSInstallState state = getInstallState(vltPkg.getId());
-                //Calculate if subpackage dependencies would be satisfied
-
-                Set<PackageId> sortedSubPackages = new TreeSet<>(new Comparator<PackageId>() {
-                    @Override
-                    public int compare(PackageId id1, PackageId id2) {
-                        FSInstallState state1;
-                        try {
-                            state1 = getInstallState(id1);
-                            Set<Dependency> deps = state1.getDependencies();
-                            return deps.contains(id2) ? 1 : -1;
-                        } catch (IOException e) {
-                            log.error("Could read state for package {}", id1);
-                            return 0;
-                        }
-                    }
-                });
-                sortedSubPackages.addAll(state.getSubPackages());
-                if (!sortedSubPackages.isEmpty()) {
-                    for (PackageId subPackId : sortedSubPackages) {
-                        DependencyReport report = analyzeDependencies(subPackId, false);
-                        if (report.getUnresolvedDependencies().length > 0) {
-                            String msg = String.format("Refusing to install subpackage %s. required dependencies missing: %s - intercepting installation of package %s",
-                                    subPackId, Arrays.toString(report.getUnresolvedDependencies()), vltPkg.getId());
-                            log.error(msg);
-                            throw new DependencyException(msg);
-                        }
-                        RegisteredPackage regPkg = open(subPackId);
-                        if (regPkg == null) {
-                            throw new IOException("Internal error while reading sub-package: " + subPackId);
-                        }
-                        installPackage(session, regPkg, opts, true);
-                    }
-                    dispatch(Type.EXTRACT_SUB_PACKAGES, pkg.getId(), sortedSubPackages.toArray(new PackageId[sortedSubPackages.size()]));
-                }
-
                 vltPkg.extract(session, opts);
 
                 dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);

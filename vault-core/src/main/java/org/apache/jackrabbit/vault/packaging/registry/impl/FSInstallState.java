@@ -155,7 +155,7 @@ public class FSInstallState {
     }
 
     private static SubPackageHandling.Option readSubPackgeHandlingOption(Element child) {
-        return SubPackageHandling.Option.valueOf(ATTR_SUBPACKAGE_HANDLING_OPTION);
+        return SubPackageHandling.Option.valueOf(child.getAttribute(ATTR_SUBPACKAGE_HANDLING_OPTION));
     }
     
     private static PackageId readPackageId(Element child) {

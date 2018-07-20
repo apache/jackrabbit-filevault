@@ -96,6 +96,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     private final String[] META_SUFFIXES = {"xml"};
 
     private Map<PackageId, FSInstallState> stateCache = new ConcurrentHashMap<>();
+    private Map<String, PackageId> pathIdMapping = new ConcurrentHashMap<>();
+
 
     private boolean packagesInitializied = false;
 
@@ -116,6 +118,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      */
     public FSPackageRegistry(@Nonnull File homeDir) throws IOException {
         this.homeDir = homeDir;
+        loadPackageCache();
     }
 
     /**
@@ -135,7 +138,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Activate
-    private void activate(BundleContext context, Config config) {
+    private void activate(BundleContext context, Config config) throws IOException {
         String repoHome = context.getProperty(REPOSITORY_HOME);
         if (repoHome == null) {
             this.homeDir = context.getDataFile(config.homePath());
@@ -145,6 +148,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 homeDir.mkdirs();
             }
         }
+        loadPackageCache();
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
     }
 
@@ -495,6 +499,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Nonnull
     @Override
     public PackageId registerExternal(@Nonnull File file, boolean replace) throws IOException, PackageExistsException {
+        if (!replace && pathIdMapping.containsKey(file.getPath())) {
+            throw new PackageExistsException("Package already exists: " + pathIdMapping.get(file.getPath()));
+        }
         ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
         try {
 
@@ -559,6 +566,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      */
     private Set<PackageId> loadPackageCache() throws IOException {
         Map<PackageId, FSInstallState> cacheEntries = new HashMap<>();
+        Map<String, PackageId> pathIdMapping = new HashMap<>();
+
 
         Collection<File> files = FileUtils.listFiles(getHomeDir(), META_SUFFIXES, true);
         for (File file : files) {
@@ -567,10 +576,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 PackageId id = state.getPackageId();
                 if (id != null) {
                     cacheEntries.put(id, state);
+                    pathIdMapping.put(state.getFilePath(), id);
+                    
                 }
             }
         }
         stateCache.putAll(cacheEntries);
+        pathIdMapping.putAll(pathIdMapping);
         packagesInitializied = true;
         return cacheEntries.keySet();
     }
@@ -651,12 +663,14 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         File metaData = getPackageMetaDataFile(pid);
 
         if (targetStatus == FSPackageStatus.NOTREGISTERED) {
+            pathIdMapping.remove(stateCache.get(pid).getFilePath());
             metaData.delete();
             stateCache.remove(pid);
         } else {
             FSInstallState state = new FSInstallState(pid, targetStatus, filePath, external, dependencies, subPackages, installTimeStamp);
             state.save(metaData);
             stateCache.put(pid, state);
+            pathIdMapping.put(state.getFilePath(), pid);
         }
     }
 
@@ -678,6 +692,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             if (state != null) {
                 //theoretical file - should only be feasible when manipulating on filesystem, writing metafile automatically updates cache
                 stateCache.put(pid, state);
+                pathIdMapping.put(state.getFilePath(), pid);
             }
             return state != null ? state : new FSInstallState(pid, FSPackageStatus.NOTREGISTERED, null, false, null, null, null);
         }

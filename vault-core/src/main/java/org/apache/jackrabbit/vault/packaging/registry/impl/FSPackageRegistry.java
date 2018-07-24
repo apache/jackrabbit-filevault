@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -96,7 +97,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     private final String[] META_SUFFIXES = {"xml"};
 
     private Map<PackageId, FSInstallState> stateCache = new ConcurrentHashMap<>();
-    private Map<String, PackageId> pathIdMapping = new ConcurrentHashMap<>();
+
+    /**
+     * Contains a map of all filesystem paths to package IDs
+     */
+    private Map<Path, PackageId> pathIdMapping = new ConcurrentHashMap<>();
 
 
     private boolean packagesInitializied = false;
@@ -198,7 +203,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             if (FSPackageStatus.NOTREGISTERED == state.getStatus()) {
                 return buildPackageFile(id);
             } else {
-                return new File(state.getFilePath());
+                return state.getFilePath().toFile();
             }
         } catch (IOException e) {
             log.error("Couldn't get install state of packageId {}", id, e);
@@ -326,7 +331,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         if (autoDependency != null) {
             dependencies.add(autoDependency);
         }
-        setInstallState(pkg.getId(), FSPackageStatus.REGISTERED, pkgFile.getPath(), false, dependencies, subpackages,
+        setInstallState(pkg.getId(), FSPackageStatus.REGISTERED, pkgFile.toPath(), false, dependencies, subpackages,
                 null);
         return pkg.getId();
     }
@@ -368,7 +373,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     /**
      * Parses given {@link Archive.Entry} for .jar & .zip binaries and tries to register given subpackage.
      *
-     * @param archive
+     * @param vltPkg
      * @param directory
      * @param parentPath
      * @param replace
@@ -487,7 +492,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pack, replace);
             FileUtils.copyFile(file, pkgFile);
             Collection<Dependency> dependencies = Arrays.asList(pack.getDependencies());
-            setInstallState(pack.getId(), FSPackageStatus.REGISTERED, pkgFile.getPath(), false, new HashSet<>(dependencies), subpackages, null);
+            setInstallState(pack.getId(), FSPackageStatus.REGISTERED, pkgFile.toPath(), false, new HashSet<>(dependencies), subpackages, null);
             return pack.getId();
         } finally {
             if (!pack.isClosed()) {
@@ -519,7 +524,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             }
             Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pack, replace);
             Collection<Dependency> dependencies = Arrays.asList(pack.getDependencies());
-            setInstallState(pack.getId(), FSPackageStatus.REGISTERED, file.getPath(), true, new HashSet<>(dependencies), subpackages, null);
+            setInstallState(pack.getId(), FSPackageStatus.REGISTERED, file.toPath(), true, new HashSet<>(dependencies), subpackages, null);
             return pack.getId();
         } finally {
             if (!pack.isClosed()) {
@@ -566,7 +571,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      */
     private Set<PackageId> loadPackageCache() throws IOException {
         Map<PackageId, FSInstallState> cacheEntries = new HashMap<>();
-        Map<String, PackageId> pathIdMapping = new HashMap<>();
+        Map<Path, PackageId> idMapping = new HashMap<>();
 
 
         Collection<File> files = FileUtils.listFiles(getHomeDir(), META_SUFFIXES, true);
@@ -576,13 +581,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 PackageId id = state.getPackageId();
                 if (id != null) {
                     cacheEntries.put(id, state);
-                    pathIdMapping.put(state.getFilePath(), id);
+                    idMapping.put(state.getFilePath(), id);
                     
                 }
             }
         }
         stateCache.putAll(cacheEntries);
-        pathIdMapping.putAll(pathIdMapping);
+        pathIdMapping.putAll(idMapping);
         packagesInitializied = true;
         return cacheEntries.keySet();
     }
@@ -659,7 +664,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param installTimeStamp
      * @throws IOException
      */
-    private void setInstallState(@Nonnull PackageId pid, @Nonnull FSPackageStatus targetStatus, @Nonnull String filePath, @Nonnull boolean external, @Nullable Set<Dependency> dependencies, @Nullable Map<PackageId, SubPackageHandling.Option> subPackages, @Nullable Long installTimeStamp) throws IOException {
+    private void setInstallState(@Nonnull PackageId pid, @Nonnull FSPackageStatus targetStatus, @Nonnull Path filePath, @Nonnull boolean external, @Nullable Set<Dependency> dependencies, @Nullable Map<PackageId, SubPackageHandling.Option> subPackages, @Nullable Long installTimeStamp) throws IOException {
         File metaData = getPackageMetaDataFile(pid);
 
         if (targetStatus == FSPackageStatus.NOTREGISTERED) {

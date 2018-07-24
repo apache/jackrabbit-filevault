@@ -19,6 +19,8 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,13 +73,13 @@ public class FSInstallState {
 
     private PackageId packageId;
     private FSPackageStatus status;
-    private String filePath;
+    private Path filePath;
     private boolean external;
     private Set<Dependency> dependencies = Collections.emptySet();
     private Map<PackageId, SubPackageHandling.Option> subPackages = Collections.emptyMap();
     private Long installTime;
 
-    public FSInstallState(@Nonnull PackageId packageId, @Nonnull FSPackageStatus status, @Nullable String filePath,
+    public FSInstallState(@Nonnull PackageId packageId, @Nonnull FSPackageStatus status, @Nullable Path filePath,
                           boolean external, @Nullable Set<Dependency> dependencies, @Nullable Map<PackageId, SubPackageHandling.Option> subPackages,
                           @Nullable Long installTime) {
         this.packageId = packageId;
@@ -119,7 +121,7 @@ public class FSInstallState {
                 return null;
             }
             String packageId = doc.getAttribute(ATTR_PACKAGE_ID);
-            String filePath = doc.getAttribute(ATTR_FILE_PATH);
+            Path filePath = Paths.get(doc.getAttribute(ATTR_FILE_PATH));
             Long installTime = null;
             if (doc.hasAttribute(ATTR_INSTALLATION_TIME)) {
                 installTime = Long.valueOf(doc.getAttribute(ATTR_INSTALLATION_TIME));
@@ -177,7 +179,7 @@ public class FSInstallState {
             if (installTime != null) {
                 attrs.addAttribute(null, null, ATTR_INSTALLATION_TIME, "CDATA", Long.toString(installTime));
             }
-            attrs.addAttribute(null, null, ATTR_FILE_PATH, "CDATA", filePath);
+            attrs.addAttribute(null, null, ATTR_FILE_PATH, "CDATA", filePath.toString());
             attrs.addAttribute(null, null, ATTR_EXTERNAL, "CDATA", Boolean.toString(external));
             attrs.addAttribute(null, null, ATTR_PACKAGE_STATUS, "CDATA", status.name().toLowerCase());
             ser.startElement(null, null, TAG_REGISTRY_METADATA, attrs);
@@ -219,7 +221,7 @@ public class FSInstallState {
         return packageId;
     }
 
-    public String getFilePath() {
+    public Path getFilePath() {
         return filePath;
     }
 

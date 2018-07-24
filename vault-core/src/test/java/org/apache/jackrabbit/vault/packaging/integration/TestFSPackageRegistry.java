@@ -31,6 +31,7 @@ import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.io.Archive;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.DependencyException;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
@@ -537,7 +538,7 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         assertFalse(plan.hasErrors());
 
         try{
-            registry.uninstallPackage(admin, registry.open(idC), null);
+            registry.uninstallPackage(admin, registry.open(idC), new ImportOptions());
             fail("uninstall attempt should fail.");
         } catch (PackageException ex) {
             //expected

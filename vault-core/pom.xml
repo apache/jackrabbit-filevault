@@ -148,6 +148,13 @@
             <artifactId>jcr</artifactId>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>4.3.0</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- SLF4j / Log4j -->
         <dependency>

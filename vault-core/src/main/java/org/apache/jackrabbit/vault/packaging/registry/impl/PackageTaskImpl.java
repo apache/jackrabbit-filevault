@@ -20,14 +20,13 @@ import java.io.IOException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
-import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.slf4j.Logger;
@@ -152,13 +151,9 @@ public class PackageTaskImpl implements PackageTask {
             if (pkg == null) {
                 throw new NoSuchPackageException("No such package: " + id);
             }
-            if (!(pkg instanceof JcrRegisteredPackage)) {
-                throw new PackageException("non jcr packages not supported yet");
-            }
-            try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()){
-                jcrPkg.uninstall(opts);
-            } catch (RepositoryException e) {
-                throw new IOException(e);
+            PackageRegistry registry = plan.getRegistry();
+            if (registry instanceof InternalPackageRegistry) {
+              ((InternalPackageRegistry)registry).uninstallPackage(plan.getSession(), pkg, opts);
             }
         }
     }
@@ -179,17 +174,9 @@ public class PackageTaskImpl implements PackageTask {
             if (pkg == null) {
                 throw new NoSuchPackageException("No such package: " + id);
             }
-            if (!(pkg instanceof JcrRegisteredPackage)) {
-                throw new PackageException("non jcr packages not supported yet");
-            }
-            try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()){
-                if (extract) {
-                    jcrPkg.extract(opts);
-                } else {
-                    jcrPkg.install(opts);
-                }
-            } catch (RepositoryException e) {
-                throw new IOException(e);
+            PackageRegistry registry = plan.getRegistry();
+            if (registry instanceof InternalPackageRegistry) {
+              ((InternalPackageRegistry)registry).installPackage(plan.getSession(), pkg, opts, extract);
             }
         }
     }

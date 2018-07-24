@@ -58,6 +58,7 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
+import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
@@ -102,7 +103,11 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         return new RepositoryException(e);
     }
 
-    public JcrPackageRegistry getRegistry() {
+    public PackageRegistry getRegistry() {
+        return registry;
+    }
+    
+    public JcrPackageRegistry getInternalRegistry() {
         return registry;
     }
 

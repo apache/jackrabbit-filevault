@@ -36,6 +36,7 @@ import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
+import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.DefaultProgressListener;
 import org.apache.tika.io.IOUtils;
 import org.junit.Before;
@@ -92,7 +93,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     public String getInstallationPath(PackageId id) {
         // make sure we use the one from the test parameter
-        return packageRoots[0] + packMgr.getRegistry().getRelativeInstallationPath(id) + ".zip";
+        return packageRoots[0] + ((JcrPackageRegistry)packMgr.getRegistry()).getRelativeInstallationPath(id) + ".zip";
     }
 
     /**

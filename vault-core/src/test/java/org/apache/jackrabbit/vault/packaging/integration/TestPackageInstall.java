@@ -51,6 +51,7 @@ import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
+import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.tika.io.IOUtils;
 import org.junit.Assume;
 import org.junit.Ignore;
@@ -676,7 +677,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         // root node is not accessible
         AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
         AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, false);
-        AccessControlUtils.addAccessControlEntry(admin, packMgr.getRegistry().getPackRootPaths()[0], principal1, new String[]{"jcr:all"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, ((JcrPackageRegistry)packMgr.getRegistry()).getPackRootPaths()[0], principal1, new String[]{"jcr:all"}, true);
         AccessControlUtils.addAccessControlEntry(admin, "/tmp/foo", principal1, new String[]{"jcr:all"}, true);
         admin.save();
 
@@ -719,7 +720,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         // root node is not accessible
         AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
         AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, false);
-        AccessControlUtils.addAccessControlEntry(admin, packMgr.getRegistry().getPackRootPaths()[0], principal1, new String[]{"jcr:all"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, ((JcrPackageRegistry)packMgr.getRegistry()).getPackRootPaths()[0], principal1, new String[]{"jcr:all"}, true);
         AccessControlUtils.addAccessControlEntry(admin, "/tmp/foo", principal1, new String[]{"jcr:all"}, true);
         admin.save();
 

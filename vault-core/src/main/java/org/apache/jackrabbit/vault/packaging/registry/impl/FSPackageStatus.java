@@ -14,5 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@org.osgi.annotation.versioning.Version("1.1.0")
-package org.apache.jackrabbit.vault.packaging.registry;
+package org.apache.jackrabbit.vault.packaging.registry.impl;
+
+/**
+ * Internal Status a package may have in {@code FSPackageRegistry}
+ */
+public enum FSPackageStatus {
+    
+    REGISTERED,
+    EXTRACTED,
+    NOTREGISTERED
+
+}

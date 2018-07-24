@@ -23,8 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -44,6 +42,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeInstaller;
@@ -77,7 +76,7 @@ import org.slf4j.LoggerFactory;
 /**
  * {@code JcrPackagePersistence}...
  */
-public class JcrPackageRegistry implements PackageRegistry {
+public class JcrPackageRegistry extends AbstractPackageRegistry {
 
     /**
      * default logger
@@ -88,16 +87,6 @@ public class JcrPackageRegistry implements PackageRegistry {
      * name of node types resource
      */
     private static final String DEFAULT_NODETYPES = "nodetypes.cnd";
-
-    /**
-     * default root path for packages
-     */
-    public static final String DEFAULT_PACKAGE_ROOT_PATH = "/etc/packages";
-
-    /**
-     * default root path prefix for packages
-     */
-    public static final String DEFAULT_PACKAGE_ROOT_PATH_PREFIX = DEFAULT_PACKAGE_ROOT_PATH + "/";
 
     /**
      * suggested folder types
@@ -335,55 +324,6 @@ public class JcrPackageRegistry implements PackageRegistry {
         } catch (RepositoryException e) {
             throw new IOException(e);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
-    @Override
-    public PackageId[] usage(PackageId id) throws IOException {
-        TreeSet<PackageId> usages = new TreeSet<PackageId>();
-        for (PackageId pid: packages()) {
-            try (RegisteredPackage pkg = open(pid)) {
-                if (pkg == null || !pkg.isInstalled()) {
-                    continue;
-                }
-                //noinspection resource
-                for (Dependency dep: pkg.getPackage().getDependencies()) {
-                    if (dep.matches(id)) {
-                        usages.add(pid);
-                        break;
-                    }
-                }
-            }
-        }
-        return usages.toArray(new PackageId[usages.size()]);
-    }
-
-    @Nonnull
-    @Override
-    public DependencyReport analyzeDependencies(@Nonnull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException {
-        List<Dependency> unresolved = new LinkedList<Dependency>();
-        List<PackageId> resolved = new LinkedList<PackageId>();
-        try (RegisteredPackage pkg = open(id)) {
-            if (pkg == null) {
-                throw new NoSuchPackageException().setId(id);
-            }
-            //noinspection resource
-            for (Dependency dep : pkg.getPackage().getDependencies()) {
-                PackageId resolvedId = resolve(dep, onlyInstalled);
-                if (resolvedId == null) {
-                    unresolved.add(dep);
-                } else {
-                    resolved.add(resolvedId);
-                }
-            }
-        }
-
-        return new DependencyReportImpl(id, unresolved.toArray(new Dependency[unresolved.size()]),
-                resolved.toArray(new PackageId[resolved.size()])
-        );
     }
 
     @Nonnull
@@ -820,40 +760,28 @@ public class JcrPackageRegistry implements PackageRegistry {
         return packRootPaths[0] + getRelativeInstallationPath(id);
     }
 
-    /**
-     * Returns the relative path of this package. please note that since 2.3 this also
-     * includes the version, but never the extension (.zip).
-     *
-     * @param id the package id
-     * @return the relative path of this package
-     * @since 2.2
-     */
-    public String getRelativeInstallationPath(PackageId id) {
-        StringBuilder b = new StringBuilder("/");
-        if (id.getGroup().length() > 0) {
-            b.append(id.getGroup());
-            b.append("/");
-        }
-        b.append(id.getName());
-        String v = id.getVersion().toString();
-        if (v.length() > 0) {
-            b.append("-").append(v);
-        }
-        return b.toString();
-    }
-
-    /**
-     * Creates a random package id for packages that lack one.
-     * @return a random package id.
-     */
-    private static PackageId createRandomPid() {
-        return new PackageId("temporary", "pack_" + UUID.randomUUID().toString(), (String) null);
-    }
-
-    @Nonnull
     @Override
-    public ExecutionPlanBuilder createExecutionPlan() {
-        return new ExecutionPlanBuilderImpl(this);
+    public void installPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts,
+            boolean extract) throws IOException, PackageException {
+        try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()) {
+            if (extract) {
+                jcrPkg.extract(opts);
+            } else {
+                jcrPkg.install(opts);
+            }
+        } catch (RepositoryException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public void uninstallPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts)
+            throws IOException, PackageException {
+        try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()) {
+            jcrPkg.uninstall(opts);
+        } catch (RepositoryException e) {
+            throw new IOException(e);
+        }
     }
 
 }

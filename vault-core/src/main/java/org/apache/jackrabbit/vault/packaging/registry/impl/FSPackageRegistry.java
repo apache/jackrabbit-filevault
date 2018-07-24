@@ -672,7 +672,12 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             metaData.delete();
             stateCache.remove(pid);
         } else {
-            FSInstallState state = new FSInstallState(pid, targetStatus, filePath, external, dependencies, subPackages, installTimeStamp);
+            FSInstallState state = new FSInstallState(pid, targetStatus)
+                    .withFilePath(filePath)
+                    .withDependencies(dependencies)
+                    .withSubPackages(subPackages)
+                    .withInstallTime(installTimeStamp)
+                    .withExternal(external);
             state.save(metaData);
             stateCache.put(pid, state);
             pathIdMapping.put(state.getFilePath(), pid);
@@ -699,7 +704,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 stateCache.put(pid, state);
                 pathIdMapping.put(state.getFilePath(), pid);
             }
-            return state != null ? state : new FSInstallState(pid, FSPackageStatus.NOTREGISTERED, null, false, null, null, null);
+            return state != null ? state : new FSInstallState(pid, FSPackageStatus.NOTREGISTERED);
         }
     }
 

@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,7 +35,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
@@ -71,31 +71,47 @@ public class FSInstallState {
 
     private static final String ATTR_SUBPACKAGE_HANDLING_OPTION = "sphoption";
 
-    private PackageId packageId;
-    private FSPackageStatus status;
+    private final PackageId packageId;
+    private final FSPackageStatus status;
     private Path filePath;
     private boolean external;
     private Set<Dependency> dependencies = Collections.emptySet();
     private Map<PackageId, SubPackageHandling.Option> subPackages = Collections.emptyMap();
     private Long installTime;
 
-    public FSInstallState(@Nonnull PackageId packageId, @Nonnull FSPackageStatus status, @Nullable Path filePath,
-                          boolean external, @Nullable Set<Dependency> dependencies, @Nullable Map<PackageId, SubPackageHandling.Option> subPackages,
-                          @Nullable Long installTime) {
-        this.packageId = packageId;
+    public FSInstallState(@Nonnull PackageId pid, @Nonnull FSPackageStatus status) {
+        this.packageId = pid;
         this.status = status;
-        this.filePath = filePath;
-        this.external = external;
-        if (dependencies != null) {
-            this.dependencies = Collections.unmodifiableSet(dependencies);
-        }
-        this.dependencies = dependencies;
-        this.installTime = installTime;
-        if (subPackages != null) {
-            this.subPackages = Collections.unmodifiableMap(subPackages);
-        }
     }
 
+    public FSInstallState withFilePath(Path filePath) {
+        this.filePath = filePath;
+        return this;
+    }
+
+    public FSInstallState withExternal(boolean external) {
+        this.external = external;
+        return this;
+    }
+
+    public FSInstallState withDependencies(Set<Dependency> dependencies) {
+        this.dependencies = dependencies == null
+                ? Collections.<Dependency>emptySet()
+                : Collections.unmodifiableSet(dependencies);
+        return this;
+    }
+
+    public FSInstallState withSubPackages(Map<PackageId, SubPackageHandling.Option> subPackages) {
+        this.subPackages = subPackages == null
+                ? Collections.<PackageId, SubPackageHandling.Option>emptyMap()
+                : Collections.unmodifiableMap(subPackages);
+        return this;
+    }
+
+    public FSInstallState withInstallTime(Long installTime) {
+        this.installTime = installTime;
+        return this;
+    }
 
     /**
      * Parses {@code InstallState} from metafile.
@@ -110,12 +126,28 @@ public class FSInstallState {
         if (!metaFile.exists()) {
             return null;
         }
+        try (InputStream in = FileUtils.openInputStream(metaFile)) {
+            return fromStream(in, metaFile.getPath());
+        }
+    }
+
+    /**
+     * Parses {@code InstallState} from metafile.
+     *
+     * @param in The input stream
+     * @param systemId the id of the stream
+     * @return Install state or null if file is not metafile format
+     *
+     * @throws IOException in case root tag is correct but structure not parsable as expected
+     */
+    @Nullable
+    public static FSInstallState fromStream(InputStream in, String systemId) throws IOException {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
             builder.setEntityResolver(new RejectingEntityResolver());
-            Document document = builder.parse(metaFile);
+            Document document = builder.parse(in, systemId);
             Element doc = document.getDocumentElement();
             if (!TAG_REGISTRY_METADATA.equals(doc.getNodeName())) {
                 return null;
@@ -144,7 +176,12 @@ public class FSInstallState {
                     }
                 }
             }
-            return new FSInstallState(PackageId.fromString(packageId), status, filePath, external, dependencies, subPackages, installTime);
+            return new FSInstallState(PackageId.fromString(packageId), status)
+                    .withFilePath(filePath)
+                    .withExternal(external)
+                    .withDependencies(dependencies)
+                    .withSubPackages(subPackages)
+                    .withInstallTime(installTime);
         } catch (ParserConfigurationException e) {
             throw new IOException("Unable to create configuration XML parser", e);
         } catch (SAXException e) {
@@ -164,13 +201,24 @@ public class FSInstallState {
         return PackageId.fromString(child.getAttribute(ATTR_PACKAGE_ID));
     }
 
+
     /**
      * Persists the installState to a metadatafile
      * @param file The files to save the state to
      * @throws IOException if an error occurs.
      */
     public void save(File file) throws IOException {
-        OutputStream out = FileUtils.openOutputStream(file);
+        try (OutputStream out = FileUtils.openOutputStream(file)) {
+            save(out);
+        }
+    }
+
+    /**
+     * Persists the installState to a metadatafile
+     * @param out Outputsteam to write to.
+     * @throws IOException if an error occurs.
+     */
+    public void save(OutputStream out) throws IOException {
         try {
             XMLSerializer ser = new XMLSerializer(out, new OutputFormat("xml", "UTF-8", true));
             ser.startDocument();
@@ -204,8 +252,6 @@ public class FSInstallState {
             ser.endDocument();
         } catch (SAXException e) {
             throw new IllegalStateException(e);
-        } finally {
-            IOUtils.closeQuietly(out);
         }
     }
 

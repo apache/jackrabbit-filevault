@@ -73,7 +73,7 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
                 if (Text.isDescendantOrEqual(DEFAULT_PACKAGE_ROOT_PATH, nodePath)) {
                     continue;
                 }
-                String etcPath = DEFAULT_PACKAGE_ROOT_PATH + mgr.getRegistry().getRelativeInstallationPath(pkg.getKey()) + ".zip";
+                String etcPath = DEFAULT_PACKAGE_ROOT_PATH + mgr.getInternalRegistry().getRelativeInstallationPath(pkg.getKey()) + ".zip";
                 etcPath = Text.getRelativeParent(etcPath, 1);
 
                 // define a workspace filter for the package at the real location
@@ -116,7 +116,7 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
             }
         }
         // now also get the packages from the primary root
-        WorkspaceFilter filter = originalFilter.translate(new SimplePathMapping(DEFAULT_PACKAGE_ROOT_PATH, mgr.getRegistry().getPackRootPaths()[0]));
+        WorkspaceFilter filter = originalFilter.translate(new SimplePathMapping(DEFAULT_PACKAGE_ROOT_PATH, mgr.getInternalRegistry().getPackRootPaths()[0]));
         for (JcrPackage pkg: mgr.listPackages(filter)) {
             if (pkg.isValid() && pkg.getSize() > 0) {
                 subPackages.put(pkg.getDefinition().getId(), pkg.getNode().getPath());
@@ -128,7 +128,7 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
             Iterator<PathFilterSet> iter = newFilter.getFilterSets().iterator();
             while (iter.hasNext()) {
                 PathFilterSet set = iter.next();
-                for (String root : mgr.getRegistry().getPackRootPaths()) {
+                for (String root : mgr.getInternalRegistry().getPackRootPaths()) {
                     if (Text.isDescendantOrEqual(root, set.getRoot())) {
                         iter.remove();
                         break;
@@ -138,7 +138,7 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
             iter = newFilter.getPropertyFilterSets().iterator();
             while (iter.hasNext()) {
                 PathFilterSet set = iter.next();
-                for (String root : mgr.getRegistry().getPackRootPaths()) {
+                for (String root : mgr.getInternalRegistry().getPackRootPaths()) {
                     if (Text.isDescendantOrEqual(root, set.getRoot())) {
                         iter.remove();
                         break;
@@ -148,7 +148,7 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
 
             // re-add all the packages in /etc/packages
             for (Map.Entry<PackageId, String> pkg : subPackages.entrySet()) {
-                String path = DEFAULT_PACKAGE_ROOT_PATH + mgr.getRegistry().getRelativeInstallationPath(pkg.getKey()) + ".zip";
+                String path = DEFAULT_PACKAGE_ROOT_PATH + mgr.getInternalRegistry().getRelativeInstallationPath(pkg.getKey()) + ".zip";
                 newFilter.add(new PathFilterSet(path));
             }
 

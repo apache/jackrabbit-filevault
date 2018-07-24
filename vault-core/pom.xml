@@ -23,14 +23,14 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.2.0-SNAPSHOT</version>
+        <version>3.2.0-FSR.1-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>org.apache.jackrabbit.vault</artifactId>
-    <version>3.2.0-SNAPSHOT</version>
+    <version>3.2.0-FSR.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>Apache Jackrabbit FileVault Core Bundle</name>
@@ -146,6 +146,13 @@
         <dependency>
             <groupId>javax.jcr</groupId>
             <artifactId>jcr</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>4.3.0</version>
             <scope>provided</scope>
         </dependency>
 

@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.2.2
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.2.0
 
 Introduction
 ------------
@@ -9,19 +9,45 @@ create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
 
-Changes in Jackrabbit FileVault 3.2.2
+Changes in Jackrabbit FileVault 3.2.0
 --------------------------------------
 
-Release Notes - Jackrabbit FileVault - Version 3.2.2
+Release Notes - Jackrabbit FileVault - Version 3.2.0
 
 Important Changes:
 For the fix of JCRVLT-282 the embedded dependencies of jackrabbit-spi and jackrabbit-spi-commons were removed from the
 vault-core bundle. This was required to keep the bundle Java 1.7 compatible and rather consume the libraries from the
 running system. Since some of the exported APIs already contain references to the Jackrabbit SPI this was necessary.
 
-Bug Fixes:
-* [JCRVLT-282] - Filevault bundle should be Java 1.7 Compatible
+Changes in Jackrabbit FileVault 3.2.0
+-------------------------------------
 
+Release Notes - Jackrabbit FileVault - Version 3.2.0
+
+Bug Fixes:
+    * [JCRVLT-292] - Order of ACLs are altered on installation of content packages
+    * [JCRVLT-293] - Failing tests when building vault-core with -Doak=true
+    * [JCRVLT-294] - DocViewFormatTest fails on Windows
+    * [JCRVLT-305] - DefaultWorkspaceFilter.add(nodeFilters) does not include properties
+
+New Features:
+    * [JCRVLT-180] - implement filesystem based persistence layer
+    * [JCRVLT-271] - Support a CLI command to format vault xml files
+    * [JCRVLT-289] - InstallHooks: Propagate exceptions also for phase INSTALL
+
+Improvements:
+    * [JCRVLT-282] - Filevault bundle should be Java 1.7 Compatible
+    * [JCRVLT-284] - Add support through environment var to directly control the line separator
+    * [JCRVLT-286] - Markup in http://jackrabbit.apache.org/filevault/rcp.html broken
+    * [JCRVLT-301] - Do not always skip installation of sub packages for older versions and log a WARN in case a subpackage is skipped
+    * [JCRVLT-303] - Register namespace under a unique prefix in case of clash
+    * [JCRVLT-304] - Add tests that cover combinations of node and property filters
+    * [JCRVLT-306] - Document properties.xml format
+    * [JCRVLT-277] - vault-davex: cleanup dependencies - suppression of commons-httpclient
+
+Pending:
+    * [JCRVLT-300] - vlt-rcp: Support proxy
+    * [JCRVLT-255] - ImportModes act on file serialization level not on node level
 
 
 Changes in Jackrabbit FileVault 3.1.44

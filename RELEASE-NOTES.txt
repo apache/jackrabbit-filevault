@@ -45,11 +45,6 @@ Improvements:
     * [JCRVLT-306] - Document properties.xml format
     * [JCRVLT-277] - vault-davex: cleanup dependencies - suppression of commons-httpclient
 
-Pending:
-    * [JCRVLT-300] - vlt-rcp: Support proxy
-    * [JCRVLT-255] - ImportModes act on file serialization level not on node level
-
-
 Changes in Jackrabbit FileVault 3.1.44
 --------------------------------------
 

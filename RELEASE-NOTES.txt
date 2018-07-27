@@ -44,6 +44,7 @@ Improvements:
     * [JCRVLT-304] - Add tests that cover combinations of node and property filters
     * [JCRVLT-306] - Document properties.xml format
     * [JCRVLT-277] - vault-davex: cleanup dependencies - suppression of commons-httpclient
+    * [JCRVLT-309] - Create helper filter that allows to limit the installation paths
 
 Improvements:
     * [JCRVLT-282] - Filevault bundle should be Java 1.7 Compatible

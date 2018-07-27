@@ -511,8 +511,8 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         Calendar after = Calendar.getInstance();
         assertFalse(plan.hasErrors());
 
-        assertTrue("Installation time for idC too late", registry.open(idC).getInstallationTime().compareTo(after) < 0);
-        assertTrue("Installation time for idC too early", registry.open(idC).getInstallationTime().compareTo(before) > 0);
+        assertTrue("Installation time for idC too late", registry.open(idC).getInstallationTime().compareTo(after) <= 0);
+        assertTrue("Installation time for idC too early", registry.open(idC).getInstallationTime().compareTo(before) >= 0);
 
     }
     

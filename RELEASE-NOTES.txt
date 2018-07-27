@@ -34,6 +34,7 @@ New Features:
     * [JCRVLT-180] - implement filesystem based persistence layer
     * [JCRVLT-271] - Support a CLI command to format vault xml files
     * [JCRVLT-289] - InstallHooks: Propagate exceptions also for phase INSTALL
+    * [JCRVLT-300] - vlt-rcp: Support proxy
 
 Improvements:
     * [JCRVLT-282] - Filevault bundle should be Java 1.7 Compatible
@@ -46,15 +47,6 @@ Improvements:
     * [JCRVLT-277] - vault-davex: cleanup dependencies - suppression of commons-httpclient
     * [JCRVLT-309] - Create helper filter that allows to limit the installation paths
 
-Improvements:
-    * [JCRVLT-282] - Filevault bundle should be Java 1.7 Compatible
-    * [JCRVLT-284] - Add support through environment var to directly control the line separator
-    * [JCRVLT-286] - Markup in http://jackrabbit.apache.org/filevault/rcp.html broken
-    * [JCRVLT-301] - Do not always skip installation of sub packages for older versions and log a WARN in case a subpackage is skipped
-    * [JCRVLT-303] - Register namespace under a unique prefix in case of clash
-    * [JCRVLT-304] - Add tests that cover combinations of node and property filters
-    * [JCRVLT-306] - Document properties.xml format
-    * [JCRVLT-277] - vault-davex: cleanup dependencies - suppression of commons-httpclient
 
 Changes in Jackrabbit FileVault 3.1.44
 --------------------------------------

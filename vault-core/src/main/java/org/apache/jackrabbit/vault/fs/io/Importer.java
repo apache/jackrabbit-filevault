@@ -53,6 +53,7 @@ import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.PathMapping;
+import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
@@ -417,6 +418,9 @@ public class Importer {
             registerPrivileges(session);
             log.debug("Starting content import. autosave is {}", autoSave);
             track("Importing content...", "");
+            if (tracker != null) {
+                tracker.setMode(ProgressTrackerListener.Mode.PATHS);
+            }
         }
         cpAutosave = autoSave.copy();
         LinkedList<TxInfo> skipList = new LinkedList<TxInfo>();
@@ -450,6 +454,9 @@ public class Importer {
                     session.refresh(false);
                 }
             }
+        }
+        if (tracker != null) {
+            tracker.setMode(ProgressTrackerListener.Mode.TEXT);
         }
         checkinNodes(session);
         applyMemberships(session);

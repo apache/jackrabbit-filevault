@@ -55,6 +55,25 @@ Please note that vlt uses the [java regexp](https://docs.oracle.com/javase/7/doc
 process the exclusion patterns. The patterns have to patch the entire path of the node in order to be excluded. For
 example this regexp `\p{ASCII}*([^\p{ASCII}]\p{ASCII}*)+` excludes all paths containing non-ascii characters.
 
+### HTTP Proxy
+
+HTTP Proxy can be enabled using the default Java proxy settings, as per
+
+https://docs.oracle.com/javase/8/docs/technotes/guides/net/proxies.html
+
+and
+
+https://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/org/apache/http/impl/client/HttpClientBuilder.html#useSystemProperties()
+
+The system property is `jackrabbit.client.useSystemProperties` and needs to be set to `true`.
+
+#### Example:
+
+```
+$ export VLT_OPTS="-Dhttp.proxyHost=my.proxy.com -Dhttp.proxyPort=8888 -Djackrabbit.client.useSystemProperties=true"
+$ vlt rcp -e ".*\.txt" -r http://admin:admin@localtest.me:4502/crx/-/jcr:root/content/screens http://admin:admin@localtest.me:4502/crx/-/jcr:root/content_copy
+```
+
 Vault RCP Server Bundle
 -----------------------
 The vault rcp server bundle provides a very simple vault remote copy task management that can be controlled via a json/http interface. This special vault rcp version can only be used to **import** content from remote repositories.

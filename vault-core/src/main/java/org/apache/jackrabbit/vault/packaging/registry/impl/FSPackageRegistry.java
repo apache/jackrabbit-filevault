@@ -184,8 +184,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Override
     public RegisteredPackage open(@Nonnull PackageId id) throws IOException {
         try {
-            File pkg = getPackageFile(id);
-            return pkg != null && pkg.exists() ? new FSRegisteredPackage(this, open(pkg)) : null;
+            FSInstallState state = getInstallState(id);
+            return FSPackageStatus.NOTREGISTERED != state.getStatus() ? new FSRegisteredPackage(this, state) : null;
         } catch (RepositoryException e) {
             throw new IOException(e);
         }

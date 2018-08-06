@@ -39,24 +39,27 @@ public class FSRegisteredPackage implements RegisteredPackage {
      */
     private static final Logger log = LoggerFactory.getLogger(FSPackageRegistry.class);
 
-    private VaultPackage vltPkg;
+    private FSInstallState installState;
     private FSPackageRegistry registry;
 
-    public FSRegisteredPackage(FSPackageRegistry registry, VaultPackage vltPkg) throws IOException, RepositoryException {
-        this.vltPkg = vltPkg;
+    private VaultPackage vltPkg = null;
+
+    public FSRegisteredPackage(FSPackageRegistry registry, FSInstallState installState) throws IOException, RepositoryException {
+        this.installState = installState;
         this.registry = registry;
     }
 
     @Nonnull
     @Override
     public PackageId getId() {
-        return vltPkg.getId();
+        return installState.getPackageId();
     }
 
     @Nonnull
     @Override
     public VaultPackage getPackage() throws IOException {
-        return vltPkg;
+        this.vltPkg = registry.open(installState.getFilePath().toFile());
+        return this.vltPkg;
     }
 
     @Override
@@ -95,8 +98,10 @@ public class FSRegisteredPackage implements RegisteredPackage {
 
     @Override
     public void close() {
-        vltPkg.close();
-        vltPkg = null;
+        if (vltPkg != null) {
+            vltPkg.close();
+            vltPkg = null;
+        }
     }
 
     @Override

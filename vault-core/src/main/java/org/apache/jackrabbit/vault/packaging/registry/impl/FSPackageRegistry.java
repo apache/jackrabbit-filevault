@@ -236,7 +236,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             return new ZipVaultPackage(pkg, false, true);
         } catch (IOException e) {
             log.error("Cloud not open file {} as ZipVaultPackage.", pkg.getPath(), e);
-            return null;
+            throw e;
         }
 
     }

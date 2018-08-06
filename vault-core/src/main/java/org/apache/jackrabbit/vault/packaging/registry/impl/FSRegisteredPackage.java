@@ -17,6 +17,7 @@
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Calendar;
 
 import javax.annotation.CheckForNull;
@@ -39,26 +40,32 @@ public class FSRegisteredPackage implements RegisteredPackage {
      */
     private static final Logger log = LoggerFactory.getLogger(FSPackageRegistry.class);
 
-    private FSInstallState installState;
+
     private FSPackageRegistry registry;
 
     private VaultPackage vltPkg = null;
+        
+    private PackageId id;
+    private Path filepath;
 
     public FSRegisteredPackage(FSPackageRegistry registry, FSInstallState installState) throws IOException, RepositoryException {
-        this.installState = installState;
+        this.id = installState.getPackageId();
+        this.filepath = installState.getFilePath();
         this.registry = registry;
     }
 
     @Nonnull
     @Override
     public PackageId getId() {
-        return installState.getPackageId();
+        return this.id;
     }
 
     @Nonnull
     @Override
     public VaultPackage getPackage() throws IOException {
-        this.vltPkg = registry.open(installState.getFilePath().toFile());
+        if (this.vltPkg == null) {
+            this.vltPkg = registry.open(filepath.toFile());
+        }
         return this.vltPkg;
     }
 

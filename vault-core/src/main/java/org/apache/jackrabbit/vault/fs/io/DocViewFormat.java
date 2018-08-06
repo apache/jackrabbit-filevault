@@ -82,6 +82,7 @@ public class DocViewFormat {
      * The file is replaced on disk but only if wasn't already formatted correctly and if {@code dryRun} is {@code false}.
      *
      * @param file the file to format
+     * @param dryRun If {@code true}, then the file is never replaced on disk.
      * @return {@code true} if the formatted version differs from the original.
      * @throws IOException if an I/O error occurs
      */
@@ -106,6 +107,7 @@ public class DocViewFormat {
      *
      * @param directory the start directory
      * @param filenamePatterns list of regexp patterns
+     * @param dryRun If {@code true}, then the file is never replaced on disk.
      * @return a list of relative paths of those files which are not formatted correctly according to {@link #format(File, boolean)}
      * @throws IOException in case there is an exception during traversal or formatting. That means formatting will fail on the first error that appeared
      */
@@ -115,7 +117,7 @@ public class DocViewFormat {
             @Override protected void process(File file) throws IOException {
                 if (format(file, dryRun)) {
                     changed.add(file.getPath());
-                };
+                }
             }
         });
         return changed;

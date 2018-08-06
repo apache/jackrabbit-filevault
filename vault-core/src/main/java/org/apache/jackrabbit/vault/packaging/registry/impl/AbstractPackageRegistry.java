@@ -40,7 +40,7 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 
 /**
- * Abstraction for shared methods of PackageRegistry & InternalPackageRegistry implementations
+ * Abstraction for shared methods of PackageRegistry &amp; InternalPackageRegistry implementations
  */
 public abstract class AbstractPackageRegistry implements PackageRegistry, InternalPackageRegistry {
 

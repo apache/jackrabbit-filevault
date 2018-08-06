@@ -51,7 +51,7 @@ Release management tasks
     4. Execute `mvn release:perform -Papache-release`. This will build the tagged release and deploy the artifacts to
         a new staging repository on _repository.apache.org_. 
         After the build, login to [https://repository.apache.org/][2] and you should see it there.
-    
+
         The non-Maven release artifacts are automatically copied to `/.../target/checkout/target/$version`
 
 4. Close the [staged repository][2] on _repository.apache.org_.

@@ -184,8 +184,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Override
     public RegisteredPackage open(@Nonnull PackageId id) throws IOException {
         try {
-            File pkg = getPackageFile(id);
-            return pkg != null && pkg.exists() ? new FSRegisteredPackage(this, open(pkg)) : null;
+            FSInstallState state = getInstallState(id);
+            return FSPackageStatus.NOTREGISTERED != state.getStatus() ? new FSRegisteredPackage(this, state) : null;
         } catch (RepositoryException e) {
             throw new IOException(e);
         }
@@ -231,12 +231,12 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     /**
      * {@inheritDoc}
      */
-    public VaultPackage open(File pkg) throws RepositoryException {
+    public VaultPackage open(File pkg) throws IOException {
         try {
             return new ZipVaultPackage(pkg, false, true);
         } catch (IOException e) {
             log.error("Cloud not open file {} as ZipVaultPackage.", pkg.getPath(), e);
-            return null;
+            throw e;
         }
 
     }
@@ -331,8 +331,12 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         if (autoDependency != null) {
             dependencies.add(autoDependency);
         }
-        setInstallState(pkg.getId(), FSPackageStatus.REGISTERED, pkgFile.toPath(), false, dependencies, subpackages,
-                null);
+        FSInstallState state = new FSInstallState(pkg.getId(), FSPackageStatus.REGISTERED)
+                .withFilePath(pkgFile.toPath())
+                .withDependencies(dependencies)
+                .withSubPackages(subpackages)
+                .withExternal(false);
+        setInstallState(state);
         return pkg.getId();
     }
 
@@ -491,8 +495,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             }
             Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pack, replace);
             FileUtils.copyFile(file, pkgFile);
-            Collection<Dependency> dependencies = Arrays.asList(pack.getDependencies());
-            setInstallState(pack.getId(), FSPackageStatus.REGISTERED, pkgFile.toPath(), false, new HashSet<>(dependencies), subpackages, null);
+            Set<Dependency> dependencies = new HashSet<>(Arrays.asList(pack.getDependencies()));
+            FSInstallState state = new FSInstallState(pack.getId(), FSPackageStatus.REGISTERED)
+                    .withFilePath(pkgFile.toPath())
+                    .withDependencies(dependencies)
+                    .withSubPackages(subpackages)
+                    .withExternal(false);
+            setInstallState(state);
             return pack.getId();
         } finally {
             if (!pack.isClosed()) {
@@ -523,8 +532,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 }
             }
             Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pack, replace);
-            Collection<Dependency> dependencies = Arrays.asList(pack.getDependencies());
-            setInstallState(pack.getId(), FSPackageStatus.REGISTERED, file.toPath(), true, new HashSet<>(dependencies), subpackages, null);
+            Set<Dependency> dependencies = new HashSet<>(Arrays.asList(pack.getDependencies()));
+            FSInstallState targetState = new FSInstallState(pack.getId(), FSPackageStatus.REGISTERED)
+                    .withFilePath(file.toPath())
+                    .withDependencies(dependencies)
+                    .withSubPackages(subpackages)
+                    .withExternal(true);
+            setInstallState(targetState);
             return pack.getId();
         } finally {
             if (!pack.isClosed()) {
@@ -649,35 +663,29 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         if (FSPackageStatus.EXTRACTED == targetStatus) {
             installTime = Calendar.getInstance().getTimeInMillis();
         }
-        setInstallState(pid, targetStatus, state.getFilePath(), state.isExternal(), state.getDependencies(), state.getSubPackages(), installTime);
+        FSInstallState targetState = new FSInstallState(pid, targetStatus)
+              .withFilePath(state.getFilePath())
+              .withDependencies(state.getDependencies())
+              .withSubPackages(state.getSubPackages())
+              .withInstallTime(installTime)
+              .withExternal(state.isExternal());
+        setInstallState(targetState);
     }
 
     /**
      * Persists the installState to a metadatafile and adds current state to cache
-     *
-     * @param pid
-     * @param targetStatus
-     * @param filePath
-     * @param external
-     * @param dependencies
-     * @param subPackages
-     * @param installTimeStamp
+     * @param state
      * @throws IOException
      */
-    private void setInstallState(@Nonnull PackageId pid, @Nonnull FSPackageStatus targetStatus, @Nonnull Path filePath, @Nonnull boolean external, @Nullable Set<Dependency> dependencies, @Nullable Map<PackageId, SubPackageHandling.Option> subPackages, @Nullable Long installTimeStamp) throws IOException {
+    private void setInstallState(@Nonnull FSInstallState state) throws IOException {
+        PackageId pid = state.getPackageId();
         File metaData = getPackageMetaDataFile(pid);
 
-        if (targetStatus == FSPackageStatus.NOTREGISTERED) {
+        if (state.getStatus() == FSPackageStatus.NOTREGISTERED) {
             pathIdMapping.remove(stateCache.get(pid).getFilePath());
             metaData.delete();
             stateCache.remove(pid);
         } else {
-            FSInstallState state = new FSInstallState(pid, targetStatus)
-                    .withFilePath(filePath)
-                    .withDependencies(dependencies)
-                    .withSubPackages(subPackages)
-                    .withInstallTime(installTimeStamp)
-                    .withExternal(external);
             state.save(metaData);
             stateCache.put(pid, state);
             pathIdMapping.put(state.getFilePath(), pid);

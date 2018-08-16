@@ -24,7 +24,10 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.slf4j.Logger;
@@ -40,17 +43,23 @@ public class FSRegisteredPackage implements RegisteredPackage {
      */
     private static final Logger log = LoggerFactory.getLogger(FSPackageRegistry.class);
 
-    private final FSPackageRegistry registry;
 
-    private final PackageId id;
+    private FSPackageRegistry registry;
 
-    private final Path filepath;
+    private VaultPackage vltPkg = null;
+        
+    private PackageId id;
+    private Path filepath;
+    private PackageProperties packageProperties;
+    private Dependency[] dependencies;
+    private WorkspaceFilter filter;
 
-    private VaultPackage vltPkg;
-
-    public FSRegisteredPackage(FSPackageRegistry registry, FSInstallState installState) throws IOException {
+    public FSRegisteredPackage(FSPackageRegistry registry, FSInstallState installState) throws IOException, RepositoryException {
         this.id = installState.getPackageId();
         this.filepath = installState.getFilePath();
+        this.dependencies = installState.getDependencies().toArray(new Dependency[installState.getDependencies().size()]);
+        this.filter = installState.getFilter();
+        this.packageProperties = new FsPackageProperties(installState);
         this.registry = registry;
     }
 
@@ -80,8 +89,8 @@ public class FSRegisteredPackage implements RegisteredPackage {
     }
 
     @Override
-    public long getSize() {
-        return vltPkg.getSize();
+    public long getSize() throws IOException {
+        return getPackage().getSize();
     }
 
     @CheckForNull
@@ -114,5 +123,20 @@ public class FSRegisteredPackage implements RegisteredPackage {
     @Override
     public int compareTo(RegisteredPackage o) {
         return getId().compareTo(o.getId());
+    }
+
+    @Override
+    public Dependency[] getDependencies() {
+        return this.dependencies;
+    }
+
+    @Override
+    public WorkspaceFilter getWorkspaceFilter() {
+        return this.filter;
+    }
+
+    @Override
+    public PackageProperties getPackageProperties() throws IOException {
+        return this.packageProperties;
     }
 }

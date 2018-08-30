@@ -33,8 +33,10 @@ import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSInstallState;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageStatus;
 import org.junit.Test;
+import org.xmlunit.matchers.CompareMatcher;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  * Test the Package registry interface
@@ -44,8 +46,8 @@ public class TestFSInstallState {
     private static final PackageId TMP_PACKAGE_ID = new PackageId("my_packages", "tmp", "");
 
     private static final String TEST_XML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<registryMetadata packageid=\"my_packages:tmp\" installtime=\"1234\"\n" +
-            "    filepath=\"test.zip\" external=\"true\" packagestatus=\"extracted\">\n" +
+            "<registryMetadata packageid=\"my_packages:tmp\" size=\"1234\"\n" +
+            "    installtime=\"1234\" filepath=\"test.zip\" external=\"true\" packagestatus=\"extracted\">\n" +
             "    <dependency packageid=\"my_packages:tmp\"/>\n" +
             "    <subpackage packageid=\"my_packages:tmp\" sphoption=\"ADD\"/>\n" +
             "</registryMetadata>\n";
@@ -63,11 +65,13 @@ public class TestFSInstallState {
                 .withExternal(true)
                 .withDependencies(deps)
                 .withSubPackages(subs)
+                .withSize(1234L)
                 .withInstallTime(1234L);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         state.save(out);
         out.close();
 
+        assertThat(out.toString("utf-8"), CompareMatcher.isIdenticalTo(TEST_XML));
         assertEquals(TEST_XML, out.toString("utf-8"));
     }
 
@@ -89,6 +93,8 @@ public class TestFSInstallState {
         assertEquals(true, state.isExternal());
         assertEquals(deps, state.getDependencies());
         assertEquals(subs, state.getSubPackages());
+        assertEquals(subs, state.getSubPackages());
+        assertEquals(1234L, state.getSize());
         assertEquals((Long) 1234L, state.getInstallationTime());
 
     }

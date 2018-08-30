@@ -335,6 +335,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 .withFilePath(pkgFile.toPath())
                 .withDependencies(dependencies)
                 .withSubPackages(subpackages)
+                .withFilter(pkg.getArchive().getMetaInf().getFilter())
+                .withSize(pkg.getSize())
+                .withProperties(pkg.getArchive().getMetaInf().getProperties())
                 .withExternal(false);
         setInstallState(state);
         return pkg.getId();
@@ -500,6 +503,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     .withFilePath(pkgFile.toPath())
                     .withDependencies(dependencies)
                     .withSubPackages(subpackages)
+                    .withFilter(pack.getArchive().getMetaInf().getFilter())
+                    .withSize(pack.getSize())
+                    .withProperties(pack.getArchive().getMetaInf().getProperties())
                     .withExternal(false);
             setInstallState(state);
             return pack.getId();
@@ -537,6 +543,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     .withFilePath(file.toPath())
                     .withDependencies(dependencies)
                     .withSubPackages(subpackages)
+                    .withFilter(pack.getArchive().getMetaInf().getFilter())
+                    .withSize(pack.getSize())
+                    .withProperties(pack.getArchive().getMetaInf().getProperties())
                     .withExternal(true);
             setInstallState(targetState);
             return pack.getId();
@@ -668,6 +677,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
               .withDependencies(state.getDependencies())
               .withSubPackages(state.getSubPackages())
               .withInstallTime(installTime)
+              .withSize(state.getSize())
+              .withProperties(state.getProperties())
               .withExternal(state.isExternal());
         setInstallState(targetState);
     }

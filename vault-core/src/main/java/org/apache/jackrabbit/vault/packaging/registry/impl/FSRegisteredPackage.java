@@ -22,9 +22,11 @@ import java.util.Calendar;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.slf4j.Logger;
@@ -40,18 +42,25 @@ public class FSRegisteredPackage implements RegisteredPackage {
      */
     private static final Logger log = LoggerFactory.getLogger(FSPackageRegistry.class);
 
-    private final FSPackageRegistry registry;
+    private FSPackageRegistry registry;
 
-    private final PackageId id;
+    private VaultPackage vltPkg = null;
 
-    private final Path filepath;
-
-    private VaultPackage vltPkg;
+    private PackageId id;
+    private Path filepath;
+    private PackageProperties packageProperties;
+    private Dependency[] dependencies;
+    private WorkspaceFilter filter;
+    private long size;
 
     public FSRegisteredPackage(FSPackageRegistry registry, FSInstallState installState) throws IOException {
         this.id = installState.getPackageId();
         this.filepath = installState.getFilePath();
+        this.dependencies = installState.getDependencies().toArray(new Dependency[installState.getDependencies().size()]);
+        this.filter = installState.getFilter();
+        this.packageProperties = new FsPackageProperties(installState);
         this.registry = registry;
+        this.size = installState.getSize();
     }
 
     @Nonnull
@@ -71,17 +80,17 @@ public class FSRegisteredPackage implements RegisteredPackage {
 
     @Override
     public boolean isInstalled() {
-            try {
-                return registry.isInstalled(getId());
-            } catch (IOException e) {
-                log.error("Packagestate couldn't be read for package {}", getId().toString(), e);
-                return false;
-            }
+        try {
+            return registry.isInstalled(getId());
+        } catch (IOException e) {
+            log.error("Packagestate couldn't be read for package {}", getId().toString(), e);
+            return false;
+        }
     }
 
     @Override
     public long getSize() {
-        return vltPkg.getSize();
+        return size;
     }
 
     @CheckForNull
@@ -93,7 +102,7 @@ public class FSRegisteredPackage implements RegisteredPackage {
             installTime = registry.getInstallState(getId()).getInstallationTime();
             if (installTime == null) {
                 cal = null;
-            } else{
+            } else {
                 cal.setTimeInMillis(installTime);
             }
         } catch (IOException e) {
@@ -114,5 +123,20 @@ public class FSRegisteredPackage implements RegisteredPackage {
     @Override
     public int compareTo(RegisteredPackage o) {
         return getId().compareTo(o.getId());
+    }
+
+    @Override
+    public Dependency[] getDependencies() {
+        return this.dependencies;
+    }
+
+    @Override
+    public WorkspaceFilter getWorkspaceFilter() {
+        return this.filter;
+    }
+
+    @Override
+    public PackageProperties getPackageProperties() throws IOException {
+        return this.packageProperties;
     }
 }

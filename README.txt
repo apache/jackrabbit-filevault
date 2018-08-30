@@ -20,6 +20,20 @@ For more instructions, please see the documentation at:
 
    http://jackrabbit.apache.org/building-jackrabbit.html
 
+Building FileVault with Docker
+==============================
+
+You can also build FileVault with Docker:
+
+    docker build -t apache-jackrabbit-filevault .
+
+After the build is finished you can run FileVault with Docker:
+
+    docker run apache-jackrabbit-filevault --help
+
+Building with Docker does not require any dependencies besides Docker.
+
+
 License (see also LICENSE.txt)
 ==============================
 

@@ -22,7 +22,10 @@ import java.util.Calendar;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -47,6 +50,28 @@ public interface RegisteredPackage extends Comparable<RegisteredPackage>, AutoCl
     @Nonnull
     VaultPackage getPackage() throws IOException;
 
+    /**
+     * Returns the dependencies of this package
+     * @return the dependencies of this package.
+     */
+    @Nonnull
+    Dependency[] getDependencies();
+    
+    /**
+     * Returns the {@code WorkspaceFilter} of this package
+     * @return {@code WorkspaceFilter} of this package
+     */
+    @Nonnull
+    WorkspaceFilter getWorkspaceFilter();
+    
+    /**
+     * Returns the {@code PackageProperties} of this package
+     * @return {@code PackageProperties} of this package
+     * @throws IOException if an I/O error occurs
+     */
+    @Nonnull
+    PackageProperties getPackageProperties() throws IOException;
+    
     /**
      * Returns the size of the underlying package.
      * @return the size in bytes

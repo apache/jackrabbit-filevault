@@ -23,10 +23,14 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.impl.JcrWorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 
 /**
@@ -95,5 +99,25 @@ public class JcrRegisteredPackage implements RegisteredPackage {
     @Override
     public int compareTo(RegisteredPackage o) {
         return getId().compareTo(o.getId());
+    }
+
+    @Override
+    public Dependency[] getDependencies() {
+        return vltPkg.getDependencies();
+    }
+
+    @Override
+    public WorkspaceFilter getWorkspaceFilter() {
+        // TODO Auto-generated method stub
+        try {
+            return JcrWorkspaceFilter.loadFilter(pkg.getDefNode());
+        } catch (RepositoryException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public PackageProperties getPackageProperties() throws IOException {
+        return getPackage().getProperties();
     }
 }

@@ -80,7 +80,7 @@ public class XmlAnalyzer {
             }
             String str = new String(buffer, 0, pos);
             // check for docview
-            if (str.contains("<jcr:root ") && str.contains("\"http://www.jcp.org/jcr/1.0\"")) {
+            if (str.contains("<jcr:root") && str.contains("\"http://www.jcp.org/jcr/1.0\"")) {
                 type = SerializationType.XML_DOCVIEW;
             } else if (str.contains("<?xml ")) {
                 type = SerializationType.XML_GENERIC;

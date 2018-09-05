@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.fs.impl.io;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
@@ -79,7 +80,7 @@ public class XmlAnalyzer {
             }
             String str = new String(buffer, 0, pos);
             // check for docview
-            if (str.contains("<jcr:root ") && str.contains("\"http://www.jcp.org/jcr/1.0\"")) {
+            if (str.contains("<jcr:root") && str.contains("\"http://www.jcp.org/jcr/1.0\"")) {
                 type = SerializationType.XML_DOCVIEW;
             } else if (str.contains("<?xml ")) {
                 type = SerializationType.XML_GENERIC;

@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -144,11 +145,15 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     @Activate
     private void activate(BundleContext context, Config config) throws IOException {
-        String repoHome = context.getProperty(REPOSITORY_HOME);
-        if (repoHome == null) {
-            this.homeDir = context.getDataFile(config.homePath());
+        Path homePath = Paths.get(config.homePath());
+        if (homePath.isAbsolute()) {
+            this.homeDir = homePath.toFile();
         } else {
-            this.homeDir = new File(repoHome + "/" + config.homePath());
+            String repoHome = context.getProperty(REPOSITORY_HOME);
+            if (repoHome == null) {
+                throw new IOException("Can't lookup relative path when property repository.home is not set");
+            }
+            this.homeDir = new File(repoHome + "/" + homePath.toString());
             if (!homeDir.exists()) {
                 homeDir.mkdirs();
             }

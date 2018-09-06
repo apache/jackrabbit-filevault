@@ -103,7 +103,7 @@ public interface ExecutionPlanBuilder {
      * @throws PackageException if the plan is not valid.
      */
     @Nonnull
-    List<PackageId> calculate() throws IOException, PackageException;
+    List<PackageId> calculateIds() throws IOException, PackageException;
     
     /**
      * builds an executes the plan synchronously.

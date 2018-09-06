@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.jackrabbit.vault.packaging.CyclicDependencyException;
 import org.apache.jackrabbit.vault.packaging.DependencyException;
@@ -322,5 +323,45 @@ public class TestExecutionPlan extends IntegrationTestBase {
         assertTrue("package C is installed", registry.open(idC).isInstalled());
     }
 
+    @Test
+    public void testStackedExecutionPlans() throws IOException, PackageException {
+        PackageId idA = registry.register(getStream(TEST_PACKAGE_A_10), false);
+        PackageId idB = registry.register(getStream(TEST_PACKAGE_B_10), false);
+        PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
+        
+        assertFalse("package A is not installed", registry.open(idA).isInstalled());
+        assertFalse("package B is not installed", registry.open(idB).isInstalled());
+        assertFalse("package C is not installed", registry.open(idC).isInstalled());
 
+        ExecutionPlanBuilder builder1 = registry.createExecutionPlan()
+                .addTask().with(idB).with(PackageTask.Type.EXTRACT)
+                .addTask().with(idC).with(PackageTask.Type.EXTRACT)
+                .with(admin)
+                .with(getDefaultOptions().getListener());
+        
+        
+        // create new executionPlanBuilder for package A
+        ExecutionPlanBuilder builder2 = registry.createExecutionPlan()
+                .addTask().with(idA).with(PackageTask.Type.EXTRACT)
+                .with(admin)
+                .with(getDefaultOptions().getListener());
+        assertEquals("builder2 contains all packageTasks", 3, builder2.calculateIds().size());
+        
+        // If calculatedIds of builder1 are declared external idB & idC should be removed
+        builder2.with(builder1.calculateIds());
+        assertEquals("builder2 only contains 1 PackageTask", 1, builder2.calculateIds().size());
+        assertEquals("builder2 handles only idA", builder2.calculateIds().get(0), idA);
+        
+        ExecutionPlan plan = builder2.execute();
+        assertTrue("builder2 should fail before builder1 is executed.",plan.hasErrors());
+        
+        builder1.execute();
+        
+        // revalidate builder2 to reset error state (calculate implicitly validates)
+        assertEquals("builder2 only contains 1 PackageTask", 1, builder2.calculateIds().size());
+        
+        ExecutionPlan plan2 = builder2.execute();
+        assertFalse("builder2 should succeed after builder1 has been executed.", plan2.hasErrors());
+        
+    }
 }

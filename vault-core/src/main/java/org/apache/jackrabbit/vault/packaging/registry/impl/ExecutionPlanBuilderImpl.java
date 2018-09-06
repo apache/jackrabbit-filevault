@@ -278,7 +278,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
             if (task == null) {
                 // package is not registered in plan, but need to be installed
                 // due to dependency
-                task = new PackageTaskImpl(id, PackageTask.Type.INSTALL);
+                task = new PackageTaskImpl(id, type);
             }
             packageTasks.add(task);
         }
@@ -359,7 +359,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     }
 
     @Override
-    public List<PackageId> calculate() throws IOException, PackageException {
+    public List<PackageId> calculateIds() throws IOException, PackageException {
         validate();
         if (plan.getTasks().size() == 0) {
             return Collections.emptyList();

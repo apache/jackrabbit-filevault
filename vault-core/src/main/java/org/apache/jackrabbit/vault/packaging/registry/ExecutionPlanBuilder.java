@@ -19,12 +19,14 @@ package org.apache.jackrabbit.vault.packaging.registry;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -84,6 +86,25 @@ public interface ExecutionPlanBuilder {
     @Nonnull
     ExecutionPlanBuilder with(@Nonnull ProgressTrackerListener listener);
 
+    
+    /**
+     * Sets packages handled externally ahead of execution for prevalidation of plan
+     * @param List of packages handled by other builder
+     * @return this.
+     */
+    @Nonnull
+    ExecutionPlanBuilder with(@Nonnull List<PackageId> externalPackages);
+
+    /**
+     * Triggers Validation and returns PackageIds of all packages to be installed
+     * by this builder
+     * @return List of packages to be installed by this builder.
+     * @throws IOException if an I/O error occurrs.
+     * @throws PackageException if the plan is not valid.
+     */
+    @Nonnull
+    List<PackageId> calculate() throws IOException, PackageException;
+    
     /**
      * builds an executes the plan synchronously.
      * @return the execution plan.

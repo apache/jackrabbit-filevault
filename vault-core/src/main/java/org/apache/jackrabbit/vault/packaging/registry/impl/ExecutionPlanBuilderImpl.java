@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -89,6 +90,8 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     private ProgressTrackerListener listener;
 
     private ExecutionPlanImpl plan;
+
+    private List<PackageId> externalPackages = Collections.emptyList();
 
     ExecutionPlanBuilderImpl(PackageRegistry registry) {
         this.registry = registry;
@@ -233,7 +236,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         packageTasks.addAll(removeTasks.values());
 
         for (PackageId id: installTasks.keySet().toArray(new PackageId[installTasks.size()])) {
-            resolveInstall(id, packageTasks, installTasks, new HashSet<PackageId>());
+            resolveInstall(id, packageTasks, installTasks, new HashSet<PackageId>(), installTasks.get(id).getType());
         }
 
         for (PackageTask task: packageTasks) {
@@ -244,7 +247,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         return this;
     }
 
-    private void resolveInstall(PackageId id, List<PackageTask> packageTasks, Map<PackageId, PackageTask> installTasks, Set<PackageId> resolved) throws IOException, PackageException {
+    private void resolveInstall(PackageId id, List<PackageTask> packageTasks, Map<PackageId, PackageTask> installTasks, Set<PackageId> resolved, PackageTask.Type type) throws IOException, PackageException {
         if (resolved.contains(id)) {
             throw new CyclicDependencyException("Package has cyclic dependencies: " + id);
         }
@@ -264,18 +267,21 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
                     continue;
                 }
             }
-            resolveInstall(depId, packageTasks, installTasks, resolved);
+            resolveInstall(depId, packageTasks, installTasks, resolved, type);
         }
         PackageTask task = installTasks.get(id);
         if (task == PackageTaskImpl.MARKER) {
             // task was added during resolution
             return;
         }
-        if (task == null) {
-            // package is not registered in plan, but need to be installed due to dependency
-            task = new PackageTaskImpl(id, PackageTask.Type.INSTALL);
+        if (!externalPackages.contains(id)) {
+            if (task == null) {
+                // package is not registered in plan, but need to be installed
+                // due to dependency
+                task = new PackageTaskImpl(id, PackageTask.Type.INSTALL);
+            }
+            packageTasks.add(task);
         }
-        packageTasks.add(task);
         // mark as processed
         installTasks.put(id, PackageTaskImpl.MARKER);
     }
@@ -343,6 +349,26 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         public ExecutionPlanBuilder with(@Nonnull PackageTask.Type type) {
             this.type = type;
             return ExecutionPlanBuilderImpl.this;
+        }
+    }
+
+    @Override
+    public ExecutionPlanBuilder with(List<PackageId> externalPackages) {
+        this.externalPackages = externalPackages;
+        return ExecutionPlanBuilderImpl.this;
+    }
+
+    @Override
+    public List<PackageId> calculate() throws IOException, PackageException {
+        validate();
+        if (plan.getTasks().size() == 0) {
+            return Collections.emptyList();
+        } else {
+            List<PackageId> packages = new ArrayList<>();
+            for(PackageTask task : plan.getTasks()) {
+                packages.add(task.getPackageId());
+            }
+            return packages;
         }
     }
 }

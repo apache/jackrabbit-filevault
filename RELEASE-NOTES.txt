@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.2.0
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.2.2
 
 Introduction
 ------------
@@ -9,6 +9,20 @@ create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
 
+Changes in Jackrabbit FileVault 3.2.2
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.2.2
+
+Bug Fixes:
+    * [JCRVLT-317] - Aggregate not recognized as XML if root element name followed by a newline
+
+Improvements:
+    * [JCRVLT-313] - Avoid opening VaultPackage to get RegisteredPackage in FSRegistry
+    * [JCRVLT-314] - Optimize buildup & update flow of FSInstallState
+    * [JCRVLT-318] - Allow FSPackageRegistry to be configured to absolute path
+
+
 Changes in Jackrabbit FileVault 3.2.0
 --------------------------------------
 
@@ -18,11 +32,6 @@ Important Changes:
 For the fix of JCRVLT-282 the embedded dependencies of jackrabbit-spi and jackrabbit-spi-commons were removed from the
 vault-core bundle. This was required to keep the bundle Java 1.7 compatible and rather consume the libraries from the
 running system. Since some of the exported APIs already contain references to the Jackrabbit SPI this was necessary.
-
-Changes in Jackrabbit FileVault 3.2.0
--------------------------------------
-
-Release Notes - Jackrabbit FileVault - Version 3.2.0
 
 Bug Fixes:
     * [JCRVLT-292] - Order of ACLs are altered on installation of content packages

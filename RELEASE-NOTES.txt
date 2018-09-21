@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.2.2
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.2.4
 
 Introduction
 ------------
@@ -9,10 +9,10 @@ create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
 
-Changes in Jackrabbit FileVault 3.2.2
+Changes in Jackrabbit FileVault 3.2.4
 --------------------------------------
 
-Release Notes - Jackrabbit FileVault - Version 3.2.2
+Release Notes - Jackrabbit FileVault - Version 3.2.4
 
 Bug Fixes:
     * [JCRVLT-317] - Aggregate not recognized as XML if root element name followed by a newline
@@ -21,6 +21,7 @@ Improvements:
     * [JCRVLT-313] - Avoid opening VaultPackage to get RegisteredPackage in FSRegistry
     * [JCRVLT-314] - Optimize buildup & update flow of FSInstallState
     * [JCRVLT-318] - Allow FSPackageRegistry to be configured to absolute path
+    * [JCRVLT-310] - FSRegistry: store package properties in metainfo
 
 
 Changes in Jackrabbit FileVault 3.2.0

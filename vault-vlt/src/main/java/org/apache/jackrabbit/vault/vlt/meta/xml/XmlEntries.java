@@ -82,6 +82,8 @@ public class XmlEntries implements VltEntries {
         try {
             DocumentBuilderFactory factory =
                 DocumentBuilderFactory.newInstance();
+            // disable DTD loading (bug #36897)
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(source);
             Element doc = document.getDocumentElement();

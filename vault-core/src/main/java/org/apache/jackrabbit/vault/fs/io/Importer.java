@@ -78,6 +78,7 @@ import org.apache.jackrabbit.vault.fs.spi.PrivilegeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
+import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
@@ -140,6 +141,10 @@ public class Importer {
      * default logger
      */
     private static final Logger log = LoggerFactory.getLogger(Importer.class);
+    /**
+     * Activity Logger to track node level updates
+     */
+    private static final Logger activityLog = LoggerFactory.getLogger(ActivityLog.class);
 
     /**
      * workspace filter to use during import
@@ -285,6 +290,7 @@ public class Importer {
             log.error("{} {}", action, path);
         } else {
             log.debug("{} {}", action, path);
+            activityLog.debug("{} {}", action, path);
         }
         if (tracker != null) {
             tracker.track(action, path);

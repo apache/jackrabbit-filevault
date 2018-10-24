@@ -56,7 +56,7 @@ public class ActivityLog implements PackageEventListener {
             msg = String.format("%s: %s", event.getId(), event.getType());
         }
 
-        if (log.isDebugEnabled()) {
+        if (log.isTraceEnabled()) {
             msg += "\nThe event was triggered here:";
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             for (int i=1; i<stackTrace.length; i++) {

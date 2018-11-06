@@ -359,12 +359,12 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     }
 
     @Override
-    public List<PackageId> calculateIds() throws IOException, PackageException {
+    public Set<PackageId> preview() throws IOException, PackageException {
         validate();
         if (plan.getTasks().size() == 0) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         } else {
-            List<PackageId> packages = new ArrayList<>();
+            Set<PackageId> packages = new HashSet<>();
             for(PackageTask task : plan.getTasks()) {
                 packages.add(task.getPackageId());
             }

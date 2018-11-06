@@ -345,12 +345,12 @@ public class TestExecutionPlan extends IntegrationTestBase {
                 .addTask().with(idA).with(PackageTask.Type.EXTRACT)
                 .with(admin)
                 .with(getDefaultOptions().getListener());
-        assertEquals("builder2 contains all packageTasks", 3, builder2.calculateIds().size());
+        assertEquals("builder2 contains all packageTasks", 3, builder2.preview().size());
         
         // If calculatedIds of builder1 are declared external idB & idC should be removed
-        builder2.with(builder1.calculateIds());
-        assertEquals("builder2 only contains 1 PackageTask", 1, builder2.calculateIds().size());
-        assertEquals("builder2 handles only idA", builder2.calculateIds().get(0), idA);
+        builder2.with(builder1.preview());
+        assertEquals("builder2 only contains 1 PackageTask", 1, builder2.preview().size());
+        assertEquals("builder2 handles only idA", builder2.preview().get(0), idA);
         
         ExecutionPlan plan = builder2.execute();
         assertTrue("builder2 should fail before builder1 is executed.",plan.hasErrors());
@@ -358,7 +358,7 @@ public class TestExecutionPlan extends IntegrationTestBase {
         builder1.execute();
         
         // revalidate builder2 to reset error state (calculate implicitly validates)
-        assertEquals("builder2 only contains 1 PackageTask", 1, builder2.calculateIds().size());
+        assertEquals("builder2 only contains 1 PackageTask", 1, builder2.preview().size());
         
         ExecutionPlan plan2 = builder2.execute();
         assertFalse("builder2 should succeed after builder1 has been executed.", plan2.hasErrors());

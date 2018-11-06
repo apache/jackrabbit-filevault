@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Session;
@@ -98,12 +99,12 @@ public interface ExecutionPlanBuilder {
     /**
      * Triggers Validation and returns PackageIds of all packages to be installed
      * by this builder
-     * @return List of packages to be installed by this builder.
+     * @return Set of packages to be installed by this builder.
      * @throws IOException if an I/O error occurrs.
      * @throws PackageException if the plan is not valid.
      */
     @Nonnull
-    List<PackageId> calculateIds() throws IOException, PackageException;
+    Set<PackageId> preview() throws IOException, PackageException;
     
     /**
      * builds an executes the plan synchronously.

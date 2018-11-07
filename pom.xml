@@ -248,5 +248,4 @@ file://${basedir}/target/vote.txt
             </build>
         </profile>
     </profiles>
-
 </project>

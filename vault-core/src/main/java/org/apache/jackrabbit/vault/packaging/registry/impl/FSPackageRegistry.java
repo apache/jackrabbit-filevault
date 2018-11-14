@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -519,8 +520,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Nonnull
     @Override
     public PackageId registerExternal(@Nonnull File file, boolean replace) throws IOException, PackageExistsException {
-        if (!replace && pathIdMapping.containsKey(file.getPath())) {
-            throw new PackageExistsException("Package already exists: " + pathIdMapping.get(file.getPath()));
+        if (!replace && pathIdMapping.containsKey(file.toPath())) {
+            PackageId pid = pathIdMapping.get(file.toPath());
+            throw new PackageExistsException("Package already exists: " + pid).setId(pid);
         }
         ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
         try {

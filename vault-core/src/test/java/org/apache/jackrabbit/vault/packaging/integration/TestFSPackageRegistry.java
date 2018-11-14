@@ -196,7 +196,7 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
     }
     
     /**
-     * registers a file as external package twice (replace = true)
+     * registers a file as external package twice (replace = false)
      */
     @Test
     public void testRegisterExternalFileTwiceFails() throws IOException, PackageException {
@@ -218,9 +218,36 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
             assertEquals("colliding pid must be correct", id, e.getId());
         }
     }
+    
+    /**
+     * registers a file as external package twice with 
+     */
+    @Test
+    public void testRegisterExternalFileTwiceFailsLoadedRegistry() throws IOException, PackageException {
+        File file = getTempFile("testpackages/tmp.zip");
+        PackageId id = registry.registerExternal(file, false);
+        assertEquals("package id", TMP_PACKAGE_ID, id);
+
+        try (RegisteredPackage pkg = registry.open(id)) {
+            assertEquals("package id of registered is correct", TMP_PACKAGE_ID, pkg.getId());
+            assertFalse("Package is not installed", pkg.isInstalled());
+        }
+        
+        // loading registry again to force loading of metadata from files
+        registry = new FSPackageRegistry(DIR_REGISTRY_HOME);
+        
+        try {
+            registry.registerExternal(file, false);
+            fail("registering the package twice should fail");
+        } catch (PackageExistsException e) {
+            // expected
+            assertEquals("colliding pid must be correct", id, e.getId());
+        }
+    }
+
 
     /**
-     * registers a file as external package twice (replace = true)
+     * registers a file as external package twice (replace = false)
      */
     @Test
     public void testRegisterExternalFileTwiceSucceeds() throws IOException, PackageException {

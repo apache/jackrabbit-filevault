@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.2.4
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.2.6
 
 Introduction
 ------------
@@ -9,8 +9,18 @@ create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
 
+Changes in Jackrabbit FileVault 3.2.6
+-------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.2.6
+
+Improvement
+   * [JCRVLT-141] - Log all activity to debug so that an activity log can be created
+   * [JCRVLT-319] - Allow building of stacked ExecutionPlans
+
+
 Changes in Jackrabbit FileVault 3.2.4
---------------------------------------
+-------------------------------------
 
 Release Notes - Jackrabbit FileVault - Version 3.2.4
 
@@ -25,7 +35,7 @@ Improvements:
 
 
 Changes in Jackrabbit FileVault 3.2.0
---------------------------------------
+-------------------------------------
 
 Release Notes - Jackrabbit FileVault - Version 3.2.0
 

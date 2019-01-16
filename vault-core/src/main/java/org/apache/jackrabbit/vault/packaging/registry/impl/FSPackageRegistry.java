@@ -150,11 +150,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             this.homeDir = context.getDataFile(config.homePath());
         } else {
             this.homeDir = new File(config.homePath());
-            if(!this.homeDir.isAbsolute()) {
+            if (!this.homeDir.isAbsolute()) {
                 this.homeDir = new File(repoHome + "/" + config.homePath());
-                if (!homeDir.exists()) {
-                    homeDir.mkdirs();
-                }
+            }
+            if (!homeDir.exists()) {
+                homeDir.mkdirs();
             }
         }
         loadPackageCache();

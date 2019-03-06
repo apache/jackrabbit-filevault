@@ -28,6 +28,8 @@ import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.Packaging;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
+import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
+import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageRegistry;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -55,6 +57,9 @@ public class PackagingImpl implements Packaging {
 
     @Reference
     private PackageEventDispatcher eventDispatcher;
+    
+    @Reference
+    private PackageRegistry fsPackageRegistry;
 
     /**
      * package manager is a singleton
@@ -98,6 +103,9 @@ public class PackagingImpl implements Packaging {
     public JcrPackageManager getPackageManager(Session session) {
         JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, packageRoots);
         mgr.setDispatcher(eventDispatcher);
+        if (fsPackageRegistry instanceof FSPackageRegistry) {
+            mgr.getInternalRegistry().setFsPackageRegistry((FSPackageRegistry)fsPackageRegistry);
+        }
         return mgr;
     }
 

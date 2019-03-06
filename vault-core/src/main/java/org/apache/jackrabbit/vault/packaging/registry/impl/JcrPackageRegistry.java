@@ -115,6 +115,11 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * the package root prefix of the primary root path.
      */
     private final String primaryPackRootPathPrefix;
+    
+    /**
+     * FSPackageRegistry can be registered if present in the system to be able to look up presatisfied dependencies
+     */
+    private FSPackageRegistry fsPackageRegistry = null;
 
 
     /**
@@ -134,6 +139,13 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         initNodeTypes();
     }
 
+    /**
+     * Sets FSPackageRegistrym for dependency lookup
+     * @param fsPackageRegistry
+     */
+    public void setFsPackageRegistry(@Nullable FSPackageRegistry fsPackageRegistry) {
+        this.fsPackageRegistry = fsPackageRegistry;
+    }
     /**
      * Sets the event dispatcher
      * @param dispatcher the dispatcher.
@@ -241,6 +253,11 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     public RegisteredPackage open(@Nonnull PackageId id) throws IOException {
         try {
             Node node = getPackageNode(id);
+            if (node == null && fsPackageRegistry != null) {
+                if (fsPackageRegistry.contains(id)) {
+                    return fsPackageRegistry.open(id);
+                }
+            }
             return node == null ? null : new JcrRegisteredPackage(open(node, false));
         } catch (RepositoryException e) {
             throw new IOException(e);
@@ -319,6 +336,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
                         }
                     }
                 }
+            } 
+            if (bestId == null && fsPackageRegistry != null) {
+                bestId = fsPackageRegistry.resolve(dependency, onlyInstalled);
             }
             return bestId;
         } catch (RepositoryException e) {

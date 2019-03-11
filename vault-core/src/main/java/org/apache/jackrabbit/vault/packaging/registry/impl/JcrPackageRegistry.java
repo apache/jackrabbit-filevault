@@ -117,9 +117,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     private final String primaryPackRootPathPrefix;
     
     /**
-     * FSPackageRegistry can be registered if present in the system to be able to look up presatisfied dependencies
+     * Fallback Registry can be registered if present in the system to be able to look up presatisfied dependencies
      */
-    private FSPackageRegistry fsPackageRegistry = null;
+    private PackageRegistry baseRegistry = null;
 
 
     /**
@@ -140,11 +140,11 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     }
 
     /**
-     * Sets FSPackageRegistrym for dependency lookup
-     * @param fsPackageRegistry
+     * Sets fallback PackageRegistry for dependency lookup
+     * @param baseRegisry
      */
-    public void setFsPackageRegistry(@Nullable FSPackageRegistry fsPackageRegistry) {
-        this.fsPackageRegistry = fsPackageRegistry;
+    public void setBaseRegistry(@Nullable PackageRegistry baseRegisry) {
+        this.baseRegistry = baseRegisry;
     }
     /**
      * Sets the event dispatcher
@@ -253,9 +253,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     public RegisteredPackage open(@Nonnull PackageId id) throws IOException {
         try {
             Node node = getPackageNode(id);
-            if (node == null && fsPackageRegistry != null) {
-                if (fsPackageRegistry.contains(id)) {
-                    return fsPackageRegistry.open(id);
+            if (node == null && baseRegistry != null) {
+                if (baseRegistry.contains(id)) {
+                    return baseRegistry.open(id);
                 }
             }
             return node == null ? null : new JcrRegisteredPackage(open(node, false));
@@ -337,8 +337,8 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
                     }
                 }
             } 
-            if (bestId == null && fsPackageRegistry != null) {
-                bestId = fsPackageRegistry.resolve(dependency, onlyInstalled);
+            if (bestId == null && baseRegistry != null) {
+                bestId = baseRegistry.resolve(dependency, onlyInstalled);
             }
             return bestId;
         } catch (RepositoryException e) {

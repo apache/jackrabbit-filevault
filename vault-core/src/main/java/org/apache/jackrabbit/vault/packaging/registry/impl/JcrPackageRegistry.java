@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.jcr.Binary;
@@ -63,8 +61,6 @@ import org.apache.jackrabbit.vault.packaging.impl.JcrPackageImpl;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
-import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
-import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;

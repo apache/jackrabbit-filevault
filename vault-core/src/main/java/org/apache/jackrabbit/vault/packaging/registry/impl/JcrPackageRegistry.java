@@ -250,9 +250,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         try {
             Node node = getPackageNode(id);
             if (node == null && baseRegistry != null) {
-                if (baseRegistry.contains(id)) {
-                    return baseRegistry.open(id);
-                }
+                return baseRegistry.open(id);
             }
             return node == null ? null : new JcrRegisteredPackage(open(node, false));
         } catch (RepositoryException e) {
@@ -263,7 +261,11 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     @Override
     public boolean contains(@Nonnull PackageId id) throws IOException {
         try {
-            return getPackageNode(id) != null;
+            boolean result = getPackageNode(id) != null;
+            if (result == false && baseRegistry != null) {
+                result = baseRegistry.contains(id);
+            }
+            return result;
         } catch (RepositoryException e) {
             throw new IOException(e);
         }

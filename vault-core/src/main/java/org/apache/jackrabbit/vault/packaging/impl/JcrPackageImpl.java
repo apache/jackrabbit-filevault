@@ -73,6 +73,7 @@ import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.Version;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
+import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
@@ -757,17 +758,17 @@ public class JcrPackageImpl implements JcrPackage {
             return;
         }
         List<Dependency> unresolved = new LinkedList<Dependency>();
-        List<JcrPackageImpl> uninstalled = new LinkedList<JcrPackageImpl>();
+        List<RegisteredPackage> uninstalled = new LinkedList<RegisteredPackage>();
         for (Dependency dep: def.getDependencies()) {
             // resolve to installed and uninstalled packages
             PackageId id = mgr.resolve(dep, false);
             if (id == null) {
                 unresolved.add(dep);
             } else {
-                JcrRegisteredPackage pack = (JcrRegisteredPackage) mgr.open(id);
+                RegisteredPackage pack = (RegisteredPackage) mgr.open(id);
                 if (pack != null && !pack.isInstalled()) {
                     unresolved.add(dep);
-                    uninstalled.add((JcrPackageImpl) pack.getJcrPackage());
+                    uninstalled.add(pack);
                 }
             }
         }
@@ -783,11 +784,11 @@ public class JcrPackageImpl implements JcrPackage {
             throw new DependencyException(msg);
         }
 
-        for (JcrPackageImpl pack: uninstalled) {
+        for (RegisteredPackage pack: uninstalled) {
             if (pack.isInstalled()) {
                 continue;
             }
-            PackageId packageId = pack.getDefinition().getId();
+            PackageId packageId = pack.getId();
             if (processed.contains(packageId)) {
                 if (opts.getDependencyHandling() == DependencyHandling.BEST_EFFORT) {
                     continue;
@@ -796,7 +797,14 @@ public class JcrPackageImpl implements JcrPackage {
                 log.error(msg);
                 throw new CyclicDependencyException(msg);
             }
-            pack.extract(processed, opts, createSnapshot, replaceSnapshot);
+            if (pack instanceof JcrRegisteredPackage) {
+                JcrPackage jcrPackage = ((JcrRegisteredPackage)pack).getJcrPackage();
+                ((JcrPackageImpl)jcrPackage).extract(processed, opts, createSnapshot, replaceSnapshot);
+            } else {
+                String msg = String.format("Unable to install package %s. dependency not found in JcrPackageRegistry %s", def.getId(), packageId);
+                log.error(msg);
+                throw new DependencyException(msg);
+            }
         }
     }
 

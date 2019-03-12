@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.jcr.Binary;
@@ -63,8 +61,6 @@ import org.apache.jackrabbit.vault.packaging.impl.JcrPackageImpl;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
-import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
-import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
@@ -115,6 +111,11 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * the package root prefix of the primary root path.
      */
     private final String primaryPackRootPathPrefix;
+    
+    /**
+     * Fallback Registry can be registered if present in the system to be able to look up presatisfied dependencies
+     */
+    private PackageRegistry baseRegistry = null;
 
 
     /**
@@ -134,6 +135,13 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         initNodeTypes();
     }
 
+    /**
+     * Sets fallback PackageRegistry for dependency lookup
+     * @param baseRegisry
+     */
+    public void setBaseRegistry(@Nullable PackageRegistry baseRegisry) {
+        this.baseRegistry = baseRegisry;
+    }
     /**
      * Sets the event dispatcher
      * @param dispatcher the dispatcher.
@@ -241,6 +249,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     public RegisteredPackage open(@Nonnull PackageId id) throws IOException {
         try {
             Node node = getPackageNode(id);
+            if (node == null && baseRegistry != null) {
+                return baseRegistry.open(id);
+            }
             return node == null ? null : new JcrRegisteredPackage(open(node, false));
         } catch (RepositoryException e) {
             throw new IOException(e);
@@ -250,7 +261,11 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     @Override
     public boolean contains(@Nonnull PackageId id) throws IOException {
         try {
-            return getPackageNode(id) != null;
+            boolean result = getPackageNode(id) != null;
+            if (result == false && baseRegistry != null) {
+                result = baseRegistry.contains(id);
+            }
+            return result;
         } catch (RepositoryException e) {
             throw new IOException(e);
         }
@@ -319,6 +334,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
                         }
                     }
                 }
+            } 
+            if (bestId == null && baseRegistry != null) {
+                bestId = baseRegistry.resolve(dependency, onlyInstalled);
             }
             return bestId;
         } catch (RepositoryException e) {

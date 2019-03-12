@@ -28,9 +28,11 @@ import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.Packaging;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
+import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -55,6 +57,12 @@ public class PackagingImpl implements Packaging {
 
     @Reference
     private PackageEventDispatcher eventDispatcher;
+    
+    // In case a PackageRegistry is exposed as OSGi Service this will be considered
+    // as base registry to fall back for dependency checks - currently only FSPackageRegistry is exposed as such
+    // currently no support for multiple registered PackageRegistries (OSGi Framework will will pick first found)
+    @Reference (cardinality = ReferenceCardinality.OPTIONAL)
+    private PackageRegistry baseRegistry = null;
 
     /**
      * package manager is a singleton
@@ -98,6 +106,7 @@ public class PackagingImpl implements Packaging {
     public JcrPackageManager getPackageManager(Session session) {
         JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, packageRoots);
         mgr.setDispatcher(eventDispatcher);
+        mgr.getInternalRegistry().setBaseRegistry(baseRegistry);
         return mgr;
     }
 

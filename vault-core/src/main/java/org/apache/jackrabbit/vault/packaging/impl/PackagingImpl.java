@@ -33,6 +33,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -61,8 +62,9 @@ public class PackagingImpl implements Packaging {
     // In case a PackageRegistry is exposed as OSGi Service this will be considered
     // as base registry to fall back for dependency checks - currently only FSPackageRegistry is exposed as such
     // currently no support for multiple registered PackageRegistries (OSGi Framework will will pick first found)
-    @Reference (cardinality = ReferenceCardinality.OPTIONAL)
-    private PackageRegistry baseRegistry = null;
+    @Reference (cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC)
+    private volatile PackageRegistry baseRegistry;
 
     /**
      * package manager is a singleton

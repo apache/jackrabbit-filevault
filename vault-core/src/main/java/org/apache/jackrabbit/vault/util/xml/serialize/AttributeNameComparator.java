@@ -26,25 +26,30 @@ public class AttributeNameComparator implements Comparator<String> {
     public static final AttributeNameComparator INSTANCE = new AttributeNameComparator();
 
     @Override
-    public int compare(String o1, String o2) {
-        String n1 = o1.toLowerCase();
-        String n2 = o2.toLowerCase();
+    public int compare(final String o1, final String o2) {
+        final String n1 = o1.toLowerCase();
+        final String n2 = o2.toLowerCase();
         // order xmlns(:<prefix>)? attributes always to the front
-        boolean isXmlNs1 = n1.startsWith(XMLSymbols.PREFIX_XMLNS);
-        boolean isXmlNs2 = n2.startsWith(XMLSymbols.PREFIX_XMLNS);
+        final boolean isXmlNs1 = n1.startsWith(XMLSymbols.PREFIX_XMLNS);
+        final boolean isXmlNs2 = n2.startsWith(XMLSymbols.PREFIX_XMLNS);
         if (isXmlNs1 && !isXmlNs2) {
             return -1;
         } else if (!isXmlNs1 && isXmlNs2) {
             return 1;
         }
-        int i1 = n1.indexOf(':');
-        int i2 = n2.indexOf(':');
+        final int i1 = n1.indexOf(':');
+        final int i2 = n2.indexOf(':');
         if (i1 >=0 && i2 < 0) {
             return -1;
         } else if (i1 < 0 && i2 >=0) {
             return 1;
         } else {
-            return n1.compareTo(n2);
+            // if the lowercase versions are equal, they could differ in case (see JCRVLT-334)
+            final int c = n1.compareTo(n2);
+            if (c == 0) {
+                return o1.compareTo(o2);
+            }
+            return c;
         }
     }
 }

@@ -17,6 +17,7 @@
 
 package org.apache.jackrabbit.vault.fs.io;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -30,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.ISO8601;
 import org.junit.After;
@@ -79,5 +81,10 @@ public class DocViewFormatTest {
         assertFalse("malformed.xml is expected to be malformed", format.format(dir, patterns, true).isEmpty());
         format.format(dir, patterns, false);
         assertTrue("malformed.xml is expected to be formatted", format.format(dir, patterns, true).isEmpty());
+
+        final String expected = IOUtils.toString(this.getClass().getClassLoader()
+                .getResourceAsStream("org/apache/jackrabbit/vault/fs/io/DocViewFormat/formatted.xml"), "utf-8");
+        final String result = FileUtils.readFileToString(docViewFile, "utf-8");
+        assertEquals(expected, result);
     }
 }

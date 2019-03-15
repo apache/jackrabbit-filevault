@@ -19,5 +19,7 @@
           jcr:primaryType="nt:unstructured"
           jcr:title="Test node">
     <testChild jcr:primaryType="nt:unstructured"
-               foo="bar"/>
+                  testProperty="test"
+TestProperty="test"
+               foo="bar"></testChild>
 </jcr:root>

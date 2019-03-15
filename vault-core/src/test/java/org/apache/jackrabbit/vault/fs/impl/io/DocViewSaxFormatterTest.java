@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jcr.GuestCredentials;
+import javax.jcr.Node;
 import javax.jcr.PropertyType;
 import javax.jcr.Session;
 import javax.jcr.Value;
@@ -112,6 +113,34 @@ public class DocViewSaxFormatterTest extends IntegrationTestBase {
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
                 "    jcr:primaryType=\"nt:unstructured\"/>\n", out.toString("utf-8"));
+    }
+
+    /**
+     * Tests export of mixed case named properties serialization
+     */
+    @Test
+    public void testMixedCaseSerialization() throws Exception {
+        Node node = JcrUtils.getOrCreateByPath("/testroot", NodeType.NT_UNSTRUCTURED, admin);
+        node.setProperty("testproperty", "lowercase");
+        node.setProperty("TestProperty", "MixedCase");
+        admin.save();
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/testroot"));
+        RepositoryAddress addr = new RepositoryAddress("/" + admin.getWorkspace().getName() + "/");
+        VaultFileSystem jcrfs = Mounter.mount(null, filter, addr, null, admin);
+        Aggregate a = jcrfs.getAggregateManager().getRoot().getAggregate("testroot");
+        DocViewSerializer s = new DocViewSerializer(a);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        s.writeContent(out);
+
+        assertEquals("valid xml",
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
+                "    jcr:primaryType=\"nt:unstructured\"\n" +
+                "    TestProperty=\"MixedCase\"\n" +
+                "    testproperty=\"lowercase\"/>\n", out.toString("utf-8"));
     }
 
 }

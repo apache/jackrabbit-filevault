@@ -40,6 +40,8 @@ import javax.jcr.Session;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -49,6 +51,7 @@ import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.ScopedWorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
@@ -70,6 +73,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.metatype.annotations.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,6 +116,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     private File homeDir;
 
+    private String scope;
+
     private File getHomeDir() {
         return homeDir;
     }
@@ -123,7 +129,19 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException If an I/O error occurs.
      */
     public FSPackageRegistry(@Nonnull File homeDir) throws IOException {
+        this(homeDir, InstallationScope.UNSCOPED);
+    }
+
+    /**
+     * Creates a new FSPackageRegistry based on the given home directory.
+     *
+     * @param homeDir the directory in which packages and their metadata is stored
+     * @param scope to set a corresponding workspacefilter
+     * @throws IOException If an I/O error occurs.
+     */
+    public FSPackageRegistry(@Nonnull File homeDir, String scope) throws IOException {
         this.homeDir = homeDir;
+        this.scope = scope;
         loadPackageCache();
     }
 
@@ -141,6 +159,18 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
         @AttributeDefinition
         String homePath() default "packageregistry";
+        
+        @AttributeDefinition(name = "Installation Scope",
+                description = "Allows to limit the installation scope of this Apache Jackrabbit FS Package Registry Service. "
+                        + "Packages installed from this registry may be unscoped (unfiltered), "
+                        + "application scoped (only content for /apps & /libs) "
+                        + "or content scoped (all content despite of /libs & /apps)",
+                options = {
+                    @Option(label = "Unscoped", value = InstallationScope.UNSCOPED),
+                    @Option(label = "Application Scoped", value = InstallationScope.APPLICATION_SCOPED),
+                    @Option(label = "Content Scoped", value = InstallationScope.CONTENT_SCOPED)
+        })
+        String scope() default "unscoped";
     }
 
     @Activate
@@ -157,6 +187,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 homeDir.mkdirs();
             }
         }
+        this.scope = config.scope();
         loadPackageCache();
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
     }
@@ -645,6 +676,30 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             throw new PackageException(msg);
         }
         try (VaultPackage vltPkg = pkg.getPackage()) {
+            WorkspaceFilter filter = getInstallState(vltPkg.getId()).getFilter();
+            switch(scope) {
+                case InstallationScope.APPLICATION_SCOPED:
+                   if (filter instanceof DefaultWorkspaceFilter) {
+                       opts.setFilter(ScopedWorkspaceFilter.createApplicationScoped((DefaultWorkspaceFilter)filter));
+                   } else {
+                       String msg = "Scoped only supports WorkspaceFilters extending DefaultWorkspaceFilter";
+                       log.error(msg);
+                       throw new PackageException(msg);
+                   }
+                   break;
+                case InstallationScope.CONTENT_SCOPED:
+                    if (filter instanceof DefaultWorkspaceFilter) {
+                        opts.setFilter(ScopedWorkspaceFilter.createContentScoped((DefaultWorkspaceFilter)filter));
+                    } else {
+                        String msg = "Scoped only supports WorkspaceFilters extending DefaultWorkspaceFilter";
+                        log.error(msg);
+                        throw new PackageException(msg);
+                    }
+                    break;
+                default:
+                    // no need to set filter in other cases
+                
+            }
             vltPkg.extract(session, opts);
             dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
             updateInstallState(vltPkg.getId(), FSPackageStatus.EXTRACTED);

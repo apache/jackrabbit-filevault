@@ -18,19 +18,22 @@
 package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
-import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.DependencyException;
@@ -47,7 +50,7 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageTask.Type;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSInstallState;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageStatus;
-import org.junit.After;
+import org.apache.jackrabbit.vault.packaging.registry.impl.InstallationScope;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -68,7 +71,18 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
 
     private static final Logger log = LoggerFactory.getLogger(TestFSPackageRegistry.class);
 
+    public static final String[] APPLICATION_PATHS = {
+            "/libs",
+            "/libs/foo"
+    };
+    
+    public static final String[] CONTENT_PATHS = {
+            "/tmp",
+            "/tmp/foo"
+    };
+    
     private FSPackageRegistry registry;
+    private File registryHome;
 
     @Override
     @Before
@@ -79,7 +93,8 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         } else {
             DIR_REGISTRY_HOME.mkdir();
         }
-        registry = new FSPackageRegistry(DIR_REGISTRY_HOME);
+        
+        getFreshRegistry();
     }
     
     /**
@@ -234,7 +249,7 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         }
         
         // loading registry again to force loading of metadata from files
-        registry = new FSPackageRegistry(DIR_REGISTRY_HOME);
+        registry = new FSPackageRegistry(registryHome);
         
         try {
             registry.registerExternal(file, false);
@@ -296,6 +311,78 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         
         assertFalse(registry.open(PACKAGE_ID_SUB_A).isInstalled());
         assertFalse(registry.open(PACKAGE_ID_SUB_B).isInstalled());
+    }
+    
+    
+
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testInstallExternalUnScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.plugins.segment.file.InvalidFileStoreVersionException {
+        File file = getTempFile("testpackages/mixed_package.zip");
+        
+        cleanPaths(APPLICATION_PATHS);
+        cleanPaths(CONTENT_PATHS);
+        getFreshRegistry();
+
+        PackageId pkg = registry.registerExternal(file, false);
+        
+        ExecutionPlanBuilder builder = registry.createExecutionPlan();
+        Collector listener = new Collector();
+        builder.with(listener);
+        builder.addTask().with(pkg).with(Type.EXTRACT);
+        ExecutionPlan plan  = builder.with(admin).execute();
+        assertFalse(plan.hasErrors());
+        checkFiltered(APPLICATION_PATHS, new String[] {}, listener.paths);
+        checkFiltered(CONTENT_PATHS, new String[] {}, listener.paths);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testInstallExternalContentScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.plugins.segment.file.InvalidFileStoreVersionException {
+        File file = getTempFile("testpackages/mixed_package.zip");
+
+        cleanPaths(APPLICATION_PATHS);
+        cleanPaths(CONTENT_PATHS);
+        getFreshRegistry(InstallationScope.CONTENT_SCOPED);
+        
+        PackageId pkg = registry.registerExternal(file, false);
+        
+        ExecutionPlanBuilder builder = registry.createExecutionPlan();
+        Collector listener = new Collector();
+        builder.with(listener);
+        builder.addTask().with(pkg).with(Type.EXTRACT);
+        ExecutionPlan plan  = builder.with(admin).execute();
+        assertFalse(plan.hasErrors());
+        checkFiltered(CONTENT_PATHS, APPLICATION_PATHS, listener.paths);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void cleanPaths(String[] paths) throws IOException, RepositoryException, org.apache.jackrabbit.oak.plugins.segment.file.InvalidFileStoreVersionException  {
+        for (String path : paths) {
+            clean(path);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testInstallExternalApplicationScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.plugins.segment.file.InvalidFileStoreVersionException {
+        File file = getTempFile("testpackages/mixed_package.zip");
+        
+        cleanPaths(APPLICATION_PATHS);
+        cleanPaths(CONTENT_PATHS);
+        getFreshRegistry(InstallationScope.APPLICATION_SCOPED);
+        
+        PackageId pkg = registry.registerExternal(file, false);
+        
+        ExecutionPlanBuilder builder = registry.createExecutionPlan();
+        Collector listener = new Collector();
+        builder.with(listener);
+        builder.addTask().with(pkg).with(Type.EXTRACT);
+        ExecutionPlan plan  = builder.with(admin).execute();
+        assertFalse(plan.hasErrors());
+        checkFiltered(APPLICATION_PATHS, CONTENT_PATHS, listener.paths);
+        
     }
     
 
@@ -591,4 +678,34 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         loadPackageCache.invoke(registry);
         assertEquals(FSPackageStatus.NOTREGISTERED, registry.getInstallState(idC).getStatus());
     }
+    
+    private void getFreshRegistry(String... scope) throws IOException {
+        if (this.registryHome != null && this.registryHome.exists()) {
+            this.registryHome.delete();
+        }
+        this.registryHome = new File(DIR_REGISTRY_HOME, UUID.randomUUID().toString());
+        this.registryHome.mkdir();
+        if (scope.length > 0) {
+            this.registry = new FSPackageRegistry(registryHome, scope[0]);
+        } else {
+            this.registry = new FSPackageRegistry(registryHome);
+        }
+    }
+    
+    private static class Collector implements ProgressTrackerListener {
+        private final List<String> paths = new LinkedList<String>();
+
+        public void onMessage(Mode mode, String action, String path) {
+            paths.add(path);
+        }
+
+        public void onError(Mode mode, String path, Exception e) {
+        }
+    }
+    
+    public static void checkFiltered(String[] containing, String[] filtered, List<String> result) {
+        assertEquals("Results don't contain expected values", Collections.EMPTY_LIST, CollectionUtils.subtract(Arrays.asList(containing), result));
+        assertEquals("Results contain unexpected values", Collections.EMPTY_LIST , CollectionUtils.intersection(result, Arrays.asList(filtered)));
+    }
+
 }

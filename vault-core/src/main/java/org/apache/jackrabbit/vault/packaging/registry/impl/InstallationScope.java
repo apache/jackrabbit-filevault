@@ -16,8 +16,26 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
-public final class InstallationScope {
+import java.util.Arrays;
+
+public class InstallationScope {
     public final static String UNSCOPED = "unscoped";
     public final static String APPLICATION_SCOPED = "application";
     public final static String CONTENT_SCOPED = "content";
+    
+    private final static String[] OPTIONS = new String[] {UNSCOPED, APPLICATION_SCOPED, CONTENT_SCOPED};
+    private static String scope;
+    
+    public InstallationScope(String scope) {
+        if (Arrays.asList(OPTIONS).contains(scope)) {
+            InstallationScope.scope = scope;
+        } else {
+            throw new IllegalArgumentException(String.format("Value %s unsupported", scope)) ;
+        }
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
 }

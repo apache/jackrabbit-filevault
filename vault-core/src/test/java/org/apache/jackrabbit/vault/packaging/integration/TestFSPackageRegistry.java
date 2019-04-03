@@ -686,7 +686,7 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         this.registryHome = new File(DIR_REGISTRY_HOME, UUID.randomUUID().toString());
         this.registryHome.mkdir();
         if (scope.length > 0) {
-            this.registry = new FSPackageRegistry(registryHome, scope[0]);
+            this.registry = new FSPackageRegistry(registryHome, new InstallationScope(scope[0]));
         } else {
             this.registry = new FSPackageRegistry(registryHome);
         }

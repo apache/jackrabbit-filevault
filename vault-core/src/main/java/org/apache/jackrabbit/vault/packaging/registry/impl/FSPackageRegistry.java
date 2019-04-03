@@ -116,7 +116,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     private File homeDir;
 
-    private String scope;
+    private InstallationScope scope;
 
     private File getHomeDir() {
         return homeDir;
@@ -129,7 +129,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException If an I/O error occurs.
      */
     public FSPackageRegistry(@Nonnull File homeDir) throws IOException {
-        this(homeDir, InstallationScope.UNSCOPED);
+        this(homeDir, new InstallationScope(InstallationScope.UNSCOPED));
     }
 
     /**
@@ -139,7 +139,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param scope to set a corresponding workspacefilter
      * @throws IOException If an I/O error occurs.
      */
-    public FSPackageRegistry(@Nonnull File homeDir, String scope) throws IOException {
+    public FSPackageRegistry(@Nonnull File homeDir, InstallationScope scope) throws IOException {
         this.homeDir = homeDir;
         this.scope = scope;
         loadPackageCache();
@@ -187,7 +187,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 homeDir.mkdirs();
             }
         }
-        this.scope = config.scope();
+        this.scope = new InstallationScope(config.scope());
         loadPackageCache();
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
     }
@@ -677,7 +677,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         }
         try (VaultPackage vltPkg = pkg.getPackage()) {
             WorkspaceFilter filter = getInstallState(vltPkg.getId()).getFilter();
-            switch(scope) {
+            switch(scope.getScope()) {
                 case InstallationScope.APPLICATION_SCOPED:
                    if (filter instanceof DefaultWorkspaceFilter) {
                        opts.setFilter(ScopedWorkspaceFilter.createApplicationScoped((DefaultWorkspaceFilter)filter));

@@ -21,10 +21,8 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 
-import org.apache.jackrabbit.vault.fs.impl.AggregateImpl;
-
 /**
- * Receives walk event from the {@link AggregateImpl#walk(AggregateWalkListener)}.
+ * Receives walk event from the {@link WalkableAggregate#walk(AggregateWalkListener)}.
  *
  */
 public interface AggregateWalkListener {
@@ -35,7 +33,7 @@ public interface AggregateWalkListener {
      * @param root the root node of the tree walk
      * @throws RepositoryException if a repository error occurs.
      */
-    public void onWalkBegin(Node root) throws RepositoryException;
+    void onWalkBegin(Node root) throws RepositoryException;
 
     /**
      * Invoked when a node is traversed
@@ -46,7 +44,7 @@ public interface AggregateWalkListener {
      * @param depth    the relative depth of the node in respect to the tree root node.
      * @throws RepositoryException if a repository error occurs.
      */
-    public void onNodeBegin(Node node, boolean included, int depth)
+    void onNodeBegin(Node node, boolean included, int depth)
             throws RepositoryException;
 
     /**
@@ -56,7 +54,7 @@ public interface AggregateWalkListener {
      * @param depth the depth relative to the tree root
      * @throws RepositoryException if a repository error occurs.
      */
-    public void onProperty(Property prop, int depth) throws RepositoryException;
+    void onProperty(Property prop, int depth) throws RepositoryException;
 
     /**
      * Invoked when the child nodes are to be traversed.
@@ -65,7 +63,7 @@ public interface AggregateWalkListener {
      * @param depth the depth of that node
      * @throws RepositoryException if a repository error occurs.
      */
-    public void onChildren(Node node, int depth) throws RepositoryException;
+    void onChildren(Node node, int depth) throws RepositoryException;
 
     /**
      * Invoked when a node finished traversing
@@ -76,7 +74,7 @@ public interface AggregateWalkListener {
      * @param depth    the relative depth of the node in respect to the tree root node.
      * @throws RepositoryException if a repository error occurs.
      */
-    public void onNodeEnd(Node node, boolean included, int depth)
+    void onNodeEnd(Node node, boolean included, int depth)
             throws RepositoryException;
 
     /**
@@ -86,7 +84,7 @@ public interface AggregateWalkListener {
      * @param depth the relative depth of the node in respect to the tree root node.
      * @throws RepositoryException if a repository error occurs
      */
-    public void onNodeIgnored(Node node, int depth) throws RepositoryException;
+    void onNodeIgnored(Node node, int depth) throws RepositoryException;
 
     /**
      * Invoked when a tree walk begins
@@ -94,6 +92,6 @@ public interface AggregateWalkListener {
      * @param root the root node of the tree walk
      * @throws RepositoryException if a repository error occurs.
      */
-    public void onWalkEnd(Node root) throws RepositoryException;
+    void onWalkEnd(Node root) throws RepositoryException;
 
 }

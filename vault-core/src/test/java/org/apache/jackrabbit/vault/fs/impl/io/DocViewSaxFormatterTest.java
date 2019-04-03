@@ -81,7 +81,7 @@ public class DocViewSaxFormatterTest extends IntegrationTestBase {
         RepositoryAddress addr = new RepositoryAddress("/" + admin.getWorkspace().getName() + "/");
         VaultFileSystem jcrfs = Mounter.mount(null, filter, addr, null, guest);
         Aggregate a = jcrfs.getAggregateManager().getRoot().getAggregate("testroot");
-        DocViewSerializer s = new DocViewSerializer(a);
+        DocViewSerializer s = new DocViewSerializer((WalkableAggregate) a);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         s.writeContent(out);
@@ -104,7 +104,7 @@ public class DocViewSaxFormatterTest extends IntegrationTestBase {
         RepositoryAddress addr = new RepositoryAddress("/" + admin.getWorkspace().getName() + "/");
         VaultFileSystem jcrfs = Mounter.mount(null, filter, addr, null, admin);
         Aggregate a = jcrfs.getAggregateManager().getRoot().getAggregate("testroot");
-        DocViewSerializer s = new DocViewSerializer(a);
+        DocViewSerializer s = new DocViewSerializer((WalkableAggregate) a);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         s.writeContent(out);
@@ -130,7 +130,7 @@ public class DocViewSaxFormatterTest extends IntegrationTestBase {
         RepositoryAddress addr = new RepositoryAddress("/" + admin.getWorkspace().getName() + "/");
         VaultFileSystem jcrfs = Mounter.mount(null, filter, addr, null, admin);
         Aggregate a = jcrfs.getAggregateManager().getRoot().getAggregate("testroot");
-        DocViewSerializer s = new DocViewSerializer(a);
+        DocViewSerializer s = new DocViewSerializer((WalkableAggregate) a);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         s.writeContent(out);

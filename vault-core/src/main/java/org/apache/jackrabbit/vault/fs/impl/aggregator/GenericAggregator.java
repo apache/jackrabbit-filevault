@@ -36,6 +36,7 @@ import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewSerializer;
 import org.apache.jackrabbit.vault.fs.impl.io.ImportInfoImpl;
+import org.apache.jackrabbit.vault.fs.impl.io.WalkableAggregate;
 import org.apache.jackrabbit.vault.fs.io.Serializer;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
@@ -207,7 +208,7 @@ public class GenericAggregator implements Aggregator, Dumpable {
         }
 
         // add extra
-        Serializer ser = new DocViewSerializer(aggregate);
+        Serializer ser = new DocViewSerializer((WalkableAggregate) aggregate);
         artifacts.add(parent, name, ext, type, ser, 0);
 
         // add binaries

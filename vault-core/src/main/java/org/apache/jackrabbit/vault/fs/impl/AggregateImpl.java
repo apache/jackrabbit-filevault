@@ -49,6 +49,7 @@ import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.io.AggregateWalkListener;
+import org.apache.jackrabbit.vault.fs.impl.io.WalkableAggregate;
 import org.apache.jackrabbit.vault.util.NodeNameComparator;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.jackrabbit.vault.util.Text;
@@ -65,7 +66,7 @@ import org.slf4j.LoggerFactory;
  * artifacts of this aggregate.
  *
  */
-public class AggregateImpl implements Aggregate {
+public class AggregateImpl implements WalkableAggregate {
 
     private static final char STATE_INITIAL = 'i';
     private static final char STATE_PREPARED = 'p';

@@ -36,6 +36,7 @@ import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewSerializer;
 import org.apache.jackrabbit.vault.fs.impl.io.ImportInfoImpl;
+import org.apache.jackrabbit.vault.fs.impl.io.WalkableAggregate;
 import org.apache.jackrabbit.vault.fs.io.Serializer;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.JcrConstants;
@@ -234,7 +235,7 @@ public class FileAggregator implements Aggregator, Dumpable {
             Artifact parent = new DirectoryArtifact(name, ".dir");
             artifacts.add(parent);
             // and extra
-            Serializer ser = new DocViewSerializer(aggregate);
+            Serializer ser = new DocViewSerializer((WalkableAggregate) aggregate);
             // hack: do better
             artifacts.add(parent, "", Constants.DOT_CONTENT_XML, ArtifactType.PRIMARY, ser, 0);
         }

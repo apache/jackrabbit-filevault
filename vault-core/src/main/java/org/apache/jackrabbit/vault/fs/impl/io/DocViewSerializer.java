@@ -17,14 +17,11 @@
 
 package org.apache.jackrabbit.vault.fs.impl.io;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
-import org.apache.jackrabbit.vault.fs.impl.AggregateImpl;
 import org.apache.jackrabbit.vault.fs.io.DocViewFormat;
 import org.apache.jackrabbit.vault.fs.io.Serializer;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
@@ -38,20 +35,20 @@ public class DocViewSerializer implements Serializer {
     /**
      * the export context
      */
-    private final AggregateImpl aggregate;
+    private final WalkableAggregate aggregate;
 
     /**
      * Creates a new doc view serializer
      * @param aggregate the export context
      */
-    public DocViewSerializer(Aggregate aggregate) {
-        this.aggregate = (AggregateImpl) aggregate;
+    public DocViewSerializer(WalkableAggregate aggregate) {
+        this.aggregate = aggregate;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void writeContent(OutputStream out) throws IOException, RepositoryException {
+    public void writeContent(OutputStream out) throws RepositoryException {
         // build content handler and add filter in case of original xml files
         XMLSerializer ser = new XMLSerializer(out, new DocViewFormat().getXmlOutputFormat());
         DocViewSAXFormatter fmt = new DocViewSAXFormatter(aggregate, ser);

@@ -129,7 +129,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException If an I/O error occurs.
      */
     public FSPackageRegistry(@Nonnull File homeDir) throws IOException {
-        this(homeDir, new InstallationScope(InstallationScope.UNSCOPED));
+        this(homeDir, InstallationScope.UNSCOPED);
     }
 
     /**
@@ -166,11 +166,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                         + "application scoped (only content for /apps & /libs) "
                         + "or content scoped (all content despite of /libs & /apps)",
                 options = {
-                    @Option(label = "Unscoped", value = InstallationScope.UNSCOPED),
-                    @Option(label = "Application Scoped", value = InstallationScope.APPLICATION_SCOPED),
-                    @Option(label = "Content Scoped", value = InstallationScope.CONTENT_SCOPED)
+                    @Option(label = "Unscoped", value = "UNSCOPED"),
+                    @Option(label = "Application Scoped", value = "APPLICATION_SCOPED"),
+                    @Option(label = "Content Scoped", value = "CONTENT_SCOPED")
         })
-        String scope() default "unscoped";
+        String scope() default "UNSCOPED";
     }
 
     @Activate
@@ -187,7 +187,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 homeDir.mkdirs();
             }
         }
-        this.scope = new InstallationScope(config.scope());
+        this.scope = InstallationScope.valueOf(config.scope());
         loadPackageCache();
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
     }
@@ -677,8 +677,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         }
         try (VaultPackage vltPkg = pkg.getPackage()) {
             WorkspaceFilter filter = getInstallState(vltPkg.getId()).getFilter();
-            switch(scope.getScope()) {
-                case InstallationScope.APPLICATION_SCOPED:
+            switch(scope) {
+                case APPLICATION_SCOPED:
                    if (filter instanceof DefaultWorkspaceFilter) {
                        opts.setFilter(ScopedWorkspaceFilter.createApplicationScoped((DefaultWorkspaceFilter)filter));
                    } else {
@@ -687,7 +687,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                        throw new PackageException(msg);
                    }
                    break;
-                case InstallationScope.CONTENT_SCOPED:
+                case CONTENT_SCOPED:
                     if (filter instanceof DefaultWorkspaceFilter) {
                         opts.setFilter(ScopedWorkspaceFilter.createContentScoped((DefaultWorkspaceFilter)filter));
                     } else {

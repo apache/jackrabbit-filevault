@@ -679,14 +679,14 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
         assertEquals(FSPackageStatus.NOTREGISTERED, registry.getInstallState(idC).getStatus());
     }
     
-    private void getFreshRegistry(String... scope) throws IOException {
+    private void getFreshRegistry(InstallationScope... scope) throws IOException {
         if (this.registryHome != null && this.registryHome.exists()) {
             this.registryHome.delete();
         }
         this.registryHome = new File(DIR_REGISTRY_HOME, UUID.randomUUID().toString());
         this.registryHome.mkdir();
         if (scope.length > 0) {
-            this.registry = new FSPackageRegistry(registryHome, new InstallationScope(scope[0]));
+            this.registry = new FSPackageRegistry(registryHome, scope[0]);
         } else {
             this.registry = new FSPackageRegistry(registryHome);
         }

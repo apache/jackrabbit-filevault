@@ -395,6 +395,11 @@ public class JcrPackageImpl implements JcrPackage {
         if (!opts.isDryRun() && createSnapshot) {
             ExportOptions eOpts = new ExportOptions();
             eOpts.setListener(opts.getListener());
+            DefaultMetaInf inf = (DefaultMetaInf) def.getMetaInf();
+            if (opts.getFilter() != null) {
+                inf.setFilter(options.getFilter());
+            }
+            eOpts.setMetaInf(inf);
             snap = snapshot(eOpts, replaceSnapshot, opts.getAccessControlHandling());
         }
         List<String> subPackages = new ArrayList<String>();
@@ -877,7 +882,12 @@ public class JcrPackageImpl implements JcrPackage {
             }
         }
         JcrPackageDefinitionImpl myDef = (JcrPackageDefinitionImpl) getDefinition();
-        WorkspaceFilter filter = myDef.getMetaInf().getFilter();
+        WorkspaceFilter filter;
+        if (opts.getMetaInf() != null && opts.getMetaInf().getFilter() != null) {
+            filter = opts.getMetaInf().getFilter();
+        } else {
+            filter = myDef.getMetaInf().getFilter();
+        }
         if (filter == null || filter.getFilterSets().isEmpty()) {
             log.info("Refusing to create snapshot {} due to empty filters", id);
             return null;

@@ -102,10 +102,10 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
                 );
             }
 
-            // explicit set workspace (JCRVLT-144)
             String workspace = address.getWorkspace();
-            parameters.put(Spi2davexRepositoryServiceFactory.PARAM_WORKSPACE_NAME_DEFAULT, workspace == null ? "" : workspace);
-
+            if (workspace != null) {
+                parameters.put(Spi2davexRepositoryServiceFactory.PARAM_WORKSPACE_NAME_DEFAULT, workspace);
+            }
             System.out.printf("Connecting via JCR remoting to %s%n", address.getSpecificURI().toString());
             return new RepositoryFactoryImpl().getRepository(parameters);
         } catch (IOException e) {

@@ -272,7 +272,7 @@
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>>${argLine} -Doak=true -Xmx1024m</argLine>
+                            <argLine>${argLine} -Doak=true -Xmx1024m</argLine>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -285,7 +285,7 @@
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>>${argLine} -Doak=true -Xmx1024m</argLine>
+                            <argLine>${argLine} -Doak=true -Xmx1024m</argLine>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -310,7 +310,7 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                    <argLine>>${argLine} -Doak=true -Xmx1024m</argLine>
+                                    <argLine>${argLine} -Doak=true -Xmx1024m</argLine>
                                     <reportNameSuffix>OAK</reportNameSuffix>
                                     <skip>false</skip>
                                 </configuration>

@@ -172,7 +172,7 @@
                                 <value>target/derby.log</value>
                             </property>
                         </systemProperties>
-                        <argLine>${test.vm.options}</argLine>
+                        <argLine>>${argLine} ${test.vm.options}</argLine>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->

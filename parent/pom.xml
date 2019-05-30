@@ -45,6 +45,7 @@
         <slf4j.version>1.7.6</slf4j.version>
         <test.oak>false</test.oak>
         <test.vm.options>-Doak=$test.oak}</test.vm.options>
+        <argLine>${test.vm.options}</argLine>
     </properties>
 
     <!-- ====================================================================== -->
@@ -172,7 +173,6 @@
                                 <value>target/derby.log</value>
                             </property>
                         </systemProperties>
-                        <argLine>${argLine} ${test.vm.options}</argLine>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->

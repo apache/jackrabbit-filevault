@@ -16,13 +16,6 @@
  */
 package org.apache.jackrabbit.vault.util.console;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Properties;
-
 import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.DisplaySetting;
 import org.apache.commons.cli2.Group;
@@ -39,6 +32,13 @@ import org.apache.jackrabbit.vault.util.console.util.Log4JConfig;
 import org.apache.jackrabbit.vault.util.console.util.PomProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * {@code Console}...
@@ -69,6 +69,7 @@ public abstract class AbstractApplication {
     private Option optLogLevel;
     private Option optVersion;
     private Option optHelp;
+    private Option optInsecureHttps;
 
     public String getVersion() {
         return getPomProperties().getVersion();
@@ -198,6 +199,17 @@ public abstract class AbstractApplication {
                         )
                         .create();
 
+        optInsecureHttps =
+                obuilder
+                        .withLongName("insecure")
+                        .withDescription("allow expired ssl certs for https")
+                        .withArgument(abuilder
+                                .withName("command")
+                                .withMaximum(1)
+                                .create()
+                        )
+                        .create();
+
         gbuilder
                 .withName("Global options:")
                 //.withOption(optPropertyFile)
@@ -206,6 +218,7 @@ public abstract class AbstractApplication {
                 .withOption(optVersion)
                 .withOption(optLogLevel)
                 .withOption(optHelp)
+                .withOption(optInsecureHttps)
                 .withMinimum(0);
         /*
         if (getConsole() != null) {

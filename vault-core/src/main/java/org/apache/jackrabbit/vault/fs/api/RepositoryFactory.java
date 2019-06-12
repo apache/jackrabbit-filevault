@@ -31,4 +31,7 @@ public interface RepositoryFactory {
 
     public Repository createRepository(RepositoryAddress address)
             throws RepositoryException;
+
+    public Repository createRepository(RepositoryAddress address, boolean allowInsecureHttps)
+            throws RepositoryException;
 }

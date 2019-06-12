@@ -66,8 +66,11 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
     public Set<String> getSupportedSchemes() {
         return SCHEMES;
     }
-
     public Repository createRepository(RepositoryAddress address)
+            throws RepositoryException {
+        return this.createRepository(address, false);
+    }
+    public Repository createRepository(RepositoryAddress address, boolean allowInsecureHttps)
             throws RepositoryException {
         if (!SCHEMES.contains(address.getSpecificURI().getScheme())) {
             return null;
@@ -105,6 +108,9 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
             String workspace = address.getWorkspace();
             if (workspace != null) {
                 parameters.put(Spi2davexRepositoryServiceFactory.PARAM_WORKSPACE_NAME_DEFAULT, workspace);
+            }
+            if (allowInsecureHttps && uri.getScheme().equals("https")) {
+                parameters.put(Spi2davexRepositoryServiceFactory.PARAM_REPOSITORY_URI_INSECURE, true);
             }
             System.out.printf("Connecting via JCR remoting to %s%n", address.getSpecificURI().toString());
             return new RepositoryFactoryImpl().getRepository(parameters);

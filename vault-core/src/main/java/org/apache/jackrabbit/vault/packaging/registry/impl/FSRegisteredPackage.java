@@ -16,6 +16,7 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Calendar;
@@ -73,7 +74,12 @@ public class FSRegisteredPackage implements RegisteredPackage {
     @Override
     public VaultPackage getPackage() throws IOException {
         if (this.vltPkg == null) {
-            this.vltPkg = registry.open(filepath.toFile());
+            File file = filepath.toFile();
+            if(file.exists() && file.length() > 0) {
+                this.vltPkg = registry.open(file);
+            } else {
+                throw new IOException("underlying file " + filepath.toString() + " for package " + getId().toString() + " is inaccessible - it might be truncated");
+            }
         }
         return this.vltPkg;
     }

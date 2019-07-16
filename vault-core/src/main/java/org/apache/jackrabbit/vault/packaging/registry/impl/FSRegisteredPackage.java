@@ -16,9 +16,7 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Calendar;
 
 import javax.annotation.CheckForNull;
@@ -48,7 +46,6 @@ public class FSRegisteredPackage implements RegisteredPackage {
     private VaultPackage vltPkg = null;
 
     private PackageId id;
-    private Path filepath;
     private PackageProperties packageProperties;
     private Dependency[] dependencies;
     private WorkspaceFilter filter;
@@ -56,7 +53,6 @@ public class FSRegisteredPackage implements RegisteredPackage {
 
     public FSRegisteredPackage(FSPackageRegistry registry, FSInstallState installState) throws IOException {
         this.id = installState.getPackageId();
-        this.filepath = installState.getFilePath();
         this.dependencies = installState.getDependencies().toArray(new Dependency[installState.getDependencies().size()]);
         this.filter = installState.getFilter();
         this.packageProperties = new FsPackageProperties(installState);
@@ -74,12 +70,7 @@ public class FSRegisteredPackage implements RegisteredPackage {
     @Override
     public VaultPackage getPackage() throws IOException {
         if (this.vltPkg == null) {
-            File file = filepath.toFile();
-            if(file.exists() && file.length() > 0) {
-                this.vltPkg = registry.open(file);
-            } else {
-                throw new IOException("underlying file " + filepath.toString() + " for package " + getId().toString() + " is inaccessible - it might be truncated");
-            }
+            this.vltPkg = registry.openPackageFile(getId());
         }
         return this.vltPkg;
     }

@@ -18,23 +18,28 @@
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.impl.HollowVaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 public class FSRegisteredPackageTest {
+
+    private static final PackageId DUMMY_ID = new PackageId("someGroup", "someName", "someVersion");
 
     private File getTempFile(String name) throws IOException {
         InputStream in = getClass().getResourceAsStream(name);
@@ -50,24 +55,20 @@ public class FSRegisteredPackageTest {
         if (packageFile.exists() && packageFile.length() > 0) {
             return new ZipVaultPackage(packageFile, false, true);
         } else {
-            return null;
+            return new HollowVaultPackage(new Properties());
         }
     }
 
     private FSPackageRegistry newRegistry(File packageFile) throws IOException {
         FSPackageRegistry registry = Mockito.mock(FSPackageRegistry.class);
-        Mockito.when(registry.open(packageFile)).thenReturn(safeLoadVaultPackage(packageFile));
+        Mockito.when(registry.openPackageFile(DUMMY_ID)).thenReturn(safeLoadVaultPackage(packageFile));
         return registry;
     }
 
     private FSInstallState newInstallState(File packageFile) throws IOException {
         FSInstallState installState = Mockito.mock(FSInstallState.class);
-
         Mockito.when(installState.getFilePath()).thenReturn(packageFile.toPath());
-
-        PackageId id = new PackageId("someGroup", "someName", "someVersion");
-        Mockito.when(installState.getPackageId()).thenReturn(id);
-
+        Mockito.when(installState.getPackageId()).thenReturn(DUMMY_ID);
         return installState;
     }
 
@@ -78,6 +79,7 @@ public class FSRegisteredPackageTest {
         try {
             VaultPackage vltPack = regPack.getPackage();
             assertNotNull(vltPack);
+            assertNotNull(vltPack.getArchive());
         } catch (IOException e) {
             fail("should not throw any exception, but thrown: " + e.getMessage());
         } finally {
@@ -90,9 +92,11 @@ public class FSRegisteredPackageTest {
         File packageFile = getTempFile("test-package-truncated.zip");
         RegisteredPackage regPack = new FSRegisteredPackage(newRegistry(packageFile), newInstallState(packageFile));
         try {
-            regPack.getPackage();
-            fail("IOException should have been thrown, but none was");
+            VaultPackage vltPack = regPack.getPackage();
+            assertNotNull(vltPack);
+            assertNull(vltPack.getArchive());
         } catch (IOException e) {
+            fail("should not throw any exception, but thrown: " + e.getMessage());
         } finally {
             regPack.close();
         }

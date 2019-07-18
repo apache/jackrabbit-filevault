@@ -57,6 +57,7 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent.Type;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
+import org.apache.jackrabbit.vault.packaging.impl.HollowVaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
@@ -260,20 +261,28 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     /**
-     * Opens the package of the given file.
-     * @param pkg Package file.
+     * Opens the package of a file with the given Id.
+     * @param id The Id of package file.
      * @return the package
      * @throws IOException if an I/O error occurrs.
      */
     @Nonnull
-    protected VaultPackage open(File pkg) throws IOException {
-        try {
-            return new ZipVaultPackage(pkg, false, true);
-        } catch (IOException e) {
-            log.error("Cloud not open file {} as ZipVaultPackage.", pkg.getPath(), e);
-            throw e;
+    protected VaultPackage openPackageFile(@Nonnull PackageId id) throws IOException {
+        File pkg = getPackageFile(id);
+        if (pkg == null) {
+            throw new IOException("Could not find package file for id " + id);
         }
 
+        if (pkg.exists() && pkg.length() > 0) {
+            try {
+                return new ZipVaultPackage(pkg, false, true);
+            } catch (IOException e) {
+                log.error("Cloud not open file {} as ZipVaultPackage.", pkg.getPath(), e);
+                throw e;
+            }
+        } else {
+            return new HollowVaultPackage(getInstallState(id).getProperties());
+        }
     }
 
     /**

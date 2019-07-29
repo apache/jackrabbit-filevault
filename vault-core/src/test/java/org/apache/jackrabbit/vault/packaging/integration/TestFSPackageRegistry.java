@@ -318,7 +318,7 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testInstallExternalUnScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.plugins.segment.file.InvalidFileStoreVersionException {
+    public void testInstallExternalUnScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
         File file = getTempFile("testpackages/mixed_package.zip");
         
         cleanPaths(APPLICATION_PATHS);
@@ -339,7 +339,7 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testInstallExternalContentScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.plugins.segment.file.InvalidFileStoreVersionException {
+    public void testInstallExternalContentScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
         File file = getTempFile("testpackages/mixed_package.zip");
 
         cleanPaths(APPLICATION_PATHS);
@@ -358,7 +358,7 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
     }
 
     @SuppressWarnings("deprecation")
-    private void cleanPaths(String[] paths) throws IOException, RepositoryException, org.apache.jackrabbit.oak.plugins.segment.file.InvalidFileStoreVersionException  {
+    private void cleanPaths(String[] paths) throws IOException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException  {
         for (String path : paths) {
             clean(path);
         }
@@ -366,7 +366,7 @@ public class TestFSPackageRegistry extends IntegrationTestBase {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testInstallExternalApplicationScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.plugins.segment.file.InvalidFileStoreVersionException {
+    public void testInstallExternalApplicationScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
         File file = getTempFile("testpackages/mixed_package.zip");
         
         cleanPaths(APPLICATION_PATHS);

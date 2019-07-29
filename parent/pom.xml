@@ -40,8 +40,8 @@
     </description>
 
     <properties>
-        <jackrabbit.version>2.16.4</jackrabbit.version>
-        <oak.version>1.6.1</oak.version>
+        <jackrabbit.version>2.18.2</jackrabbit.version>
+        <oak.version>1.16.0</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
         <test.oak>false</test.oak>
         <test.vm.options>-Doak=$test.oak}</test.vm.options>
@@ -259,8 +259,8 @@
             <!-- jackrabbit -->
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-api</artifactId>
-                <version>${jackrabbit.version}</version>
+                <artifactId>oak-jackrabbit-api</artifactId>
+                <version>${oak.version}</version>
             </dependency>
 
             <dependency>

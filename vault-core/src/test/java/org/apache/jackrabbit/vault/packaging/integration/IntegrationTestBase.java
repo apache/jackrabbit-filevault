@@ -62,15 +62,18 @@ import org.apache.jackrabbit.core.security.principal.EveryonePrincipal;
 import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
 import org.apache.jackrabbit.oak.jcr.Jcr;
 import org.apache.jackrabbit.oak.plugins.blob.datastore.DataStoreBlobStore;
+import org.apache.jackrabbit.oak.plugins.tree.impl.RootProviderService;
+import org.apache.jackrabbit.oak.plugins.tree.impl.TreeProviderService;
+import org.apache.jackrabbit.oak.security.internal.SecurityProviderBuilder;
 import org.apache.jackrabbit.oak.security.user.RandomAuthorizableNodeName;
 import org.apache.jackrabbit.oak.segment.SegmentNodeStore;
 import org.apache.jackrabbit.oak.segment.SegmentNodeStoreBuilders;
 import org.apache.jackrabbit.oak.segment.file.FileStore;
 import org.apache.jackrabbit.oak.segment.file.FileStoreBuilder;
 import org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException;
-import org.apache.jackrabbit.oak.security.SecurityProviderImpl;
 import org.apache.jackrabbit.oak.spi.blob.BlobStore;
 import org.apache.jackrabbit.oak.spi.security.ConfigurationParameters;
+import org.apache.jackrabbit.oak.spi.security.SecurityProvider;
 import org.apache.jackrabbit.oak.spi.security.authorization.AuthorizationConfiguration;
 import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants;
 import org.apache.jackrabbit.oak.spi.security.user.AuthorizableNodeName;
@@ -86,7 +89,6 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipStreamArchive;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
-import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
@@ -173,22 +175,6 @@ public class IntegrationTestBase  {
     @BeforeClass
     public static void initRepository() throws RepositoryException, IOException, InvalidFileStoreVersionException {
         if (isOak()) {
-            Properties userProps = new Properties();
-            AuthorizableNodeName nameGenerator = new RandomAuthorizableNodeName();
-
-            userProps.put(UserConstants.PARAM_USER_PATH, "/home/users");
-            userProps.put(UserConstants.PARAM_GROUP_PATH, "/home/groups");
-            userProps.put(AccessControlAction.USER_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_ALL});
-            userProps.put(AccessControlAction.GROUP_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_READ});
-            userProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
-            userProps.put(UserConstants.PARAM_AUTHORIZABLE_NODE_NAME, nameGenerator);
-            userProps.put("cacheExpiration", 3600*1000);
-            Properties authzProps = new Properties();
-            authzProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
-            Properties securityProps = new Properties();
-            securityProps.put(UserConfiguration.NAME, ConfigurationParameters.of(userProps));
-            securityProps.put(AuthorizationConfiguration.NAME, ConfigurationParameters.of(authzProps));
-
             Jcr jcr;
             if (useFileStore()) {
                 BlobStore blobStore = createBlobStore();
@@ -203,7 +189,7 @@ public class IntegrationTestBase  {
             }
 
             repository = jcr
-                    .with(new SecurityProviderImpl(ConfigurationParameters.of(securityProps)))
+                    .with(createSecurityProvider())
                     .withAtomicCounter()
                     .createRepository();
 
@@ -220,6 +206,32 @@ public class IntegrationTestBase  {
         log.info("repository created: {} {}",
                 repository.getDescriptor(Repository.REP_NAME_DESC),
                 repository.getDescriptor(Repository.REP_VERSION_DESC));
+    }
+
+    public static ConfigurationParameters getSecurityConfigurationParameters() {
+        Properties userProps = new Properties();
+        AuthorizableNodeName nameGenerator = new RandomAuthorizableNodeName();
+
+        userProps.put(UserConstants.PARAM_USER_PATH, "/home/users");
+        userProps.put(UserConstants.PARAM_GROUP_PATH, "/home/groups");
+        userProps.put(AccessControlAction.USER_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_ALL});
+        userProps.put(AccessControlAction.GROUP_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_READ});
+        userProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
+        userProps.put(UserConstants.PARAM_AUTHORIZABLE_NODE_NAME, nameGenerator);
+        userProps.put("cacheExpiration", 3600*1000);
+        Properties authzProps = new Properties();
+        authzProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
+        return ConfigurationParameters.of(
+                UserConfiguration.NAME, ConfigurationParameters.of(userProps),
+                AuthorizationConfiguration.NAME, ConfigurationParameters.of(authzProps));
+    }
+
+    public static SecurityProvider createSecurityProvider() {
+        SecurityProvider securityProvider = SecurityProviderBuilder.newBuilder()
+                .with(getSecurityConfigurationParameters())
+                .withRootProvider(new RootProviderService())
+                .withTreeProvider(new TreeProviderService()).build();
+        return securityProvider;
     }
 
     public static boolean useFileStore() {
@@ -301,6 +313,7 @@ public class IntegrationTestBase  {
             // ignore
         }
     }
+
     public final Set<String> getAllAuthorizableIds() throws RepositoryException {
         Set<String> ret = new HashSet<String>();
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();

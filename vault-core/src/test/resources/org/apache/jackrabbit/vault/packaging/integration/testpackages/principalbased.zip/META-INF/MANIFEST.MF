@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Content-Package-Roots: /home/users/system/intermediate
+Content-Package-Type: content
+Content-Package-Id: my_packages:testsystemuser
+

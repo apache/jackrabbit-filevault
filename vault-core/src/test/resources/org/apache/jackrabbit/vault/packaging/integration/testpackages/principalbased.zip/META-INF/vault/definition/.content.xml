@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:vlt="http://www.day.com/jcr/vault/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:created="{Date}2019-07-23T10:20:20.089+02:00"
+    jcr:createdBy="admin"
+    jcr:description=""
+    jcr:lastModified="{Date}2019-07-23T10:20:20.089+02:00"
+    jcr:lastModifiedBy="admin"
+    jcr:primaryType="vlt:PackageDefinition"
+    buildCount="1"
+    builtWith=""
+    fixedBugs=""
+    group="integrationtesting"
+    lastUnwrapped="{Date}2019-07-23T10:20:20.089+02:00"
+    lastUnwrappedBy="admin"
+    lastWrapped="{Date}2019-07-23T10:20:20.089+02:00"
+    lastWrappedBy="admin"
+    name="principalbased_overwrite"
+    acHandling="OVERWRITE"
+    providerLink=""
+    providerName=""
+    providerUrl=""
+    testedWith=""
+    version="">
+    <filter jcr:primaryType="nt:unstructured">
+        <f0
+            jcr:primaryType="nt:unstructured"
+            mode="replace"
+            root="/home/users/system/intermediate"
+            rules="[]"/>
+    </filter>
+    <screenshots jcr:primaryType="nt:unstructured"/>
+</jcr:root>

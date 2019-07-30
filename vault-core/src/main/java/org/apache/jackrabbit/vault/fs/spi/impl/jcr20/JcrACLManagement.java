@@ -33,7 +33,7 @@ public class JcrACLManagement implements ACLManagement {
      * {@inheritDoc}
      */
     public boolean isACLNodeType(String name) {
-        return name.equals("rep:ACL") || name.equals("rep:CugPolicy");
+        return name.equals("rep:ACL") || name.equals("rep:CugPolicy") || name.equals("rep:PrincipalPolicy");
     }
 
     /**
@@ -42,7 +42,8 @@ public class JcrACLManagement implements ACLManagement {
     public boolean isAccessControllableMixin(String name) {
         return name.equals("rep:AccessControllable")
                 || name.equals("rep:RepoAccessControllable")
-                || name.equals("rep:CugMixin");
+                || name.equals("rep:CugMixin")
+                || name.equals("rep:PrincipalBasedMixin");
     }
 
     /**
@@ -69,6 +70,11 @@ public class JcrACLManagement implements ACLManagement {
         } else if ("rep:CugPolicy".equals(policyPrimaryType)) {
             if (!node.isNodeType("rep:CugMixin")) {
                 node.addMixin("rep:CugMixin");
+                modified = true;
+            }
+        } else if ("rep:PrincipalPolicy".equals(policyPrimaryType)) {
+            if (!node.isNodeType("rep:PrincipalBasedMixin")) {
+                node.addMixin("rep:PrincipalBasedMixin");
                 modified = true;
             }
         }

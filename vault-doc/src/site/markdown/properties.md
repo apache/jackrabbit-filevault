@@ -65,17 +65,20 @@ Example:
 | created | A date string in the format `±YYYY-MM-DDThh:mm:ss.SSSTZD` specifying when the package has been created initially (see also [ISO8601][api.ISO8601]) | no | empty
 | createdBy | A user name indicating who initially created this package | no | empty
 | lastWrapped | A date string in the format `±YYYY-MM-DDThh:mm:ss.SSSTZD` specifying when the package has been last wrapped (i.e. rebuilt) (see also [ISO8601][api.ISO8601]) | no | empty
-| lastWrappedBy | A user name indicating who last modified this package | no | empty | empty
+| lastWrappedBy | A user name indicating who last modified this package | no | empty
 | acHandling | See [AccessControlHandling][api. AccessControlHandling]. | no | ignore
 | cndPattern | A [Java regular expression pattern](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) which specifies where to look for CND files within the given package | no | `^/(apps|libs)/([^/]+/){1,2}nodetypes/.+\\.cnd$`
 | requiresRoot | If set to `true` indicates that only admin sessions can install this package | no | `false`
 | requiresRestart | If set to `true` indicates that the system should be restarted after this package has been installed | no | `false`
-| noIntermediateSaves | If set to `true` indicates no intermediate saves should be performed while installing this package | no | `false`;
+| noIntermediateSaves | If set to `true` indicates no intermediate saves should be performed while installing this package | no | `false`
 | subPackageHandling | see [SubPackageHandling][api.SubPackageHandling] | no | `*;install`
 | useBinaryReferences | If set to `true` indicates that binary references should be used instead of the actual binary | no | `false`
 | packageType | Possible values: <ul><li>`application`: An application package consists purely of application content. It serializes entire subtrees with no inclusion or exclusion filters. it does not contain any subpackages nor OSGi configuration or bundles.</li><li>`content`: A content package consists only of content and user defined configuration. It usually serializes entire subtrees but can contain inclusion or exclusion filters. it does not contain any subpackages nor OSGi configuration or bundles.</li><li>`container`: A container package only contains sub packages and OSGi configuration and bundles. The container package is only used as container for deployment.</li><li>`mixed`: Catch all type for a combination of the above.</li></ul>Compare with [JCRVLT-170](https://issues.apache.org/jira/browse/JCRVLT-170) | no | ?
 | installhook.* | The FQN of the class which acts as an InstallHook (code being executed while this package is being installed) | no | n/a
-| packageFormatVersion | The version of this package as integer value. Newer versions than 2 are not yet supported during installation. | no | 2
+| packageFormatVersion | The version of this package as integer value. Versions newer than 2 are not yet supported during installation. | no | 2
+| allowIndexDefinitions | If set to `true` indicates that the package contains an [Oak Index Definition](https://jackrabbit.apache.org/oak/docs/query/indexing.html#index-defnitions). Otherwise the package is not supposed to contain an index definition. This may be important to know prior to installation as installing/updating an index definition might have a severe performance impact especially on large repositories| no | false
+| groupId | The Maven groupId of the underlying Maven module from which this package was built. Only set if built via the [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) | no | n/a
+| artifactId | The Maven artifactId of the underlying Maven module from which this package was built. Only set if built via the [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) | no | n/a
 
 Manifest File
 ---------------

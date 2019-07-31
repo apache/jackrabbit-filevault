@@ -31,7 +31,7 @@ import org.apache.jackrabbit.vault.fs.config.MetaInf;
 /**
  * Specifies a filevault archive.
  */
-public interface Archive {
+public interface Archive extends AutoCloseable {
 
     /**
      * Opens the archive.

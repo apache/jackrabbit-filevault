@@ -108,17 +108,12 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
         File jarFile = File.createTempFile("vaulthook", ".jar");
         Hook hook = new Hook(input.getSystemId(), jarFile, classLoader);
 
-        OutputStream out = null;
-        InputStream in = input.getByteStream();
-        try {
-            out = FileUtils.openOutputStream(jarFile);
+        try (OutputStream out = FileUtils.openOutputStream(jarFile);
+             InputStream in = input.getByteStream()) {
             IOUtils.copy(in, out);
         } catch (IOException e) {
             hook.destroy();
             throw e;
-        } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
         }
         initHook(hook);
     }

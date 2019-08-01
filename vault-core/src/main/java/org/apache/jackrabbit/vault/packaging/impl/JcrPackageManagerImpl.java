@@ -215,10 +215,10 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             for (Archive.Entry e: spfArchive.getSubPackageEntries()) {
                 InputStream in = spfArchive.openInputStream(e);
                 if (in != null) {
-                    Archive subArchive = new ZipStreamArchive(in);
-                    PackageId[] subIds = extract(subArchive, options, replace);
-                    ids.addAll(Arrays.asList(subIds));
-                    subArchive.close();
+                    try (Archive subArchive = new ZipStreamArchive(in)) {
+                        PackageId[] subIds = extract(subArchive, options, replace);
+                        ids.addAll(Arrays.asList(subIds));
+                    }
                 }
             }
         }
@@ -360,18 +360,17 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
 
         // update this content
         Node contentNode = packNode.getNode(JcrConstants.JCR_CONTENT);
-        InputStream in;
-        try {
-            in = FileUtils.openInputStream(pack.getFile());
+        
+        try (InputStream in = FileUtils.openInputStream(pack.getFile())){
+            // stay jcr 1.0 compatible
+            //noinspection deprecation
+            contentNode.setProperty(JcrConstants.JCR_DATA, in);
+            contentNode.setProperty(JcrConstants.JCR_LASTMODIFIED, now);
+            contentNode.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
+            packNode.getSession().save();
         } catch (IOException e) {
             throw new PackageException(e);
         }
-        // stay jcr 1.0 compatible
-        //noinspection deprecation
-        contentNode.setProperty(JcrConstants.JCR_DATA, in);
-        contentNode.setProperty(JcrConstants.JCR_LASTMODIFIED, now);
-        contentNode.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
-        packNode.getSession().save();
         pack.close();
         dispatch(PackageEvent.Type.ASSEMBLE, id, null);
     }

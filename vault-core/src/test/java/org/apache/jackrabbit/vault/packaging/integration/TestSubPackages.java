@@ -674,61 +674,62 @@ public class TestSubPackages extends IntegrationTestBase {
         JcrPackage pkg = packMgr.open(PACKAGE_ID_SUB_TEST);
         packMgr.assemble(pkg, new DefaultProgressListener());
 
-        ZipInputStream in = new ZipInputStream(pkg.getData().getBinary().getStream());
-        ZipEntry e;
-        List<String> entries = new ArrayList<>();
-        String filter = "";
-        while ((e = in.getNextEntry()) != null) {
-            entries.add(e.getName());
-            if ("META-INF/vault/filter.xml".equals(e.getName())) {
-                filter = IOUtils.toString(in, "utf-8");
+        try (ZipInputStream in = new ZipInputStream(pkg.getData().getBinary().getStream())) {
+            ZipEntry e;
+            List<String> entries = new ArrayList<>();
+            String filter = "";
+            while ((e = in.getNextEntry()) != null) {
+                entries.add(e.getName());
+                if ("META-INF/vault/filter.xml".equals(e.getName())) {
+                    filter = IOUtils.toString(in, "utf-8");
+                }
             }
-        }
-        in.close();
-        Collections.sort(entries);
-        StringBuffer result = new StringBuffer();
-        for (String name: entries) {
-            // exclude some of the entries that depend on the repository setup
-            if ("jcr_root/etc/.content.xml".equals(name)
-                    || "jcr_root/etc/packages/my_packages/.content.xml".equals(name)
-                    || "jcr_root/etc/packages/.content.xml".equals(name)) {
-                continue;
+            Collections.sort(entries);
+            StringBuffer result = new StringBuffer();
+            for (String name: entries) {
+                // exclude some of the entries that depend on the repository setup
+                if ("jcr_root/etc/.content.xml".equals(name)
+                        || "jcr_root/etc/packages/my_packages/.content.xml".equals(name)
+                        || "jcr_root/etc/packages/.content.xml".equals(name)) {
+                    continue;
+                }
+                result.append(name).append("\n");
             }
-            result.append(name).append("\n");
+        
+            assertEquals("Filter must be correct",
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<workspaceFilter version=\"1.0\">\n" +
+                    "    <filter root=\"/etc/packages/my_packages/sub_a.zip\"/>\n" +
+                    "    <filter root=\"/etc/packages/my_packages/sub_b.zip\"/>\n" +
+                    "</workspaceFilter>\n", filter);
+    
+            assertEquals("Package must contain proper entries.",
+                    "META-INF/\n" +
+                    "META-INF/MANIFEST.MF\n" +
+                    "META-INF/vault/\n" +
+                    "META-INF/vault/config.xml\n" +
+                    "META-INF/vault/definition/\n" +
+                    "META-INF/vault/definition/.content.xml\n" +
+                    "META-INF/vault/filter.xml\n" +
+                    "META-INF/vault/nodetypes.cnd\n" +
+                    "META-INF/vault/properties.xml\n" +
+                    "jcr_root/.content.xml\n" +
+                    "jcr_root/etc/\n" +
+                    "jcr_root/etc/packages/\n" +
+                    "jcr_root/etc/packages/my_packages/\n" +
+                    "jcr_root/etc/packages/my_packages/sub_a.zip\n" +
+                    "jcr_root/etc/packages/my_packages/sub_a.zip.dir/\n" +
+                    "jcr_root/etc/packages/my_packages/sub_a.zip.dir/.content.xml\n" +
+                    "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/\n" +
+                    "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/_vlt_definition/\n" +
+                    "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/_vlt_definition/.content.xml\n" +
+                    "jcr_root/etc/packages/my_packages/sub_b.zip\n" +
+                    "jcr_root/etc/packages/my_packages/sub_b.zip.dir/\n" +
+                    "jcr_root/etc/packages/my_packages/sub_b.zip.dir/.content.xml\n" +
+                    "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/\n" +
+                    "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/_vlt_definition/\n" +
+                    "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/_vlt_definition/.content.xml\n", result.toString());
         }
-        assertEquals("Filter must be correct",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<workspaceFilter version=\"1.0\">\n" +
-                "    <filter root=\"/etc/packages/my_packages/sub_a.zip\"/>\n" +
-                "    <filter root=\"/etc/packages/my_packages/sub_b.zip\"/>\n" +
-                "</workspaceFilter>\n", filter);
-
-        assertEquals("Package must contain proper entries.",
-                "META-INF/\n" +
-                "META-INF/MANIFEST.MF\n" +
-                "META-INF/vault/\n" +
-                "META-INF/vault/config.xml\n" +
-                "META-INF/vault/definition/\n" +
-                "META-INF/vault/definition/.content.xml\n" +
-                "META-INF/vault/filter.xml\n" +
-                "META-INF/vault/nodetypes.cnd\n" +
-                "META-INF/vault/properties.xml\n" +
-                "jcr_root/.content.xml\n" +
-                "jcr_root/etc/\n" +
-                "jcr_root/etc/packages/\n" +
-                "jcr_root/etc/packages/my_packages/\n" +
-                "jcr_root/etc/packages/my_packages/sub_a.zip\n" +
-                "jcr_root/etc/packages/my_packages/sub_a.zip.dir/\n" +
-                "jcr_root/etc/packages/my_packages/sub_a.zip.dir/.content.xml\n" +
-                "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/\n" +
-                "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/_vlt_definition/\n" +
-                "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/_vlt_definition/.content.xml\n" +
-                "jcr_root/etc/packages/my_packages/sub_b.zip\n" +
-                "jcr_root/etc/packages/my_packages/sub_b.zip.dir/\n" +
-                "jcr_root/etc/packages/my_packages/sub_b.zip.dir/.content.xml\n" +
-                "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/\n" +
-                "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/_vlt_definition/\n" +
-                "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/_vlt_definition/.content.xml\n", result.toString());
     }
 
     /**

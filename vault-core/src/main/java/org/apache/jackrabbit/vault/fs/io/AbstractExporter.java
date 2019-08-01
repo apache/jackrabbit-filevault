@@ -66,7 +66,7 @@ import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_VERSI
  * Generic context for exporters
  *
  */
-public abstract class AbstractExporter {
+public abstract class AbstractExporter implements AutoCloseable {
 
     /**
      * default logger
@@ -418,6 +418,12 @@ public abstract class AbstractExporter {
     public abstract void createDirectory(VaultFile file, String relPath)
             throws RepositoryException, IOException;
 
+    /**
+     * <p>The specified stream remains open after this method returns.
+     * @param in
+     * @param relPath
+     * @throws IOException
+     */
     public abstract void writeFile(InputStream in, String relPath)
             throws IOException;
 

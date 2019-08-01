@@ -72,20 +72,21 @@ public class TestSpecialDoubleProperties extends IntegrationTestBase {
 
         Archive.Entry e = pkg.getArchive().getEntry("jcr_root/tmp/.content.xml");
         InputSource is = pkg.getArchive().getInputSource(e);
-        Reader r = new InputStreamReader(is.getByteStream(), "utf-8");
-        String contentXml = IOUtils.toString(r);
+        try (Reader r = new InputStreamReader(is.getByteStream(), "utf-8")) {
+            String contentXml = IOUtils.toString(r);
 
-        assertEquals("Serialized content",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                        "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
-                        "    jcr:primaryType=\"nt:unstructured\">\n" +
-                        "    <jcr:content\n" +
-                        "        jcr:primaryType=\"nt:unstructured\"\n" +
-                        "        double_nan=\"{Double}NaN\"\n" +
-                        "        double_neg_inf=\"{Double}-Infinity\"\n" +
-                        "        double_pos_inf=\"{Double}Infinity\"/>\n" +
-                        "</jcr:root>\n",
-                contentXml);
+            assertEquals("Serialized content",
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                            "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
+                            "    jcr:primaryType=\"nt:unstructured\">\n" +
+                            "    <jcr:content\n" +
+                            "        jcr:primaryType=\"nt:unstructured\"\n" +
+                            "        double_nan=\"{Double}NaN\"\n" +
+                            "        double_neg_inf=\"{Double}-Infinity\"\n" +
+                            "        double_pos_inf=\"{Double}Infinity\"/>\n" +
+                            "</jcr:root>\n",
+                    contentXml);
+        }
         pkg.close();
         tmpFile.delete();
     }

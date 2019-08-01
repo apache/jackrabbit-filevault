@@ -37,13 +37,10 @@ import javax.jcr.Session;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.Mounter;
-import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
-import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
-import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.impl.AggregateManagerImpl;
 import org.apache.jackrabbit.vault.fs.io.JarExporter;
@@ -56,9 +53,6 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.util.Constants;
-
-import static org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
-import static org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH_PREFIX;
 
 /**
  * Implements the package manager
@@ -191,57 +185,57 @@ public class PackageManagerImpl implements PackageManager {
         if (metaInf == null) {
             metaInf = new DefaultMetaInf();
         }
-        JarExporter exporter = new JarExporter(out, opts.getCompressionLevel());
-        exporter.open();
-        exporter.setProperties(metaInf.getProperties());
-        ProgressTracker tracker = null;
-        if (opts.getListener() != null) {
-            tracker = new ProgressTracker();
-            exporter.setVerbose(opts.getListener());
-        }
-
-        // merge
-        MetaInf inf = opts.getMetaInf();
-        ZipFile zip = new ZipFile(src.getFile(), ZipFile.OPEN_READ);
-        if (opts.getPostProcessor() == null) {
-            // no post processor, we keep all files except the properties
-            Enumeration e = zip.entries();
-            while (e.hasMoreElements()) {
-                ZipEntry entry = (ZipEntry) e.nextElement();
-                String path = entry.getName();
-                if (!path.equals(Constants.META_DIR + "/" + Constants.PROPERTIES_XML)) {
-                    exporter.write(zip, entry);
+        try (JarExporter exporter = new JarExporter(out, opts.getCompressionLevel())) {
+            exporter.open();
+            exporter.setProperties(metaInf.getProperties());
+            ProgressTracker tracker = null;
+            if (opts.getListener() != null) {
+                tracker = new ProgressTracker();
+                exporter.setVerbose(opts.getListener());
+            }
+    
+            // merge
+            MetaInf inf = opts.getMetaInf();
+            try (ZipFile zip = new ZipFile(src.getFile(), ZipFile.OPEN_READ)) {
+                if (opts.getPostProcessor() == null) {
+                    // no post processor, we keep all files except the properties
+                    Enumeration<? extends ZipEntry> e = zip.entries();
+                    while (e.hasMoreElements()) {
+                        ZipEntry entry = (ZipEntry) e.nextElement();
+                        String path = entry.getName();
+                        if (!path.equals(Constants.META_DIR + "/" + Constants.PROPERTIES_XML)) {
+                            exporter.write(zip, entry);
+                        }
+                    }
+                } else {
+                    Set<String> keep = new HashSet<String>();
+                    keep.add(Constants.META_DIR + "/");
+                    keep.add(Constants.META_DIR + "/" + Constants.NODETYPES_CND);
+                    keep.add(Constants.META_DIR + "/" + Constants.CONFIG_XML);
+                    keep.add(Constants.META_DIR + "/" + Constants.FILTER_XML);
+                    Enumeration<? extends ZipEntry> e = zip.entries();
+                    while (e.hasMoreElements()) {
+                        ZipEntry entry = (ZipEntry) e.nextElement();
+                        String path = entry.getName();
+                        if (!path.startsWith(Constants.META_DIR + "/") || keep.contains(path)) {
+                            exporter.write(zip, entry);
+                        }
+                    }
                 }
             }
-        } else {
-            Set<String> keep = new HashSet<String>();
-            keep.add(Constants.META_DIR + "/");
-            keep.add(Constants.META_DIR + "/" + Constants.NODETYPES_CND);
-            keep.add(Constants.META_DIR + "/" + Constants.CONFIG_XML);
-            keep.add(Constants.META_DIR + "/" + Constants.FILTER_XML);
-            Enumeration e = zip.entries();
-            while (e.hasMoreElements()) {
-                ZipEntry entry = (ZipEntry) e.nextElement();
-                String path = entry.getName();
-                if (!path.startsWith(Constants.META_DIR + "/") || keep.contains(path)) {
-                    exporter.write(zip, entry);
-                }
+    
+            // write updated properties
+            ByteArrayOutputStream tmpOut = new ByteArrayOutputStream();
+            inf.getProperties().storeToXML(tmpOut, "FileVault Package Properties", "utf-8");
+            exporter.writeFile(new ByteArrayInputStream(tmpOut.toByteArray()), Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
+            if (tracker != null) {
+                tracker.track("A", Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
+            }
+    
+            if (opts.getPostProcessor() != null) {
+                opts.getPostProcessor().process(exporter);
             }
         }
-        zip.close();
-
-        // write updated properties
-        ByteArrayOutputStream tmpOut = new ByteArrayOutputStream();
-        inf.getProperties().storeToXML(tmpOut, "FileVault Package Properties", "utf-8");
-        exporter.writeFile(new ByteArrayInputStream(tmpOut.toByteArray()), Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
-        if (tracker != null) {
-            tracker.track("A", Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
-        }
-
-        if (opts.getPostProcessor() != null) {
-            opts.getPostProcessor().process(exporter);
-        }
-        exporter.close();
     }
 
     @Nullable

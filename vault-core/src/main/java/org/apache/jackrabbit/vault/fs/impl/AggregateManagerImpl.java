@@ -212,9 +212,8 @@ public class AggregateManagerImpl implements AggregateManager {
      * @return the default config
      */
     public static VaultFsConfig getDefaultConfig() {
-        try {
-            InputStream in = AggregateManagerImpl.class.getClassLoader()
-                    .getResourceAsStream(DEFAULT_CONFIG);
+        try (InputStream in = AggregateManagerImpl.class.getClassLoader()
+                    .getResourceAsStream(DEFAULT_CONFIG)) {
             if (in == null) {
                 throw new InternalError("Default config not in classpath: " + DEFAULT_CONFIG);
             }
@@ -231,9 +230,8 @@ public class AggregateManagerImpl implements AggregateManager {
      * @return the default config
      */
     public static VaultFsConfig getDefaultBinaryReferencesConfig() {
-        try {
-            InputStream in = AggregateManagerImpl.class.getClassLoader()
-                    .getResourceAsStream(DEFAULT_BINARY_REFERENCES_CONFIG);
+        try (InputStream in = AggregateManagerImpl.class.getClassLoader()
+                    .getResourceAsStream(DEFAULT_BINARY_REFERENCES_CONFIG)) {
             if (in == null) {
                 throw new InternalError("Default config not in classpath: " + DEFAULT_BINARY_REFERENCES_CONFIG);
             }
@@ -250,9 +248,8 @@ public class AggregateManagerImpl implements AggregateManager {
      * @return the default workspace filter
      */
     public static DefaultWorkspaceFilter getDefaultWorkspaceFilter() {
-        try {
-            InputStream in = AggregateManagerImpl.class.getClassLoader()
-                    .getResourceAsStream(DEFAULT_WSP_FILTER);
+        try (InputStream in = AggregateManagerImpl.class.getClassLoader()
+                    .getResourceAsStream(DEFAULT_WSP_FILTER)) {
             if (in == null) {
                 throw new InternalError("Default filter not in classpath: " + DEFAULT_WSP_FILTER);
             }
@@ -437,17 +434,15 @@ public class AggregateManagerImpl implements AggregateManager {
         } catch (RepositoryException e) {
             // ignore
         }
-        InputStream in = getClass().getClassLoader()
-                .getResourceAsStream(DEFAULT_NODETYPES);
-        try {
+        
+        try (InputStream in = getClass().getClassLoader()
+                .getResourceAsStream(DEFAULT_NODETYPES)) {
             NodeTypeInstaller installer = ServiceProviderFactory.getProvider().getDefaultNodeTypeInstaller(session);
             CNDReader types = ServiceProviderFactory.getProvider().getCNDReader();
             types.read(new InputStreamReader(in, "utf8"), DEFAULT_NODETYPES, null);
             installer.install(null, types);
         } catch (Exception e) {
             throw new RepositoryException("Error while importing nodetypes.", e);
-        } finally {
-            IOUtils.closeQuietly(in);
         }
     }
 

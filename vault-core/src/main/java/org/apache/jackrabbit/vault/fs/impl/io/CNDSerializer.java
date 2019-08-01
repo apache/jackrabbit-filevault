@@ -27,6 +27,7 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
+import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.io.Serializer;
@@ -60,18 +61,18 @@ public class CNDSerializer implements Serializer {
      * {@inheritDoc}
      */
     public void writeContent(OutputStream out) throws IOException, RepositoryException {
-        Writer w = new OutputStreamWriter(out, "utf-8");
-        for (String prefix: aggregate.getNamespacePrefixes()) {
-            w.write("<'");
-            w.write(prefix);
-            w.write("'='");
-            w.write(escape(aggregate.getNamespaceURI(prefix)));
-            w.write("'>\n");
+        try (Writer w = new OutputStreamWriter(new CloseShieldOutputStream(out), "utf-8")) {
+            for (String prefix: aggregate.getNamespacePrefixes()) {
+                w.write("<'");
+                w.write(prefix);
+                w.write("'='");
+                w.write(escape(aggregate.getNamespaceURI(prefix)));
+                w.write("'>\n");
+            }
+            w.write("\n");
+            
+            writeNodeTypeDef(w, aggregate.getNode());
         }
-        w.write("\n");
-        
-        writeNodeTypeDef(w, aggregate.getNode());
-        w.close();
         out.flush();
     }
 

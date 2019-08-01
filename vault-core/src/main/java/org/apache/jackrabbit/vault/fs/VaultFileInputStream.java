@@ -67,9 +67,9 @@ public class VaultFileInputStream extends InputStream {
                 base = a.getInputStream();
             } else {
                 tmpFile = File.createTempFile("vltfs", ".spool");
-                FileOutputStream out = new FileOutputStream(tmpFile);
-                a.spool(out);
-                out.close();
+                try (FileOutputStream out = new FileOutputStream(tmpFile)) {
+                    a.spool(out);
+                }
                 base = new FileInputStream(tmpFile);
             }
         } catch (RepositoryException e) {

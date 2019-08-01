@@ -294,7 +294,9 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
      * @throws IOException if an I/O error occurs
      */
     public void load(File file) throws IOException, ConfigurationException {
-        load(new FileInputStream(file));
+        try (InputStream input = new FileInputStream(file)) {
+            load(input);
+        }
     }
 
     /**
@@ -322,22 +324,22 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     }
 
     /**
-     * Loads the workspace filter from the given input source
+     * Loads the workspace filter from the given input source.
+     * <p>The specified stream remains open after this method returns.
      * @param in source
      * @throws ConfigurationException if the source is not valid
      * @throws IOException if an I/O error occurs
      */
-    public void load(InputStream in) throws IOException, ConfigurationException {
-        try {
-            source = IOUtils.toByteArray(in);
-            in = getSource();
+    public void load(final InputStream in) throws IOException, ConfigurationException {
+        source = IOUtils.toByteArray(in);
+        try (InputStream inCopy = getSource()) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             //factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
             DocumentBuilder builder = factory.newDocumentBuilder();
             // disable DTD loading (bug #36897)
             builder.setEntityResolver(new RejectingEntityResolver());
-            Document document = builder.parse(in);
+            Document document = builder.parse(inCopy);
             Element doc = document.getDocumentElement();
             if (!"workspaceFilter".equals(doc.getNodeName())) {
                 throw new ConfigurationException("<workspaceFilter> expected.");
@@ -360,8 +362,6 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         } catch (SAXException e) {
             throw new ConfigurationException(
                     "Configuration file syntax error.", e);
-        } finally {
-            IOUtils.closeQuietly(in);
         }
 
     }

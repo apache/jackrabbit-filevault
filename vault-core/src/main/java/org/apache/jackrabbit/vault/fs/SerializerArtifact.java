@@ -97,13 +97,13 @@ public class SerializerArtifact extends AbstractArtifact implements ExportArtifa
      * {@inheritDoc}
      */
     public InputStream getInputStream() throws IOException, RepositoryException {
-        DeferredFileOutputStream out = new DeferredFileOutputStream(8192, "vlttmp", ".tmp", null);
-        spool(out);
-        out.close();
-        if (out.isInMemory()) {
-            return new ByteArrayInputStream(out.getData());
-        } else {
-            return new TempFileInputStream(out.getFile());
+        try (DeferredFileOutputStream out = new DeferredFileOutputStream(8192, "vlttmp", ".tmp", null)) {
+            spool(out);
+            if (out.isInMemory()) {
+                return new ByteArrayInputStream(out.getData());
+            } else {
+                return new TempFileInputStream(out.getFile());
+            }
         }
     }
 
@@ -111,17 +111,18 @@ public class SerializerArtifact extends AbstractArtifact implements ExportArtifa
      * {@inheritDoc}
      */
     public VaultInputSource getInputSource() throws IOException, RepositoryException {
-        DeferredFileOutputStream out = new DeferredFileOutputStream(8192, "vlttmp", ".tmp", null);
-        spool(out);
-        out.close();
         final InputStream in;
         final long size;
-        if (out.isInMemory()) {
-            in = new ByteArrayInputStream(out.getData());
-            size = out.getData().length;
-        } else {
-            in = new TempFileInputStream(out.getFile());
-            size = out.getFile().length();
+        try (DeferredFileOutputStream out = new DeferredFileOutputStream(8192, "vlttmp", ".tmp", null)) {
+            spool(out);
+        
+            if (out.isInMemory()) {
+                in = new ByteArrayInputStream(out.getData());
+                size = out.getData().length;
+            } else {
+                in = new TempFileInputStream(out.getFile());
+                size = out.getFile().length();
+            }
         }
         return new VaultInputSource() {
 

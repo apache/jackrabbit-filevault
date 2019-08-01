@@ -117,7 +117,7 @@ public interface Artifact extends Dumpable {
     /**
      * Writes the content to the given output stream and closes it afterwards.
      * This is the preferred method to use for output-artifacts.
-     *
+     * <p>The specified stream remains open after this method returns.
      * @param out the output stream to spool to
      * @throws IOException if an I/O error occurs
      * @throws RepositoryException if a repository error occurs

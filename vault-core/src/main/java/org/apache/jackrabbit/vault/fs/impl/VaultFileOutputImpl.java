@@ -30,7 +30,7 @@ import org.apache.jackrabbit.vault.util.FileInputSource;
 
 /**
  * Provides methods for writing jcr files. This can either be done by providing
- * an input source or by fetching an output stream. this output stream can be
+ * an input source or by fetching an output stream. This output stream can be
  * acquired via a {@link TransactionImpl}.
  *
  */
@@ -53,6 +53,10 @@ public class VaultFileOutputImpl implements VaultFileOutput {
         this.is = input;
     }
 
+    /**
+     * This method can only be called once.
+     * @return the returned output stream is implicitly closed via {@link #close()} and doesn't need to be closed.
+     */
     public OutputStream getOutputStream() throws IOException {
         if (out != null) {
             throw new IOException("Output stream already obtained.");

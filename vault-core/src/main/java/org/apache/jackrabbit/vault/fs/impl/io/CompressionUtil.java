@@ -155,15 +155,11 @@ public final class CompressionUtil {
     }
 
     static int seemsCompressible(@Nonnull Artifact artifact) {
-        InputStream stream = null;
-        try {
-            stream = artifact.getInputStream();
+        try (InputStream stream = artifact.getInputStream()) {
             byte[] sample = IOUtils.toByteArray(stream, SAMPLE_LENGTH);
             return isCompressible(sample, SAMPLE_LENGTH) ? 1 : -1;
         } catch (RepositoryException | IOException e) {
             log.warn(e.getMessage(), e);
-        } finally {
-            IOUtils.closeQuietly(stream);
         }
         return 0;
     }

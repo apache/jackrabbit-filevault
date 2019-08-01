@@ -76,26 +76,24 @@ public class MD5 {
     }
 
     public static MD5 digest(InputStream in) throws IOException {
+        MessageDigest md;
         try {
-            MessageDigest md;
-            try {
-                md = MessageDigest.getInstance("md5");
-            } catch (NoSuchAlgorithmException e) {
-                throw new IllegalArgumentException(e.toString());
-            }
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = in.read(buffer)) > 0) {
-                md.update(buffer, 0, read);
-            }
-            return new MD5(md.digest());
-        } finally {
-            in.close();
+            md = MessageDigest.getInstance("md5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException(e.toString());
         }
+        byte[] buffer = new byte[8192];
+        int read;
+        while ((read = in.read(buffer)) > 0) {
+            md.update(buffer, 0, read);
+        }
+        return new MD5(md.digest());
     }
 
     public static MD5 digest(File file) throws IOException {
-        return digest(new FileInputStream(file));
+        try (InputStream input = new FileInputStream(file)) {
+            return digest(input);
+        }
     }
 
     public String toString() {

@@ -84,13 +84,10 @@ public class CmdImportCli extends AbstractVaultCommand {
                 return;
             }
             // todo: move to another location
-            InputStream ins = FileUtils.openInputStream(localFile);
-            try {
+            try (InputStream ins = FileUtils.openInputStream(localFile)) {
                 Session session = vCtx.getFileSystem(addr).getAggregateManager().getSession();
                 session.getWorkspace().importXML(jcrPath, ins, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
                 return;
-            } finally {
-                IOUtils.closeQuietly(ins);
             }
         }
 

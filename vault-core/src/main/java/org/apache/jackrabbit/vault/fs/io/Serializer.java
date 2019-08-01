@@ -30,6 +30,12 @@ import org.apache.jackrabbit.vault.fs.api.SerializationType;
  */
 public interface Serializer {
 
+    /**
+     * <p>The specified stream remains open after this method returns.
+     * @param out
+     * @throws IOException
+     * @throws RepositoryException
+     */
     void writeContent(@Nonnull OutputStream out) throws IOException, RepositoryException;
 
     @Nonnull

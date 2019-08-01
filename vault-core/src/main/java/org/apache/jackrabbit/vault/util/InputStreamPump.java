@@ -68,6 +68,11 @@ public class InputStreamPump extends InputStream {
     }
 
     public interface Pump {
+        /**
+         * <p>The specified stream remains open after this method returns.
+         * @param in
+         * @throws Exception
+         */
         void run(InputStream in) throws Exception;
     }
 

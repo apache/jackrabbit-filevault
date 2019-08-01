@@ -17,6 +17,7 @@
 
 package org.apache.jackrabbit.vault.fs.io;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -31,7 +32,7 @@ import org.apache.jackrabbit.vault.fs.config.MetaInf;
 /**
  * Specifies a filevault archive.
  */
-public interface Archive extends AutoCloseable {
+public interface Archive extends Closeable {
 
     /**
      * Opens the archive.

@@ -46,11 +46,9 @@ public class PomProperties {
     public Properties getProperties() {
         if (props == null) {
             props = new Properties();
-            try {
-                InputStream in = PomProperties.class.getClassLoader().getResourceAsStream(pomPropsPath);
+            try (InputStream in = PomProperties.class.getClassLoader().getResourceAsStream(pomPropsPath)) {
                 if (in != null) {
                     props.load(in);
-                    in.close();
                 }
             } catch (IOException e) {
                 // ignore

@@ -181,15 +181,13 @@ public class JarExporter extends AbstractExporter {
                 throw new RepositoryException("Artifact has no content.");
 
             case SPOOL:
-                OutputStream nout = new CloseShieldOutputStream(jOut);
-                a.spool(nout);
+                a.spool(jOut);
                 break;
 
             case STREAM:
-                nout = new CloseShieldOutputStream(jOut);
-                InputStream in = a.getInputStream();
-                IOUtils.copy(in, nout);
-                in.close();
+                try (InputStream in = a.getInputStream()) {
+                    IOUtils.copy(in, jOut);
+                }
                 break;
         }
         jOut.closeEntry();
@@ -203,9 +201,7 @@ public class JarExporter extends AbstractExporter {
         ZipEntry e = new ZipEntry(relPath);
         exportInfo.update(ExportInfo.Type.ADD, e.getName());
         jOut.putNextEntry(e);
-        OutputStream nout = new CloseShieldOutputStream(jOut);
-        IOUtils.copy(in, nout);
-        in.close();
+        IOUtils.copy(in, jOut);
         jOut.closeEntry();
     }
 
@@ -222,9 +218,9 @@ public class JarExporter extends AbstractExporter {
         jOut.putNextEntry(copy);
         if (!entry.isDirectory()) {
             // copy
-            InputStream in = zip.getInputStream(entry);
-            IOUtils.copy(in, jOut);
-            in.close();
+            try (InputStream in = zip.getInputStream(entry)) {
+                IOUtils.copy(in, jOut);
+            }
         }
         jOut.closeEntry();
         if (changeCompressionLevel) {

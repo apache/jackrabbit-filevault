@@ -110,8 +110,8 @@ public class ZipArchive extends AbstractArchive {
             String path = entry.getName();
             // check for meta inf
             if (path.startsWith(Constants.META_DIR + "/")) {
-                try {
-                    inf.load(jar.getInputStream(entry), file.getPath() + ":" + path);
+                try (InputStream input = jar.getInputStream(entry)) {
+                    inf.load(input, file.getPath() + ":" + path);
                 } catch (ConfigurationException e1) {
                     throw new IOException(e1);
                 }

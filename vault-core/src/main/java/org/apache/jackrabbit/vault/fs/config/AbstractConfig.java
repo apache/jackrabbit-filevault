@@ -27,7 +27,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
@@ -84,9 +83,21 @@ abstract public class AbstractConfig {
     abstract protected void doLoad(Element child) throws ConfigurationException;
 
     public boolean load(File configFile) throws IOException, ConfigurationException {
-        return configFile.canRead() && load(FileUtils.openInputStream(configFile));
+        if (configFile.canRead()) {
+            try (InputStream input = FileUtils.openInputStream(configFile)) {
+                return true;
+            }
+        }
+        return false;
     }
 
+    /**
+     * <p>The specified stream remains open after this method returns.
+     * @param in
+     * @return
+     * @throws IOException
+     * @throws ConfigurationException
+     */
     public boolean load(InputStream in) throws IOException, ConfigurationException {
         try {
             DocumentBuilderFactory factory =
@@ -102,13 +113,13 @@ abstract public class AbstractConfig {
             throw new ConfigurationException(e);
         } catch (SAXException e) {
             throw new ConfigurationException(e);
-        } finally {
-            IOUtils.closeQuietly(in);
         }
     }
 
     public void save(File configFile) throws IOException {
-        save(FileUtils.openOutputStream(configFile));
+        try (OutputStream output = FileUtils.openOutputStream(configFile)) {
+            save(output);
+        }
     }
     
     public void save(OutputStream out) throws IOException {
@@ -120,8 +131,6 @@ abstract public class AbstractConfig {
             write(ser);
         } catch (SAXException e) {
             throw new IOException(e.toString());
-        } finally {
-            IOUtils.closeQuietly(out);
         }
     }
 

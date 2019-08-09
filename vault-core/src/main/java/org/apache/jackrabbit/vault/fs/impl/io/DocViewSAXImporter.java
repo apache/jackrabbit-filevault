@@ -18,6 +18,7 @@
 package org.apache.jackrabbit.vault.fs.impl.io;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -446,22 +447,23 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         boolean modified = false;
         // Set the jcr:data property
         ValueFactory factory = node.getSession().getValueFactory();
-        Value value = factory.createValue(a.getInputStream());
-        if (node.hasProperty(JcrConstants.JCR_DATA)) {
-            Property data = node.getProperty(JcrConstants.JCR_DATA);
-            if (!value.equals(data.getValue())) {
-                data.setValue(value);
-                // mark jcr:data as modified.
-                importInfo.onModified(data.getPath());
+        try (InputStream input = a.getInputStream()) {
+            Value value = factory.createValue(input);
+            if (node.hasProperty(JcrConstants.JCR_DATA)) {
+                Property data = node.getProperty(JcrConstants.JCR_DATA);
+                if (!value.equals(data.getValue())) {
+                    data.setValue(value);
+                    // mark jcr:data as modified.
+                    importInfo.onModified(data.getPath());
+                    modified = true;
+                }
+            } else {
+                Property data = node.setProperty(JcrConstants.JCR_DATA, value);
+                // mark jcr:data as created
+                importInfo.onCreated(data.getPath());
                 modified = true;
             }
-        } else {
-            Property data = node.setProperty(JcrConstants.JCR_DATA, value);
-            // mark jcr:data as created
-            importInfo.onCreated(data.getPath());
-            modified = true;
         }
-
         // always update last modified if binary was modified (bug #22969)
         if (!node.hasProperty(JcrConstants.JCR_LASTMODIFIED) || modified) {
             Calendar lastModified = Calendar.getInstance();
@@ -1271,7 +1273,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             Value[] values = new Value[artifacts.size()];
             for (int i = 0; i < values.length; i++) {
                 Artifact a = artifacts.get(i);
-                values[i] = session.getValueFactory().createValue(a.getInputStream());
+                try (InputStream input = a.getInputStream()) {
+                    values[i] = session.getValueFactory().createValue(input);
+                }
             }
             return values;
         }
@@ -1279,7 +1283,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         public Value getValue(Session session)
                 throws RepositoryException, IOException {
             Artifact a = artifacts.get(0);
-            return session.getValueFactory().createValue(a.getInputStream());
+            try (InputStream input = a.getInputStream()) {
+                return session.getValueFactory().createValue(input);
+            }
         }
 
         public void detach() {

@@ -175,8 +175,11 @@ public class XMLSerializer extends BaseMarkupSerializer {
      * using the specified output format. If <tt>format</tt> is null,
      * will use a default output format.
      *
+     * <p>The specified writer will not be closed by this class.
+     * 
      * @param writer The writer to use
      * @param format The output format to use, null for the default
+     * 
      */
     public XMLSerializer(Writer writer, OutputFormat format) {
         super(format != null ? format : new OutputFormat(Method.XML, null, false));
@@ -189,7 +192,8 @@ public class XMLSerializer extends BaseMarkupSerializer {
      * Constructs a new serializer that writes to the specified output
      * stream using the specified output format. If <tt>format</tt>
      * is null, will use a default output format.
-     *
+     * <p>The specified stream will not be closed by this class.
+     * 
      * @param output The output stream to use
      * @param format The output format to use, null for the default
      */

@@ -275,7 +275,9 @@ public abstract class BaseMarkupSerializer
         return this;
     }
 
-
+    /**
+     * <p>The specified stream will not be closed by this class.
+     */
     public void setOutputByteStream(OutputStream output) {
         if (output == null) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN,
@@ -288,6 +290,9 @@ public abstract class BaseMarkupSerializer
     }
 
 
+    /**
+     * <p>The specified writer will not be closed by this class.
+     */
     public void setOutputCharStream(Writer writer) {
         if (writer == null) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN,

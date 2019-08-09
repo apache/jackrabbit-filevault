@@ -70,38 +70,43 @@ public abstract class AbstractVaultFsConfig implements VaultFsConfig {
 
     public static VaultFsConfig load(File file)
             throws ConfigurationException, IOException {
-        return load(new FileInputStream(file), file.getName());
+        try (InputStream input = new FileInputStream(file)) {
+            return load(input, file.getName());
+        }
     }
 
+    /**
+     * <p>The specified stream remains open after this method returns.
+     * @param in
+     * @param name
+     * @return
+     * @throws ConfigurationException
+     * @throws IOException
+     */
     public static VaultFsConfig load(InputStream in, String name)
             throws ConfigurationException, IOException {
-        try {
-            byte[] source = IOUtils.toByteArray(in);
-            Document document = parse(new ByteArrayInputStream(source));
+        byte[] source = IOUtils.toByteArray(in);
+        Document document = parse(new ByteArrayInputStream(source));
 
-            Element doc = document.getDocumentElement();
-            if (!doc.getNodeName().equals("vaultfs")) {
-                throw new ConfigurationException("<vaultfs> expected.");
-            }
-            String v = doc.getAttribute(ATTR_VERSION);
-            if (v == null || v.equals("")) {
-                v = "1.0";
-            }
-            double version = Double.parseDouble(v);
-            AbstractVaultFsConfig config;
-            if (version != VaultFsConfig11.SUPPORTED_VERSION) {
-                throw new ConfigurationException("version " + version + " not supported.");
-            } else {
-                config = new VaultFsConfig11();
-            }
-            config.setSource(source);
-            config.setName(name);
-            config.process(doc);
-            return config;
-        } finally {
-            IOUtils.closeQuietly(in);
+        Element doc = document.getDocumentElement();
+        if (!doc.getNodeName().equals("vaultfs")) {
+            throw new ConfigurationException("<vaultfs> expected.");
         }
-
+        String v = doc.getAttribute(ATTR_VERSION);
+        if (v == null || v.equals("")) {
+            v = "1.0";
+        }
+        double version = Double.parseDouble(v);
+        AbstractVaultFsConfig config;
+        if (version != VaultFsConfig11.SUPPORTED_VERSION) {
+            throw new ConfigurationException("version " + version + " not supported.");
+        } else {
+            config = new VaultFsConfig11();
+        }
+        config.setSource(source);
+        config.setName(name);
+        config.process(doc);
+        return config;
     }
 
     protected Map<String, String> getProperties() {

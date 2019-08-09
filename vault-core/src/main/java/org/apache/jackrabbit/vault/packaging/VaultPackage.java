@@ -93,12 +93,15 @@ public interface VaultPackage extends PackageProperties, AutoCloseable {
     File getFile();
 
     /**
-     * Closes this package and releases underlying data.
+     * Closes this package and releases underlying data. 
+     * This will also close the underlying {@link Archive} if it has been opened.
      */
     void close();
 
     /**
-     * Returns the underlying package archive
+     * Returns the underlying package archive.
+     * This does not need to be closed explicitly but rather is implicitly closed via
+     * a call to {@link #close()}.
      * @return the archive or {@code null} if already closed
      */
     Archive getArchive();

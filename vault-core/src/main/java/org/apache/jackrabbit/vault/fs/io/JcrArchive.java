@@ -129,7 +129,9 @@ public class JcrArchive extends AbstractArchive {
         // filter
         for (Entry entry: dir.getChildren()) {
             VaultInputSource src = getInputSource(entry);
-            inf.load(src.getByteStream(), src.getSystemId());
+            try (InputStream input = src.getByteStream()) {
+                inf.load(input, src.getSystemId());
+            }
         }
         if (inf.getFilter() == null) {
             log.debug("Archive {} does not contain filter definition.", this);

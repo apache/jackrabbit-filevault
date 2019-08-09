@@ -141,17 +141,16 @@ public class PlatformExporter extends AbstractExporter {
                 throw new RepositoryException("Artifact has no content.");
 
             case SPOOL:
-                FileOutputStream out = new FileOutputStream(local);
-                a.spool(out);
-                out.close();
+                try (FileOutputStream out = new FileOutputStream(local)) {
+                    a.spool(out);
+                }
                 break;
 
             case STREAM:
-                InputStream in = a.getInputStream();
-                out = new FileOutputStream(local);
-                IOUtils.copy(in, out);
-                in.close();
-                out.close();
+                try (InputStream in = a.getInputStream();
+                     OutputStream out = new FileOutputStream(local)) {
+                    IOUtils.copy(in, out);
+                }
                 break;
         }
         if (a.getLastModified() >= 0) {

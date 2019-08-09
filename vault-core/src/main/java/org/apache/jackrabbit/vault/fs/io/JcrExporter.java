@@ -133,11 +133,11 @@ public class JcrExporter extends AbstractExporter {
             case SPOOL:
                 // we can't support spool
             case STREAM:
-                InputStream in = a.getInputStream();
-                Binary b = content.getSession().getValueFactory().createBinary(in);
-                content.setProperty(JcrConstants.JCR_DATA, b);
-                b.dispose();
-                in.close();
+                try (InputStream in = a.getInputStream()) {
+                    Binary b = content.getSession().getValueFactory().createBinary(in);
+                    content.setProperty(JcrConstants.JCR_DATA, b);
+                    b.dispose();
+                }
                 break;
         }
         Calendar now = Calendar.getInstance();

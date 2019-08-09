@@ -108,7 +108,7 @@ public interface PackageManager {
     /**
      * Assembles a package using the given meta information. The package
      * is directly streamed to the given output stream.
-     *
+     * <p>The specified stream is closed after this method returns.
      * @param s the repository session
      * @param opts the export options
      * @param out the output stream to write to
@@ -138,6 +138,7 @@ public interface PackageManager {
     /**
      * Re-wraps the given package with the definition provided in the export
      * options.
+     * <p>The specified stream is closed after this method returns.
      * @param opts export options
      * @param src source package
      * @param out destination output stream

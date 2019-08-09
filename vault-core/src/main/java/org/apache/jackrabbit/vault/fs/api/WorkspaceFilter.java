@@ -100,6 +100,8 @@ public interface WorkspaceFilter extends Dumpable {
 
     /**
      * Returns the source xml that constructs this filter
+     * It is the obligation of the caller to close the returned input stream.
+     * 
      * @return the source xml
      */
     @Nonnull

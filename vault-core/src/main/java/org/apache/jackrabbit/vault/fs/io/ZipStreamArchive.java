@@ -106,7 +106,7 @@ public class ZipStreamArchive extends AbstractArchive {
     private final byte[] buffer = new byte[0x10000];
 
     /**
-     * Creates an ew zip stream archive on the given input stream.
+     * Creates a new zip stream archive on the given input stream.
      * @param in the input stream to read from.
      */
     public ZipStreamArchive(@Nonnull InputStream in) {
@@ -273,6 +273,9 @@ public class ZipStreamArchive extends AbstractArchive {
 
     @Override
     public void close() {
+        if (in != null) {
+            IOUtils.closeQuietly(in);
+        }
         if (raf != null) {
             try {
                 raf.close();

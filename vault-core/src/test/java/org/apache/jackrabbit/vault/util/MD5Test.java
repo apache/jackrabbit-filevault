@@ -65,9 +65,10 @@ public class MD5Test extends TestCase {
 
 
     public void testDigest() throws IOException {
-        InputStream in = new ByteArrayInputStream(testData.getBytes());
-        MD5 md5 = MD5.digest(in);
-        assertEquals(testString, md5.toString());
+        try (InputStream in = new ByteArrayInputStream(testData.getBytes())) {
+            MD5 md5 = MD5.digest(in);
+            assertEquals(testString, md5.toString());
+        }
     }
 
     private void assertEquals(byte[] expected, byte[] result) {

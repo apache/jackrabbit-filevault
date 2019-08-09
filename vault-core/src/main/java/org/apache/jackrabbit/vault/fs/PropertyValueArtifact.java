@@ -166,11 +166,10 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
             tmpFile = File.createTempFile("jcrfs", "dat");
             tmpFile.setLastModified(getLastModified());
             tmpFile.deleteOnExit();
-            FileOutputStream out = new FileOutputStream(tmpFile);
-            InputStream in = getValue().getStream();
-            IOUtils.copy(in, out);
-            in.close();
-            out.close();
+            try (FileOutputStream out = new FileOutputStream(tmpFile);
+                 InputStream in = getValue().getStream()) {
+                IOUtils.copy(in, out);
+            }
         }
     }
 

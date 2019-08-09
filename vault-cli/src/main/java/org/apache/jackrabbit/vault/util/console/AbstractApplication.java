@@ -331,9 +331,9 @@ public abstract class AbstractApplication {
             return;
         }
         Properties props = new Properties();
-        FileInputStream in = new FileInputStream(file);
-        props.load(in);
-        in.close();
+        try (FileInputStream in = new FileInputStream(file)) {
+            props.load(in);
+        }
         Iterator iter = globalEnv.keySet().iterator();
         while (iter.hasNext()) {
             String key = (String) iter.next();

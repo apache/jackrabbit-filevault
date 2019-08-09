@@ -67,9 +67,10 @@ public class SHA1Test extends TestCase {
 
 
     public void testDigest() throws IOException {
-        InputStream in = new ByteArrayInputStream(testData.getBytes());
-        SHA1 sha1 = SHA1.digest(in);
-        assertEquals(testString, sha1.toString());
+        try (InputStream in = new ByteArrayInputStream(testData.getBytes())) {
+            SHA1 sha1 = SHA1.digest(in);
+            assertEquals(testString, sha1.toString());
+        }
     }
 
     private void assertEquals(byte[] expected, byte[] result) {

@@ -148,11 +148,12 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
             }
             SecretKeySpec key = new SecretKeySpec(data, 0, KEY_LENGTH, "DES");
             Cipher cipher = Cipher.getInstance("DES");
-            ByteArrayOutputStream out = new ByteArrayOutputStream(data.length);
-            cipher.init(Cipher.DECRYPT_MODE, key);
-            out.write(cipher.update(data, KEY_LENGTH, data.length - KEY_LENGTH));
-            out.write(cipher.doFinal());
-            return out.toString("utf-8");
+            try (ByteArrayOutputStream out = new ByteArrayOutputStream(data.length)) {
+                cipher.init(Cipher.DECRYPT_MODE, key);
+                out.write(cipher.update(data, KEY_LENGTH, data.length - KEY_LENGTH));
+                out.write(cipher.doFinal());
+                return out.toString("utf-8");
+            }
         } catch (Exception e) {
             log.warn("Unable to decrypt data: " + e);
             return null;

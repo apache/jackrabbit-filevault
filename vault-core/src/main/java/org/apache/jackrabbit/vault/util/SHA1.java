@@ -87,26 +87,24 @@ public class SHA1 {
     }
 
     public static SHA1 digest(InputStream in) throws IOException {
+        MessageDigest md;
         try {
-            MessageDigest md;
-            try {
-                md = MessageDigest.getInstance("SHA-1");
-            } catch (NoSuchAlgorithmException e) {
-                throw new IllegalArgumentException(e.toString());
-            }
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = in.read(buffer)) > 0) {
-                md.update(buffer, 0, read);
-            }
-            return new SHA1(md.digest());
-        } finally {
-            in.close();
+            md = MessageDigest.getInstance("SHA-1");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException(e.toString());
         }
+        byte[] buffer = new byte[8192];
+        int read;
+        while ((read = in.read(buffer)) > 0) {
+            md.update(buffer, 0, read);
+        }
+        return new SHA1(md.digest());
     }
 
     public static SHA1 digest(File file) throws IOException {
-        return digest(FileUtils.openInputStream(file));
+        try (InputStream input = FileUtils.openInputStream(file)) {
+            return digest(input);
+        }
     }
 
     public String toString() {

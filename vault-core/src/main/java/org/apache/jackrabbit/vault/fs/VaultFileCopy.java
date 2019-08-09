@@ -97,24 +97,23 @@ public class VaultFileCopy {
         if (lineFeed != null) {
             base = new LineOutputStream(base, lineFeed);
         }
-        BinaryCheckOutputStream out = new BinaryCheckOutputStream(base);
-        switch (a.getPreferredAccess()) {
-            case SPOOL:
-                a.spool(out);
-                out.close();
-                break;
-            case STREAM:
-                InputStream in = a.getInputStream();
-                byte[] buffer = new byte[8192];
-                int read;
-                while ((read = in.read(buffer)) >= 0) {
-                    out.write(buffer, 0, read);
-                }
-                in.close();
-                out.close();
-                break;
+        try (BinaryCheckOutputStream out = new BinaryCheckOutputStream(base)) {
+            switch (a.getPreferredAccess()) {
+                case SPOOL:
+                    a.spool(out);
+                    break;
+                case STREAM:
+                    try (InputStream in = a.getInputStream()) {
+                        byte[] buffer = new byte[8192];
+                        int read;
+                        while ((read = in.read(buffer)) >= 0) {
+                            out.write(buffer, 0, read);
+                        }
+                    }
+                    break;
+            }
+            binary = out.isBinary();
         }
-        binary = out.isBinary();
         length = localFile.length();
         // try to set last modified
         long lastMod = remoteFile.lastModified();

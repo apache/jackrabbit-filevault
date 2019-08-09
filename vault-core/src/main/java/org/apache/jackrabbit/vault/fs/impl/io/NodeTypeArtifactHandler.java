@@ -65,12 +65,9 @@ public class NodeTypeArtifactHandler extends AbstractArtifactHandler {
         }
         // do import
         CNDImporter importer = new CNDImporter();
-        InputStream in = primary.getInputStream();
-        try {
+        try (InputStream in = primary.getInputStream()) {
             Reader r = new InputStreamReader(in, "utf-8");
             return importer.doImport(parent, primary.getRelativePath(), r, primary.getRelativePath());
-        } finally {
-            in.close();
         }
     }
 

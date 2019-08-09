@@ -709,8 +709,7 @@ public class Importer {
                 } else if (".cnd".equals(ext)) {
                     if (opts.getCndPattern().matcher(repoPath).matches()) {
                         InputStream in = is.getByteStream();
-                        try {
-                            Reader r = new InputStreamReader(in, "utf8");
+                        try (Reader r = new InputStreamReader(in, "utf8")) {
                             CNDReader reader = ServiceProviderFactory.getProvider().getCNDReader();
                             // provide session namespaces
                             reader.read(r, is.getSystemId(), new NamespaceMapping(resolver));
@@ -718,8 +717,6 @@ public class Importer {
                             log.debug("Loaded nodetypes from {}.", repoPath);
                         } catch (IOException e1) {
                             log.error("Error while reading CND.", e1);
-                        } finally {
-                            IOUtils.closeQuietly(in);
                         }
                     }
                     ext = "";
@@ -1083,17 +1080,11 @@ public class Importer {
                 log.debug("Dry run: Would copy patch {} to {}", name, target.getPath());
             } else {
                 log.debug("Copying patch {} to {}", name, target.getPath());
-                InputStream in = null;
-                OutputStream out = null;
-                try {
-                    in = archive.getInputSource(e).getByteStream();
-                    out = FileUtils.openOutputStream(target);
+                try (InputStream in = archive.getInputSource(e).getByteStream();
+                     OutputStream out = FileUtils.openOutputStream(target)) {
                     IOUtils.copy(in, out);
                 } catch (IOException e1) {
                     log.error("Error while copying patch.", e);
-                } finally {
-                    IOUtils.closeQuietly(in);
-                    IOUtils.closeQuietly(out);
                 }
             }
             track("P", name);

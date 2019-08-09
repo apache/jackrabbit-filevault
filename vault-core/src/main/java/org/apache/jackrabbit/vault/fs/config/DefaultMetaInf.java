@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import javax.jcr.NamespaceException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.jackrabbit.spi.commons.privilege.ParseException;
 import org.apache.jackrabbit.spi.commons.privilege.PrivilegeDefinitionReader;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
@@ -93,6 +95,8 @@ public class DefaultMetaInf implements MetaInf {
 
     /**
      * Loads a setting based on the name of the system id.
+     * <p>The specified stream remains open after this method returns.
+     * 
      * @param systemId the system id of the setting to load
      * @param in the input stream
      * @return {@code true} if the setting was loaded.
@@ -143,6 +147,15 @@ public class DefaultMetaInf implements MetaInf {
         return false;
     }
 
+    /**
+     * 
+     * <p>The specified stream remains open after this method returns.
+     * 
+     * @param in
+     * @param systemId
+     * @throws ConfigurationException
+     * @throws IOException
+     */
     public void loadFilter(@Nonnull InputStream in, @Nonnull String systemId)
             throws ConfigurationException, IOException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
@@ -151,6 +164,13 @@ public class DefaultMetaInf implements MetaInf {
         log.trace("Loaded filter from {}.", systemId);
     }
 
+    /**
+     * <p>The specified stream remains open after this method returns.
+     * @param in
+     * @param systemId
+     * @throws ConfigurationException
+     * @throws IOException
+     */
     public void loadConfig(@Nonnull InputStream in, @Nonnull String systemId)
             throws ConfigurationException, IOException {
         VaultFsConfig config = AbstractVaultFsConfig.load(in, systemId);
@@ -166,14 +186,27 @@ public class DefaultMetaInf implements MetaInf {
         log.trace("Loaded settings from {}.", systemId);
     }
 
+    /**
+     * <p>The specified stream remains open after this method returns.
+     * @param in
+     * @param systemId
+     * @throws IOException
+     */
     public void loadProperties(@Nonnull InputStream in, @Nonnull String systemId)
             throws IOException {
         Properties props = new Properties();
-        props.loadFromXML(in);
+        // prevent the input stream from being closed for achieving a consistens behaviour
+        props.loadFromXML(new CloseShieldInputStream(in));
         setProperties(props);
         log.trace("Loaded properties from {}.", systemId);
     }
 
+    /**
+     * <p>The specified stream remains open after this method returns.
+     * @param in
+     * @param systemId
+     * @throws IOException
+     */
     public void loadPrivileges(@Nonnull InputStream in, @Nonnull String systemId)
             throws IOException {
         try {
@@ -311,10 +344,9 @@ public class DefaultMetaInf implements MetaInf {
             throws IOException {
         if (config != null) {
             File file = new File(metaDir, Constants.CONFIG_XML);
-            IOUtils.copy(
-                    config.getSource(),
-                    FileUtils.openOutputStream(file)
-            );
+            try (OutputStream output = FileUtils.openOutputStream(file)) {
+                IOUtils.copy(config.getSource(), output);
+            }
         }
     }
 
@@ -339,39 +371,37 @@ public class DefaultMetaInf implements MetaInf {
             throws IOException {
         if (filter != null) {
             File file = new File(metaDir, Constants.FILTER_XML);
-            IOUtils.copy(
-                    filter.getSource(),
-                    FileUtils.openOutputStream(file)
-            );
+            try (OutputStream output = FileUtils.openOutputStream(file)) {
+                IOUtils.copy(filter.getSource(), output);
+            }
         }
     }
 
     protected void loadProperties(@Nonnull File metaDir) throws IOException {
         File file = new File(metaDir, Constants.PROPERTIES_XML);
         if (file.isFile()) {
-            Properties properties = new Properties();
-            properties.loadFromXML(FileUtils.openInputStream(file));
-            this.properties = properties;
+            try (InputStream input = FileUtils.openInputStream(file)) {
+                Properties properties = new Properties();
+                properties.loadFromXML(input);
+                this.properties = properties;
+            }
         }
     }
 
     protected void saveProperties(@Nonnull File metaDir) throws IOException {
         if (properties != null) {
             File file = new File(metaDir, Constants.PROPERTIES_XML);
-            properties.storeToXML(
-                    FileUtils.openOutputStream(file),
-                    "Custom Vault Properties", "utf-8");
+            try (OutputStream output = FileUtils.openOutputStream(file)) {
+                properties.storeToXML(output, "Custom Vault Properties", "utf-8");
+            }
         }
     }
 
     protected void loadPrivileges(@Nonnull File metaDir) throws IOException {
         File file = new File(metaDir, Constants.PRIVILEGES_XML);
         if (file.isFile()) {
-            InputStream in = FileUtils.openInputStream(file);
-            try {
+            try (InputStream in = FileUtils.openInputStream(file)) {
                 loadPrivileges(in, file.getPath());
-            } finally {
-                IOUtils.closeQuietly(in);
             }
         }
     }
@@ -383,17 +413,13 @@ public class DefaultMetaInf implements MetaInf {
         }
         for (File file: files) {
             if (file.getName().endsWith(".cnd")) {
-                Reader r = null;
-                try {
-                    r = new InputStreamReader(new FileInputStream(file), "utf8");
+                try(Reader r = new InputStreamReader(new FileInputStream(file), "utf8")) {
                     CNDReader reader = ServiceProviderFactory.getProvider().getCNDReader();
                     reader.read(r, file.getName(), null);
                     cnds.add(reader);
                 } catch (IOException e) {
                     log.error("Error while reading CND: {}", e.toString());
                     throw new IOException("Error while reading CND.", e);
-                } finally {
-                    IOUtils.closeQuietly(r);
                 }
             }
         }

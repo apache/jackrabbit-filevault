@@ -42,12 +42,11 @@ public class FSRegisteredPackageTest {
     private static final PackageId DUMMY_ID = new PackageId("someGroup", "someName", "someVersion");
 
     private File getTempFile(String name) throws IOException {
-        InputStream in = getClass().getResourceAsStream(name);
         File tmpFile = File.createTempFile("vaultpack", ".zip");
-        FileOutputStream out = FileUtils.openOutputStream(tmpFile);
-        IOUtils.copy(in, out);
-        in.close();
-        out.close();
+        try (InputStream in = getClass().getResourceAsStream(name);
+             FileOutputStream out = FileUtils.openOutputStream(tmpFile)) {
+            IOUtils.copy(in, out);
+        }
         return tmpFile;
     }
 

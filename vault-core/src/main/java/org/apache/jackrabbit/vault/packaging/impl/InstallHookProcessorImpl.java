@@ -85,7 +85,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             // currently only the format: "installhook.{name}.class" is supported
             Properties props = archive.getMetaInf().getProperties();
             if (props != null) {
-                Enumeration names = props.propertyNames();
+                Enumeration<?> names = props.propertyNames();
                 while (names.hasMoreElements()) {
                     String name = names.nextElement().toString();
                     if (name.startsWith(VaultPackage.PREFIX_INSTALL_HOOK)) {
@@ -248,7 +248,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             log.info("Loading Hook {}: Main-Class = {}", name, mainClassName);
 
             // find main class
-            Class clazz = classLoader.loadClass(mainClassName);
+            Class<?> clazz = classLoader.loadClass(mainClassName);
             if (!InstallHook.class.isAssignableFrom(clazz)) {
                 throw new PackageException("hook's main class " + mainClassName + " does not implement the InstallHook interface: " + name);
             }

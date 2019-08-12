@@ -19,7 +19,6 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.PatternSyntaxException;

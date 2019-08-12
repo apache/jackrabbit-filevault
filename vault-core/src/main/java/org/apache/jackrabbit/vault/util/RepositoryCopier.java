@@ -25,7 +25,6 @@ import java.util.Set;
 
 import javax.jcr.Credentials;
 import javax.jcr.ImportUUIDBehavior;
-import javax.jcr.LoginException;
 import javax.jcr.NamespaceException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;

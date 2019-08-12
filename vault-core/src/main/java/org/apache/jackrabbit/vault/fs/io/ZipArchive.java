@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -104,9 +105,9 @@ public class ZipArchive extends AbstractArchive {
         root = new EntryImpl("", true);
         inf = new DefaultMetaInf();
 
-        Enumeration e = jar.entries();
+        Enumeration<JarEntry> e = jar.entries();
         while (e.hasMoreElements()) {
-            ZipEntry entry = (ZipEntry) e.nextElement();
+            ZipEntry entry = e.nextElement();
             String path = entry.getName();
             // check for meta inf
             if (path.startsWith(Constants.META_DIR + "/")) {

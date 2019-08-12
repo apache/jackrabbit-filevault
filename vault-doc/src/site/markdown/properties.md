@@ -23,7 +23,7 @@ is installed (like `subPackageHandling`). In addition to that there is the `MANI
 
 properties.xml
 -----------------
-The `properties.xml` follows the format of a Java properties file in XML format as defined by [java.util.Properties](https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html). The individual keys are defined within [PackageProperties](api.PackageProperties).
+The `properties.xml` follows the format of a Java properties file in XML format as defined by [java.util.Properties](https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html). The individual keys are defined within [PackageProperties][api.PackageProperties].
 
 
 Example:
@@ -96,7 +96,7 @@ Since version 3.1.40 ([JCRVLT-32](https://issues.apache.org/jira/browse/JCRVLT-3
 
 <!-- references -->
 [api.PackageProperties]: apidocs/org/apache/jackrabbit/vault/packaging/PackageProperties.html
-[api. AccessControlHandling]: apidocs/org/apache/jackrabbit/vault/fs/io/AccessControlHandling
+[api.AccessControlHandling]: apidocs/org/apache/jackrabbit/vault/fs/io/AccessControlHandling
 [api.SubPackageHandling]: apidocs/org/apache/jackrabbit/vault/packaging/SubPackageHandling.html
 [api.ISO8601]: https://jackrabbit.apache.org/api/2.12/org/apache/jackrabbit/util/ISO8601.html
 [api.Dependency]: apidocs/org/apache/jackrabbit/vault/packaging/Dependency.html

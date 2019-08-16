@@ -195,7 +195,7 @@ public class DefaultMetaInf implements MetaInf {
     public void loadProperties(@Nonnull InputStream in, @Nonnull String systemId)
             throws IOException {
         Properties props = new Properties();
-        // prevent the input stream from being closed for achieving a consistens behaviour
+        // prevent the input stream from being closed for achieving a consistent behaviour
         props.loadFromXML(new CloseShieldInputStream(in));
         setProperties(props);
         log.trace("Loaded properties from {}.", systemId);

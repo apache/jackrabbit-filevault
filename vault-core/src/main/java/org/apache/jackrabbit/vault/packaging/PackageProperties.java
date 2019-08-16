@@ -128,10 +128,16 @@ public interface PackageProperties {
     String NAME_DISABLE_INTERMEDIATE_SAVE = "noIntermediateSaves";
 
     /**
-     * Name of the flag that configures the sub package handling
+     * Name of the flag that configures the sub package handling.
      * @since 3.1
      */
     String NAME_SUB_PACKAGE_HANDLING = "subPackageHandling";
+
+    /**
+     * Name of the flag that defines if the package is supposed to contains/overwrite Oak index definitions.
+     * @since 3.
+     */
+    String NAME_ALLOW_INDEX_DEFINITIONS = "allowIndexDefinitions";
 
     /**
      * Name of the flag that configures whether to use binary references instead of actual binary

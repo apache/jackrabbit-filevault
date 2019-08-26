@@ -135,7 +135,7 @@ public interface PackageProperties {
 
     /**
      * Name of the flag that defines if the package is supposed to contains/overwrite Oak index definitions.
-     * @since 3.
+     * @since 3.2.10
      */
     String NAME_ALLOW_INDEX_DEFINITIONS = "allowIndexDefinitions";
 

@@ -22,31 +22,45 @@ import javax.jcr.PropertyType;
 import javax.jcr.Value;
 import javax.jcr.nodetype.PropertyDefinition;
 
-import org.apache.jackrabbit.util.Text;
+import org.junit.Assert;
+import org.junit.Test;
 import org.mockito.Mockito;
 
-import junit.framework.TestCase;
 
 /**
  * {@code DocViewPropertyTest}...
  */
-public class DocViewPropertyTest extends TestCase {
+public class DocViewPropertyTest {
 
+    @Test
     public void testParseUndefined() {
         DocViewProperty p = DocViewProperty.parse("foo", "hello");
-        assertEquals(p, false, PropertyType.UNDEFINED, "hello");
+        Assert.assertEquals(new DocViewProperty("foo", new String[] {"hello"}, false, PropertyType.UNDEFINED), p);
     }
 
+    @Test
     public void testParseLong() {
         DocViewProperty p = DocViewProperty.parse("foo", "{Long}1234");
-        assertEquals(p, false, PropertyType.LONG, "1234");
+        Assert.assertEquals(new DocViewProperty("foo", new String[] {"1234"}, false, PropertyType.LONG), p);
     }
 
+    @Test
+    public void testEquals() {
+        DocViewProperty p1 = DocViewProperty.parse("foo", "{Long}1234");
+        DocViewProperty p2 = DocViewProperty.parse("foo", "{Long}1234");
+        Assert.assertEquals(p1, p2);
+        DocViewProperty p3 = DocViewProperty.parse("foo", "{String}1234");
+        Assert.assertNotEquals(p1, p3);
+    }
+
+    @Test
     public void testParseEmpty() {
         DocViewProperty p = DocViewProperty.parse("foo", "{Binary}");
-        assertEquals(p, false, PropertyType.BINARY, "");
+        Assert.assertEquals(new DocViewProperty("foo", new String[] { ""}, false, PropertyType.BINARY), p);
     }
 
+    
+    @Test
     public void testParseSpecial() {
         DocViewProperty p = DocViewProperty.parse("foo", "\\{hello, world}");
         assertEquals(p, false, PropertyType.UNDEFINED, "{hello, world}");
@@ -54,16 +68,19 @@ public class DocViewPropertyTest extends TestCase {
         assertEquals(p, false, PropertyType.STRING, "[hello");
     }
 
+    @Test
     public void testParseStringTyped() {
         DocViewProperty p = DocViewProperty.parse("foo", "{String}hello");
         assertEquals(p, false, PropertyType.STRING, "hello");
     }
 
+    @Test
     public void testParseStringUnicode() {
         DocViewProperty p = DocViewProperty.parse("foo", "{String}he\\u000fllo");
         assertEquals(p, false, PropertyType.STRING, "he\u000fllo");
     }
 
+    @Test
     public void testParseMVString() {
         DocViewProperty p = DocViewProperty.parse("foo", "[hello,world]");
         assertEquals(p, true, PropertyType.UNDEFINED, "hello", "world");
@@ -71,6 +88,7 @@ public class DocViewPropertyTest extends TestCase {
         assertEquals(p, true, PropertyType.UNDEFINED, "hello,world");
     }
 
+    @Test
     public void testParseEmptyMVStrings() {
         DocViewProperty p = DocViewProperty.parse("foo", "[,a,b,c]");
         assertEquals(p, true, PropertyType.UNDEFINED, "", "a", "b", "c");
@@ -80,6 +98,7 @@ public class DocViewPropertyTest extends TestCase {
         assertEquals(p, true, PropertyType.UNDEFINED, "", "", "", "");
     }
 
+    @Test
     public void testParseMVSpecial() {
         DocViewProperty p = DocViewProperty.parse("foo", "[\\[hello,world]");
         assertEquals(p, true, PropertyType.UNDEFINED, "[hello", "world");
@@ -101,16 +120,19 @@ public class DocViewPropertyTest extends TestCase {
         assertEquals(p, true, PropertyType.UNDEFINED, "/content/[a-z]{2,3}/[a-z]{2,3}(/.*)");
     }
 
+    @Test
     public void testParseMVLong() {
         DocViewProperty p = DocViewProperty.parse("foo", "{Long}[1,2]");
         assertEquals(p, true, PropertyType.LONG, "1", "2");
     }
 
+    @Test
     public void testParseMVLongEmpty() {
         DocViewProperty p = DocViewProperty.parse("foo", "{Long}[]");
         assertEquals(p, true, PropertyType.LONG);
     }
 
+    @Test
     public void testParseMVStringEmpty() {
         DocViewProperty p = DocViewProperty.parse("foo", "[]");
         assertEquals(p, true, PropertyType.UNDEFINED);
@@ -120,6 +142,7 @@ public class DocViewPropertyTest extends TestCase {
      * Special test for mv properties with 1 empty string value (JCR-3661)
      * @throws Exception
      */
+    @Test
     public void testEmptyMVString() throws Exception {
         Property p = Mockito.mock(Property.class);
         Value value = Mockito.mock(Value.class);
@@ -135,13 +158,14 @@ public class DocViewPropertyTest extends TestCase {
         Mockito.when(p.getDefinition()).thenReturn(pd);
 
         String result = DocViewProperty.format(p);
-        assertEquals("formatted property", "[\\0]", result);
+        Assert.assertEquals("formatted property", "[\\0]", result);
 
         // now round trip back
         DocViewProperty dp = DocViewProperty.parse("foo", result);
-        assertEquals(dp, true, PropertyType.UNDEFINED, "");
+        Assert.assertEquals(new DocViewProperty("foo", new String[] {""}, true, PropertyType.UNDEFINED), dp);
     }
 
+    @Test
     public void testEmptyMVBoolean() throws Exception {
         Property p = Mockito.mock(Property.class);
         Value value = Mockito.mock(Value.class);
@@ -157,13 +181,14 @@ public class DocViewPropertyTest extends TestCase {
         Mockito.when(p.getDefinition()).thenReturn(pd);
 
         String result = DocViewProperty.format(p);
-        assertEquals("formatted property", "{Boolean}[false]", result);
+        Assert.assertEquals("formatted property", "{Boolean}[false]", result);
 
         // now round trip back
         DocViewProperty dp = DocViewProperty.parse("foo", result);
-        assertEquals(dp, true, PropertyType.BOOLEAN, "false");
+        Assert.assertEquals(new DocViewProperty("foo", new String[] {"false"}, true, PropertyType.BOOLEAN), dp);
     }
 
+    @Test
     public void testEscape() {
         assertEscaped("hello", "hello", false);
         assertEscaped("hello, world", "hello, world", false);
@@ -181,13 +206,11 @@ public class DocViewPropertyTest extends TestCase {
     private void assertEscaped(String original, String expected, boolean multi) {
         StringBuffer buf = new StringBuffer();
         DocViewProperty.escape(buf, original, multi);
-        assertEquals(expected, buf.toString());
+        Assert.assertEquals(expected, buf.toString());
     }
 
-    private void assertEquals(DocViewProperty p, boolean m, int type, String ... values) {
-        assertEquals("Multiple", m, p.isMulti);
-        assertEquals("Type", type, p.type);
-        assertEquals("Array Length", values.length, p.values.length);
-        assertEquals("Values", Text.implode(values, ","), Text.implode(p.values, ","));
+    private void assertEquals(DocViewProperty p, boolean multi, int type, String... values) {
+        Assert.assertEquals(new DocViewProperty(p.name, values, multi, type), p);
     }
+
 }

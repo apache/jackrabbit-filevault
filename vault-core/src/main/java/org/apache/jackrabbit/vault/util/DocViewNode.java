@@ -16,11 +16,11 @@
  ************************************************************************/
 package org.apache.jackrabbit.vault.util;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jcr.NamespaceException;
-import javax.jcr.Value;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.NamePathResolver;
@@ -91,6 +91,64 @@ public class DocViewNode {
     public String getValue(String name) {
         DocViewProperty prop = props.get(name);
         return prop == null ? null : prop.values[0];
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((label == null) ? 0 : label.hashCode());
+        result = prime * result + Arrays.hashCode(mixins);
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((primary == null) ? 0 : primary.hashCode());
+        result = prime * result + ((props == null) ? 0 : props.hashCode());
+        result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        DocViewNode other = (DocViewNode) obj;
+        if (label == null) {
+            if (other.label != null)
+                return false;
+        } else if (!label.equals(other.label))
+            return false;
+        if (!Arrays.equals(mixins, other.mixins))
+            return false;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        if (primary == null) {
+            if (other.primary != null)
+                return false;
+        } else if (!primary.equals(other.primary))
+            return false;
+        if (props == null) {
+            if (other.props != null)
+                return false;
+        } else if (!props.equals(other.props))
+            return false;
+        if (uuid == null) {
+            if (other.uuid != null)
+                return false;
+        } else if (!uuid.equals(other.uuid))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "DocViewNode [name=" + name + ", label=" + label + ", props=" + props + ", uuid=" + uuid + ", mixins="
+                + Arrays.toString(mixins) + ", primary=" + primary + "]";
     }
 
 }

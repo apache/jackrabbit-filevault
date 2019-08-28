@@ -105,6 +105,8 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements NamespaceResolver {
 
+    private static final String[] ACL_NAMES = { "rep:ACL", "rep:PrincipalPolicy" };
+
     /**
      * the default logger
      */
@@ -129,6 +131,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         props.add(JcrConstants.JCR_PREDECESSORS);
         props.add(JcrConstants.JCR_SUCCESSORS);
         props.add(JcrConstants.JCR_VERSIONHISTORY);
+        props.add("rep:principalNames");
         props.add("oak:counter");
         PROTECTED_PROPERTIES = Collections.unmodifiableSet(props);
     }
@@ -627,7 +630,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 } else {
                     try {
                         DocViewNode ni = new DocViewNode(name, label, attributes, npResolver);
-                        if (aclManagement.isACLNodeType(ni.primary)) {
+                        if (isACLNode(ni.primary)) {
                             if (aclHandling != AccessControlHandling.CLEAR && aclHandling != AccessControlHandling.IGNORE) {
                                 log.trace("Access control policy element detected. starting special transformation {}/{}", node.getPath(), name);
                                 if (aclManagement.ensureAccessControllable(node, ni.primary)) {
@@ -1428,6 +1431,15 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             return parent == null ? null : parent.getAdapter();
         }
 
+    }
+
+    private static boolean isACLNode(String nodeName) {
+        for (String aclName : ACL_NAMES) {
+            if (aclName.equals(nodeName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

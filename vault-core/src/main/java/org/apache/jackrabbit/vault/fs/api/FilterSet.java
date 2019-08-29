@@ -17,6 +17,8 @@
 
 package org.apache.jackrabbit.vault.fs.api;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -284,6 +286,14 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
 
     }
 
+    @Override
+    public String toString() {
+        StringWriter stringWriter = new StringWriter();
+        dump(new DumpContext(new PrintWriter(stringWriter)), true);
+        return stringWriter.toString();
+    }
+
+
     /**
      * Holds a filter entry
      */
@@ -363,5 +373,13 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
             return include == entry.include && filter.equals(entry.filter);
         }
 
+        @Override
+        public String toString() {
+            StringWriter stringWriter = new StringWriter();
+            dump(new DumpContext(new PrintWriter(stringWriter)), true);
+            return stringWriter.toString();
+        }
+
+        
     }
 }

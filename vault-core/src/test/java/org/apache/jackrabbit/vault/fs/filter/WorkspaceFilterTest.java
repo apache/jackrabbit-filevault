@@ -17,6 +17,7 @@
 package org.apache.jackrabbit.vault.fs.filter;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.apache.jackrabbit.vault.fs.api.FilterSet;
@@ -32,6 +33,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -192,4 +194,24 @@ public class WorkspaceFilterTest {
 
     }
 
+    @Test
+    public  void testEquals() throws IOException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        try (InputStream input = getClass().getResourceAsStream("workspacefilters/complex.xml")) {
+            filter.load(input);
+        }
+        DefaultWorkspaceFilter filter2 = new DefaultWorkspaceFilter();
+        try (InputStream input = getClass().getResourceAsStream("workspacefilters/complex.xml")) {
+            filter2.load(input);
+        }
+        assertEquals(filter, filter2);
+        DefaultWorkspaceFilter filter3 = new DefaultWorkspaceFilter();
+        try (InputStream input = getClass().getResourceAsStream("workspacefilters/mixed.xml")) {
+            filter3.load(input);
+        }
+        assertNotEquals(filter, filter3);
+        // modify filter2 slightly
+        filter2.setGlobalIgnored(PathFilter.NONE);
+        assertNotEquals(filter, filter2);
+    }
 }

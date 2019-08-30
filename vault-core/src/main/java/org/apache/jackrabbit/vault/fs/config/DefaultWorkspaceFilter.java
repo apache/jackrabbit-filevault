@@ -23,7 +23,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -209,7 +212,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         if (importMode != null) {
             return importMode;
         }
-        FilterSet set = getCoveringFilterSet(path);
+        FilterSet<PathFilter> set = getCoveringFilterSet(path);
         return set == null ? ImportMode.REPLACE : set.getImportMode();
     }
 
@@ -576,6 +579,67 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
 
         }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((globalIgnored == null) ? 0 : globalIgnored.hashCode());
+        result = prime * result + ((importMode == null) ? 0 : importMode.hashCode());
+        result = prime * result + ((nodesFilterSets == null) ? 0 : nodesFilterSets.hashCode());
+        result = prime * result + ((propsFilterSets == null) ? 0 : propsFilterSets.hashCode());
+        result = prime * result + ((referenceFilterSets == null) ? 0 : referenceFilterSets.hashCode());
+        result = prime * result + Arrays.hashCode(source);
+        long temp;
+        temp = Double.doubleToLongBits(version);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        DefaultWorkspaceFilter other = (DefaultWorkspaceFilter) obj;
+        if (globalIgnored == null) {
+            if (other.globalIgnored != null)
+                return false;
+        } else if (!globalIgnored.equals(other.globalIgnored))
+            return false;
+        if (importMode != other.importMode)
+            return false;
+        if (nodesFilterSets == null) {
+            if (other.nodesFilterSets != null)
+                return false;
+        } else if (!nodesFilterSets.equals(other.nodesFilterSets))
+            return false;
+        if (propsFilterSets == null) {
+            if (other.propsFilterSets != null)
+                return false;
+        } else if (!propsFilterSets.equals(other.propsFilterSets))
+            return false;
+        if (referenceFilterSets == null) {
+            if (other.referenceFilterSets != null)
+                return false;
+        } else if (!referenceFilterSets.equals(other.referenceFilterSets))
+            return false;
+        if (!Arrays.equals(source, other.source))
+            return false;
+        if (Double.doubleToLongBits(version) != Double.doubleToLongBits(other.version))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        StringWriter stringWriter = new StringWriter();
+        dump(new DumpContext(new PrintWriter(stringWriter)), true);
+        return stringWriter.toString();
     }
 
     /**

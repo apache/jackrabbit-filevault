@@ -17,6 +17,9 @@
 
 package org.apache.jackrabbit.vault.fs.api;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -25,7 +28,7 @@ import javax.annotation.Nullable;
  * It is usually part of a {@link PathFilterSet}.
  *
  */
-public interface PathFilter extends Filter {
+public interface PathFilter extends Filter, Dumpable {
 
     /**
      * The "Catch all" item filter.
@@ -59,6 +62,24 @@ public interface PathFilter extends Filter {
         public PathFilter translate(PathMapping mapping) {
             return this;
         }
+
+        @Override
+        public int hashCode() {
+            return 1;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return (obj == this);
+        }
+
+        @Override
+        public String toString() {
+            StringWriter stringWriter = new StringWriter();
+            dump(new DumpContext(new PrintWriter(stringWriter)), true);
+            return stringWriter.toString();
+        }
+
     };
 
     /**
@@ -92,6 +113,23 @@ public interface PathFilter extends Filter {
          */
         public PathFilter translate(PathMapping mapping) {
             return this;
+        }
+
+        @Override
+        public int hashCode() {
+            return 2;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return (obj == this);
+        }
+
+        @Override
+        public String toString() {
+            StringWriter stringWriter = new StringWriter();
+            dump(new DumpContext(new PrintWriter(stringWriter)), true);
+            return stringWriter.toString();
         }
     };
 

@@ -227,6 +227,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                         try {
                             DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter);
                             handler.setAclHandling(getAcHandling());
+                            handler.setCugHandling(getCugHandling());
                             SAXParserFactory factory = SAXParserFactory.newInstance();
                             factory.setNamespaceAware(true);
                             factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
@@ -325,6 +326,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
         }
         DocViewSAXImporter handler = new DocViewSAXImporter(parent, rootName, artifacts, wspFilter);
         handler.setAclHandling(getAcHandling());
+        handler.setCugHandling(getCugHandling());
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);

@@ -92,6 +92,7 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
             try {
                 DocViewSAXImporter handler = new DocViewSAXImporter(parent, name, artifacts, wspFilter);
                 handler.setAclHandling(getAcHandling());
+                handler.setCugHandling(getCugHandling());
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 factory.setNamespaceAware(true);
                 factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);

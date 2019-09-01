@@ -372,8 +372,11 @@ public class Importer {
             opts.setAccessControlHandling(AccessControlHandling.IGNORE);
         }
         fileHandler.setAcHandling(opts.getAccessControlHandling());
+        fileHandler.setCugHandling(opts.getCugHandling());
         genericHandler.setAcHandling(opts.getAccessControlHandling());
+        genericHandler.setCugHandling(opts.getCugHandling());
         folderHandler.setAcHandling(opts.getAccessControlHandling());
+        folderHandler.setCugHandling(opts.getCugHandling());
 
         filter = opts.getFilter();
         if (filter == null) {
@@ -415,6 +418,7 @@ public class Importer {
         }
 
         log.debug("Access control handling set to {}", opts.getAccessControlHandling());
+        log.debug("CUG handling set to {}", opts.getCugHandling());
         if (opts.isDryRun()) {
             track("Dry Run: Skipping node types installation (might lead to errors).", "");
             track("Simulating content import...", "");
@@ -870,6 +874,8 @@ public class Importer {
                 Node node = session.getNode(info.path);
                 imp = new ImportInfoImpl();
                 if (aclManagement.isACLNode(node)) {
+                    // Judging from isACLNode behavior, this part only applies
+                    // to "rep:Policy" nodes so no need for special handling of CUG case.
                     if (opts.getAccessControlHandling() == AccessControlHandling.OVERWRITE
                             || opts.getAccessControlHandling() == AccessControlHandling.CLEAR) {
                         imp.onDeleted(info.path);

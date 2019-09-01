@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Item;
 import javax.jcr.ItemNotFoundException;
@@ -222,6 +223,12 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
     private AccessControlHandling aclHandling = AccessControlHandling.IGNORE;
 
     /**
+     * Closed user group handling to apply by default (when set to <code>null</code>)
+     * falls back to using aclHandling
+     */
+    private AccessControlHandling cugHandling = null;
+
+    /**
      * flag indicating if SNS are supported by the underlying repository
      */
     private final boolean snsSupported;
@@ -279,6 +286,25 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
     public void setAclHandling(AccessControlHandling aclHandling) {
         this.aclHandling = aclHandling;
+    }
+
+    /**
+     * returns closed user group handling
+     * @return either current cugHandling value or <code>null</code>
+     * if undefined and aclHandling is used instead
+     */
+    public AccessControlHandling getCugHandling() {
+        return cugHandling;
+    }
+
+    /**
+     * Sets closed user group handling for this importer
+     * For backwards compatibility, if <code>null</code> is specified
+     * then importer falls back to using aclHandling value instead.
+     * @param cugHandling
+     */
+    public void setCugHandling(AccessControlHandling cugHandling) {
+        this.cugHandling = cugHandling;
     }
 
     private void registerBinary(Artifact a, String rootPath)
@@ -626,9 +652,10 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     stack = stack.push();
                 } else {
                     try {
+                        AccessControlHandling acHandling = getAcHandling(label);
                         DocViewNode ni = new DocViewNode(name, label, attributes, npResolver);
                         if (aclManagement.isACLNodeType(ni.primary)) {
-                            if (aclHandling != AccessControlHandling.CLEAR && aclHandling != AccessControlHandling.IGNORE) {
+                            if (acHandling != AccessControlHandling.CLEAR && acHandling != AccessControlHandling.IGNORE) {
                                 log.trace("Access control policy element detected. starting special transformation {}/{}", node.getPath(), name);
                                 if (aclManagement.ensureAccessControllable(node, ni.primary)) {
                                     log.debug("Adding access control policy element to non access-controllable parent - adding mixin: {}", node.getPath());
@@ -636,13 +663,13 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 stack = stack.push();
                                 if ("rep:repoPolicy".equals(name)) {
                                     if (node.getDepth() == 0) {
-                                        stack.adapter = new JackrabbitACLImporter(session, aclHandling);
+                                        stack.adapter = new JackrabbitACLImporter(session, acHandling);
                                         stack.adapter.startNode(ni);
                                     } else {
                                         log.debug("ignoring invalid location for repository level ACL: {}", node.getPath());
                                     }
                                 } else {
-                                    stack.adapter = new JackrabbitACLImporter(node, aclHandling);
+                                    stack.adapter = new JackrabbitACLImporter(node, acHandling);
                                     stack.adapter.startNode(ni);
                                 }
                             } else {
@@ -903,11 +930,12 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             // adjust mixins
             Set<String> newMixins = new HashSet<String>();
             boolean isAtomicCounter = false;
+            AccessControlHandling acHandling = getAcHandling(ni.name);
             if (ni.mixins != null) {
                 for (String mixin : ni.mixins) {
                     // omit name if mix:AccessControllable and CLEAR
                     if (!aclManagement.isAccessControllableMixin(mixin)
-                            || aclHandling != AccessControlHandling.CLEAR) {
+                            || acHandling != AccessControlHandling.CLEAR) {
                         newMixins.add(mixin);
 
                         if ("mix:atomicCounter".equals(mixin)) {
@@ -922,8 +950,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 if (!newMixins.remove(name)) {
                     // special check for mix:AccessControllable
                     if (!aclManagement.isAccessControllableMixin(name)
-                            || aclHandling == AccessControlHandling.CLEAR
-                            || aclHandling == AccessControlHandling.OVERWRITE) {
+                            || acHandling == AccessControlHandling.CLEAR
+                            || acHandling == AccessControlHandling.OVERWRITE) {
                         vs.ensureCheckedOut();
                         node.removeMixin(name);
                         modified = true;
@@ -1172,14 +1200,15 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     Node child = iter.nextNode();
                     String path = child.getPath();
                     String label = Text.getName(path);
+                    AccessControlHandling acHandling = getAcHandling(child.getName());
                     if (!childNames.contains(label)
                             && !hints.contains(path)
                             && isIncluded(child, child.getDepth() - rootDepth)) {
                         // if the child is in the filter, it belongs to
                         // this aggregate and needs to be removed
                         if (aclManagement.isACLNode(child)) {
-                            if (aclHandling == AccessControlHandling.OVERWRITE
-                                    || aclHandling == AccessControlHandling.CLEAR) {
+                            if (acHandling == AccessControlHandling.OVERWRITE
+                                    || acHandling == AccessControlHandling.CLEAR) {
                                 importInfo.onDeleted(path);
                                 aclManagement.clearACL(node);
                             }
@@ -1196,7 +1225,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 }
                             }
                         }
-                    } else if (aclHandling == AccessControlHandling.CLEAR
+                    } else if (acHandling == AccessControlHandling.CLEAR
                             && aclManagement.isACLNode(child)
                             && isIncluded(child, child.getDepth() - rootDepth)) {
                         importInfo.onDeleted(path);
@@ -1236,6 +1265,22 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             return session.getNamespacePrefix(uri);
         } catch (RepositoryException e) {
             throw new NamespaceException(e);
+        }
+    }
+
+    /**
+     * Returns proper access control handling value based on the node
+     * name.
+     * @param nodeName name of the access control node
+     * @return cugHandling for CUG related nodes, aclHandling for
+     * everything else
+     */
+    @Nonnull
+    private AccessControlHandling getAcHandling(@Nonnull String nodeName) {
+        if (cugHandling != null && "rep:cugPolicy".equals(nodeName)) {
+            return cugHandling;
+        } else {
+            return aclHandling;
         }
     }
 

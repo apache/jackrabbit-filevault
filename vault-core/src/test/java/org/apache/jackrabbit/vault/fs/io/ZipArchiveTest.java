@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -32,21 +33,27 @@ public class ZipArchiveTest {
 
     @Test
     public void testSmallArchiveViaStream() throws IOException {
-        InputStream in = getClass().getResourceAsStream("/org/apache/jackrabbit/vault/packaging/integration/testpackages/atomic-counter-test.zip");
-        ZipStreamArchive a = new ZipStreamArchive(in);
-        a.open(true);
-        Properties props = a.getMetaInf().getProperties();
-        assertEquals("Package Name", "atomic-counter-test", props.getProperty("name"));
-        a.close();
+        try (InputStream in = getClass().getResourceAsStream("/org/apache/jackrabbit/vault/packaging/integration/testpackages/atomic-counter-test.zip");
+             ZipStreamArchive a = new ZipStreamArchive(in)) {
+            a.open(true);
+            Properties props = a.getMetaInf().getProperties();
+            assertEquals("Package Name", "atomic-counter-test", props.getProperty("name"));
+            Archive.Entry entry = a.getEntry("META-INF/vault/properties.xml");
+            try (InputStream i = a.openInputStream(entry)) {
+                DefaultMetaInf metaInf = new DefaultMetaInf();
+                metaInf.loadProperties(i, "inputstream");
+                assertEquals("Package Name", "atomic-counter-test", metaInf.getProperties().getProperty("name"));
+            }
+        }
     }
 
     @Test
     public void testSmallArchiveViaFile() throws IOException {
         File file = new File(getClass().getResource("/org/apache/jackrabbit/vault/packaging/integration/testpackages/atomic-counter-test.zip").getFile());
-        ZipArchive a = new ZipArchive(file, false);
-        a.open(true);
-        Properties props = a.getMetaInf().getProperties();
-        assertEquals("Package Name", "atomic-counter-test", props.getProperty("name"));
-        a.close();
+        try (ZipArchive a = new ZipArchive(file, false)) {
+            a.open(true);
+            Properties props = a.getMetaInf().getProperties();
+            assertEquals("Package Name", "atomic-counter-test", props.getProperty("name"));
+        }
     }
 }

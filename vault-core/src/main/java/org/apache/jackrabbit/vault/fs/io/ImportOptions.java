@@ -51,6 +51,8 @@ public class ImportOptions {
 
     private AccessControlHandling acHandling = null;
 
+    private AccessControlHandling cugHandling = null;
+
     private ImportMode importMode;
 
     private Pattern cndPattern = Pattern.compile("^/(apps|libs)/([^/]+/){1,2}nodetypes/.+\\.cnd$");
@@ -86,6 +88,7 @@ public class ImportOptions {
             dryRun = base.dryRun;
             autoSave = base.autoSave;
             acHandling = base.acHandling;
+            cugHandling = base.cugHandling;
             importMode = base.importMode;
             cndPattern = base.cndPattern;
             filter = base.filter;
@@ -110,6 +113,7 @@ public class ImportOptions {
         ret.dryRun = dryRun;
         ret.autoSave = autoSave;
         ret.acHandling = acHandling;
+        ret.cugHandling = cugHandling;
         ret.importMode = importMode;
         ret.cndPattern = cndPattern;
         ret.filter = filter;
@@ -217,6 +221,24 @@ public class ImportOptions {
      */
     public void setAccessControlHandling(AccessControlHandling acHandling) {
         this.acHandling = acHandling;
+    }
+
+    /**
+     * Returns closed user group handling.
+     * @return CUG handling value. <code>null</code> value indicates that CUG
+     * handling is controlled by acHandling value which maintains backwards compatibility.
+     */
+    public AccessControlHandling getCugHandling() {
+        return cugHandling;
+    }
+
+    /**
+     * Sets closed user group handling. For backwards compatibility, when cugHandling is set to
+     * null <code>null</code> then acHandling is used is used to control handling of CUG nodes.
+     * @param cugHandling the CUG handling.
+     */
+    public void setCugHandling(AccessControlHandling cugHandling) {
+        this.cugHandling = cugHandling;
     }
 
     /**

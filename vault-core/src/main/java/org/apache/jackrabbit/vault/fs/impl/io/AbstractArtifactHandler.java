@@ -48,6 +48,13 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
     protected AccessControlHandling acHandling = AccessControlHandling.OVERWRITE;
 
     /**
+     * Closed user group (CUG) handling. <code>null</code> indicates that
+     * the handling is governed by acHandling values.
+     * todo: would be better to pass via some kind of import context
+     */
+    protected AccessControlHandling cugHandling = null;
+
+    /**
      * acl management
      */
     private ACLManagement aclManagement;
@@ -66,6 +73,24 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
      */
     public void setAcHandling(AccessControlHandling acHandling) {
         this.acHandling = acHandling;
+    }
+
+    /**
+     * Returns closed user group (CUG) handling defined for this handler
+     * @return the access control handling.
+     */
+    public AccessControlHandling getCugHandling() {
+        return cugHandling;
+    }
+
+    /**
+     * Sets closed user group (CUG) handling used for importing.
+     * @param cugHandling the access control handling
+     *                    When <code>null</code> value is specified
+     *                    CUG handling is controled by acHandling value.
+     */
+    public void setCugHandling(AccessControlHandling cugHandling) {
+        this.cugHandling = cugHandling;
     }
 
     /**

@@ -23,7 +23,7 @@ imported or exported during the respective operations through `vlt` or package m
 
 General Structure
 -----------------
-The `filter.xml` consists of a set of `filter` elements, each with a `root` attribute and an optional list of
+The `filter.xml` consists of a set of `filter` elements, each with a mandatory `root` attribute and an optional list of
 `include` and `exclude` child elements.
 
 Example:
@@ -37,12 +37,9 @@ Example:
         <filter root="/etc/map" mode="merge" />
     </workspaceFilter>
 
-In addition it is possible to influence the auto-detection of the package type (if not explicitly specified in the `properties.xml`) with the attribute `type`. The only supported value as of now is `cleanup` which means that the filter rule is ignored for the auto-detection of  the package type ([JCRVLT-220](https://issues.apache.org/jira/browse/JCRVLT-220))
-
 ### Filter Elements
 The filter elements are independent of each other and define include and exclude patters for subtrees. The root of a
 subtree is defined by the `root` attribute, which must be an absolute path.
-
 The filter element can have an optional `mode` attribute which specified the [import mode][api.ImportMode] used when
 importing content. the following values are possible:
 
@@ -50,15 +47,18 @@ importing content. the following values are possible:
 1. `merge` : Existing content is not modified, i.e. only new content is added and none is deleted or modified.
 1. `update` : Existing content is updated, new content is added and none is deleted.
 
-For a more detailed description of the import mode, see [here](importmode.html)
+For a more detailed description of the import mode, see [here](importmode.html).
+
+In addition it is possible to influence the auto-detection of the package type (if not explicitly specified in the `properties.xml`) with the attribute `type`. The only supported value as of now is `cleanup` which means that the filter rule is ignored for the auto-detection of  the package type ([JCRVLT-220](https://issues.apache.org/jira/browse/JCRVLT-220))
+
 
 ### Include and Exclude Elements
-The include and exclude elements allow more fine grained filtering of the subtree during import and export. they have a
+The include and exclude elements can be added as optional children to the `filter` element to allow more fine grained filtering of the subtree during import and export. They have a
 mandatory `pattern` attribute which has the format of a [regexp][api.Pattern]. The regexp is matched against the full _path_ of the
 respective or potential JCR node, so it either must start with `/` (absolute regex) or a wildcard (relative regex).
 
 #### Order
-The order of the include and exclude elements is important. the paths are tested in a sequential order against all
+The order of the include and exclude elements is important. The paths are tested in a sequential order against all
 patterns and the type of the **last matching** element determines if the path is included or not. One caveat is, that
 the type of the first pattern defines the default behavior, so that the filter is more natural to write. If the first
 pattern is include, then the default is exclude and vice versa.

@@ -34,7 +34,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
-import org.apache.jackrabbit.vault.packaging.InstallContext.Phase;
 import org.apache.jackrabbit.vault.packaging.InstallHook;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.PackageException;
@@ -195,53 +194,53 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
 
         private void init() throws IOException, PackageException {
             try {
-	            if (jarFile != null) {
-	                // open jar file and get manifest
-	                JarFile jar = new JarFile(jarFile);
-	                Manifest mf = jar.getManifest();
-	                if (mf == null) {
-	                    throw new PackageException("hook jar file does not have a manifest: " + name);
-	                }
-	                mainClassName = mf.getMainAttributes().getValue("Main-Class");
-	                if (mainClassName == null) {
-	                    throw new PackageException("hook manifest file does not have a Main-Class entry: " + name);
-	                }
-	                // create classloader
-	                if (parentClassLoader == null) {
-	                    try {
-	                    	// 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
-	                    	loadMainClass(URLClassLoader.newInstance(
-	        	                    new URL[]{jarFile.toURI().toURL()},
-	        	                    this.getClass().getClassLoader()));
-	                    } catch (ClassNotFoundException cnfe) {
-	                    	// 2nd fallback is the thread context classloader
-	                    	loadMainClass(URLClassLoader.newInstance(
-	        	                    new URL[]{jarFile.toURI().toURL()},
-	        	                    Thread.currentThread().getContextClassLoader()));
-	                    }
-	                } else {
-	                	loadMainClass(URLClassLoader.newInstance(
-        	                    new URL[]{jarFile.toURI().toURL()},
-        	                    parentClassLoader));
-	                }
-	            } else {
-	            	// create classloader
-	                if (parentClassLoader == null) {
-	                    try {
-	                    	// 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
-	                    	loadMainClass(this.getClass().getClassLoader());
-	                    } catch (ClassNotFoundException cnfe) {
-	                    	// 2nd fallback is the thread context classloader
-	                    	loadMainClass(Thread.currentThread().getContextClassLoader());
-	                    }
-	                } else {
-	                	loadMainClass(parentClassLoader);
-	                }
-	            }
+                if (jarFile != null) {
+                    // open jar file and extract classname from manifest
+                    try (JarFile jar = new JarFile(jarFile)) {
+                        Manifest mf = jar.getManifest();
+                        if (mf == null) {
+                            throw new PackageException("hook jar file does not have a manifest: " + name);
+                        }
+                        mainClassName = mf.getMainAttributes().getValue("Main-Class");
+                        if (mainClassName == null) {
+                            throw new PackageException("hook manifest file does not have a Main-Class entry: " + name);
+                        }
+                    }
+                    // create classloader
+                    if (parentClassLoader == null) {
+                        try {
+                            // 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
+                            loadMainClass(URLClassLoader.newInstance(
+                                    new URL[] { jarFile.toURI().toURL() },
+                                    this.getClass().getClassLoader()));
+                        } catch (ClassNotFoundException cnfe) {
+                            // 2nd fallback is the thread context classloader
+                            loadMainClass(URLClassLoader.newInstance(
+                                    new URL[] { jarFile.toURI().toURL() },
+                                    Thread.currentThread().getContextClassLoader()));
+                        }
+                    } else {
+                        loadMainClass(URLClassLoader.newInstance(
+                                new URL[] { jarFile.toURI().toURL() },
+                                parentClassLoader));
+                    }
+                } else {
+                    // create classloader
+                    if (parentClassLoader == null) {
+                        try {
+                            // 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
+                            loadMainClass(this.getClass().getClassLoader());
+                        } catch (ClassNotFoundException cnfe) {
+                            // 2nd fallback is the thread context classloader
+                            loadMainClass(Thread.currentThread().getContextClassLoader());
+                        }
+                    } else {
+                        loadMainClass(parentClassLoader);
+                    }
+                }
             } catch (ClassNotFoundException cnfe) {
                 throw new PackageException("hook's main class " + mainClassName + " not found: " + name, cnfe);
             }
-            
         }
 
         private void loadMainClass(ClassLoader classLoader) throws PackageException, ClassNotFoundException {

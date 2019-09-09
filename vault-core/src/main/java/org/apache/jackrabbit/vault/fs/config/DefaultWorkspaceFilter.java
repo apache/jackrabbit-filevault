@@ -344,21 +344,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             builder.setEntityResolver(new RejectingEntityResolver());
             Document document = builder.parse(inCopy);
             Element doc = document.getDocumentElement();
-            if (!"workspaceFilter".equals(doc.getNodeName())) {
-                throw new ConfigurationException("<workspaceFilter> expected.");
-            }
-            String v = doc.getAttribute(ATTR_VERSION);
-            if (v == null || "".equals(v)) {
-                v = "1.0";
-            }
-            version = Double.parseDouble(v);
-            if (version > SUPPORTED_VERSION) {
-                throw new ConfigurationException("version " + version + " not supported.");
-            }
-            nodesFilterSets.clear();
-            propsFilterSets.clear();
-            referenceFilterSets = new LinkedList<>();
-            read(doc);
+            load(doc);
         } catch (ParserConfigurationException e) {
             throw new ConfigurationException(
                     "Unable to create configuration XML parser", e);
@@ -367,6 +353,24 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
                     "Configuration file syntax error.", e);
         }
 
+    }
+
+    public void load(Element doc) throws ConfigurationException {
+        if (!"workspaceFilter".equals(doc.getNodeName())) {
+            throw new ConfigurationException("<workspaceFilter> expected.");
+        }
+        String v = doc.getAttribute(ATTR_VERSION);
+        if (v == null || "".equals(v)) {
+            v = "1.0";
+        }
+        version = Double.parseDouble(v);
+        if (version > SUPPORTED_VERSION) {
+            throw new ConfigurationException("version " + version + " not supported.");
+        }
+        nodesFilterSets.clear();
+        propsFilterSets.clear();
+        referenceFilterSets = new LinkedList<>();
+        read(doc);
     }
 
     private void read(Element elem) throws ConfigurationException {
@@ -590,7 +594,6 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         result = prime * result + ((nodesFilterSets == null) ? 0 : nodesFilterSets.hashCode());
         result = prime * result + ((propsFilterSets == null) ? 0 : propsFilterSets.hashCode());
         result = prime * result + ((referenceFilterSets == null) ? 0 : referenceFilterSets.hashCode());
-        result = prime * result + Arrays.hashCode(source);
         long temp;
         temp = Double.doubleToLongBits(version);
         result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -627,8 +630,6 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             if (other.referenceFilterSets != null)
                 return false;
         } else if (!referenceFilterSets.equals(other.referenceFilterSets))
-            return false;
-        if (!Arrays.equals(source, other.source))
             return false;
         if (Double.doubleToLongBits(version) != Double.doubleToLongBits(other.version))
             return false;

@@ -51,7 +51,7 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.sling</groupId>
-                <artifactId>maven-sling-plugin</artifactId>
+                <artifactId>sling-maven-plugin</artifactId>
                 <configuration>
                     <slingUrlSuffix>/libs/crx/vault/install/</slingUrlSuffix>
                     <slingUrl>http://localhost:4502/crx/repository/crx.default</slingUrl>

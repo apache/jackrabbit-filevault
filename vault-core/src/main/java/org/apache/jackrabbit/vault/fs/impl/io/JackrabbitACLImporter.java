@@ -72,7 +72,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
     private final String accessControlledPath;
 
-    private ImportedPolicy importPolicy;
+    private ImportedPolicy<? extends AccessControlPolicy> importPolicy;
 
     private enum State {
         INITIAL,
@@ -146,16 +146,12 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         importPolicy.endNode(state);
     }
 
-    public List<String> close() throws SAXException {
+    public List<String> close() throws SAXException, RepositoryException {
         if (states.peek() != State.INITIAL) {
             log.error("Unexpected end state: {}", states.peek());
         }
-        List<String> paths = new ArrayList<String>();
-        try {
-            importPolicy.apply(paths);
-        } catch (RepositoryException e) {
-            log.error("Error while applying access control content.", e);
-        }
+        List<String> paths = new ArrayList<>();
+        importPolicy.apply(paths);
         return paths;
     }
 

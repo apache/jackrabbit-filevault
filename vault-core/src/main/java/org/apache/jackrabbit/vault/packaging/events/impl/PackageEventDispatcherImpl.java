@@ -16,6 +16,7 @@
  */
 package org.apache.jackrabbit.vault.packaging.events.impl;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -127,6 +128,42 @@ public class PackageEventDispatcherImpl implements PackageEventDispatcher {
         @Override
         public PackageId[] getRelatedIds() {
             return related;
+        }
+
+        @Override
+        public String toString() {
+            return "EventImpl [type=" + type + ", id=" + id + ", related=" + Arrays.toString(related) + "]";
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((id == null) ? 0 : id.hashCode());
+            result = prime * result + Arrays.hashCode(related);
+            result = prime * result + ((type == null) ? 0 : type.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            EventImpl other = (EventImpl) obj;
+            if (id == null) {
+                if (other.id != null)
+                    return false;
+            } else if (!id.equals(other.id))
+                return false;
+            if (!Arrays.equals(related, other.related))
+                return false;
+            if (type != other.type)
+                return false;
+            return true;
         }
     }
 

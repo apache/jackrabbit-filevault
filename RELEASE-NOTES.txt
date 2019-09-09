@@ -9,6 +9,37 @@ create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like
 utility to work and develop with repository content.
 
+Changes in Jackrabbit FileVault 3.4.0
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.4.0
+This version requires Java 8, Oak 1.16 and Jackrabbit 2.18.3
+
+Bug fixes:
+
+    * [JCRVLT-323] - Unable to perform sync due to wrong default workspace handling
+    * [JCRVLT-338] - argLine getting overridden by parent pom and vault-core pom
+    * [JCRVLT-341] - https doesn't work anymore
+    * [JCRVLT-352] - File leak in Hook.init
+    * [JCRVLT-359] - Provide separate option to control handling of rep:cugPolicy nodes.,Bug
+    * [JCRVLT-362] - ZipStreamArchive does not expose correct input source to the META-INF resources
+
+New Features:
+    * [JCRVLT-340] - Adjust JackrabbitACLImporter to handle extensions provided by OAK-8190
+
+Improvements:
+    * [JCRVLT-287] - Throw exception in case of ACL Importer failures (instead of just logging)
+    * [JCRVLT-336] - FSPackageRegistry should allow forced application scoping of PackageInstallations
+    * [JCRVLT-339] - Add FSPackageRegistry support for hollow packages
+    * [JCRVLT-344] - update version of jackrabbit and oak dependencies
+    * [JCRVLT-346] - allow for custom security setup
+    * [JCRVLT-348] - Implement AutoCloseable for classes which have a close method
+    * [JCRVLT-349] - Clarify closing behaviour of input streams in methods getting it as argument
+    * [JCRVLT-353] - Add constant for allowIndexDefinitions to PackageProperties
+    * [JCRVLT-356] - Add equals and toString methods to DocViewNode and DocViewProperty
+    * [JCRVLT-360] - Add equals and toString methods to DefaultWorkspaceFilter and FilterSet
+    * [JCRVLT-364] - Upgrade jackrabbit and oak and use Java 8
+
 
 Changes in Jackrabbit FileVault 3.2.8
 -------------------------------------

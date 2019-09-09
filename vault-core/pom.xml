@@ -54,7 +54,7 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.sling</groupId>
-                <artifactId>maven-sling-plugin</artifactId>
+                <artifactId>sling-maven-plugin</artifactId>
                 <configuration>
                     <slingUrlSuffix>/libs/system/install/</slingUrlSuffix>
                 </configuration>
@@ -263,6 +263,12 @@
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-authorization-principalbased</artifactId>
             <version>${oak.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>oak-authorization-cug</artifactId>
+            <version>1.16.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

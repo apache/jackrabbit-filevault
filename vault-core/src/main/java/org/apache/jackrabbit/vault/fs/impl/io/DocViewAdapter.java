@@ -18,6 +18,8 @@ package org.apache.jackrabbit.vault.fs.impl.io;
 
 import java.util.List;
 
+import javax.jcr.RepositoryException;
+
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.xml.sax.SAXException;
 
@@ -31,21 +33,24 @@ public interface DocViewAdapter {
     /**
      * Start node is invoked when the importer descends into an element.
      * @param node the node
-     * @throws SAXException if an error occurrs
+     * @throws SAXException if a parsing error occurs.
+     * @throws RepositoryException if a import exception occurs.
      */
-    void startNode(DocViewNode node) throws SAXException;
+    void startNode(DocViewNode node) throws SAXException, RepositoryException;
 
     /**
      * Ends node is invoked when the importer ascends from an element.
-     * @throws SAXException if an error occurrs.
+     * @throws SAXException if a parsing error occurs.
+     * @throws RepositoryException if a import exception occurs.
      */
-    void endNode() throws SAXException;
+    void endNode() throws SAXException, RepositoryException;
 
     /**
      * Is called by the importer if the adapter is no longer used and must finalize the import.
-     * @throws SAXException if an error occurrs.
+     * @throws SAXException if a parsing error occurs.
+     * @throws RepositoryException if a import exception occurs.
      * @return The paths that were created.
      */
-    List<String> close() throws SAXException;
+    List<String> close() throws SAXException, RepositoryException;
 
 }

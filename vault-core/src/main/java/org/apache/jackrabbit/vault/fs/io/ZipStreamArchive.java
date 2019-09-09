@@ -135,23 +135,13 @@ public class ZipStreamArchive extends AbstractArchive {
         inf = new DefaultMetaInf();
 
         // scan the zip and copy data to temporary file
-        ZipInputStream zin = new ZipInputStream(in);
-
-        try {
+        try (ZipInputStream zin = new ZipInputStream(in)) {
             ZipEntry entry;
             while ((entry = zin.getNextEntry()) != null) {
                 String name = entry.getName();
-                // check for meta inf
-                if (name.startsWith(Constants.META_DIR + "/")) {
-                    try {
-                        inf.load(new CloseShieldInputStream(zin), "inputstream:" + name);
-                    } catch (ConfigurationException e) {
-                        throw new IOException(e);
-                    }
-                }
                 String[] names = Text.explode(name, '/');
+                EntryImpl je = root;
                 if (names.length > 0) {
-                    EntryImpl je = root;
                     for (int i=0; i<names.length; i++) {
                         if (i == names.length -1 && !entry.isDirectory()) {
                             // copy stream
@@ -164,6 +154,15 @@ public class ZipStreamArchive extends AbstractArchive {
                     }
                     if (log.isDebugEnabled()) {
                         log.debug("scanning jar: {}", name);
+                    }
+                }
+                // extract meta information
+                if (name.startsWith(Constants.META_DIR + "/")) {
+                    try (InputStream input = createInputStream(je)) {
+                        // load from previous entryImpl
+                        inf.load(input, "inputstream:" + name);
+                    } catch (ConfigurationException e) {
+                        throw new IOException(e);
                     }
                 }
             }
@@ -185,8 +184,6 @@ public class ZipStreamArchive extends AbstractArchive {
             if (inf.getNodeTypes().isEmpty()) {
                 log.debug("Zip stream does not contain nodetypes.");
             }
-        } finally {
-            IOUtils.closeQuietly(zin);
         }
     }
 

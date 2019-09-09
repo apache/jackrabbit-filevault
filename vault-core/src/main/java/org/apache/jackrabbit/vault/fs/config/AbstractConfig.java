@@ -58,7 +58,7 @@ abstract public class AbstractConfig {
 
     abstract protected double getSupportedVersion();
 
-    protected void load(Element doc) throws ConfigurationException {
+    public void load(Element doc) throws ConfigurationException {
         if (!doc.getNodeName().equals(getRootElemName())) {
             throw new ConfigurationException("unexpected element: " + doc.getNodeName());
         }

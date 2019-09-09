@@ -46,13 +46,9 @@ subtree is defined by the `root` attribute, which must be an absolute path.
 The filter element can have an optional `mode` attribute which specified the [import mode][api.ImportMode] used when
 importing content. the following values are possible:
 
-1. `replace`
-: This is the normal behavior. Existing content is replaced completely by the imported content, i.e. is overridden or
-  deleted accordingly.
-1. `merge`
-: Existing content is not modified, i.e. only new content is added and none is deleted or modified.
-1. `update`
-: Existing content is updated, new content is added and none is deleted.
+1. `replace` : This is the normal behavior. Existing content is replaced completely by the imported content, i.e. is overridden or deleted accordingly.
+1. `merge` : Existing content is not modified, i.e. only new content is added and none is deleted or modified.
+1. `update` : Existing content is updated, new content is added and none is deleted.
 
 For a more detailed description of the import mode, see [here](importmode.html)
 

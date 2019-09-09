@@ -37,6 +37,8 @@ Example:
         <filter root="/etc/map" mode="merge" />
     </workspaceFilter>
 
+In addition it is possible to influence the auto-detection of the package type (if not explicitly specified in the `properties.xml`) with the attribute `type`. The only supported value as of now is `cleanup` which means that the filter rule is ignored for the auto-detection of  the package type ([JCRVLT-220](https://issues.apache.org/jira/browse/JCRVLT-220))
+
 ### Filter Elements
 The filter elements are independent of each other and define include and exclude patters for subtrees. The root of a
 subtree is defined by the `root` attribute, which must be an absolute path.
@@ -44,14 +46,12 @@ subtree is defined by the `root` attribute, which must be an absolute path.
 The filter element can have an optional `mode` attribute which specified the [import mode][api.ImportMode] used when
 importing content. the following values are possible:
 
-"replace"
+1. `replace`
 : This is the normal behavior. Existing content is replaced completely by the imported content, i.e. is overridden or
   deleted accordingly.
-
-"merge"
+1. `merge`
 : Existing content is not modified, i.e. only new content is added and none is deleted or modified.
-
-"update"
+1. `update`
 : Existing content is updated, new content is added and none is deleted.
 
 For a more detailed description of the import mode, see [here](importmode.html)
@@ -123,7 +123,7 @@ Item covered by filter rule | Item contained in the Content Package | Item conta
 --- | --- | --- | ---
 no | yes | yes | not touched
 no | no | yes | not touched
-no | yes | no | deserialized from content package (for backwards compatibility reasons), this should not be used, i.e. all items in the content package should always be covered by some filter rule
+no | yes | no | *nodes which are ancestors of covered rules*: deserialized from content package (for backwards compatibility reasons), *nodes which are not ancestors of covered rules*: not touched. One should not rely on this behaviour, i.e. all items in the content package should always be covered by some filter rule to make the behaviour more explicit.
 no | no | no | not existing (not touched)
 yes | yes | yes | overwritten
 yes | no | yes | removed

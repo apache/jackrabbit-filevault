@@ -41,6 +41,7 @@
     <menu name="Developing">
       <item href="dev.html" name="Overview" />
       <item href="apidocs/index.html" name="API docs" />
+      <item href="howto_release.html" name="How to create a release" />
     </menu>
     <menu name="Links">
       <item href="http://jackrabbit.apache.org/" name="Apache Jackrabbit" />

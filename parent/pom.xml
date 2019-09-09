@@ -46,6 +46,7 @@
         <test.oak>false</test.oak>
         <test.vm.options>-Doak=$test.oak}</test.vm.options>
         <argLine>${test.vm.options}</argLine>
+        <java.target.version>1.8</java.target.version>
     </properties>
 
     <!-- ====================================================================== -->
@@ -81,6 +82,10 @@
         <url>https://issues.apache.org/jira/browse/JCR</url>
     </issueManagement>
 
+    <prerequisites>
+        <maven>3.0.5</maven>
+    </prerequisites>
+
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
     <!-- ====================================================================== -->
@@ -90,15 +95,35 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.8.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${java.target.version}</source>
+                    <target>${java.target.version}</target>
                     <debug>true</debug>
                     <showDeprecation>false</showDeprecation>
                     <showWarnings>true</showWarnings>
                     <optimize>false</optimize>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-java</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>${java.target.version}</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -108,8 +133,8 @@
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.sling</groupId>
-                    <artifactId>maven-sling-plugin</artifactId>
-                    <version>2.1.8</version>
+                    <artifactId>sling-maven-plugin</artifactId>
+                    <version>2.4.2</version>
                     <configuration>
                         <slingUrl>http://localhost:4502</slingUrl>
                         <slingUrlSuffix>/libs/system/install</slingUrlSuffix>
@@ -189,7 +214,7 @@
                 <plugin>
                     <groupId>org.apache.rat</groupId>
                     <artifactId>apache-rat-plugin</artifactId>
-                    <version>0.11</version>
+                    <version>0.13</version>
                     <configuration>
                         <excludes>
                             <exclude>release.properties</exclude>

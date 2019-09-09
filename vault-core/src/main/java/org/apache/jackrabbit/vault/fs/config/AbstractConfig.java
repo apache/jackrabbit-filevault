@@ -85,7 +85,7 @@ abstract public class AbstractConfig {
     public boolean load(File configFile) throws IOException, ConfigurationException {
         if (configFile.canRead()) {
             try (InputStream input = FileUtils.openInputStream(configFile)) {
-                return true;
+                return load(input);
             }
         }
         return false;

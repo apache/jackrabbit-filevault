@@ -126,12 +126,6 @@ if [ -n "$COLS" ]; then
     EXTRA_JVM_ARGUMENTS="$EXTRA_JVM_ARGUMENTS -Denv.term.width=${COLS}"
 fi
 
-JAVA_VER=$($JAVACMD -version 2>&1 | sed 's/.*version "\(.*\)\.\(.*\)\..*"/\1\2/; 1q')
-
-if [ "$JAVA_VER" -lt 18 ]; then
-    EXTRA_JVM_ARGUMENTS="$EXTRA_JVM_ARGUMENTS -XX:PermSize=128m -XX:-UseGCOverheadLimit"
-fi
-
 exec "$JAVACMD" $VLT_OPTS $EXTRA_JVM_ARGUMENTS \
   -classpath "$CLASSPATH" \
   -Dapp.name="@APP_NAME@" \

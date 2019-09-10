@@ -82,10 +82,6 @@
         <url>https://issues.apache.org/jira/browse/JCR</url>
     </issueManagement>
 
-    <prerequisites>
-        <maven>3.0.5</maven>
-    </prerequisites>
-
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
     <!-- ====================================================================== -->

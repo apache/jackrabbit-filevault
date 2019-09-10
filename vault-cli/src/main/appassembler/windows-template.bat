@@ -81,17 +81,13 @@ if "%JAVACMD%"=="" set JAVACMD=#JAVA_BINARY#
 
 if "%REPO%"=="" set REPO=%VLT_HOME%\#REPO#
 
-set EXTRA_JVM_ARGUMENTS=#EXTRA_JVM_ARGUMENTS#
-for /f tokens^=2-5^ delims^=.-_^" %%j in ('%JAVACMD% -fullversion 2^>^&1') do set "jver=%%j%%k%%l%%m"
-if %jver% LSS 18000 set EXTRA_JVM_ARGUMENTS=#EXTRA_JVM_ARGUMENTS# -XX:PermSize=128m -XX:-UseGCOverheadLimit
-
 set CLASSPATH=#CLASSPATH#
 goto endInit
 
 @REM Reaching here means variables are defined and arguments have been captured
 :endInit
 
-%JAVACMD% %VLT_OPTS% %EXTRA_JVM_ARGUMENTS% -classpath %CLASSPATH_PREFIX%;%CLASSPATH% -Dapp.name="#APP_NAME#" -Dapp.repo="%REPO%" -Dapp.home="%VLT_HOME%" -Dvlt.home="%VLT_HOME%" #MAINCLASS# #APP_ARGUMENTS#%CMD_LINE_ARGS%
+%JAVACMD% %VLT_OPTS% #EXTRA_JVM_ARGUMENTS# -classpath %CLASSPATH_PREFIX%;%CLASSPATH% -Dapp.name="#APP_NAME#" -Dapp.repo="%REPO%" -Dapp.home="%VLT_HOME%" -Dvlt.home="%VLT_HOME%" #MAINCLASS# #APP_ARGUMENTS#%CMD_LINE_ARGS%
 if ERRORLEVEL 1 goto error
 goto end
 

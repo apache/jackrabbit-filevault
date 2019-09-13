@@ -1,12 +1,12 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.2.8
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.0
 
 Introduction
 ------------
 The FileVault introduces a JCR repository to filesystem mapping. The mapping
-is exposed by and API and used by the _CRX Content Packaging_  that allows to
+is exposed by an API and used by the "FileVault Content Packages" which allow to
 create portable packages of repository content.
 
-The Vault Command Line Interface aka _vlt_ that provides a subversion like
+The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
 
 Changes in Jackrabbit FileVault 3.4.0

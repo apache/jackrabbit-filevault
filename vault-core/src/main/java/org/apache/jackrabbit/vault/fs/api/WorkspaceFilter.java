@@ -63,9 +63,14 @@ public interface WorkspaceFilter extends Dumpable {
     ImportMode getImportMode(@Nonnull String path);
 
     /**
-     * Checks if the given node path is contained in this workspace filter.
+     * Checks if the given node path is contained (and by that also covered)
+     * in this workspace filter.
      * It returns {@code true} if any of the filter sets contain the path
      * and it's not globally ignored.
+     * <p>
+     * If {@link #contains(String)} returns {@code true} for one path, 
+     * also {@link #covers(String)} would return {@code true} for the same path, 
+     * but not vice-versa.
      *
      * @param path to check
      * @return {@code true} if the given path is included in this filter.
@@ -76,8 +81,12 @@ public interface WorkspaceFilter extends Dumpable {
      * Checks if the given node path is covered in this workspace filter.
      * It only returns {@code true} if at least one of the sets covers
      * the path and is not globally ignored.
+     * <p>
+     * Still {@link WorkspaceFilter#contains(String)} might return {@code false}
+     * for the same path in case there is  some exclusion patterns matching
+     * the given path.
      *
-     * @param path the pathto check
+     * @param path the path to check
      * @return {@code true} if the given path is covered by this filter.
      */
     boolean covers(@Nonnull String path);

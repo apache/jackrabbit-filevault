@@ -254,7 +254,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         resolved.add(id);
         DependencyReport report = registry.analyzeDependencies(id, false);
         if (report.getUnresolvedDependencies().length > 0) {
-            throw new DependencyException("Package has unresolved dependencies: " + Dependency.toString(report.getUnresolvedDependencies()));
+            throw new DependencyException("Package " + id + " has unresolved dependencies: " + Dependency.toString(report.getUnresolvedDependencies()));
         }
         for (PackageId depId: report.getResolvedDependencies()) {
             // if the package task is already present, continue resolution

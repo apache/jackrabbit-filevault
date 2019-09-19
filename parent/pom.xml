@@ -1,33 +1,34 @@
 <?xml version="1.0"?><!--
-  Licensed to the Apache Software Foundation (ASF) under one or more
-  contributor license agreements.  See the NOTICE file distributed with
-  this work for additional information regarding copyright ownership.
-  The ASF licenses this file to You under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with
-  the License.  You may obtain a copy of the License at
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements. See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License. You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-  -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
     <modelVersion>4.0.0</modelVersion>
     <!-- ====================================================================== -->
-    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
+    <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
         <version>21</version>
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <!-- ====================================================================== -->
-    <!-- P R O J E C T  D E S C R I P T I O N                                   -->
+    <!-- P R O J E C T D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <groupId>org.apache.jackrabbit.vault</groupId>
     <artifactId>parent</artifactId>
@@ -50,7 +51,7 @@
     </properties>
 
     <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N                                             -->
+    <!-- S C M D E F I N I T I O N -->
     <!-- ====================================================================== -->
     <scm>
         <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/parent</connection>
@@ -83,7 +84,7 @@
     </issueManagement>
 
     <!-- ====================================================================== -->
-    <!-- B U I L D   D E F I N I T I O N                                        -->
+    <!-- B U I L D D E F I N I T I O N -->
     <!-- ====================================================================== -->
     <build>
         <plugins>
@@ -125,7 +126,7 @@
         <pluginManagement>
             <plugins>
                 <!-- ====================================================================== -->
-                <!-- S L I N G   P L U G I N                                                -->
+                <!-- S L I N G P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.sling</groupId>
@@ -138,7 +139,7 @@
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- B U N D L E   P L U G I N                                              -->
+                <!-- B U N D L E P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.felix</groupId>
@@ -166,6 +167,7 @@
                                 Private-Package
                             </_removeheaders>
                         </instructions>
+                        <exportScr>true</exportScr>
                     </configuration>
                     <executions>
                         <execution>
@@ -178,10 +180,21 @@
                                 <comparisonVersion>LATEST</comparisonVersion>
                             </configuration>
                         </execution>
+                        <!-- Configure extra execution of 'manifest' in process-classes phase to make sure SCR metadata is generated before
+                            unit test runs -->
+                        <execution>
+                            <id>scr-metadata</id>
+                            <goals>
+                                <goal>manifest</goal>
+                            </goals>
+                            <configuration>
+                                <supportIncrementalBuild>true</supportIncrementalBuild>
+                            </configuration>
+                        </execution>
                     </executions>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- S U R E F I R E   P L U G I N                                          -->
+                <!-- S U R E F I R E P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -197,7 +210,7 @@
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- R E L E A S E    P L U G I N                                           -->
+                <!-- R E L E A S E P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -207,7 +220,7 @@
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- R A T   P L U G I N                                                    -->
+                <!-- R A T P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.rat</groupId>
@@ -221,11 +234,12 @@
                             <exclude>.gitignore</exclude>
                             <exclude>derby.log</exclude>
                             <exclude>**/*.zip/**</exclude>
+                            <exclude>.mvn/**</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- S I T E    P L U G I N                                                 -->
+                <!-- S I T E P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -259,7 +273,7 @@
     </build>
 
     <!-- ====================================================================== -->
-    <!-- R E P O R T I N G                                                      -->
+    <!-- R E P O R T I N G -->
     <!-- ====================================================================== -->
     <reporting>
         <plugins>
@@ -273,7 +287,7 @@
     </reporting>
 
     <!-- ====================================================================== -->
-    <!-- D E P E N D E N C Y   M A N A G E M E N T                              -->
+    <!-- D E P E N D E N C Y M A N A G E M E N T -->
     <!-- ====================================================================== -->
     <dependencyManagement>
         <dependencies>
@@ -396,6 +410,11 @@
                 <version>2.5</version>
             </dependency>
             <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.9</version>
+            </dependency>
+            <dependency>
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>
                 <version>3.2.2</version>
@@ -430,12 +449,12 @@
     </dependencyManagement>
 
     <!-- ====================================================================== -->
-    <!-- P R O F I L E S                                                        -->
+    <!-- P R O F I L E S -->
     <!-- ====================================================================== -->
     <profiles>
         <profile>
             <!-- ====================================================================== -->
-            <!-- R A T   P L U G I N                                                    -->
+            <!-- R A T P L U G I N -->
             <!-- ====================================================================== -->
             <id>rat-check</id>
             <activation>
@@ -459,13 +478,13 @@
             </build>
         </profile>
         <profile>
-             <id>java9</id>
-             <activation>
+            <id>java9</id>
+            <activation>
                 <jdk>9</jdk>
-             </activation>
-             <properties>
+            </activation>
+            <properties>
                 <test.vm.options>--add-modules=java.se.ee -Doak=${test.oak}</test.vm.options>
-             </properties>
+            </properties>
         </profile>
     </profiles>
 

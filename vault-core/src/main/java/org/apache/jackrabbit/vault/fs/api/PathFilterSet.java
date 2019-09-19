@@ -35,6 +35,12 @@ import javax.annotation.Nullable;
 public class PathFilterSet extends FilterSet<PathFilter> {
 
     /**
+     * PathFilterSets of this type are only used to remove nodes during import
+     * and ignored for calculation of the package type.
+     */
+    public static final String TYPE_CLEANUP = "cleanup";
+
+    /**
      * The include all item filter set
      */
     public static final PathFilterSet INCLUDE_ALL =

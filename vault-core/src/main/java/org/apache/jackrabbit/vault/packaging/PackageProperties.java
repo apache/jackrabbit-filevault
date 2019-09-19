@@ -18,16 +18,18 @@
 package org.apache.jackrabbit.vault.packaging;
 
 import java.util.Calendar;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The package properties provide extra/meta information about the package to install. The properties are usually
- * store in the {@code META-INF/vault/properties.xml} or in the jar's manifest.
+ * stored in the {@code META-INF/vault/properties.xml} or in the jar's manifest.
  *
  * @since 3.1
  */
@@ -155,6 +157,43 @@ public interface PackageProperties {
      */
     String PREFIX_INSTALL_HOOK = "installhook.";
 
+    /** 
+     * The manifest header key which indicates the package type
+     * @see #NAME_PACKAGE_TYPE
+     */
+    String MF_KEY_PACKAGE_TYPE = "Content-Package-Type";
+
+    /**
+     * The manifest header key for the package id in the form {@code <group>:<name>:<version>}
+     * @see #NAME_GROUP
+     * @see #NAME_NAME
+     * @see #NAME_VERSION
+     */
+    String MF_KEY_PACKAGE_ID = "Content-Package-Id";
+
+    /**
+     * The manifest header key for the package dependencies.
+     * @see #NAME_DEPENDENCIES
+     */
+    String MF_KEY_PACKAGE_DEPENDENCIES = "Content-Package-Dependencies";
+
+    /**
+     * The manifest header key for all filter roots separated by ','.
+     * @see WorkspaceFilter
+     */
+    String MF_KEY_PACKAGE_ROOTS = "Content-Package-Roots";
+
+    /**
+     * The manifest header key for the package description.
+     * @see #NAME_DESCRIPTION
+     */
+    String MF_KEY_PACKAGE_DESC = "Content-Package-Description";
+
+    /**
+     * The manifest header key containing all necessary imports for this package
+     */
+    String MF_KEY_IMPORT_PACKAGE = "Import-Package";
+
     /**
      * Returns the id of this package or {@code null} if the id can't
      * be determined.
@@ -218,6 +257,12 @@ public interface PackageProperties {
      * @return list of dependencies
      */
     Dependency[] getDependencies();
+
+    /**
+     * 
+     * @return all external hooks registered in a package (key = name, value = fully qualified class name)
+     */
+    Map<String, String> getExternalHooks();
 
     /**
      * Returns the access control handling defined in this package.

@@ -18,6 +18,9 @@
 package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.util.Calendar;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -29,6 +32,8 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -203,10 +208,31 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
             try {
                 return PackageType.valueOf(pt.toUpperCase());
             } catch (IllegalArgumentException e) {
-                log.warn("invalid package type configured: {}", pt);
+                log.warn("Invalid package type configured: {}", pt);
             }
         }
         return null;
+    }
+
+    @Override
+    public Map<String, String> getExternalHooks() {
+        // currently only the format: "installhook.{name}.class" is supported
+        Properties props = getPropertiesMap();
+        Map<String, String> hookClasses = new HashMap<>();
+        if (props != null) {
+            Enumeration<?> names = props.propertyNames();
+            while (names.hasMoreElements()) {
+                String name = names.nextElement().toString();
+                if (name.startsWith(VaultPackage.PREFIX_INSTALL_HOOK)) {
+                    String[] segs = Text.explode(name.substring(VaultPackage.PREFIX_INSTALL_HOOK.length()), '.');
+                    if (segs.length == 0 || segs.length > 2 || !"class".equals(segs[1])) {
+                        log.warn("Invalid installhook property: {}", name);
+                    }
+                    hookClasses.put(segs[0], props.getProperty(name));
+                }
+            }
+        }
+        return hookClasses;
     }
 
     protected abstract Properties getPropertiesMap();

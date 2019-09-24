@@ -131,7 +131,9 @@ public class TestEscapedExport extends IntegrationTestBase {
             packMgr.assemble(admin, options, pkgFile).close();
 
             clean("/tmp");
-            packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+            try (VaultPackage vp = packMgr.open(pkgFile)) {
+                vp.extract(admin, getDefaultOptions());
+            }
         } finally {
             pkgFile.delete();
         }

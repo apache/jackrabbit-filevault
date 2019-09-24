@@ -269,24 +269,27 @@ public class TestUserContentPackage extends IntegrationTestBase {
         admin.save();
 
         File tmpFile = createPackage("test", "test", u.getPath());
-        u.remove();
-        u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
-        assertNull(u);
+        try {
+            u.remove();
+            u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
+            assertNull(u);
 
 
-        JcrPackage pack = packMgr.upload(tmpFile, true, true, null);
-        assertNotNull(pack);
-        ImportOptions opts = getDefaultOptions();
-        pack.install(opts);
+            JcrPackage pack = packMgr.upload(tmpFile, true, true, null);
+            assertNotNull(pack);
+            ImportOptions opts = getDefaultOptions();
+            pack.install(opts);
 
 
-        u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
-        assertNotNull(u);
+            u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
+            assertNotNull(u);
 
-        node = admin.getNode(u.getPath());
-        property = node.getProperty("mv");
-        assertTrue(property.isMultiple());
-
+            node = admin.getNode(u.getPath());
+            property = node.getProperty("mv");
+            assertTrue(property.isMultiple());
+        } finally {
+            tmpFile.delete();
+        }
     }
 
     @Test
@@ -301,21 +304,25 @@ public class TestUserContentPackage extends IntegrationTestBase {
         admin.save();
 
         File tmpFile = createPackage("test", "test", u.getPath());
-        u.remove();
-        u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
-        assertNull(u);
+        try {
+            u.remove();
+            u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
+            assertNull(u);
 
-        JcrPackage pack = packMgr.upload(tmpFile, true, true, null);
-        assertNotNull(pack);
-        ImportOptions opts = getDefaultOptions();
-        pack.install(opts);
+            JcrPackage pack = packMgr.upload(tmpFile, true, true, null);
+            assertNotNull(pack);
+            ImportOptions opts = getDefaultOptions();
+            pack.install(opts);
 
-        u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
-        assertNotNull(u);
+            u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
+            assertNotNull(u);
 
-        node = admin.getNode(u.getPath());
-        property = node.getProperty("mv");
-        assertTrue(property.isMultiple());
+            node = admin.getNode(u.getPath());
+            property = node.getProperty("mv");
+            assertTrue(property.isMultiple());
+        } finally {
+            tmpFile.delete();
+        }
     }
 
     /**

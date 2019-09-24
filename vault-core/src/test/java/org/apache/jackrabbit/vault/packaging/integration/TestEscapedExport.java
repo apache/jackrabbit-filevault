@@ -115,22 +115,26 @@ public class TestEscapedExport extends IntegrationTestBase {
     private void assembleAndReinstallPackage() throws IOException, PackageException, RepositoryException {
         File pkgFile = File.createTempFile("vaulttest", ".zip");
 
-        ExportOptions options = new ExportOptions();
-        DefaultMetaInf meta = new DefaultMetaInf();
-        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
-        filter.add(new PathFilterSet("/tmp"));
-        meta.setFilter(filter);
+        try {
+            ExportOptions options = new ExportOptions();
+            DefaultMetaInf meta = new DefaultMetaInf();
+            DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+            filter.add(new PathFilterSet("/tmp"));
+            meta.setFilter(filter);
 
-        Properties props = new Properties();
-        props.setProperty(VaultPackage.NAME_GROUP, "jackrabbit/test");
-        props.setProperty(VaultPackage.NAME_NAME, "filtered-export-package");
-        meta.setProperties(props);
-        options.setMetaInf(meta);
+            Properties props = new Properties();
+            props.setProperty(VaultPackage.NAME_GROUP, "jackrabbit/test");
+            props.setProperty(VaultPackage.NAME_NAME, "filtered-export-package");
+            meta.setProperties(props);
+            options.setMetaInf(meta);
 
-        packMgr.assemble(admin, options, pkgFile).close();
+            packMgr.assemble(admin, options, pkgFile).close();
 
-        clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+            clean("/tmp");
+            packMgr.open(pkgFile).extract(admin, getDefaultOptions());
+        } finally {
+            pkgFile.delete();
+        }
     }
 
 }

@@ -86,17 +86,19 @@ public class TestNamespaceImport {
         opts.setMetaInf(inf);
 
         File tmpFile = File.createTempFile("vaulttest", "zip");
-        VaultPackage pkg = i1.packMgr.assemble(i1.admin, opts, tmpFile);
-        Archive archive = pkg.getArchive();
+        try (VaultPackage pkg = i1.packMgr.assemble(i1.admin, opts, tmpFile)) {
+            Archive archive = pkg.getArchive();
 
-        // Import the archive in the instance i2, with strict mode enabled
+            // Import the archive in the instance i2, with strict mode enabled
 
-        ImportOptions io = new ImportOptions();
-        io.setStrict(true);
-        i2.packMgr.extract(archive, io, true);
+            ImportOptions io = new ImportOptions();
+            io.setStrict(true);
+            i2.packMgr.extract(archive, io, true);
 
-        assertEquals(i2.getRootNode().getNode("tmp").getProperty("{" + URI1 + "}prop1").getString(), "value1");
-
+            assertEquals(i2.getRootNode().getNode("tmp").getProperty("{" + URI1 + "}prop1").getString(), "value1");
+        } finally {
+            tmpFile.delete();
+        }
     }
 
     @Test
@@ -120,19 +122,22 @@ public class TestNamespaceImport {
         opts.setMetaInf(inf);
 
         File tmpFile = File.createTempFile("vaulttest", "zip");
-        VaultPackage pkg = i1.packMgr.assemble(i1.admin, opts, tmpFile);
-        Archive archive = pkg.getArchive();
+        try (VaultPackage pkg = i1.packMgr.assemble(i1.admin, opts, tmpFile)) {
+            Archive archive = pkg.getArchive();
 
-        // Import the archive in the instance i2, with strict mode enabled
+            // Import the archive in the instance i2, with strict mode enabled
 
-        ImportOptions io = new ImportOptions();
-        io.setStrict(true);
-        i2.packMgr.extract(archive, io, true);
+            ImportOptions io = new ImportOptions();
+            io.setStrict(true);
+            i2.packMgr.extract(archive, io, true);
 
-        assertEquals(i2.getRootNode().getProperty("tmp/{" + URI1 + "}node1/test").getString(), "value1");
+            assertEquals(i2.getRootNode().getProperty("tmp/{" + URI1 + "}node1/test").getString(), "value1");
 
-        i2.relogin();
-        assertNotEquals(PREFIX, i2.admin.getNamespacePrefix(URI1));
+            i2.relogin();
+            assertNotEquals(PREFIX, i2.admin.getNamespacePrefix(URI1));
+        } finally {
+            tmpFile.delete();
+        }
     }
 
     private static final class Instance {

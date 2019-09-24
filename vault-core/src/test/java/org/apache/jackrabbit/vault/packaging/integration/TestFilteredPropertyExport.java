@@ -58,11 +58,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -73,11 +77,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -91,12 +99,16 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo", "p1");
-        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo", "p1");
+            assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -110,12 +122,16 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo", "p1");
-        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo", "p1");
+            assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -129,11 +145,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -148,11 +168,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -167,11 +191,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -189,11 +217,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -212,11 +244,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -230,14 +266,18 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p2", "p3");
-        assertPropertiesMissg("/tmp", "p1");
-        assertPropertiesExist("/tmp/foo", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo", "p1");
-        assertPropertiesExist("/tmp/foo/bar", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo/bar", "p1");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p2", "p3");
+            assertPropertiesMissg("/tmp", "p1");
+            assertPropertiesExist("/tmp/foo", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo", "p1");
+            assertPropertiesExist("/tmp/foo/bar", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo/bar", "p1");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -251,14 +291,18 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p2", "p3");
-        assertPropertiesMissg("/tmp", "p1");
-        assertPropertiesExist("/tmp/foo", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo", "p1");
-        assertPropertiesExist("/tmp/foo/bar", "p2", "p3");
-        assertPropertiesMissg("/tmp/foo/bar", "p1");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p2", "p3");
+            assertPropertiesMissg("/tmp", "p1");
+            assertPropertiesExist("/tmp/foo", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo", "p1");
+            assertPropertiesExist("/tmp/foo/bar", "p2", "p3");
+            assertPropertiesMissg("/tmp/foo/bar", "p1");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -271,11 +315,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
 
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo", "p1", "p2", "p3");
-        assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo", "p1", "p2", "p3");
+            assertPropertiesExist("/tmp/foo/bar", "p1", "p2", "p3");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -289,11 +337,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         filter.add(nodes, props);
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertNodeMissing("/tmp/foo");
-        assertNodeMissing("/tmp/foo/bar");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertNodeMissing("/tmp/foo");
+            assertNodeMissing("/tmp/foo/bar");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -308,12 +360,16 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         filter.add(nodes, props);
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p2", "p3");
-        assertPropertiesMissg("/tmp", "p1");
-        assertNodeMissing("/tmp/foo");
-        assertNodeMissing("/tmp/foo/bar");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p2", "p3");
+            assertPropertiesMissg("/tmp", "p1");
+            assertNodeMissing("/tmp/foo");
+            assertNodeMissing("/tmp/foo/bar");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -328,11 +384,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertNodeMissing("/tmp/foo");
-        assertNodeMissing("/tmp/foo/bar");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertNodeMissing("/tmp/foo");
+            assertNodeMissing("/tmp/foo/bar");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     @Test
@@ -350,11 +410,15 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
         // export and extract
         File pkgFile = assemblePackage(filter);
         clean("/tmp");
-        packMgr.open(pkgFile).extract(admin, getDefaultOptions());
-        // validate the extracted content
-        assertPropertiesExist("/tmp", "p1", "p2", "p3");
-        assertNodeMissing("/tmp/foo");
-        assertNodeMissing("/tmp/foo/bar");
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content
+            assertPropertiesExist("/tmp", "p1", "p2", "p3");
+            assertNodeMissing("/tmp/foo");
+            assertNodeMissing("/tmp/foo/bar");
+        } finally {
+            pkgFile.delete();
+        }
     }
 
     /**

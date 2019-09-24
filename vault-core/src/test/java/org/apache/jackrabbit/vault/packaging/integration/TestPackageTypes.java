@@ -69,8 +69,6 @@ public class TestPackageTypes extends IntegrationTestBase {
     private void verifyPackageTypeViaPackageCreation(WorkspaceFilter filter, PackageType expected)
             throws IOException, RepositoryException {
 
-        File tmpFile = File.createTempFile("vaulttest", "zip");
-
         ExportOptions options = new ExportOptions();
         DefaultMetaInf meta = new DefaultMetaInf();
         meta.setFilter(filter);
@@ -81,9 +79,13 @@ public class TestPackageTypes extends IntegrationTestBase {
         meta.setProperties(props);
 
         options.setMetaInf(meta);
+
+        File tmpFile = File.createTempFile("vaulttest", "zip");
         try (VaultPackage pkg = packMgr.assemble(admin, options, tmpFile)) {
             PackageType result = pkg.getProperties().getPackageType();
             assertEquals("Package type", expected, result);
+        } finally {
+            tmpFile.delete();
         }
     }
 

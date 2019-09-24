@@ -61,19 +61,19 @@ public class TestManifestCreationExport extends IntegrationTestBase {
         inf.setProperties(props);
 
         opts.setMetaInf(inf);
-        File tmpFile = File.createTempFile("vaulttest", ".zip");
-        VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile);
-
-        String expected =
-                "Content-Package-Dependencies:foo:bar:[1.0,2.0)\n" +
-                "Content-Package-Description:This is a test package.\n" +
-                "Content-Package-Id:jackrabbit/test:test-package\n" +
-                "Content-Package-Roots:/tmp/foo/bar,/tmp/foo/zoo\n" +
-                "Content-Package-Type:content\n" +
-                "Manifest-Version:1.0";
-        verifyManifest(tmpFile, Collections.<String>emptySet(), expected);
-        tmpFile.delete();
-        pkg.close();
+        File tmpFile = File.createTempFile("e-vaulttest", ".zip");
+        try (VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile)) {
+            String expected =
+                    "Content-Package-Dependencies:foo:bar:[1.0,2.0)\n" +
+                    "Content-Package-Description:This is a test package.\n" +
+                    "Content-Package-Id:jackrabbit/test:test-package\n" +
+                    "Content-Package-Roots:/tmp/foo/bar,/tmp/foo/zoo\n" +
+                    "Content-Package-Type:content\n" +
+                    "Manifest-Version:1.0";
+            verifyManifest(tmpFile, Collections.<String>emptySet(), expected);
+        } finally {
+            tmpFile.delete();
+        }
     }
 
 }

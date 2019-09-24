@@ -719,19 +719,19 @@ public class IntegrationTestBase  {
     }
 
     void verifyManifest(File testPackageFile, Set<String> ignoredEntries, String expected) throws IOException {
-        JarFile jar = new JarFile(testPackageFile);
-
-        List<String> entries = new ArrayList<String>();
-        for (Map.Entry<Object, Object> e: jar.getManifest().getMainAttributes().entrySet()) {
-            String key = e.getKey().toString();
-            if (ignoredEntries.contains(key)) {
-                continue;
+        try (JarFile jar = new JarFile(testPackageFile)) {
+            List<String> entries = new ArrayList<String>();
+            for (Map.Entry<Object, Object> e: jar.getManifest().getMainAttributes().entrySet()) {
+                String key = e.getKey().toString();
+                if (ignoredEntries.contains(key)) {
+                    continue;
+                }
+                entries.add(e.getKey() + ":" + e.getValue());
             }
-            entries.add(e.getKey() + ":" + e.getValue());
+            Collections.sort(entries);
+            String result = Text.implode(entries.toArray(new String[entries.size()]),"\n");
+            assertEquals("Manifest", expected, result);
         }
-        Collections.sort(entries);
-        String result = Text.implode(entries.toArray(new String[entries.size()]),"\n");
-        assertEquals("Manifest", expected, result);
     }
 
 }

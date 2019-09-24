@@ -271,22 +271,21 @@ public class TestUserContentPackage extends IntegrationTestBase {
         File tmpFile = createPackage("test", "test", u.getPath());
         try {
             u.remove();
-            u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
+            u = (User) mgr.getAuthorizable(ID_TEST_USER_A);
             assertNull(u);
 
+            try (JcrPackage pack = packMgr.upload(tmpFile, true, true, null)) {
+                assertNotNull(pack);
+                ImportOptions opts = getDefaultOptions();
+                pack.install(opts);
 
-            JcrPackage pack = packMgr.upload(tmpFile, true, true, null);
-            assertNotNull(pack);
-            ImportOptions opts = getDefaultOptions();
-            pack.install(opts);
+                u = (User) mgr.getAuthorizable(ID_TEST_USER_A);
+                assertNotNull(u);
 
-
-            u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
-            assertNotNull(u);
-
-            node = admin.getNode(u.getPath());
-            property = node.getProperty("mv");
-            assertTrue(property.isMultiple());
+                node = admin.getNode(u.getPath());
+                property = node.getProperty("mv");
+                assertTrue(property.isMultiple());
+            }
         } finally {
             tmpFile.delete();
         }
@@ -309,17 +308,18 @@ public class TestUserContentPackage extends IntegrationTestBase {
             u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
             assertNull(u);
 
-            JcrPackage pack = packMgr.upload(tmpFile, true, true, null);
-            assertNotNull(pack);
-            ImportOptions opts = getDefaultOptions();
-            pack.install(opts);
+            try (JcrPackage pack = packMgr.upload(tmpFile, true, true, null);) {
+                assertNotNull(pack);
+                ImportOptions opts = getDefaultOptions();
+                pack.install(opts);
 
-            u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
-            assertNotNull(u);
+                u = (User) mgr.getAuthorizable(ID_TEST_USER_A);
+                assertNotNull(u);
 
-            node = admin.getNode(u.getPath());
-            property = node.getProperty("mv");
-            assertTrue(property.isMultiple());
+                node = admin.getNode(u.getPath());
+                property = node.getProperty("mv");
+                assertTrue(property.isMultiple());
+            }
         } finally {
             tmpFile.delete();
         }
@@ -494,9 +494,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
         return userA;
     }
 
-
-
-    public File createPackage(String group, String name, String... paths) throws RepositoryException, IOException, PackageException {
+    private File createPackage(String group, String name, String... paths) throws RepositoryException, IOException, PackageException {
         ExportOptions opts = new ExportOptions();
         DefaultMetaInf inf = new DefaultMetaInf();
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();

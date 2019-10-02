@@ -31,6 +31,7 @@ import org.apache.jackrabbit.vault.packaging.PackageType;
 
 /**
  * Abstracts the way of accessing the vault specific meta-info of a checkout.
+ * TODO: merge with packageInfo
  */
 public interface MetaInf {
 

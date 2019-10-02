@@ -1,0 +1,8 @@
+.ratignore
+src/test/resources/**/*.txt
+src/test/resources/**/*.xml
+src/test/resources/**/.vlt
+src/test/resources/**/.vltignore
+src/test/resources/**/.dummy
+src/test/resources/**/*.lst
+src/test/resources/**/*.MF

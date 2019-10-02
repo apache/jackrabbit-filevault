@@ -30,6 +30,7 @@
       <item href="overview.html" name="Overview" />
       <item href="vaultfs.html" name="Vault FS" />
       <item href="docview.html" name="Document View" />
+      <item href="validation.html" name="Validation" />
     </menu>
     <menu name="Using Filevault">
       <item href="usage.html" name="Getting Started" />

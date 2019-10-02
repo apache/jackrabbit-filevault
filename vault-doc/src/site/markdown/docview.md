@@ -29,7 +29,7 @@ a `example.xml` file, using the (filevault) DocView format.
 For example, a _sling:Folder_ node, named `libs` will be serialized into a directory `libs` and a
 `libs/.content.xml` file, using the (filevault) DocView format.
 
-Also see the [vault-fs][vaultfs.html]
+Also see the [vault-fs](vaultfs.html)
 article about this.
 
 Deviations to the JCR DocView
@@ -55,7 +55,8 @@ Example:
 The deserialization treats empty elements different as the default [JCR 2.0 Import][import-docview], as
 empty elements never create a new node in the repository but are merely used to define the childnode 
 sort order.
-        
+Nodes/properties below empty elements will never be removed during import ([JCRVLT-251](https://issues.apache.org/jira/browse/JCRVLT-251))
+
 ### Property Values
 
 The probably biggest different to the [JCR 2.0][jcr-docview] is the handling of the property values.

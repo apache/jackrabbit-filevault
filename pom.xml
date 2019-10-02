@@ -58,6 +58,7 @@
         <module>vault-hook-example</module>
         <module>vault-hook-externalclass-test</module>
         <module>vault-sync</module>
+        <module>vault-validation</module>
     </modules>
 
     <!-- ====================================================================== -->

@@ -126,6 +126,10 @@ public class DefaultPathFilter implements PathFilter {
         return regex.hashCode();
     }
 
+    public String toString() {
+        return "regex: " + regex.toString();
+    }
+
     /**
      * {@inheritDoc}
      */

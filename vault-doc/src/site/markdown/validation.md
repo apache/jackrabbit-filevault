@@ -45,14 +45,14 @@ Each validator settings are set for a specific validator id.
 ID  |  Description | Options
 --- | --- | ---
 `jackrabbit-filter` |  Checks for validity of the [filter.xml](./filter.html]) (according to a predefined  XML schema). In addition checks that every [docview xml node](./docview.html) is contained in the filter. For packages of type `application` (or when option `severityForUncoveredAncestorNodes` is set to an according severity) it also makes sure that all filter root's ancestors are either known/valid roots or are contained in the package dependencies. Also it makes sure that `pattern` values for includes/excludes as well as `root` values for each filter entry are valid. Orphaned filter rules (i.e. ones not being necessary) lead to validation issues as well. | *severityForUncoveredAncestorNodes*: severity of validation messages for uncovered ancestor nodes. Only relevant for package type != application (default = info)<br/>*severityForOrphanedFilterRules*: severity of validation messages for orphaned filter rules (default = info)<br/>*validRoots*: comma-separated list of valid roots (default = `"/,/libs,/apps,/etc,/var,/tmp,/content"`)
-`jackrabbit-properties ` | Checks for validity of the  [properties.xml](./properties.html)
+`jackrabbit-properties ` | Checks for validity of the  [properties.xml](./properties.html) | none
 `jackrabbit-dependencies` | Checks for overlapping filter roots of the referenced package dependencies as well as for valid package dependency references (i.e. references which can be resolved). | *severityForUnresolvedDependencies*: severity of validation messages for unresolved dependencies (default = warn)
-`jackrabbit-docviewparser` | Checks if all docview files in the package are compliant with the [(extended) Document View Format](../docview.html). This involves checking for XML validity as well as checking for correct property types.
-`jackrabbit-emptyelements` | Check for empty elements within DocView files (used for ordering purposes, compare with  [(extended) Document View Format](../docview.html)) which are included in the filter with import=replace as those are actually not replaced!
-`jackrabbit-mergelimitations` | Checks for the limitation of import mode=merge outlined at [JCRVLT-255][jcrvlt-255].
-`jackrabbit-oakindex` |  Checks if the package (potentially) modifies/creates an OakIndexDefinition. This is done by evaluating both the filter.xml for potential matches as well as the actual content for nodes with jcr:primaryType  `oak:indexDefinition`.
-`jackrabbit-packagetype` | Checks if the package type is correctly set for this package, i.e. is compliant with all rules outlined at [JCRVLT-170][jcrvlt-170].
-`jackrabbit-primarynodetype` | Checks if all non empty elements within [DocView files](../docview.html) have the mandatory property `jcr:primaryType` set.
+`jackrabbit-docviewparser` | Checks if all docview files in the package are compliant with the [(extended) Document View Format](../docview.html). This involves checking for XML validity as well as checking for correct property types. | none
+`jackrabbit-emptyelements` | Check for empty elements within DocView files (used for ordering purposes, compare with  [(extended) Document View Format](../docview.html)) which are included in the filter with import=replace as those are actually not replaced! | none
+`jackrabbit-mergelimitations` | Checks for the limitation of import mode=merge outlined at [JCRVLT-255][jcrvlt-255]. | none
+`jackrabbit-oakindex` |  Checks if the package (potentially) modifies/creates an OakIndexDefinition. This is done by evaluating both the filter.xml for potential matches as well as the actual content for nodes with jcr:primaryType  `oak:indexDefinition`. | none
+`jackrabbit-packagetype` | Checks if the package type is correctly set for this package, i.e. is compliant with all rules outlined at [JCRVLT-170][jcrvlt-170]. | none
+`jackrabbit-primarynodetype` | Checks if all non empty elements within [DocView files](../docview.html) have the mandatory property `jcr:primaryType` set. | none
 
 
 ### Custom Validators

@@ -88,8 +88,8 @@ For each file you then call either
 
 The Validation API is currently used by the [FileVault Package Maven Plugin][filevault.maven].
 
-[javadoc.spi]: apidocs/org/apache/jackrabbit/vault/validation/spi.html
-[javadoc.api]: apidocs/org/apache/jackrabbit/vault/validation.html
+[javadoc.spi]: apidocs/org/apache/jackrabbit/vault/validation/spi/package-summary.html
+[javadoc.api]: apidocs/org/apache/jackrabbit/vault/validation/package-summary.html
 [javadoc.serviceloader]: https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html
 [filevault.maven]: http://jackrabbit.apache.org/filevault-package-maven-plugin/
 [jcrvlt-255]: https://issues.apache.org/jira/browse/JCRVLT-255

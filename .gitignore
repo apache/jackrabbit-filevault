@@ -9,3 +9,4 @@ console.properties
 .idea/
 bin/
 derby.log
+.mvn

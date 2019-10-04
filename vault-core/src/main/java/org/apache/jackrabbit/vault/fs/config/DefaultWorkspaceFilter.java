@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -89,6 +88,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
     protected double version = SUPPORTED_VERSION;
 
+    /** the serialized output of the current filter or {@code null} */
     private byte[] source;
 
     /**
@@ -119,6 +119,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
         }
         propsFilterSets.add(new PathFilterSet(set.getRoot()));
+        resetSource();
     }
 
     /**
@@ -154,6 +155,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
         }
         referenceFilterSets.add(bothFilter);
+        resetSource();
     }
 
     /**
@@ -174,6 +176,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
         }
         propsFilterSets.add(set);
+        resetSource();
     }
 
     /**

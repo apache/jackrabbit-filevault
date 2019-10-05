@@ -337,7 +337,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
      * @throws IOException if an I/O error occurs
      */
     public void load(final InputStream in) throws IOException, ConfigurationException {
-        source = IOUtils.toByteArray(in);
+        byte[] tmpSource = source = IOUtils.toByteArray(in);
         try (InputStream inCopy = getSource()) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -348,6 +348,8 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             Document document = builder.parse(inCopy);
             Element doc = document.getDocumentElement();
             load(doc);
+            // restore source
+            source = tmpSource;
         } catch (ParserConfigurationException e) {
             throw new ConfigurationException(
                     "Unable to create configuration XML parser", e);
@@ -374,6 +376,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         propsFilterSets.clear();
         referenceFilterSets = new LinkedList<>();
         read(doc);
+        resetSource();
     }
 
     private void read(Element elem) throws ConfigurationException {

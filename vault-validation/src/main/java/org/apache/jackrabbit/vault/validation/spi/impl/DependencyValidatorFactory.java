@@ -29,7 +29,7 @@ public final class DependencyValidatorFactory implements ValidatorFactory {
     public static final String ID = PREFIX_JACKRABBIT + "dependencies";
     
     public static final String OPTION_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES = "severityForUnresolvedDependencies";
-    public static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES = ValidationMessageSeverity.WARN;
+    private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES = ValidationMessageSeverity.WARN;
     
     @Override
     public Validator createValidator(ValidationContext context, ValidatorSettings settings) {

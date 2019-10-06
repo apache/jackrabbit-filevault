@@ -17,12 +17,12 @@
 package org.apache.jackrabbit.vault.validation.spi;
 
 public enum ValidationMessageSeverity {
-    /** only emitted in case debug build is enabled, not a real violation */
+    /** should only be emitted in case a debug option is enabled, not a real violation */
     DEBUG, 
     /** only for informational purposes, not a real violation */
     INFO, 
-    /** a violation which will not make the build fail */
+    /** a violation which might lead to unintended side-effects during package installation */
     WARN, 
-    /** a violation which will make the build fail */
+    /** a severe violation which very likely leads to unintended side-effects during package installation */
     ERROR
 }

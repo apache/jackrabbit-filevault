@@ -73,7 +73,7 @@ public class ValidationExecutorFactory {
      * @param validatorSettingsById a map of {@link ValidatorSettings}. The key is the validator id. May be {@code null}.
      * @return either {@code null} or an executor (if at least one validator is registered)
      */
-    public @CheckForNull ValidationExecutor createValidationExecutor(@Nonnull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ValidatorSettings> validatorSettingsById) {
+    public @CheckForNull ValidationExecutor createValidationExecutor(@Nonnull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ? extends ValidatorSettings> validatorSettingsById) {
         Map<String, Validator> validatorsById = createValidators(context, isSubPackage, enforceSubpackageValidation, validatorSettingsById != null ? validatorSettingsById : Collections.emptyMap());
         if (validatorsById.isEmpty()) {
             return null;
@@ -81,7 +81,7 @@ public class ValidationExecutorFactory {
         return new ValidationExecutor(validatorsById);
     }
 
-    private @Nonnull Map<String, Validator> createValidators(@Nonnull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ValidatorSettings> validatorSettingsById) {
+    private @Nonnull Map<String, Validator> createValidators(@Nonnull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ? extends ValidatorSettings> validatorSettingsById) {
         Map<String, Validator> validatorsById = new LinkedHashMap<>();
         Set<String> validatorSettingsIds = new HashSet<>(validatorSettingsById.keySet());
         for (ValidatorFactory validatorFactory : validatorFactories) {

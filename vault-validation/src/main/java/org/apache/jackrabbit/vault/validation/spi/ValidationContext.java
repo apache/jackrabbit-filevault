@@ -27,33 +27,35 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * The validation context for a specific run of validators (bound to at most one Maven Module and package)
+ * The validation context encapsulates information about the package for which the validation is  being triggered.
  *
  */
 @ProviderType
 public interface ValidationContext extends PackageInfo {
     
     /**
+     * Returns the package properties.
+     * 
      * @return the package properties or some exception in case none could be found (will always point to the root package's properties).
      */
     @Nonnull PackageProperties getProperties();
 
     /**
+     * Returns the validation context of the container package.
      * @return the validation context of the container in case this is the context of a sub package otherwise {@code null}.
      */
     @CheckForNull ValidationContext getContainerValidationContext();
     
     /**
+     * Returns the root path of the package.
      * @return either the path to the ZIP file or a directory containing an exploded package.
      */
     @Nonnull Path getPackageRootPath();
     
     /**
-     * PackageInfo for all resolved package dependencies 
+     * PackageInfo for all resolved package dependencies.
      * In contrast to {@link PackageProperties#getDependencies()} the resolved dependencies also
      * carry the main metadata of the dependencies.
-     * This might even include artificial dependencies (i.e. repositoryStructureDependencies) which never
-     * appear in the package  properties,  but are only given at build time!
      * @return the package info of all resolved package dependencies (i.e. the ones for which an artifact was found).
      */
     @Nonnull Collection<PackageInfo> getDependenciesMetaInfo();

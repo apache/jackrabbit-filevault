@@ -39,7 +39,7 @@ public final class EmptyElementsValidatorFactory implements ValidatorFactory {
 
     @Override
     public String getId() {
-        return ValidatorFactory.PREFIX_JACKRABBIT + "emptyelements";
+        return ValidatorFactory.ID_PREFIX_JACKRABBIT + "emptyelements";
     }
 
     @Override

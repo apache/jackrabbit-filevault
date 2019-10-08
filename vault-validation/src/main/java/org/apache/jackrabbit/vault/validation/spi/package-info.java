@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+/**
+ * The FileVault validation framework SPI. Provides classes/interfaces to implement validators on FileVault packages.
+ */
 @Version("1.0.0")
 package org.apache.jackrabbit.vault.validation.spi;
 

@@ -25,12 +25,13 @@ import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * This validator is called for each {@code META-INF/vault/filter.xml} being found
+ * Validator interface for package filters. Called for each {@code META-INF/vault/filter.xml} being found.
  *
  */
 @ProviderType
 public interface FilterValidator extends Validator {
     /**
+     * Called when a filter is validated.
      * 
      * @param filter the deserialized filter
      * @return validation messages or {@code null}

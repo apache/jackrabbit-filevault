@@ -449,7 +449,7 @@ public class OutputFormat {
     }
 
     /**
-     * Returns an {@code EncodingInfo{@code  instance for the encoding.
+     * Returns an {@code EncodingInfo} instance for the encoding.
      *
      * @see #setEncoding
      */

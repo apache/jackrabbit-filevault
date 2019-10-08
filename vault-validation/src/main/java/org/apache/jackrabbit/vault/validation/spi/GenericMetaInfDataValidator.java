@@ -27,22 +27,30 @@ import javax.annotation.Nonnull;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * Called for each file below META-INF (including {@code vault/filter.xml} and {@code vault/properties.xml})
+ * Low-level validator interface for all files below META-INF (including {@code vault/filter.xml} and {@code vault/properties.xml}).
+ * 
+ * For validating properties and filter rather use the high-level validators {@link PropertiesValidator} or {@link FilterValidator}.
+ * For validators only considering the file name use {@link MetaInfPathValidator} instead.
+ 
  */
 @ProviderType
 public interface GenericMetaInfDataValidator extends Validator {
 
     /**
+     * Called for each file below META-INF.
      * Only called in case {@link #shouldValidateMetaInfData(Path)} returned true for the given path.
+     *
      * @param input the input stream of the META-INF file located at filePath
-     * @param filePath is relative to the META-INF directory (i.e. does not start with {@code META-INF})
+     * @param filePath file path relative to the META-INF directory (i.e. does not start with {@code META-INF})
      * @return a collection of validation messages or {@code null}
      * @throws IOException in case the input stream could not be accessed
      */
     @CheckForNull Collection<ValidationMessage> validateMetaInfData(@Nonnull InputStream input, @Nonnull Path filePath) throws IOException;
 
     /**
-     * @param filePath is relative to the META-INF directory (i.e. does not start with {@code META-INF})
+     * Called for each file below META-INF.
+     * 
+     * @param filePath file path relative to the META-INF directory (i.e. does not start with {@code META-INF})
      * @return {@code true} in case the file should be validated, otherwise {@code false}
      */
     boolean shouldValidateMetaInfData(@Nonnull Path filePath);

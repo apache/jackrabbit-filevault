@@ -32,7 +32,7 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 public final class DependencyValidator implements PropertiesValidator {
 
     static final String MESSAGE_DEPENDENCIES_WITH_OVERLAPPING_FILTERS = "Dependency '%s' defines same filter root '%s' as dependency '%s'";
-    static final String MESSAGE_UNRESOLVED_DEPENDENCY = "Dependency '%s' is not using maven coordinates and cannot be used for analysis.";
+    static final String MESSAGE_UNRESOLVED_DEPENDENCY = "Dependency '%s'was not successfully resolved and can therefore not be used for analysis.";
     private final Collection<PackageInfo> dependenciesMetaInfo;
     private final ValidationMessageSeverity severity;
     private final ValidationMessageSeverity severityForUnresolvedDependencies;

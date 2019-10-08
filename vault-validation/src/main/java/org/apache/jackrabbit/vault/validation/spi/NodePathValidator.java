@@ -25,13 +25,14 @@ import org.osgi.annotation.versioning.ProviderType;
 
 
 /**
- * Interface for validators which are only interested in the node paths but not any other information.
- * For validators interested in the actual properties use either {@link DocumentViewXmlValidator} or {@link GenericJcrDataValidator}
+ * Validator interface for validating node paths.
+ * For validators interested in the actual properties use either {@link DocumentViewXmlValidator} or {@link GenericJcrDataValidator}.
  * 
  */
 @ProviderType
 public interface NodePathValidator extends Validator {
     /**
+     * Called for each node being found in a package.
      * 
      * @param nodePath the absolute node path
      * @return validation messages or {@code null}

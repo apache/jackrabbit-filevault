@@ -42,7 +42,6 @@ package org.apache.jackrabbit.vault.util.xml.xerces.util;
  *
  * @author Andy Clark
  * @version $Id$
- * @see SymbolHash
  */
 public class SymbolTable {
 

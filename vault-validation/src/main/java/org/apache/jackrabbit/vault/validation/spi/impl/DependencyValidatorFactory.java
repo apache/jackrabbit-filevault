@@ -26,7 +26,7 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices
 public final class DependencyValidatorFactory implements ValidatorFactory {
 
-    public static final String ID = PREFIX_JACKRABBIT + "dependencies";
+    public static final String ID = ID_PREFIX_JACKRABBIT + "dependencies";
     
     public static final String OPTION_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES = "severityForUnresolvedDependencies";
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES = ValidationMessageSeverity.WARN;

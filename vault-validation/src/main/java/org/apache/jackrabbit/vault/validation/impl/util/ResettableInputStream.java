@@ -29,6 +29,11 @@ import org.apache.commons.io.input.TeeInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An input stream wrapper which is resettable, i.e. allows {{@link #mark(int)} and {{@link #reset()} to be called.
+ * It uses a temporary file for buffering the given input stream, except for the case where it is already a {@link FileInputStream}
+ * in which case it uses the seeking methods of that.
+ */
 public class ResettableInputStream extends InputStream {
 
     private final Path tmpFile;

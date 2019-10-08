@@ -39,7 +39,7 @@ public final class PrimaryNodeTypeValidatorFactory implements ValidatorFactory {
 
     @Override
     public String getId() {
-        return ValidatorFactory.PREFIX_JACKRABBIT + "primarynodetype";
+        return ValidatorFactory.ID_PREFIX_JACKRABBIT + "primarynodetype";
     }
 
     @Override

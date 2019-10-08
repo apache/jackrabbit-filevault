@@ -131,7 +131,7 @@ public class DOMMessageFormatter {
     /**
      * setLocale to be used by the formatter.
      *
-     * @param locale
+     * @param dlocale the locale
      */
     public static void setLocale(Locale dlocale) {
         locale = dlocale;

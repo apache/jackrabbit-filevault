@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 @MetaInfServices
 public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
 
-    public static final String ID = PREFIX_JACKRABBIT + "filter";
+    public static final String ID = ID_PREFIX_JACKRABBIT + "filter";
 
     public static final String OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES = "severityForUncoveredAncestorNodes";
     private static final Object OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS = "severityForUncoveredFilterRootAncestors";

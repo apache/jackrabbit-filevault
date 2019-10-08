@@ -16,8 +16,11 @@
  */
 package org.apache.jackrabbit.vault.validation.spi;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 /**
- * Class encapsulating the actual message together with a {@link ValidationMessageSeverity}
+ * Class encapsulating the actual message together with a {@link ValidationMessageSeverity}.
  */
 public class ValidationMessage {
 
@@ -30,15 +33,15 @@ public class ValidationMessage {
     /** the underlying exception if there was any, may be null */
     private final Throwable throwable;
     
-    public ValidationMessage(ValidationMessageSeverity severity, String message) {
+    public ValidationMessage(@Nonnull ValidationMessageSeverity severity, @Nonnull String message) {
         this(severity, message, 0, 0, null);
     }
 
-    public ValidationMessage(ValidationMessageSeverity severity, String message, Throwable throwable) {
+    public ValidationMessage(@Nonnull ValidationMessageSeverity severity, @Nonnull String message, Throwable throwable) {
         this(severity, message, 0, 0, throwable);
     }
 
-    public ValidationMessage(ValidationMessageSeverity severity, String message, int line, int column, Throwable throwable) {
+    public ValidationMessage(@Nonnull ValidationMessageSeverity severity, @Nonnull String message, int line, int column, Throwable throwable) {
         this.severity = severity;
         this.message = message;
         this.line = line;
@@ -46,27 +49,45 @@ public class ValidationMessage {
         this.throwable = throwable;
     }
     
-    public ValidationMessageSeverity getSeverity() {
+    
+    
+    /**
+     * Returns the severity of this message.
+     * @return the severity of this message
+     */
+    public @Nonnull ValidationMessageSeverity getSeverity() {
         return severity;
     }
 
-
-    public String getMessage() {
-        // prefix message with 
+    /**
+     * Returns the message text.
+     * @return the message text
+     */
+    public @Nonnull String getMessage() {
         return message;
     }
 
-    /** @return the line number of this violation (1-based) or 0 if not bound to any specific line number */
+    /** 
+     * Returns the line number.
+     * @return the line number of this violation (1-based) or 0 if not bound to any specific line number
+     */
     public int getLine() {
         return line;
     }
 
-    /** @return the column number of this violation (1-based) or 0 if not bound to any specific column number */
+    /** 
+     * Returns the column number.
+     * @return the column number of this violation (1-based) or 0 if not bound to any specific column number
+     */
     public int getColumn() {
         return column;
     }
 
-    public Throwable getThrowable() {
+    /**
+     * Returns the underlying throwable.
+     * @return the throwable bound to this message or {@code null} if the message has no underlying throwable
+     */
+    public @CheckForNull Throwable getThrowable() {
         return throwable;
     }
 

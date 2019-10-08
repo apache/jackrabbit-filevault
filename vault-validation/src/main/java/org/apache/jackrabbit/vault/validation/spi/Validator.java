@@ -23,17 +23,16 @@ import javax.annotation.CheckForNull;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * A validator is created per Maven module individually and only used from a single thread.
- * Also the instance is only used for one package at most (i.e. subpackages get another instance)
- * Instead of implementing this generic interface each validator should rather implement one of the
+ * Base interface for all validators. Instead of implementing this generic interface each validator should rather implement one of the
  * sub interfaces.
- *
+ * A validator is created per {@link ValidationContext} individually and only used from a single thread.
+ * Also the instance is only used for one package at most (i.e. subpackages get another instance).
  */
 @ProviderType
 public interface Validator {
 
     /**
-     * Called when the validation is done for one {@link ValidationContext} (i.e. this instance is no longer needed)
+     * Called when the validation is done for one {@link ValidationContext} (this instance is no longer needed)
      * @return validation messages or {@code null}
      */
      @CheckForNull Collection<ValidationMessage> done();

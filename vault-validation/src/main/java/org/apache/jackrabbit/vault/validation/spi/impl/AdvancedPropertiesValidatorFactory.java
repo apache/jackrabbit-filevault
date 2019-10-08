@@ -37,7 +37,7 @@ public final class AdvancedPropertiesValidatorFactory implements ValidatorFactor
 
     @Override
     public String getId() {
-        return ValidatorFactory.PREFIX_JACKRABBIT + "properties";
+        return ValidatorFactory.ID_PREFIX_JACKRABBIT + "properties";
     }
 
     @Override

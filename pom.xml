@@ -72,16 +72,21 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.7</version>
                 <configuration>
                     <!-- Default configuration for all reports -->
                     <windowtitle>Apache Jackrabbit FileVault ${project.version} API</windowtitle>
                     <doctitle>Apache Jackrabbit FileVault ${project.version} API</doctitle>
                     <excludePackageNames>
-                        org.apache.jackrabbit.vault.cli*,org.apache.jackrabbit.vault.davex,*.impl*,org.apache.jackrabbit.vault.util.xml,org.apache.jackrabbit.vault.vlt.actions,org.apache.jackrabbit.vault.vlt.meta.*,org.apache.jackrabbit.vault.packaging.hotfix
+                        org.apache.jackrabbit.vault.cli*,org.apache.jackrabbit.vault.davex,*.impl*,org.apache.jackrabbit.vault.util.xml,org.apache.jackrabbit.vault.vlt.actions,org.apache.jackrabbit.vault.vlt.meta.*,org.apache.jackrabbit.vault.packaging.hotfix,org.apache.jackrabbit.vault.validation.impl*,org.apache.jackrabbit.vault.validation.spi.impl
                     </excludePackageNames>
                     <reportOutputDirectory>${basedir}/vault-doc/target/site</reportOutputDirectory>
                     <additionalparam>-notimestamp</additionalparam>
+                    <detectLinks>true</detectLinks>
+                    <detectJavaApiLink>true</detectJavaApiLink>
+                    <links>
+                        <link>https://docs.adobe.com/docs/en/spec/javax.jcr/javadocs/jcr-2.0</link>
+                        <link>http://jackrabbit.apache.org/api/2.18</link>
+                    </links>
                 </configuration>
                 <executions>
                     <execution>

@@ -35,25 +35,33 @@ public class DefaultPackageProperties extends PackagePropertiesImpl {
 
     private final Properties properties;
 
-    public static DefaultPackageProperties fromFile(Path path) throws InvalidPropertiesFormatException, IOException {
+    /**
+     * Reads package properties from a file.
+     * @param path the path from which to read package properties
+     * @return the package properties deserialized from the given file
+     * @throws IOException in case deserializing from the file failed
+     */
+    public static DefaultPackageProperties fromFile(Path path) throws IOException {
         return new DefaultPackageProperties(path);
     }
 
     /**
+     * Reads package properties from an input stream.
      * <p> The specified stream remains open after this method returns.
-     * @param input
-     * @return the package properties being exposed through this input
-     * @throws IOException 
+     * 
+     * @param input the input from which to generate the package properties
+     * @return the package properties deserialized from the given input
+     * @throws IOException in case deserializing from the input stream failed
      */
-    public static DefaultPackageProperties fromInputStream(InputStream input) throws InvalidPropertiesFormatException, IOException {
+    public static DefaultPackageProperties fromInputStream(InputStream input) throws IOException {
         return new DefaultPackageProperties(input);
     }
 
-    protected DefaultPackageProperties(InputStream input) throws IOException {
+    private DefaultPackageProperties(InputStream input) throws IOException {
         properties = getPropertiesMap(input);
     }
-    
-    protected DefaultPackageProperties(Path path) throws IOException {
+
+    private DefaultPackageProperties(Path path) throws IOException {
         try (InputStream fileInput = Files.newInputStream(path)) {
             properties = getPropertiesMap(fileInput);
         }

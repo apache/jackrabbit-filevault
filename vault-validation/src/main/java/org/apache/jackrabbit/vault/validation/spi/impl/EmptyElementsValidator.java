@@ -38,7 +38,7 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 /**
  *  Check for empty elements (used for ordering purposes)
  *  which are included in the filter with import=replace as those are actually not replaced!
- *  @see <https://issues.apache.org/jira/browse/JCRVLT-251>JCRVLT-251</a>
+ *  @see <a href="https://issues.apache.org/jira/browse/JCRVLT-251">JCRVLT-251</a>
  */
 public class EmptyElementsValidator implements DocumentViewXmlValidator, GenericJcrDataValidator {
 

@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/**
+ * The FileVault validation framework API. Provides classes to execute validations on FileVault packages.
+ */
 @Version("1.0.0")
 package org.apache.jackrabbit.vault.validation;
 

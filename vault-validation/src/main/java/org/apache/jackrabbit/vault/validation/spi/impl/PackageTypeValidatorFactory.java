@@ -58,7 +58,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
 
     @Override
     public String getId() {
-        return ValidatorFactory.PREFIX_JACKRABBIT + "packagetype";
+        return ValidatorFactory.ID_PREFIX_JACKRABBIT + "packagetype";
     }
 
     @Override

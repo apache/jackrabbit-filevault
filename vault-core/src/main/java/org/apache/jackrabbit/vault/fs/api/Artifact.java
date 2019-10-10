@@ -115,7 +115,7 @@ public interface Artifact extends Dumpable {
     long getLastModified();
 
     /**
-     * Writes the content to the given output stream and closes it afterwards.
+     * Writes the content to the given output stream.
      * This is the preferred method to use for output-artifacts.
      * <p>The specified stream remains open after this method returns.
      * @param out the output stream to spool to

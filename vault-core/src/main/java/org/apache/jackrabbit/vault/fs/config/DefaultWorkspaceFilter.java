@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -89,6 +88,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
     protected double version = SUPPORTED_VERSION;
 
+    /** the serialized output of the current filter or {@code null} */
     private byte[] source;
 
     /**
@@ -119,6 +119,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
         }
         propsFilterSets.add(new PathFilterSet(set.getRoot()));
+        source = null;
     }
 
     /**
@@ -154,6 +155,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
         }
         referenceFilterSets.add(bothFilter);
+        source = null;
     }
 
     /**
@@ -174,6 +176,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
         }
         propsFilterSets.add(set);
+        source = null;
     }
 
     /**
@@ -334,7 +337,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
      * @throws IOException if an I/O error occurs
      */
     public void load(final InputStream in) throws IOException, ConfigurationException {
-        source = IOUtils.toByteArray(in);
+        byte[] tmpSource = source = IOUtils.toByteArray(in);
         try (InputStream inCopy = getSource()) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -345,6 +348,8 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             Document document = builder.parse(inCopy);
             Element doc = document.getDocumentElement();
             load(doc);
+            // restore source
+            source = tmpSource;
         } catch (ParserConfigurationException e) {
             throw new ConfigurationException(
                     "Unable to create configuration XML parser", e);
@@ -371,6 +376,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         propsFilterSets.clear();
         referenceFilterSets = new LinkedList<>();
         read(doc);
+        source = null;
     }
 
     private void read(Element elem) throws ConfigurationException {
@@ -466,7 +472,9 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     }
 
     /**
-     * Reset the source content to a null state.
+     * Resets the source content to a null state.
+     * This leads to generating the source from scratch if necessary.
+     * Is called implicitly for every modifying operation ({@link #add(PathFilterSet)}, {@link #add(PathFilterSet, PathFilterSet)}, {@link #addPropertyFilterSet(PathFilterSet)}, {@link #load(Element)}, {@link #load(InputStream) and {@link #load(File)}).
      */
     @SuppressWarnings("unused")
     public void resetSource() {

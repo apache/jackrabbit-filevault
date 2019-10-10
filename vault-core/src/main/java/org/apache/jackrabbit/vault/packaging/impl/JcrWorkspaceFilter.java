@@ -30,6 +30,7 @@ import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 
@@ -68,7 +69,12 @@ public class JcrWorkspaceFilter  {
                     int idx = rule.indexOf(':');
                     String type = idx > 0 ? rule.substring(0, idx) : "include";
                     String patt = idx > 0 ? rule.substring(idx + 1) : "";
-                    DefaultPathFilter pf = new DefaultPathFilter(patt);
+                    DefaultPathFilter pf;
+                    try {
+                        pf = new DefaultPathFilter(patt);
+                    } catch (ConfigurationException e) {
+                        throw new RepositoryException("Can not load filter from node " + defNode.getPath(), e);
+                    }
                     if ("include".equals(type)) {
                         set.addInclude(pf);
                     } else {
@@ -80,7 +86,12 @@ public class JcrWorkspaceFilter  {
                     Node rule = rules.nextNode();
                     String type = rule.getProperty(JcrPackageDefinitionImpl.PN_TYPE).getString();
                     String pattern = rule.getProperty(JcrPackageDefinitionImpl.PN_PATTERN).getString();
-                    DefaultPathFilter pf = new DefaultPathFilter(pattern);
+                    DefaultPathFilter pf;
+                    try {
+                        pf = new DefaultPathFilter(pattern);
+                    } catch (ConfigurationException e) {
+                        throw new RepositoryException("Can not load filter from node " + defNode.getPath(), e);
+                    }
                     if ("include".equals(type)) {
                         set.addInclude(pf);
                     } else {

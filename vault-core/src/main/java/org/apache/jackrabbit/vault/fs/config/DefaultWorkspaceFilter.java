@@ -145,10 +145,15 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             // only handle path filters
             PathFilter filter = entry.getFilter();
             if (filter instanceof DefaultPathFilter) {
-                if (entry.isInclude()) {
-                    bothFilter.addInclude(new DefaultPropertyPathFilter(((DefaultPathFilter) filter).getPattern()));
-                } else {
-                    bothFilter.addExclude(new DefaultPropertyPathFilter(((DefaultPathFilter) filter).getPattern()));
+                try {
+                    if (entry.isInclude()) {
+                        bothFilter.addInclude(new DefaultPropertyPathFilter(((DefaultPathFilter) filter).getPattern()));
+                    } else {
+                        bothFilter.addExclude(new DefaultPropertyPathFilter(((DefaultPathFilter) filter).getPattern()));
+                    }
+                } catch (ConfigurationException e) {
+                    // cannot not happen as pattern is always valid
+                    
                 }
             } else {
                 throw new IllegalArgumentException("Can only export default path filters, yet.");
@@ -658,7 +663,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
      */
     private static class DefaultPropertyPathFilter extends DefaultPathFilter {
 
-        private DefaultPropertyPathFilter(String pattern) {
+        private DefaultPropertyPathFilter(String pattern) throws ConfigurationException {
             super(pattern);
         }
 
@@ -666,7 +671,11 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         public PathFilter translate(PathMapping mapping) {
             DefaultPathFilter mapped =  (DefaultPathFilter) super.translate(mapping);
             if (mapped != this) {
-                mapped = new DefaultPropertyPathFilter(mapped.getPattern());
+                try {
+                    mapped = new DefaultPropertyPathFilter(mapped.getPattern());
+                } catch (ConfigurationException e) {
+                    // cannot happen as pattern is always valiid
+                }
             }
             return mapped;
         }

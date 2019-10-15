@@ -17,19 +17,24 @@
 
 package org.apache.jackrabbit.vault.fs.filter;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+import org.junit.Test;
 
 /**
  * {@code DefaultPathFilterTest}...
  */
-public class DefaultPathFilterTest extends TestCase {
+public class DefaultPathFilterTest {
 
-    public void testExact() {
+    @Test
+    public void testExact() throws ConfigurationException {
         test("/foo\\.bar", "/foo.bar", true);
         test("/foo\\.bar", "/foo_bar", false);
     }
 
-    public void testFiles() {
+    @Test
+    public void testFiles() throws ConfigurationException {
         test("/foo/bar\\.[^/]*$", "/foo/bar.txt", true);
         test("/foo/bar\\.[^/]*$", "/foo/bar.zip", true);
         test("/foo/bar\\.[^/]*$", "/foo/bar1.txt", false);
@@ -40,25 +45,33 @@ public class DefaultPathFilterTest extends TestCase {
         test("^.*/bar\\.[^/]*$", "foobar.txt", false);
     }
 
-    public void testDirectChildren() {
+    @Test
+    public void testDirectChildren() throws ConfigurationException {
         test("/foo/[^/]*$", "/foo/bar", true);
         test("/foo/[^/]*$", "/foo/bar/readme", false);
     }
 
-    public void testDeepChildren() {
+    @Test
+    public void testDeepChildren() throws ConfigurationException {
         test("/foo/.*", "/foo/bar", true);
         test("/foo/.*", "/foo/bar/readme.txt", true);
         test("/foo/.*", "/bar/bar/readme.txt", false);
     }
-    
-    public void testSelfAndDeepChildren() {
+
+    @Test
+    public void testSelfAndDeepChildren() throws ConfigurationException {
         test("/foo(/.*)?", "/foo", true);
         test("/foo(/.*)?", "/foo/bar/readme.txt", true);
         test("/foo(/.*)?", "/foobar", false);
         test("/foo(/.*)?", "/foobar/foo", false);
     }
 
-    private void test(String pattern, String path, boolean result) {
+    @Test(expected = ConfigurationException.class)
+    public void testInvalidPattern() throws ConfigurationException {
+        new DefaultPathFilter("[");
+    }
+    
+    private void test(String pattern, String path, boolean result) throws ConfigurationException {
         DefaultPathFilter f = new DefaultPathFilter(pattern);
         assertEquals("Pattern '" + pattern + "' matches '" + path + "'", result, f.matches(path));
     }

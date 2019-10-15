@@ -22,6 +22,7 @@ import java.util.Collection;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
+import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.osgi.annotation.versioning.ProviderType;
 

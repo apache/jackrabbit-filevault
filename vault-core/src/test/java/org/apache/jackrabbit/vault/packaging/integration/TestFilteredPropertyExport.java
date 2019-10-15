@@ -89,7 +89,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyP1OnFoo_deprecated() throws IOException, RepositoryException, PackageException {
+    public void filterPropertyP1OnFoo_deprecated() throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p1"));
 
@@ -112,7 +112,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyP1OnFoo() throws IOException, RepositoryException, PackageException {
+    public void filterPropertyP1OnFoo() throws IOException, RepositoryException, PackageException, ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));
 
@@ -135,7 +135,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyPxOnFoo_deprecated() throws IOException, RepositoryException, PackageException {
+    public void filterPropertyPxOnFoo_deprecated() throws IOException, RepositoryException, PackageException, ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));
 
@@ -157,7 +157,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyPxOnFoo() throws IOException, RepositoryException, PackageException {
+    public void filterPropertyPxOnFoo() throws IOException, RepositoryException, PackageException, ConfigurationException {
 
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
@@ -180,7 +180,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyWithTwoRoots() throws IOException, RepositoryException, PackageException {
+    public void filterPropertyWithTwoRoots() throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
 
@@ -203,7 +203,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyWithTwoRoots_deprecated() throws IOException, RepositoryException, PackageException {
+    public void filterPropertyWithTwoRoots_deprecated() throws IOException, RepositoryException, PackageException, ConfigurationException {
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/foo"));
@@ -256,7 +256,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativeProperties_deprecated() throws IOException, RepositoryException, PackageException {
+    public void filterRelativeProperties_deprecated() throws IOException, RepositoryException, PackageException, ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));
 
@@ -281,7 +281,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativeProperties() throws IOException, RepositoryException, PackageException {
+    public void filterRelativeProperties() throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter(".*/p1"));
 
@@ -327,7 +327,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativePropertiesShallowNoPropertyFilter() throws IOException, RepositoryException, PackageException {
+    public void filterRelativePropertiesShallowNoPropertyFilter() throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet nodes = new PathFilterSet("/tmp");
         nodes.addInclude(new DefaultPathFilter("/tmp"));
 
@@ -349,7 +349,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativePropertiesShallowWithPropertyFilter() throws IOException, RepositoryException, PackageException {
+    public void filterRelativePropertiesShallowWithPropertyFilter() throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet props = new PathFilterSet("/tmp");
         props.addExclude(new DefaultPathFilter(".*/p1"));
 
@@ -373,7 +373,7 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativePropertiesSingleSet_NotDeep_no_propertyFilter_addNodes() throws IOException, RepositoryException, PackageException {
+    public void filterRelativePropertiesSingleSet_NotDeep_no_propertyFilter_addNodes() throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet nodes = new PathFilterSet("/tmp");
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();

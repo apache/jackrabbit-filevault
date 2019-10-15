@@ -16,6 +16,8 @@
  */
 package org.apache.jackrabbit.vault.validation.spi;
 
+import java.util.ServiceLoader;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 

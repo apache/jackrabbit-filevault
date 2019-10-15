@@ -43,7 +43,7 @@ import org.junit.Test;
 public class WorkspaceFilterTest {
 
     @Test
-    public void testMatching() {
+    public void testMatching() throws ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         PathFilterSet set1 = new PathFilterSet("/foo");
         filter.add(set1);
@@ -77,7 +77,7 @@ public class WorkspaceFilterTest {
     }
 
     @Test
-    public void testMapping2() {
+    public void testMapping2() throws ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         PathFilterSet set1 = new PathFilterSet("/tmp/stage");
         set1.addInclude(new DefaultPathFilter("/tmp/stage/products(/.*)?"));
@@ -93,7 +93,7 @@ public class WorkspaceFilterTest {
     }
 
     @Test
-    public void testRelativePatterns() {
+    public void testRelativePatterns() throws ConfigurationException {
         PathFilterSet set1 = new PathFilterSet("/foo");
         set1.addInclude(new DefaultPathFilter("/foo/.*"));
         set1.addInclude(new DefaultPathFilter("/bar/.*"));
@@ -160,7 +160,7 @@ public class WorkspaceFilterTest {
     }
 
     @Test
-    public void testGeneratedSourceFromCode()  {
+    public void testGeneratedSourceFromCode() throws ConfigurationException  {
         String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<workspaceFilter version=\"1.0\">\n" +
                 "    <filter root=\"/tmp\">\n" +
@@ -181,7 +181,7 @@ public class WorkspaceFilterTest {
     }
 
     @Test
-    public void testGeneratedSourceFromCodeWithProps()  {
+    public void testGeneratedSourceFromCodeWithProps() throws ConfigurationException  {
         String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<workspaceFilter version=\"1.0\">\n" +
                 "    <filter root=\"/foo\"/>\n" +
@@ -246,6 +246,14 @@ public class WorkspaceFilterTest {
             String actual = IOUtils.toString(actualInput);
             assertNotEquals(previousSerialization, actual);
             previousSerialization = actual;
+        }
+    }
+
+    @Test(expected=ConfigurationException.class)
+    public void testInvalidPattern() throws IOException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        try (InputStream input = getClass().getResourceAsStream("workspacefilters/invalid-pattern.xml")) {
+            filter.load(input);
         }
     }
 }

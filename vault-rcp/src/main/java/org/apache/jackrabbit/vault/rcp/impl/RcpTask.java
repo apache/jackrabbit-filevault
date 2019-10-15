@@ -30,6 +30,7 @@ import org.apache.jackrabbit.vault.davex.DAVExRepositoryFactory;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.util.RepositoryCopier;
@@ -222,7 +223,7 @@ public class RcpTask implements Runnable {
         this.recursive = b;
     }
 
-    public void addExclude(String exclude) {
+    public void addExclude(String exclude) throws ConfigurationException {
         excludes.add(exclude);
         // could be done better
         DefaultWorkspaceFilter srcFilter = new DefaultWorkspaceFilter();

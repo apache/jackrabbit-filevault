@@ -42,6 +42,7 @@ import org.apache.jackrabbit.vault.validation.spi.JcrPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
 import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
+import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
@@ -52,7 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** 
- * Prrovides methods to call all registered validators. This instance is bound to the {@link ValidationContext} being given in the 
+ * Provides methods to call all registered validators. This instance is bound to the {@link ValidationContext} being given in the 
  * {@link ValidationExecutorFactory#createValidationExecutor(org.apache.jackrabbit.vault.validation.spi.ValidationContext, boolean, boolean, Map)}.
  * This class is thread-safe (i.e. methods can be used from different threads on the same instance). 
  * @see ValidationExecutorFactory

@@ -40,6 +40,7 @@ import org.apache.jackrabbit.vault.fs.api.FilterSet.Entry;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.packaging.Dependency;
@@ -243,6 +244,8 @@ public class FSInstallState {
             throw new IOException("Unable to create configuration XML parser", e);
         } catch (SAXException e) {
             throw new IOException("Configuration file syntax error.", e);
+        } catch (ConfigurationException e) {
+            throw new IOException("Configuration file syntax error.", e);
         }
     }
 
@@ -268,7 +271,7 @@ public class FSInstallState {
         return PackageId.fromString(child.getAttribute(ATTR_PACKAGE_ID));
     }
 
-    private static WorkspaceFilter readWorkspaceFilter(Element child) {
+    private static WorkspaceFilter readWorkspaceFilter(Element child) throws ConfigurationException {
         DefaultWorkspaceFilter wsfilter = new DefaultWorkspaceFilter();
         NodeList nl = child.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {

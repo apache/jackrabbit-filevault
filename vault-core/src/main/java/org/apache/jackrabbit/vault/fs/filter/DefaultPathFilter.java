@@ -18,10 +18,12 @@
 package org.apache.jackrabbit.vault.fs.filter;
 
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
 import org.apache.jackrabbit.vault.fs.api.PathMapping;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 
 /**
  * The default path filter provides hierarchical filtering.
@@ -42,9 +44,10 @@ public class DefaultPathFilter implements PathFilter {
     /**
      * Creates a new default path filter
      * @param pattern the pattern
+     * @throws ConfigurationException in case an invalid regex pattern was given.
      * @see #setPattern
      */
-    public DefaultPathFilter(String pattern) {
+    public DefaultPathFilter(String pattern) throws ConfigurationException {
         setPattern(pattern);
     }
 
@@ -63,9 +66,14 @@ public class DefaultPathFilter implements PathFilter {
      * </pre>
      *
      * @param pattern the pattern.
+     * @throws ConfigurationException in case an invalid regex pattern was given.
      */
-    public void setPattern(String pattern) {
-        regex = Pattern.compile(pattern);
+    public void setPattern(String pattern) throws ConfigurationException {
+        try {
+            regex = Pattern.compile(pattern);
+        } catch (PatternSyntaxException e) {
+            throw new ConfigurationException("Invalid pattern given: '" + pattern + "'", e);
+        }
     }
 
     /**
@@ -104,7 +112,12 @@ public class DefaultPathFilter implements PathFilter {
         if (!pattern.startsWith("/")) {
             return this;
         }
-        return new DefaultPathFilter(mapping.map(pattern));
+        try {
+            return new DefaultPathFilter(mapping.map(pattern));
+        } catch (ConfigurationException e) {
+            // should not happen as pattern is always valid
+            return this;
+        }
     }
 
     /**

@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.fs.filter;
 import org.apache.jackrabbit.vault.fs.api.FilterSet;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 
 import junit.framework.TestCase;
 
@@ -64,7 +65,7 @@ public class FilterSetTest extends TestCase {
     /**
      * Test if 2 filter sets are equal
      */
-    public void testEquals() {
+    public void testEquals() throws ConfigurationException {
         PathFilterSet f1 = new PathFilterSet("/foo");
         f1.addInclude(new DefaultPathFilter("/foo/bar(/.*)?"));
         f1.seal();
@@ -79,7 +80,7 @@ public class FilterSetTest extends TestCase {
     /**
      * Test if 2 filter sets are not equal if the filter differs in sign.
      */
-    public void testNotEquals() {
+    public void testNotEquals() throws ConfigurationException {
         PathFilterSet f1 = new PathFilterSet("/foo");
         f1.addInclude(new DefaultPathFilter("/foo/bar(/.*)?"));
         f1.seal();
@@ -94,7 +95,7 @@ public class FilterSetTest extends TestCase {
     /**
      * Test if 2 filter sets are not equal if the filter differs pattern
      */
-    public void testNotEquals2() {
+    public void testNotEquals2() throws ConfigurationException {
         PathFilterSet f1 = new PathFilterSet("/foo");
         f1.addInclude(new DefaultPathFilter("/foo/bar(/.*)?"));
         f1.seal();

@@ -23,6 +23,8 @@ import java.io.StringWriter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+
 /**
  * The item filter is used to include or exclude a set of paths.
  * It is usually part of a {@link PathFilterSet}.

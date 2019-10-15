@@ -22,6 +22,7 @@ import java.util.LinkedList;
 
 import javax.annotation.CheckForNull;
 
+import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 

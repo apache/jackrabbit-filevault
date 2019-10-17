@@ -60,4 +60,15 @@ public class DefaultPackageInfoTest {
         PackageInfo info = DefaultPackageInfo.read(load("non-valid-package.zip"));
         assertNull("PackageInfo", info);
     }
+
+    @Test
+    public void test_pkg_from_exploded_folder() throws Exception {
+        File directory = new File(getClass().getResource("exploded-package-folder1/marker").getFile()).getParentFile();
+        PackageInfo info = DefaultPackageInfo.read(directory);
+        assertNotNull("PackageInfo", info);
+        assertEquals("PackageId", "group1:name1:1.0.0-SNAPSHOT", info.getId().toString());
+        assertEquals("filter size", 2, info.getFilter().getFilterSets().size());
+        assertTrue("contains filter", info.getFilter().contains("/apps/wcm/core/content"));
+        assertEquals("package type", PackageType.MIXED, info.getPackageType());
+    }
 }

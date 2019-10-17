@@ -1,3 +1,4 @@
 .ratignore
+src/test/resources/org/apache/jackrabbit/vault/packaging/impl/exploded-package-folder1/marker
 src/test/resources/org/apache/jackrabbit/vault/fs/filter/workspacefilters/complex-expected.xml
 src/test/resources/org/apache/jackrabbit/vault/fs/io/DocViewFormat/formatted.xml

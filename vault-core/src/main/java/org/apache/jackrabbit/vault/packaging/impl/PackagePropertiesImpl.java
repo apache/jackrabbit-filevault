@@ -17,7 +17,10 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -168,6 +171,40 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<PackageId, URI> getDependenciesLocations() {
+        String deps = getProperty(NAME_DEPENDENCIES_LOCATIONS);
+        if (deps == null || deps.length() == 0) {
+            return Collections.emptyMap();
+        } else {
+            // parse item in the format <pid>=<uri>, items are comma separated
+            Map<PackageId, URI> dependenciesLocations = new HashMap<>();
+            for (String item : deps.split(",")) {
+                String[] parts = item.split("=", 2);
+                if (parts.length < 2) {
+                    log.error("Invalid dependencies locations string, item " +item + " does not contain a '='");
+                } else {
+                    PackageId packageId = PackageId.fromString(parts[0]);
+                    if (packageId == null) {
+                        log.error("Invalid package id given in item " + item);
+                        continue;
+                    }
+                    try {
+                        URI uri = new URI(parts[1]);
+                        dependenciesLocations.put(packageId, uri);
+                    } catch (URISyntaxException e) {
+                        log.error("Invalid uri given in item " + item);
+                    }
+                    
+                }
+            }
+            return dependenciesLocations;
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */

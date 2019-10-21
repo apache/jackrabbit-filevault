@@ -62,11 +62,13 @@ Example:
 | lastModifiedBy | A user name indicating who last modified this package | no | empty
 | buildCount | An integer indicating how often this package has been built | no | empty
 | dependencies | Comma-separated list of dependencies. Each dependency has the format `<group>:<name>:<version or versionrange>`. See [Dependencies][api.Dependency]. | no | empty
+| dependencies-locations | Optional comma-separated list of dependencies' locations. Each item has the format `<package-id>=<uri>`. Currently [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) is using a URI scheme for Maven coordinates like 
+`maven:<groupId>:<artifactId>:<version>[[:<classifier>]:packaging]`. | no | empty
 | created | A date string in the format `±YYYY-MM-DDThh:mm:ss.SSSTZD` specifying when the package has been created initially (see also [ISO8601][api.ISO8601]) | no | empty
 | createdBy | A user name indicating who initially created this package | no | empty
 | lastWrapped | A date string in the format `±YYYY-MM-DDThh:mm:ss.SSSTZD` specifying when the package has been last wrapped (i.e. rebuilt) (see also [ISO8601][api.ISO8601]) | no | empty
 | lastWrappedBy | A user name indicating who last modified this package | no | empty
-| acHandling | See [AccessControlHandling][api. AccessControlHandling]. | no | ignore
+| acHandling | See [AccessControlHandling][api.AccessControlHandling]. | no | ignore
 | cndPattern | A [Java regular expression pattern](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) which specifies where to look for CND files within the given package | no | `^/(apps|libs)/([^/]+/){1,2}nodetypes/.+\\.cnd$`
 | requiresRoot | If set to `true` indicates that only admin sessions can install this package | no | `false`
 | requiresRestart | If set to `true` indicates that the system should be restarted after this package has been installed | no | `false`
@@ -88,6 +90,7 @@ Since version 3.1.40 ([JCRVLT-32](https://issues.apache.org/jira/browse/JCRVLT-3
 | Attribute | Description |
 | -------- | ------- |
 | Content-Package-Dependencies | Same as `dependencies` within the `properties.xml` |
+| Content-Package-Dependencies-Locations | Same as `dependencies-locations` within the `properties.xml` |
 | Content-Package-Description | Same as `description` within the `properties.xml` |
 | Content-Package-Type | Same as `packageType` within the `properties.xml`
 | Content-Package-Id | The string format of the [PackageId][api.PackageId] |

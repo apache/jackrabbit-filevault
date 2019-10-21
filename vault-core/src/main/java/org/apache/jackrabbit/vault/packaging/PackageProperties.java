@@ -17,9 +17,11 @@
 
 package org.apache.jackrabbit.vault.packaging;
 
+import java.net.URI;
 import java.util.Calendar;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
@@ -72,6 +74,12 @@ public interface PackageProperties {
      * Name of the dependencies meta-inf property
      */
     String NAME_DEPENDENCIES = "dependencies";
+
+    /**
+     * Name of the meta-inf property for locations of package dependencies. Each location has the format {@code <packageId>=<uri>}.
+     * Multiple locations are separated by ",".
+     */
+    String NAME_DEPENDENCIES_LOCATIONS = "dependencies-locations";
 
     /**
      * Name of the created meta-inf property
@@ -176,6 +184,13 @@ public interface PackageProperties {
      * @see #NAME_DEPENDENCIES
      */
     String MF_KEY_PACKAGE_DEPENDENCIES = "Content-Package-Dependencies";
+    
+    /**
+     * The manifest header key for locations of package dependencies. Each location has the format {@code <packageId>=<uri>}.
+     * Multiple locations are separated by ",".
+     * @see #NAME_DEPENDENCIES_LOCATIONS
+     */
+    String MF_KEY_PACKAGE_DEPENDENCIES_LOCATIONS = "Content-Package-Dependencies-Locations";
 
     /**
      * The manifest header key for all filter roots separated by ','.
@@ -297,4 +312,10 @@ public interface PackageProperties {
      */
     @Nullable
     PackageType getPackageType();
+
+    /**
+     * Returns a map of dependency locations where key = package id and value = uri of package dependency with that id.
+     * @return dependencies locations as map
+     */
+    @Nonnull Map<PackageId, URI> getDependenciesLocations();
 }

@@ -43,7 +43,7 @@ public class PackageId implements Comparable<PackageId> {
     public static final String ETC_PACKAGES_PREFIX = "/etc/packages/";
 
     public static final PackageId[] EMPTY = new PackageId[0];
-    
+
     private final String group;
 
     private final String name;
@@ -209,7 +209,7 @@ public class PackageId implements Comparable<PackageId> {
     public PackageId(String group, String name, Version version) {
         fromPath = false;
         // validate group
-        if (group.equals(ETC_PACKAGES)) {
+        if (group == null || group.equals(ETC_PACKAGES)) {
             group = "";
         } else if (group.startsWith(ETC_PACKAGES_PREFIX)) {
             group = group.substring(ETC_PACKAGES_PREFIX.length());
@@ -217,6 +217,8 @@ public class PackageId implements Comparable<PackageId> {
             group = group.substring(1);
         }
         this.group = group;
+        if (name == null)
+            name = "";
         this.name = name;
         this.version = version == null ? Version.EMPTY : version;
         this.str = getString(this.group, name, this.version);
@@ -376,7 +378,7 @@ public class PackageId implements Comparable<PackageId> {
 
     /**
      * {@inheritDoc}
-     *  
+     *
      * Compares this id with the given one.
      */
     public int compareTo(PackageId o) {

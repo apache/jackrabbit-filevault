@@ -100,6 +100,7 @@ public class CmdExportCli extends AbstractVaultCommand {
         }
 
         vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
+        vCtx.setAllowInsecureHttps(cl.hasOption(OPT_INSECURE_HTTPS));
         VaultFile vaultFile = vCtx.getFileSystem(addr).getFile(jcrPath);
         if (vaultFile == null) {
             VaultFsApp.log.error("Not such remote file: {}", jcrPath);

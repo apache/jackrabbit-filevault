@@ -43,6 +43,12 @@ public interface CliCommand {
             .withDescription("print as little as possible")
             .create();
 
+    Option OPT_INSECURE_HTTPS = new DefaultOptionBuilder()
+            .withLongName("insecure")
+            .withDescription("allow expired ssl certs for https")
+            .create();
+
+
     boolean execute(ExecutionContext ctx, CommandLine cl) throws Exception;
 
     String getName();
@@ -56,5 +62,6 @@ public interface CliCommand {
     boolean hasName(String name);
 
     Option getCommand();
-    
+
+
 }

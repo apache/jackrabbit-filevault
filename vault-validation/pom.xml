@@ -101,7 +101,10 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-spi</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-spi-commons</artifactId>
@@ -132,7 +135,7 @@
             <artifactId>osgi.annotation</artifactId>
             <scope>provided</scope>
         </dependency>
-            
+
         <!-- http://metainf-services.kohsuke.org/index.html -->
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>

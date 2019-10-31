@@ -350,6 +350,16 @@
                 <artifactId>jackrabbit-webdav</artifactId>
                 <version>${jackrabbit.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.jackrabbit</groupId>
+                <artifactId>jackrabbit-parent</artifactId>
+                <version>${jackrabbit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jackrabbit</groupId>
+                <artifactId>jackrabbit-data</artifactId>
+                <version>${jackrabbit.version}</version>
+            </dependency>
 
             <!-- JCR Stuff -->
             <dependency>

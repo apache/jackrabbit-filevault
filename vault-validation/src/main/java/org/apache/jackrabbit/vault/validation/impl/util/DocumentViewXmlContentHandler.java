@@ -129,7 +129,6 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
         while (iterator.hasNext()) {
             nodePath.append("/").append(iterator.next());
         }
-        nodePathsAndLineNumbers.put(nodePath.toString(), locator.getLineNumber());
         nodePathStack.push(nodePath.toString());
         try {
             DocViewNode node = getDocViewNode(name, label, attributes);
@@ -144,6 +143,10 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
             }
         } catch (IllegalArgumentException e) { // thrown from DocViewProperty.parse()
             violations.add(new ValidationViolation(ValidationMessageSeverity.ERROR, String.format(PARSE_VIOLATION_MESSAGE_STRING, qName, e.getMessage()), filePath, null, nodePath.toString(), locator.getLineNumber(), locator.getColumnNumber(), e));
+        }
+        // do not collect node paths for empty elements (as they represent order only)
+        if (attributes.getLength() > 0) {
+            nodePathsAndLineNumbers.put(nodePath.toString(), locator.getLineNumber());
         }
     }
 

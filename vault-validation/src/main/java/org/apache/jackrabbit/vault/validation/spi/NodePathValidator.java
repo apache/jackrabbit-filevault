@@ -33,6 +33,7 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface NodePathValidator extends Validator {
     /**
      * Called for each node being found in a package.
+     * Empty node elements (in DocView files) are not included as they are only used for ordering purposes.
      * 
      * @param nodePath the absolute node path
      * @return validation messages or {@code null}

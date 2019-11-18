@@ -102,7 +102,7 @@ public class TestAceOrder extends IntegrationTestBase {
     public void testHandlingOverwrite() throws Exception {
         assertNodeMissing("/testroot/secured");
 
-        extractVaultPackage("testpackages/ace_order_overwrite.zip");
+        extractVaultPackage("/test-packages/ace_order_overwrite.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/secured");

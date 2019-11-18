@@ -43,7 +43,7 @@ public class SubPackageFilterArchiveTest {
     @Before
     public void setup() throws Exception {
         memoryArchive = new MemoryArchive(false);
-        InputStream in = IntegrationTestBase.class.getResourceAsStream("testpackages/subtest.zip");
+        InputStream in = IntegrationTestBase.class.getResourceAsStream("/test-packages/subtest.zip");
         memoryArchive.run(in);
         in.close();
         archive = new SubPackageFilterArchive(memoryArchive);

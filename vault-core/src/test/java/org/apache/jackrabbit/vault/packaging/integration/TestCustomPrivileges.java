@@ -40,7 +40,7 @@ public class TestCustomPrivileges extends IntegrationTestBase {
      */
     @Test
     public void installWithPrivs() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/privileges.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/privileges.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 

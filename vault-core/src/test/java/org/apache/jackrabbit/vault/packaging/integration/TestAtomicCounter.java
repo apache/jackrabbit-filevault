@@ -66,7 +66,7 @@ public class TestAtomicCounter extends IntegrationTestBase {
     public void installAtomicCounter() throws RepositoryException, IOException, PackageException {
         Assume.assumeTrue(isOak());
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/atomic-counter-test.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/atomic-counter-test.zip"), false);
         assertNotNull(pack);
         ImportOptions opts = getDefaultOptions();
         pack.install(opts);
@@ -88,7 +88,7 @@ public class TestAtomicCounter extends IntegrationTestBase {
         admin.save();
         assertEquals(5L, testroot.getProperty("oak:counter").getLong());
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/atomic-counter-test.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/atomic-counter-test.zip"), false);
         assertNotNull(pack);
         ImportOptions opts = getDefaultOptions();
         pack.install(opts);

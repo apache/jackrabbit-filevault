@@ -74,7 +74,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testUpload() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
         assertPackageNodeExists(TMP_PACKAGE_ID);
 
@@ -90,7 +90,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testRewrap() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
 
         ImportOptions opts = getDefaultOptions();
@@ -105,7 +105,7 @@ public class TestPackageInstall extends IntegrationTestBase {
     @Test
     public void testUnwrapPreserveInstall() throws RepositoryException, IOException, PackageException {
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), true, true);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), true, true);
         assertNotNull(pack);
         assertTrue(pack.isValid());
         assertPackageNodeExists(TMP_PACKAGE_ID);
@@ -116,7 +116,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertTrue(lastUnpacked > 0);
 
         // now upload again, but don't install
-        pack = packMgr.upload(getStream("testpackages/tmp.zip"), true, true);
+        pack = packMgr.upload(getStream("/test-packages/tmp.zip"), true, true);
         assertNotNull(pack);
         PackageId pkgId = pack.getDefinition().getId();
         assertTrue(pack.isValid());
@@ -130,7 +130,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertEquals(lastUnpacked, pack.getDefinition().getLastUnpacked().getTimeInMillis());
 
         // a package with a different created date should not preserve the status!
-        pack = packMgr.upload(getStream("testpackages/tmp_with_modified_created_date.zip"), true, true);
+        pack = packMgr.upload(getStream("/test-packages/tmp_with_modified_created_date.zip"), true, true);
         assertNotNull(pack);
         assertTrue(pack.isValid());
         assertFalse(pack.isInstalled());
@@ -141,7 +141,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testUploadWithThumbnail() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_with_thumbnail.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_with_thumbnail.zip"), false);
         assertNotNull(pack);
         assertPackageNodeExists(TMP_PACKAGE_ID);
 
@@ -155,7 +155,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testFullCoverageNT() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/fullcoverage.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/fullcoverage.zip"), false);
         assertNotNull(pack);
 
         // just extract - no snapshots
@@ -171,7 +171,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testDeepMixin() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/deepmixintest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/deepmixintest.zip"), false);
         assertNotNull(pack);
 
         // just extract - no snapshots
@@ -185,7 +185,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testJcrContent() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_testpage_jcr_content.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_testpage_jcr_content.zip"), false);
         assertNotNull(pack);
 
         // just extract - no snapshots
@@ -198,7 +198,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testRootImport() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/testrootimport.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/testrootimport.zip"), false);
         assertNotNull(pack);
 
         // just extract - no snapshots
@@ -216,7 +216,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         }
         admin.getRootNode().addNode("testroot", "nt:unstructured").addNode("testnode", "nt:unstructured");
         admin.save();
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_hook.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_hook.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertTrue(admin.propertyExists("/testroot/hook-example"));
@@ -231,7 +231,7 @@ public class TestPackageInstall extends IntegrationTestBase {
             admin.getNode("/testroot").remove();
         }
         admin.save();
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_hook.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_hook.zip"), false);
         assertNotNull(pack);
         try {
             pack.install(getDefaultOptions());
@@ -246,7 +246,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testInvalidHook() throws RepositoryException, IOException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/invalid_hook.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/invalid_hook.zip"), false);
         assertNotNull(pack);
 
         try {
@@ -267,7 +267,7 @@ public class TestPackageInstall extends IntegrationTestBase {
             admin.save();
         }
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/external_hook.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/external_hook.zip"), false);
         assertNotNull(pack);
 
         pack.install(getDefaultOptions());
@@ -282,7 +282,7 @@ public class TestPackageInstall extends IntegrationTestBase {
     @Test
     public void testExternalHookFailsInInstalledPhase() throws RepositoryException, IOException, PackageException {
         try {
-            extractVaultPackage("testpackages/external_hook_failing_in_installed_phase.zip");
+            extractVaultPackage("/test-packages/external_hook_failing_in_installed_phase.zip");
             fail("Package install should fail due to installhook exception.");
         } catch (PackageException e) {
             // ok
@@ -297,7 +297,7 @@ public class TestPackageInstall extends IntegrationTestBase {
     @Test
     public void testNoProperties() throws RepositoryException, IOException, PackageException {
         File tmpFile = File.createTempFile("vlttest", "zip");
-        IOUtils.copy(getStream("testpackages/tmp_no_properties.zip"), FileUtils.openOutputStream(tmpFile));
+        IOUtils.copy(getStream("/test-packages/tmp_no_properties.zip"), FileUtils.openOutputStream(tmpFile));
         JcrPackage pack = packMgr.upload(tmpFile, true, true, "testpackage", false);
         assertNotNull(pack);
 
@@ -320,7 +320,7 @@ public class TestPackageInstall extends IntegrationTestBase {
     @Test
     public void testNoChildFilter() throws RepositoryException, IOException, PackageException {
         File tmpFile = File.createTempFile("vlttest", "zip");
-        IOUtils.copy(getStream("testpackages/test-package-with-etc.zip"), FileUtils.openOutputStream(tmpFile));
+        IOUtils.copy(getStream("/test-packages/test-package-with-etc.zip"), FileUtils.openOutputStream(tmpFile));
         JcrPackage pack = packMgr.upload(tmpFile, true, true, "test-package-with-etc", false);
         assertNodeExists("/etc");
         admin.getNode("/etc").addNode("foo", NodeType.NT_FOLDER);
@@ -331,7 +331,7 @@ public class TestPackageInstall extends IntegrationTestBase {
 
     @Test
     public void testDeepContentImport() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_test_deep.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_test_deep.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -347,7 +347,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testChildNodeOrder() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_childnodeorder.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_childnodeorder.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -366,7 +366,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testChildNodeOrder2() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_childnodeorder2.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_childnodeorder2.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -384,7 +384,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testSnapshotExists() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -397,7 +397,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testUninstall() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
@@ -411,7 +411,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testUninstallNoSnapshot() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
 
         // extract should not generate snapshots
@@ -428,7 +428,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testUninstallNoSnapshotStrict() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
 
         // extract should not generate snapshots
@@ -451,7 +451,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testBinaryProperties() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_binary.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_binary.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -474,7 +474,7 @@ public class TestPackageInstall extends IntegrationTestBase {
     @Test
     @Ignore
     public void testBinaryPropertyTwice() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_binary.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_binary.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -506,7 +506,7 @@ public class TestPackageInstall extends IntegrationTestBase {
     @Test
     public void testBinaryPropertiesOutsideFilter() throws RepositoryException, IOException, PackageException {
         // first install the package once to create the intermediate nodes
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_filter_binary.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_filter_binary.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertProperty("/tmp/test", "123");
@@ -536,7 +536,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testNodeTypeChange() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
         assertPackageNodeExists(TMP_PACKAGE_ID);
 
@@ -546,7 +546,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertNodeExists("/tmp/foo");
         assertEquals(admin.getNode("/tmp").getPrimaryNodeType().getName(), "sling:OrderedFolder");
 
-        pack = packMgr.upload(getStream("testpackages/tmp_nt_folder.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/tmp_nt_folder.zip"), false);
         assertNotNull(pack);
         assertPackageNodeExists(TMP_PACKAGE_ID);
 
@@ -561,7 +561,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testVersionInstall() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_version.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_version.zip"), false);
         assertNotNull(pack);
 
         ImportOptions opts = getDefaultOptions();
@@ -591,7 +591,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testVersionInstallCheckedOut() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_version.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_version.zip"), false);
         assertNotNull(pack);
 
         ImportOptions opts = getDefaultOptions();
@@ -618,7 +618,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testInvalidDependenciesInProperties() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/null-dependency-test.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/null-dependency-test.zip"), false);
         assertNotNull(pack);
         for (Dependency dep: pack.getDefinition().getDependencies()) {
             assertNotNull("dependency element", dep);
@@ -630,7 +630,7 @@ public class TestPackageInstall extends IntegrationTestBase {
      */
     @Test
     public void testInvalidDependenciesInDefinition() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/null-dependency-test.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/null-dependency-test.zip"), false);
         assertNotNull(pack);
         Dependency[] deps = {new Dependency(TMP_PACKAGE_ID), null};
         pack.getDefinition().setDependencies(deps, true);
@@ -656,7 +656,7 @@ public class TestPackageInstall extends IntegrationTestBase {
     @Test
     @Ignore("JCRVLT-100")
     public void testInstallWithoutRootAndTmpAccess() throws IOException, RepositoryException, ConfigurationException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), true, true);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo.zip"), true, true);
         assertNotNull(pack);
         assertTrue(pack.isValid());
         PackageId id = pack.getPackage().getId();
@@ -699,7 +699,7 @@ public class TestPackageInstall extends IntegrationTestBase {
     public void testExtractWithoutRootAndTmpAccess() throws IOException, RepositoryException, ConfigurationException, PackageException {
         Assume.assumeTrue(!isOak());
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), true, true);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo.zip"), true, true);
         assertNotNull(pack);
         assertTrue(pack.isValid());
         PackageId id = pack.getPackage().getId();

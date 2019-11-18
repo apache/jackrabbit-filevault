@@ -71,7 +71,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
      */
     @Test
     public void testRegisterStream() throws IOException, PackageException {
-        PackageId id = registry.register(getStream("testpackages/tmp.zip"), false);
+        PackageId id = registry.register(getStream("/test-packages/tmp.zip"), false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
 
         try (RegisteredPackage pkg = registry.open(id)) {
@@ -85,11 +85,11 @@ public class TestPackageRegistry extends IntegrationTestBase {
      */
     @Test
     public void testRegisterStreamTwiceFails() throws IOException, PackageException {
-        PackageId id = registry.register(getStream("testpackages/tmp.zip"), false);
+        PackageId id = registry.register(getStream("/test-packages/tmp.zip"), false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
 
         try {
-            registry.register(getStream("testpackages/tmp.zip"), false);
+            registry.register(getStream("/test-packages/tmp.zip"), false);
             fail("registering the package twice should fail");
         } catch (PackageExistsException e) {
             // expected
@@ -102,9 +102,9 @@ public class TestPackageRegistry extends IntegrationTestBase {
      */
     @Test
     public void testRegisterStreamTwiceSucceeds() throws IOException, PackageException {
-        PackageId id = registry.register(getStream("testpackages/tmp.zip"), false);
+        PackageId id = registry.register(getStream("/test-packages/tmp.zip"), false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
-        registry.register(getStream("testpackages/tmp.zip"), true);
+        registry.register(getStream("/test-packages/tmp.zip"), true);
     }
 
     /**
@@ -112,7 +112,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
      */
     @Test
     public void testRegisterFileTwiceFails() throws IOException, PackageException {
-        File file = getTempFile("testpackages/tmp.zip");
+        File file = getTempFile("/test-packages/tmp.zip");
         PackageId id = registry.register(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
         assertTrue("file should still exist", file.exists());
@@ -138,7 +138,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
      */
     @Test
     public void testRegisterTempFileTwiceFails() throws IOException, PackageException {
-        File file = getTempFile("testpackages/tmp.zip");
+        File file = getTempFile("/test-packages/tmp.zip");
         PackageId id = registry.register(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
 
@@ -147,7 +147,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
             assertFalse("Package is not installed", pkg.isInstalled());
         }
 
-        file = getTempFile("testpackages/tmp.zip");
+        file = getTempFile("/test-packages/tmp.zip");
         try {
             registry.register(file, false);
             fail("registering the package twice should fail");
@@ -162,7 +162,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
      */
     @Test
     public void testRegisterFileTwiceSucceeds() throws IOException, PackageException {
-        File file = getTempFile("testpackages/tmp.zip");
+        File file = getTempFile("/test-packages/tmp.zip");
         PackageId id = registry.register(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
         assertTrue("file should still exist", file.exists());
@@ -175,7 +175,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
      */
     @Test
     public void testRemovePackage() throws IOException, PackageException {
-        PackageId id = registry.register(getStream("testpackages/tmp.zip"), false);
+        PackageId id = registry.register(getStream("/test-packages/tmp.zip"), false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
 
         registry.remove(id);
@@ -189,7 +189,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
     @Test
     public void testPackages() throws IOException, PackageException {
         assertTrue("initially the packages set is empty", registry.packages().isEmpty());
-        registry.register(getStream("testpackages/tmp.zip"), false);
+        registry.register(getStream("/test-packages/tmp.zip"), false);
         assertEquals("packages contains 1 element", 1, registry.packages().size());
         assertTrue("contains new package", registry.packages().contains(TMP_PACKAGE_ID));
     }
@@ -308,7 +308,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
     @Test
     public void testAlternativeRoot() throws IOException, PackageException, RepositoryException {
         JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages" , "/etc/packages");
-        File file = getTempFile("testpackages/tmp.zip");
+        File file = getTempFile("/test-packages/tmp.zip");
         PackageId id = reg.register(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
         file.delete();
@@ -323,7 +323,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
         assertNodeExists("/etc/packages/my_packages/test_b-1.0.zip");
 
         JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages", "/etc/packages");
-        PackageId id = reg.register(getStream("testpackages/tmp.zip"), false);
+        PackageId id = reg.register(getStream("/test-packages/tmp.zip"), false);
 
         assertNodeExists("/var/packages/my_packages/tmp.zip");
 

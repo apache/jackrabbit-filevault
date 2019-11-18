@@ -43,7 +43,7 @@ public class TestImportMode extends IntegrationTestBase {
         assertNodeExists("/tmp/foo/old");
         assertNodeMissing("/tmp/foo/bar");
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_mode_replace.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_mode_replace.zip"), false);
         pack.extract(getDefaultOptions());
 
         assertNodeMissing("/tmp/foo/old");
@@ -65,7 +65,7 @@ public class TestImportMode extends IntegrationTestBase {
         assertNodeExists("/tmp/foo/old");
         assertNodeMissing("/tmp/foo/new");
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_mode_merge.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_mode_merge.zip"), false);
         pack.extract(getDefaultOptions());
 
         assertNodeExists("/tmp/foo/old");
@@ -88,7 +88,7 @@ public class TestImportMode extends IntegrationTestBase {
         assertNodeExists("/tmp/foo/old");
         assertNodeMissing("/tmp/foo/new");
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_mode_update.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_mode_update.zip"), false);
         pack.extract(getDefaultOptions());
 
         assertNodeExists("/tmp/foo/old");

@@ -101,7 +101,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testNonRecursive() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -137,7 +137,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testRecursiveIgnoreA() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest_ignore_a.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest_ignore_a.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -158,7 +158,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testRecursiveAddA() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest_add_a.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest_add_a.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -179,7 +179,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testRecursiveExtractA() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest_extract_a.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest_extract_a.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -205,7 +205,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testRecursive() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -231,7 +231,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testUninstallNonRecursive() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -258,7 +258,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testUninstallRecursive() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -285,7 +285,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testNonRecursiveClearsInstalledState() throws RepositoryException, IOException, PackageException {
-        JcrPackage packNewer = packMgr.upload(getStream("testpackages/subtest_extract_contains_newer_version.zip"), false);
+        JcrPackage packNewer = packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false);
         assertNotNull(packNewer);
 
         // extract the sub packages, but don't install them.
@@ -304,7 +304,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testUninstallMissingSnapshot() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -334,7 +334,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testSkipOlderVersionInstallation() throws RepositoryException, IOException, PackageException {
-        JcrPackage packNewer = packMgr.upload(getStream("testpackages/subtest_extract_contains_newer_version.zip"), false);
+        JcrPackage packNewer = packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false);
         assertNotNull(packNewer);
 
         // install package that contains newer version of the sub package first
@@ -349,7 +349,7 @@ public class TestSubPackages extends IntegrationTestBase {
 
         opts = getDefaultOptions();
         opts.setNonRecursive(false);
-        JcrPackage packOlder = packMgr.upload(getStream("testpackages/subtest_extract_contains_older_version.zip"), false);
+        JcrPackage packOlder = packMgr.upload(getStream("/test-packages/subtest_extract_contains_older_version.zip"), false);
         packOlder.install(opts);
         assertPackageNodeExists(PACKAGE_ID_SUB_TEST_10);
         assertFalse(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_10))).isInstalled());
@@ -362,7 +362,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testNotSkipOlderVersionInstallation() throws RepositoryException, IOException, PackageException {
-        JcrPackage packNewer = packMgr.upload(getStream("testpackages/subtest_extract_contains_newer_version.zip"), false);
+        JcrPackage packNewer = packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false);
         assertNotNull(packNewer);
 
         // extract the sub packages, but don't install them.
@@ -377,7 +377,7 @@ public class TestSubPackages extends IntegrationTestBase {
 
         opts = getDefaultOptions();
         opts.setNonRecursive(false);
-        JcrPackage packOlder = packMgr.upload(getStream("testpackages/subtest_extract_contains_older_version.zip"), false);
+        JcrPackage packOlder = packMgr.upload(getStream("/test-packages/subtest_extract_contains_older_version.zip"), false);
         packOlder.install(opts);
         assertPackageNodeExists(PACKAGE_ID_SUB_TEST_10);
         assertTrue(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_10))).isInstalled());
@@ -386,7 +386,7 @@ public class TestSubPackages extends IntegrationTestBase {
 
     @Test
     public void testDowngradeInstallationOfSubpackages() throws PathNotFoundException, RepositoryException, IOException, PackageException {
-        try (JcrPackage packNewer = packMgr.upload(getStream("testpackages/subtest_extract_contains_newer_version.zip"), false)) {
+        try (JcrPackage packNewer = packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false)) {
             assertNotNull(packNewer);
     
             // install package that contains newer version of the sub package first
@@ -401,7 +401,7 @@ public class TestSubPackages extends IntegrationTestBase {
         assertNodeExists("/tmp/b");
         
         // now install package which is supposed to downgrade
-        try (JcrPackage packOlder = packMgr.upload(getStream("testpackages/subtest_extract_contains_older_version_force_downgrade.zip"), false)) {
+        try (JcrPackage packOlder = packMgr.upload(getStream("/test-packages/subtest_extract_contains_older_version_force_downgrade.zip"), false)) {
             assertNotNull(packOlder);
             packOlder.install(getDefaultOptions());
         }
@@ -417,7 +417,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testPackageExtract() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -437,7 +437,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testPackageExtractTwice() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -464,12 +464,12 @@ public class TestSubPackages extends IntegrationTestBase {
     @Test
     public void testSubPackageDependency() throws IOException, RepositoryException, PackageException {
         // install other package that provides sling node type
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_a-1.0.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_a-1.0.zip"), false);
         ImportOptions opts = getDefaultOptions();
         pack.install(opts);
         assertTrue(admin.getWorkspace().getNodeTypeManager().hasNodeType("sling:Folder"));
 
-        pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/subtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -492,12 +492,12 @@ public class TestSubPackages extends IntegrationTestBase {
     @Test
     public void testSubPackageInheritDependency() throws IOException, RepositoryException, PackageException {
         // install other package that provides sling node type
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_a-1.0.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_a-1.0.zip"), false);
         ImportOptions opts = getDefaultOptions();
         pack.install(opts);
         assertTrue(admin.getWorkspace().getNodeTypeManager().hasNodeType("sling:Folder"));
 
-        pack = packMgr.upload(getStream("testpackages/subtest_inherit_dep.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/subtest_inherit_dep.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -525,7 +525,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testSubPackageWithContentDependency() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest_with_content.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest_with_content.zip"), false);
         assertNotNull(pack);
         PackageId pId = pack.getDefinition().getId();
 
@@ -553,7 +553,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testSubPackageWithNodeTypesDependency() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest_with_nodetypes.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest_with_nodetypes.zip"), false);
         assertNotNull(pack);
         PackageId pId = pack.getDefinition().getId();
 
@@ -580,7 +580,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testRecursivePackageExtract() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subsubtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subsubtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -603,7 +603,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testNonRecursivePackageExtract() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subsubtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subsubtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -621,7 +621,7 @@ public class TestSubPackages extends IntegrationTestBase {
 
     @Test
     public void testSubPackageDependency2() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subsubtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subsubtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -643,7 +643,7 @@ public class TestSubPackages extends IntegrationTestBase {
 
     @Test
     public void testInstallingSubPackagesTwice() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), true);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest.zip"), true);
         assertNotNull(pack);
 
         // install
@@ -662,7 +662,7 @@ public class TestSubPackages extends IntegrationTestBase {
      */
     @Test
     public void testRoundTrip() throws IOException, RepositoryException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/subtest.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/subtest.zip"), false);
         assertNotNull(pack);
 
         // install
@@ -740,7 +740,7 @@ public class TestSubPackages extends IntegrationTestBase {
     @Test
     public void testMixedPackageUpdatesCorrectly() throws Exception {
        // install 1.0
-        JcrPackage pack = packMgr.upload(getStream("testpackages/multipackage-a-1.0.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/multipackage-a-1.0.zip"), false);
         assertNotNull(pack);
 
         ImportOptions opts = getDefaultOptions();
@@ -750,7 +750,7 @@ public class TestSubPackages extends IntegrationTestBase {
         assertProperty("/apps/test/version","1.0");
 
         // install 2.0
-        pack = packMgr.upload(getStream("testpackages/multipackage-a-2.0.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/multipackage-a-2.0.zip"), false);
         assertNotNull(pack);
         opts = getDefaultOptions();
         opts.setDependencyHandling(DependencyHandling.REQUIRED);

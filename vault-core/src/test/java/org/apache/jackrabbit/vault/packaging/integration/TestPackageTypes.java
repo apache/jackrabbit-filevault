@@ -57,7 +57,7 @@ public class TestPackageTypes extends IntegrationTestBase {
     }
 
     private void verifyViaRegistry(String type) throws IOException, PackageExistsException {
-        PackageId id = registry.register(getStream("testpackages/packagetype/" + type + "-pkg.zip"), false);
+        PackageId id = registry.register(getStream("/test-packages/packagetype/" + type + "-pkg.zip"), false);
         RegisteredPackage pkg = registry.open(id);
         PackageType result  = pkg.getPackage().getProperties().getPackageType();
         PackageType expected = "notype".equals(type)

@@ -101,7 +101,7 @@ public class TestPackageCreation extends IntegrationTestBase {
     @Test
     public void testUploadIllegal() throws RepositoryException, IOException, PackageException {
         try {
-            packMgr.upload(getStream("testpackages/tmp_illegal.zip"), false);
+            packMgr.upload(getStream("/test-packages/tmp_illegal.zip"), false);
             fail("Uploading a package with an illegal name must fail.");
         } catch (RepositoryException e) {
             // ok

@@ -83,6 +83,7 @@
                         </Import-Package>
                         <!-- to load hook classes through this bundle's classloader -->
                         <DynamicImport-Package>*</DynamicImport-Package>
+                        
                     </instructions>
                 </configuration>
             </plugin>

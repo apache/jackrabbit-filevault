@@ -118,7 +118,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertPropertyMissing(authPath + "/" + NAME_PROFILE_PROPERTY);
 
         // install updated profile
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a_profile.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -132,7 +132,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
 
         // install profile
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a_profile.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -152,7 +152,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertPropertyMissing(authPath + "/" + NAME_PROFILE_PROPERTY);
 
         // install updated profile
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a_profile.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -169,7 +169,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertPropertyMissing(authPath + "/" + NAME_PROFILE_PROPERTY);
 
         // install updated profile
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile_picture.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a_profile_picture.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -184,7 +184,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
 
         // install updated profile
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile_picture.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a_profile_picture.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -204,7 +204,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertPropertyMissing(authPath + "/" + NAME_PROFILE_PROPERTY);
 
         // install updated profile
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_profile_picture.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a_profile_picture.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -225,7 +225,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
         // assert that user does not have an ACL setup
         assertPermissionMissing(authPath, true, new String[]{"jcr:all"}, "everyone", null);
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a_policy.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a_policy.zip"), false);
         assertNotNull(pack);
         ImportOptions opts = getDefaultOptions();
         opts.setImportMode(ImportMode.MERGE);
@@ -247,7 +247,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
      */
     @Test
     public void install_two_moved_users() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_two_moved_users.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_two_moved_users.zip"), false);
         assertNotNull(pack);
         ImportOptions opts = getDefaultOptions();
         opts.setImportMode(ImportMode.MERGE);
@@ -390,7 +390,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
 
         // install user package
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_with_rep_cache.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_with_rep_cache.zip"), false);
         assertNotNull(pack);
         ImportOptions opts = getDefaultOptions();
         opts.setImportMode(mode);
@@ -420,7 +420,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
         assertNodeExists(newPath + "/rep:cache");
 
         // install user package
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a.zip"), false);
         assertNotNull(pack);
         ImportOptions opts = getDefaultOptions();
         opts.setImportMode(mode);
@@ -454,7 +454,7 @@ public class TestUserContentPackage extends IntegrationTestBase {
 
         admin.save();
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_user_a.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a.zip"), false);
         assertNotNull(pack);
         ImportOptions opts = getDefaultOptions();
         if (mode != null) {

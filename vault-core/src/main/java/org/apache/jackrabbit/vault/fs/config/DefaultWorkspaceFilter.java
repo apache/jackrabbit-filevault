@@ -23,11 +23,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -492,9 +490,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     private void generateSource() {
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            // use writer to be able to close it
-            try (OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
-            XMLSerializer ser = new XMLSerializer(writer, new OutputFormat("xml", "UTF-8", true));
+            XMLSerializer ser = new XMLSerializer(out, new OutputFormat("xml", "UTF-8", true));
             ser.startDocument();
             AttributesImpl attrs = new AttributesImpl();
             attrs.addAttribute(null, null, ATTR_VERSION, "CDATA", String.valueOf(version));
@@ -537,9 +533,6 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
             ser.endElement("workspaceFilter");
             ser.endDocument();
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
             source = out.toByteArray();
         } catch (SAXException e) {
             throw new IllegalStateException(e);

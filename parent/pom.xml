@@ -490,18 +490,20 @@
                 <jdk>[9,)</jdk>
             </activation>
             <build>
-            <pluginManagement>
-                <plugins>
-                    <plugin>
-                        <!-- only html4 output is supported due to non HTML5 compliant javadoc -->
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <configuration>
-                            <additionalOptions>-html4</additionalOptions>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </pluginManagement>
-        </build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-javadoc-plugin</artifactId>
+                            <configuration>
+                                <!-- only html4 output is supported due to non HTML5 compliant javadoc -->
+                                <additionalOptions>-html4</additionalOptions>
+                                <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
+                                <source>8</source>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
         </profile>
     </profiles>
 

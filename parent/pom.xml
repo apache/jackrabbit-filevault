@@ -495,7 +495,9 @@
                         <plugin>
                             <artifactId>maven-javadoc-plugin</artifactId>
                             <configuration>
-                                <!-- only html4 output is supported due to non HTML5 compliant javadoc -->
+                                <!-- only html4 output is working due to non HTML5 compliant javadoc 
+                                This is no longer supported with Java13 as it will always emit HTML5
+                                -->
                                 <additionalOptions>-html4</additionalOptions>
                                 <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
                                 <source>8</source>

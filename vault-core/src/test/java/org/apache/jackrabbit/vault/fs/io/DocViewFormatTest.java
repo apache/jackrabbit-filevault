@@ -35,7 +35,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.ISO8601;
-import org.apache.jackrabbit.vault.fs.filter.WorkspaceFilterTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,7 +85,7 @@ public class DocViewFormatTest {
         try (InputStream input = this.getClass().getResourceAsStream("DocViewFormat/formatted.xml")) {
             final String expected = IOUtils.toString(input, StandardCharsets.UTF_8);
             final String result = FileUtils.readFileToString(docViewFile, StandardCharsets.UTF_8);
-            assertEquals(WorkspaceFilterTest.makeNewlinesVisible(expected), WorkspaceFilterTest.makeNewlinesVisible(result));
+            assertEquals(expected, result);
         }
     }
 }

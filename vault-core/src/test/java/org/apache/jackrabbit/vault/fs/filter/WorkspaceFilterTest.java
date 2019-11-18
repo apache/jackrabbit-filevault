@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.regex.Matcher;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.FilterSet;
@@ -180,13 +179,10 @@ public class WorkspaceFilterTest {
 
         filter.add(nodes, props);
 
-        assertEquals(makeNewlinesVisible(expected), makeNewlinesVisible(filter.getSourceAsString()));
+        assertEquals(expected, filter.getSourceAsString());
 
     }
 
-    public static String makeNewlinesVisible(String value) {
-        return value.replaceAll("\n", Matcher.quoteReplacement("\\n")).replaceAll("\r", Matcher.quoteReplacement("\\r"));
-    }
     @Test
     public void testGeneratedSourceFromCodeWithProps() throws ConfigurationException  {
         String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

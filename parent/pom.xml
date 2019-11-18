@@ -80,8 +80,13 @@
     </mailingLists>
 
     <issueManagement>
-        <url>https://issues.apache.org/jira/browse/JCR</url>
+        <url>https://issues.apache.org/jira/browse/JCRVLT</url>
     </issueManagement>
+
+    <ciManagement>
+        <system>Travis</system>
+        <url>https://travis-ci.org/apache/jackrabbit-filevault</url>
+    </ciManagement>
 
     <!-- ====================================================================== -->
     <!-- B U I L D D E F I N I T I O N -->

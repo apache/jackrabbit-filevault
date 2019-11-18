@@ -485,13 +485,26 @@
             </build>
         </profile>
         <profile>
-            <id>java9</id>
+            <id>java9-or-above</id>
             <activation>
-                <jdk>9</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <properties>
                 <test.vm.options>--add-modules=java.se.ee -Doak=${test.oak}</test.vm.options>
             </properties>
+            <build>
+            <pluginManagement>
+                <plugins>
+                    <plugin>
+                        <!-- only html4 output is supported due to non-compliant javadoc -->
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <additionalOptions>-html4</additionalOptions>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </pluginManagement>
+        </build>
         </profile>
     </profiles>
 

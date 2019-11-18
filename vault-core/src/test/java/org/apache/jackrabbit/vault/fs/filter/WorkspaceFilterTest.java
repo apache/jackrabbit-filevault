@@ -24,8 +24,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.FilterSet;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -34,7 +36,6 @@ import org.apache.jackrabbit.vault.fs.api.SimplePathMapping;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.tika.io.IOUtils;
 import org.junit.Test;
 
 /**
@@ -143,20 +144,22 @@ public class WorkspaceFilterTest {
         // make sure serialization format is kept (including comments)
         try (InputStream input = getClass().getResourceAsStream("workspacefilters/items.xml");
              InputStream actualInput = filter.getSource()) {
-            assertEquals(IOUtils.toString(input), IOUtils.toString(actualInput));
+            assertEquals(IOUtils.toString(input, StandardCharsets.UTF_8), IOUtils.toString(actualInput, StandardCharsets.UTF_8));
         }
     }
 
     @Test
     public void testToSource() throws IOException, ConfigurationException {
-
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
-        filter.load(getClass().getResourceAsStream("workspacefilters/complex.xml"));
+        try (InputStream input = getClass().getResourceAsStream("workspacefilters/complex.xml")) {
+            filter.load(input);
+        }
         filter.resetSource();
-
-        String expected = IOUtils.toString(getClass().getResourceAsStream("workspacefilters/complex-expected.xml"));
-
-        assertEquals("Filter source", expected, filter.getSourceAsString());
+        
+        try (InputStream input = getClass().getResourceAsStream("workspacefilters/complex-expected.xml")) {
+            String expected = IOUtils.toString(input, StandardCharsets.UTF_8);
+            assertEquals("Filter source", expected, filter.getSourceAsString());
+        }
     }
 
     @Test
@@ -232,18 +235,18 @@ public class WorkspaceFilterTest {
         filter.add(new PathFilterSet("/newroot"));
         String previousSerialization;
         try (InputStream input = getClass().getResourceAsStream("workspacefilters/items.xml")) {
-            previousSerialization = IOUtils.toString(input);
+            previousSerialization = IOUtils.toString(input, StandardCharsets.UTF_8);
         }
         // and check the serialization again
         try (InputStream actualInput = filter.getSource()) {
-            String actual = IOUtils.toString(actualInput);
+            String actual = IOUtils.toString(actualInput, StandardCharsets.UTF_8);
             assertNotEquals(previousSerialization, actual);
             previousSerialization = actual;
         }
         filter.add(new PathFilterSet("/someotherroot"), new PathFilterSet("/someotherroot"));
         // and check the serialization again
         try (InputStream actualInput = filter.getSource()) {
-            String actual = IOUtils.toString(actualInput);
+            String actual = IOUtils.toString(actualInput, StandardCharsets.UTF_8);
             assertNotEquals(previousSerialization, actual);
             previousSerialization = actual;
         }

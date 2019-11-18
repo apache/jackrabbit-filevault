@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -52,8 +53,7 @@ public class DocViewFormatTest {
         docViewFile = new File(dir.getPath() + File.separator + "malformed.xml");
         assert docViewFile.createNewFile();
 
-        try (InputStream in = this.getClass().getClassLoader()
-                .getResourceAsStream("org/apache/jackrabbit/vault/fs/io/DocViewFormat/malformed.xml")) {
+        try (InputStream in = this.getClass().getResourceAsStream("DocViewFormat/malformed.xml")) {
             try (OutputStream out = new FileOutputStream(docViewFile)) {
                 IOUtils.copy(in, out);
             }
@@ -82,9 +82,10 @@ public class DocViewFormatTest {
         format.format(dir, patterns, false);
         assertTrue("malformed.xml is expected to be formatted", format.format(dir, patterns, true).isEmpty());
 
-        final String expected = IOUtils.toString(this.getClass().getClassLoader()
-                .getResourceAsStream("org/apache/jackrabbit/vault/fs/io/DocViewFormat/formatted.xml"), "utf-8");
-        final String result = FileUtils.readFileToString(docViewFile, "utf-8");
-        assertEquals(expected, result);
+        try (InputStream input = this.getClass().getResourceAsStream("DocViewFormat/formatted.xml")) {
+            final String expected = IOUtils.toString(input, StandardCharsets.UTF_8);
+            final String result = FileUtils.readFileToString(docViewFile, StandardCharsets.UTF_8);
+            assertEquals(expected, result);
+        }
     }
 }

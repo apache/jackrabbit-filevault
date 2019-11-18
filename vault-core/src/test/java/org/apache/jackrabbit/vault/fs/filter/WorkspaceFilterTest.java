@@ -151,12 +151,15 @@ public class WorkspaceFilterTest {
     public void testToSource() throws IOException, ConfigurationException {
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
-        filter.load(getClass().getResourceAsStream("workspacefilters/complex.xml"));
+        try (InputStream input = getClass().getResourceAsStream("workspacefilters/complex.xml")) {
+            filter.load(input);
+        }
         filter.resetSource();
 
-        String expected = IOUtils.toString(getClass().getResourceAsStream("workspacefilters/complex-expected.xml"));
-
-        assertEquals("Filter source", expected, filter.getSourceAsString());
+        try (InputStream input = getClass().getResourceAsStream("workspacefilters/complex-expected.xml")) {
+            String expected = IOUtils.toString(input);
+            assertEquals("Filter source", expected, filter.getSourceAsString());
+        }
     }
 
     @Test

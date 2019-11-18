@@ -489,9 +489,6 @@
             <activation>
                 <jdk>[9,)</jdk>
             </activation>
-            <properties>
-                <test.vm.options>--add-modules=java.se.ee -Doak=${test.oak}</test.vm.options>
-            </properties>
             <build>
             <pluginManagement>
                 <plugins>

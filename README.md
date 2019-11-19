@@ -1,28 +1,39 @@
-=======================================================================
-Welcome to Apache Jackrabbit FileVault <http://jackrabbit.apache.org/>
-=======================================================================
+[![Build Status](https://travis-ci.org/apache/jackrabbit-filevault.svg?branch=trunk)](https://travis-ci.org/apache/jackrabbit-filevault)
 
-The FileVault introduces a JCR repository to filesystem mapping. The mapping is exposed by and API and used by the 
-_CRX Content Packaging_  that allows to create portable packages of repository content.
-The Vault Command Line Interface aka _vlt_ that provides a subversion like utility to work and develop with repository content.
+Welcome to Apache Jackrabbit FileVault
+===========================================================
+
+The FileVault introduces a JCR repository to filesystem mapping. The mapping
+is exposed by an API and used by the "FileVault Content Packages" which allow to
+create portable packages of repository content.
+
+The Vault Command Line Interface aka "vlt" provides a subversion like
+utility to work and develop with repository content.
 
 Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
-Building FileVault
-===================
+Documentation
+=============
+Please refer to the documentation at 
+<https://jackrabbit.apache.org/filevault/>
 
-You can build FileVault like this:
+
+Building the FileVault Package Maven Plugin
+===========================================
+
+You can build the plugin like this:
 
     mvn clean install
 
-You need Maven 2.0.9 (or higher) with Java 5 (or higher) for the build.
+You need Maven 3.3.9 (or higher) with Java 8 (or higher) for the build.
 For more instructions, please see the documentation at:
 
    http://jackrabbit.apache.org/building-jackrabbit.html
 
-License (see also LICENSE.txt)
+License (see also LICENSE)
 ==============================
 
+```
 Collective work: Copyright 2013 The Apache Software Foundation.
 
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -39,6 +50,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+```
 
 Mailing Lists
 =============
@@ -52,20 +64,20 @@ Jackrabbit mailing lists as well as links to list archives, please see:
 Latest development
 ==================
 
-The latest FileVault source code is available via Subversion at
+The latest FileVault package plugin source code is available via Subversion at
 
-   https://svn.apache.org/repos/asf/commons/filevault/trunk
+   <https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/>
 
 or with ViewVC at
 
-   https://svn.apache.org/viewvc/commons/filevault/trunk
+   <https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/>
 
-To checkout the main Jackrabbit source tree, run
+To checkout the main source tree, run
 
    svn checkout https://svn.apache.org/repos/asf/commons/filevault/trunk filevault
 
 Credits
 =======
 
-See http://jackrabbit.apache.org/jackrabbit-team.html for the list of 
+See <http://jackrabbit.apache.org/jackrabbit-team.html> for the list of
 Jackrabbit committers and main contributors.

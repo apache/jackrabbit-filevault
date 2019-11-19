@@ -18,10 +18,10 @@ Please refer to the documentation at
 <https://jackrabbit.apache.org/filevault/>
 
 
-Building the FileVault Package Maven Plugin
+Building FileVault
 ===========================================
 
-You can build the plugin like this:
+You can build FileVault like this:
 
     mvn clean install
 
@@ -64,7 +64,7 @@ Jackrabbit mailing lists as well as links to list archives, please see:
 Latest development
 ==================
 
-The latest FileVault package plugin source code is available via Subversion at
+The latest FileVault source code is available via Subversion at
 
    <https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/>
 

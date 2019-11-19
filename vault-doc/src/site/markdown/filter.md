@@ -14,6 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
+
 Workspace Filter
 ================
 One of the most important meta files of a vault checkout or a content package is the `filter.xml` which is present in

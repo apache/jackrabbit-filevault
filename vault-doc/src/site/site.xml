@@ -24,7 +24,6 @@
   <body>
     <menu name="Overview">
       <item href="index.html" name="Jackrabbit Filevault" />
-      <item href="license.html" name="License" />
     </menu>
     <menu name="Concepts and architecture">
       <item href="overview.html" name="Overview" />

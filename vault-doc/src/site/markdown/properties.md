@@ -14,6 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
+
 Content Package Properties
 ================
 One of the most important meta files of a content package is the `properties.xml` which is present in

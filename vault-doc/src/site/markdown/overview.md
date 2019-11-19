@@ -14,13 +14,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
+
 Overview
 ========
 
 **NOTE**: Parts of the following documentation is outdated and needs review
 - - - 
 
-Jackrabbit FileVault introduces a JCR repository to filesystem mapping. The mapping is exposed by and API and used by several tools:
+Jackrabbit FileVault introduces a JCR repository to filesystem mapping. The mapping is exposed by an API and used by several tools:
 
 * JackrabbitVaultPackaging that defines a package including the files, configuration and filter information that allows export/import packages of content.
 * Vault Command Line Interface aka `vlt` that provides a subversion like utility to work and develop with repository content.

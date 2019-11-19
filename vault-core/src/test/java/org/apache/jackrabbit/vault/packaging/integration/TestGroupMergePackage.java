@@ -64,7 +64,7 @@ public class TestGroupMergePackage extends IntegrationTestBase {
         assertNull("test-group must not exist", mgr.getAuthorizable("test-group"));
         assertNull("test-user-a must not exist", mgr.getAuthorizable("test-user-a"));
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/group_with_a.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/group_with_a.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -89,11 +89,11 @@ public class TestGroupMergePackage extends IntegrationTestBase {
         assertNull("test-user-b must not exist", mgr.getAuthorizable("test-user-b"));
         assertNull("test-user-c must not exist", mgr.getAuthorizable("test-user-c"));
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/group_with_a.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/group_with_a.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
-        pack = packMgr.upload(getStream("testpackages/group_with_bc.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/group_with_bc.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertABC(mgr);
@@ -112,11 +112,11 @@ public class TestGroupMergePackage extends IntegrationTestBase {
         assertNull("test-user-b must not exist", mgr.getAuthorizable("test-user-b"));
         assertNull("test-user-c must not exist", mgr.getAuthorizable("test-user-c"));
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/group_with_bc.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/group_with_bc.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
-        pack = packMgr.upload(getStream("testpackages/group_with_a_moved.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/group_with_a_moved.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertABC(mgr);

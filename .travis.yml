@@ -1,0 +1,67 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# use https://github.com/DanySK/Gravis-CI for Maven Builds on Windows
+
+# Java is not yet supported on Windows, so the build would block.
+# You do not need any setup from Travis, use a plain bash build
+language: bash
+# Enable them all, if you need them.
+os:
+  - linux
+#  - osx
+  - windows
+env:
+  global:
+    # This is a convenience variable for shortening download commands
+    - GRAVIS="https://raw.githubusercontent.com/DanySK/Gravis-CI/master/"
+    # If you use Windows, you may want to disable Windows Defender. It slows down the builds
+    # dramatically, also during cache setup. From a Tanzinul Islam's idea: http://bit.ly/348VPYS,
+    # This work around disables it before caching
+    - NO_WIN_DEFENDER=$(curl "${GRAVIS}.disable-windows-defender.sh" --output .no-defender.sh && source .no-defender.sh)
+  matrix:
+    # List any JDK you want to build your software with.
+    # You can see the list of supported environments by installing Jabba and using ls-remote:
+    # https://github.com/shyiko/jabba#usage
+    # Partial versions are allowed. They are dynamically resoved by launching jabba ls-remote,
+    # filtering for the provided JDK string, then picking the *first* match. This is useful if
+    # the intent is to target the latest release of some Java major release, or if the latest
+    # available build differs among platforms.
+    - JDK="adopt@1.8"
+    - JDK="adopt@1.11"
+    # Java13 not yet supported due to non-compliant javadooc
+    #- JDK="adopt@1.13"
+before_install:
+  # Download the script
+  - curl "${GRAVIS}.install-jdk-travis.sh" --output ~/.install-jdk-travis.sh
+  # Download, install, configue the JDK, and export the configuration to the current shell
+  - source ~/.install-jdk-travis.sh
+  - curl "${GRAVIS}.install-maven.sh" --output ~/.install-maven.sh
+  # Download, install, configue the JDK, and export the configuration to the current shell
+  - source ~/.install-maven.sh
+# This is your main script
+script:
+  # Just an example. Do what you deem useful
+  - mvn verify -B
+# If you use Gradle, cleanup the build cache from lock/temporary files
+before_cache:
+  #- curl "${GRAVIS}.clean_gradle_cache.sh" --output ~/.clean_gradle_cache.sh
+  #- bash ~/.clean_gradle_cache.sh
+cache:
+  directories:
+    # This avoids re-downloading the JDK every time, but Travis recommends not to do it
+    # - $HOME/.jabba/
+    # Cache Maven repo
+    - $HOME/.m2

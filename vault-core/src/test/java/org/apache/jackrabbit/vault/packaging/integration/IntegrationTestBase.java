@@ -146,17 +146,17 @@ public class IntegrationTestBase  {
     /**
      * Test package A-1.0. Depends on B and C-1.X
      */
-    public static String TEST_PACKAGE_A_10 = "testpackages/test_a-1.0.zip";
+    public static String TEST_PACKAGE_A_10 = "/test-packages/test_a-1.0.zip";
 
     /**
      * Test package B-1.0. Depends on C
      */
-    public static String TEST_PACKAGE_B_10 = "testpackages/test_b-1.0.zip";
+    public static String TEST_PACKAGE_B_10 = "/test-packages/test_b-1.0.zip";
 
     /**
      * Test package C-1.0
      */
-    public static String TEST_PACKAGE_C_10 = "testpackages/test_c-1.0.zip";
+    public static String TEST_PACKAGE_C_10 = "/test-packages/test_c-1.0.zip";
 
 
     @ClassRule
@@ -333,11 +333,7 @@ public class IntegrationTestBase  {
 
     public InputStream getStream(String name) {
         InputStream in;
-        if (name.startsWith("/")) {
-           in = getClass().getClassLoader().getResourceAsStream(name);
-        } else {
-            in = getClass().getResourceAsStream(name);
-        }
+        in = getClass().getResourceAsStream(name);
         return in;
     }
 

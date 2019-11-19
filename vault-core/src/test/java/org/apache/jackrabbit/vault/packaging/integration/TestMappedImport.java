@@ -38,7 +38,7 @@ public class TestMappedImport extends IntegrationTestBase {
 
     @Test
     public void testSimple() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo.zip"), false);
         ImportOptions opts = getDefaultOptions();
 
         MultiPathMapping mapping = new MultiPathMapping();
@@ -59,7 +59,7 @@ public class TestMappedImport extends IntegrationTestBase {
         assertNodeMissing("/tmp/foo");
         assertNodeMissing("/tmp/mapped");
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo.zip"), false);
         PackageId id = pack.getDefinition().getId();
         ImportOptions opts = getDefaultOptions();
 
@@ -87,7 +87,7 @@ public class TestMappedImport extends IntegrationTestBase {
         assertNodeMissing("/tmp/mapped0");
         assertNodeMissing("/tmp/mapped1");
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo.zip"), false);
         PackageId id = pack.getDefinition().getId();
         ImportOptions opts = getDefaultOptions();
 
@@ -115,7 +115,7 @@ public class TestMappedImport extends IntegrationTestBase {
 
     @Test
     public void testSimpleDelete() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo.zip"), false);
         ImportOptions opts = getDefaultOptions();
 
         MultiPathMapping mapping = new MultiPathMapping();
@@ -126,7 +126,7 @@ public class TestMappedImport extends IntegrationTestBase {
         assertNodeMissing("/tmp/foo");
         assertNodeExists("/tmp/mapped");
 
-        pack = packMgr.upload(getStream("testpackages/empty_tmp_foo.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/empty_tmp_foo.zip"), false);
         pack.extract(opts);
 
         assertNodeMissing("/tmp/mapped");
@@ -139,7 +139,7 @@ public class TestMappedImport extends IntegrationTestBase {
     @Ignore("JCRVLT-79")
     @Test
     public void testGenericArtifact() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/fullcoverage.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/fullcoverage.zip"), false);
         ImportOptions opts = getDefaultOptions();
 
         MultiPathMapping mapping = new MultiPathMapping();
@@ -153,7 +153,7 @@ public class TestMappedImport extends IntegrationTestBase {
 
     @Test
     public void testNested() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo.zip"), false);
         ImportOptions opts = getDefaultOptions();
 
         MultiPathMapping mapping = new MultiPathMapping();
@@ -172,7 +172,7 @@ public class TestMappedImport extends IntegrationTestBase {
      */
     @Test
     public void testNonRename() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo.zip"), false);
         ImportOptions opts = getDefaultOptions();
 
         MultiPathMapping mapping = new MultiPathMapping();
@@ -189,7 +189,7 @@ public class TestMappedImport extends IntegrationTestBase {
      */
     @Test
     public void  testInstallWithRegexp() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/test_version.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_version.zip"), false);
         assertNotNull(pack);
 
         ImportOptions opts = getDefaultOptions();

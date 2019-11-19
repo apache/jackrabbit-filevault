@@ -43,13 +43,13 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installEmptyLevel1() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
 
         // now install the empty package
-        pack = packMgr.upload(getStream("testpackages/empty_tmp.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/empty_tmp.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeMissing("/tmp");
@@ -61,13 +61,13 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installEmptyLevel2() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
 
         // now install the empty package
-        pack = packMgr.upload(getStream("testpackages/empty_tmp_foo.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/empty_tmp_foo.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp");
@@ -80,13 +80,13 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installEmptyLevel3() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
 
         // now install the empty package
-        pack = packMgr.upload(getStream("testpackages/empty_tmp_foo_bar.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/empty_tmp_foo_bar.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo");
@@ -99,7 +99,7 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installEmptyFolder() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_test_folders.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_test_folders.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/test/content/foo/foo.jsp");
@@ -123,7 +123,7 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installUninstallLevel1() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
@@ -138,7 +138,7 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installUninstallLevel2() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
@@ -154,7 +154,7 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installUninstallLevel3() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo_bar.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo_bar.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
@@ -171,13 +171,13 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installUninstallSubsequent() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/tobi");
 
         // now install the empty package
-        JcrPackage pack2 = packMgr.upload(getStream("testpackages/empty_tmp_foo_bar.zip"), false);
+        JcrPackage pack2 = packMgr.upload(getStream("/test-packages/empty_tmp_foo_bar.zip"), false);
         assertNotNull(pack2);
         pack2.install(getDefaultOptions());
 
@@ -193,7 +193,7 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installUninstallFile() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo_bar_test.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo_bar_test.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/test.txt");
@@ -209,7 +209,7 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installInstallNoFilter() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo_bar_test_nofilter.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo_bar_test_nofilter.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/test.txt");
@@ -224,7 +224,7 @@ public class TestEmptyPackage extends IntegrationTestBase {
      */
     @Test
     public void installInstallMinimal() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo_bar_test_minimal.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo_bar_test_minimal.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/test.txt");

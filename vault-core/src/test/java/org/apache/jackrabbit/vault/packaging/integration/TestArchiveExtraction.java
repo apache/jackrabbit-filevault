@@ -82,7 +82,7 @@ public class TestArchiveExtraction extends IntegrationTestBase {
 
     @Test
     public void testDefaultArchiveInstall() throws RepositoryException, IOException, PackageException {
-        Archive a = getFileArchive("testpackages/tmp.zip");
+        Archive a = getFileArchive("/test-packages/tmp.zip");
         ImportOptions opts = getDefaultOptions();
         PackageId[] ids = packMgr.extract(a, opts, true);
         validateArchive(a);
@@ -113,8 +113,8 @@ public class TestArchiveExtraction extends IntegrationTestBase {
 
     @Test
     public void testDefaultArchiveInstallFailsWithoutReplace() throws RepositoryException, IOException, PackageException {
-        uploadPackage("testpackages/tmp.zip");
-        Archive a = getFileArchive("testpackages/tmp.zip");
+        uploadPackage("/test-packages/tmp.zip");
+        Archive a = getFileArchive("/test-packages/tmp.zip");
         ImportOptions opts = getDefaultOptions();
         try {
             packMgr.extract(a, opts, false);
@@ -128,8 +128,8 @@ public class TestArchiveExtraction extends IntegrationTestBase {
 
     @Test
     public void testDefaultArchiveInstallCanReplace() throws RepositoryException, IOException, PackageException {
-        uploadPackage("testpackages/tmp.zip");
-        Archive a = getFileArchive("testpackages/tmp.zip");
+        uploadPackage("/test-packages/tmp.zip");
+        Archive a = getFileArchive("/test-packages/tmp.zip");
         ImportOptions opts = getDefaultOptions();
         PackageId[] ids = packMgr.extract(a, opts, true);
         assertEquals(1, ids.length);
@@ -138,7 +138,7 @@ public class TestArchiveExtraction extends IntegrationTestBase {
 
     @Test
     public void testNonRecursive() throws RepositoryException, IOException, PackageException {
-        Archive a = getFileArchive("testpackages/subtest.zip");
+        Archive a = getFileArchive("/test-packages/subtest.zip");
 
         // install
         ImportOptions opts = getDefaultOptions();
@@ -161,7 +161,7 @@ public class TestArchiveExtraction extends IntegrationTestBase {
 
     @Test
     public void testRecursive() throws RepositoryException, IOException, PackageException {
-        Archive a = getFileArchive("testpackages/subtest.zip");
+        Archive a = getFileArchive("/test-packages/subtest.zip");
 
         // install
         ImportOptions opts = getDefaultOptions();

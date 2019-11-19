@@ -43,42 +43,42 @@ public class TestEnforcedDependencies extends IntegrationTestBase {
     /**
      * Test package A-1.0. Depends on B and C-1.X
      */
-    private static String TEST_PACKAGE_A_10 = "testpackages/test_a-1.0.zip";
+    private static String TEST_PACKAGE_A_10 = "/test-packages/test_a-1.0.zip";
 
     /**
      * Test package A-2.0. Depends on B and C-2.X
      */
-    private static String TEST_PACKAGE_A_20 = "testpackages/test_a-2.0.zip";
+    private static String TEST_PACKAGE_A_20 = "/test-packages/test_a-2.0.zip";
 
     /**
      * Test package B-1.0. Depends on C
      */
-    private static String TEST_PACKAGE_B_10 = "testpackages/test_b-1.0.zip";
+    private static String TEST_PACKAGE_B_10 = "/test-packages/test_b-1.0.zip";
 
     /**
      * Test package C-1.0
      */
-    private static String TEST_PACKAGE_C_10 = "testpackages/test_c-1.0.zip";
+    private static String TEST_PACKAGE_C_10 = "/test-packages/test_c-1.0.zip";
 
     /**
      * Test package C-1.1
      */
-    private static String TEST_PACKAGE_C_11 = "testpackages/test_c-1.1.zip";
+    private static String TEST_PACKAGE_C_11 = "/test-packages/test_c-1.1.zip";
 
     /**
      * Test package C-2.0
      */
-    private static String TEST_PACKAGE_C_20 = "testpackages/test_c-2.0.zip";
+    private static String TEST_PACKAGE_C_20 = "/test-packages/test_c-2.0.zip";
 
     /**
      * Test package D-1.0. Depends on B and E
      */
-    private static String TEST_PACKAGE_D_10 = "testpackages/test_d-1.0.zip";
+    private static String TEST_PACKAGE_D_10 = "/test-packages/test_d-1.0.zip";
 
     /**
      * Test package E-1.0. Depends on D
      */
-    private static String TEST_PACKAGE_E_10 = "testpackages/test_e-1.0.zip";
+    private static String TEST_PACKAGE_E_10 = "/test-packages/test_e-1.0.zip";
 
     /**
      * Tests if dependencies are ignored by default

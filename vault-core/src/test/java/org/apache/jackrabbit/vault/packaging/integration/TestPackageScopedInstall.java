@@ -50,7 +50,7 @@ public class TestPackageScopedInstall extends IntegrationTestBase {
         assertNodeMissing("/libs/foo");
         assertNodeMissing("/tmp/foo");
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/mixed_package.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/mixed_package.zip"), false);
         assertNotNull(pack);
 
         // just extract - no snapshots
@@ -68,7 +68,7 @@ public class TestPackageScopedInstall extends IntegrationTestBase {
         assertNodeMissing("/libs/foo");
         assertNodeMissing("/tmp/foo");
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/mixed_package.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/mixed_package.zip"), false);
         assertNotNull(pack);
 
         // just extract - no snapshots
@@ -90,7 +90,7 @@ public class TestPackageScopedInstall extends IntegrationTestBase {
         assertNodeMissing("/libs/foo");
         assertNodeMissing("/tmp/foo");
 
-        JcrPackage pack = packMgr.upload(getStream("testpackages/mixed_package.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/mixed_package.zip"), false);
         assertNotNull(pack);
 
         // just extract - no snapshots

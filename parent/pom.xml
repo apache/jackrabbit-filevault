@@ -80,8 +80,13 @@
     </mailingLists>
 
     <issueManagement>
-        <url>https://issues.apache.org/jira/browse/JCR</url>
+        <url>https://issues.apache.org/jira/browse/JCRVLT</url>
     </issueManagement>
+
+    <ciManagement>
+        <system>Travis</system>
+        <url>https://travis-ci.org/apache/jackrabbit-filevault</url>
+    </ciManagement>
 
     <!-- ====================================================================== -->
     <!-- B U I L D D E F I N I T I O N -->
@@ -199,7 +204,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.20.1</version>
+                    <version>3.0.0-M4</version>
                     <configuration>
                         <systemProperties>
                             <property>
@@ -235,7 +240,9 @@
                             <exclude>derby.log</exclude>
                             <exclude>**/*.zip/**</exclude>
                             <exclude>.mvn/**</exclude>
+                            <exclude>.no-defender.sh</exclude>
                         </excludes>
+                        <consoleOutput>true</consoleOutput>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
@@ -483,13 +490,27 @@
             </build>
         </profile>
         <profile>
-            <id>java9</id>
+            <id>java9-or-above</id>
             <activation>
-                <jdk>9</jdk>
+                <jdk>[9,)</jdk>
             </activation>
-            <properties>
-                <test.vm.options>--add-modules=java.se.ee -Doak=${test.oak}</test.vm.options>
-            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-javadoc-plugin</artifactId>
+                            <configuration>
+                                <!-- only html4 output is working due to non HTML5 compliant javadoc 
+                                This is no longer supported with Java13 as it will always emit HTML5
+                                -->
+                                <additionalOptions>-html4</additionalOptions>
+                                <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
+                                <source>8</source>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
         </profile>
     </profiles>
 

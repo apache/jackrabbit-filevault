@@ -42,7 +42,7 @@ public class TestManifestCreationExport extends IntegrationTestBase {
 
     @Test
     public void exportPackageCreatesManifest() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo_bar_test.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo_bar_test.zip"), false);
         assertNotNull(pack);
         pack.extract(getDefaultOptions());
         assertNodeExists("/tmp/foo/bar/test.txt");

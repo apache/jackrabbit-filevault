@@ -93,7 +93,7 @@ public class TestSpecialDoubleProperties extends IntegrationTestBase {
 
     @Test
     public void importDoubles() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/double_properties.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/double_properties.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 

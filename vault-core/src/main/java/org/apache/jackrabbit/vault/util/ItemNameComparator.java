@@ -22,8 +22,6 @@ import java.util.Comparator;
 import javax.jcr.Item;
 import javax.jcr.RepositoryException;
 
-import org.apache.jackrabbit.vault.util.xml.serialize.AttributeNameComparator;
-
 /**
  * {@code ItemNameComparator}...
  */

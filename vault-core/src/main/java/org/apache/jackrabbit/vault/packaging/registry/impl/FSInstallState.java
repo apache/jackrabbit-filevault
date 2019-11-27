@@ -318,7 +318,7 @@ public class FSInstallState {
      */
     public void save(OutputStream out) throws IOException {
         try {
-            XMLSerializer ser = new XMLSerializer(out, new OutputFormat("xml", "UTF-8", true));
+            XMLSerializer ser = new XMLSerializer(out, new OutputFormat(4, false));
             ser.startDocument();
             AttributesImpl attrs = new AttributesImpl();
             attrs.addAttribute(null, null, ATTR_PACKAGE_ID, "CDATA", packageId.toString());

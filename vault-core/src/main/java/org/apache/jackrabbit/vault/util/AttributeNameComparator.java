@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.jackrabbit.vault.util.xml.serialize;
+package org.apache.jackrabbit.vault.util;
 
 import java.util.Comparator;
 
-import org.apache.jackrabbit.vault.util.xml.xerces.util.XMLSymbols;
+import javax.xml.XMLConstants;
 
 public class AttributeNameComparator implements Comparator<String> {
 
@@ -30,8 +30,8 @@ public class AttributeNameComparator implements Comparator<String> {
         final String n1 = o1.toLowerCase();
         final String n2 = o2.toLowerCase();
         // order xmlns(:<prefix>)? attributes always to the front
-        final boolean isXmlNs1 = n1.startsWith(XMLSymbols.PREFIX_XMLNS);
-        final boolean isXmlNs2 = n2.startsWith(XMLSymbols.PREFIX_XMLNS);
+        final boolean isXmlNs1 = n1.startsWith(XMLConstants.XML_NS_PREFIX);
+        final boolean isXmlNs2 = n2.startsWith(XMLConstants.XML_NS_PREFIX);
         if (isXmlNs1 && !isXmlNs2) {
             return -1;
         } else if (!isXmlNs1 && isXmlNs2) {

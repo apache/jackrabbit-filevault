@@ -490,7 +490,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     private void generateSource() {
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            XMLSerializer ser = new XMLSerializer(out, new OutputFormat("xml", "UTF-8", true));
+            XMLSerializer ser = new XMLSerializer(out, new OutputFormat(4, false));
             ser.startDocument();
             AttributesImpl attrs = new AttributesImpl();
             attrs.addAttribute(null, null, ATTR_VERSION, "CDATA", String.valueOf(version));
@@ -536,6 +536,8 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             source = out.toByteArray();
         } catch (SAXException e) {
             throw new IllegalStateException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(e);
         }
     }
 

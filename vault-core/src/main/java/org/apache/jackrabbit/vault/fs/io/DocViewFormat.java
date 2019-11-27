@@ -42,7 +42,6 @@ import java.util.zip.CheckedOutputStream;
 import java.util.zip.Checksum;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.vault.util.xml.serialize.AttributeNameComparator;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 import org.xml.sax.InputSource;
@@ -60,11 +59,7 @@ public class DocViewFormat {
     private WeakReference<ByteArrayOutputStream> formattingBuffer;
 
     public DocViewFormat() {
-        format = new OutputFormat("xml", "UTF-8", true);
-        format.setIndent(4);
-        format.setLineWidth(0);
-        format.setBreakEachAttribute(true);
-        format.setSortAttributeNamesBy(AttributeNameComparator.INSTANCE);
+        format = new OutputFormat(4, true, 0);
     }
 
     /**
@@ -145,7 +140,7 @@ public class DocViewFormat {
             XMLSerializer serializer = new XMLSerializer(new CheckedOutputStream(buffer, formatted), format);
             XMLReader reader = XMLReaderFactory.createXMLReader();
             reader.setContentHandler(serializer);
-            reader.setDTDHandler(serializer);
+            //reader.setDTDHandler(serializer);
             reader.parse(new InputSource(in));
 
             return buffer.toByteArray();

@@ -220,6 +220,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                                 <value>target/derby.log</value>
                             </property>
                         </systemProperties>
+                        <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->

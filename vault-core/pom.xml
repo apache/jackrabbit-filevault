@@ -83,7 +83,8 @@
                         </Import-Package>
                         <!-- to load hook classes through this bundle's classloader -->
                         <DynamicImport-Package>*</DynamicImport-Package>
-                        
+                        <!-- embed class from tika core (https://bnd.bndtools.org/instructions/conditionalpackage.html) -->
+                        <Conditional-Package>org.apache.tika.sax</Conditional-Package>
                     </instructions>
                 </configuration>
             </plugin>
@@ -157,6 +158,14 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- only for ToXMLContentHandler -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>1.22</version>
+            <scope>provided</scope>
+        </dependency>
+        
         <!-- SLF4j / Log4j -->
         <dependency>
             <groupId>org.slf4j</groupId>

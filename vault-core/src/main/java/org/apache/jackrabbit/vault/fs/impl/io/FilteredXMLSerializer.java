@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.fs.impl.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,7 +44,7 @@ public class FilteredXMLSerializer extends XMLSerializer {
 
     private Filter filter = new DefaultFilter();
 
-    public FilteredXMLSerializer(OutputStream outputStream, OutputFormat outputFormat) throws RepositoryException {
+    public FilteredXMLSerializer(OutputStream outputStream, OutputFormat outputFormat) throws RepositoryException, UnsupportedEncodingException {
         super(outputStream, outputFormat);
     }
 
@@ -75,14 +76,6 @@ public class FilteredXMLSerializer extends XMLSerializer {
             log.trace("Filtering: {" + namespaceURI + "}" + localName + " -> " + rawName);
         } else {
             super.endElement(namespaceURI, localName, rawName);
-        }
-    }
-
-    public void endElementIO(String namespaceURI, String localName, String rawName) throws IOException {
-        if (filter.isFilteredNamespace(namespaceURI) || filter.isFilteredRawName(rawName)) {
-            log.trace("Filtering: {" + namespaceURI + "}" + localName + " -> " + rawName);
-        } else {
-            super.endElementIO(namespaceURI, localName, rawName);
         }
     }
 

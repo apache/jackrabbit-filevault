@@ -28,6 +28,8 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
@@ -44,9 +46,6 @@ import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.util.ItemNameComparator;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * The docview sax formatter generates SAX events to a given ContentHandler based on the aggregate tree.
@@ -69,9 +68,9 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
     protected final NamespaceResolver nsResolver;
 
     /**
-     * the content handler to feed the SAX events to
+     * the writer for outputting the xml
      */
-    protected final ContentHandler contentHandler;
+    protected final XMLStreamWriter writer;
 
     /**
      * The jcr:primaryType property name (allowed for session-local prefix mappings)
@@ -116,14 +115,16 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      */
     private final Set<String> ignored = new HashSet<String>();
 
-    protected DocViewSAXFormatter(Aggregate aggregate, ContentHandler contentHandler)
+    private ItemNameComparator itemNameComparator;
+
+    protected DocViewSAXFormatter(Aggregate aggregate, XMLStreamWriter writer)
             throws RepositoryException {
 
         this.aggregate = aggregate;
         this.session = aggregate.getNode().getSession();
         nsResolver = new SessionNamespaceResolver(session);
-
-        this.contentHandler = contentHandler;
+        itemNameComparator = new ItemNameComparator(nsResolver);
+        this.writer = writer;
 
         DefaultNamePathResolver npResolver = new DefaultNamePathResolver(nsResolver);
 
@@ -150,9 +151,10 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      * @throws RepositoryException if a repository error occurs
      * @throws SAXException if the underlying content handler throws a sax exception
      */
-    private void startNamespaceDeclarations() throws RepositoryException, SAXException {
+    private void startNamespaceDeclarations() throws RepositoryException, XMLStreamException {
         // always include jcr namespace (see JCRVLT-266)
-        contentHandler.startPrefixMapping(Name.NS_JCR_PREFIX, Name.NS_JCR_URI);
+        
+        writer.writeNamespace(Name.NS_JCR_PREFIX, Name.NS_JCR_URI);
 
         for (String prefix: aggregate.getNamespacePrefixes()) {
             if (Name.NS_XML_PREFIX.equals(prefix)) {
@@ -162,29 +164,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
             if (Name.NS_JCR_PREFIX.equals(prefix)) {
                 continue;
             }
-            contentHandler.startPrefixMapping(prefix, aggregate.getNamespaceURI(prefix));
-        }
-    }
-
-    /**
-     * Ends namespace declarations
-     *
-     * @throws RepositoryException if a repository error occurs
-     * @throws SAXException if the underlying content handler throws a sax exception
-      */
-    private void endNamespaceDeclarations() throws RepositoryException, SAXException {
-        // always include jcr namespace (see JCRVLT-266)
-        contentHandler.endPrefixMapping(Name.NS_JCR_PREFIX);
-
-        for (String prefix: aggregate.getNamespacePrefixes()) {
-            if (Name.NS_XML_PREFIX.equals(prefix)) {
-                // skip 'xml' prefix as this would be an illegal namespace declaration
-                continue;
-            }
-            if (Name.NS_JCR_PREFIX.equals(prefix)) {
-                continue;
-            }
-            contentHandler.endPrefixMapping(prefix);
+            writer.writeNamespace(prefix, aggregate.getNamespaceURI(prefix));
         }
     }
 
@@ -212,9 +192,8 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
         ignored.add(JcrConstants.JCR_PREDECESSORS);
 
         try {
-            contentHandler.startDocument();
-            startNamespaceDeclarations();
-        } catch (SAXException e) {
+            writer.writeStartDocument();
+        } catch (XMLStreamException e) {
             throw new RepositoryException(e);
         }
     }
@@ -225,10 +204,8 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
     @Override
     public void onWalkEnd(Node root) throws RepositoryException {
         try {
-            // clear namespace declarations and end document
-            endNamespaceDeclarations();
-            contentHandler.endDocument();
-        } catch (SAXException e) {
+            writer.writeEndDocument();
+        } catch (XMLStreamException e) {
             throw new RepositoryException(e);
         }
     }
@@ -259,24 +236,36 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
             elemName = ISO9075.encode(label);
         }
 
-        // attributes (properties)
-        AttributesImpl attrs = new AttributesImpl();
-        Collections.sort(props, ItemNameComparator.INSTANCE);
-        for (Property prop: props) {
-            // attribute name (encode property name to make sure it's a valid xml name)
-            String attrName = ISO9075.encode(prop.getName());
-            Name qName = getQName(attrName);
-            boolean sort = qName.equals(NameConstants.JCR_MIXINTYPES);
-            attrs.addAttribute(qName.getNamespaceURI(), qName.getLocalName(),
-                    attrName, CDATA_TYPE, DocViewProperty.format(prop, sort, useBinaryReferences));
-        }
+        Collections.sort(props, itemNameComparator);
 
         // start element (node)
         Name qName = getQName(elemName);
         try {
-            contentHandler.startElement(qName.getNamespaceURI(),
-                    qName.getLocalName(), elemName, attrs);
-        } catch (SAXException e) {
+            // with namespace?
+            String namespaceUri = qName.getNamespaceURI();
+            if (namespaceUri.length()>0) {
+                writer.writeStartElement(nsResolver.getPrefix(namespaceUri), qName.getLocalName(), namespaceUri);
+            } else {
+                writer.writeStartElement(qName.getLocalName());
+            }
+            if (elemName == jcrRoot) {
+                startNamespaceDeclarations();
+            }
+            for (Property prop: props) {
+                // attribute name (encode property name to make sure it's a valid xml name)
+                String attrName = ISO9075.encode(prop.getName());
+                Name qAttributeName = getQName(attrName);
+                boolean sort = qName.equals(NameConstants.JCR_MIXINTYPES);
+                String attributeNamespaceUri = qAttributeName.getNamespaceURI();
+                if (attributeNamespaceUri.length()>0) {
+                    writer.writeAttribute(nsResolver.getPrefix(attributeNamespaceUri), attributeNamespaceUri, qAttributeName.getLocalName(), 
+                            DocViewProperty.format(prop, sort, useBinaryReferences));
+                } else {
+                    writer.writeAttribute(qAttributeName.getLocalName(), DocViewProperty.format(prop, sort, useBinaryReferences));
+                }
+               
+            }
+        } catch (XMLStreamException e) {
             throw new RepositoryException(e);
         }
     }
@@ -286,21 +275,10 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      */
     @Override
     public void onNodeEnd(Node node, boolean included, int level) throws RepositoryException {
-        String label = Text.getName(node.getPath());
-        String elemName;
-        if (node.getDepth() == 0) {
-            // root node needs a name
-            elemName = jcrRoot;
-        } else {
-            // encode node name to make sure it's a valid xml name
-            elemName = ISO9075.encode(label);
-        }
-
         // end element (node)
-        Name qName = getQName(elemName);
         try {
-            contentHandler.endElement(qName.getNamespaceURI(), qName.getLocalName(), elemName);
-        } catch (SAXException e) {
+            writer.writeEndElement();
+        } catch (XMLStreamException e) {
             throw new RepositoryException(e);
         }
     }
@@ -327,9 +305,9 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
         String elemName = ISO9075.encode(label);
         Name qName = getQName(elemName);
         try {
-            contentHandler.startElement(qName.getNamespaceURI(), qName.getLocalName(), elemName, null);
-            contentHandler.endElement(qName.getNamespaceURI(), qName.getLocalName(), elemName);
-        } catch (SAXException e) {
+            writer.writeStartElement(nsResolver.getPrefix(qName.getNamespaceURI()), qName.getLocalName(), qName.getNamespaceURI());
+            writer.writeEndElement();
+        } catch (XMLStreamException e) {
             throw new RepositoryException(e);
         }
     }

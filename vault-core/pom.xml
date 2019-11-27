@@ -83,7 +83,10 @@
                         </Import-Package>
                         <!-- to load hook classes through this bundle's classloader -->
                         <DynamicImport-Package>*</DynamicImport-Package>
-                        
+                        <!-- embed classes from jaxb-impl (https://bnd.bndtools.org/instructions/conditionalpackage.html) -->
+                        <Conditional-Package>com.sun.xml.txw2.output</Conditional-Package>
+                        <Embed-Dependency>woodstox-core,stax2-api</Embed-Dependency>
+                        <Embed-Transitive>true</Embed-Transitive>
                     </instructions>
                 </configuration>
             </plugin>
@@ -156,7 +159,20 @@
             <version>4.3.0</version>
             <scope>provided</scope>
         </dependency>
-
+    
+        <!-- StaX implementation for indentation -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>txw2</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+        <!-- embed -->
+        <dependency>
+            <groupId>com.fasterxml.woodstox</groupId>
+            <artifactId>woodstox-core</artifactId>
+            <version>6.0.2</version>
+        </dependency>
+        
         <!-- SLF4j / Log4j -->
         <dependency>
             <groupId>org.slf4j</groupId>

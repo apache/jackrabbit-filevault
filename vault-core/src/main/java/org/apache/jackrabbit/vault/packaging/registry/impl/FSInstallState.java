@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.FilterSet.Entry;
@@ -46,9 +47,10 @@ import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
+import org.apache.jackrabbit.vault.packaging.SubPackageHandling.Option;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
+import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
-import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -56,7 +58,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Internal (immutable) State object to cache and pass the relevant metadata around.
@@ -317,69 +318,62 @@ public class FSInstallState {
      * @throws IOException if an error occurs.
      */
     public void save(OutputStream out) throws IOException {
-        try {
-            XMLSerializer ser = new XMLSerializer(out, new OutputFormat("xml", "UTF-8", true));
-            ser.startDocument();
-            AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute(null, null, ATTR_PACKAGE_ID, "CDATA", packageId.toString());
-            attrs.addAttribute(null, null, ATTR_SIZE, "CDATA", Long.toString(size));
+        try (FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, new OutputFormat(4, false))) {
+            writer.writeStartDocument();
+            writer.writeStartElement(TAG_REGISTRY_METADATA);
+            writer.writeAttribute(ATTR_PACKAGE_ID, packageId.toString());
+            writer.writeAttribute(ATTR_SIZE, Long.toString(size));
             if (installTime != null) {
-                attrs.addAttribute(null, null, ATTR_INSTALLATION_TIME, "CDATA", Long.toString(installTime));
+                writer.writeAttribute(ATTR_INSTALLATION_TIME, Long.toString(installTime));
             }
-            attrs.addAttribute(null, null, ATTR_FILE_PATH, "CDATA", filePath.toString());
-            attrs.addAttribute(null, null, ATTR_EXTERNAL, "CDATA", Boolean.toString(external));
-            attrs.addAttribute(null, null, ATTR_PACKAGE_STATUS, "CDATA", status.name().toLowerCase());
-            ser.startElement(null, null, TAG_REGISTRY_METADATA, attrs);
+            writer.writeAttribute(ATTR_FILE_PATH, filePath.toString());
+            writer.writeAttribute(ATTR_EXTERNAL, Boolean.toString(external));
+            writer.writeAttribute(ATTR_PACKAGE_STATUS, status.name().toLowerCase());
 
             if (filter != null && !filter.getFilterSets().isEmpty()) {
-                ser.startElement(null, null, TAG_WORKSPACEFILTER, null);
+                writer.writeStartElement(TAG_WORKSPACEFILTER);
                 for (PathFilterSet pfs : filter.getFilterSets()) {
-                    attrs = new AttributesImpl();
-                    attrs.addAttribute(null, null, ATTR_ROOT, "CDATA", pfs.getRoot());
-                    ser.startElement(null, null, TAG_FILTER, attrs);
+                    writer.writeStartElement(TAG_FILTER);
+                    writer.writeAttribute(ATTR_ROOT, pfs.getRoot());
                     for (Entry<PathFilter> pf : pfs.getEntries()) {
-                        attrs = new AttributesImpl();
+                        writer.writeStartElement(TAG_RULE);
                         DefaultPathFilter dpf = (DefaultPathFilter) pf.getFilter();
                         if (pf.isInclude()) {
-                            attrs.addAttribute(null, null, ATTR_INCLUDE, "CDATA", dpf.getPattern());
+                            writer.writeAttribute(ATTR_INCLUDE, dpf.getPattern());
                         } else {
-                            attrs.addAttribute(null, null, ATTR_EXCLUDE, "CDATA", dpf.getPattern());
+                            writer.writeAttribute(ATTR_EXCLUDE, dpf.getPattern());
                         }
-                        ser.startElement(null, null, TAG_RULE, attrs);
-                        ser.endElement(TAG_RULE);
+                        writer.writeEndElement();
                     }
-                    ser.endElement(TAG_FILTER);
+                    writer.writeEndElement();
                 }
-                ser.endElement(TAG_WORKSPACEFILTER);
+                writer.writeEndElement();
             }
             if (dependencies != null) {
                 for (Dependency dependency : dependencies) {
-                    attrs = new AttributesImpl();
-                    attrs.addAttribute(null, null, ATTR_PACKAGE_ID, "CDATA", dependency.toString());
-                    ser.startElement(null, null, TAG_DEPENDENCY, attrs);
-                    ser.endElement(TAG_DEPENDENCY);
+                    writer.writeStartElement(TAG_DEPENDENCY);
+                    writer.writeAttribute(ATTR_PACKAGE_ID, dependency.toString());
+                    writer.writeEndElement();
                 }
             }
             if (subPackages != null) {
-                for (PackageId subPackId : subPackages.keySet()) {
-                    attrs = new AttributesImpl();
-                    attrs.addAttribute(null, null, ATTR_PACKAGE_ID, "CDATA", subPackId.toString());
-                    attrs.addAttribute(null, null, ATTR_SUBPACKAGE_HANDLING_OPTION, "CDATA", subPackages.get(subPackId).toString());
-                    ser.startElement(null, null, TAG_SUBPACKAGE, attrs);
-                    ser.endElement(TAG_SUBPACKAGE);
+                for (java.util.Map.Entry<PackageId, Option> entry : subPackages.entrySet()) {
+                    writer.writeStartElement(TAG_SUBPACKAGE);
+                    writer.writeAttribute(ATTR_PACKAGE_ID, entry.getKey().toString());
+                    writer.writeAttribute(ATTR_SUBPACKAGE_HANDLING_OPTION, entry.getValue().toString());
+                    writer.writeEndElement();
                 }
             }
-            attrs = new AttributesImpl();
-            for (String key : properties.stringPropertyNames()) {
-                attrs.addAttribute(null, null, key, "CDATA", properties.getProperty(key));
+            if (properties.size() > 0) {
+                writer.writeStartElement(TAG_PACKAGEPROPERTIES);
+                for (String key : properties.stringPropertyNames()) {
+                    writer.writeAttribute(key, properties.getProperty(key));
+                }
+                writer.writeEndElement();
             }
-            if (attrs.getLength() > 0) {
-                ser.startElement(null, null, TAG_PACKAGEPROPERTIES, attrs);
-                ser.endElement(TAG_PACKAGEPROPERTIES);
-            }
-            ser.endElement(TAG_REGISTRY_METADATA);
-            ser.endDocument();
-        } catch (SAXException e) {
+            writer.writeEndElement();
+            writer.writeEndDocument();
+        } catch (XMLStreamException e) {
             throw new IllegalStateException(e);
         }
     }

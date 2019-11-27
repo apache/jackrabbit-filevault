@@ -21,22 +21,44 @@ import java.util.Comparator;
 
 import javax.jcr.Item;
 import javax.jcr.RepositoryException;
+import javax.xml.namespace.QName;
 
-import org.apache.jackrabbit.vault.util.xml.serialize.AttributeNameComparator;
+import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.commons.conversion.NameException;
+import org.apache.jackrabbit.spi.commons.conversion.NameParser;
+import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
+import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 
 /**
  * {@code ItemNameComparator}...
  */
 public class ItemNameComparator implements Comparator<Item> {
 
-    public static final ItemNameComparator INSTANCE = new ItemNameComparator();
+    
+    /**
+     * the session's namespace resolver
+     */
+    private final NamespaceResolver nsResolver;
+    
+    public ItemNameComparator(NamespaceResolver nsResolver) {
+        super();
+        this.nsResolver = nsResolver;
+    }
 
+    private QName getQName(String rawName) throws RepositoryException {
+        try {
+            Name name = NameParser.parse(rawName, nsResolver, NameFactoryImpl.getInstance());
+            return new QName(name.getNamespaceURI(), name.getLocalName(), nsResolver.getPrefix(name.getNamespaceURI()));
+        } catch (NameException e) {
+            // should never get here...
+            String msg = "internal error: failed to resolve namespace mappings";
+            throw new RepositoryException(msg, e);
+        }
+    }
+    
     public int compare(Item o1, Item o2) {
         try {
-            // sort namespaced first
-            String n1 = o1.getName();
-            String n2 = o2.getName();
-            return AttributeNameComparator.INSTANCE.compare(n1, n2);
+            return QNameComparator.INSTANCE.compare(getQName(o1.getName()), getQName(o2.getName()));
         } catch (RepositoryException e) {
             throw new IllegalStateException(e);
         }

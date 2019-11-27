@@ -20,6 +20,9 @@ package org.apache.jackrabbit.vault.fs.config;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.w3c.dom.Element;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -68,12 +71,11 @@ public class VaultSettings extends AbstractConfig {
         return 1.0;
     }
 
-    protected void doWrite(ContentHandler handler) throws SAXException {
+    protected void doWrite(XMLStreamWriter writer) throws XMLStreamException {
         for (String ignore: ignores) {
-            AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute("", ATTR_IGNORE_NAME, "", "CDATA", ignore);
-            handler.startElement("", ELEM_IGNORE, "", attrs);
-            handler.endElement("", ELEM_IGNORE, "");
+            writer.writeStartElement(ELEM_IGNORE);
+            writer.writeAttribute(ATTR_IGNORE_NAME, ignore);
+            writer.writeEndElement();
         }
     }
 

@@ -26,9 +26,11 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
-import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
 import org.apache.jackrabbit.vault.vlt.meta.VltEntries;
@@ -37,10 +39,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code Entries}...
@@ -139,27 +139,22 @@ public class XmlEntries implements VltEntries {
     */
 
     public void save(OutputStream out) throws IOException {
-        OutputFormat fmt = new OutputFormat("xml", "UTF-8", true);
-        fmt.setLineWidth(0);
-        fmt.setIndent(2);
-        XMLSerializer ser = new XMLSerializer(out, fmt);
-        try {
-            write(ser);
-        } catch (SAXException e) {
+        try (FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, new OutputFormat(2, false, 0))) {
+            write(writer);
+        } catch (XMLStreamException e) {
             throw new IOException(e.toString());
         }
     }
 
-    private void write(ContentHandler handler) throws SAXException {
-        handler.startDocument();
-        AttributesImpl attrs = new AttributesImpl();
-        attrs.addAttribute("", AN_PATH, "", "CDATA", path);
-        handler.startElement("", EN_ENTRIES, "", attrs);
+    private void write(XMLStreamWriter writer) throws XMLStreamException {
+        writer.writeStartDocument();
+        writer.writeStartElement(EN_ENTRIES);
+        writer.writeAttribute(AN_PATH, path);
         for (VltEntry e: entries.values()) {
-            ((XmlEntry) e).write(handler);
+            ((XmlEntry) e).write(writer);
         }
-        handler.endElement("", EN_ENTRIES, "");
-        handler.endDocument();
+        writer.writeEndElement();
+        writer.writeEndDocument();
         dirty = false;
     }
 

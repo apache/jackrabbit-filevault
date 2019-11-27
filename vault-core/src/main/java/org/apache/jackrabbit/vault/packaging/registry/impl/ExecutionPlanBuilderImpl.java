@@ -33,6 +33,7 @@ import javax.jcr.Session;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -50,8 +51,8 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTaskBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
+import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
-import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -59,7 +60,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code ExecutionPlanBuilderImpl}...
@@ -101,23 +101,19 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     @Override
     public ExecutionPlanBuilder save(@Nonnull OutputStream out) throws IOException, PackageException {
         validate();
-        try {
-            XMLSerializer ser = new XMLSerializer(out, new OutputFormat("xml", "UTF-8", true));
-            ser.startDocument();
-            AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute(null, null, ATTR_VERSION, "CDATA", String.valueOf(version));
-            ser.startElement(null, null, TAG_EXECUTION_PLAN, attrs);
-
+        try (FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, new OutputFormat(4, false))) {
+            writer.writeStartDocument();
+            writer.writeStartElement(TAG_EXECUTION_PLAN);
+            writer.writeAttribute(ATTR_VERSION, String.valueOf(version));
             for (PackageTask task: plan.getTasks()) {
-                attrs = new AttributesImpl();
-                attrs.addAttribute(null, null, ATTR_CMD, "CDATA", task.getType().name().toLowerCase());
-                attrs.addAttribute(null, null, ATTR_PACKAGE_ID, "CDATA", task.getPackageId().toString());
-                ser.startElement(null, null, TAG_TASK, attrs);
-                ser.endElement(TAG_TASK);
+                writer.writeStartElement(TAG_TASK);
+                writer.writeAttribute(ATTR_CMD, task.getType().name().toLowerCase());
+                writer.writeAttribute(ATTR_PACKAGE_ID, task.getPackageId().toString());
+                writer.writeEndElement();
             }
-            ser.endElement(TAG_EXECUTION_PLAN);
-            ser.endDocument();
-        } catch (SAXException e) {
+            writer.writeEndElement();
+            writer.writeEndDocument();
+        } catch (XMLStreamException e) {
             throw new IllegalStateException(e);
         }
         return this;

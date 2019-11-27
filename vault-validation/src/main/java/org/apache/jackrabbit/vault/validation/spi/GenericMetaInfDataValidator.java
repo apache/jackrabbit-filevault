@@ -21,9 +21,8 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -45,7 +44,7 @@ public interface GenericMetaInfDataValidator extends Validator {
      * @return a collection of validation messages or {@code null}
      * @throws IOException in case the input stream could not be accessed
      */
-    @CheckForNull Collection<ValidationMessage> validateMetaInfData(@Nonnull InputStream input, @Nonnull Path filePath) throws IOException;
+    @Nullable Collection<ValidationMessage> validateMetaInfData(@NotNull InputStream input, @NotNull Path filePath) throws IOException;
 
     /**
      * Called for each file below META-INF.
@@ -53,7 +52,7 @@ public interface GenericMetaInfDataValidator extends Validator {
      * @param filePath file path relative to the META-INF directory (i.e. does not start with {@code META-INF})
      * @return {@code true} in case the file should be validated, otherwise {@code false}
      */
-    boolean shouldValidateMetaInfData(@Nonnull Path filePath);
+    boolean shouldValidateMetaInfData(@NotNull Path filePath);
 
     
 }

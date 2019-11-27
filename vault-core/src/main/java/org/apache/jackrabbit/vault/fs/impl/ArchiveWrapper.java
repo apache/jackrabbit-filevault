@@ -19,13 +19,11 @@ package org.apache.jackrabbit.vault.fs.impl;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.Archive;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Wrapper class that hides all implementation details from the underlying archive.
@@ -45,44 +43,44 @@ public final class ArchiveWrapper implements Archive {
     }
 
     @Override
-    @CheckForNull
+    @Nullable
     public InputStream openInputStream(@Nullable Entry entry) throws IOException {
         return archive.openInputStream(entry);
     }
 
     @Override
-    @CheckForNull
+    @Nullable
     public VaultInputSource getInputSource(@Nullable Entry entry) throws IOException {
         return archive.getInputSource(entry);
     }
 
     @Override
-    @CheckForNull
+    @Nullable
     public Entry getJcrRoot() throws IOException {
         return archive.getJcrRoot();
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public Entry getRoot() throws IOException {
         return archive.getRoot();
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public MetaInf getMetaInf() {
         return archive.getMetaInf();
     }
 
     @Override
-    @CheckForNull
-    public Entry getEntry(@Nonnull String path) throws IOException {
+    @Nullable
+    public Entry getEntry(@NotNull String path) throws IOException {
         return archive.getEntry(path);
     }
 
     @Override
-    @CheckForNull
-    public Archive getSubArchive(@Nonnull String root, boolean asJcrRoot) throws IOException {
+    @Nullable
+    public Archive getSubArchive(@NotNull String root, boolean asJcrRoot) throws IOException {
         return archive.getSubArchive(root, asJcrRoot);
     }
 

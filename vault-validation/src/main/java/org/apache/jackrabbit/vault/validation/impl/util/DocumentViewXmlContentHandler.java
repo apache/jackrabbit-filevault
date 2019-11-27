@@ -25,8 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
@@ -38,6 +36,7 @@ import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -58,7 +57,7 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
 
     private List<ValidationViolation> violations;
 
-    public @Nonnull List<ValidationViolation> getViolations() {
+    public @NotNull List<ValidationViolation> getViolations() {
         return violations;
     }
 
@@ -175,7 +174,7 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
     }
 
     /** @return a Collection of absolute node paths (i.e. starting with "/") with "/" as path delimiter. */
-    public @Nonnull Map<String, Integer> getNodePaths() {
+    public @NotNull Map<String, Integer> getNodePaths() {
         return nodePathsAndLineNumbers;
     }
 

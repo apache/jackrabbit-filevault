@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.packaging.Dependency;
@@ -37,6 +35,7 @@ import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

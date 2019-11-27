@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -41,6 +40,7 @@ import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +71,7 @@ public class JcrArchive extends AbstractArchive {
      * @param archiveRoot root node for this archive
      * @param rootPath root path
      */
-    public JcrArchive(@Nonnull Node archiveRoot, @Nonnull String rootPath) {
+    public JcrArchive(@NotNull Node archiveRoot, @NotNull String rootPath) {
         this.archiveRoot = archiveRoot;
         this.rootPath = rootPath;
     }

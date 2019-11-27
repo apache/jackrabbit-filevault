@@ -17,9 +17,8 @@
 
 package org.apache.jackrabbit.vault.fs.io;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ConsumerType;
 
 /**
@@ -35,5 +34,5 @@ public interface DocViewAnalyzerListener {
      * @param intermediate {@code true} if intermediate node
      * @param nodeType the primary type of the node or {@code null} if empty.
      */
-    void onNode(@Nonnull String path, boolean intermediate, @Nullable String nodeType);
+    void onNode(@NotNull String path, boolean intermediate, @Nullable String nodeType);
 }

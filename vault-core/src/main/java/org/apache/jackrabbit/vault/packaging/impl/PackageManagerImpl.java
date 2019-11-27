@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
@@ -53,6 +51,8 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Implements the package manager
@@ -247,7 +247,7 @@ public class PackageManagerImpl implements PackageManager {
         this.dispatcher = dispatcher;
     }
 
-    void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId[] related) {
+    void dispatch(@NotNull PackageEvent.Type type, @NotNull PackageId id, @Nullable PackageId[] related) {
         if (dispatcher == null) {
             return;
         }

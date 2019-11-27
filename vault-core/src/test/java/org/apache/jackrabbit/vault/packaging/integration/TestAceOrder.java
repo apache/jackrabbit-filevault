@@ -18,7 +18,6 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.security.Principal;
 import java.util.List;
-import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.ValueFactory;
 import javax.jcr.security.AccessControlEntry;
@@ -33,6 +32,7 @@ import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -91,7 +91,7 @@ public class TestAceOrder extends IntegrationTestBase {
         }
     }
 
-    private void assertACEs(@Nonnull String path) throws Exception {
+    private void assertACEs(@NotNull String path) throws Exception {
         JackrabbitAccessControlList list = AccessControlUtils.getAccessControlList(acMgr, path);
         AccessControlEntry[] entries = list.getAccessControlEntries();
 

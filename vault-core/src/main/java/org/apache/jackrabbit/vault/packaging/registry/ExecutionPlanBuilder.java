@@ -22,12 +22,12 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -42,8 +42,8 @@ public interface ExecutionPlanBuilder {
      * @return this
      * @throws IOException if an I/O error occurrs.
      */
-    @Nonnull
-    ExecutionPlanBuilder load(@Nonnull InputStream in) throws IOException;
+    @NotNull
+    ExecutionPlanBuilder load(@NotNull InputStream in) throws IOException;
 
     /**
      * Serializes the tasks of this plan.
@@ -52,14 +52,14 @@ public interface ExecutionPlanBuilder {
      * @throws IOException if an I/O error occurrs.
      * @throws PackageException if this builder does not have valid tasks.
      */
-    @Nonnull
-    ExecutionPlanBuilder save(@Nonnull OutputStream out) throws IOException, PackageException;
+    @NotNull
+    ExecutionPlanBuilder save(@NotNull OutputStream out) throws IOException, PackageException;
 
     /**
      * Adds a new task to this builder.
      * @return an package task builder that helps to assemble the task.
      */
-    @Nonnull
+    @NotNull
     PackageTaskBuilder addTask();
 
     /**
@@ -68,7 +68,7 @@ public interface ExecutionPlanBuilder {
      * @throws IOException if an I/O error occurrs.
      * @throws PackageException if the plan is not valid.
      */
-    @Nonnull
+    @NotNull
     ExecutionPlanBuilder validate() throws IOException, PackageException;
 
     /**
@@ -76,16 +76,16 @@ public interface ExecutionPlanBuilder {
      * @param session the session
      * @return this.
      */
-    @Nonnull
-    ExecutionPlanBuilder with(@Nonnull Session session);
+    @NotNull
+    ExecutionPlanBuilder with(@NotNull Session session);
 
     /**
      * Sets the progress tracker listener for this plan.
      * @param listener the listener
      * @return this.
      */
-    @Nonnull
-    ExecutionPlanBuilder with(@Nonnull ProgressTrackerListener listener);
+    @NotNull
+    ExecutionPlanBuilder with(@NotNull ProgressTrackerListener listener);
 
     
     /**
@@ -93,8 +93,8 @@ public interface ExecutionPlanBuilder {
      * @param externalPackages Set of package ids handled by other builder
      * @return this.
      */
-    @Nonnull
-    ExecutionPlanBuilder with(@Nonnull Set<PackageId> externalPackages);
+    @NotNull
+    ExecutionPlanBuilder with(@NotNull Set<PackageId> externalPackages);
 
     /**
      * Triggers Validation and returns PackageIds of all packages to be installed
@@ -103,7 +103,7 @@ public interface ExecutionPlanBuilder {
      * @throws IOException if an I/O error occurrs.
      * @throws PackageException if the plan is not valid.
      */
-    @Nonnull
+    @NotNull
     Set<PackageId> preview() throws IOException, PackageException;
     
     /**
@@ -112,6 +112,6 @@ public interface ExecutionPlanBuilder {
      * @throws IOException if an I/O error occurrs.
      * @throws PackageException if a package operation fails.
      */
-    @Nonnull
+    @NotNull
     ExecutionPlan execute() throws IOException, PackageException;
 }

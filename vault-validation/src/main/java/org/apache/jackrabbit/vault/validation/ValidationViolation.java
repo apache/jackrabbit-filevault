@@ -20,11 +20,10 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import javax.annotation.CheckForNull;
-
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A ValidationViolation is a {@link ValidationMessage} enriched with additional meta information like
@@ -97,7 +96,7 @@ public class ValidationViolation extends ValidationMessage {
      * Returns the file path bound to this message.
      * @return the absolute file path or {@code null} if the message does not belong to a file
      */
-    public @CheckForNull Path getFilePath() {
+    public @Nullable Path getFilePath() {
         if (basePath != null && filePath != null) {
             return basePath.resolve(filePath);
         }
@@ -108,7 +107,7 @@ public class ValidationViolation extends ValidationMessage {
      * Returns the node path bound to this message.
      * @return the node path or {@code null} if the message does not belong to a specific node
      */
-    public @CheckForNull String getNodePath() {
+    public @Nullable String getNodePath() {
         return nodePath;
     }
 
@@ -116,7 +115,7 @@ public class ValidationViolation extends ValidationMessage {
      * Returns the validator id bound to this message.
      * @return the validator id or {@code null} if the message does not belong to a specific {@link ValidatorFactory}
      */
-    public @CheckForNull String getValidatorId() {
+    public @Nullable String getValidatorId() {
         return validatorId;
     }
 

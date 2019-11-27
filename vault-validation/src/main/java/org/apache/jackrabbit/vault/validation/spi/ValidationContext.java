@@ -19,11 +19,10 @@ package org.apache.jackrabbit.vault.validation.spi;
 import java.nio.file.Path;
 import java.util.Collection;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -38,19 +37,19 @@ public interface ValidationContext extends PackageInfo {
      * 
      * @return the package properties or some exception in case none could be found (will always point to the root package's properties).
      */
-    @Nonnull PackageProperties getProperties();
+    @NotNull PackageProperties getProperties();
 
     /**
      * Returns the validation context of the container package.
      * @return the validation context of the container in case this is the context of a sub package otherwise {@code null}.
      */
-    @CheckForNull ValidationContext getContainerValidationContext();
+    @Nullable ValidationContext getContainerValidationContext();
     
     /**
      * Returns the root path of the package.
      * @return either the path to the ZIP file or a directory containing an exploded package.
      */
-    @Nonnull Path getPackageRootPath();
+    @NotNull Path getPackageRootPath();
     
     /**
      * PackageInfo for all resolved package dependencies.
@@ -58,5 +57,5 @@ public interface ValidationContext extends PackageInfo {
      * carry the main metadata of the dependencies.
      * @return the package info of all resolved package dependencies (i.e. the ones for which an artifact was found).
      */
-    @Nonnull Collection<PackageInfo> getDependenciesMetaInfo();
+    @NotNull Collection<PackageInfo> getDependenciesMetaInfo();
 }

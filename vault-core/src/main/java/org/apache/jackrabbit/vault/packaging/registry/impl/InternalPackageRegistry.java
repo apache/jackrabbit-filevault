@@ -18,20 +18,20 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import java.io.IOException;
 
-import javax.annotation.Nonnull;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
+import org.jetbrains.annotations.NotNull;
 
 public interface InternalPackageRegistry extends PackageRegistry {
 
-    void installPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts,
+    void installPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts,
             boolean extract) throws IOException, PackageException;
 
-    void uninstallPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts)
+    void uninstallPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts)
             throws IOException, PackageException;
 
 }

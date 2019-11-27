@@ -22,8 +22,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -44,7 +43,7 @@ public interface GenericJcrDataValidator extends Validator {
      * @return a collection of validation messages or {@code null}
      * @throws IOException in case the input stream could not be accessed
      */
-    Collection<ValidationMessage> validateJcrData(@Nonnull InputStream input, @Nonnull Path filePath, @Nonnull Map<String, Integer> nodePathsAndLineNumbers) throws IOException;
+    Collection<ValidationMessage> validateJcrData(@NotNull InputStream input, @NotNull Path filePath, @NotNull Map<String, Integer> nodePathsAndLineNumbers) throws IOException;
 
     /**
      * Called for each file below jcr_root.
@@ -52,5 +51,5 @@ public interface GenericJcrDataValidator extends Validator {
      * @param filePath file path relative to the jcr_root directory (i.e. does not start with {@code jcr_root})
      * @return {@code true} in case the file should be validated, otherwise {@code false}
      */
-    boolean shouldValidateJcrData(@Nonnull Path filePath);
+    boolean shouldValidateJcrData(@NotNull Path filePath);
 }

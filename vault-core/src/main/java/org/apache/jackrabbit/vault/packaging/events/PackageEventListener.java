@@ -16,8 +16,7 @@
  */
 package org.apache.jackrabbit.vault.packaging.events;
 
-import javax.annotation.Nonnull;
-
+import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ConsumerType;
 
 
@@ -27,6 +26,6 @@ import org.osgi.annotation.versioning.ConsumerType;
 @ConsumerType
 public interface PackageEventListener {
 
-    void onPackageEvent(@Nonnull PackageEvent event);
+    void onPackageEvent(@NotNull PackageEvent event);
 
 }

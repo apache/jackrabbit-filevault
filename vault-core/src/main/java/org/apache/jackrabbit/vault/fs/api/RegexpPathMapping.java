@@ -22,8 +22,8 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Implements a path mapping that supports regular expressions, i.e. {@code /etc/(.*)=/dummy/$1/custom}
@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
  */
 public final class RegexpPathMapping implements PathMapping {
 
-    @Nonnull
+    @NotNull
     private final Map<Pattern, String> pathsMapping = new HashMap<>();
 
     /**
@@ -44,8 +44,8 @@ public final class RegexpPathMapping implements PathMapping {
      * @param <K> KEey type
      * @return this
      */
-    @Nonnull
-    public <K, V> RegexpPathMapping addAllMappings(@Nonnull Map<K, V> pathsMappingMap) {
+    @NotNull
+    public <K, V> RegexpPathMapping addAllMappings(@NotNull Map<K, V> pathsMappingMap) {
         for (Entry<K, V> entry : pathsMappingMap.entrySet()) {
             final K key = entry.getKey();
             final V value = entry.getValue();
@@ -63,8 +63,8 @@ public final class RegexpPathMapping implements PathMapping {
      * @param toPattern the replacing pattern, i.e. <code>/dummy/$1/custom</code>
      * @return this
      */
-    @Nonnull
-    public RegexpPathMapping addMapping(@Nonnull String fromPattern, @Nonnull String toPattern) {
+    @NotNull
+    public RegexpPathMapping addMapping(@NotNull String fromPattern, @NotNull String toPattern) {
         pathsMapping.put(Pattern.compile(fromPattern), toPattern);
         return this;
     }
@@ -75,7 +75,7 @@ public final class RegexpPathMapping implements PathMapping {
      * @param base base mapping
      * @return this
      */
-    @Nonnull
+    @NotNull
     public RegexpPathMapping merge(@Nullable RegexpPathMapping base) {
         if (base != null) {
             this.pathsMapping.putAll(base.pathsMapping);
@@ -87,8 +87,8 @@ public final class RegexpPathMapping implements PathMapping {
      * {@inheritDoc}
      */
     @Override
-    @Nonnull
-    public String map(@Nonnull String path) {
+    @NotNull
+    public String map(@NotNull String path) {
         for (Entry<Pattern, String> pathMapping : pathsMapping.entrySet()) {
             Matcher matcher = pathMapping.getKey().matcher(path);
             if (matcher.matches()) {
@@ -102,8 +102,8 @@ public final class RegexpPathMapping implements PathMapping {
      * {@inheritDoc}
      */
     @Override
-    @Nonnull
-    public String map(@Nonnull String path, boolean reverse) {
+    @NotNull
+    public String map(@NotNull String path, boolean reverse) {
         if (reverse) {
             throw new IllegalArgumentException("No reverse mapping not supported with regexp mapping");
         }

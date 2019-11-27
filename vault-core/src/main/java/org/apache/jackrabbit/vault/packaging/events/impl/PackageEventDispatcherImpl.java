@@ -20,13 +20,11 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEventListener;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -87,7 +85,7 @@ public class PackageEventDispatcherImpl implements PackageEventDispatcher {
         }
     }
 
-    public void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId[] related) {
+    public void dispatch(@NotNull PackageEvent.Type type, @NotNull PackageId id, @Nullable PackageId[] related) {
         final EventImpl event = new EventImpl(type, id, related);
         for (PackageEventListener l: listeners.values()) {
             try {
@@ -112,19 +110,19 @@ public class PackageEventDispatcherImpl implements PackageEventDispatcher {
             this.related = related;
         }
 
-        @Nonnull
+        @NotNull
         @Override
         public Type getType() {
             return type;
         }
 
-        @Nonnull
+        @NotNull
         @Override
         public PackageId getId() {
             return id;
         }
 
-        @CheckForNull
+        @Nullable
         @Override
         public PackageId[] getRelatedIds() {
             return related;

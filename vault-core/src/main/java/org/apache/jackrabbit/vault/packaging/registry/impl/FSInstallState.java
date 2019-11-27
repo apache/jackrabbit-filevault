@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,6 +49,8 @@ import org.apache.jackrabbit.vault.packaging.SubPackageHandling.Option;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -109,7 +109,7 @@ public class FSInstallState {
     private WorkspaceFilter filter;
     private Properties properties = new Properties();
 
-    public FSInstallState(@Nonnull PackageId pid, @Nonnull FSPackageStatus status) {
+    public FSInstallState(@NotNull PackageId pid, @NotNull FSPackageStatus status) {
         this.packageId = pid;
         this.status = status;
     }

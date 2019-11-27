@@ -22,11 +22,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.BitSet;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.Credentials;
 import javax.jcr.SimpleCredentials;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The repository address locates a jcr repository in with a URI representation.
@@ -71,7 +71,7 @@ public class RepositoryAddress {
      * @param uri the uri
      * @throws URISyntaxException if the uri is not valid
      */
-    public RepositoryAddress(@Nonnull String uri) throws URISyntaxException {
+    public RepositoryAddress(@NotNull String uri) throws URISyntaxException {
         this(new URI(uri));
     }
 
@@ -80,7 +80,7 @@ public class RepositoryAddress {
      * @param uri the uri
      * @throws URISyntaxException if the uri is not valid
      */
-    public RepositoryAddress(@Nonnull URI uri) throws URISyntaxException {
+    public RepositoryAddress(@NotNull URI uri) throws URISyntaxException {
         // decode uri
         String path = uri.getPath();
         String workspace;
@@ -181,7 +181,7 @@ public class RepositoryAddress {
      * @param workspace the workspace
      * @param path the path
      */
-    private RepositoryAddress(@Nonnull URI uri, @Nonnull URI specific, @Nullable String workspace, @Nonnull String path) {
+    private RepositoryAddress(@NotNull URI uri, @NotNull URI specific, @Nullable String workspace, @NotNull String path) {
         this.uri = uri;
         this.specific = specific;
         this.workspace = workspace;
@@ -193,7 +193,7 @@ public class RepositoryAddress {
      * Returns the uri of this address
      * @return the uri of this address
      */
-    @Nonnull
+    @NotNull
     public URI getURI() {
         return uri;
     }
@@ -203,8 +203,8 @@ public class RepositoryAddress {
      * @param path the path to include in the new address
      * @return a new repository address
      */
-    @Nonnull
-    public RepositoryAddress resolve(@CheckForNull String path) {
+    @NotNull
+    public RepositoryAddress resolve(@Nullable String path) {
         if (path == null || path.length() == 0 || ".".equals(path) || "./".equals(path)) {
             return this;
         }
@@ -229,7 +229,7 @@ public class RepositoryAddress {
      * workspace is used.
      * @return the name of the workspace or {@code null}
      */
-    @CheckForNull
+    @Nullable
     public String getWorkspace() {
         return "-".equals(workspace) ? null : workspace;
     }
@@ -239,7 +239,7 @@ public class RepositoryAddress {
      * actually connect to the repository
      * @return the specific part
      */
-    @Nonnull
+    @NotNull
     public URI getSpecificURI() {
         return specific;
     }
@@ -249,7 +249,7 @@ public class RepositoryAddress {
      * by this address the root path '/' is returned.
      * @return the path to a repository item.
      */
-    @Nonnull
+    @NotNull
     public String getPath() {
         return path;
     }
@@ -259,7 +259,7 @@ public class RepositoryAddress {
      * is specified.
      * @return the creds
      */
-    @CheckForNull
+    @Nullable
     public Credentials getCredentials() {
         String userinfo = uri.getUserInfo();
         if (userinfo == null) {
@@ -283,7 +283,7 @@ public class RepositoryAddress {
      * @return same as {@link #getURI() getURI().toString()} with obfuscated user info
      */
     @Override
-    @Nonnull
+    @NotNull
     public String toString() {
         final URI uri = getURI();
         final String userInfo = uri.getRawUserInfo();
@@ -356,8 +356,8 @@ public class RepositoryAddress {
      * @return the escaped string
      * @throws NullPointerException if {@code string} is @{code null}.
      */
-    @Nonnull
-    private static String escapePath(@Nonnull String string) {
+    @NotNull
+    private static String escapePath(@NotNull String string) {
         try {
             byte[] bytes = string.getBytes("utf-8");
             StringBuilder out = new StringBuilder(bytes.length);

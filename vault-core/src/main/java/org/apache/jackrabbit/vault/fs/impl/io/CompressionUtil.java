@@ -28,12 +28,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import javax.annotation.Nonnull;
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +104,7 @@ public final class CompressionUtil {
      * @return A negative integer, a positive integer or zero depending on whether the artifact
      * is estimated to be incompressible, compressible or if the estimate did not run.
      */
-    public static int isCompressible(@Nonnull Artifact artifact) {
+    public static int isCompressible(@NotNull Artifact artifact) {
 
         if (SerializationType.GENERIC == artifact.getSerializationType()) {
 
@@ -146,15 +146,15 @@ public final class CompressionUtil {
         return 0;
     }
 
-    static boolean isCompressibleContentType(@Nonnull String mimeType) {
+    static boolean isCompressibleContentType(@NotNull String mimeType) {
         return mimeType.startsWith("text/") || COMPRESSIBLE_MIME_TYPES.contains(mimeType);
     }
 
-    static boolean isIncompressibleContentType(@Nonnull String mimeType) {
+    static boolean isIncompressibleContentType(@NotNull String mimeType) {
         return INCOMPRESSIBLE_MIME_TYPES.contains(mimeType);
     }
 
-    static int seemsCompressible(@Nonnull Artifact artifact) {
+    static int seemsCompressible(@NotNull Artifact artifact) {
         try (InputStream stream = artifact.getInputStream()) {
             byte[] sample = IOUtils.toByteArray(stream, SAMPLE_LENGTH);
             return isCompressible(sample, SAMPLE_LENGTH) ? 1 : -1;

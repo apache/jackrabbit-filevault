@@ -20,10 +20,10 @@ package org.apache.jackrabbit.vault.fs.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.annotation.Nonnull;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * {@code Serializer}...
@@ -36,8 +36,8 @@ public interface Serializer {
      * @throws IOException
      * @throws RepositoryException
      */
-    void writeContent(@Nonnull OutputStream out) throws IOException, RepositoryException;
+    void writeContent(@NotNull OutputStream out) throws IOException, RepositoryException;
 
-    @Nonnull
+    @NotNull
     SerializationType getType();
 }

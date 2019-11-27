@@ -29,9 +29,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
@@ -40,6 +37,8 @@ import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +81,7 @@ public class ZipArchive extends AbstractArchive {
      * Creates a new archive that is based on the given zip file.
      * @param zipFile the zip file
      */
-    public ZipArchive(@Nonnull File zipFile) {
+    public ZipArchive(@NotNull File zipFile) {
         this(zipFile, false);
     }
 
@@ -91,7 +90,7 @@ public class ZipArchive extends AbstractArchive {
      * @param zipFile the zip file
      * @param isTempFile if {@code true} if the file is considered temporary and can be deleted after this archive is closed.
      */
-    public ZipArchive(@Nonnull File zipFile, boolean isTempFile) {
+    public ZipArchive(@NotNull File zipFile, boolean isTempFile) {
         this.file = zipFile;
         this.isTempFile = isTempFile;
     }
@@ -228,13 +227,13 @@ public class ZipArchive extends AbstractArchive {
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public Entry getRoot() throws IOException {
         return root;
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public MetaInf getMetaInf() {
         if (inf == null) {
             throw new IllegalStateException("Archive not open.");
@@ -277,13 +276,13 @@ public class ZipArchive extends AbstractArchive {
 
         private Map<String, EntryImpl> children;
 
-        private EntryImpl(@Nonnull String name, boolean directory) {
+        private EntryImpl(@NotNull String name, boolean directory) {
             this.name = name;
             isDirectory = directory;
         }
 
-        @Nonnull
-        private EntryImpl add(@Nonnull EntryImpl e) {
+        @NotNull
+        private EntryImpl add(@NotNull EntryImpl e) {
             if (children == null) {
                 children = new LinkedHashMap<String, EntryImpl>();
             }
@@ -291,8 +290,8 @@ public class ZipArchive extends AbstractArchive {
             return e;
         }
 
-        @Nonnull
-        public EntryImpl add(@Nonnull String name, boolean isDirectory) {
+        @NotNull
+        public EntryImpl add(@NotNull String name, boolean isDirectory) {
             if (children != null) {
                 EntryImpl ret = children.get(name);
                 if (ret != null) {
@@ -303,7 +302,7 @@ public class ZipArchive extends AbstractArchive {
         }
 
         @Override
-        @Nonnull
+        @NotNull
         public String getName() {
             return name;
         }
@@ -314,7 +313,7 @@ public class ZipArchive extends AbstractArchive {
         }
 
         @Override
-        @Nonnull
+        @NotNull
         public Collection<? extends Entry> getChildren() {
             return children == null
                     ? Collections.<EntryImpl>emptyList()
@@ -323,7 +322,7 @@ public class ZipArchive extends AbstractArchive {
 
         @Override
         @Nullable
-        public Entry getChild(@Nonnull String name) {
+        public Entry getChild(@NotNull String name) {
             return children == null ? null : children.get(name);
         }
 

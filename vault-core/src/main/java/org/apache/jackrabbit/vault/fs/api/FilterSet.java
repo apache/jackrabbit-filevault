@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The item filter set holds a set of item filters each attributed as include
@@ -41,13 +41,13 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     /**
      * root path of this definition
      */
-    @Nonnull
+    @NotNull
     private String root;
 
     /**
      * root patten to check for inclusion
      */
-    @Nonnull
+    @NotNull
     private String rootPattern;
 
     /**
@@ -64,7 +64,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     /**
      * import mode. defaults to {@link ImportMode#REPLACE}.
      */
-    @Nonnull
+    @NotNull
     private ImportMode mode = ImportMode.REPLACE;
 
     /**
@@ -86,7 +86,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * Returns the root path
      * @return root path
      */
-    @Nonnull
+    @NotNull
     public String getRoot() {
         return "".equals(root) ? "/" : root;
     }
@@ -95,7 +95,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * Sets the root path
      * @param path root path
      */
-    public void setRoot(@Nonnull String path) {
+    public void setRoot(@NotNull String path) {
         if (sealed) {
             throw new UnsupportedOperationException("FilterSet is sealed.");
         }
@@ -114,7 +114,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      *
      * @return the import mode.
      */
-    @Nonnull
+    @NotNull
     public ImportMode getImportMode() {
         return mode;
     }
@@ -123,7 +123,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * Sets the import mode.
      * @param mode import mode
      */
-    public void setImportMode(@Nonnull ImportMode mode) {
+    public void setImportMode(@NotNull ImportMode mode) {
         if (sealed) {
             throw new UnsupportedOperationException("FilterSet is sealed.");
         }
@@ -134,7 +134,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * Seals this list, i.e. makes it unmodifiable.
      * @return this list
      */
-    @Nonnull
+    @NotNull
     public FilterSet seal() {
         if (!sealed) {
             if (entries == null) {
@@ -160,8 +160,8 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @param set the set of entries
      * @return {@code this} suitable for chaining.
      */
-    @Nonnull
-    public FilterSet addAll(@Nonnull FilterSet<E> set) {
+    @NotNull
+    public FilterSet addAll(@NotNull FilterSet<E> set) {
         if (sealed) {
             throw new UnsupportedOperationException("FilterSet is sealed.");
         }
@@ -177,8 +177,8 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @param filter the filter
      * @return {@code this} suitable for chaining.
      */
-    @Nonnull
-    public FilterSet addInclude(@Nonnull E filter) {
+    @NotNull
+    public FilterSet addInclude(@NotNull E filter) {
         addEntry(new Entry<>(filter, true));
         return this;
     }
@@ -188,8 +188,8 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @param filter the filter
      * @return {@code this} suitable for chaining.
      */
-    @Nonnull
-    public FilterSet addExclude(@Nonnull E filter) {
+    @NotNull
+    public FilterSet addExclude(@NotNull E filter) {
         addEntry(new Entry<>(filter, false));
         return this;
     }
@@ -198,7 +198,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * Internally adds a new entry to the list
      * @param e the entry
      */
-    private void addEntry(@Nonnull Entry<E> e) {
+    private void addEntry(@NotNull Entry<E> e) {
         if (sealed) {
             throw new UnsupportedOperationException("FilterSet is sealed.");
         }
@@ -212,7 +212,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * Returns the list of entries
      * @return the list of entries
      */
-    @Nonnull
+    @NotNull
     public List<Entry<E>> getEntries() {
         seal();
         //noinspection ConstantConditions
@@ -234,7 +234,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @param path path of the item
      * @return {@code true} if this set covers the given item
      */
-    public boolean covers(@Nonnull String path) {
+    public boolean covers(@NotNull String path) {
         return path.equals(root) || path.startsWith(rootPattern);
     }
 
@@ -243,7 +243,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @param path path of the item to check
      * @return {@code true} if the given item is an ancestor
      */
-    public boolean isAncestor(@Nonnull String path) {
+    public boolean isAncestor(@NotNull String path) {
         return path.equals(root) || root.startsWith(path + "/") || "/".equals(path);
     }
 
@@ -251,7 +251,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * {@inheritDoc}
      */
     @Override
-    public void dump(@Nonnull DumpContext ctx, boolean isLast) {
+    public void dump(@NotNull DumpContext ctx, boolean isLast) {
         ctx.printf(false, "root: %s", getRoot());
         if (entries != null) {
             Iterator<Entry<E>> iter = entries.iterator();
@@ -302,7 +302,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         /**
          * The item filter
          */
-        @Nonnull
+        @NotNull
         protected final E filter;
 
         /**
@@ -315,7 +315,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
          * @param filter the filter
          * @param include the include flag
          */
-        public Entry(@Nonnull E filter, boolean include) {
+        public Entry(@NotNull E filter, boolean include) {
             this.filter = filter;
             this.include = include;
         }
@@ -324,7 +324,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
          * Returns the filter of this entry
          * @return the filter
          */
-        @Nonnull
+        @NotNull
         public E getFilter() {
             return filter;
         }
@@ -341,7 +341,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
          * {@inheritDoc}
          */
         @Override
-        public void dump(@Nonnull DumpContext ctx, boolean isLast) {
+        public void dump(@NotNull DumpContext ctx, boolean isLast) {
             if (include) {
                 ctx.println(isLast, "include");
             } else {

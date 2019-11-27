@@ -18,9 +18,6 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import java.io.IOException;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
@@ -29,6 +26,8 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,24 +51,24 @@ public class PackageTaskImpl implements PackageTask {
 
     private Throwable error;
 
-    PackageTaskImpl(@Nonnull PackageId id, @Nonnull Type type) {
+    PackageTaskImpl(@NotNull PackageId id, @NotNull Type type) {
         this.id = id;
         this.type = type;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public PackageId getPackageId() {
         return id;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public Type getType() {
         return type;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public State getState() {
         return state;

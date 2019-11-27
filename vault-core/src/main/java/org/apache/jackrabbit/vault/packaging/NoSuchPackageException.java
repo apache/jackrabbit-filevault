@@ -17,7 +17,7 @@
 
 package org.apache.jackrabbit.vault.packaging;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Exception for errors where a specified package does not exist

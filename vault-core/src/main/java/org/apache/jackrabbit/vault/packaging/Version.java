@@ -19,10 +19,9 @@ package org.apache.jackrabbit.vault.packaging;
 
 import java.util.ArrayList;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Implements a package version.
@@ -52,7 +51,7 @@ public class Version implements Comparable<Version> {
      * @return the new version or {@link Version#EMPTY} if {@code str} is an empty string.
      * @since 2.2.4
      */
-    @Nonnull
+    @NotNull
     public static Version create(@Nullable String str) {
         if (str == null || str.length() == 0) {
             return Version.EMPTY;
@@ -66,7 +65,7 @@ public class Version implements Comparable<Version> {
      * @return the new version or {@link Version#EMPTY} if {@code segments} is empty.
      * @since 2.2.4
      */
-    @Nonnull
+    @NotNull
     public static Version create(@Nullable String[] segments) {
         if (segments == null || segments.length == 0) {
             return Version.EMPTY;
@@ -105,7 +104,7 @@ public class Version implements Comparable<Version> {
      * @param str string
      * @param segments segments
      */
-    private Version(@Nonnull String str, @Nonnull String[] segments) {
+    private Version(@NotNull String str, @NotNull String[] segments) {
         this.str = str;
         this.segments = segments;
     }

@@ -18,10 +18,9 @@ package org.apache.jackrabbit.vault.validation.spi;
 
 import java.util.Collection;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -36,5 +35,5 @@ public interface PropertiesValidator extends Validator {
      * @param properties the deserialized properties.xml
      * @return validation messages or {@code null}
      */
-    @CheckForNull Collection<ValidationMessage> validate(@Nonnull PackageProperties properties);
+    @Nullable Collection<ValidationMessage> validate(@NotNull PackageProperties properties);
 }

@@ -19,15 +19,14 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import java.io.IOException;
 import java.util.Calendar;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,13 +59,13 @@ public class FSRegisteredPackage implements RegisteredPackage {
         this.size = installState.getSize();
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public PackageId getId() {
         return this.id;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public VaultPackage getPackage() throws IOException {
         if (this.vltPkg == null) {
@@ -90,7 +89,7 @@ public class FSRegisteredPackage implements RegisteredPackage {
         return size;
     }
 
-    @CheckForNull
+    @Nullable
     @Override
     public Calendar getInstallationTime() {
         Calendar cal = Calendar.getInstance();

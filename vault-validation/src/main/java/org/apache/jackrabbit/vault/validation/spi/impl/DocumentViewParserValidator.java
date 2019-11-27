@@ -93,7 +93,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
     }
 
 
-    /** @param input, the given input stream must be reset later on
+    /** @param input the given input stream must be reset later on
      * @param path
      * @return either the path of the root node of the given docview xml or {@code null} if no docview xml given
      * @throws IOException */

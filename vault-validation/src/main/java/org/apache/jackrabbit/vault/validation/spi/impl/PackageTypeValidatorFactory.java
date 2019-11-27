@@ -36,8 +36,19 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
      */
     public static final String OPTION_JCR_INSTALLER_NODE_PATH_REGEX = "jcrInstallerNodePathRegex";
 
+    public static final String OPTION_SEVERITY_FOR_LEGACY_TYPE = "legacyTypeSeverity";
+
+    public static final String OPTION_SEVERITY_FOR_NO_TYPE = "noTypeSeverity";
+
+    public static final String OPTION_PROHIBIT_MUTABLE_CONTENT = "prohibitMutableContent";
+
+    public static final String OPTION_PROHIBIT_IMMUTABLE_CONTENT = "prohibitImmutableContent";
+
     static final Pattern DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX = Pattern.compile("/([^/]*/){0,4}?(install|config)(\\.[^/]*)*/(\\d{1,3}/)?.+?\\.(jar|config|cfg|cfg\\.json|xml)$");
 
+    private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_LEGACY_TYPE = ValidationMessageSeverity.WARN;
+    private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_NO_TYPE = ValidationMessageSeverity.WARN;
+    
     @Override
     public @CheckForNull Validator createValidator(ValidationContext context, ValidatorSettings settings) {
         // evaluate options
@@ -48,7 +59,33 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
         } else {
             jcrInstallerNodePathRegex = DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX;
         }
-        return new PackageTypeValidator(settings.getDefaultSeverity(), ValidationMessageSeverity.WARN, context.getProperties().getPackageType(), jcrInstallerNodePathRegex, context.getContainerValidationContext());
+        final ValidationMessageSeverity severityForNoType;
+        if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_NO_TYPE)) {
+            String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_NO_TYPE);
+            severityForNoType = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+        } else {
+            severityForNoType = DEFAULT_SEVERITY_FOR_NO_TYPE;
+        }
+        final ValidationMessageSeverity severityForLegacyType;
+        if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_LEGACY_TYPE)) {
+            String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_LEGACY_TYPE);
+            severityForLegacyType = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+        } else {
+            severityForLegacyType = DEFAULT_SEVERITY_FOR_LEGACY_TYPE;
+        }
+        final boolean prohibitMutableContent;
+        if (settings.getOptions().containsKey(OPTION_PROHIBIT_MUTABLE_CONTENT)) {
+            prohibitMutableContent = Boolean.valueOf(settings.getOptions().get(OPTION_PROHIBIT_MUTABLE_CONTENT));
+        } else {
+            prohibitMutableContent = false;
+        }
+        final boolean prohibitImmutableContent;
+        if (settings.getOptions().containsKey(OPTION_PROHIBIT_IMMUTABLE_CONTENT)) {
+            prohibitImmutableContent = Boolean.valueOf(settings.getOptions().get(OPTION_PROHIBIT_IMMUTABLE_CONTENT));
+        } else {
+            prohibitImmutableContent = false;
+        }
+        return new PackageTypeValidator(settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, context.getProperties().getPackageType(), jcrInstallerNodePathRegex, context.getContainerValidationContext());
     }
 
     @Override

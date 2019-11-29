@@ -85,7 +85,7 @@ public class XMLSerializer extends IndentXmlWriter {
         // for backwards-compatibility accept null values
         if (atts != null) {
             for (int i = 0; i < atts.getLength(); i++) {
-                if (format.isIndentAttributes() && (i >= 0 || !namespaces.isEmpty())) {
+                if (format.isSplitAttributesByLineBreaks() && namespaces.size() + atts.getLength() > 1) {
                     write('\n');
                     writeIndent(true);
                 } else {

@@ -7,7 +7,7 @@ public class OutputFormat {
      * was requested.
      */
     private final int indentationSize; // number of spaces
-    private final boolean indentAttributes;
+    private final boolean splitAttributesByLineBreaks;
     private final int maxLineLength; // if 0 no limitation (TODO: currently not evaluated)
 
     public OutputFormat() {
@@ -18,10 +18,10 @@ public class OutputFormat {
         this(indentationSize, indentAttributes, 72);
     }
 
-    public OutputFormat(int indentationSize, boolean indentAttributes, int maxLineLength) {
+    public OutputFormat(int indentationSize, boolean splitAttributesByLineBreaks, int maxLineLength) {
         super();
         this.indentationSize = indentationSize;
-        this.indentAttributes = indentAttributes;
+        this.splitAttributesByLineBreaks = splitAttributesByLineBreaks;
         this.maxLineLength = maxLineLength;
     }
 
@@ -33,8 +33,8 @@ public class OutputFormat {
         return builder.toString();
     }
 
-    public boolean isIndentAttributes() {
-        return indentAttributes;
+    public boolean isSplitAttributesByLineBreaks() {
+        return splitAttributesByLineBreaks;
     }
     
     

@@ -92,12 +92,13 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         } else {
             validRoots.addAll(DEFAULT_VALID_ROOTS);
         }
-        return new AdvancedFilterValidator(settings.getDefaultSeverity(), severityForUncoveredAncestorNode, severityForUncoveredFilterRootAncestors, severityForOrphanedFilterRules, context.getDependenciesMetaInfo(), context.getFilter(), validRoots);
+        return new AdvancedFilterValidator(settings.getDefaultSeverity(), severityForUncoveredAncestorNode, severityForUncoveredFilterRootAncestors, severityForOrphanedFilterRules, context.getContainerValidationContext() != null, context.getDependenciesMetaInfo(), context.getFilter(), validRoots);
     }
 
     @Override
     public boolean shouldValidateSubpackages() {
-        return false;
+        // necessary to call nested validators which should be called for subpackages
+        return true;
     }
 
     @Override

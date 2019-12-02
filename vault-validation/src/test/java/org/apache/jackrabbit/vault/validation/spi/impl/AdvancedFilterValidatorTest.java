@@ -103,6 +103,7 @@ public class AdvancedFilterValidatorTest {
                     AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                     ValidationMessageSeverity.ERROR,
                     ValidationMessageSeverity.ERROR,
+                    false,
                     dependenciesMetaInfo,
                     filter, // this is per test
                     validRoots);
@@ -137,6 +138,7 @@ public class AdvancedFilterValidatorTest {
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
+                false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
@@ -158,6 +160,7 @@ public class AdvancedFilterValidatorTest {
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
+                false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
@@ -181,6 +184,7 @@ public class AdvancedFilterValidatorTest {
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
+                false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
@@ -199,6 +203,7 @@ public class AdvancedFilterValidatorTest {
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
+                false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
@@ -215,6 +220,7 @@ public class AdvancedFilterValidatorTest {
                 ValidationMessageSeverity.WARN,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
+                false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 Collections.emptyList());
@@ -241,6 +247,7 @@ public class AdvancedFilterValidatorTest {
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
+                false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
@@ -265,6 +272,7 @@ public class AdvancedFilterValidatorTest {
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
+                false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
@@ -292,6 +300,7 @@ public class AdvancedFilterValidatorTest {
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.INFO,
                 ValidationMessageSeverity.ERROR,
+                false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
@@ -311,6 +320,7 @@ public class AdvancedFilterValidatorTest {
                     AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                     ValidationMessageSeverity.ERROR,
                     ValidationMessageSeverity.ERROR,
+                    false,
                     dependenciesMetaInfo,
                     filter,
                     validRoots);
@@ -336,6 +346,7 @@ public class AdvancedFilterValidatorTest {
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
+                false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
@@ -382,6 +393,7 @@ public class AdvancedFilterValidatorTest {
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
+                false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);

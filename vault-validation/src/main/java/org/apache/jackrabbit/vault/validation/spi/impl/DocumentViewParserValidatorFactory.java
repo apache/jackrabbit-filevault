@@ -47,7 +47,7 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
 
     @Override
     public boolean shouldValidateSubpackages() {
-        return false;
+        return true;
     }
 
     @Override

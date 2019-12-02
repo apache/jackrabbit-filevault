@@ -223,7 +223,6 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         assertPolicy(testUser.getPrincipal(), existingEntries);
     }
 
-    @Ignore("Enable once Oak 1.18.0 is released")
     @Test
     public void testHandlingIgnoreModeReplace() throws Exception {
         assumeTrue(isOak());
@@ -298,7 +297,6 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         assertPolicy(testUser.getPrincipal(), expected.toArray(new AccessControlEntry[0]));
     }
 
-    @Ignore("Enable once Oak 1.18.0 is released")
     @Test
     public void testHandlingMergeModeReplace() throws Exception {
         assumeTrue(isOak());
@@ -334,7 +332,6 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         assertPolicy(testUser.getPrincipal(), existingEntries);
     }
 
-    @Ignore("Enable once Oak 1.18.0 is released")
     @Test
     public void testHandlingMergePreserveModeReplace() throws Exception {
         assumeTrue(isOak());

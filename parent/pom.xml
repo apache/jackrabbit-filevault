@@ -49,7 +49,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
     <properties>
         <jackrabbit.version>2.18.3</jackrabbit.version>
-        <oak.version>1.16.0</oak.version>
+        <oak.version>1.18.0</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
         <test.oak>false</test.oak>
         <test.vm.options>-Doak=$test.oak}</test.vm.options>

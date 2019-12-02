@@ -65,16 +65,13 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         }
         // severity for ancestor of filter rules
         final ValidationMessageSeverity severityForUncoveredFilterRootAncestors;
-        if (PackageType.APPLICATION.equals(context.getProperties().getPackageType())) {
-            log.debug("Due to package type 'application' emit error for every uncovered filter root ancestor");
-            severityForUncoveredFilterRootAncestors = ValidationMessageSeverity.ERROR;
-            if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS)) {
-                log.warn("Disregard option '{}' as package type is application which sets this violation to severity 'error'", OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS);
-            }
+        if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS)) {
+            String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS);
+            severityForUncoveredFilterRootAncestors = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
         } else {
-            if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS)) {
-                String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS);
-                severityForUncoveredFilterRootAncestors = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            if (PackageType.APPLICATION.equals(context.getProperties().getPackageType())) {
+                log.debug("Due to package type 'application' emit error for every uncovered filter root ancestor");
+                severityForUncoveredFilterRootAncestors = ValidationMessageSeverity.ERROR;
             } else {
                 severityForUncoveredFilterRootAncestors = DEFAULT_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS;
             }

@@ -61,7 +61,7 @@ public class TestNoRootAccessExport extends IntegrationTestBase {
         admin.save();
 
         // import existing package
-        JcrPackage pack = packMgr.upload(getStream("testpackages/tmp_foo_bar_test.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo_bar_test.zip"), false);
         PackageId id = pack.getDefinition().getId();
         assertNotNull(pack);
         pack.extract(getDefaultOptions());

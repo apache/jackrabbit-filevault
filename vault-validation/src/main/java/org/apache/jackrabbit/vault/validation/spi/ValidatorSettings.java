@@ -21,27 +21,31 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import org.osgi.annotation.versioning.ProviderType;
+
 /**
- * Settings relevant for one {@link Validator}.
+ * Settings relevant for one {@link ValidatorFactory}.
  */
 @ProviderType
 public interface ValidatorSettings {
 
     /**
+     * Returns the default severity.
      * 
-     * @return the default severity for most {@link ValidationMessage}s being returned by the validator
+     * @return the default severity for most {@link ValidationMessage}s being returned by the validator.
      */
     @Nonnull ValidationMessageSeverity getDefaultSeverity();
 
     /**
+     * Returns the additional options.
      * 
      * @return list of options relevant for this validator
      */
     @Nonnull Map<String, String> getOptions();
 
     /**
+     * Returns whether the validator is disabled.
      * 
-     * @return {@code true} in case validator 
+     * @return {@code true} in case validator is disabled otherwise {@code false}
      */
     @Nonnull boolean isDisabled();
 

@@ -26,12 +26,13 @@ import org.osgi.annotation.versioning.ProviderType;
 
 
 /**
- * Interface for validators which are only interested in file path for files
+ * Validator interface for validating file paths for files
  * below jcr_root.
  */
 @ProviderType
 public interface JcrPathValidator extends Validator {
     /**
+     * Called for each file below jcr_root.
      * 
      * @param filePath the relative file path to the jcr_root directory
      * @return validation messages or {@code null}

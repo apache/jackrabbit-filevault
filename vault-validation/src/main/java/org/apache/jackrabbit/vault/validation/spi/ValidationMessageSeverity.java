@@ -16,13 +16,16 @@
  */
 package org.apache.jackrabbit.vault.validation.spi;
 
+/**
+ * The severity of a {@link ValidationMessage}.
+ */
 public enum ValidationMessageSeverity {
-    /** only emitted in case debug build is enabled, not a real violation */
+    /** Should only be emitted in case a debug option is enabled, not a real violation. */
     DEBUG, 
-    /** only for informational purposes, not a real violation */
+    /** Only for informational purposes, not a real violation. */
     INFO, 
-    /** a violation which will not make the build fail */
+    /** A violation which might lead to unintended side-effects during package installation. */
     WARN, 
-    /** a violation which will make the build fail */
+    /** A severe violation which very likely leads to unintended side-effects during package installation. */
     ERROR
 }

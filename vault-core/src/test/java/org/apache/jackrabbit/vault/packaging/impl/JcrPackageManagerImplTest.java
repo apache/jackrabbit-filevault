@@ -204,7 +204,7 @@ public class JcrPackageManagerImplTest extends IntegrationTestBase {
     @Test
     public void testListPackages() throws IOException, PackageException, RepositoryException {
         assertTrue("initially the packages set is empty", packMgr.listPackages().isEmpty());
-        packMgr.upload(getStream("../integration/testpackages/tmp.zip"), false);
+        packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         assertEquals("package list contains 1 element", 1, packMgr.listPackages().size());
         JcrPackage pkg = packMgr.listPackages().get(0);
         assertEquals("contains new package", TMP_PACKAGE_ID, pkg.getDefinition().getId());
@@ -215,7 +215,7 @@ public class JcrPackageManagerImplTest extends IntegrationTestBase {
      */
     @Test
     public void testListPackagesWithGroup() throws IOException, PackageException, RepositoryException {
-        packMgr.upload(getStream("../integration/testpackages/tmp.zip"), false);
+        packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         packMgr.create("foo", "test-package");
         assertEquals("package list contains 2 elements", 2, packMgr.listPackages().size());
 
@@ -235,15 +235,15 @@ public class JcrPackageManagerImplTest extends IntegrationTestBase {
     @Test
     public void testListPackagesMultiRoot() throws IOException, PackageException, RepositoryException {
         assertTrue("initially the packages set is empty", packMgr.listPackages().isEmpty());
-        packMgr.upload(getStream("../integration/" + TEST_PACKAGE_A_10), false);
-        packMgr.upload(getStream("../integration/" + TEST_PACKAGE_B_10), false);
+        packMgr.upload(getStream(TEST_PACKAGE_A_10), false);
+        packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
         assertEquals("package list contains 2 elements", 2, packMgr.listPackages().size());
 
         JcrPackageManager multiRootMgr = new JcrPackageManagerImpl(admin, new String[]{"/var/packages" , "/etc/packages"});
         assertEquals("package list contains 2 elements", 2, multiRootMgr.listPackages().size());
 
         // install 3rd package in /var
-        multiRootMgr.upload(getStream("../integration/" + TEST_PACKAGE_C_10), false);
+        multiRootMgr.upload(getStream(TEST_PACKAGE_C_10), false);
         List<JcrPackage> pkgs = multiRootMgr.listPackages();
         assertEquals("packages contains 3 elements", 3, pkgs.size());
         Set<PackageId> ids = new HashSet<PackageId>();
@@ -262,8 +262,8 @@ public class JcrPackageManagerImplTest extends IntegrationTestBase {
     @Test
     public void testListPackagesMultiRootAndGroup() throws IOException, PackageException, RepositoryException {
         assertTrue("initially the packages set is empty", packMgr.listPackages().isEmpty());
-        packMgr.upload(getStream("../integration/" + TEST_PACKAGE_A_10), false);
-        packMgr.upload(getStream("../integration/" + TEST_PACKAGE_B_10), false);
+        packMgr.upload(getStream(TEST_PACKAGE_A_10), false);
+        packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
         packMgr.create("foo", "test-package");
         assertEquals("package list contains 3 elements", 3, packMgr.listPackages().size());
 
@@ -271,7 +271,7 @@ public class JcrPackageManagerImplTest extends IntegrationTestBase {
         assertEquals("package list contains 3 elements", 3, multiRootMgr.listPackages().size());
 
         // install 3rd package in /var
-        multiRootMgr.upload(getStream("../integration/" + TEST_PACKAGE_C_10), false);
+        multiRootMgr.upload(getStream(TEST_PACKAGE_C_10), false);
         multiRootMgr.create("foo", "var-test-package");
 
         List<JcrPackage> pkgs = multiRootMgr.listPackages("foo", false);

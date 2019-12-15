@@ -83,6 +83,7 @@
                         </Import-Package>
                         <!-- to load hook classes through this bundle's classloader -->
                         <DynamicImport-Package>*</DynamicImport-Package>
+                        
                     </instructions>
                 </configuration>
             </plugin>
@@ -208,6 +209,12 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>

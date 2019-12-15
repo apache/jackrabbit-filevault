@@ -81,13 +81,13 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testACAndMerge() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/mode_ac_test_a.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_a.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_a");
         assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
 
-        extractVaultPackage("testpackages/mode_ac_test_b.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_b.zip");
 
         // test if nodes and ACLs of 2nd package exist
         assertNodeExists("/testroot/node_a");
@@ -105,13 +105,13 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testACMerge() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/mode_ac_test_a.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_a.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_a");
         assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
 
-        extractVaultPackage("testpackages/mode_ac_test_b_merge.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_b_merge.zip");
 
         // test if nodes and ACLs of 2nd package exist
         assertNodeExists("/testroot/node_a");
@@ -128,13 +128,13 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testACMergeSubpackage() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/mode_ac_test_a.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_a.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_a");
         assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
 
-        installPackage("testpackages/mode_ac_subpackage.zip");
+        installPackage("/test-packages/mode_ac_subpackage.zip");
 
         // test if nodes and ACLs of 2nd package exist
         assertNodeExists("/testroot/node_a");
@@ -151,13 +151,13 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testACMerge4() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/mode_ac_test_b2_merge.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_b2_merge.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_a");
         assertPermission("/testroot/secured", true, new String[]{"jcr:read", "jcr:write"}, "everyone", null);
 
-        extractVaultPackage("testpackages/mode_ac_test_b3_merge.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_b3_merge.zip");
 
         // test if nodes and ACLs of 2nd package exist
         assertNodeExists("/testroot/node_a");
@@ -173,13 +173,13 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testACMerge2() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/mode_ac_test_a.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_a.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_a");
         assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
 
-        extractVaultPackage("testpackages/mode_ac_test_c_merge.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_c_merge.zip");
 
         // test if nodes and ACLs of 2nd package exist
         assertNodeExists("/testroot/node_a");
@@ -196,13 +196,13 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testACMerge3() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/mode_ac_test_a.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_a.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_a");
         assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
 
-        extractVaultPackage("testpackages/mode_ac_test_d.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_d.zip");
 
         // test if nodes and ACLs of 2nd package exist
         assertNodeExists("/testroot/node_a");
@@ -219,7 +219,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testACMergePreserve2() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/mode_ac_test_a.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_a.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_a");
@@ -227,7 +227,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
 
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
-        extractVaultPackage("testpackages/mode_ac_test_d.zip", opts);
+        extractVaultPackage("/test-packages/mode_ac_test_d.zip", opts);
 
         // test if nodes and ACLs of 2nd package exist
         assertNodeExists("/testroot/node_a");
@@ -246,13 +246,13 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testACMergePreserve() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/mode_ac_test_a.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_a.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_a");
         assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
 
-        extractVaultPackage("testpackages/mode_ac_test_b_preserve.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_b_preserve.zip");
 
         // test if nodes and ACLs of 2nd package exist
         assertNodeExists("/testroot/node_a");
@@ -269,14 +269,14 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testACMergePreserveNodeType() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/mode_ac_test_a.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_a.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_a");
         assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
         assertProperty("/testroot/secured/jcr:primaryType", "nt:folder");
 
-        extractVaultPackage("testpackages/mode_ac_test_unsecured_nodetype.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_unsecured_nodetype.zip");
 
         // test if permissions remain and pt changed
         assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
@@ -341,7 +341,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
     private void doOrderTest(AccessControlHandling ac) throws Exception {
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(ac);
-        extractVaultPackage("testpackages/mode_ac_test_e.zip", opts);
+        extractVaultPackage("/test-packages/mode_ac_test_e.zip", opts);
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_e");
@@ -362,7 +362,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
         Assume.assumeTrue(isOak());
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/oak_ac_content_test.zip");
+        extractVaultPackage("/test-packages/oak_ac_content_test.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_a");
@@ -383,7 +383,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testMissingUser() throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/mode_ac_test_lateuser.zip");
+        extractVaultPackage("/test-packages/mode_ac_test_lateuser.zip");
 
         // test if nodes and ACLs of first package exist
         assertNodeExists("/testroot/node_d");
@@ -400,7 +400,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
 
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
-        extractVaultPackage("testpackages/repo_policy.zip", opts);
+        extractVaultPackage("/test-packages/repo_policy.zip", opts);
 
         // test if nodes and ACLs of first package exist
         assertPermission(null, false, new String[]{"jcr:all"}, "everyone", null);
@@ -408,7 +408,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
 
         opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
-        extractVaultPackage("testpackages/repo_no_policy.zip", opts);
+        extractVaultPackage("/test-packages/repo_no_policy.zip", opts);
 
         assertPermissionMissing(null, false, new String[]{"jcr:all"}, "everyone", null);
         assertPermissionMissing(null, false, new String[]{"jcr:all"}, "testuser", null);
@@ -428,7 +428,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
 
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE);
-        extractVaultPackage("testpackages/repo_policy.zip", opts);
+        extractVaultPackage("/test-packages/repo_policy.zip", opts);
 
         // test if nodes and ACLs of first package exist
         assertPermission(null, false, new String[]{"jcr:all"}, "everyone", null);
@@ -449,7 +449,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
 
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
-        extractVaultPackage("testpackages/repo_policy.zip", opts);
+        extractVaultPackage("/test-packages/repo_policy.zip", opts);
 
         // test if nodes and ACLs of first package exist
         assertPermission(null, false, new String[]{"jcr:all"}, "everyone", null);
@@ -464,7 +464,7 @@ public class TestACLAndMerge extends IntegrationTestBase {
     public void testRootACL() throws RepositoryException, IOException, PackageException {
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
-        extractVaultPackage("testpackages/root_policy.zip", opts);
+        extractVaultPackage("/test-packages/root_policy.zip", opts);
 
         // test if nodes and ACLs of first package exist
         assertPermission("/", true, new String[]{"jcr:all"}, "everyone", null);

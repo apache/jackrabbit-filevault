@@ -40,15 +40,15 @@ public class TestResolve extends IntegrationTestBase {
      */
     @Test
     public void testResolve() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/package_1.0.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/package_1.0.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
-        pack = packMgr.upload(getStream("testpackages/package_2.0.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/package_2.0.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
-        pack = packMgr.upload(getStream("testpackages/empty_tmp.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/empty_tmp.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
@@ -64,16 +64,16 @@ public class TestResolve extends IntegrationTestBase {
      */
     @Test
     public void testResolvePartial() throws RepositoryException, IOException, PackageException {
-        JcrPackage pack = packMgr.upload(getStream("testpackages/package_1.0.zip"), false);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/package_1.0.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 
-        pack = packMgr.upload(getStream("testpackages/package_2.0.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/package_2.0.zip"), false);
         assertNotNull(pack);
         // do NOT install
         //pack.install(getDefaultOptions());
 
-        pack = packMgr.upload(getStream("testpackages/empty_tmp.zip"), false);
+        pack = packMgr.upload(getStream("/test-packages/empty_tmp.zip"), false);
         assertNotNull(pack);
         pack.install(getDefaultOptions());
 

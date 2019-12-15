@@ -47,12 +47,12 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
 
     @Override
     public boolean shouldValidateSubpackages() {
-        return false;
+        return true;
     }
 
     @Override
     public String getId() {
-        return ValidatorFactory.PREFIX_JACKRABBIT + "docviewparser";
+        return ValidatorFactory.ID_PREFIX_JACKRABBIT + "docviewparser";
     }
 
     @Override

@@ -25,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
@@ -56,7 +58,7 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
 
     private List<ValidationViolation> violations;
 
-    public List<ValidationViolation> getViolations() {
+    public @Nonnull List<ValidationViolation> getViolations() {
         return violations;
     }
 
@@ -127,7 +129,6 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
         while (iterator.hasNext()) {
             nodePath.append("/").append(iterator.next());
         }
-        nodePathsAndLineNumbers.put(nodePath.toString(), locator.getLineNumber());
         nodePathStack.push(nodePath.toString());
         try {
             DocViewNode node = getDocViewNode(name, label, attributes);
@@ -142,6 +143,10 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
             }
         } catch (IllegalArgumentException e) { // thrown from DocViewProperty.parse()
             violations.add(new ValidationViolation(ValidationMessageSeverity.ERROR, String.format(PARSE_VIOLATION_MESSAGE_STRING, qName, e.getMessage()), filePath, null, nodePath.toString(), locator.getLineNumber(), locator.getColumnNumber(), e));
+        }
+        // do not collect node paths for empty elements (as they represent order only)
+        if (attributes.getLength() > 0) {
+            nodePathsAndLineNumbers.put(nodePath.toString(), locator.getLineNumber());
         }
     }
 
@@ -170,7 +175,7 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
     }
 
     /** @return a Collection of absolute node paths (i.e. starting with "/") with "/" as path delimiter. */
-    public Map<String, Integer> getNodePaths() {
+    public @Nonnull Map<String, Integer> getNodePaths() {
         return nodePathsAndLineNumbers;
     }
 

@@ -57,6 +57,8 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     protected static final String MESSAGE_APP_CONTENT = "Package of type '%s' is not supposed to contain content inside '/libs' and '/apps' but has '%s'!";
     protected static final String MESSAGE_NO_APP_CONTENT_FOUND = "Package of type '%s' is not supposed to contain content outside '/libs' and '/apps' but has '%s'!";
     protected static final String MESSAGE_INDEX_DEFINITIONS = "Package of type '%s' is not supposed to contain Oak index definitions but has 'allowIndexDefinitions' set to true.";
+    protected static final String MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE = "All mutable package types are prohibited and this package is of mutable type '%s'";
+    protected static final String MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE = "All mutable package types are prohibited and this package is of mutable type '%s'";
 
     protected static final Path PATH_HOOKS = Paths.get(Constants.VAULT_DIR, Constants.HOOKS_DIR);
     private final PackageType type;
@@ -64,15 +66,22 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     private final ValidationMessageSeverity severityForLegacyType;
     private final Pattern jcrInstallerNodePathRegex;
     private final ValidationContext containerValidationContext;
+    private final ValidationMessageSeverity severityForNoPackageType;
+    private final boolean prohibitMutableContent;
+    private final boolean prohibitImmutableContent;
 
-    public PackageTypeValidator(@Nonnull ValidationMessageSeverity severity, @Nonnull ValidationMessageSeverity severityForLegacyType,
-            PackageType type, @Nonnull Pattern jcrInstallerNodePathRegex,
+    public PackageTypeValidator(@Nonnull ValidationMessageSeverity severity, @Nonnull ValidationMessageSeverity severityForNoPackageType, @Nonnull ValidationMessageSeverity severityForLegacyType,
+            boolean prohibitMutableContent, boolean prohibitImmutableContent, PackageType type, @Nonnull Pattern jcrInstallerNodePathRegex,
             ValidationContext containerValidationContext) {
         this.type = type;
         this.severity = severity;
+        this.severityForNoPackageType = severityForNoPackageType;
         this.severityForLegacyType = severityForLegacyType;
+        this.prohibitMutableContent = prohibitMutableContent;
+        this.prohibitImmutableContent = prohibitImmutableContent;
         this.jcrInstallerNodePathRegex = jcrInstallerNodePathRegex;
         this.containerValidationContext = containerValidationContext;
+        
     }
 
     boolean isOsgiBundleOrConfiguration(String nodePath) {
@@ -149,19 +158,10 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         return null;
     }
 
-    static boolean hasIncludesOrExcludes(WorkspaceFilter filter) {
-        for (PathFilterSet set : filter.getFilterSets()) {
-            if (!set.getEntries().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public Collection<ValidationMessage> validate(PackageProperties properties) {
         if (properties.getPackageType() == null) {
-            return Collections.singleton(new ValidationMessage(severityForLegacyType, MESSAGE_NO_PACKAGE_TYPE_SET));
+            return Collections.singleton(new ValidationMessage(severityForNoPackageType, MESSAGE_NO_PACKAGE_TYPE_SET));
         }
         Collection<ValidationMessage> messages = new LinkedList<>();
         // is sub package?
@@ -172,7 +172,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
                 messages.add(message);
             }
         }
-
+    
         switch (properties.getPackageType()) {
         case APPLICATION:
             // must not contain hooks (this detects external hooks)
@@ -184,8 +184,14 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
             if (OakIndexDefinitionValidatorFactory.areIndexDefinitionsAllowed(properties)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_INDEX_DEFINITIONS, properties.getPackageType())));
             }
+            if (prohibitImmutableContent) {
+                messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+            }
             break;
         case CONTENT:
+            if (prohibitMutableContent) {
+                messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+            }
             break;
         case CONTAINER:
             // no dependencies
@@ -193,13 +199,31 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
                 messages.add(new ValidationMessage(severity,
                         String.format(MESSAGE_DEPENDENCY, properties.getPackageType(), StringUtils.join(properties.getDependencies()))));
             }
+            if (prohibitImmutableContent) {
+                messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+            }
             break;
         case MIXED:
             messages.add(
                     new ValidationMessage(severityForLegacyType, String.format(MESSAGE_LEGACY_TYPE, properties.getPackageType())));
+            if (prohibitImmutableContent) {
+                messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+            }
+            if (prohibitMutableContent) {
+                messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+            }
             break;
         }
         return messages;
+    }
+
+    static boolean hasIncludesOrExcludes(WorkspaceFilter filter) {
+        for (PathFilterSet set : filter.getFilterSets()) {
+            if (!set.getEntries().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ValidationMessage validateSubPackageType(PackageType packageType, PackageType containerPackageType) {

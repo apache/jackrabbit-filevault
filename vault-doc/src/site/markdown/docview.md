@@ -14,23 +14,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
+
 FileVault DocView
 =================
 
-Filevault uses slightly different version of the Document View specified by [JCR 2.0][jcr-docview].
-In general all node can cannot be serialized as plain directories or as plain files are either
+FileVault uses a slightly different version of the Document View specified by [JCR 2.0][jcr-docview].
+In general all nodes can cannot be serialized as plain directories or as plain files are either
 serialized into DocView XML file. If the node can only be partially mapped to a directory or file,
 it will be accompanied with a `.content.xml` containing the residual content. 
 
 For example, a _full coverage_ content tree, starting at the node `example` will be serialized into
 a `example.xml` file, using the (filevault) DocView format.
 
-
 For example, a _sling:Folder_ node, named `libs` will be serialized into a directory `libs` and a
 `libs/.content.xml` file, using the (filevault) DocView format.
 
-Also see the [vault-fs](vaultfs.html)
-article about this.
+Also see the [vault-fs](vaultfs.html) article about this.
 
 Deviations to the JCR DocView
 -----------------------------

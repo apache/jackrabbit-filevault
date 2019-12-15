@@ -52,9 +52,10 @@ import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidat
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Calls all registered low-level validators. This instance is bound to the {@link ValidationContext} being given in the 
+/** 
+ * Provides methods to call all registered validators. This instance is bound to the {@link ValidationContext} being given in the 
  * {@link ValidationExecutorFactory#createValidationExecutor(org.apache.jackrabbit.vault.validation.spi.ValidationContext, boolean, boolean, Map)}.
- * This class is thread-safe (i.e. methods can be used from different threads on the same instance) 
+ * This class is thread-safe (i.e. methods can be used from different threads on the same instance). 
  * @see ValidationExecutorFactory
  */
 public class ValidationExecutor {
@@ -74,6 +75,11 @@ public class ValidationExecutor {
      */
     private static final Logger log = LoggerFactory.getLogger(ValidationExecutor.class);
 
+    /**
+     * Creates a new instance with the given validators.
+     * 
+     * @param validatorsById a map of validator ids and actual validators
+     */
     public ValidationExecutor(@Nonnull Map<String, Validator> validatorsById) {
         this.validatorsById = validatorsById;
         this.documentViewXmlValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, DocumentViewXmlValidator.class);
@@ -99,10 +105,20 @@ public class ValidationExecutor {
         }
     }
 
+    /**
+     * Returns all bound validators by id.
+     * @return a map with all validators (key=validator id, value=actual validator)
+     */
     public @Nonnull Map<String, Validator> getAllValidatorsById() {
         return validatorsById;
     }
 
+    /**
+     * Returns all unused validators by id. Unused validators are those implementing an interface which
+     * is not understood by this executor.
+     * 
+     * @return a map with all unused validators (key=validator id, value=actual validator)
+     */
     public @Nonnull Map<String, Validator> getUnusedValidatorsById() {
         Map<String, Validator> unusedValidators = new HashMap<>(validatorsById);
         unusedValidators.keySet().removeAll(documentViewXmlValidators.keySet());
@@ -117,7 +133,10 @@ public class ValidationExecutor {
         return unusedValidators;
     }
 
-    /** @param input the input stream (it is not closed during processing, this is obligation of the caller). Should not be buffered as buffering is done internally!
+    /** 
+     * Validates a package META-INF input stream  with all relevant validators.
+     * 
+     * @param input the input stream (it is not closed during processing, this is obligation of the caller). Should not be buffered as buffering is done internally!
      * @param filePath should be relative to the META-INF directory (i.e. should not start with {@code META-INF})
      * @param basePath the path to which the file path is relative
      * @return the list of validation messages 
@@ -138,7 +157,10 @@ public class ValidationExecutor {
         return messages;
     }
 
-    /** @param input the input stream (it is not closed during processing, this is obligation of the caller). Should not be buffered as buffering is done internally!
+    /** 
+     * Validates a package jcr_root input stream  with all relevant validators.
+     * 
+     * @param input the input stream (it is not closed during processing, this is obligation of the caller). Should not be buffered as buffering is done internally!
      * @param filePath file path relative to the content package jcr root (i.e. the folder named "jcr_root")
      * @param basePath the path to which the file path is relative
      * @return the list of validation messages 
@@ -160,9 +182,12 @@ public class ValidationExecutor {
         return messages;
     }
 
-    /** Must be called at the end of the validation (i.e. when the validation context is not longer used)
+    /** 
+     * Must be called at the end of the validation (when the validation context is no longer used).
+     * This is important as some validators emit violation messages only when this method is called.
      * 
-     * @return the list of additional validation violations (might be empty) which have not been reported before */
+     * @return the list of additional validation violations (might be empty) which have not been reported before 
+     */
     public @Nonnull Collection<ValidationViolation> done() {
         Collection<ValidationViolation> allViolations = new LinkedList<>();
         // go through all validators (even the nested ones)
@@ -175,7 +200,7 @@ public class ValidationExecutor {
         return allViolations;
     }
 
-    protected Collection<ValidationViolation> validateNodePaths(Path filePath, Path basePath, Map<String, Integer> nodePathsAndLineNumbers) {
+    private Collection<ValidationViolation> validateNodePaths(Path filePath, Path basePath, Map<String, Integer> nodePathsAndLineNumbers) {
         List<ValidationViolation> enrichedMessages = new LinkedList<>();
        
         for (Map.Entry<String, Integer> nodePathAndLineNumber : nodePathsAndLineNumbers.entrySet()) {
@@ -191,7 +216,7 @@ public class ValidationExecutor {
         return enrichedMessages;
     }
 
-    protected Collection<ValidationViolation> validateGenericMetaInfData(InputStream input, Path filePath, Path basePath) throws IOException {
+    private Collection<ValidationViolation> validateGenericMetaInfData(InputStream input, Path filePath, Path basePath) throws IOException {
         Collection<ValidationViolation> enrichedMessages = new LinkedList<>();
         ResettableInputStream resettableInputStream = null;
         InputStream currentInput = input;
@@ -227,7 +252,7 @@ public class ValidationExecutor {
         return enrichedMessages;
     }
 
-    protected Collection<ValidationViolation> validateGenericJcrData(InputStream input, Path filePath, Path basePath) throws IOException {
+    private Collection<ValidationViolation> validateGenericJcrData(InputStream input, Path filePath, Path basePath) throws IOException {
         Map<String, Integer> nodePathsAndLineNumbers = new HashMap<>();
         Collection<ValidationViolation> enrichedMessages = new LinkedList<>();
         ResettableInputStream resettableInputStream = null;
@@ -274,7 +299,12 @@ public class ValidationExecutor {
         return enrichedMessages;
     }
 
-    public static String filePathToNodePath(Path filePath) {
+    /**
+     * Converts the given file path (a relative one) to the absolute node path.
+     * @param filePath the relative file path to convert
+     * @return the node path
+     */
+    public static @Nonnull String filePathToNodePath(@Nonnull Path filePath) {
         // convert to forward slashes and make absolute by prefixing it with "/"
         String platformPath = "/" + FilenameUtils.separatorsToUnix(filePath.toString());
         return PlatformNameFormat.getRepositoryPath(platformPath, true);

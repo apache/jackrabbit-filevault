@@ -49,30 +49,30 @@ public class TestExecutionPlan extends IntegrationTestBase {
     /**
      * Test package A-1.0. Depends on B and C-1.X
      */
-    private static String TEST_PACKAGE_A_10 = "testpackages/test_a-1.0.zip";
+    private static String TEST_PACKAGE_A_10 = "/test-packages/test_a-1.0.zip";
     private static PackageId TEST_PACKAGE_ID_A_10 = PackageId.fromString("my_packages:test_a:1.0");
 
     /**
      * Test package B-1.0. Depends on C
      */
-    private static String TEST_PACKAGE_B_10 = "testpackages/test_b-1.0.zip";
+    private static String TEST_PACKAGE_B_10 = "/test-packages/test_b-1.0.zip";
     private static PackageId TEST_PACKAGE_ID_B_10 = PackageId.fromString("my_packages:test_b:1.0");
 
     /**
      * Test package C-1.0
      */
-    private static String TEST_PACKAGE_C_10 = "testpackages/test_c-1.0.zip";
+    private static String TEST_PACKAGE_C_10 = "/test-packages/test_c-1.0.zip";
     private static PackageId TEST_PACKAGE_ID_C_10 = PackageId.fromString("my_packages:test_c:1.0");
 
     /**
      * Test package D-1.0. Depends on B and E
      */
-    private static String TEST_PACKAGE_D_10 = "testpackages/test_d-1.0.zip";
+    private static String TEST_PACKAGE_D_10 = "/test-packages/test_d-1.0.zip";
 
     /**
      * Test package E-1.0. Depends on D
      */
-    private static String TEST_PACKAGE_E_10 = "testpackages/test_e-1.0.zip";
+    private static String TEST_PACKAGE_E_10 = "/test-packages/test_e-1.0.zip";
 
 
     private PackageRegistry registry;

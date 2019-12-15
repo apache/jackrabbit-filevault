@@ -26,13 +26,14 @@ import org.osgi.annotation.versioning.ProviderType;
 
 
 /**
- * Interface for validators which are only interested in file path for files
- * below META-INF
+ * Validator interface for validating file paths for files
+ * below META-INF.
  */
 @ProviderType
 public interface MetaInfPathValidator extends Validator {
     /**
-     * 
+     * Called for each file below META-INF.
+     *
      * @param filePath the relative file path to the META-INF directory
      * @return validation messages or {@code null}
      */

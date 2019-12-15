@@ -33,7 +33,7 @@ public class ZipArchiveTest {
 
     @Test
     public void testSmallArchiveViaStream() throws IOException {
-        try (InputStream in = getClass().getResourceAsStream("/org/apache/jackrabbit/vault/packaging/integration/testpackages/atomic-counter-test.zip");
+        try (InputStream in = getClass().getResourceAsStream("/test-packages/atomic-counter-test.zip");
              ZipStreamArchive a = new ZipStreamArchive(in)) {
             a.open(true);
             Properties props = a.getMetaInf().getProperties();
@@ -49,7 +49,7 @@ public class ZipArchiveTest {
 
     @Test
     public void testSmallArchiveViaFile() throws IOException {
-        File file = new File(getClass().getResource("/org/apache/jackrabbit/vault/packaging/integration/testpackages/atomic-counter-test.zip").getFile());
+        File file = new File(getClass().getResource("/test-packages/atomic-counter-test.zip").getFile());
         try (ZipArchive a = new ZipArchive(file, false)) {
             a.open(true);
             Properties props = a.getMetaInf().getProperties();

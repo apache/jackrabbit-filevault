@@ -42,6 +42,7 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;

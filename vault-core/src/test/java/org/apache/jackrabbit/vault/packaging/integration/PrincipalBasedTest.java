@@ -208,7 +208,7 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.IGNORE);
         opts.setImportMode(ImportMode.UPDATE);
 
-        extractVaultPackage("testpackages/principalbased.zip", opts);
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
         assertPolicy(testUser.getPrincipal(), existingEntries);
     }
 
@@ -219,11 +219,10 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.IGNORE);
         opts.setImportMode(ImportMode.MERGE);
 
-        extractVaultPackage("testpackages/principalbased.zip", opts);
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
         assertPolicy(testUser.getPrincipal(), existingEntries);
     }
 
-    @Ignore("Enable once Oak 1.18.0 is released")
     @Test
     public void testHandlingIgnoreModeReplace() throws Exception {
         assumeTrue(isOak());
@@ -231,7 +230,7 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.IGNORE);
         opts.setImportMode(ImportMode.REPLACE);
 
-        extractVaultPackage("testpackages/principalbased.zip", opts);
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
         // user may have been moved due to 'replace' mode -> need to retrieve again
         Principal p = userManager.getAuthorizable(SYSTEM_USER_ID).getPrincipal();
         assertEquals(0, acMgr.getPolicies(p).length);
@@ -244,7 +243,7 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
         opts.setImportMode(ImportMode.UPDATE);
 
-        extractVaultPackage("testpackages/principalbased.zip");
+        extractVaultPackage("/test-packages/principalbased.zip");
         assertPolicy(testUser.getPrincipal(), packageEntries);
     }
 
@@ -255,7 +254,7 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
         opts.setImportMode(ImportMode.MERGE);
 
-        extractVaultPackage("testpackages/principalbased.zip");
+        extractVaultPackage("/test-packages/principalbased.zip");
         assertPolicy(testUser.getPrincipal(), packageEntries);
     }
 
@@ -266,7 +265,7 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
         opts.setImportMode(ImportMode.REPLACE);
 
-        extractVaultPackage("testpackages/principalbased.zip");
+        extractVaultPackage("/test-packages/principalbased.zip");
         assertPolicy(testUser.getPrincipal(), packageEntries);
     }
 
@@ -277,7 +276,7 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.MERGE);
         opts.setImportMode(ImportMode.UPDATE);
 
-        extractVaultPackage("testpackages/principalbased.zip", opts);
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
 
         List<AccessControlEntry> expected = Lists.newArrayList(existingEntries);
         expected.addAll(ImmutableList.copyOf(packageEntries));
@@ -291,14 +290,13 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.MERGE);
         opts.setImportMode(ImportMode.MERGE);
 
-        extractVaultPackage("testpackages/principalbased.zip", opts);
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
 
         List<AccessControlEntry> expected = Lists.newArrayList(existingEntries);
         expected.addAll(ImmutableList.copyOf(packageEntries));
         assertPolicy(testUser.getPrincipal(), expected.toArray(new AccessControlEntry[0]));
     }
 
-    @Ignore("Enable once Oak 1.18.0 is released")
     @Test
     public void testHandlingMergeModeReplace() throws Exception {
         assumeTrue(isOak());
@@ -306,7 +304,7 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.MERGE);
         opts.setImportMode(ImportMode.REPLACE);
 
-        extractVaultPackage("testpackages/principalbased.zip", opts);
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
 
         // user may have been moved due to 'replace' mode -> need to retrieve again
         assertPolicy(userManager.getAuthorizable(SYSTEM_USER_ID).getPrincipal(), packageEntries);
@@ -319,7 +317,7 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
         opts.setImportMode(ImportMode.UPDATE);
 
-        extractVaultPackage("testpackages/principalbased.zip", opts);
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
         assertPolicy(testUser.getPrincipal(), existingEntries);
     }
 
@@ -330,11 +328,10 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
         opts.setImportMode(ImportMode.MERGE);
 
-        extractVaultPackage("testpackages/principalbased.zip", opts);
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
         assertPolicy(testUser.getPrincipal(), existingEntries);
     }
 
-    @Ignore("Enable once Oak 1.18.0 is released")
     @Test
     public void testHandlingMergePreserveModeReplace() throws Exception {
         assumeTrue(isOak());
@@ -342,7 +339,7 @@ public class PrincipalBasedTest extends IntegrationTestBase {
         opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
         opts.setImportMode(ImportMode.REPLACE);
 
-        extractVaultPackage("testpackages/principalbased.zip", opts);
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
         // user may have been moved due to 'replace' mode -> need to retrieve again
         Principal p = userManager.getAuthorizable(SYSTEM_USER_ID).getPrincipal();
         assertEquals(0, acMgr.getPolicies(p).length);

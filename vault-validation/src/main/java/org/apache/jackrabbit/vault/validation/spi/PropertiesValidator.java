@@ -25,13 +25,14 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * This validator is called for each {@code META-INF/vault/properties.xml} being found
+ * Validator interface for package properties.
  *
  */
 @ProviderType
 public interface PropertiesValidator extends Validator {
     /**
-     * Called once for each each {@code META-INF/vault/properties.xml} being found
+     * Called once for each each {@code META-INF/vault/properties.xml} being found.
+     * 
      * @param properties the deserialized properties.xml
      * @return validation messages or {@code null}
      */

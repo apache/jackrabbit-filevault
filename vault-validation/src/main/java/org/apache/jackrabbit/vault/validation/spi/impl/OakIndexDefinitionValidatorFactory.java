@@ -64,7 +64,7 @@ public final class OakIndexDefinitionValidatorFactory implements ValidatorFactor
 
     @Override
     public String getId() {
-        return ValidatorFactory.PREFIX_JACKRABBIT + "oakindex";
+        return ValidatorFactory.ID_PREFIX_JACKRABBIT + "oakindex";
     }
 
     @Override

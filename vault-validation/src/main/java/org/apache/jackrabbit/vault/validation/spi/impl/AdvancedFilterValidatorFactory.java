@@ -23,44 +23,66 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import org.apache.jackrabbit.vault.packaging.PackageType;
+import org.apache.jackrabbit.vault.validation.ValidationExecutorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
 import org.kohsuke.MetaInfServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @MetaInfServices
 public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
 
-    protected static final String OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES = "severityForUncoveredAncestorNodes";
-    protected static final String OPTION_SEVERITY_FOR_ORPHANED_FILTER_RULES = "severityForOrphanedFilterRules";
+    public static final String ID = ID_PREFIX_JACKRABBIT + "filter";
+
+    public static final String OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES = "severityForUncoveredAncestorNodes";
+    private static final Object OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS = "severityForUncoveredFilterRootAncestors";
+    public static final String OPTION_SEVERITY_FOR_ORPHANED_FILTER_RULES = "severityForOrphanedFilterRules";
     // should take comma-separated list of valid root paths
-    protected static final String OPTION_VALID_ROOTS = "validRoots";
+    public static final String OPTION_VALID_ROOTS = "validRoots";
     
-    protected static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES = ValidationMessageSeverity.INFO;
-    protected static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES = ValidationMessageSeverity.INFO;
-    protected static final Collection<String> DEFAULT_VALID_ROOTS = new LinkedList<>(Arrays.asList("/","/libs","/apps","/etc","/var","/tmp","/content"));
+    static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES = ValidationMessageSeverity.INFO;
+    private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS = ValidationMessageSeverity.WARN;
+    static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES = ValidationMessageSeverity.INFO;
+    static final Collection<String> DEFAULT_VALID_ROOTS = new LinkedList<>(Arrays.asList("/","/libs","/apps","/etc","/var","/tmp","/content"));
+
+    /**
+     * the default logger
+     */
+    private static final Logger log = LoggerFactory.getLogger(ValidationExecutorFactory.class);
 
     @Override
     public Validator createValidator(ValidationContext context, ValidatorSettings settings) {
-        final ValidationMessageSeverity messageSeverityForUncoveredAncestorNode;
-        if (PackageType.APPLICATION.equals(context.getProperties().getPackageType())) {
-            messageSeverityForUncoveredAncestorNode = ValidationMessageSeverity.ERROR;
+        final ValidationMessageSeverity severityForUncoveredAncestorNode;
+        if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES)) {
+            String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES);
+            severityForUncoveredAncestorNode = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
         } else {
-            if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES)) {
-                String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES);
-                messageSeverityForUncoveredAncestorNode = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            severityForUncoveredAncestorNode = DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES;
+        }
+        // severity for ancestor of filter rules
+        final ValidationMessageSeverity severityForUncoveredFilterRootAncestors;
+        if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS)) {
+            String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS);
+            severityForUncoveredFilterRootAncestors = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+        } else {
+            if (PackageType.APPLICATION.equals(context.getProperties().getPackageType())) {
+                log.debug("Due to package type 'application' emit error for every uncovered filter root ancestor");
+                severityForUncoveredFilterRootAncestors = ValidationMessageSeverity.ERROR;
             } else {
-                messageSeverityForUncoveredAncestorNode = DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES;
+                severityForUncoveredFilterRootAncestors = DEFAULT_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS;
             }
         }
-        final ValidationMessageSeverity messageSeverityForOrphanedFilterRules;
+        
+        final ValidationMessageSeverity severityForOrphanedFilterRules;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_ORPHANED_FILTER_RULES)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_ORPHANED_FILTER_RULES);
-            messageSeverityForOrphanedFilterRules = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            severityForOrphanedFilterRules = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
         } else {
-            messageSeverityForOrphanedFilterRules = DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES;
+            severityForOrphanedFilterRules = DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES;
         }
         Set<String> validRoots = new HashSet<>();
         validRoots.add("");
@@ -70,18 +92,18 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         } else {
             validRoots.addAll(DEFAULT_VALID_ROOTS);
         }
-        
-        return new AdvancedFilterValidator(settings.getDefaultSeverity(), messageSeverityForUncoveredAncestorNode, messageSeverityForOrphanedFilterRules, context.getDependenciesMetaInfo(), context.getFilter(), validRoots);
+        return new AdvancedFilterValidator(settings.getDefaultSeverity(), severityForUncoveredAncestorNode, severityForUncoveredFilterRootAncestors, severityForOrphanedFilterRules, context.getContainerValidationContext() != null, context.getDependenciesMetaInfo(), context.getFilter(), validRoots);
     }
 
     @Override
     public boolean shouldValidateSubpackages() {
-        return false;
+        // necessary to call nested validators which should be called for subpackages
+        return true;
     }
 
     @Override
     public String getId() {
-        return ValidatorFactory.PREFIX_JACKRABBIT + "filter";
+        return ID;
     }
 
     @Override

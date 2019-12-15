@@ -27,9 +27,8 @@ import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * Similar to a SAX content handler but specific for (enhanced) Document View XML files within content packages.
+ * Validator interface for (enhanced) Document View XML files within content packages.
  * 
- * Allows to add violations.
  * @see <a href="https://jackrabbit.apache.org/filevault/docview.html">Filevault DocView</a> 
  *
  */
@@ -37,10 +36,11 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface DocumentViewXmlValidator extends Validator {
 
     /**
-     * Called for the beginning of each new JCR document view node (not part of the SAXHandler interface).
+     * Called for the beginning of each new JCR document view node.
      * Deserialization of the node information was already done when this method is called!
-     * The node and attribute names have the string representation outlined in {@link Name} (i.e. including the expanded namespace uri)
-     * @param node the node which is represented by the current XML element
+     * The node and attribute names have the string representation outlined in {@link Name} (i.e. including the expanded namespace uri in the format <code>{namespaceURI}localPart</code>).
+     * 
+     * @param node the node which should be validated
      * @param nodePath the absolute repository path of the given node
      * @param filePath the relative file path of the docview file containing this node
      * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}

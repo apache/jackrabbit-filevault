@@ -32,12 +32,13 @@ public final class AdvancedPropertiesValidatorFactory implements ValidatorFactor
 
     @Override
     public boolean shouldValidateSubpackages() {
-        return false;
+        // necessary to call nested validators which should be called for subpackages
+        return true;
     }
 
     @Override
     public String getId() {
-        return ValidatorFactory.PREFIX_JACKRABBIT + "properties";
+        return ValidatorFactory.ID_PREFIX_JACKRABBIT + "properties";
     }
 
     @Override

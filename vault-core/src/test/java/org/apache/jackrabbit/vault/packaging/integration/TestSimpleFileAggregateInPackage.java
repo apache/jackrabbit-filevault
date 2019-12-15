@@ -31,13 +31,13 @@ public class TestSimpleFileAggregateInPackage extends IntegrationTestBase {
             throws RepositoryException, IOException, PackageException {
         assertNodeMissing("/testroot");
 
-        extractVaultPackage("testpackages/simple_file_aggregate_with_children.zip");
+        extractVaultPackage("/test-packages/simple_file_aggregate_with_children.zip");
 
         // test if nodes exist
         assertNodeExists("/testroot/thumbnail.png");
         assertNodeExists("/testroot/thumbnail.png/jcr:content/dam:thumbnails/dam:thumbnail_48.png");
 
-        extractVaultPackage("testpackages/simple_file_aggregate_without_children.zip");
+        extractVaultPackage("/test-packages/simple_file_aggregate_without_children.zip");
 
         assertNodeExists("/testroot/thumbnail.png");
         assertNodeMissing("/testroot/thumbnail.png/jcr:content/dam:thumbnails");

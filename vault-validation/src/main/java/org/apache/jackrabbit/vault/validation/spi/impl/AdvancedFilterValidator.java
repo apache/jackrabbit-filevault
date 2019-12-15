@@ -80,13 +80,13 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     protected static final String MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT = "Ancestor node '%s' is not covered by any of the filter rules but that node is a given root (either by a dependency or by the known roots). Remove that node!";
     protected static final String MESSAGE_NODE_BELOW_CLEANUP_FILTER = "Node '%s' is covered by a 'cleanup' filter rule. That filter type is only supposed to be used for removing nodes during import!";
     
-    public static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES = ValidationMessageSeverity.INFO;
-
     static final Path FILTER_XML_PATH = Paths.get(Constants.VAULT_DIR, Constants.FILTER_XML);
 
+    private final boolean isSubPackage;
     private final Collection<String> validRoots;
     private final ValidationMessageSeverity defaultSeverity;
     private final ValidationMessageSeverity severityForUncoveredAncestorNode;
+    private final ValidationMessageSeverity severityForUncoveredFilterRootAncestors;
     private final ValidationMessageSeverity severityForOrphanedFilterEntries;
     private final Collection<PackageInfo> dependenciesMetaInfo;
     private final WorkspaceFilter filter;
@@ -94,11 +94,12 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     private final Collection<String> danglingNodePaths;
     private final Map<PathFilterSet, List<Entry<PathFilter>>> orphanedFilterSets;
 
-    public AdvancedFilterValidator(@Nonnull ValidationMessageSeverity defaultSeverity, @Nonnull ValidationMessageSeverity severityForUncoveredAncestorNodes, @Nonnull ValidationMessageSeverity severityForOrphanedFilterEntries, @Nonnull Collection<PackageInfo> dependenciesMetaInfo, @Nonnull WorkspaceFilter filter, @Nonnull Collection<String> validRoots) {
-        
+    public AdvancedFilterValidator(@Nonnull ValidationMessageSeverity defaultSeverity, @Nonnull ValidationMessageSeverity severityForUncoveredAncestorNodes, @Nonnull ValidationMessageSeverity severityForUncoveredFilterRootAncestors, @Nonnull ValidationMessageSeverity severityForOrphanedFilterEntries, boolean isSubPackage, @Nonnull Collection<PackageInfo> dependenciesMetaInfo, @Nonnull WorkspaceFilter filter, @Nonnull Collection<String> validRoots) {
+        this.isSubPackage = isSubPackage;
         this.filterValidators = new HashMap<>();
         this.defaultSeverity = defaultSeverity;
         this.severityForUncoveredAncestorNode = severityForUncoveredAncestorNodes;
+        this.severityForUncoveredFilterRootAncestors = severityForUncoveredFilterRootAncestors;
         this.severityForOrphanedFilterEntries = severityForOrphanedFilterEntries;
         this.dependenciesMetaInfo = dependenciesMetaInfo;
         this.filter = filter;
@@ -113,11 +114,13 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
             }
         }
         this.orphanedFilterSets = new LinkedHashMap<>();
-        for (PathFilterSet pathFilter : filter.getFilterSets()) {
-            if (!PathFilterSet.TYPE_CLEANUP.equals(pathFilter.getType())) {
-                List<Entry<PathFilter>> entries = pathFilter.getEntries().stream().filter(Entry<PathFilter>::isInclude).collect(Collectors.toList());
-                // add all includes to a new list
-                this.orphanedFilterSets.put(pathFilter, entries);
+        if (!isSubPackage) {
+            for (PathFilterSet pathFilter : filter.getFilterSets()) {
+                if (!PathFilterSet.TYPE_CLEANUP.equals(pathFilter.getType())) {
+                    List<Entry<PathFilter>> entries = pathFilter.getEntries().stream().filter(Entry<PathFilter>::isInclude).collect(Collectors.toList());
+                    // add all includes to a new list
+                    this.orphanedFilterSets.put(pathFilter, entries);
+                }
             }
         }
     }
@@ -157,6 +160,9 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
 
     @Override
     public Collection<ValidationMessage> validate(WorkspaceFilter filter) {
+        if (isSubPackage) {
+            return null; // not relevant for sub packages
+        }
         Collection<ValidationMessage> messages = new LinkedList<>();
         messages.addAll(validatePathFilterSets(filter.getFilterSets(), true));
         messages.addAll(validatePathFilterSets(filter.getPropertyFilterSets(), false));
@@ -181,7 +187,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
         }
         // then check for each ancestor
         for (String root : ancestors) {
-            String isCovered = null;
+            String coveringPackageId = null;
             boolean isContained = false;
             for (PackageInfo dependencyInfo : dependenciesMetaInfo) {
                 WorkspaceFilter dependencyFilter = dependencyInfo.getFilter();
@@ -189,23 +195,23 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
                     isContained = true;
                 }
                 if (dependencyFilter.covers(root)) {
-                    isCovered = dependencyInfo.getId().toString();
+                    coveringPackageId = dependencyInfo.getId().toString();
                 }
             }
             if (!isContained) {
                 String msg;
-                if (isCovered == null) {
+                if (coveringPackageId == null) {
                     msg = String.format(MESSAGE_FILTER_ROOT_ANCESTOR_UNCOVERED, root);
                 } else {
-                    msg = String.format(MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED, root, isCovered);
+                    msg = String.format(MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED, root, coveringPackageId);
                 }
-                messages.add(new ValidationMessage(severityForUncoveredAncestorNode, msg));
+                messages.add(new ValidationMessage(severityForUncoveredFilterRootAncestors, msg));
             }
         }
         return messages;
     }
 
-    public Collection<ValidationMessage> validatePathFilterSets(Collection<PathFilterSet> pathFilterSets, boolean checkRoots) {
+    private Collection<ValidationMessage> validatePathFilterSets(Collection<PathFilterSet> pathFilterSets, boolean checkRoots) {
         Collection<ValidationMessage> messages = new LinkedList<>();
         for (PathFilterSet pathFilterSet : pathFilterSets) {
             // check for validity of root path
@@ -319,6 +325,9 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
 
     @Override
     public Collection<ValidationMessage> validate(String nodePath) {
+        if (isSubPackage) {
+            return null; // not relevant for sub packages
+        }
         // remove from orphaned list
         removeFromOrphanedFilterEntries(nodePath);
         

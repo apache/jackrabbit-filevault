@@ -37,12 +37,19 @@
 
     <name>Apache Jackrabbit FileVault (Parent Project)</name>
     <description>
-        Parent project for the FileVault
+The FileVault introduces a JCR repository to filesystem mapping. The mapping
+is exposed by an API and used by the "FileVault Content Packages" which allow to
+create portable packages of repository content.
+
+The Vault Command Line Interface aka "vlt" provides a subversion like
+utility to work and develop with repository content.
+
+Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     </description>
 
     <properties>
         <jackrabbit.version>2.18.3</jackrabbit.version>
-        <oak.version>1.16.0</oak.version>
+        <oak.version>1.18.0</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
         <test.oak>false</test.oak>
         <test.vm.options>-Doak=$test.oak}</test.vm.options>
@@ -80,8 +87,14 @@
     </mailingLists>
 
     <issueManagement>
-        <url>https://issues.apache.org/jira/browse/JCR</url>
+        <system>JIRA</system>
+        <url>https://issues.apache.org/jira/browse/JCRVLT</url>
     </issueManagement>
+
+    <ciManagement>
+        <system>Travis</system>
+        <url>https://travis-ci.org/apache/jackrabbit-filevault</url>
+    </ciManagement>
 
     <!-- ====================================================================== -->
     <!-- B U I L D D E F I N I T I O N -->
@@ -199,7 +212,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.20.1</version>
+                    <version>3.0.0-M4</version>
                     <configuration>
                         <systemProperties>
                             <property>
@@ -235,7 +248,9 @@
                             <exclude>derby.log</exclude>
                             <exclude>**/*.zip/**</exclude>
                             <exclude>.mvn/**</exclude>
+                            <exclude>.no-defender.sh</exclude>
                         </excludes>
+                        <consoleOutput>true</consoleOutput>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
@@ -244,9 +259,8 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.3</version>
+                    <version>3.8.2</version>
                     <configuration>
-                        <generateReports>false</generateReports>
                         <skip>true</skip>
                         <skipDeploy>true</skipDeploy>
                     </configuration>
@@ -254,7 +268,7 @@
                         <dependency>
                             <groupId>org.apache.maven.doxia</groupId>
                             <artifactId>doxia-module-markdown</artifactId>
-                            <version>1.5</version>
+                            <version>1.9</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -267,6 +281,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-scm-publish-plugin</artifactId>
                     <version>3.0.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.1.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -478,13 +497,27 @@
             </build>
         </profile>
         <profile>
-            <id>java9</id>
+            <id>java9-or-above</id>
             <activation>
-                <jdk>9</jdk>
+                <jdk>[9,)</jdk>
             </activation>
-            <properties>
-                <test.vm.options>--add-modules=java.se.ee -Doak=${test.oak}</test.vm.options>
-            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-javadoc-plugin</artifactId>
+                            <configuration>
+                                <!-- only html4 output is working due to non HTML5 compliant javadoc 
+                                This is no longer supported with Java13 as it will always emit HTML5
+                                -->
+                                <additionalOptions>-html4</additionalOptions>
+                                <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
+                                <source>8</source>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
         </profile>
     </profiles>
 

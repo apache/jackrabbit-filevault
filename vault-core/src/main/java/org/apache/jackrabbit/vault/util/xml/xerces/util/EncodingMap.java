@@ -26,7 +26,7 @@ import java.util.Hashtable;
  * be the IANA encoding names specified or one of the aliases for those names
  * which IANA defines.
  * <p>
- * <TABLE BORDER="0" WIDTH="100%">
+ * <TABLE BORDER="0" WIDTH="100%" summary="Encoding table">
  * <TR>
  * <TD WIDTH="33%">
  * <P ALIGN="CENTER"><B>Common Name</B>

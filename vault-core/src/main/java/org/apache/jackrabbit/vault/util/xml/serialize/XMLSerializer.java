@@ -62,16 +62,16 @@ import org.xml.sax.helpers.AttributeListImpl;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * <b>ASF Note<b>: This class and dependencies were copied from the sun jdk1.5
+ * <b>ASF Note</b>: This class and dependencies were copied from the sun jdk1.5
  * source base. The original serializer is extended by a new OutputFormat
  * setting that allows to break the line for each attribute. additionally,
  * all attribute names are sorted alphabetically.
  * Some Features were removed to limit the number of dependent classes:
  * <ul>
- * <li> dom filter support
- * <li> all text nodes as CDATA feature
- * <li> skip attribute default values feature
- * <li> entity node reference feature
+ * <li>dom filter support</li>
+ * <li>all text nodes as CDATA feature</li>
+ * <li>skip attribute default values feature</li>
+ * <li>entity node reference feature</li>
  * </ul>
  * <p>
  *  

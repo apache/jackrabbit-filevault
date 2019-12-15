@@ -39,7 +39,7 @@ public final class MergeLimitationsValidatorFactory implements ValidatorFactory 
 
     @Override
     public String getId() {
-        return ValidatorFactory.PREFIX_JACKRABBIT + "mergelimitations";
+        return ValidatorFactory.ID_PREFIX_JACKRABBIT + "mergelimitations";
     }
 
     @Override

@@ -24,7 +24,6 @@
   <body>
     <menu name="Overview">
       <item href="index.html" name="Jackrabbit Filevault" />
-      <item href="license.html" name="License" />
     </menu>
     <menu name="Concepts and architecture">
       <item href="overview.html" name="Overview" />
@@ -40,10 +39,11 @@
       <item href="rcp.html" name="Vault Remote Copy" />
     </menu>
     <menu name="Developing">
-      <item href="dev.html" name="Overview" />
       <item href="apidocs/index.html" name="API docs" />
       <item href="howto_release.html" name="How to create a release" />
     </menu>
+    <menu ref="modules"/>
+    <menu ref="reports" inherit="bottom"/>
     <menu name="Links">
       <item href="http://jackrabbit.apache.org/" name="Apache Jackrabbit" />
     </menu>
@@ -52,7 +52,7 @@
   <skin>
     <groupId>org.apache.maven.skins</groupId>
     <artifactId>maven-fluido-skin</artifactId>
-    <version>1.3.0</version>
+    <version>1.8</version>
   </skin>
 
   <custom>

@@ -71,12 +71,12 @@ public final class TestCugHandling {
     /**
      * contains cugPolicy with rep:principalNames=[principal-1,principal-2]
      */
-    private static final String CUG_PACKAGE_1 = "testpackages/cug-test-1.zip";
+    private static final String CUG_PACKAGE_1 = "/test-packages/cug-test-1.zip";
 
     /**
      * contains cugPolicy with rep:principalNames=[principal-2,principal-3]
      */
-    private static final String CUG_PACKAGE_2 = "testpackages/cug-test-2.zip";
+    private static final String CUG_PACKAGE_2 = "/test-packages/cug-test-2.zip";
 
     private Repository repository;
 

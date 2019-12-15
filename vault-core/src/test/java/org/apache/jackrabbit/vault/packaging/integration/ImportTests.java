@@ -65,7 +65,7 @@ public class ImportTests extends IntegrationTestBase {
 
     @Test
     public void testImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/tmp.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/tmp.zip"));
         archive.open(true);
         Node rootNode = admin.getRootNode();
         ImportOptions opts = getDefaultOptions();
@@ -77,7 +77,7 @@ public class ImportTests extends IntegrationTestBase {
 
     @Test
     public void testReimportLess() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/tmp.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/tmp.zip"));
         archive.open(true);
         Node rootNode = admin.getRootNode();
         ImportOptions opts = getDefaultOptions();
@@ -86,7 +86,7 @@ public class ImportTests extends IntegrationTestBase {
 
         assertNodeExists("/tmp/foo/bar/tobi");
 
-        ZipArchive archive2 = new ZipArchive(getTempFile("testpackages/tmp_less.zip"));
+        ZipArchive archive2 = new ZipArchive(getTempFile("/test-packages/tmp_less.zip"));
         archive2.open(true);
         importer.run(archive2, rootNode);
 
@@ -95,7 +95,7 @@ public class ImportTests extends IntegrationTestBase {
 
     @Test
     public void testFilteredImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/filtered_package.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/filtered_package.zip"));
         archive.open(true);
         Node rootNode = admin.getRootNode();
         ImportOptions opts = getDefaultOptions();
@@ -112,7 +112,7 @@ public class ImportTests extends IntegrationTestBase {
 
     @Test
     public void testUnFilteredImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/unfiltered_package.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/unfiltered_package.zip"));
         archive.open(true);
         Node rootNode = admin.getRootNode();
         ImportOptions opts = getDefaultOptions();
@@ -129,7 +129,7 @@ public class ImportTests extends IntegrationTestBase {
 
     @Test
     public void testRelativeImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/tmp.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/tmp.zip"));
 
         admin.getRootNode().addNode(TEST_ROOT.substring(1, TEST_ROOT.length()));
         admin.save();
@@ -155,7 +155,7 @@ public class ImportTests extends IntegrationTestBase {
      */
     @Test
     public void testRelativeEmptyImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/empty_testnode.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/empty_testnode.zip"));
 
         admin.getRootNode().addNode(TEST_ROOT.substring(1, TEST_ROOT.length()));
         admin.save();
@@ -200,7 +200,7 @@ public class ImportTests extends IntegrationTestBase {
 
     @Test
     public void testConcurrentModificationHandling() throws IOException, RepositoryException, PackageException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/tags.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/tags.zip"));
         archive.open(true);
         Node rootNode = admin.getRootNode();
         ImportOptions opts = getDefaultOptions();
@@ -220,7 +220,7 @@ public class ImportTests extends IntegrationTestBase {
 
     @Test
     public void testSNSImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/test_sns.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/test_sns.zip"));
         archive.open(true);
         Node rootNode = admin.getRootNode();
         ImportOptions opts = getDefaultOptions();
@@ -248,7 +248,7 @@ public class ImportTests extends IntegrationTestBase {
 
     @Test
     public void testSubArchiveExtract() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/tmp_with_thumbnail.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/tmp_with_thumbnail.zip"));
         archive.open(true);
         Node rootNode = admin.getRootNode();
         Node tmpNode = rootNode.addNode("tmp");
@@ -299,7 +299,7 @@ public class ImportTests extends IntegrationTestBase {
 
         // Import with a session associated to the test user
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/tmp.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/tmp.zip"));
         archive.open(true);
         ImportOptions opts = getDefaultOptions();
         Importer importer = new Importer(opts);
@@ -333,7 +333,7 @@ public class ImportTests extends IntegrationTestBase {
 
         // Import with a session associated to the test user
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        ZipArchive archive = new ZipArchive(getTempFile("testpackages/tmp_foo.zip"));
+        ZipArchive archive = new ZipArchive(getTempFile("/test-packages/tmp_foo.zip"));
         archive.open(true);
         ImportOptions opts = getDefaultOptions();
         Importer importer = new Importer(opts);

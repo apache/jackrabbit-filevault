@@ -27,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
 import org.apache.jackrabbit.vault.fs.api.PathMapping;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
@@ -71,9 +72,7 @@ public class Ignored implements PathFilter {
             ignored = new LinkedList<PathFilter>();
             try {
                 scan(scanRoot);
-            } catch (VltException e) {
-                log.error("Error while scanning for " + FILE_NAME, e);
-            } catch (IOException e) {
+            } catch (VltException|IOException|ConfigurationException e) {
                 log.error("Error while scanning for " + FILE_NAME, e);
             }
             log.info("scanned for .vltignore files below {} in {}ms", scanRoot, System.currentTimeMillis() - now);
@@ -91,7 +90,7 @@ public class Ignored implements PathFilter {
         return false;
     }
 
-    public Ignored scan(File dir) throws VltException, IOException {
+    public Ignored scan(File dir) throws VltException, IOException, ConfigurationException {
         for (File file: dir.listFiles()) {
             String name = file.getName();
             if (settings != null && settings.isIgnored(name)) {
@@ -106,7 +105,7 @@ public class Ignored implements PathFilter {
         return this;
     }
 
-    private void addIgnores(File dir, File file) throws VltException, IOException {
+    private void addIgnores(File dir, File file) throws VltException, IOException, ConfigurationException {
         VltDirectory d = new VltDirectory(ctx, dir);
         String root = d.getAggregatePath();
         if (root == null) {
@@ -119,7 +118,7 @@ public class Ignored implements PathFilter {
         }
     }
 
-    private void addIgnored(String root, String pattern) {
+    private void addIgnored(String root, String pattern) throws ConfigurationException {
         if (pattern.startsWith("#")) {
             return;
         }

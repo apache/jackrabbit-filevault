@@ -30,18 +30,20 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface ValidatorFactory {
     /**
-     * Reserved prefix for all validators integrated in this JAR
+     * Reserved prefix for all validator ids integrated in this JAR. No custom validator ids must start with this prefix.
      */
-    public static final String PREFIX_JACKRABBIT = "jackrabbit-";
+    public static final String ID_PREFIX_JACKRABBIT = "jackrabbit-";
     /**
+     * Creates a new validator for the given context.
      * 
-     * @param context the context of Validator (info about package)
+     * @param context the validation context
      * @param settings the validator settings
-     * @return a new validator instance (lifecycle bound to the package outlined in context and the current maven module) or {@code null} in case there is no validation relevant for the given context
+     * @return a new validator instance (lifecycle bound to the package outlined in context) or {@code null} in case there is no validation relevant for the given context
      */
     @CheckForNull Validator createValidator(@Nonnull ValidationContext context, @Nonnull ValidatorSettings settings);
 
     /**
+     * Returns whether the validator should by default also called for subpackages.
      * 
      * @return {@code true} in case the validation with this validator should also happen for subpackages (recursively), otherwise {@code false}
      */
@@ -49,9 +51,9 @@ public interface ValidatorFactory {
 
     /**
      * Returns the validator ID. It should be unique i.e. not overlap between any two validators. To achieve that
-     * use a {@code <prefix>-<name>} as ID. Reserved prefixes are "jackrabbit" (used by all OOTB validators), "aem" and "sling".
+     * use the format {@code <prefix>-<name>} for every ID. Reserved prefixes are "jackrabbit" (used by all OOTB validators), "aem" and "sling".
      * For custom validators use a company name as prefix. The name should not contain the string "validator".
-     * The id should only use lower case characters.
+     * The id should only contain lower case characters.
      * @return the id of the validator returned by {@link #createValidator(ValidationContext, ValidatorSettings)}
      */
     @Nonnull String getId();
@@ -59,7 +61,7 @@ public interface ValidatorFactory {
     /**
      * The service ranking will influence the order in which the validators will be called.
      * In general:
-     * The higher the ranking the earlier it will be executed
+     * The higher the ranking the earlier it will be executed.
      * @return the service ranking
      */
     int getServiceRanking();

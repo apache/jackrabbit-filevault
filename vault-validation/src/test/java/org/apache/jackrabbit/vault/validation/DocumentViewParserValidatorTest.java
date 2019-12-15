@@ -111,6 +111,20 @@ public class DocumentViewParserValidatorTest {
     }
 
     @Test
+    public void testDocViewWithEmptyElements() throws IOException {
+        try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/emptyelements/.content.xml")) {
+            Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "emptyelements", ".content.xml"), nodePathsAndLineNumbers);
+            Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+
+            // verify node names
+            Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();
+            expectedNodePathsAndLineNumber.put("/apps/emptyelements", 20);
+            expectedNodePathsAndLineNumber.put("/apps/emptyelements/nonemptyelement", 23);
+            Assert.assertEquals(expectedNodePathsAndLineNumber, nodePathsAndLineNumbers);
+        }
+    }
+    
+    @Test
     public void testDocViewWithRegularFileName()
             throws ParserConfigurationException, SAXException, URISyntaxException, IOException, NamespaceException {
 

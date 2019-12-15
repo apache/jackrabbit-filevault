@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Creates {@link ValidationExecutor}s.
+ * Creates {@link ValidationExecutor}s. Holds a number of {@link ValidatorFactory} instances.
  */
 public class ValidationExecutorFactory {
 
@@ -51,6 +51,10 @@ public class ValidationExecutorFactory {
      */
     private static final Logger log = LoggerFactory.getLogger(ValidationExecutorFactory.class);
 
+    /** Creates a new instance with {@code ValidatorFactory} instances being created via the {@link ServiceLoader} being used with the given classloader.
+     * 
+     * @param classLoader the class loader to be used with the service loader
+     */
     public ValidationExecutorFactory(ClassLoader classLoader) {
         this(ServiceLoader.load(ValidatorFactory.class, classLoader));
     }
@@ -66,14 +70,17 @@ public class ValidationExecutorFactory {
     }
 
     
-    /** @param context the validation context given to the validators
+    /** 
+     * Creates a {@link ValidationExecutor} for the given context.
+     * 
+     * @param context the validation context given to the validators
      * @param isSubPackage {@code true} in case this is a subpackage, otherwise {@code false}
      * @param enforceSubpackageValidation {@code true} in case all validators should be also applied in any case to the sub package
      *            (independent of their {@link ValidatorFactory#shouldValidateSubpackages()} return value)
      * @param validatorSettingsById a map of {@link ValidatorSettings}. The key is the validator id. May be {@code null}.
      * @return either {@code null} or an executor (if at least one validator is registered)
      */
-    public @CheckForNull ValidationExecutor createValidationExecutor(@Nonnull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ValidatorSettings> validatorSettingsById) {
+    public @CheckForNull ValidationExecutor createValidationExecutor(@Nonnull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ? extends ValidatorSettings> validatorSettingsById) {
         Map<String, Validator> validatorsById = createValidators(context, isSubPackage, enforceSubpackageValidation, validatorSettingsById != null ? validatorSettingsById : Collections.emptyMap());
         if (validatorsById.isEmpty()) {
             return null;
@@ -81,7 +88,7 @@ public class ValidationExecutorFactory {
         return new ValidationExecutor(validatorsById);
     }
 
-    private @Nonnull Map<String, Validator> createValidators(@Nonnull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ValidatorSettings> validatorSettingsById) {
+    private @Nonnull Map<String, Validator> createValidators(@Nonnull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ? extends ValidatorSettings> validatorSettingsById) {
         Map<String, Validator> validatorsById = new LinkedHashMap<>();
         Set<String> validatorSettingsIds = new HashSet<>(validatorSettingsById.keySet());
         for (ValidatorFactory validatorFactory : validatorFactories) {

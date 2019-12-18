@@ -50,7 +50,7 @@ public class DocViewFormatTest {
         dir = new File(tempDir + File.separator + "DocViewFormatTest-"
                 + ISO8601.format(Calendar.getInstance()).replace(":", "").replace(".", "").replace("-", ""));
         assert dir.mkdir();
-        docViewFile = new File(dir.getPath() + File.separator + "malformed.xml");
+        docViewFile = new File(dir, "malformed.xml");
         assert docViewFile.createNewFile();
 
         try (InputStream in = this.getClass().getResourceAsStream("DocViewFormat/malformed.xml")) {
@@ -78,14 +78,12 @@ public class DocViewFormatTest {
     public void testFormatting() throws IOException {
         List<Pattern> patterns = Collections.singletonList(Pattern.compile(".+\\.xml"));
         DocViewFormat format = new DocViewFormat();
-        assertFalse("malformed.xml is expected to be malformed", format.format(dir, patterns, true).isEmpty());
-        format.format(dir, patterns, false);
-        assertTrue("malformed.xml is expected to be formatted", format.format(dir, patterns, true).isEmpty());
-
+        assertFalse("malformed.xml is expected to be malformed", format.format(dir, patterns, false).isEmpty());
         try (InputStream input = this.getClass().getResourceAsStream("DocViewFormat/formatted.xml")) {
             final String expected = IOUtils.toString(input, StandardCharsets.UTF_8);
             final String result = FileUtils.readFileToString(docViewFile, StandardCharsets.UTF_8);
             assertEquals(expected, result);
         }
+        assertTrue("malformed.xml is expected to be formatted", format.format(dir, patterns, true).isEmpty());
     }
 }

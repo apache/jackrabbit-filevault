@@ -37,6 +37,7 @@ import javax.jcr.Session;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.Text;
@@ -53,8 +54,8 @@ import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.Tree;
+import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
-import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -62,7 +63,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Holds a list of {@link PathFilterSet}s.
@@ -488,53 +488,51 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
 
     private void generateSource() {
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            XMLSerializer ser = new XMLSerializer(out, new OutputFormat("xml", "UTF-8", true));
-            ser.startDocument();
-            AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute(null, null, ATTR_VERSION, "CDATA", String.valueOf(version));
-            ser.startElement(null, null, "workspaceFilter", attrs);
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, new OutputFormat(4, false))) {
+            
+            writer.writeStartDocument();
+            writer.writeStartElement("workspaceFilter");
+            writer.writeAttribute(ATTR_VERSION, String.valueOf(version));
 
             if (referenceFilterSets == null) {
                 referenceFilterSets = new LinkedList<>(nodesFilterSets);
             }
             for (PathFilterSet set: referenceFilterSets) {
-                attrs = new AttributesImpl();
-                attrs.addAttribute(null, null, "root", "CDATA", set.getRoot());
+                writer.writeStartElement("filter");
+                writer.writeAttribute("root", set.getRoot());
                 if (set.getImportMode() != ImportMode.REPLACE) {
-                    attrs.addAttribute(null, null, "mode", "CDATA", set.getImportMode().name().toLowerCase());
+                    writer.writeAttribute("mode", set.getImportMode().name().toLowerCase());
                 }
                 if (set.getType() != null) {
-                    attrs.addAttribute(null, null, "type", "CDATA", set.getType());
+                    writer.writeAttribute("type", set.getType());
                 }
-                ser.startElement(null, null, "filter", attrs);
                 for (PathFilterSet.Entry<PathFilter> entry: set.getEntries()) {
                     // only handle path filters
                     PathFilter filter = entry.getFilter();
                     if (filter instanceof DefaultPathFilter) {
-                        attrs = new AttributesImpl();
-                        attrs.addAttribute(null, null, "pattern", "CDATA", ((DefaultPathFilter) filter).getPattern());
-                        if (filter instanceof DefaultPropertyPathFilter) {
-                            attrs.addAttribute(null, null, "matchProperties", "CDATA", "true");
-                        }
                         if (entry.isInclude()) {
-                            ser.startElement(null, null, "include", attrs);
-                            ser.endElement("include");
+                            writer.writeStartElement("include");
                         } else {
-                            ser.startElement(null, null, "exclude", attrs);
-                            ser.endElement("exclude");
+                            writer.writeStartElement("exclude");
                         }
+                        writer.writeAttribute("pattern", ((DefaultPathFilter) filter).getPattern());
+                        if (filter instanceof DefaultPropertyPathFilter) {
+                            writer.writeAttribute("matchProperties", "true");
+                        }
+                        writer.writeEndElement();
                     } else {
                         throw new IllegalArgumentException("Can only export default path filters, yet.");
                     }
                 }
-                ser.endElement("filter");
+                writer.writeEndElement();
             }
-            ser.endElement("workspaceFilter");
-            ser.endDocument();
+            writer.writeEndElement();
+            writer.writeEndDocument();
             source = out.toByteArray();
-        } catch (SAXException e) {
+        } catch (XMLStreamException e) {
+            throw new IllegalStateException(e);
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }

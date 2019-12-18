@@ -21,13 +21,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.jcr.RepositoryException;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.impl.AggregateImpl;
 import org.apache.jackrabbit.vault.fs.io.DocViewFormat;
 import org.apache.jackrabbit.vault.fs.io.Serializer;
-import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
+import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 
 /**
  * {@code DocViewSerializer}...
@@ -53,9 +55,12 @@ public class DocViewSerializer implements Serializer {
      */
     public void writeContent(OutputStream out) throws IOException, RepositoryException {
         // build content handler and add filter in case of original xml files
-        XMLSerializer ser = new XMLSerializer(out, new DocViewFormat().getXmlOutputFormat());
-        DocViewSAXFormatter fmt = new DocViewSAXFormatter(aggregate, ser);
-        aggregate.walk(fmt);
+        try (FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, new DocViewFormat().getXmlOutputFormat())){
+            DocViewSAXFormatter fmt = new DocViewSAXFormatter(aggregate, writer);
+            aggregate.walk(fmt);
+        } catch (XMLStreamException | FactoryConfigurationError e) {
+            throw new IOException(e);
+        }
     }
 
     /**

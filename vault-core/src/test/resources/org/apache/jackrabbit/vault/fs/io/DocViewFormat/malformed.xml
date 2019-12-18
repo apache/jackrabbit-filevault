@@ -18,8 +18,8 @@
 <jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0"
           jcr:primaryType="nt:unstructured"
           jcr:title="Test node">
-    <testChild jcr:primaryType="nt:unstructured"
+    <!-- My Comment --><testChild jcr:primaryType="nt:unstructured"
                   testProperty="test"
 TestProperty="test"
-               foo="bar"></testChild>
+               foo="bar"><!-- MyComment2 --><grandchild     /></testChild>
 </jcr:root>

@@ -41,51 +41,49 @@ import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.Checksum;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stax.StAXResult;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.vault.util.xml.serialize.AttributeNameComparator;
+import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
+import org.apache.jackrabbit.vault.util.xml.serialize.NormalizingSaxFilter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
-import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
-/**
- * This class provides access to the commonly used doc view xml format and functionality that checks files for the format or reformats
- * them accordingly.
- */
+/** This class provides access to the commonly used doc view xml format and functionality that checks files for the format or reformats them
+ * accordingly. */
 public class DocViewFormat {
 
     private final OutputFormat format;
     private WeakReference<ByteArrayOutputStream> formattingBuffer;
 
     public DocViewFormat() {
-        format = new OutputFormat("xml", "UTF-8", true);
-        format.setIndent(4);
-        format.setLineWidth(0);
-        format.setBreakEachAttribute(true);
-        format.setSortAttributeNamesBy(AttributeNameComparator.INSTANCE);
+        format = new OutputFormat(4, true);
     }
 
-    /**
-     * Returns the {@link OutputFormat} used by {@link org.apache.jackrabbit.vault.fs.impl.io.DocViewSerializer} when writing doc view xml
+    /** Returns the {@link OutputFormat} used by {@link org.apache.jackrabbit.vault.fs.impl.io.DocViewSerializer} when writing doc view xml
      * files.
      *
-     * @return the output format
-     */
+     * @return the output format */
     public OutputFormat getXmlOutputFormat() {
         return format;
     }
 
-    /**
-     * Formats a given file using the {@link OutputFormat} returned by {@link DocViewFormat#getXmlOutputFormat()}.
-     * The file is replaced on disk but only if wasn't already formatted correctly and if {@code dryRun} is {@code false}.
+    /** Formats a given file using the {@link OutputFormat} returned by {@link DocViewFormat#getXmlOutputFormat()}. The file is replaced on
+     * disk but only if wasn't already formatted correctly and if {@code dryRun} is {@code false}.
      *
      * @param file the file to format
      * @param dryRun If {@code true}, then the file is never replaced on disk.
      * @return {@code true} if the formatted version differs from the original.
-     * @throws IOException if an I/O error occurs
-     */
+     * @throws IOException if an I/O error occurs */
     public boolean format(File file, boolean dryRun) throws IOException {
         CRC32 originalCrc32 = new CRC32();
         CRC32 formattedCrc32 = new CRC32();
@@ -100,21 +98,21 @@ public class DocViewFormat {
         return changed;
     }
 
-    /**
-     * Formats given files using the {@link OutputFormat} returned by {@link DocViewFormat#getXmlOutputFormat()} by traversing the directory
-     * tree given as file. Only those files will be formatted, that have a filename matching at least one of the given filenamePatterns,
-     * and only if {@code dryRun} is {@code false}.
+    /** Formats given files using the {@link OutputFormat} returned by {@link DocViewFormat#getXmlOutputFormat()} by traversing the
+     * directory tree given as file. Only those files will be formatted, that have a filename matching at least one of the given
+     * filenamePatterns, and only if {@code dryRun} is {@code false}.
      *
      * @param directory the start directory
      * @param filenamePatterns list of regexp patterns
      * @param dryRun If {@code true}, then the file is never replaced on disk.
      * @return a list of relative paths of those files which are not formatted correctly according to {@link #format(File, boolean)}
-     * @throws IOException in case there is an exception during traversal or formatting. That means formatting will fail on the first error that appeared
-     */
+     * @throws IOException in case there is an exception during traversal or formatting. That means formatting will fail on the first error
+     *             that appeared */
     public List<String> format(File directory, List<Pattern> filenamePatterns, final boolean dryRun) throws IOException {
         final List<String> changed = new LinkedList<>();
         Files.walkFileTree(directory.toPath(), new AbstractFormattingVisitor(filenamePatterns) {
-            @Override protected void process(File file) throws IOException {
+            @Override
+            protected void process(File file) throws IOException {
                 if (format(file, dryRun)) {
                     changed.add(file.getPath());
                 }
@@ -123,14 +121,13 @@ public class DocViewFormat {
         return changed;
     }
 
-    /**
-     * internally formats the given file and computes their checksum
+    /** internally formats the given file and computes their checksum
+     * 
      * @param file the file
      * @param original checksum of the original file
      * @param formatted checksum of the formatted file
      * @return the formatted bytes
-     * @throws IOException if an error occurs
-     */
+     * @throws IOException if an error occurs */
     private byte[] format(File file, Checksum original, Checksum formatted) throws IOException {
         try (InputStream in = new CheckedInputStream(new BufferedInputStream(new FileInputStream(file)), original)) {
             @SuppressWarnings("resource")
@@ -142,14 +139,24 @@ public class DocViewFormat {
                 buffer.reset();
             }
 
-            XMLSerializer serializer = new XMLSerializer(new CheckedOutputStream(buffer, formatted), format);
-            XMLReader reader = XMLReaderFactory.createXMLReader();
-            reader.setContentHandler(serializer);
-            reader.setDTDHandler(serializer);
-            reader.parse(new InputSource(in));
-
+            try (OutputStream out = new CheckedOutputStream(buffer, formatted);
+                 FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, format)) {
+                // cannot use XMlStreamReader due to comment handling:
+                // https://stackoverflow.com/questions/15792007/why-does-xmlstreamreader-staxsource-strip-comments-from-xml
+                TransformerFactory tf = TransformerFactory.newInstance();
+                tf.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                SAXSource saxSource = new SAXSource(new InputSource(in));
+                SAXParserFactory sf = SAXParserFactory.newInstance();
+                sf.setNamespaceAware(true);
+                sf.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
+                sf.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                saxSource.setXMLReader(new NormalizingSaxFilter(sf.newSAXParser().getXMLReader()));
+                Transformer t = tf.newTransformer();
+                StAXResult result = new StAXResult(writer);
+                t.transform(saxSource, result);
+            }
             return buffer.toByteArray();
-        } catch (SAXException ex) {
+        } catch (TransformerException | XMLStreamException | FactoryConfigurationError | ParserConfigurationException | SAXException ex) {
             throw new IOException(ex);
         }
     }

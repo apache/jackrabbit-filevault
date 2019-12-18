@@ -2,9 +2,13 @@
 <jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0"
     jcr:primaryType="nt:unstructured"
     jcr:title="Test node">
+    <!-- My Comment -->
     <testChild
         jcr:primaryType="nt:unstructured"
         foo="bar"
         TestProperty="test"
-        testProperty="test"/>
+        testProperty="test">
+        <!-- MyComment2 -->
+        <grandchild/>
+    </testChild>
 </jcr:root>

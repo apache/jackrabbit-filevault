@@ -17,11 +17,10 @@
 package org.apache.jackrabbit.vault.packaging.impl;
 
 
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEventListener;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
@@ -48,7 +47,7 @@ public class ActivityLog implements PackageEventListener {
     }
 
     @Override
-    public void onPackageEvent(@Nonnull PackageEvent event) {
+    public void onPackageEvent(@NotNull PackageEvent event) {
         String msg;
         if (event.getRelatedIds() != null) {
             msg = String.format("%s: %s (%s)", event.getId(), event.getType(), PackageId.toString(event.getRelatedIds()));

@@ -26,15 +26,14 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.validation.impl.util.ValidatorSettingsImpl;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +79,7 @@ public class ValidationExecutorFactory {
      * @param validatorSettingsById a map of {@link ValidatorSettings}. The key is the validator id. May be {@code null}.
      * @return either {@code null} or an executor (if at least one validator is registered)
      */
-    public @CheckForNull ValidationExecutor createValidationExecutor(@Nonnull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ? extends ValidatorSettings> validatorSettingsById) {
+    public @Nullable ValidationExecutor createValidationExecutor(@NotNull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ? extends ValidatorSettings> validatorSettingsById) {
         Map<String, Validator> validatorsById = createValidators(context, isSubPackage, enforceSubpackageValidation, validatorSettingsById != null ? validatorSettingsById : Collections.emptyMap());
         if (validatorsById.isEmpty()) {
             return null;
@@ -88,7 +87,7 @@ public class ValidationExecutorFactory {
         return new ValidationExecutor(validatorsById);
     }
 
-    private @Nonnull Map<String, Validator> createValidators(@Nonnull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ? extends ValidatorSettings> validatorSettingsById) {
+    private @NotNull Map<String, Validator> createValidators(@NotNull ValidationContext context, boolean isSubPackage, boolean enforceSubpackageValidation, Map<String, ? extends ValidatorSettings> validatorSettingsById) {
         Map<String, Validator> validatorsById = new LinkedHashMap<>();
         Set<String> validatorSettingsIds = new HashSet<>(validatorSettingsById.keySet());
         for (ValidatorFactory validatorFactory : validatorFactories) {

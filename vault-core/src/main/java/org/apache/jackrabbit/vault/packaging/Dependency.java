@@ -20,8 +20,8 @@ package org.apache.jackrabbit.vault.packaging;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Implements a package dependency reference.
@@ -60,7 +60,7 @@ public class Dependency {
      * @param name name
      * @param range version range
      */
-    public Dependency(@Nonnull String groupId, @Nonnull String name, @Nullable VersionRange range) {
+    public Dependency(@NotNull String groupId, @NotNull String name, @Nullable VersionRange range) {
         if (groupId.startsWith(PackageId.ETC_PACKAGES_PREFIX)) {
             groupId = groupId.substring(PackageId.ETC_PACKAGES_PREFIX.length());
         }
@@ -84,7 +84,7 @@ public class Dependency {
      * Creates a new dependency to the specified package id
      * @param id package id.
      */
-    public Dependency(@Nonnull PackageId id) {
+    public Dependency(@NotNull PackageId id) {
         this(id.getGroup(), id.getName(), new VersionRange(id.getVersion()));
     }
 
@@ -93,7 +93,7 @@ public class Dependency {
      * @return the group id
      * @since 2.4
      */
-    @Nonnull
+    @NotNull
     public String getGroup() {
         return groupId;
     }
@@ -102,7 +102,7 @@ public class Dependency {
      * Returns the name of the dependency
      * @return the name
      */
-    @Nonnull
+    @NotNull
     public String getName() {
         return name;
     }
@@ -111,7 +111,7 @@ public class Dependency {
      * Returns the version range
      * @return the version range
      */
-    @Nonnull
+    @NotNull
     public VersionRange getRange() {
         return range;
     }
@@ -123,7 +123,7 @@ public class Dependency {
      * @deprecated As of 3.1.42, the storage location is implementation details.
      */
     @Deprecated
-    @Nonnull
+    @NotNull
     public String getPath() {
         StringBuilder b = new StringBuilder();
         if (groupId.length() > 0) {
@@ -144,7 +144,7 @@ public class Dependency {
      * @param id the package id
      * @return {@code true} if matches
      */
-    public boolean matches(@Nonnull PackageId id) {
+    public boolean matches(@NotNull PackageId id) {
         return groupId.equals(id.getGroup())
                 && name.equals(id.getName())
                 && range.isInRange(id.getVersion());
@@ -206,8 +206,8 @@ public class Dependency {
      * @param str serialized string
      * @return array of dependency references
      */
-    @Nonnull
-    public static Dependency[] parse(@Nonnull String str) {
+    @NotNull
+    public static Dependency[] parse(@NotNull String str) {
         List<Dependency> deps = new ArrayList<>();
         boolean inRange = false;
         int start = 0;
@@ -242,8 +242,8 @@ public class Dependency {
      * @param str the strings
      * @return the dependencies
      */
-    @Nonnull
-    public static Dependency[] fromString(@Nonnull String ... str) {
+    @NotNull
+    public static Dependency[] fromString(@NotNull String ... str) {
         List<Dependency> deps = new ArrayList<>(str.length);
         for (String s : str) {
             Dependency dep = Dependency.fromString(s);
@@ -259,8 +259,8 @@ public class Dependency {
      * @param deps the dependencies
      * @return the strings
      */
-    @Nonnull
-    public static String toString(@Nonnull Dependency ... deps) {
+    @NotNull
+    public static String toString(@NotNull Dependency ... deps) {
         String delim = "";
         StringBuilder b = new StringBuilder();
         for (Dependency dep: deps) {
@@ -273,7 +273,7 @@ public class Dependency {
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public String toString() {
         return str;
     }

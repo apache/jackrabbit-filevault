@@ -29,9 +29,6 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -45,6 +42,8 @@ import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /** Very simple class that reads basic package info from a file.
  * 
@@ -71,7 +70,7 @@ public class DefaultPackageInfo implements PackageInfo {
      * @param file the package file as zip or an exploded directory containing metadata.
      * @return the package info if the package is valid, otherwise {@code null}.
      * @throws IOException if an error occurs. */
-    public static @CheckForNull PackageInfo read(@Nonnull File file) throws IOException {
+    public static @Nullable PackageInfo read(@NotNull File file) throws IOException {
         DefaultPackageInfo info = new DefaultPackageInfo(null, null, PackageType.MIXED);
         if (!file.exists()) {
             throw new FileNotFoundException("Could not find file " + file);

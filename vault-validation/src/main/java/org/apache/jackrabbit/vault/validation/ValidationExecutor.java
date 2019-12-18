@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
@@ -49,6 +47,7 @@ import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedFilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedPropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidator;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +79,7 @@ public class ValidationExecutor {
      * 
      * @param validatorsById a map of validator ids and actual validators
      */
-    public ValidationExecutor(@Nonnull Map<String, Validator> validatorsById) {
+    public ValidationExecutor(@NotNull Map<String, Validator> validatorsById) {
         this.validatorsById = validatorsById;
         this.documentViewXmlValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, DocumentViewXmlValidator.class);
         this.nodePathValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, NodePathValidator.class);
@@ -109,7 +108,7 @@ public class ValidationExecutor {
      * Returns all bound validators by id.
      * @return a map with all validators (key=validator id, value=actual validator)
      */
-    public @Nonnull Map<String, Validator> getAllValidatorsById() {
+    public @NotNull Map<String, Validator> getAllValidatorsById() {
         return validatorsById;
     }
 
@@ -119,7 +118,7 @@ public class ValidationExecutor {
      * 
      * @return a map with all unused validators (key=validator id, value=actual validator)
      */
-    public @Nonnull Map<String, Validator> getUnusedValidatorsById() {
+    public @NotNull Map<String, Validator> getUnusedValidatorsById() {
         Map<String, Validator> unusedValidators = new HashMap<>(validatorsById);
         unusedValidators.keySet().removeAll(documentViewXmlValidators.keySet());
         unusedValidators.keySet().removeAll(nodePathValidators.keySet());
@@ -141,7 +140,7 @@ public class ValidationExecutor {
      * @param basePath the path to which the file path is relative
      * @return the list of validation messages 
      * @throws IOException in case the input stream could not be accessed */
-    public @Nonnull Collection<ValidationViolation> validateMetaInf(@Nonnull InputStream input, @Nonnull Path filePath, @Nonnull Path basePath) throws IOException {
+    public @NotNull Collection<ValidationViolation> validateMetaInf(@NotNull InputStream input, @NotNull Path filePath, @NotNull Path basePath) throws IOException {
         if (filePath.isAbsolute()) {
             throw new IllegalArgumentException("Given file path must not be absolute");
         }
@@ -166,7 +165,7 @@ public class ValidationExecutor {
      * @return the list of validation messages 
      * @throws IOException in case the input stream could not be accessed
      */
-    public @Nonnull Collection<ValidationViolation> validateJcrRoot(@Nonnull InputStream input, @Nonnull Path filePath, @Nonnull Path basePath) throws IOException {
+    public @NotNull Collection<ValidationViolation> validateJcrRoot(@NotNull InputStream input, @NotNull Path filePath, @NotNull Path basePath) throws IOException {
         if (filePath.isAbsolute()) {
             throw new IllegalArgumentException("Given path is not relative " + filePath);
         }
@@ -188,7 +187,7 @@ public class ValidationExecutor {
      * 
      * @return the list of additional validation violations (might be empty) which have not been reported before 
      */
-    public @Nonnull Collection<ValidationViolation> done() {
+    public @NotNull Collection<ValidationViolation> done() {
         Collection<ValidationViolation> allViolations = new LinkedList<>();
         // go through all validators (even the nested ones)
         for (Map.Entry<String, Validator>entry : validatorsById.entrySet()) {
@@ -304,7 +303,7 @@ public class ValidationExecutor {
      * @param filePath the relative file path to convert
      * @return the node path
      */
-    public static @Nonnull String filePathToNodePath(@Nonnull Path filePath) {
+    public static @NotNull String filePathToNodePath(@NotNull Path filePath) {
         // convert to forward slashes and make absolute by prefixing it with "/"
         String platformPath = "/" + FilenameUtils.separatorsToUnix(filePath.toString());
         return PlatformNameFormat.getRepositoryPath(platformPath, true);

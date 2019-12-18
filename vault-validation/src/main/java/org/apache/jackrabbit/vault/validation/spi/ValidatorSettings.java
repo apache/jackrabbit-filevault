@@ -18,8 +18,7 @@ package org.apache.jackrabbit.vault.validation.spi;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -33,20 +32,20 @@ public interface ValidatorSettings {
      * 
      * @return the default severity for most {@link ValidationMessage}s being returned by the validator.
      */
-    @Nonnull ValidationMessageSeverity getDefaultSeverity();
+    @NotNull ValidationMessageSeverity getDefaultSeverity();
 
     /**
      * Returns the additional options.
      * 
      * @return list of options relevant for this validator
      */
-    @Nonnull Map<String, String> getOptions();
+    @NotNull Map<String, String> getOptions();
 
     /**
      * Returns whether the validator is disabled.
      * 
      * @return {@code true} in case validator is disabled otherwise {@code false}
      */
-    @Nonnull boolean isDisabled();
+    @NotNull boolean isDisabled();
 
 }

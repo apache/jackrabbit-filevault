@@ -20,19 +20,17 @@ import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 /**
  * Implements an archive that remaps the entries of an underlying archive using a {@link PathMapping}.
  */
@@ -67,7 +65,7 @@ public class MappedArchive extends AbstractArchive {
      * @param src source entry parent
      * @param dst destination entry parent
      */
-    private void applyMapping(@Nonnull Entry src, @Nonnull VirtualEntry dst) {
+    private void applyMapping(@NotNull Entry src, @NotNull VirtualEntry dst) {
         for (Entry child: src.getChildren()) {
             VirtualEntry dstChild = dst.add(child.getName(), child);
             if ("/jcr_root".equals(dstChild.getPath())) {
@@ -86,7 +84,7 @@ public class MappedArchive extends AbstractArchive {
      * @param src the source entry
      * @param jcrPath the jcr path of the source entry
      */
-    private void applyMapping(@Nonnull Entry src, @Nonnull String jcrPath) {
+    private void applyMapping(@NotNull Entry src, @NotNull String jcrPath) {
         for (Entry child: src.getChildren()) {
             String path = jcrPath + "/" + child.getName();
             String mappedPath = mapping.map(path);
@@ -108,7 +106,7 @@ public class MappedArchive extends AbstractArchive {
     }
 
     @Override
-    @CheckForNull
+    @Nullable
     public InputStream openInputStream(@Nullable Entry entry) throws IOException {
         if (entry == null) {
             return null;
@@ -117,7 +115,7 @@ public class MappedArchive extends AbstractArchive {
     }
 
     @Override
-    @CheckForNull
+    @Nullable
     public VaultInputSource getInputSource(@Nullable Entry entry) throws IOException {
         if (entry == null) {
             return null;
@@ -126,7 +124,7 @@ public class MappedArchive extends AbstractArchive {
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public Entry getRoot() throws IOException {
         return root;
     }
@@ -137,7 +135,7 @@ public class MappedArchive extends AbstractArchive {
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public MetaInf getMetaInf() {
         return base.getMetaInf();
     }
@@ -155,7 +153,7 @@ public class MappedArchive extends AbstractArchive {
         @Nullable
         private final VirtualEntry parent;
 
-        @Nonnull
+        @NotNull
         private final String name;
 
         @Nullable
@@ -170,7 +168,7 @@ public class MappedArchive extends AbstractArchive {
             this.baseEntry = null;
         }
 
-        private VirtualEntry(@Nonnull VirtualEntry parent, @Nonnull String name, @Nullable Archive.Entry baseEntry) {
+        private VirtualEntry(@NotNull VirtualEntry parent, @NotNull String name, @Nullable Archive.Entry baseEntry) {
             this.parent = parent;
             this.name = name;
             this.baseEntry = baseEntry;
@@ -180,18 +178,18 @@ public class MappedArchive extends AbstractArchive {
          * {@inheritDoc}
          */
         @Override
-        @Nonnull
+        @NotNull
         public String getName() {
             return name;
         }
 
-        @Nonnull
+        @NotNull
         public String getPath() {
             return getPath(new StringBuilder()).toString();
         }
 
-        @Nonnull
-        private StringBuilder getPath(@Nonnull StringBuilder sb) {
+        @NotNull
+        private StringBuilder getPath(@NotNull StringBuilder sb) {
             return parent == null ? sb : parent.getPath(sb).append('/').append(name);
         }
 
@@ -207,7 +205,7 @@ public class MappedArchive extends AbstractArchive {
          * {@inheritDoc}
          */
         @Override
-        @Nonnull
+        @NotNull
         public Collection<? extends Entry> getChildren() {
             return children == null ? Collections.<Entry>emptyList() : children.values();
         }
@@ -227,8 +225,8 @@ public class MappedArchive extends AbstractArchive {
          * @param baseEntry the base archive's entry or
          * @return the new entry
          */
-        @Nonnull
-        public VirtualEntry add(@Nonnull String name, @Nullable Archive.Entry baseEntry) {
+        @NotNull
+        public VirtualEntry add(@NotNull String name, @Nullable Archive.Entry baseEntry) {
             if (children != null) {
                 VirtualEntry ret = children.get(name);
                 if (ret != null) {

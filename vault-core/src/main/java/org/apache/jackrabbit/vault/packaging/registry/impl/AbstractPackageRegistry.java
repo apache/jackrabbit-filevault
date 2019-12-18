@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import javax.annotation.Nonnull;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -38,6 +37,7 @@ import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Abstraction for shared methods of PackageRegistry &amp; InternalPackageRegistry implementations
@@ -118,9 +118,9 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NotNull
     @Override
-    public DependencyReport analyzeDependencies(@Nonnull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException {
+    public DependencyReport analyzeDependencies(@NotNull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException {
         List<Dependency> unresolved = new LinkedList<Dependency>();
         List<PackageId> resolved = new LinkedList<PackageId>();
         try (RegisteredPackage pkg = open(id)) {
@@ -152,7 +152,7 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NotNull
     @Override
     public PackageId[] usage(PackageId id) throws IOException {
         TreeSet<PackageId> usages = new TreeSet<PackageId>();
@@ -176,7 +176,7 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NotNull
     @Override
     public ExecutionPlanBuilder createExecutionPlan() {
         return new ExecutionPlanBuilderImpl(this);

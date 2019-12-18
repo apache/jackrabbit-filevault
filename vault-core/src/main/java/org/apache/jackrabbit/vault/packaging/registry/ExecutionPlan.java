@@ -18,8 +18,7 @@ package org.apache.jackrabbit.vault.packaging.registry;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
+import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -32,14 +31,14 @@ public interface ExecutionPlan {
      * An id of the execution plan.
      * @return the id.
      */
-    @Nonnull
+    @NotNull
     String getId();
 
     /**
      * Retrieves the list of all tasks
      * @return the tasks.
      */
-    @Nonnull
+    @NotNull
     List<PackageTask> getTasks();
 
     /**

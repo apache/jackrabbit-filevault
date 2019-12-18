@@ -23,9 +23,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
@@ -39,6 +36,8 @@ import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /** Checks if the package type is correctly set for this package
  * 
@@ -70,8 +69,8 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     private final boolean prohibitMutableContent;
     private final boolean prohibitImmutableContent;
 
-    public PackageTypeValidator(@Nonnull ValidationMessageSeverity severity, @Nonnull ValidationMessageSeverity severityForNoPackageType, @Nonnull ValidationMessageSeverity severityForLegacyType,
-            boolean prohibitMutableContent, boolean prohibitImmutableContent, PackageType type, @Nonnull Pattern jcrInstallerNodePathRegex,
+    public PackageTypeValidator(@NotNull ValidationMessageSeverity severity, @NotNull ValidationMessageSeverity severityForNoPackageType, @NotNull ValidationMessageSeverity severityForLegacyType,
+            boolean prohibitMutableContent, boolean prohibitImmutableContent, PackageType type, @NotNull Pattern jcrInstallerNodePathRegex,
             ValidationContext containerValidationContext) {
         this.type = type;
         this.severity = severity;
@@ -97,12 +96,12 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     }
 
     @Override
-    public @CheckForNull Collection<ValidationMessage> done() {
+    public @Nullable Collection<ValidationMessage> done() {
         return null;
     }
 
     @Override
-    public @CheckForNull Collection<ValidationMessage> validate(String nodePath) {
+    public @Nullable Collection<ValidationMessage> validate(String nodePath) {
         if (type == null) {
             return null;
         }

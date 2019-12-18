@@ -20,12 +20,12 @@ package org.apache.jackrabbit.vault.fs.io;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -208,11 +208,11 @@ public class AutoSave {
         return needsSave();
     }
 
-    public void markMissing(@Nonnull String path) {
+    public void markMissing(@NotNull String path) {
         missingMandatory.add(path);
     }
 
-    public void markResolved(@Nonnull String path) {
+    public void markResolved(@NotNull String path) {
         missingMandatory.remove(path);
     }
 

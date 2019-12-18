@@ -16,11 +16,10 @@
  */
 package org.apache.jackrabbit.vault.packaging;
 
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageType;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Exposes the main meta information about a package
@@ -31,17 +30,17 @@ public interface PackageInfo {
      * Returns the package id.
      * @return the package id.
      */
-    @Nonnull PackageId getId();
+    @NotNull PackageId getId();
 
     /**
      * Returns the workspace filter
      * @return the filter
      */
-    @Nonnull WorkspaceFilter getFilter();
+    @NotNull WorkspaceFilter getFilter();
 
     /**
      * Returns the package type.
      * @return the package type
      */
-    @Nonnull PackageType getPackageType();
+    @NotNull PackageType getPackageType();
 }

@@ -394,9 +394,9 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>com.google.code.findbugs</groupId>
-                <artifactId>jsr305</artifactId>
-                <version>2.0.2</version>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>18.0.0</version>
                 <scope>provided</scope>
             </dependency>
 

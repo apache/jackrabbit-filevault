@@ -19,8 +19,6 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import java.io.IOException;
 import java.util.Calendar;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
@@ -32,6 +30,8 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.JcrWorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * {@code JcrRegisteredPackage}...
@@ -51,13 +51,13 @@ public class JcrRegisteredPackage implements RegisteredPackage {
         return pkg;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public PackageId getId() {
         return vltPkg.getId();
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public VaultPackage getPackage() throws IOException {
         return vltPkg;
@@ -77,7 +77,7 @@ public class JcrRegisteredPackage implements RegisteredPackage {
         return pkg.getSize();
     }
 
-    @CheckForNull
+    @Nullable
     @Override
     public Calendar getInstallationTime() {
         try {

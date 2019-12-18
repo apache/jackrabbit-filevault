@@ -19,8 +19,8 @@ package org.apache.jackrabbit.vault.fs.api;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The path filter set holds a set of path filters each attributes as include
@@ -75,7 +75,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
      * Creates a new path filter set and sets the respective root path
      * @param root path
      */
-    public PathFilterSet(@Nonnull String root) {
+    public PathFilterSet(@NotNull String root) {
         super(root);
     }
 
@@ -90,7 +90,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
      * @param path the path to check
      * @return {@code true} if this set matches the item
      */
-    public boolean contains(@Nonnull String path) {
+    public boolean contains(@NotNull String path) {
         if (!covers(path)) {
             return false;
         }
@@ -109,7 +109,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public FilterSet seal() {
         if (!isSealed()) {
             super.seal();
@@ -131,7 +131,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
      * @return the new filter
      * @since 2.4.10
      */
-    @Nonnull
+    @NotNull
     public PathFilterSet translate(@Nullable PathMapping mapping) {
         if (mapping == null) {
             return this;
@@ -174,7 +174,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
      * @param type the type
      * @return this.
      */
-    @Nonnull
+    @NotNull
     public PathFilterSet setType(@Nullable String type) {
         this.type = type;
         return this;

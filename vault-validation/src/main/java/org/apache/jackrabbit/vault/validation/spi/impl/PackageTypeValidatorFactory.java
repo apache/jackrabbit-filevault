@@ -18,13 +18,12 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 
 import java.util.regex.Pattern;
 
-import javax.annotation.CheckForNull;
-
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.Nullable;
 import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
@@ -50,7 +49,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_NO_TYPE = ValidationMessageSeverity.WARN;
     
     @Override
-    public @CheckForNull Validator createValidator(ValidationContext context, ValidatorSettings settings) {
+    public @Nullable Validator createValidator(ValidationContext context, ValidatorSettings settings) {
         // evaluate options
         final Pattern jcrInstallerNodePathRegex;
         if (settings.getOptions().containsKey(OPTION_JCR_INSTALLER_NODE_PATH_REGEX)) {

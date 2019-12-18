@@ -21,13 +21,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -45,14 +44,14 @@ public interface PackageRegistry {
      * @return {@code true} if the package is registered.
      * @throws IOException if an I/O error occurrs.
      */
-    boolean contains(@Nonnull PackageId id) throws IOException;
+    boolean contains(@NotNull PackageId id) throws IOException;
 
     /**
      * Returns as set of all packages registered in this registry.
      * @return a set of package ids.
      * @throws IOException if an I/O error occurrs.
      */
-    @Nonnull
+    @NotNull
     Set<PackageId> packages() throws IOException;
 
     /**
@@ -62,7 +61,7 @@ public interface PackageRegistry {
      * @throws IOException if an I/O error occurrs.
      */
     @Nullable
-    RegisteredPackage open(@Nonnull PackageId id) throws IOException;
+    RegisteredPackage open(@NotNull PackageId id) throws IOException;
 
     /**
      * Registers a package provided via an input stream. The method fails, if a package with the same id already exists,
@@ -74,8 +73,8 @@ public interface PackageRegistry {
      * @throws IOException if an I/O error occurrs.
      * @throws PackageExistsException if the package exists and {@code replace} is {@code false}.
      */
-    @Nonnull
-    PackageId register(@Nonnull InputStream in, boolean replace) throws IOException, PackageExistsException;
+    @NotNull
+    PackageId register(@NotNull InputStream in, boolean replace) throws IOException, PackageExistsException;
 
     /**
      * Registers a package provided via a file. The method fails, if a package with the same id already exists,
@@ -87,8 +86,8 @@ public interface PackageRegistry {
      * @throws IOException if an I/O error occurrs.
      * @throws PackageExistsException if the package exists and {@code replace} is {@code false}.
      */
-    @Nonnull
-    PackageId register(@Nonnull File file, boolean replace) throws IOException, PackageExistsException;
+    @NotNull
+    PackageId register(@NotNull File file, boolean replace) throws IOException, PackageExistsException;
 
     /**
      * Registers a package provided via an external file. The binary data of the package will not be copied into the
@@ -104,8 +103,8 @@ public interface PackageRegistry {
      * @throws IOException if an I/O error occurrs.
      * @throws PackageExistsException if the package exists and {@code replace} is {@code false}.
      */
-    @Nonnull
-    PackageId registerExternal(@Nonnull File file, boolean replace) throws IOException, PackageExistsException;
+    @NotNull
+    PackageId registerExternal(@NotNull File file, boolean replace) throws IOException, PackageExistsException;
 
     /**
      * Removes the package from this registry.
@@ -113,7 +112,7 @@ public interface PackageRegistry {
      * @throws IOException if an I/O error occurrs.
      * @throws NoSuchPackageException if the package does not exist
      */
-    void remove(@Nonnull PackageId id) throws IOException, NoSuchPackageException;
+    void remove(@NotNull PackageId id) throws IOException, NoSuchPackageException;
 
     /**
      * Creates a dependency report that lists the resolved and unresolved dependencies.
@@ -123,8 +122,8 @@ public interface PackageRegistry {
      * @throws IOException if an error accessing the repository occurrs
      * @throws NoSuchPackageException if the package with the given {@code id} does not exist.
      */
-    @Nonnull
-    DependencyReport analyzeDependencies(@Nonnull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException;
+    @NotNull
+    DependencyReport analyzeDependencies(@NotNull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException;
 
     /**
      * Tries to resolve the given dependency and returns the id of the package that matches the dependency filter best.
@@ -134,7 +133,7 @@ public interface PackageRegistry {
      * @throws IOException if an I/O error occurrs.
      */
     @Nullable
-    PackageId resolve(@Nonnull Dependency dependency, boolean onlyInstalled) throws IOException;
+    PackageId resolve(@NotNull Dependency dependency, boolean onlyInstalled) throws IOException;
 
     /**
      * Returns the package ids of installed packages that depend on the given package.
@@ -143,8 +142,8 @@ public interface PackageRegistry {
      * @return the array of package ids.
      * @throws IOException if an I/O error occurs.
      */
-    @Nonnull
-    PackageId[] usage(@Nonnull PackageId id) throws IOException;
+    @NotNull
+    PackageId[] usage(@NotNull PackageId id) throws IOException;
 
     /**
      * Creates a new execution plan builder. The builder allows to create an execution plan for package installation
@@ -152,6 +151,6 @@ public interface PackageRegistry {
      *
      * @return a new builder
      */
-    @Nonnull
+    @NotNull
     ExecutionPlanBuilder createExecutionPlan();
 }

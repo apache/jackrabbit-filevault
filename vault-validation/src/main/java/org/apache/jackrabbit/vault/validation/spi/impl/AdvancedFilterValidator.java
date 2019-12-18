@@ -35,8 +35,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -64,6 +62,8 @@ import org.apache.jackrabbit.vault.validation.spi.GenericMetaInfDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -94,7 +94,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     private final Collection<String> danglingNodePaths;
     private final Map<PathFilterSet, List<Entry<PathFilter>>> orphanedFilterSets;
 
-    public AdvancedFilterValidator(@Nonnull ValidationMessageSeverity defaultSeverity, @Nonnull ValidationMessageSeverity severityForUncoveredAncestorNodes, @Nonnull ValidationMessageSeverity severityForUncoveredFilterRootAncestors, @Nonnull ValidationMessageSeverity severityForOrphanedFilterEntries, boolean isSubPackage, @Nonnull Collection<PackageInfo> dependenciesMetaInfo, @Nonnull WorkspaceFilter filter, @Nonnull Collection<String> validRoots) {
+    public AdvancedFilterValidator(@NotNull ValidationMessageSeverity defaultSeverity, @NotNull ValidationMessageSeverity severityForUncoveredAncestorNodes, @NotNull ValidationMessageSeverity severityForUncoveredFilterRootAncestors, @NotNull ValidationMessageSeverity severityForOrphanedFilterEntries, boolean isSubPackage, @NotNull Collection<PackageInfo> dependenciesMetaInfo, @NotNull WorkspaceFilter filter, @NotNull Collection<String> validRoots) {
         this.isSubPackage = isSubPackage;
         this.filterValidators = new HashMap<>();
         this.defaultSeverity = defaultSeverity;
@@ -372,7 +372,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
      * @param nodePath
      * @return the path the ancestor node not contained in the filter or {@code null}
      */
-     @CheckForNull String getDanglingAncestorNodePath(String nodePath, WorkspaceFilter filter) {
+     @Nullable String getDanglingAncestorNodePath(String nodePath, WorkspaceFilter filter) {
         // check cache first (in that case the issue has already been emitted)
         if (danglingNodePaths.contains(nodePath)) {
             return null;

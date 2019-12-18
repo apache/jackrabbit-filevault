@@ -19,11 +19,10 @@ package org.apache.jackrabbit.vault.validation.spi;
 import java.nio.file.Path;
 import java.util.Collection;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -46,5 +45,5 @@ public interface DocumentViewXmlValidator extends Validator {
      * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
      * @return validation messages or {@code null}
      */
-    @CheckForNull Collection<ValidationMessage> validate(@Nonnull DocViewNode node, @Nonnull String nodePath, @Nonnull Path filePath, boolean isRoot);
+    @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot);
 }

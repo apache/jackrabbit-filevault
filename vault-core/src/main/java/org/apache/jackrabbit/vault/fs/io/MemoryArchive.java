@@ -27,9 +27,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
@@ -38,6 +35,8 @@ import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -232,13 +231,13 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
             return name;
         }
 
-        @Nonnull
+        @NotNull
         public String getPath() {
             return getPath(new StringBuilder()).toString();
         }
 
-        @Nonnull
-        private StringBuilder getPath(@Nonnull StringBuilder sb) {
+        @NotNull
+        private StringBuilder getPath(@NotNull StringBuilder sb) {
             return parent == null ? sb : parent.getPath(sb).append('/').append(name);
         }
 
@@ -273,8 +272,8 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
          * @param data data or {@code null}
          * @return the new entry
          */
-        @Nonnull
-        public VirtualEntry add(@Nonnull String name, long time, @Nullable byte[] data) {
+        @NotNull
+        public VirtualEntry add(@NotNull String name, long time, @Nullable byte[] data) {
             if (children != null) {
                 VirtualEntry ret = children.get(name);
                 if (ret != null) {

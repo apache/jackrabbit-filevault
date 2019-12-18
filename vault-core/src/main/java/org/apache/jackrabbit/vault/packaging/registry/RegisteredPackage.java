@@ -19,14 +19,13 @@ package org.apache.jackrabbit.vault.packaging.registry;
 import java.io.IOException;
 import java.util.Calendar;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -39,7 +38,7 @@ public interface RegisteredPackage extends Comparable<RegisteredPackage>, AutoCl
      * Returns the id of this package
      * @return the id of this package.
      */
-    @Nonnull
+    @NotNull
     PackageId getId();
 
     /**
@@ -47,21 +46,21 @@ public interface RegisteredPackage extends Comparable<RegisteredPackage>, AutoCl
      * @return the package
      * @throws IOException if an I/O error occurs
      */
-    @Nonnull
+    @NotNull
     VaultPackage getPackage() throws IOException;
 
     /**
      * Returns the dependencies of this package
      * @return the dependencies of this package.
      */
-    @Nonnull
+    @NotNull
     Dependency[] getDependencies();
     
     /**
      * Returns the {@code WorkspaceFilter} of this package
      * @return {@code WorkspaceFilter} of this package
      */
-    @Nonnull
+    @NotNull
     WorkspaceFilter getWorkspaceFilter();
     
     /**
@@ -69,7 +68,7 @@ public interface RegisteredPackage extends Comparable<RegisteredPackage>, AutoCl
      * @return {@code PackageProperties} of this package
      * @throws IOException if an I/O error occurs
      */
-    @Nonnull
+    @NotNull
     PackageProperties getPackageProperties() throws IOException;
     
     /**

@@ -17,7 +17,7 @@
 
 package org.apache.jackrabbit.vault.fs.api;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * {@code Dumpable}...
@@ -31,5 +31,5 @@ public interface Dumpable {
      * @param ctx the dump context
      * @param isLast specifies if this is the last element to dump on this level
      */
-    void dump(@Nonnull DumpContext ctx, boolean isLast);
+    void dump(@NotNull DumpContext ctx, boolean isLast);
 }

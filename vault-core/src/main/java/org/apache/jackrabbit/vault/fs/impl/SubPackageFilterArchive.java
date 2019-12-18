@@ -23,14 +23,12 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl.ARCHIVE_PACKAGE_ROOT_PATH;
 
@@ -52,38 +50,38 @@ public class SubPackageFilterArchive implements Archive {
     }
 
     @Override
-    @CheckForNull
+    @Nullable
     public InputStream openInputStream(@Nullable Entry entry) throws IOException {
         return base.openInputStream(entry);
     }
 
     @Override
-    @CheckForNull
+    @Nullable
     public VaultInputSource getInputSource(@Nullable Entry entry) throws IOException {
         return base.getInputSource(entry);
     }
 
     @Override
-    @CheckForNull
+    @Nullable
     public Entry getJcrRoot() throws IOException {
         return new FilterEntry(base.getJcrRoot(), 1);
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public Entry getRoot() throws IOException {
         return new FilterEntry(base.getRoot(), 0);
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public MetaInf getMetaInf() {
         return base.getMetaInf();
     }
 
     @Override
-    @CheckForNull
-    public Entry getEntry(@Nonnull String path) throws IOException {
+    @Nullable
+    public Entry getEntry(@NotNull String path) throws IOException {
         if (path.length() == 0 || "/".equals(path)) {
             return getRoot();
         }
@@ -100,8 +98,8 @@ public class SubPackageFilterArchive implements Archive {
     }
 
     @Override
-    @CheckForNull
-    public Archive getSubArchive(@Nonnull String root, boolean asJcrRoot) throws IOException {
+    @Nullable
+    public Archive getSubArchive(@NotNull String root, boolean asJcrRoot) throws IOException {
         return base.getSubArchive(root, asJcrRoot);
     }
 
@@ -124,7 +122,7 @@ public class SubPackageFilterArchive implements Archive {
         return entries;
     }
 
-    private void findSubPackageEntries(@Nonnull List<Entry> entries, @Nonnull Entry folder) {
+    private void findSubPackageEntries(@NotNull List<Entry> entries, @NotNull Entry folder) {
         for (Archive.Entry e: folder.getChildren()) {
             final String name = e.getName();
             if (e.isDirectory()) {
@@ -156,7 +154,7 @@ public class SubPackageFilterArchive implements Archive {
         }
 
         @Override
-        @Nonnull
+        @NotNull
         public String getName() {
             return base.getName();
         }
@@ -179,7 +177,7 @@ public class SubPackageFilterArchive implements Archive {
         }
 
         @Override
-        @Nonnull
+        @NotNull
         public Collection<? extends Entry> getChildren() {
             Collection<? extends Entry> children =  base.getChildren();
             List<Entry> ret = new ArrayList<>(children.size());
@@ -193,8 +191,8 @@ public class SubPackageFilterArchive implements Archive {
         }
 
         @Override
-        @CheckForNull
-        public Entry getChild(@Nonnull String name) {
+        @Nullable
+        public Entry getChild(@NotNull String name) {
             return filterChild(base.getChild(name));
         }
     }

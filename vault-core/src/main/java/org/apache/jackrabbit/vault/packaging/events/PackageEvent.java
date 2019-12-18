@@ -16,10 +16,9 @@
  */
 package org.apache.jackrabbit.vault.packaging.events;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -93,18 +92,18 @@ public interface PackageEvent {
      * Returns the type of the event
      * @return the type.
      */
-    @Nonnull Type getType();
+    @NotNull Type getType();
 
     /**
      * Returns the id of the package
      * @return the id.
      */
-    @Nonnull PackageId getId();
+    @NotNull PackageId getId();
 
     /**
      * Returns the related ids for certain events.
      * @return the related ids.
      */
-    @CheckForNull PackageId[] getRelatedIds();
+    @Nullable PackageId[] getRelatedIds();
 
 }

@@ -21,12 +21,11 @@ import java.net.URI;
 import java.util.Calendar;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -317,5 +316,5 @@ public interface PackageProperties {
      * Returns a map of dependency locations where key = package id and value = uri of package dependency with that id.
      * @return dependencies locations as map
      */
-    @Nonnull Map<PackageId, URI> getDependenciesLocations();
+    @NotNull Map<PackageId, URI> getDependenciesLocations();
 }

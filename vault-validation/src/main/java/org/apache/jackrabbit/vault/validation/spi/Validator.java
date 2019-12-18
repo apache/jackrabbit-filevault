@@ -18,8 +18,7 @@ package org.apache.jackrabbit.vault.validation.spi;
 
 import java.util.Collection;
 
-import javax.annotation.CheckForNull;
-
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -35,7 +34,7 @@ public interface Validator {
      * Called when the validation is done for one {@link ValidationContext} (this instance is no longer needed)
      * @return validation messages or {@code null}
      */
-     @CheckForNull Collection<ValidationMessage> done();
+     @Nullable Collection<ValidationMessage> done();
 
 
 }

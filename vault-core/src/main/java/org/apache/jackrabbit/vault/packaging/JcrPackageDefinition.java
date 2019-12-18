@@ -20,9 +20,6 @@ package org.apache.jackrabbit.vault.packaging;
 import java.io.IOException;
 import java.util.Calendar;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
@@ -30,6 +27,8 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -186,14 +185,14 @@ public interface JcrPackageDefinition {
      * Returns the underlying node
      * @return the node
      */
-    @Nonnull
+    @NotNull
     Node getNode();
 
     /**
      * Returns the package id
      * @return the package id
      */
-    @Nonnull
+    @NotNull
     PackageId getId();
 
     /**
@@ -202,7 +201,7 @@ public interface JcrPackageDefinition {
      * @param autoSave if {@code true} the changes are saved automatically.
      * @since 2.2
      */
-    void setId(@Nonnull PackageId id, boolean autoSave);
+    void setId(@NotNull PackageId id, boolean autoSave);
 
     /**
      * Checks if this definition is unwrapped, i.e. if the definition structured
@@ -234,13 +233,13 @@ public interface JcrPackageDefinition {
      * @param listener the listener
      * @throws RepositoryException if an error occurrs
      */
-    void dumpCoverage(@Nonnull ProgressTrackerListener listener) throws RepositoryException;
+    void dumpCoverage(@NotNull ProgressTrackerListener listener) throws RepositoryException;
 
     /**
      * Returns the dependencies stored in this definition
      * @return the dependencies
      */
-    @Nonnull
+    @NotNull
     Dependency[] getDependencies();
 
     /**
@@ -249,30 +248,30 @@ public interface JcrPackageDefinition {
      * @param autoSave if {@code true} the modifications are saved automatically.
      * @since 3.1.32
      */
-    void setDependencies(@Nonnull Dependency[] dependencies, boolean autoSave);
+    void setDependencies(@NotNull Dependency[] dependencies, boolean autoSave);
 
     /**
      * Generic method to retrieve a string property of this definition.
      * @param name the name of the property.
      * @return the property value or {@code null} if it does not exist.
      */
-    @CheckForNull
-    String get(@Nonnull String name);
+    @Nullable
+    String get(@NotNull String name);
 
     /**
      * Generic method to retrieve a boolean property of this definition.
      * @param name the name of the property.
      * @return the property value or {@code null} if it does not exist.
      */
-    boolean getBoolean(@Nonnull String name);
+    boolean getBoolean(@NotNull String name);
 
     /**
      * Generic method to retrieve a date property of this definition.
      * @param name the name of the property.
      * @return the property value or {@code null} if it does not exist.
      */
-    @CheckForNull
-    Calendar getCalendar(@Nonnull String name);
+    @Nullable
+    Calendar getCalendar(@NotNull String name);
 
     /**
      * Generic method to set a string property to this definition.
@@ -280,7 +279,7 @@ public interface JcrPackageDefinition {
      * @param value the value or {@code null} to clear the property
      * @param autoSave if {@code true} the modifications are saved automatically.
      */
-    void set(@Nonnull String name, @Nullable String value, boolean autoSave);
+    void set(@NotNull String name, @Nullable String value, boolean autoSave);
 
     /**
      * Generic method to set a date property to this definition.
@@ -288,7 +287,7 @@ public interface JcrPackageDefinition {
      * @param value the value or {@code null} to clear the property
      * @param autoSave if {@code true} the modifications are saved automatically.
      */
-    void set(@Nonnull String name, @Nullable Calendar value, boolean autoSave);
+    void set(@NotNull String name, @Nullable Calendar value, boolean autoSave);
 
     /**
      * Generic method to set a boolean property to this definition.
@@ -296,7 +295,7 @@ public interface JcrPackageDefinition {
      * @param value the value
      * @param autoSave if {@code true} the modifications are saved automatically.
      */
-    void set(@Nonnull String name, boolean value, boolean autoSave);
+    void set(@NotNull String name, boolean value, boolean autoSave);
 
     /**
      * Touches the last modified and last modified by property.
@@ -317,28 +316,28 @@ public interface JcrPackageDefinition {
      * Returns the last modified date
      * @return the last modified date
      */
-    @CheckForNull
+    @Nullable
     Calendar getLastModified();
 
     /**
      * Returns the last modified user id
      * @return the last modified user id
      */
-    @CheckForNull
+    @Nullable
     String getLastModifiedBy();
 
     /**
      * Returns the created date
      * @return the created date
      */
-    @CheckForNull
+    @Nullable
     Calendar getCreated();
 
     /**
      * Returns the creator user id
      * @return the creator
      */
-    @CheckForNull
+    @Nullable
     String getCreatedBy();
 
     /**
@@ -346,7 +345,7 @@ public interface JcrPackageDefinition {
      * @return the last wrapped date
      * @since 2.2.22
      */
-    @CheckForNull
+    @Nullable
     Calendar getLastWrapped();
 
     /**
@@ -354,35 +353,35 @@ public interface JcrPackageDefinition {
      * @return the wrapper
      * @since 2.2.22
      */
-    @CheckForNull
+    @Nullable
     String getLastWrappedBy();
 
     /**
      * Returns the last unwrapped date
      * @return the last unwrapped date
      */
-    @CheckForNull
+    @Nullable
     Calendar getLastUnwrapped();
 
     /**
      * Returns the last unwrapped user id
      * @return the last unwrapped user id
      */
-    @CheckForNull
+    @Nullable
     String getLastUnwrappedBy();
 
     /**
      * Returns the date when the package was unpacked
      * @return the unpacked date
      */
-    @CheckForNull
+    @Nullable
     Calendar getLastUnpacked();
 
     /**
      * Returns the user id who unpacked the package
      * @return the unpacked user id
      */
-    @CheckForNull
+    @Nullable
     String getLastUnpackedBy();
 
     /**
@@ -405,14 +404,14 @@ public interface JcrPackageDefinition {
      * @return the access control handling or {@code null}
      * @since 2.3.2
      */
-    @CheckForNull
+    @Nullable
     AccessControlHandling getAccessControlHandling();
 
     /**
      * Returns the description of this package
      * @return the description
      */
-    @CheckForNull
+    @Nullable
     String getDescription();
 
     /**
@@ -426,7 +425,7 @@ public interface JcrPackageDefinition {
      * @return the meta inf
      * @throws RepositoryException if an error occurs.
      */
-    @Nonnull
+    @NotNull
     MetaInf getMetaInf() throws RepositoryException;
 
 }

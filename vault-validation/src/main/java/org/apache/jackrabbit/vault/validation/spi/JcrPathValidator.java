@@ -19,9 +19,8 @@ package org.apache.jackrabbit.vault.validation.spi;
 import java.nio.file.Path;
 import java.util.Collection;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 
@@ -37,6 +36,6 @@ public interface JcrPathValidator extends Validator {
      * @param filePath the relative file path to the jcr_root directory
      * @return validation messages or {@code null}
      */
-    @CheckForNull Collection<ValidationMessage> validateJcrPath(@Nonnull Path filePath);
+    @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull Path filePath);
    
 }

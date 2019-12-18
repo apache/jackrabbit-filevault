@@ -20,14 +20,13 @@ package org.apache.jackrabbit.vault.fs.config;
 import java.util.Collection;
 import java.util.Properties;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeSet;
 import org.apache.jackrabbit.vault.fs.spi.PrivilegeDefinitions;
 import org.apache.jackrabbit.vault.packaging.PackageType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Abstracts the way of accessing the vault specific meta-info of a checkout.
@@ -77,35 +76,35 @@ public interface MetaInf {
      * Returns the vault settings.
      * @return the vault settings.
      */
-    @CheckForNull
+    @Nullable
     VaultSettings getSettings();
 
     /**
      * Returns the workspace filter.
      * @return the workspace filter.
      */
-    @CheckForNull
+    @Nullable
     WorkspaceFilter getFilter();
 
     /**
      * Returns the vault config
      * @return the vault config
      */
-    @CheckForNull
+    @Nullable
     VaultFsConfig getConfig();
 
     /**
      * Returns the properties
      * @return the properties
      */
-    @CheckForNull
+    @Nullable
     Properties getProperties();
 
     /**
      * Returns the node types
      * @return the node types
      */
-    @Nonnull
+    @NotNull
     Collection<NodeTypeSet> getNodeTypes();
 
     /**
@@ -113,7 +112,7 @@ public interface MetaInf {
      * @return a collection of custom privileges.
      * @since 3.0
      */
-    @CheckForNull
+    @Nullable
     PrivilegeDefinitions getPrivileges();
     
     /**

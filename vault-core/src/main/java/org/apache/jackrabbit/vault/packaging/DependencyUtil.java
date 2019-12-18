@@ -23,9 +23,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
 import javax.jcr.RepositoryException;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +130,7 @@ public class DependencyUtil {
      * @param id the id
      * @return {@code true} if matches
      */
-    public static boolean matches(@Nonnull Dependency[] deps, @Nonnull PackageId id) {
+    public static boolean matches(@NotNull Dependency[] deps, @NotNull PackageId id) {
         for (Dependency dep: deps) {
             if (dep.matches(id)) {
                 return true;
@@ -145,7 +145,7 @@ public class DependencyUtil {
      * @param id the id to add
      * @return the new array of dependencies, or {@code deps} if nothing changed.
      */
-    public static Dependency[] addExact(@Nonnull Dependency[] deps, @Nonnull PackageId id) {
+    public static Dependency[] addExact(@NotNull Dependency[] deps, @NotNull PackageId id) {
         if (matches(deps, id)) {
             return deps;
         }
@@ -163,7 +163,7 @@ public class DependencyUtil {
      * @param dep the dependency to add
      * @return the new array of dependencies, or {@code deps} if nothing changed.
      */
-    public static Dependency[] add(@Nonnull Dependency[] deps, @Nonnull Dependency dep) {
+    public static Dependency[] add(@NotNull Dependency[] deps, @NotNull Dependency dep) {
         for (Dependency d: deps) {
             if (d.getName().equals(dep.getName()) && d.getGroup().equals(dep.getGroup())) {
                 return deps;

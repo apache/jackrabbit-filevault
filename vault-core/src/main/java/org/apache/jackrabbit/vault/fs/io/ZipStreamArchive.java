@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.annotation.Nonnull;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CloseShieldInputStream;
@@ -41,6 +39,7 @@ import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +108,7 @@ public class ZipStreamArchive extends AbstractArchive {
      * Creates a new zip stream archive on the given input stream.
      * @param in the input stream to read from.
      */
-    public ZipStreamArchive(@Nonnull InputStream in) {
+    public ZipStreamArchive(@NotNull InputStream in) {
         this(in, DEFAULT_BUFFER_SIZE);
     }
 
@@ -118,7 +117,7 @@ public class ZipStreamArchive extends AbstractArchive {
      * @param in the input stream to read from.
      * @param maxBufferSize size of buffer to keep content in memory.
      */
-    public ZipStreamArchive(@Nonnull InputStream in, int maxBufferSize) {
+    public ZipStreamArchive(@NotNull InputStream in, int maxBufferSize) {
         this.in = in;
         this.maxBufferSize = maxBufferSize;
     }
@@ -205,7 +204,7 @@ public class ZipStreamArchive extends AbstractArchive {
      * @return the number of bytes written to the destination.
      * @throws IOException if an I/O error occurrs.
      */
-    private long copy(@Nonnull InputStream in) throws IOException {
+    private long copy(@NotNull InputStream in) throws IOException {
         if (raf != null) {
             return copyToRaf(in);
         }
@@ -219,7 +218,7 @@ public class ZipStreamArchive extends AbstractArchive {
      * @return the number of bytes written to the destination.
      * @throws IOException if an I/O error occurrs.
      */
-    private long copyToBuffer(@Nonnull InputStream in) throws IOException {
+    private long copyToBuffer(@NotNull InputStream in) throws IOException {
         int read;
         int total = 0;
         while ((read = in.read(decompressed, pos, decompressed.length - pos)) > 0) {
@@ -243,7 +242,7 @@ public class ZipStreamArchive extends AbstractArchive {
      * @return the total number of bytes copied
      * @throws IOException if an error occurrs.
      */
-    private long copyToRaf(@Nonnull InputStream in) throws IOException {
+    private long copyToRaf(@NotNull InputStream in) throws IOException {
         int read;
         int total = 0;
         while ((read = in.read(buffer)) > 0) {
@@ -309,7 +308,7 @@ public class ZipStreamArchive extends AbstractArchive {
      * @param entry the archive entry
      * @return the input stream
      */
-    private InputStream createInputStream(@Nonnull EntryImpl entry) {
+    private InputStream createInputStream(@NotNull EntryImpl entry) {
         if (raf == null) {
             return new ByteArrayInputStream(decompressed, (int) entry.pos, (int) entry.len);
         }

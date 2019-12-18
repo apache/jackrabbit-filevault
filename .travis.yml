@@ -42,8 +42,7 @@ env:
     # available build differs among platforms.
     - JDK="adopt@1.8"
     - JDK="adopt@1.11"
-    # Java13 not yet supported due to non-compliant javadooc
-    #- JDK="adopt@1.13"
+    - JDK="adopt@1.13"
 before_install:
   # Download the script
   - curl "${GRAVIS}.install-jdk-travis.sh" --output ~/.install-jdk-travis.sh

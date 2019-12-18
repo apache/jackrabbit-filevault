@@ -27,6 +27,7 @@ env:
   global:
     # This is a convenience variable for shortening download commands
     - GRAVIS="https://raw.githubusercontent.com/DanySK/Gravis-CI/master/"
+    - MAVEN_VERSION="3.6.3"
     # If you use Windows, you may want to disable Windows Defender. It slows down the builds
     # dramatically, also during cache setup. From a Tanzinul Islam's idea: http://bit.ly/348VPYS,
     # This work around disables it before caching

@@ -172,7 +172,6 @@ Content Package Serialized Content
     - property2="new"
 ```
 
-<!-- references -->
 [api.WorkspaceFilter]: apidocs/org/apache/jackrabbit/vault/fs/api/WorkspaceFilter.html
 [api.ImportMode]: apidocs/org/apache/jackrabbit/vault/fs/api/ImportMode.html
 [api.Pattern]: https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html

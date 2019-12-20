@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.jackrabbit.vault.fs.impl;
+package org.apache.jackrabbit.vault.fs;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -170,7 +170,7 @@ public abstract class AbstractArtifact implements Artifact {
      * Sets the content type
      * @param contentType the content type
      */
-    protected void setContentType(String contentType) {
+    public void setContentType(String contentType) {
         this.contentType = contentType;
     }
 

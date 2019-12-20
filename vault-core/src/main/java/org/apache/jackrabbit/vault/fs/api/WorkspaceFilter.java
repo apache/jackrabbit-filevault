@@ -155,4 +155,13 @@ public interface WorkspaceFilter extends Dumpable {
      */
     void dumpCoverage(@NotNull Session session, @NotNull ProgressTrackerListener listener, boolean skipJcrContent)
             throws RepositoryException;
+
+    /**
+     * Tests if the given workspace filter includes the given property. If the filter does not cover the property,
+     * it returns {@code true}.
+     *
+     * @param propertyPath the path to the property
+     * @return {@code true} if the property is included in the filter
+     */
+    boolean includesProperty(String propertyPath);
 }

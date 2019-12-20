@@ -573,28 +573,6 @@ public class AggregateImpl implements Aggregate {
         }
     }
 
-    /**
-     * Tests if the given workspace filter includes the given property. If the filter does not cover the property,
-     * it returns {@code true}.
-     *
-     * @param filter the workspace filter
-     * @param propertyPath the path to the property
-     * @return {@code true} if the property is included in the aggregate
-     */
-    private boolean includesProperty(WorkspaceFilter filter, String propertyPath) {
-        if (!filter.covers(propertyPath)) {
-            // include all properties that are not covered by any filter. this is to ensure that the ancestor paths
-            // have at least jcr:primary type.
-            return true;
-        }
-        for (PathFilterSet filterSet: filter.getPropertyFilterSets()) {
-            if (filterSet.contains(propertyPath)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void addNamespace(Set<String> prefixes, String name) throws RepositoryException {
         int idx = name.indexOf(':');
         if (idx > 0) {
@@ -700,7 +678,7 @@ public class AggregateImpl implements Aggregate {
         while (pIter.hasNext()) {
             Property p = pIter.nextProperty();
             String path = p.getPath();
-            if (aggregator.includes(getNode(), node, p, path) && includesProperty(filter, path)) {
+            if (aggregator.includes(getNode(), node, p, path) && filter.includesProperty(path)) {
                 include(node, p, path);
             }
         }

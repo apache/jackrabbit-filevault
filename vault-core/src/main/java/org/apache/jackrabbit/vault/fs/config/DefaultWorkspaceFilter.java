@@ -258,6 +258,21 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         return false;
     }
 
+    @Override
+    public boolean includesProperty(String propertyPath) {
+        if (!covers(propertyPath)) {
+            // include all properties that are not covered by any filter. this is to ensure that the ancestor paths
+            // have at least jcr:primary type.
+            return true;
+        }
+        for (PathFilterSet filterSet: getPropertyFilterSets()) {
+            if (filterSet.contains(propertyPath)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * {@inheritDoc}
      */

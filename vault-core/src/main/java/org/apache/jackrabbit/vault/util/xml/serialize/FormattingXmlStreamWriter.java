@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -28,6 +29,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import com.ctc.wstx.api.WstxOutputProperties;
 import com.ctc.wstx.stax.WstxOutputFactory;
+import com.sun.xml.txw2.output.IndentingXMLStreamWriter;
 
 /** StAX XML Stream Writer filter. Adds the following functionality:
  * <ul>
@@ -36,11 +38,12 @@ import com.ctc.wstx.stax.WstxOutputFactory;
  * <li>indentation for elements and comments</li>
  * </ul> 
  */
-public class FormattingXmlStreamWriter extends com.sun.xml.txw2.output.IndentingXMLStreamWriter implements AutoCloseable {
+public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable {
 
     private final Writer rawWriter;
     private final XMLStreamWriter writer;
     private final OutputFormat output;
+    private final IndentingXMLStreamWriter elementIndentingXmlWriter;
 
     int numNamespaceDeclarations = 0;
     int numAttributes = 0;
@@ -61,39 +64,39 @@ public class FormattingXmlStreamWriter extends com.sun.xml.txw2.output.Indenting
     }
 
     private FormattingXmlStreamWriter(XMLStreamWriter writer, OutputFormat output) {
-        super(writer);
-        super.setIndentStep(output.getIndent());
         this.output = output;
         this.writer = writer;
         this.rawWriter = (Writer) writer.getProperty(WstxOutputProperties.P_OUTPUT_UNDERLYING_WRITER);
         if (this.rawWriter == null) {
             throw new IllegalStateException("Could not get underlying writer!");
         }
+        this.elementIndentingXmlWriter = new IndentingXMLStreamWriter(writer);
+        this.elementIndentingXmlWriter.setIndentStep(output.getIndent());
     }
 
     @Override
     public void writeEndDocument() throws XMLStreamException {
         // nothing can be written after writeEndDocument() has been called, therefore call the additional new line before
-        super.writeEndDocument();
+        elementIndentingXmlWriter.writeEndDocument();
         addLineBreak(true);
     }
 
     @Override
     public void writeStartElement(String localName) throws XMLStreamException {
         onStartElement();
-        super.writeStartElement(localName);
+        elementIndentingXmlWriter.writeStartElement(localName);
     }
 
     @Override
     public void writeStartElement(String namespaceURI, String localName) throws XMLStreamException {
         onStartElement();
-        super.writeStartElement(namespaceURI, localName);
+        elementIndentingXmlWriter.writeStartElement(namespaceURI, localName);
     }
 
     @Override
     public void writeStartElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
         onStartElement();
-        super.writeStartElement(prefix, localName, namespaceURI);
+        elementIndentingXmlWriter.writeStartElement(prefix, localName, namespaceURI);
     }
 
     @Override
@@ -101,7 +104,7 @@ public class FormattingXmlStreamWriter extends com.sun.xml.txw2.output.Indenting
         // is it new element or 
         flushBufferedAttribute();
         depth--;
-        super.writeEndElement();
+        elementIndentingXmlWriter.writeEndElement();
     }
 
     private void onStartElement() throws XMLStreamException {
@@ -114,27 +117,27 @@ public class FormattingXmlStreamWriter extends com.sun.xml.txw2.output.Indenting
     @Override
     public void writeNamespace(String prefix, String namespaceURI) throws XMLStreamException {
         numNamespaceDeclarations++;
-        super.writeNamespace(prefix, namespaceURI);
+        elementIndentingXmlWriter.writeNamespace(prefix, namespaceURI);
     }
 
     @Override
     public void writeAttribute(String localName, String value) throws XMLStreamException {
         if (onAttribute(null, null, localName, value)) {
-            super.writeAttribute(localName, value);
+            elementIndentingXmlWriter.writeAttribute(localName, value);
         }
     }
 
     @Override
     public void writeAttribute(String prefix, String namespaceURI, String localName, String value) throws XMLStreamException {
         if (onAttribute(prefix, namespaceURI, localName, value)) {
-            super.writeAttribute(prefix, namespaceURI, localName, value);
+            elementIndentingXmlWriter.writeAttribute(prefix, namespaceURI, localName, value);
         }
     }
 
     @Override
     public void writeAttribute(String namespaceURI, String localName, String value) throws XMLStreamException {
         if (onAttribute(null, namespaceURI, localName, value)) {
-            super.writeAttribute(namespaceURI, localName, value);
+            elementIndentingXmlWriter.writeAttribute(namespaceURI, localName, value);
         }
     }
 
@@ -238,7 +241,103 @@ public class FormattingXmlStreamWriter extends com.sun.xml.txw2.output.Indenting
         flushBufferedAttribute();
         addLineBreak(false);
         indent(false);
-        super.writeComment(data);
-        //addLineBreak(false);
+        elementIndentingXmlWriter.writeComment(data);
     }
+
+    public void close() throws XMLStreamException {
+        elementIndentingXmlWriter.close();
+    }
+
+    public void setIndentStep(String s) {
+        elementIndentingXmlWriter.setIndentStep(s);
+    }
+
+    public void flush() throws XMLStreamException {
+        elementIndentingXmlWriter.flush();
+    }
+
+    public void writeDefaultNamespace(String namespaceURI) throws XMLStreamException {
+        elementIndentingXmlWriter.writeDefaultNamespace(namespaceURI);
+    }
+
+    public void writeProcessingInstruction(String target) throws XMLStreamException {
+        elementIndentingXmlWriter.writeProcessingInstruction(target);
+    }
+
+    public void writeProcessingInstruction(String target, String data) throws XMLStreamException {
+        elementIndentingXmlWriter.writeProcessingInstruction(target, data);
+    }
+
+    public void writeStartDocument() throws XMLStreamException {
+        elementIndentingXmlWriter.writeStartDocument();
+    }
+
+    public void writeStartDocument(String version) throws XMLStreamException {
+        elementIndentingXmlWriter.writeStartDocument(version);
+    }
+
+    public void writeDTD(String dtd) throws XMLStreamException {
+        elementIndentingXmlWriter.writeDTD(dtd);
+    }
+
+    public void writeStartDocument(String encoding, String version) throws XMLStreamException {
+        elementIndentingXmlWriter.writeStartDocument(encoding, version);
+    }
+
+    public void writeEntityRef(String name) throws XMLStreamException {
+        elementIndentingXmlWriter.writeEntityRef(name);
+    }
+
+    public void writeEmptyElement(String namespaceURI, String localName) throws XMLStreamException {
+        elementIndentingXmlWriter.writeEmptyElement(namespaceURI, localName);
+    }
+
+    public String getPrefix(String uri) throws XMLStreamException {
+        return elementIndentingXmlWriter.getPrefix(uri);
+    }
+
+    public void setPrefix(String prefix, String uri) throws XMLStreamException {
+        elementIndentingXmlWriter.setPrefix(prefix, uri);
+    }
+
+    public void writeEmptyElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
+        elementIndentingXmlWriter.writeEmptyElement(prefix, localName, namespaceURI);
+    }
+
+    public void setDefaultNamespace(String uri) throws XMLStreamException {
+        elementIndentingXmlWriter.setDefaultNamespace(uri);
+    }
+
+    public void writeEmptyElement(String localName) throws XMLStreamException {
+        elementIndentingXmlWriter.writeEmptyElement(localName);
+    }
+
+    public void setNamespaceContext(NamespaceContext context) throws XMLStreamException {
+        elementIndentingXmlWriter.setNamespaceContext(context);
+    }
+
+    public NamespaceContext getNamespaceContext() {
+        return elementIndentingXmlWriter.getNamespaceContext();
+    }
+
+    public Object getProperty(String name) throws IllegalArgumentException {
+        return elementIndentingXmlWriter.getProperty(name);
+    }
+
+    public void writeCharacters(String text) throws XMLStreamException {
+        elementIndentingXmlWriter.writeCharacters(text);
+    }
+
+    public void writeCharacters(char[] text, int start, int len) throws XMLStreamException {
+        elementIndentingXmlWriter.writeCharacters(text, start, len);
+    }
+
+    public void writeCData(String data) throws XMLStreamException {
+        elementIndentingXmlWriter.writeCData(data);
+    }
+
+    public String toString() {
+        return elementIndentingXmlWriter.toString();
+    }
+
 }

@@ -973,7 +973,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 String propName = p.getName();
                 if (!PROTECTED_PROPERTIES.contains(propName)
                         && !ni.props.containsKey(propName)
-                        && !saveProperties.contains(p.getPath())) {
+                        && !saveProperties.contains(p.getPath())
+                        && wspFilter.includesProperty(p.getPath())) {
                     try {
                         vs.ensureCheckedOut();
                         p.remove();

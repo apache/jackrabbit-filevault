@@ -256,6 +256,33 @@ public class TestFilteredPropertyExport extends IntegrationTestBase {
     }
 
     @Test
+    public void filterPropertyFromSourceWithRelativePropertyFilter() throws IOException, RepositoryException, PackageException, ConfigurationException {
+        String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<workspaceFilter version=\"1.0\">\n" +
+                "    <filter root=\"/tmp/foo\">\n" +
+                "        <exclude pattern=\".*/p1\" matchProperties=\"true\"/>\n" +
+                "    </filter>\n" +
+                "</workspaceFilter>";
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.load(new ByteArrayInputStream(src.getBytes("utf-8")));
+
+        // export and extract
+        File pkgFile = assemblePackage(filter);
+        // do not clean but modify a property
+        admin.getNode("/tmp/foo").setProperty("p1", "newv1");
+        assertProperty("/tmp/foo/p1", "newv1");
+        admin.save();
+        try (VaultPackage vp = packMgr.open(pkgFile)) {
+            vp.extract(admin, getDefaultOptions());
+            // validate the extracted content has not overwritten p1
+            assertProperty("/tmp/foo/p1", "newv1");
+        } finally {
+            pkgFile.delete();
+        }
+    }
+
+    @Test
     public void filterRelativeProperties_deprecated() throws IOException, RepositoryException, PackageException, ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));

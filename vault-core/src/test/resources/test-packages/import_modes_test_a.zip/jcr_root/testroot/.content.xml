@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:rep="internal"
+    jcr:primaryType="sling:Folder">
+    <replace jcr:primaryType="sling:Folder"
+        propertyupdate="new"
+        propertynew="new">
+        <update jcr:primaryType="sling:Folder" propertynew="new" />
+        <new jcr:primaryType="sling:Folder" />
+    </replace>
+    <merge jcr:primaryType="sling:Folder"
+        propertyupdate="new"
+        propertynew="new">
+        <update jcr:primaryType="sling:Folder" propertynew="new" />
+        <new jcr:primaryType="sling:Folder" />
+    </merge>
+    <update jcr:primaryType="sling:Folder"
+        propertyupdate="new"
+        propertynew="new">
+        <update jcr:primaryType="sling:Folder" propertynew="new"/>
+        <new jcr:primaryType="sling:Folder" />
+    </update>
+</jcr:root>

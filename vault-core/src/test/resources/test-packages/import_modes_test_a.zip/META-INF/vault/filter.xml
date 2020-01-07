@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/testroot/replace" mode="replace"/>
+    <filter root="/testroot/merge" mode="merge"/>
+    <filter root="/testroot/update" mode="update"/>
+</workspaceFilter>

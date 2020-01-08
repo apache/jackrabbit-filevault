@@ -13,6 +13,7 @@ Changes in Jackrabbit FileVault 3.4.2
 --------------------------------------
 
 Release Notes - Jackrabbit FileVault - Version 3.4.2
+This version requires Java 8, Oak 1.18 and Jackrabbit 2.18.3
 
 Bug fixes
     * [JCRVLT-343] - Check for index definitions also considers ACL entries

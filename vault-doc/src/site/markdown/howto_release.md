@@ -183,7 +183,7 @@ Appendix B: Maven settings
       </servers>
     </settings>
 
-<!-- references -->
+
 [0]: http://www.apache.org/dev/release-signing.html#generate
 [1]: http://www.apache.org/dev/release-signing.html#apache-wot
 [2]: https://repository.apache.org/index.html#stagingRepositories

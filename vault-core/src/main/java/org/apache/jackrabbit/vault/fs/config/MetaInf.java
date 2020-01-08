@@ -24,7 +24,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeSet;
 import org.apache.jackrabbit.vault.fs.spi.PrivilegeDefinitions;
-import org.apache.jackrabbit.vault.packaging.PackageType;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,34 +74,41 @@ public interface MetaInf {
 
     /**
      * Returns the vault settings.
-     * @return the vault settings.
+     * @return the vault settings
      */
     @Nullable
     VaultSettings getSettings();
 
     /**
      * Returns the workspace filter.
-     * @return the workspace filter.
+     * @return the workspace filter
      */
     @Nullable
     WorkspaceFilter getFilter();
 
     /**
-     * Returns the vault config
+     * Returns the vault config.
      * @return the vault config
      */
     @Nullable
     VaultFsConfig getConfig();
 
     /**
-     * Returns the properties
+     * Returns the properties.
      * @return the properties
      */
     @Nullable
     Properties getProperties();
 
     /**
-     * Returns the node types
+     * Returns the package properties.
+     * @return the package properties
+     */
+    @NotNull
+    PackageProperties getPackageProperties();
+
+    /**
+     * Returns the node types.
      * @return the node types
      */
     @NotNull
@@ -109,7 +116,7 @@ public interface MetaInf {
 
     /**
      * Returns custom privileges defined in the meta inf.
-     * @return a collection of custom privileges.
+     * @return a collection of custom privileges
      * @since 3.0
      */
     @Nullable
@@ -117,7 +124,7 @@ public interface MetaInf {
     
     /**
      * Checks if the meta-inf contains a serialized definition.
-     * @return {@code true} if it contains a serialized definition.
+     * @return {@code true} if it contains a serialized definition
      */
     boolean hasDefinition();
 

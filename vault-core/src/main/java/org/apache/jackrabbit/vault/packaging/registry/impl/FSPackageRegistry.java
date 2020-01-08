@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -29,7 +28,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,7 +54,6 @@ import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent.Type;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.packaging.impl.HollowVaultPackage;
-import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
@@ -487,13 +484,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             }
 
             final MetaInf inf = archive.getMetaInf();
-            PackagePropertiesImpl props = new PackagePropertiesImpl() {
-                @Override
-                protected Properties getPropertiesMap() {
-                    return inf.getProperties();
-                }
-            };
-            PackageId pid = props.getId();
+            PackageId pid = inf.getPackageProperties().getId();
 
             // invalidate pid if path is unknown
             if (pid == null) {

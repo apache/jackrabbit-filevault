@@ -24,9 +24,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+
 import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -57,7 +57,6 @@ import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageDefinitionImpl;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageImpl;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
-import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
@@ -378,13 +377,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
 
         final MetaInf inf = archive.getMetaInf();
-        PackagePropertiesImpl props = new PackagePropertiesImpl() {
-            @Override
-            protected Properties getPropertiesMap() {
-                return inf.getProperties();
-            }
-        };
-        PackageId pid = props.getId();
+        PackageId pid = inf.getPackageProperties().getId();
 
         // invalidate pid if path is unknown
         if (pid == null) {

@@ -43,6 +43,8 @@ import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeSet;
 import org.apache.jackrabbit.vault.fs.spi.PrivilegeDefinitions;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.Text;
 import org.jetbrains.annotations.NotNull;
@@ -424,4 +426,16 @@ public class DefaultMetaInf implements MetaInf {
             }
         }
     }
+
+    @Override
+    public PackageProperties getPackageProperties() {
+        return new PackagePropertiesImpl() {
+            
+            @Override
+            protected Properties getPropertiesMap() {
+                return getProperties();
+            }
+        };
+    }
+
 }

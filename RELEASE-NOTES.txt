@@ -13,7 +13,7 @@ Changes in Jackrabbit FileVault 3.4.2
 --------------------------------------
 
 Release Notes - Jackrabbit FileVault - Version 3.4.2
-This version requires Java 8, Oak 1.18 and Jackrabbit 2.18.3
+This version requires Java 8, Oak 1.18 and Jackrabbit 2.20.0
 
 Bug fixes
     * [JCRVLT-343] - Check for index definitions also considers ACL entries
@@ -22,11 +22,11 @@ Bug fixes
     * [JCRVLT-390] - filter based on content properties is not working
 
 New Features
+    * [JCRVLT-232] - Enforce constraints for package types
     * [JCRVLT-345] - Support pluggable node/file/filter validators
 
 Improvements
     * [JCRVLT-187] - Expose PackageProperties from MetaInf and VaultPackage from Archive
-    * [JCRVLT-232] - Enforce constraints for package types
     * [JCRVLT-361] - Validate that all includes/excludes are below the filter root
     * [JCRVLT-365] - Migrate from JSR 305 to Jetbrains annotations
     * [JCRVLT-368] - DefaultWorkspaceFilter.readFilter(Element) might throw j.u.r.PatternSyntaxException
@@ -36,7 +36,7 @@ Improvements
     * [JCRVLT-382] - DefaultWorkspaceFilter: Reset source for every modifying operation
     * [JCRVLT-384] - Document config.xml, settings.xml, nodetypes.cnd and privileges.xml below META-INF/vault
     * [JCRVLT-385] - AdvancedFilterValidator should also consider filter roots of nested subpackages
-    * [JCRVLT-394] - Get rid of "provided" scope for FileVault dependencies
+    * [JCRVLT-399] - Update to Jackrabbit API 2.20.0
 
 Tasks
     * [JCRVLT-161] - Document FileVault Workspace Property filter

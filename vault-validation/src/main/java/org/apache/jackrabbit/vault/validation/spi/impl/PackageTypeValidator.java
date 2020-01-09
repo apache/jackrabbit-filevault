@@ -166,7 +166,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         // is sub package?
         if (containerValidationContext != null) {
             messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, "Found sub package"));
-            ValidationMessage message = validateSubPackageType(properties.getPackageType(), containerValidationContext.getPackageType());
+            ValidationMessage message = validateSubPackageType(properties.getPackageType(), containerValidationContext.getProperties().getPackageType());
             if (message != null) {
                 messages.add(message);
             }

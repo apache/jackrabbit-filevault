@@ -40,7 +40,7 @@ public final class DependencyValidatorFactory implements ValidatorFactory {
         } else {
             severityForUnresolvedDependencies = DEFAULT_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES;
         }
-        return new DependencyValidator(settings.getDefaultSeverity(), severityForUnresolvedDependencies, context.getDependenciesMetaInfo());
+        return new DependencyValidator(settings.getDefaultSeverity(), severityForUnresolvedDependencies, context.getDependenciesPackageInfo());
     }
 
     @Override

@@ -190,7 +190,6 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                             </goals>
                             <configuration>
                                 <failOnError>true</failOnError>
-                                <comparisonVersion>LATEST</comparisonVersion>
                             </configuration>
                         </execution>
                         <!-- Configure extra execution of 'manifest' in process-classes phase to make sure SCR metadata is generated before

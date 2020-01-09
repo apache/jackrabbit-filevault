@@ -29,6 +29,7 @@ import org.apache.jackrabbit.vault.fs.api.ExportArtifact;
 import org.apache.jackrabbit.vault.fs.api.ImportArtifact;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
+import org.apache.jackrabbit.vault.fs.impl.AbstractArtifact;
 
 /**
  * Implements a generic hint artifact.

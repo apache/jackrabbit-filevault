@@ -74,6 +74,11 @@ public class VaultAuthConfig extends AbstractConfig {
         repoConfigs.put(cfg.uri, cfg);
     }
 
+    @Deprecated
+    protected void doWrite(ContentHandler handler) throws SAXException {
+        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+    }
+
     protected void doWrite(XMLStreamWriter writer) throws XMLStreamException {
         for (RepositoryConfig cfg: repoConfigs.values()) {
             cfg.write(writer);
@@ -133,6 +138,11 @@ public class VaultAuthConfig extends AbstractConfig {
                 }
             }
             return cfg;
+        }
+
+        @Deprecated
+        public void write(ContentHandler contentHandler) throws XMLStreamException {
+            throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
         }
 
         public void write(XMLStreamWriter writer) throws XMLStreamException {

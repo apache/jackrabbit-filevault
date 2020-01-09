@@ -34,6 +34,8 @@ import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
  */
 public class ItemNameComparator implements Comparator<Item> {
 
+    @Deprecated
+    public static final ItemNameComparator INSTANCE = new ItemNameComparator();
     
     /**
      * the session's namespace resolver
@@ -43,6 +45,11 @@ public class ItemNameComparator implements Comparator<Item> {
     public ItemNameComparator(NamespaceResolver nsResolver) {
         super();
         this.nsResolver = nsResolver;
+    }
+
+    @Deprecated
+    public ItemNameComparator() {
+        throw new UnsupportedOperationException("This constructor is no longer supported, please use constructor with argument instead");
     }
 
     private QName getQName(String rawName) throws RepositoryException {

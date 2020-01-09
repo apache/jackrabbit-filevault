@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-@Version("2.4.0")
+@Version("3.0.0")
 package org.apache.jackrabbit.vault.util.xml;
 
 import org.osgi.annotation.versioning.Version;

@@ -32,18 +32,21 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
+import org.osgi.annotation.versioning.ProviderType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
  * {@code VaultUserConfig}...
  *
  */
+@ProviderType
 abstract public class AbstractConfig {
 
     protected static Logger log = LoggerFactory.getLogger(AbstractConfig.class);
@@ -143,6 +146,13 @@ abstract public class AbstractConfig {
         return configDir;
     }
 
+    @Deprecated
+    protected void write(ContentHandler handler) throws SAXException {
+        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+    }
+  
+    abstract protected void doWrite(ContentHandler handler) throws SAXException;
+    
     protected void write(XMLStreamWriter writer) throws XMLStreamException {
         writer.writeStartDocument();
         writer.writeStartElement(getRootElemName());

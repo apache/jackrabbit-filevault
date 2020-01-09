@@ -55,7 +55,7 @@ Release management tasks
 
         The non-Maven release artifacts are automatically copied to `/.../target/checkout/target/$version`
 
-4. Close the [staged repository][2] on _repository.apache.org_.
+4. Close the [staged repository][2] on <https://repository.apache.org>.
 
 5. Upload the artifacts to https://dist.apache.org/repos/dist/dev/jackrabbit/filevault via SVN
        
@@ -75,13 +75,13 @@ Release management tasks
        ````
 
     2. delete the RC from _dist.apache.org_
-    3. and drop the staged repository
+    3. and drop the [staged repository][2]
     4. done 
  
 8. If the vote is successful, close the vote by publishing the results
 
 9. copy the release candidate from `dev/jackrabbit` to `release/jackrabbit` in 
-   https://dist.apche.org/repos/dist/, and delete any older releases from the same branch 
+   <https://dist.apache.org/repos/dist/>, and delete any older releases from the same branch 
    (they're automatically archived):
 
     ```` 

@@ -92,7 +92,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         } else {
             validRoots.addAll(DEFAULT_VALID_ROOTS);
         }
-        return new AdvancedFilterValidator(settings.getDefaultSeverity(), severityForUncoveredAncestorNode, severityForUncoveredFilterRootAncestors, severityForOrphanedFilterRules, context.getContainerValidationContext() != null, context.getDependenciesMetaInfo(), context.getFilter(), validRoots);
+        return new AdvancedFilterValidator(settings.getDefaultSeverity(), severityForUncoveredAncestorNode, severityForUncoveredFilterRootAncestors, severityForOrphanedFilterRules, context.getContainerValidationContext() != null, context.getDependenciesPackageInfo(), context.getFilter(), validRoots);
     }
 
     @Override

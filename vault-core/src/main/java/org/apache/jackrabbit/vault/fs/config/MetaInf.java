@@ -27,11 +27,13 @@ import org.apache.jackrabbit.vault.fs.spi.PrivilegeDefinitions;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Abstracts the way of accessing the vault specific meta-info of a checkout.
  * TODO: merge with packageInfo
  */
+@ProviderType
 public interface MetaInf {
 
     /**

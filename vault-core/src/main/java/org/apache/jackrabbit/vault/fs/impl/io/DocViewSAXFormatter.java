@@ -43,7 +43,7 @@ import org.apache.jackrabbit.util.ISO9075;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
-import org.apache.jackrabbit.vault.util.ItemNameComparator;
+import org.apache.jackrabbit.vault.util.ItemNameComparator2;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
 
@@ -115,7 +115,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      */
     private final Set<String> ignored = new HashSet<String>();
 
-    private ItemNameComparator itemNameComparator;
+    private ItemNameComparator2 itemNameComparator;
 
     protected DocViewSAXFormatter(Aggregate aggregate, XMLStreamWriter writer)
             throws RepositoryException {
@@ -123,7 +123,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
         this.aggregate = aggregate;
         this.session = aggregate.getNode().getSession();
         nsResolver = new SessionNamespaceResolver(session);
-        itemNameComparator = new ItemNameComparator(nsResolver);
+        itemNameComparator = new ItemNameComparator2(nsResolver);
         this.writer = writer;
 
         DefaultNamePathResolver npResolver = new DefaultNamePathResolver(nsResolver);

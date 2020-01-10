@@ -36,7 +36,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code SimpleCredentialsConfig}...
@@ -94,6 +93,12 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
         throw new ConfigurationException("mandatory element <user> missing.");
     }
 
+    @Deprecated
+    public void writeInner(ContentHandler handler) throws SAXException {
+        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+    }
+
+    
     @Override
     protected void writeInner(XMLStreamWriter writer) throws XMLStreamException {
         if (creds != null) {

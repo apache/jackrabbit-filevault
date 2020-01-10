@@ -24,7 +24,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.w3c.dom.Element;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code CredentialsConfig}...
@@ -51,6 +50,13 @@ public abstract class CredentialsConfig {
     }
 
     public abstract Credentials getCredentials();
+
+    @Deprecated
+    public void write(ContentHandler handler) throws SAXException {
+        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+    }
+
+    protected abstract void writeInner(ContentHandler handler) throws SAXException;
 
     public void write(XMLStreamWriter writer) throws XMLStreamException {
         writer.writeStartElement(ELEM_CREDETIALS);

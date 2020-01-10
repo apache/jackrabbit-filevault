@@ -26,10 +26,12 @@ import javax.jcr.Session;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * {@code WorkspaceFilter} defined a filter for items (node or property).
  */
+@ProviderType
 public interface WorkspaceFilter extends Dumpable {
 
     /**

@@ -26,7 +26,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.w3c.dom.Element;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code VaultUserConfig}...
@@ -69,6 +68,11 @@ public class VaultSettings extends AbstractConfig {
 
     protected double getSupportedVersion() {
         return 1.0;
+    }
+
+    @Deprecated
+    protected void doWrite(ContentHandler handler) throws SAXException {
+        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
     }
 
     protected void doWrite(XMLStreamWriter writer) throws XMLStreamException {

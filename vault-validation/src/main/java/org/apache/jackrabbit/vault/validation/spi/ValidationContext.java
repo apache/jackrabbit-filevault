@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.validation.spi;
 import java.nio.file.Path;
 import java.util.Collection;
 
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.jetbrains.annotations.NotNull;
@@ -30,8 +31,13 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  */
 @ProviderType
-public interface ValidationContext extends PackageInfo {
-    
+public interface ValidationContext {
+    /**
+     * Returns the workspace filter
+     * @return the filter
+     */
+    @NotNull WorkspaceFilter getFilter();
+
     /**
      * Returns the package properties.
      * 
@@ -57,5 +63,5 @@ public interface ValidationContext extends PackageInfo {
      * carry the main metadata of the dependencies.
      * @return the package info of all resolved package dependencies (i.e. the ones for which an artifact was found).
      */
-    @NotNull Collection<PackageInfo> getDependenciesMetaInfo();
+    @NotNull Collection<PackageInfo> getDependenciesPackageInfo();
 }

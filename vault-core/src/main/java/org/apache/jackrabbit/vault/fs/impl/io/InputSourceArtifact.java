@@ -22,13 +22,13 @@ import java.io.InputStream;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.jackrabbit.vault.fs.AbstractArtifact;
 import org.apache.jackrabbit.vault.fs.api.AccessType;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.ImportArtifact;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
+import org.apache.jackrabbit.vault.fs.impl.AbstractArtifact;
 import org.xml.sax.InputSource;
 
 /**

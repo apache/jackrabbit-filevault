@@ -41,7 +41,7 @@
     <scm>
         <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-vlt</connection>
         <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-vlt</developerConnection>
-        <url>http://svn.apache.org/viewvc/asf/jackrabbit/commons/filevault/trunk/vault-vlt</url>
+        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-vlt</url>
     </scm>
 
 

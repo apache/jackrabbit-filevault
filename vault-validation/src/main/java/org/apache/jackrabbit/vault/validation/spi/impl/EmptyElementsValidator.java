@@ -42,7 +42,7 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
  */
 public class EmptyElementsValidator implements DocumentViewXmlValidator, GenericJcrDataValidator {
 
-    protected static final String MESSAGE_EMPTY_NODES = "Found empty nodes: %s (used for ordering only) which are included in the filter with mode=merge. Rather use the according include/exclude patterns.";
+    protected static final String MESSAGE_EMPTY_NODES = "Found empty nodes: %s (used for ordering only) which are included in the filter with mode=replace. Either remove the empty node or add at least the 'jcr:primaryType' attribute to make this node really get replaced.";
     private final ValidationMessageSeverity severity;
     private final Map<String, Path> emptyNodePathsAndFiles;
     private final Collection<String> nonEmptyNodePaths;

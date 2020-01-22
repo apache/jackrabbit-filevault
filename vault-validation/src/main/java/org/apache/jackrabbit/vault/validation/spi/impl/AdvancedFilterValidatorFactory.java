@@ -23,7 +23,6 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import org.apache.jackrabbit.vault.packaging.PackageType;
-import org.apache.jackrabbit.vault.validation.ValidationExecutorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
@@ -47,12 +46,12 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
     static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES = ValidationMessageSeverity.INFO;
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS = ValidationMessageSeverity.WARN;
     static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES = ValidationMessageSeverity.INFO;
-    static final Collection<String> DEFAULT_VALID_ROOTS = new LinkedList<>(Arrays.asList("/","/libs","/apps","/etc","/var","/tmp","/content"));
+    static final Collection<String> DEFAULT_VALID_ROOTS = new LinkedList<>(Arrays.asList("/","/libs","/apps","/etc","/var","/tmp","/content","/etc/packages"));
 
     /**
      * the default logger
      */
-    private static final Logger log = LoggerFactory.getLogger(ValidationExecutorFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(AdvancedFilterValidatorFactory.class);
 
     @Override
     public Validator createValidator(ValidationContext context, ValidatorSettings settings) {

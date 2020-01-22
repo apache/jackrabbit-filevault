@@ -111,7 +111,7 @@ public class ValidationExecutorFactory {
                 }
             }
         }
-        if (!validatorSettingsIds.isEmpty()) {
+        if (!validatorSettingsIds.isEmpty() && !isSubPackage) {
             log.warn("There are validator settings bound to invalid ids " + StringUtils.join(validatorSettingsIds, ", "));
         }
         return validatorsById;

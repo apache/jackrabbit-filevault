@@ -33,6 +33,7 @@ import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
+import org.apache.jackrabbit.vault.validation.ValidatorException;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -133,11 +134,15 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
             DocViewNode node = getDocViewNode(name, label, attributes);
             nodeStack.push(node);
             for (Map.Entry<String, DocumentViewXmlValidator> entry : validators.entrySet()) {
-                violations.add(new ValidationViolation(entry.getKey(), ValidationMessageSeverity.DEBUG, "Validate node '" + node + "' start"));
-                Collection<ValidationMessage> messages = entry.getValue().validate(node, nodePath.toString(), filePath, elementNameStack.size() <= 1);
-                if (messages != null && !messages.isEmpty()) {
-                    violations.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, null, nodePath.toString(),
-                            locator.getLineNumber(), locator.getColumnNumber()));
+                try {
+                    violations.add(new ValidationViolation(entry.getKey(), ValidationMessageSeverity.DEBUG, "Validate node '" + node + "' start"));
+                    Collection<ValidationMessage> messages = entry.getValue().validate(node, nodePath.toString(), filePath, elementNameStack.size() <= 1);
+                    if (messages != null && !messages.isEmpty()) {
+                        violations.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, null, nodePath.toString(),
+                                locator.getLineNumber(), locator.getColumnNumber()));
+                    }
+                } catch (RuntimeException e) {
+                    throw new ValidatorException(entry.getKey(), e, filePath, locator.getLineNumber(), locator.getColumnNumber(), e);
                 }
             }
         } catch (IllegalArgumentException e) { // thrown from DocViewProperty.parse()

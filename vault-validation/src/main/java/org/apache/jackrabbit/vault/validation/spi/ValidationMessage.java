@@ -24,8 +24,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class ValidationMessage {
 
-    private final ValidationMessageSeverity severity;
-    private final String message;
+    private final @NotNull ValidationMessageSeverity severity;
+    private final @NotNull String message;
     /** if this is file based, may indicate the line where the issue happened, 0 for unspecified */
     private final int line;
     /** if this is file based, may indicate the column where the issue happened, 0 for unspecified */
@@ -115,10 +115,7 @@ public class ValidationMessage {
             return false;
         if (line != other.line)
             return false;
-        if (message == null) {
-            if (other.message != null)
-                return false;
-        } else if (!message.equals(other.message))
+        if (!message.equals(other.message))
             return false;
         if (severity != other.severity)
             return false;

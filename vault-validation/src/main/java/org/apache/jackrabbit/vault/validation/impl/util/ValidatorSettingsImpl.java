@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
 
 public class ValidatorSettingsImpl implements ValidatorSettings {
     private boolean isDisabled;
@@ -45,7 +46,7 @@ public class ValidatorSettingsImpl implements ValidatorSettings {
     }
 
     @Override
-    public ValidationMessageSeverity getDefaultSeverity() {
+    public @NotNull ValidationMessageSeverity getDefaultSeverity() {
         if (defaultSeverity == null) {
             return ValidationMessageSeverity.ERROR;
         }
@@ -53,7 +54,7 @@ public class ValidatorSettingsImpl implements ValidatorSettings {
     }
 
     @Override
-    public Map<String, String> getOptions() {
+    public @NotNull Map<String, String> getOptions() {
         if (options == null) {
             return Collections.emptyMap();
         }

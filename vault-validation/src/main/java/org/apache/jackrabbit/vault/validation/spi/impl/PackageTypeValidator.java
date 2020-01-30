@@ -101,7 +101,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     }
 
     @Override
-    public @Nullable Collection<ValidationMessage> validate(String nodePath) {
+    public @Nullable Collection<ValidationMessage> validate(@NotNull String nodePath) {
         if (type == null) {
             return null;
         }
@@ -139,7 +139,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     }
 
     @Override
-    public Collection<ValidationMessage> validate(WorkspaceFilter filter) {
+    public Collection<ValidationMessage> validate(@NotNull WorkspaceFilter filter) {
         if (type == null) {
             return null;
         }
@@ -158,7 +158,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     }
 
     @Override
-    public Collection<ValidationMessage> validate(PackageProperties properties) {
+    public Collection<ValidationMessage> validate(@NotNull PackageProperties properties) {
         if (properties.getPackageType() == null) {
             return Collections.singleton(new ValidationMessage(severityForNoPackageType, MESSAGE_NO_PACKAGE_TYPE_SET));
         }
@@ -172,46 +172,49 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
             }
         }
     
-        switch (properties.getPackageType()) {
-        case APPLICATION:
-            // must not contain hooks (this detects external hooks)
-            if (!properties.getExternalHooks().isEmpty()) {
-                messages.add(new ValidationMessage(severity,
-                        String.format(MESSAGE_PACKAGE_HOOKS, properties.getPackageType(), properties.getExternalHooks())));
+        PackageType packageType = properties.getPackageType();
+        if (packageType != null) {
+            switch (packageType) {
+            case APPLICATION:
+                // must not contain hooks (this detects external hooks)
+                if (!properties.getExternalHooks().isEmpty()) {
+                    messages.add(new ValidationMessage(severity,
+                            String.format(MESSAGE_PACKAGE_HOOKS, properties.getPackageType(), properties.getExternalHooks())));
+                }
+                // must not include oak:index
+                if (OakIndexDefinitionValidatorFactory.areIndexDefinitionsAllowed(properties)) {
+                    messages.add(new ValidationMessage(severity, String.format(MESSAGE_INDEX_DEFINITIONS, properties.getPackageType())));
+                }
+                if (prohibitImmutableContent) {
+                    messages.add(new ValidationMessage(severity, String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+                }
+                break;
+            case CONTENT:
+                if (prohibitMutableContent) {
+                    messages.add(new ValidationMessage(severity, String.format(MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+                }
+                break;
+            case CONTAINER:
+                // no dependencies
+                if (properties.getDependencies() != null && properties.getDependencies().length > 0) {
+                    messages.add(new ValidationMessage(severity,
+                            String.format(MESSAGE_DEPENDENCY, properties.getPackageType(), StringUtils.join(properties.getDependencies()))));
+                }
+                if (prohibitImmutableContent) {
+                    messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+                }
+                break;
+            case MIXED:
+                messages.add(
+                        new ValidationMessage(severityForLegacyType, String.format(MESSAGE_LEGACY_TYPE, properties.getPackageType())));
+                if (prohibitImmutableContent) {
+                    messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+                }
+                if (prohibitMutableContent) {
+                    messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+                }
+                break;
             }
-            // must not include oak:index
-            if (OakIndexDefinitionValidatorFactory.areIndexDefinitionsAllowed(properties)) {
-                messages.add(new ValidationMessage(severity, String.format(MESSAGE_INDEX_DEFINITIONS, properties.getPackageType())));
-            }
-            if (prohibitImmutableContent) {
-                messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
-            }
-            break;
-        case CONTENT:
-            if (prohibitMutableContent) {
-                messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
-            }
-            break;
-        case CONTAINER:
-            // no dependencies
-            if (properties.getDependencies() != null && properties.getDependencies().length > 0) {
-                messages.add(new ValidationMessage(severity,
-                        String.format(MESSAGE_DEPENDENCY, properties.getPackageType(), StringUtils.join(properties.getDependencies()))));
-            }
-            if (prohibitImmutableContent) {
-                messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
-            }
-            break;
-        case MIXED:
-            messages.add(
-                    new ValidationMessage(severityForLegacyType, String.format(MESSAGE_LEGACY_TYPE, properties.getPackageType())));
-            if (prohibitImmutableContent) {
-                messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
-            }
-            if (prohibitMutableContent) {
-                messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
-            }
-            break;
         }
         return messages;
     }
@@ -255,7 +258,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
 
     
     @Override
-    public Collection<ValidationMessage> validateMetaInfPath(Path filePath) {
+    public Collection<ValidationMessage> validateMetaInfPath(@NotNull Path filePath) {
         if (type == null) {
             return null;
         }

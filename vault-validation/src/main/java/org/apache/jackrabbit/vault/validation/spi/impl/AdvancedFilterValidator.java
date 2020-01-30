@@ -159,7 +159,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     }
 
     @Override
-    public Collection<ValidationMessage> validate(WorkspaceFilter filter) {
+    public Collection<ValidationMessage> validate(@NotNull WorkspaceFilter filter) {
         if (isSubPackage) {
             return null; // not relevant for sub packages
         }
@@ -250,7 +250,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     }
 
     @Override
-    public Collection<ValidationMessage> validateMetaInfData(InputStream input, Path filePath) throws IOException {
+    public Collection<ValidationMessage> validateMetaInfData(@NotNull InputStream input, @NotNull Path filePath) throws IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         try (InputStream xsdInput = getClass().getResourceAsStream("/filter.xsd")) {
@@ -296,7 +296,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     }
 
     @Override
-    public boolean shouldValidateMetaInfData(Path filePath) {
+    public boolean shouldValidateMetaInfData(@NotNull Path filePath) {
         return FILTER_XML_PATH.equals(filePath);
     }
 
@@ -324,7 +324,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     }
 
     @Override
-    public Collection<ValidationMessage> validate(String nodePath) {
+    public Collection<ValidationMessage> validate(@NotNull String nodePath) {
         if (isSubPackage) {
             return null; // not relevant for sub packages
         }

@@ -21,6 +21,7 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
@@ -32,7 +33,7 @@ public final class DependencyValidatorFactory implements ValidatorFactory {
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES = ValidationMessageSeverity.WARN;
     
     @Override
-    public Validator createValidator(ValidationContext context, ValidatorSettings settings) {
+    public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         final ValidationMessageSeverity severityForUnresolvedDependencies;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES);
@@ -49,7 +50,7 @@ public final class DependencyValidatorFactory implements ValidatorFactory {
     }
 
     @Override
-    public String getId() {
+    public @NotNull String getId() {
         return ID;
     }
 

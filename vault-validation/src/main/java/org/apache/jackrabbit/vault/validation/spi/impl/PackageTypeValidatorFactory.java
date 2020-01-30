@@ -23,6 +23,7 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.kohsuke.MetaInfServices;
 
@@ -49,7 +50,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_NO_TYPE = ValidationMessageSeverity.WARN;
     
     @Override
-    public @Nullable Validator createValidator(ValidationContext context, ValidatorSettings settings) {
+    public @Nullable Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         // evaluate options
         final Pattern jcrInstallerNodePathRegex;
         if (settings.getOptions().containsKey(OPTION_JCR_INSTALLER_NODE_PATH_REGEX)) {
@@ -93,7 +94,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
     }
 
     @Override
-    public String getId() {
+    public @NotNull String getId() {
         return ValidatorFactory.ID_PREFIX_JACKRABBIT + "packagetype";
     }
 

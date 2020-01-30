@@ -41,6 +41,7 @@ import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.GenericJcrDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -68,7 +69,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
     }
 
     @Override
-    public Collection<ValidationMessage> validateJcrData(InputStream input, Path filePath, Map<String, Integer> nodePathsAndLineNumbers) throws IOException {
+    public Collection<ValidationMessage> validateJcrData(@NotNull InputStream input, @NotNull Path filePath, @NotNull Map<String, Integer> nodePathsAndLineNumbers) throws IOException {
         Collection<ValidationMessage> messages = new LinkedList<>();
         // TODO: support other formats like sysview xml or generic xml
         // (https://jackrabbit.apache.org/filevault/vaultfs.html#Deserialization)
@@ -155,7 +156,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
 
     // support upper case extensions?
     @Override
-    public boolean shouldValidateJcrData(Path filePath) {
+    public boolean shouldValidateJcrData(@NotNull Path filePath) {
         return filePath.toString().endsWith(".xml");
     }
 

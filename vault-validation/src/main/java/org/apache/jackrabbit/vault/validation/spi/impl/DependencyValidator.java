@@ -28,6 +28,7 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
 
 public final class DependencyValidator implements PropertiesValidator {
 
@@ -37,7 +38,7 @@ public final class DependencyValidator implements PropertiesValidator {
     private final ValidationMessageSeverity severity;
     private final ValidationMessageSeverity severityForUnresolvedDependencies;
     
-    public DependencyValidator(ValidationMessageSeverity severity, ValidationMessageSeverity severityForUnresolvedDependencies, Collection<PackageInfo> dependenciesMetaInfo) {
+    public DependencyValidator(@NotNull ValidationMessageSeverity severity, ValidationMessageSeverity severityForUnresolvedDependencies, Collection<PackageInfo> dependenciesMetaInfo) {
         this.dependenciesMetaInfo = dependenciesMetaInfo;
         this.severity = severity;
         this.severityForUnresolvedDependencies = severityForUnresolvedDependencies;
@@ -49,7 +50,7 @@ public final class DependencyValidator implements PropertiesValidator {
     }
 
     @Override
-    public Collection<ValidationMessage> validate(PackageProperties properties) {
+    public Collection<ValidationMessage> validate(@NotNull PackageProperties properties) {
         
         // use resolved dependencies
         Collection<ValidationMessage> messages = new LinkedList<>();

@@ -14,10 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.jackrabbit.vault.validation;
+package org.apache.jackrabbit.vault.validation.impl.util;
 
 import java.nio.file.Path;
 
+/**
+ * Exception wrapping all sorts of runtime exceptions being thrown from a validator
+ */
 public class ValidatorException extends RuntimeException {
 
     private ValidatorException(String id, String messageSuffix, Throwable cause) {

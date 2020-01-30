@@ -34,6 +34,7 @@ import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.GenericJcrDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
 
 /**
  *  Check for empty elements (used for ordering purposes)
@@ -79,7 +80,7 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, Generic
     }
 
     @Override
-    public Collection<ValidationMessage> validate(DocViewNode node, String nodePath, Path filePath, boolean isRoot) {
+    public Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
         if (isBelowAffectedFilterRoots(nodePath)) {
             if (node.primary == null && node.mixins == null && node.props.isEmpty() && filter.contains(nodePath) && filter.getImportMode(nodePath) == ImportMode.REPLACE) {
                 // only relevant if no other merge mode
@@ -92,7 +93,7 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, Generic
     }
 
     @Override
-    public Collection<ValidationMessage> validateJcrData(InputStream input, Path filePath, Map<String, Integer> nodePathsAndLineNumbers) {
+    public Collection<ValidationMessage> validateJcrData(@NotNull InputStream input, @NotNull Path filePath, @NotNull Map<String, Integer> nodePathsAndLineNumbers) {
         // never validate actual input
         // this should never be called
         return null;
@@ -108,7 +109,7 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, Generic
     }
 
     @Override
-    public boolean shouldValidateJcrData(Path filePath) {
+    public boolean shouldValidateJcrData(@NotNull Path filePath) {
         String nodePath = ValidationExecutor.filePathToNodePath(filePath);
         if (isBelowAffectedFilterRoots(nodePath)) {
             nonEmptyNodePaths.add(nodePath);

@@ -77,9 +77,6 @@
                     <executions>
                         <execution>
                             <id>baseline</id>
-                            <configuration>
-                                <skip>true</skip> <!-- skip until the first release is done -->
-                            </configuration>
                         </execution>
                     </executions>
             </plugin>

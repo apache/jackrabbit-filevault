@@ -46,6 +46,6 @@ public interface ValidatorSettings {
      * 
      * @return {@code true} in case validator is disabled otherwise {@code false}
      */
-    @NotNull boolean isDisabled();
+    boolean isDisabled();
 
 }

@@ -87,11 +87,11 @@ public class EmptyElementsValidatorTest {
 
         // order node only (no other property)
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "nt:unstructured");
-        Assert.assertThat(validator.validate(node, "somepath1", null, false), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, "somepath1", Paths.get("/some/path"), false), AnyValidationMessageMatcher.noValidationInCollection());
         
         // primary node type set with additional properties
         node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "nt:unstructured");
-        Assert.assertThat(validator.validate(node, "somepath2", null, false), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, "somepath2", Paths.get("/some/path"), false), AnyValidationMessageMatcher.noValidationInCollection());
         Assert.assertNull(validator.done());
     }
 }

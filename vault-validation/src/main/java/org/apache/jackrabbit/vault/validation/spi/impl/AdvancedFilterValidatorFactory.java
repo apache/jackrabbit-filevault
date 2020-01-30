@@ -28,6 +28,7 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
     private static final Logger log = LoggerFactory.getLogger(AdvancedFilterValidatorFactory.class);
 
     @Override
-    public Validator createValidator(ValidationContext context, ValidatorSettings settings) {
+    public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         final ValidationMessageSeverity severityForUncoveredAncestorNode;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES);
@@ -101,7 +102,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
     }
 
     @Override
-    public String getId() {
+    public @NotNull String getId() {
         return ID;
     }
 

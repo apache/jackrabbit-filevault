@@ -32,6 +32,7 @@ import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.FilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /** Validates that packages not having the property {@code allowIndexDefinitions=true} must not contain index definitions.
@@ -50,7 +51,7 @@ public final class OakIndexDefinitionValidator implements FilterValidator, Docum
         this.defaultMessageSeverity = defaultMessageSeverity;
     }
     @Override
-    public @Nullable Collection<ValidationMessage> validate(WorkspaceFilter filter) {
+    public @Nullable Collection<ValidationMessage> validate(@NotNull WorkspaceFilter filter) {
         Collection<ValidationMessage> violations = new LinkedList<>();
         violations.addAll(collectIndexPaths(filter.getFilterSets()));
         return violations;
@@ -73,7 +74,7 @@ public final class OakIndexDefinitionValidator implements FilterValidator, Docum
     }
 
     @Override
-    public @Nullable Collection<ValidationMessage> validate(DocViewNode node, String nodePath, Path filePath, boolean isRoot) {
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
         ValidationMessage violation = null;
         if (IndexConstants.INDEX_DEFINITIONS_NODE_TYPE.equals(node.primary)) {
             violation = new ValidationMessage(defaultMessageSeverity, String.format(MESSAGE_INDEX_AT_NODE, packageRootPathOfNotAllowedIndexDefinition, nodePath));

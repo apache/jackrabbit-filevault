@@ -34,6 +34,7 @@ import org.apache.jackrabbit.vault.validation.spi.GenericMetaInfDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
 
 public final class AdvancedPropertiesValidator implements GenericMetaInfDataValidator {
 
@@ -59,7 +60,7 @@ public final class AdvancedPropertiesValidator implements GenericMetaInfDataVali
     }
 
     @Override
-    public Collection<ValidationMessage> validateMetaInfData(InputStream input, Path filePath) {
+    public Collection<ValidationMessage> validateMetaInfData(@NotNull InputStream input, @NotNull Path filePath) {
         Collection<ValidationMessage> messages = new LinkedList<>();
         try {
             PackageProperties properties = DefaultPackageProperties.fromInputStream(input);
@@ -80,7 +81,7 @@ public final class AdvancedPropertiesValidator implements GenericMetaInfDataVali
     }
 
     @Override
-    public boolean shouldValidateMetaInfData(Path filePath) {
+    public boolean shouldValidateMetaInfData(@NotNull Path filePath) {
         return PROPERTIES_XML_PATH.equals(filePath);
     }
 

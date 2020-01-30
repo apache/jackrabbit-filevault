@@ -33,7 +33,6 @@ import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
-import org.apache.jackrabbit.vault.validation.ValidatorException;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -46,7 +45,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /** TODO: reuse more logic from DocViewSAXImporter (https://issues.apache.org/jira/browse/JCRVLT-357) */
 public class DocumentViewXmlContentHandler extends DefaultHandler {
 
-    private final Map<String, Integer> nodePathsAndLineNumbers;
+    private final @NotNull Map<String, Integer> nodePathsAndLineNumbers;
     private String rootNodeName;
     private String rootNodeParentPath; // must not end with "/"
     private final Path filePath;
@@ -56,7 +55,7 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
     private Deque<String> nodePathStack;
     private final Map<String, DocumentViewXmlValidator> validators;
 
-    private List<ValidationViolation> violations;
+    private @NotNull List<ValidationViolation> violations;
 
     public @NotNull List<ValidationViolation> getViolations() {
         return violations;

@@ -132,9 +132,9 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
         try {
             DocViewNode node = getDocViewNode(name, label, attributes);
             nodeStack.push(node);
+            violations.add(new ValidationViolation(ValidationMessageSeverity.DEBUG, "Validate node '" + node + "' start"));
             for (Map.Entry<String, DocumentViewXmlValidator> entry : validators.entrySet()) {
                 try {
-                    violations.add(new ValidationViolation(entry.getKey(), ValidationMessageSeverity.DEBUG, "Validate node '" + node + "' start"));
                     Collection<ValidationMessage> messages = entry.getValue().validate(node, nodePath.toString(), filePath, elementNameStack.size() <= 1);
                     if (messages != null && !messages.isEmpty()) {
                         violations.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, null, nodePath.toString(),

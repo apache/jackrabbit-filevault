@@ -37,7 +37,9 @@ public interface DocumentViewXmlValidator extends Validator {
     /**
      * Called for the beginning of each new JCR document view node.
      * Deserialization of the node information was already done when this method is called!
-     * The node and attribute names have the string representation outlined in {@link Name} (i.e. including the expanded namespace uri in the format <code>{namespaceURI}localPart</code>).
+     * The attribute names have the string representation outlined in {@link Name} (i.e. including the expanded namespace uri in the format <code>{namespaceURI}localPart</code>).
+     * This is also referred to as <a href="https://docs.adobe.com/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.2.5.1%20Expanded%20Form">JCR name expanded form</a>.
+     * To construct such names either use {@link NameUtil} or use the constants from {@link NameConstants}.
      * 
      * @param node the node which should be validated
      * @param nodePath the absolute repository path of the given node

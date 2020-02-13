@@ -83,21 +83,24 @@ public class DocumentViewParserValidatorTest {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", ".content.xml"), nodePathsAndLineNumbers);
             // filter
             ValidationExecutorTest.assertViolation(messages,
-                    new ValidationViolation("docviewid", ValidationMessageSeverity.ERROR, "startDocView", Paths.get("apps/.content.xml"), Paths.get(""), "/apps", 19, 36, null
+                    new ValidationViolation("docviewid", ValidationMessageSeverity.ERROR, "startDocView", Paths.get("apps/.content.xml"), Paths.get(""), "/apps", 19, 35, null
                             ),
                     new ValidationViolation("docviewid", ValidationMessageSeverity.ERROR,
-                            "startDocView", Paths.get("apps/.content.xml"), Paths.get(""), "/apps/somepath", 22, 6, null));
+                            "startDocView", Paths.get("apps/.content.xml"), Paths.get(""), "/apps/somepath", 21, 29, null),
+                    new ValidationViolation("docviewid", ValidationMessageSeverity.ERROR,
+                            "startDocView", Paths.get("apps/.content.xml"), Paths.get(""), "/apps/somepath/jc:content", 22, 54, null));
 
             // verify node names
             Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();
             expectedNodePathsAndLineNumber.put("/apps", 19);
-            expectedNodePathsAndLineNumber.put("/apps/somepath", 22);
+            expectedNodePathsAndLineNumber.put("/apps/somepath", 21);
+            expectedNodePathsAndLineNumber.put("/apps/somepath/jc:content", 22);
             Assert.assertEquals(expectedNodePathsAndLineNumber, nodePathsAndLineNumbers);
             Map<String, DocViewProperty> properties = new HashMap<>();
             properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
                     new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { "sling:Folder" }, false,
                             PropertyType.UNDEFINED));
-            DocViewNode node = new DocViewNode("apps", "apps", null, properties, null, "sling:Folder");
+            DocViewNode node = new DocViewNode("{}apps", "jc:root", null, properties, null, "sling:Folder");
             Mockito.verify(docViewXmlValidator).validate(node, "/apps", Paths.get("apps", ".content.xml"), true);
 
             properties = new HashMap<>();
@@ -105,8 +108,15 @@ public class DocumentViewParserValidatorTest {
                     new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { JcrConstants.NT_UNSTRUCTURED }, false,
                             PropertyType.UNDEFINED));
             properties.put("{}attribute1", new DocViewProperty("{}attribute1", new String[] { "value1" }, false, PropertyType.UNDEFINED));
-            node = new DocViewNode("somepath", "somepath", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
+            node = new DocViewNode("{}somepath", "somepath", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
             Mockito.verify(docViewXmlValidator).validate(node, "/apps/somepath", Paths.get("apps", ".content.xml"), false);
+            
+            properties = new HashMap<>();
+            properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
+                    new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { JcrConstants.NT_UNSTRUCTURED }, false,
+                            PropertyType.UNDEFINED));
+            node = new DocViewNode("{http://www.jcp.org/jcr/1.0}content", "jc:content", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
+            Mockito.verify(docViewXmlValidator).validate(node, "/apps/somepath/jc:content", Paths.get("apps", ".content.xml"), false);
         }
     }
 
@@ -136,7 +146,7 @@ public class DocumentViewParserValidatorTest {
             properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
                     new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { "sling:Folder" }, false,
                             PropertyType.UNDEFINED));
-            DocViewNode node = new DocViewNode("child1", "child1", null, properties, null, "sling:Folder");
+            DocViewNode node = new DocViewNode("{}child1", "jcr:root", null, properties, null, "sling:Folder");
             Mockito.verify(docViewXmlValidator).validate(node, "/apps/child1", Paths.get("apps", "child1.xml"), true);
 
             properties = new HashMap<>();
@@ -144,7 +154,7 @@ public class DocumentViewParserValidatorTest {
                     new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { JcrConstants.NT_UNSTRUCTURED }, false,
                             PropertyType.UNDEFINED));
             properties.put("{}attribute1", new DocViewProperty("{}attribute1", new String[] { "value1" }, false, PropertyType.UNDEFINED));
-            node = new DocViewNode("somepath", "somepath", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
+            node = new DocViewNode("{}somepath", "somepath", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
             Mockito.verify(docViewXmlValidator).validate(node, "/apps/child1/somepath", Paths.get("apps", "child1.xml"), false);
 
             // verify node names
@@ -166,7 +176,7 @@ public class DocumentViewParserValidatorTest {
             properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
                     new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { "sling:Folder" }, false,
                             PropertyType.UNDEFINED));
-            DocViewNode node = new DocViewNode("child3", "child3", null, properties, null, "sling:Folder");
+            DocViewNode node = new DocViewNode("{}child3", "child3", null, properties, null, "sling:Folder");
             Mockito.verify(docViewXmlValidator).validate(node, "/apps/child3", Paths.get("apps", "child2", ".content.xml"), true);
 
             properties = new HashMap<>();
@@ -174,7 +184,7 @@ public class DocumentViewParserValidatorTest {
                     new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { JcrConstants.NT_UNSTRUCTURED }, false,
                             PropertyType.UNDEFINED));
             properties.put("{}attribute1", new DocViewProperty("{}attribute1", new String[] { "value1" }, false, PropertyType.UNDEFINED));
-            node = new DocViewNode("somepath", "somepath", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
+            node = new DocViewNode("{}somepath", "somepath", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
             Mockito.verify(docViewXmlValidator).validate(node, "/apps/child3/somepath", Paths.get("apps", "child2", ".content.xml"), false);
 
             // verify node names

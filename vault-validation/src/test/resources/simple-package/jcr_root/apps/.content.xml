@@ -15,9 +15,11 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
-    jcr:primaryType="sling:Folder">
-    <somepath jcr:primaryType="nt:unstructured"
-        attribute1="value1"
-    ></somepath>
-</jcr:root>
+<jc:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jc="http://www.jcp.org/jcr/1.0"
+    jc:primaryType="sling:Folder">
+    <somepath jc:primaryType="nt:unstructured"
+        attribute1="value1">
+        <jc:content jc:primaryType="nt:unstructured">
+        </jc:content>
+    </somepath>
+</jc:root>

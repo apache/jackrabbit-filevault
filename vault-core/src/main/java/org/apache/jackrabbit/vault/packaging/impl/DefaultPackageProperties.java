@@ -24,10 +24,11 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Implementing {@link PackageProperties} on top of an existing {@link File} or {@link InputStream}.
+ * Implementing {@link PackageProperties} on top of an existing {@link Path} or {@link InputStream}.
  */
 public class DefaultPackageProperties extends PackagePropertiesImpl {
 

@@ -29,6 +29,8 @@ import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.FilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
@@ -42,7 +44,7 @@ import org.jetbrains.annotations.Nullable;
 /** Checks if the package type is correctly set for this package
  * 
  * @see <a href="https://issues.apache.org/jira/browse/JCRVLT-170">JCRVLT-170</a> */
-public final class PackageTypeValidator implements NodePathValidator, FilterValidator, PropertiesValidator, MetaInfPathValidator {
+public final class PackageTypeValidator implements NodePathValidator, FilterValidator, PropertiesValidator, MetaInfPathValidator, DocumentViewXmlValidator {
 
     protected static final String MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES = "Package of type '%s' is not supposed to contain includes/excludes below any of its filters!";
     protected static final String MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE = "Package of type '%s' must only contain sub packages of type '%s' but found sub package of type '%s'!";
@@ -58,19 +60,20 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     protected static final String MESSAGE_INDEX_DEFINITIONS = "Package of type '%s' is not supposed to contain Oak index definitions but has 'allowIndexDefinitions' set to true.";
     protected static final String MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE = "All mutable package types are prohibited and this package is of mutable type '%s'";
     protected static final String MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE = "All mutable package types are prohibited and this package is of mutable type '%s'";
-
+    protected static final String SLING_OSGI_CONFIG = "sling:OsgiConfig";
     protected static final Path PATH_HOOKS = Paths.get(Constants.VAULT_DIR, Constants.HOOKS_DIR);
     private final PackageType type;
     private final ValidationMessageSeverity severity;
     private final ValidationMessageSeverity severityForLegacyType;
     private final Pattern jcrInstallerNodePathRegex;
+    private final Pattern additionalJcrInstallerFileNodePathRegex;
     private final ValidationContext containerValidationContext;
     private final ValidationMessageSeverity severityForNoPackageType;
     private final boolean prohibitMutableContent;
     private final boolean prohibitImmutableContent;
 
     public PackageTypeValidator(@NotNull ValidationMessageSeverity severity, @NotNull ValidationMessageSeverity severityForNoPackageType, @NotNull ValidationMessageSeverity severityForLegacyType,
-            boolean prohibitMutableContent, boolean prohibitImmutableContent, PackageType type, @NotNull Pattern jcrInstallerNodePathRegex,
+            boolean prohibitMutableContent, boolean prohibitImmutableContent, PackageType type, @NotNull Pattern jcrInstallerNodePathRegex, @NotNull Pattern additionalJcrInstallerFileNodePathRegex,
             ValidationContext containerValidationContext) {
         this.type = type;
         this.severity = severity;
@@ -79,12 +82,12 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         this.prohibitMutableContent = prohibitMutableContent;
         this.prohibitImmutableContent = prohibitImmutableContent;
         this.jcrInstallerNodePathRegex = jcrInstallerNodePathRegex;
+        this.additionalJcrInstallerFileNodePathRegex = additionalJcrInstallerFileNodePathRegex;
         this.containerValidationContext = containerValidationContext;
-        
     }
 
-    boolean isOsgiBundleOrConfiguration(String nodePath) {
-        return jcrInstallerNodePathRegex.matcher(nodePath).matches();
+    boolean isOsgiBundleOrConfigurationFile(String nodePath) {
+        return jcrInstallerNodePathRegex.matcher(nodePath).matches() && additionalJcrInstallerFileNodePathRegex.matcher(nodePath).matches();
     }
 
     static boolean isSubPackage(String nodePath) {
@@ -111,7 +114,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
             if (isAppContent(nodePath)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_APP_CONTENT, type, nodePath)));
             }
-            if (isOsgiBundleOrConfiguration(nodePath)) {
+            if (isOsgiBundleOrConfigurationFile(nodePath)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type, nodePath)));
             }
             break;
@@ -119,13 +122,13 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
             if (!isAppContent(nodePath)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_APP_CONTENT_FOUND, type, nodePath)));
             }
-            if (isOsgiBundleOrConfiguration(nodePath)) {
+            if (isOsgiBundleOrConfigurationFile(nodePath)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type, nodePath)));
             }
             // sub packages are detected via validate(Properties) on the sub package
             break;
         case CONTAINER:
-            if (!isOsgiBundleOrConfiguration(nodePath) && !isSubPackage(nodePath)) {
+            if (!isOsgiBundleOrConfigurationFile(nodePath) && !isSubPackage(nodePath)) {
                 messages.add(
                         new ValidationMessage(severity, String.format(MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_OR_SUB_PACKAGE, type, nodePath)));
             }
@@ -269,6 +272,17 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
                     return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_PACKAGE_HOOKS, type, filePath)));
             default:
                 break;
+        }
+        return null;
+    }
+
+    @Override
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath,
+            @NotNull Path filePath, boolean isRoot) {
+        if (jcrInstallerNodePathRegex.matcher(nodePath).matches()) {
+            if (SLING_OSGI_CONFIG.equals(node.primary)) {
+                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type, nodePath)));
+            }
         }
         return null;
     }

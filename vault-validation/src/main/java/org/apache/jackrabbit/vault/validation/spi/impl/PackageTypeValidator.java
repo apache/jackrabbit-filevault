@@ -71,9 +71,10 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     private final ValidationMessageSeverity severityForNoPackageType;
     private final boolean prohibitMutableContent;
     private final boolean prohibitImmutableContent;
+    private final boolean allowComplexFilterRulesInApplicationPackages;
 
     public PackageTypeValidator(@NotNull ValidationMessageSeverity severity, @NotNull ValidationMessageSeverity severityForNoPackageType, @NotNull ValidationMessageSeverity severityForLegacyType,
-            boolean prohibitMutableContent, boolean prohibitImmutableContent, PackageType type, @NotNull Pattern jcrInstallerNodePathRegex, @NotNull Pattern additionalJcrInstallerFileNodePathRegex,
+            boolean prohibitMutableContent, boolean prohibitImmutableContent, boolean allowComplexFilterRulesInApplicationPackages, PackageType type, @NotNull Pattern jcrInstallerNodePathRegex, @NotNull Pattern additionalJcrInstallerFileNodePathRegex,
             ValidationContext containerValidationContext) {
         this.type = type;
         this.severity = severity;
@@ -81,6 +82,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         this.severityForLegacyType = severityForLegacyType;
         this.prohibitMutableContent = prohibitMutableContent;
         this.prohibitImmutableContent = prohibitImmutableContent;
+        this.allowComplexFilterRulesInApplicationPackages = allowComplexFilterRulesInApplicationPackages;
         this.jcrInstallerNodePathRegex = jcrInstallerNodePathRegex;
         this.additionalJcrInstallerFileNodePathRegex = additionalJcrInstallerFileNodePathRegex;
         this.containerValidationContext = containerValidationContext;
@@ -148,7 +150,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         }
         switch (type) {
         case APPLICATION:
-            if (hasIncludesOrExcludes(filter)) {
+            if (!allowComplexFilterRulesInApplicationPackages && hasIncludesOrExcludes(filter)) {
                 return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES, type)));
             }
             break;

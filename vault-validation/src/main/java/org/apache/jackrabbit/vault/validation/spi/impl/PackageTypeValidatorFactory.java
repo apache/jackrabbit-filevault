@@ -52,6 +52,9 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
 
     public static final String OPTION_PROHIBIT_IMMUTABLE_CONTENT = "prohibitImmutableContent";
 
+    public static final String OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES = "allowComplexFilterRulesInApplicationPackages";
+    
+    // TODO: option to disable exclude/include filter check
     static final Pattern DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX = Pattern.compile("/([^/]*/){0,4}?(install|config)(\\.[^/]*)*/(\\d{1,3}/)?.+?");
 
     static final Pattern DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX = Pattern.compile(".+?\\.(jar|config|cfg|cfg\\.json)");
@@ -102,7 +105,13 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
         } else {
             prohibitImmutableContent = false;
         }
-        return new PackageTypeValidator(settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, context.getProperties().getPackageType(), jcrInstallerNodePathRegex, additionalJcrInstallerFileNodePathRegex, context.getContainerValidationContext());
+        final boolean allowComplexFilterRulesInApplicationPackages;
+        if (settings.getOptions().containsKey(OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES)) {
+            allowComplexFilterRulesInApplicationPackages = Boolean.valueOf(settings.getOptions().get(OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES));
+        } else {
+            allowComplexFilterRulesInApplicationPackages = false;
+        }
+        return new PackageTypeValidator(settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, context.getProperties().getPackageType(), jcrInstallerNodePathRegex, additionalJcrInstallerFileNodePathRegex, context.getContainerValidationContext());
     }
 
     @Override

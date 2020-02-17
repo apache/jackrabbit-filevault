@@ -23,7 +23,7 @@
          name="Jackrabbit Filevault">
   <body>
     <menu name="Overview">
-      <item href="index.html" name="Jackrabbit Filevault" />
+      <item href="index.html" name="Jackrabbit FileVault" />
     </menu>
     <menu name="Concepts and architecture">
       <item href="overview.html" name="Overview" />
@@ -52,7 +52,8 @@
     <menu ref="modules"/>
     <menu ref="reports" inherit="bottom"/>
     <menu name="Links">
-      <item href="http://jackrabbit.apache.org/" name="Apache Jackrabbit" />
+      <item href="https://jackrabbit.apache.org/" name="Apache Jackrabbit" />
+      <item href="https://jackrabbit.apache.org/filevault-package-maven-plugin" name="Apache Jackrabbit FileVault - Package Maven Plugin" />
     </menu>
   </body>
 

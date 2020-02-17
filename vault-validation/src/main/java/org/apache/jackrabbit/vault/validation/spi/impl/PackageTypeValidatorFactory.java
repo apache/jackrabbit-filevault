@@ -53,8 +53,10 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
     public static final String OPTION_PROHIBIT_IMMUTABLE_CONTENT = "prohibitImmutableContent";
 
     public static final String OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES = "allowComplexFilterRulesInApplicationPackages";
-    
-    // TODO: option to disable exclude/include filter check
+
+    /**
+     *  option to disable exclude/include filter check
+     */
     static final Pattern DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX = Pattern.compile("/([^/]*/){0,4}?(install|config)(\\.[^/]*)*/(\\d{1,3}/)?.+?");
 
     static final Pattern DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX = Pattern.compile(".+?\\.(jar|config|cfg|cfg\\.json)");

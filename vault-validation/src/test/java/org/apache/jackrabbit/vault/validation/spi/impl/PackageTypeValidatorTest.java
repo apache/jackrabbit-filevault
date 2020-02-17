@@ -97,6 +97,10 @@ public class PackageTypeValidatorTest {
         // test mixed package type
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.MIXED);
         ValidationExecutorTest.assertViolation(validator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_LEGACY_TYPE, PackageType.MIXED.toString())));
+        // validate sling:OsgiConfig node
+        DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
+        Assert.assertThat(validator.validate("/apps/config/someconfigpid"), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, "/apps/config/someconfigpid", Paths.get(""), true), AnyValidationMessageMatcher.noValidationInCollection());
         
         // validate sub packages of type Content
         Mockito.when(parentContainerProperties.getPackageType()).thenReturn(PackageType.MIXED);
@@ -130,6 +134,13 @@ public class PackageTypeValidatorTest {
         // validate sub packages of type Content
         PackageTypeValidator subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         Assert.assertThat(subPackageValidator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
+        // validate sling:OsgiConfig node
+        DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
+        Assert.assertThat(validator.validate("/content/config/someconfigpid"), AnyValidationMessageMatcher.noValidationInCollection());
+        ValidationExecutorTest.assertViolation(
+                validator.validate(node, "/content/config/someconfigpid", Paths.get(""), true),
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.CONTENT, "/content/config/someconfigpid")));
+        
         // validate sub packages of type Application
         subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.APPLICATION);
@@ -159,6 +170,11 @@ public class PackageTypeValidatorTest {
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.APPLICATION);
         Assert.assertThat(subPackageValidator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
     
+        // validate sling:OsgiConfig node
+        DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
+        Assert.assertThat(validator.validate("/apps/config/someconfigpid"), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, "/apps/config/someconfigpid", Paths.get(""), true), AnyValidationMessageMatcher.noValidationInCollection());
+        
         // make sure no dependencies
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTAINER);
         Mockito.when(properties.getDependencies()).thenReturn(new Dependency[] { Dependency.fromString("some/group:artifact:1.0.0") });
@@ -201,7 +217,7 @@ public class PackageTypeValidatorTest {
         
         // validate sling:OsgiConfig node
         DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
-        
+        Assert.assertThat(validator.validate("/apps/config/someconfigpid"), AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(
                 validator.validate(node, "/apps/config/someconfigpid", Paths.get(""), true),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.APPLICATION, "/apps/config/someconfigpid")));
@@ -258,19 +274,20 @@ public class PackageTypeValidatorTest {
     @Test
     public void testIsOsgiBundleOrConfigurationFile() {
         validator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
-        Assert.assertTrue(validator.isOsgiBundleOrConfigurationFile("/apps/install/mybundle-123.jar"));
-        Assert.assertTrue(validator.isOsgiBundleOrConfigurationFile("/apps/config/mmyconfig-123.cfg.json"));
-        Assert.assertTrue(validator.isOsgiBundleOrConfigurationFile("/apps/config/mmyconfig-123.cfg"));
+        Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/install/mybundle-123.jar", true));
+        Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/config/mmyconfig-123.cfg.json", true));
+        Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/config/mmyconfig-123.cfg", true));
         
-        Assert.assertFalse(validator.isOsgiBundleOrConfigurationFile("/apps/config/mmyconfig-123.json"));
-        Assert.assertTrue(validator.isOsgiBundleOrConfigurationFile("/apps/config/mmyconfig-123.config"));
-        Assert.assertTrue(validator.isOsgiBundleOrConfigurationFile("/apps/level2/config/mybundle-123.jar"));
+        Assert.assertFalse(validator.isOsgiBundleOrConfiguration("/apps/config/mmyconfig-123.json", true));
+        Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/config/mmyconfig-123.config", true));
+        Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/level2/config/mybundle-123.jar", true));
         // osgi:configNodes are detected on a different level
-        Assert.assertFalse(validator.isOsgiBundleOrConfigurationFile("/apps/level2/config/myconfig-123.xml"));
-        Assert.assertTrue(validator.isOsgiBundleOrConfigurationFile("/apps/install.runmode1.runmode2/mybundle-123.jar")); // with run modes
-        Assert.assertTrue(validator.isOsgiBundleOrConfigurationFile("/apps/install.runmode1.runmode2/12/mybundle-123.jar")); // with start level
+        Assert.assertFalse(validator.isOsgiBundleOrConfiguration("/apps/level2/config/myconfig-123.xml", true));
+        Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/level2/config/myconfig-123.xml", false));
+        Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/install.runmode1.runmode2/mybundle-123.jar", true)); // with run modes
+        Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/install.runmode1.runmode2/12/mybundle-123.jar", true)); // with start level
         // below level 4
-        Assert.assertFalse(validator.isOsgiBundleOrConfigurationFile("/apps/level2/level3/level4/l5/install/mybundle-123.jar"));
+        Assert.assertFalse(validator.isOsgiBundleOrConfiguration("/apps/level2/level3/level4/l5/install/mybundle-123.jar", true));
         
     }
 }

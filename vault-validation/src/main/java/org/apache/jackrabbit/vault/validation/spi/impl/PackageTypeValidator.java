@@ -88,8 +88,15 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         this.containerValidationContext = containerValidationContext;
     }
 
-    boolean isOsgiBundleOrConfigurationFile(String nodePath) {
-        return jcrInstallerNodePathRegex.matcher(nodePath).matches() && additionalJcrInstallerFileNodePathRegex.matcher(nodePath).matches();
+    boolean isOsgiBundleOrConfiguration(String nodePath, boolean onlyFile) {
+        if (jcrInstallerNodePathRegex.matcher(nodePath).matches()) {
+            if (onlyFile) {
+                return additionalJcrInstallerFileNodePathRegex.matcher(nodePath).matches();
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
 
     static boolean isSubPackage(String nodePath) {
@@ -116,7 +123,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
             if (isAppContent(nodePath)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_APP_CONTENT, type, nodePath)));
             }
-            if (isOsgiBundleOrConfigurationFile(nodePath)) {
+            if (isOsgiBundleOrConfiguration(nodePath, true)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type, nodePath)));
             }
             break;
@@ -124,13 +131,14 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
             if (!isAppContent(nodePath)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_APP_CONTENT_FOUND, type, nodePath)));
             }
-            if (isOsgiBundleOrConfigurationFile(nodePath)) {
+            if (isOsgiBundleOrConfiguration(nodePath, true)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type, nodePath)));
             }
             // sub packages are detected via validate(Properties) on the sub package
             break;
         case CONTAINER:
-            if (!isOsgiBundleOrConfigurationFile(nodePath) && !isSubPackage(nodePath)) {
+            // sling:OsgiConfig
+            if (!isOsgiBundleOrConfiguration(nodePath, false) && !isSubPackage(nodePath)) {
                 messages.add(
                         new ValidationMessage(severity, String.format(MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_OR_SUB_PACKAGE, type, nodePath)));
             }
@@ -281,10 +289,18 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     @Override
     public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath,
             @NotNull Path filePath, boolean isRoot) {
-        if (jcrInstallerNodePathRegex.matcher(nodePath).matches()) {
-            if (SLING_OSGI_CONFIG.equals(node.primary)) {
-                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type, nodePath)));
-            }
+        // check only type content and application
+        switch (type) {
+            case APPLICATION:
+            case CONTENT:
+                if (jcrInstallerNodePathRegex.matcher(nodePath).matches()) {
+                    if (SLING_OSGI_CONFIG.equals(node.primary)) {
+                        return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type, nodePath)));
+                    }
+                }
+                break;
+            case CONTAINER:
+                
         }
         return null;
     }

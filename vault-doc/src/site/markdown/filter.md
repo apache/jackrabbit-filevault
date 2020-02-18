@@ -127,6 +127,14 @@ yes | no | yes | removed
 yes | yes | no | deserialized from content package
 yes | no | no | not existing
 
+### Uncovered ancestor nodes
+
+All *uncovered* ancestor nodes are either
+
+1. created with the node type and properties given in the package (in case the node type *is* given with a `.content.xml` at the right location and the node does not yet exist in the repo)
+1. created with node type `nt:folder` (in case they the node type is *not* given with a `.content.xml` at the right location and the node does not yet exist in the repo) or
+1. not touched at all (in case they are already existing in the repo, no matter which node type is given with a `.content.xml` at the according location) 
+
 ### Example
 
 Content Package Filter

@@ -66,7 +66,12 @@
                 <configuration>
                     <instructions>
                         <Bundle-Build>${buildNumber}</Bundle-Build>
+                        <!-- remove the unused dependencies of shaded com.ctc.wstx.shaded.msv_core.driver.textui.Driver in Woodstox Core (JCRVLT-414) -->
                         <Import-Package>
+                            !com.sun.org.apache.xml.internal.resolver.*,
+                            !org.apache.crimson.jaxp
+                            !org.apache.xerces.jaxp
+                            !oracle.xml.jaxp
                             org.apache.jackrabbit.*;version=!,
                             org.apache.sling.jcr.api;resolution:=optional,
                             javax.jcr,

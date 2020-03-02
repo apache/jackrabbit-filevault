@@ -169,8 +169,8 @@ public class DocumentViewXmlContentHandler extends DefaultHandler implements Nam
                         // how to get name of root node?
                         name = getExpandedName(rootNodeName);
                     }
-                } catch (IllegalNameException|NamespaceException e) {
-                    throw new SAXException("Given root node name '" + rootNodeName + "' (implicitly given via filename) cannot be resolved. The prefix used in the filename must be defined in the XML as well!", e);
+                } catch (IllegalNameException|NamespaceException|IllegalArgumentException e) {
+                    throw new SAXException("Given root node name '" + rootNodeName + "' (implicitly given via filename) cannot be resolved. The prefix used in the filename must be declared as XML namespace in the child docview XML as well!", e);
                 }
         } else {
             name = NameFactoryImpl.getInstance().create(uri, getNormalizedName(localName));

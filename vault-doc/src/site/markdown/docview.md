@@ -49,6 +49,8 @@ Example:
     title="Libraries"/>
 ```
 
+As by that the filename implicitly sets the root element name, its namespace is also supposed to be declared in the XML in case it is using a prefix. This is similar to all other elements in the XML.
+
 ### Empty Elements
 
 The deserialization treats empty elements different as the default [JCR 2.0 Import][import-docview], as

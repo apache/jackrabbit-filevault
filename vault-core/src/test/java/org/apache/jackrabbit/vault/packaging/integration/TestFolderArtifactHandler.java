@@ -30,42 +30,44 @@ public class TestFolderArtifactHandler extends IntegrationTestBase {
 
     /* JCRVLT-415 */
     @Test
-    public void testModifyingNonNtFolderPrimaryType() throws RepositoryException, IOException, PackageException {
+    public void testModifyingCoveredNonNtFolderPrimaryType() throws RepositoryException, IOException, PackageException {
         // create node "/test/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
-        Node testNode = rootNode.addNode("test", "nt:unstructured");
+        Node testNode = rootNode.addNode("testroot", "nt:unstructured");
         Node fooNode = testNode.addNode("foo", "nt:unstructured");
         fooNode.setProperty("testProperty", "test");
         try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
             // make sure the primary type from "/test/foo" got overwritten!
-            assertPropertyMissing("/test/foo/testProperty");
-            assertNodeHasPrimaryType("/test/foo", "nt:folder");
+            assertPropertyMissing("/testroot/foo/testProperty");
+            assertNodeHasPrimaryType("/testroot/foo", "nt:folder");
         }
     }
 
     @Test
-    public void testNotModifyingNtFolderPrimaryType() throws RepositoryException, IOException, PackageException {
+    public void testNotModifyingCoveredNtFolderPrimaryType() throws RepositoryException, IOException, PackageException {
         // create node "/test/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
-        Node testNode = rootNode.addNode("test", "nt:unstructured");
+        Node testNode = rootNode.addNode("testroot", "nt:unstructured");
         testNode.setProperty("value", "huhu");
         Node fooNode = testNode.addNode("foo", "nt:folder");
         try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
-            assertNodeHasPrimaryType("/test/foo", "nt:folder");
-            assertPropertyMissing("/test/value");
+            assertNodeHasPrimaryType("/testroot/foo", "nt:folder");
+            assertPropertyMissing("/testroot/value");
         }
     }
 
     @Test
-    public void testNotModifyingIntermediatePrimaryTypes() throws RepositoryException, IOException, PackageException {
+    public void testNotModifyingIntermediateNodePrimaryType() throws RepositoryException, IOException, PackageException {
         // create node "/test/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
-        Node testNode = rootNode.addNode("test2", "nt:unstructured");
+        Node testNode = rootNode.addNode("var", "nt:unstructured");
+        //assertNodeMissing("/test2/foo");
         Node fooNode = testNode.addNode("foo", "nt:unstructured");
+        assertNodeHasPrimaryType("/var/foo", "nt:unstructured");
         fooNode.setProperty("testProperty", "test");
         try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
-            assertNodeHasPrimaryType("/test2/foo", "nt:unstructured");
-            assertProperty("/test2/foo/testProperty", "test");
+            assertNodeHasPrimaryType("/var/foo", "nt:unstructured");
+            assertProperty("/var/foo/testProperty", "test");
         }
     }
 }

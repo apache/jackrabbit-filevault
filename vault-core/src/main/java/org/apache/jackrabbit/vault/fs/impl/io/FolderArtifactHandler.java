@@ -92,7 +92,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             }
 
             Node node = parent.getNode(dir.getRelativePath());
-            if (!node.getPrimaryNodeType().isNodeType(nodeType)) {
+            if (wspFilter.contains(node.getPath()) && !node.getPrimaryNodeType().isNodeType(nodeType)) {
                 node = modifyPrimaryType(node, info);
             }
             NodeIterator iter = node.getNodes();
@@ -146,7 +146,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
         return newNode;
     }
 
-    public void ensureCheckedOut(Node node, ImportInfoImpl info) throws RepositoryException {
+    private void ensureCheckedOut(Node node, ImportInfoImpl info) throws RepositoryException {
         boolean isCheckedOut = !node.isNodeType(JcrConstants.MIX_VERSIONABLE) || node.isCheckedOut();
         if (!isCheckedOut) {
             info.registerToVersion(node.getPath());

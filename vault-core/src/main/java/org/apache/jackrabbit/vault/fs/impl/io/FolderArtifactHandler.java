@@ -92,6 +92,9 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             }
 
             Node node = parent.getNode(dir.getRelativePath());
+            if (!node.getPrimaryNodeType().isNodeType(nodeType)) {
+                node = modifyPrimaryType(node, info);
+            }
             NodeIterator iter = node.getNodes();
             while (iter.hasNext()) {
                 Node child = iter.nextNode();
@@ -124,4 +127,34 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
         return info;
     }
 
+    private Node modifyPrimaryType(Node node, ImportInfoImpl info) throws RepositoryException {
+        String name = node.getName();
+        Node parent = node.getParent();
+
+        // check versionable
+        ensureCheckedOut(node, info);
+
+        ChildNodeStash recovery = new ChildNodeStash(node.getSession());
+        recovery.stashChildren(node);
+        node.remove();
+        
+        // now create the new node
+        Node newNode = parent.addNode(name, nodeType);
+        info.onReplaced(newNode.getPath());
+        // move the children back
+        recovery.recoverChildren(newNode, info);
+        return newNode;
+    }
+
+    public void ensureCheckedOut(Node node, ImportInfoImpl info) throws RepositoryException {
+        boolean isCheckedOut = !node.isNodeType(JcrConstants.MIX_VERSIONABLE) || node.isCheckedOut();
+        if (!isCheckedOut) {
+            info.registerToVersion(node.getPath());
+            try {
+                node.checkout();
+            } catch (RepositoryException e) {
+                info.log.warn("error while checkout node (ignored)", e);
+            }
+        }
+    }
 }

@@ -29,7 +29,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * Low-level validator interface for all files below META-INF (including {@code vault/filter.xml} and {@code vault/properties.xml}).
  * 
  * For validating properties and filter rather use the high-level validators {@link PropertiesValidator} or {@link FilterValidator}.
- * For validators only considering the file name use {@link MetaInfPathValidator} instead.
+ * For validators only considering the file/folder name use {@link MetaInfPathValidator} instead.
  
  */
 @ProviderType

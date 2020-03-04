@@ -28,7 +28,7 @@ import org.osgi.annotation.versioning.ProviderType;
 /**
  * Low-level validator interface for all files below jcr_root.
  * For Document View XML files rather use {@link DocumentViewXmlValidator}.
- * For validators only considering file name or node name use {@link JcrPathValidator} or {@link NodePathValidator} instead.
+ * For validators only considering file/folder name or node name use {@link JcrPathValidator} or {@link NodePathValidator} instead.
  */
 @ProviderType
 public interface GenericJcrDataValidator extends Validator {

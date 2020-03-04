@@ -76,7 +76,7 @@ public class EmptyElementsValidatorTest {
         node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "nt:unstructed");
         Assert.assertThat(validator.validate(node, "/apps/test/node5", Paths.get("node45"), false), AnyValidationMessageMatcher.noValidationInCollection());
         //
-        Assert.assertFalse(validator.shouldValidateJcrData(Paths.get("apps", "test", "node2")));
+        Assert.assertNull(validator.validate("/apps/test/node2"));
         ValidationExecutorTest.assertViolation(validator.done(), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(EmptyElementsValidator.MESSAGE_EMPTY_NODES, "'/apps/test/node1' (in 'node1'), '/apps/test/node3' (in 'node3')")));
     }
 
@@ -85,13 +85,27 @@ public class EmptyElementsValidatorTest {
         Map<String, DocViewProperty> props = new HashMap<>();
         props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
 
-        // order node only (no other property)
+        // primary node type set as well
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "nt:unstructured");
         Assert.assertThat(validator.validate(node, "somepath1", Paths.get("/some/path"), false), AnyValidationMessageMatcher.noValidationInCollection());
         
         // primary node type set with additional properties
         node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "nt:unstructured");
         Assert.assertThat(validator.validate(node, "somepath2", Paths.get("/some/path"), false), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertNull(validator.done());
+    }
+    
+    @Test
+    public void testWithEmptyElementsAndFolders() {
+        Map<String, DocViewProperty> props = new HashMap<>();
+        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
+
+        // order node only (no other property)
+        DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, null);
+        Assert.assertThat(validator.validate(node, "/apps/test/node1", Paths.get("node1"), false), AnyValidationMessageMatcher.noValidationInCollection());
+        
+        // folder below 
+        Assert.assertThat(validator.validate("/apps/test/node1"), AnyValidationMessageMatcher.noValidationInCollection());
         Assert.assertNull(validator.done());
     }
 }

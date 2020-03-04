@@ -125,7 +125,7 @@ public class ValidationExecutorTest {
         Mockito.when(genericMetaInfDataValidator.validateMetaInfData(Mockito.any(), Mockito.any())).thenAnswer(answer);
         CapturingInputStreamFromArgumentAnswer<Collection<ValidationMessage>> answer2 = new CapturingInputStreamFromArgumentAnswer<>(StandardCharsets.US_ASCII, 0, Collections.singleton(new ValidationMessage(ValidationMessageSeverity.WARN, "error1")));
         Mockito.when(genericMetaInfDataValidator2.validateMetaInfData(Mockito.any(), Mockito.any())).thenAnswer(answer2);
-        Mockito.when(metaInfPathValidator.validateMetaInfPath(Mockito.any())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "patherror")));
+        Mockito.when(metaInfPathValidator.validateMetaInfPath(Mockito.any(), Mockito.anyBoolean())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "patherror")));
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/META-INF/vault/genericfile.txt")) {
             Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "vault/genericfile.txt", true);
             assertViolation(messages, 
@@ -134,7 +134,7 @@ public class ValidationExecutorTest {
             Assert.assertEquals("Test", answer.getValue());
             Assert.assertEquals("Test", answer2.getValue());
             Path expectedPath = Paths.get("vault/genericfile.txt");
-            Mockito.verify(metaInfPathValidator).validateMetaInfPath(expectedPath);
+            Mockito.verify(metaInfPathValidator).validateMetaInfPath(expectedPath, false);
             Mockito.verify(genericMetaInfDataValidator, Mockito.atLeastOnce()).shouldValidateMetaInfData(expectedPath);
             Mockito.verify(genericMetaInfDataValidator).validateMetaInfData(Mockito.any(), Mockito.eq(expectedPath));
             Mockito.verify(genericMetaInfDataValidator2, Mockito.atLeastOnce()).shouldValidateMetaInfData(expectedPath);
@@ -153,6 +153,13 @@ public class ValidationExecutorTest {
     }
 
     @Test
+    public void testMetaInfFolder() throws URISyntaxException, IOException, SAXException {
+        Collection<ValidationViolation> messages = validateFolder(executor, Paths.get(""), "vault/genericfile.txt", true);
+        Assert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+        Mockito.verify(metaInfPathValidator).validateMetaInfPath(Paths.get("vault", "genericfile.txt"), true);
+    }
+
+    @Test
     public void testGenericJcrData()
             throws URISyntaxException, IOException, SAXException, ParserConfigurationException, ConfigurationException {
         Mockito.when(genericJcrDataValidator.shouldValidateJcrData(Mockito.any())).thenReturn(true);
@@ -161,7 +168,7 @@ public class ValidationExecutorTest {
         CapturingInputStreamFromArgumentAnswer<Void> answer2 = new CapturingInputStreamFromArgumentAnswer<>(StandardCharsets.US_ASCII, 0, null);
         Mockito.when(genericJcrDataValidator2.shouldValidateJcrData(Mockito.any())).thenReturn(true);
         Mockito.when(genericJcrDataValidator2.validateJcrData(Mockito.any(), Mockito.any(), Mockito.any())).thenAnswer(answer2);
-        Mockito.when(jcrPathValidator.validateJcrPath(Mockito.any())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "patherror")));
+        Mockito.when(jcrPathValidator.validateJcrPath(Mockito.any(), Mockito.anyBoolean())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "patherror")));
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/genericfile.xml")) {
             Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "apps/genericfile.xml", false);
             assertViolation(messages, 
@@ -170,7 +177,7 @@ public class ValidationExecutorTest {
             Assert.assertEquals("Test", answer.getValue());
             Assert.assertEquals("Test", answer2.getValue());
             Path expectedPath = Paths.get("apps/genericfile.xml");
-            Mockito.verify(jcrPathValidator).validateJcrPath(expectedPath);
+            Mockito.verify(jcrPathValidator).validateJcrPath(expectedPath, false);
             Mockito.verify(genericJcrDataValidator, Mockito.atLeastOnce()).shouldValidateJcrData(expectedPath);
             Mockito.verify(genericJcrDataValidator).validateJcrData(Mockito.any(), Mockito.eq(expectedPath), Mockito.any());
             Mockito.verify(genericJcrDataValidator2, Mockito.atLeastOnce()).shouldValidateJcrData(expectedPath);
@@ -186,6 +193,14 @@ public class ValidationExecutorTest {
             Assert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
             Mockito.verify(genericJcrDataValidator, Mockito.never()).validateJcrData(Mockito.any(), Mockito.any(), Mockito.any());
         }
+    }
+
+    @Test
+    public void testJcrRootFolder() throws URISyntaxException, IOException, SAXException {
+        Collection<ValidationViolation> messages = validateFolder(executor, Paths.get(""), "apps.dir", false);
+        Assert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+        Mockito.verify(jcrPathValidator).validateJcrPath(Paths.get("apps.dir"), true);
+        Mockito.verify(nodePathValidator).validate("/apps");
     }
 
     @Test
@@ -210,6 +225,16 @@ public class ValidationExecutorTest {
         return messages;
     }
     
+    private Collection<ValidationViolation> validateFolder(ValidationExecutor executor, Path basePath, String resourcePath,
+            boolean isMetaInf) throws URISyntaxException, IOException, SAXException {
+        final Collection<ValidationViolation> messages;
+        if (isMetaInf) {
+            messages = executor.validateMetaInf(null, Paths.get(resourcePath), basePath);
+        } else {
+            messages = executor.validateJcrRoot(null, Paths.get(resourcePath), basePath);
+        }
+        return messages;
+    }
 
     @Test
     public void testFilePathToNodePath() {

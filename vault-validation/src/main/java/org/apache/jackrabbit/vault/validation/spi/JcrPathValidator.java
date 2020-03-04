@@ -25,17 +25,28 @@ import org.osgi.annotation.versioning.ProviderType;
 
 
 /**
- * Validator interface for validating file paths for files
+ * Validator interface for validating file paths for files and folders
  * below jcr_root.
  */
 @ProviderType
 public interface JcrPathValidator extends Validator {
     /**
-     * Called for each file below jcr_root.
+     * Called for each file/folder below jcr_root.
      * 
-     * @param filePath the relative file path to the jcr_root directory
+     * @param filePath the relative file/folder path to the jcr_root directory
+     * @return validation messages or {@code null}
+     * @deprecated Use {@link #validateJcrPath(Path, boolean)} instead.
+     */
+    @Deprecated 
+    default @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull Path filePath) { return null; };
+    
+    /**
+     * Called for each file/folder below jcr_root.
+     * 
+     * @param filePath the relative file/folder path to the jcr_root directory
+     * @param isFolder {@code true} in case it is a folder, otherwise {@code false}
      * @return validation messages or {@code null}
      */
-    @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull Path filePath);
+    default @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull Path filePath, boolean isFolder) { return validateJcrPath(filePath); }
    
 }

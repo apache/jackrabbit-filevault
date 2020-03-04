@@ -16,7 +16,6 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,21 +28,21 @@ import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.DocViewNode;
-import org.apache.jackrabbit.vault.validation.ValidationExecutor;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
-import org.apache.jackrabbit.vault.validation.spi.GenericJcrDataValidator;
+import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  *  Check for empty elements (used for ordering purposes)
  *  which are included in the filter with import=replace as those are actually not replaced!
  *  @see <a href="https://issues.apache.org/jira/browse/JCRVLT-251">JCRVLT-251</a>
  */
-public class EmptyElementsValidator implements DocumentViewXmlValidator, GenericJcrDataValidator {
+public class EmptyElementsValidator implements DocumentViewXmlValidator, NodePathValidator {
 
-    protected static final String MESSAGE_EMPTY_NODES = "Found empty nodes: %s (used for ordering only) which are included in the filter with mode=replace. Either remove the empty node or add at least the 'jcr:primaryType' attribute to make this node really get replaced.";
+    protected static final String MESSAGE_EMPTY_NODES = "Found empty nodes: %s (used for ordering only) without an accompanying folder which are included in the filter with mode=replace. Either remove the empty node or add at least the 'jcr:primaryType' attribute to make this node really get replaced.";
     private final ValidationMessageSeverity severity;
     private final Map<String, Path> emptyNodePathsAndFiles;
     private final Collection<String> nonEmptyNodePaths;
@@ -92,13 +91,6 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, Generic
         return null;
     }
 
-    @Override
-    public Collection<ValidationMessage> validateJcrData(@NotNull InputStream input, @NotNull Path filePath, @NotNull Map<String, Integer> nodePathsAndLineNumbers) {
-        // never validate actual input
-        // this should never be called
-        return null;
-    }
-
     private boolean isBelowAffectedFilterRoots(String nodePath) {
         for (String affectedFilterRoot : affectedFilterRoots) {
             if (nodePath.startsWith(affectedFilterRoot)) {
@@ -109,12 +101,11 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, Generic
     }
 
     @Override
-    public boolean shouldValidateJcrData(@NotNull Path filePath) {
-        String nodePath = ValidationExecutor.filePathToNodePath(filePath);
+    public @Nullable Collection<ValidationMessage> validate(@NotNull String nodePath) {
         if (isBelowAffectedFilterRoots(nodePath)) {
             nonEmptyNodePaths.add(nodePath);
         }
-        return false;
+        return null;
     }
 
 }

@@ -25,17 +25,29 @@ import org.osgi.annotation.versioning.ProviderType;
 
 
 /**
- * Validator interface for validating file paths for files
+ * Validator interface for validating file paths for files and folders
  * below META-INF.
  */
 @ProviderType
 public interface MetaInfPathValidator extends Validator {
     /**
-     * Called for each file below META-INF.
-     *
-     * @param filePath the relative file path to the META-INF directory
+     * Called for each file/folder below META-INF.
+     * 
+     * @param filePath the relative file/folder path to the META-INF directory
+     * @return validation messages or {@code null}
+     * @deprecated Use {@link #validateMetaInfPath(Path, boolean)} instead.
+     */
+    @Deprecated 
+    default @Nullable Collection<ValidationMessage> validateMetaInfPath(@NotNull Path filePath) { return null; };
+    
+    /**
+     * Called for each file/folder below META-INF.
+     * 
+     * @param filePath the relative file/folder path to the META-INF directory
+     * @param isFolder {@code true} in case it is a folder, otherwise {@code false}
      * @return validation messages or {@code null}
      */
-    @Nullable Collection<ValidationMessage> validateMetaInfPath(@NotNull Path filePath);
+    default @Nullable Collection<ValidationMessage> validateMetaInfPath(@NotNull Path filePath, boolean isFolder) { return validateMetaInfPath(filePath); }
+   
    
 }

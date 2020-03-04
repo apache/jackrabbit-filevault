@@ -17,7 +17,7 @@
 /**
  * The FileVault validation framework API. Provides classes to execute validations on FileVault packages.
  */
-@Version("1.0.0")
+@Version("1.0.1")
 package org.apache.jackrabbit.vault.validation;
 
 import org.osgi.annotation.versioning.Version;

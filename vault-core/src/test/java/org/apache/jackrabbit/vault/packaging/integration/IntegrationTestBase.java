@@ -505,8 +505,8 @@ public class IntegrationTestBase  {
 
     public void assertNodeHasPrimaryType(String path, String primaryType) throws PathNotFoundException, RepositoryException {
         Node node = admin.getNode(path);
-        assertNotNull("Node at " + path + " must exist", node);
-        assertEquals("Node at " + path + " does not have the expected node type ", primaryType, node.getPrimaryNodeType().getName());
+        assertNotNull("Node at '" + path + "' must exist", node);
+        assertEquals("Node at '" + path + "' does not have the expected node type", primaryType, node.getPrimaryNodeType().getName());
     }
 
     public void createNodes(Node parent, int maxDepth, int nodesPerFolder) throws RepositoryException {

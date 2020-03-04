@@ -17,6 +17,8 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 
 import javax.jcr.Node;
@@ -30,7 +32,7 @@ public class TestFolderArtifactHandler extends IntegrationTestBase {
 
     /* JCRVLT-415 */
     @Test
-    public void testModifyingCoveredNonNtFolderPrimaryType() throws RepositoryException, IOException, PackageException {
+    public void testModifyingContainedNodeNonNtFolderPrimaryType() throws RepositoryException, IOException, PackageException {
         // create node "/test/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
         Node testNode = rootNode.addNode("testroot", "nt:unstructured");
@@ -44,15 +46,16 @@ public class TestFolderArtifactHandler extends IntegrationTestBase {
     }
 
     @Test
-    public void testNotModifyingCoveredNtFolderPrimaryType() throws RepositoryException, IOException, PackageException {
+    public void testNotModifyingContainedNodeNtFolderPrimaryType() throws RepositoryException, IOException, PackageException {
         // create node "/test/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
         Node testNode = rootNode.addNode("testroot", "nt:unstructured");
-        testNode.setProperty("value", "huhu");
         Node fooNode = testNode.addNode("foo", "nt:folder");
+        String oldId = fooNode.getIdentifier();
         try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
             assertNodeHasPrimaryType("/testroot/foo", "nt:folder");
             assertPropertyMissing("/testroot/value");
+            assertEquals(oldId, admin.getNode("/testroot/foo").getIdentifier());
         }
     }
 

@@ -92,7 +92,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             }
 
             Node node = parent.getNode(dir.getRelativePath());
-            if (wspFilter.contains(node.getPath()) && !node.getPrimaryNodeType().isNodeType(nodeType)) {
+            if (wspFilter.contains(node.getPath()) && !nodeType.equals(node.getPrimaryNodeType().getName())) {
                 node = modifyPrimaryType(node, info);
             }
             NodeIterator iter = node.getNodes();

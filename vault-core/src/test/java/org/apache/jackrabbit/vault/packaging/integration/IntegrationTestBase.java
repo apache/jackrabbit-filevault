@@ -36,6 +36,7 @@ import java.util.jar.JarFile;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
@@ -500,6 +501,12 @@ public class IntegrationTestBase  {
         } else {
             assertTrue(path + " should not exist or be empty", p.getString().length() == 0);
         }
+    }
+
+    public void assertNodeHasPrimaryType(String path, String primaryType) throws PathNotFoundException, RepositoryException {
+        Node node = admin.getNode(path);
+        assertNotNull("Node at '" + path + "' must exist", node);
+        assertEquals("Node at '" + path + "' does not have the expected node type", primaryType, node.getPrimaryNodeType().getName());
     }
 
     public void createNodes(Node parent, int maxDepth, int nodesPerFolder) throws RepositoryException {

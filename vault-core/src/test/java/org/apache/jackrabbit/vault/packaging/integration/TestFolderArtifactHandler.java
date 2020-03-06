@@ -33,7 +33,7 @@ public class TestFolderArtifactHandler extends IntegrationTestBase {
     /* JCRVLT-415 */
     @Test
     public void testModifyingContainedNodeNonNtFolderPrimaryType() throws RepositoryException, IOException, PackageException {
-        // create node "/test/foo" with node type "nt:unstructured"
+        // create node "/testroot/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
         Node testNode = rootNode.addNode("testroot", "nt:unstructured");
         Node fooNode = testNode.addNode("foo", "nt:unstructured");
@@ -47,7 +47,7 @@ public class TestFolderArtifactHandler extends IntegrationTestBase {
 
     @Test
     public void testNotModifyingContainedNodeNtFolderPrimaryType() throws RepositoryException, IOException, PackageException {
-        // create node "/test/foo" with node type "nt:unstructured"
+        // create node "/testroot/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
         Node testNode = rootNode.addNode("testroot", "nt:unstructured");
         Node fooNode = testNode.addNode("foo", "nt:folder");
@@ -61,16 +61,25 @@ public class TestFolderArtifactHandler extends IntegrationTestBase {
 
     @Test
     public void testNotModifyingIntermediateNodePrimaryType() throws RepositoryException, IOException, PackageException {
-        // create node "/test/foo" with node type "nt:unstructured"
+        // create node "/var/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
         Node testNode = rootNode.addNode("var", "nt:unstructured");
-        //assertNodeMissing("/test2/foo");
         Node fooNode = testNode.addNode("foo", "nt:unstructured");
         assertNodeHasPrimaryType("/var/foo", "nt:unstructured");
         fooNode.setProperty("testProperty", "test");
         try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
             assertNodeHasPrimaryType("/var/foo", "nt:unstructured");
             assertProperty("/var/foo/testProperty", "test");
+        }
+    }
+
+    @Test
+    public void testCreatingIntermediateNodesWithDefaultType() throws RepositoryException, IOException, PackageException {
+        // create node "/var/foo" with node type "nt:unstructured"
+        Node rootNode = admin.getRootNode();
+        Node testNode = rootNode.addNode("var", "nt:unstructured");
+        try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
+            assertNodeHasPrimaryType("/var/foo", "nt:unstructured");
         }
     }
 }

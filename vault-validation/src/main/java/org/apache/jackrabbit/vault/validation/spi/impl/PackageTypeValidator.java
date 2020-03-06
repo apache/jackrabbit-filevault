@@ -285,9 +285,9 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
             }
             break;
         case CONTAINER:
-            if (packageType != PackageType.APPLICATION) {
+            if (packageType != PackageType.APPLICATION && packageType != PackageType.CONTAINER && packageType != PackageType.CONTENT) {
                 message = new ValidationMessage(severity, String.format(MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, containerPackageType,
-                        PackageType.APPLICATION.toString(), packageType));
+                        StringUtils.join(new String[] {PackageType.APPLICATION.toString(),PackageType.CONTENT.toString(),PackageType.CONTAINER.toString()}, ", "), packageType));
             }
             break;
         case MIXED:

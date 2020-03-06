@@ -273,7 +273,7 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
          * @return the new entry
          */
         @NotNull
-        public VirtualEntry add(@NotNull String name, long time, @Nullable byte[] data) {
+        public VirtualEntry add(@NotNull String name, long time, byte[] data) {
             if (children != null) {
                 VirtualEntry ret = children.get(name);
                 if (ret != null) {

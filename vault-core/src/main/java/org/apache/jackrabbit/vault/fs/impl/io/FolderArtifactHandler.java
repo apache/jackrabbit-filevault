@@ -82,8 +82,13 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             if (wspFilter.contains(parent.getPath() + "/" + dir.getRelativePath())) {
                 node = parent.addNode(dir.getRelativePath(), nodeType);
             } else {
-                // use default node type for intermediate nodes
-                node = parent.addNode(dir.getRelativePath());
+                // preferably use default node type for intermediate nodes
+                if (parent.getPrimaryNodeType().canAddChildNode(dir.getRelativePath())) {
+                    node = parent.addNode(dir.getRelativePath());
+                } else {
+                    node = parent.addNode(dir.getRelativePath(), nodeType);
+                }
+                
             }
             info.onCreated(node.getPath());
         } else {

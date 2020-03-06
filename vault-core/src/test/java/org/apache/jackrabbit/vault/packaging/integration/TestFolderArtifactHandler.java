@@ -38,7 +38,8 @@ public class TestFolderArtifactHandler extends IntegrationTestBase {
         Node testNode = rootNode.addNode("testroot", "nt:unstructured");
         Node fooNode = testNode.addNode("foo", "nt:unstructured");
         fooNode.setProperty("testProperty", "test");
-        try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
+        admin.save();
+        try (VaultPackage vltPackage = extractVaultPackageStrict("/test-packages/folder-without-docview-element.zip")) {
             // make sure the primary type from "/test/foo" got overwritten!
             assertPropertyMissing("/testroot/foo/testProperty");
             assertNodeHasPrimaryType("/testroot/foo", "nt:folder");
@@ -52,7 +53,8 @@ public class TestFolderArtifactHandler extends IntegrationTestBase {
         Node testNode = rootNode.addNode("testroot", "nt:unstructured");
         Node fooNode = testNode.addNode("foo", "nt:folder");
         String oldId = fooNode.getIdentifier();
-        try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
+        admin.save();
+        try (VaultPackage vltPackage = extractVaultPackageStrict("/test-packages/folder-without-docview-element.zip")) {
             assertNodeHasPrimaryType("/testroot/foo", "nt:folder");
             assertPropertyMissing("/testroot/value");
             assertEquals(oldId, admin.getNode("/testroot/foo").getIdentifier());
@@ -67,7 +69,8 @@ public class TestFolderArtifactHandler extends IntegrationTestBase {
         Node fooNode = testNode.addNode("foo", "nt:unstructured");
         assertNodeHasPrimaryType("/var/foo", "nt:unstructured");
         fooNode.setProperty("testProperty", "test");
-        try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
+        admin.save();
+        try (VaultPackage vltPackage = extractVaultPackageStrict("/test-packages/folder-without-docview-element.zip")) {
             assertNodeHasPrimaryType("/var/foo", "nt:unstructured");
             assertProperty("/var/foo/testProperty", "test");
         }
@@ -78,8 +81,22 @@ public class TestFolderArtifactHandler extends IntegrationTestBase {
         // create node "/var/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
         Node testNode = rootNode.addNode("var", "nt:unstructured");
-        try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
+        admin.save();
+        try (VaultPackage vltPackage = extractVaultPackageStrict("/test-packages/folder-without-docview-element.zip")) {
             assertNodeHasPrimaryType("/var/foo", "nt:unstructured");
+        }
+    }
+
+    @Test
+    public void testCreatingIntermediateNodesWithFallbackType() throws RepositoryException, IOException, PackageException {
+        // create node "/var/foo" with node type "nt:unstructured"
+        Node rootNode = admin.getRootNode();
+        Node testNode = rootNode.addNode("var", "nt:folder");
+        admin.save();
+        assertNodeHasPrimaryType("/var", "nt:folder");
+        try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
+            assertNodeHasPrimaryType("/var", "nt:folder");
+            assertNodeHasPrimaryType("/var/foo", "nt:folder");
         }
     }
 }

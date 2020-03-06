@@ -14,10 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * The FileVault validation framework API. Provides classes to execute validations on FileVault packages.
- */
-@Version("2.0.0")
 package org.apache.jackrabbit.vault.validation;
 
-import org.osgi.annotation.versioning.Version;
+import org.apache.jackrabbit.vault.validation.spi.NodeContext;
+import org.jetbrains.annotations.NotNull;
+import org.mockito.ArgumentMatcher;
+
+public class NodeContextNodePathMatcher implements ArgumentMatcher<@NotNull NodeContext> {
+
+    private final String expectedNodePath;
+    public NodeContextNodePathMatcher(String expectedNodePath) {
+        this.expectedNodePath = expectedNodePath;
+    }
+
+    @Override
+    public boolean matches(@NotNull NodeContext nodeContext) {
+        return nodeContext.getNodePath().equals(expectedNodePath);
+    }
+
+}

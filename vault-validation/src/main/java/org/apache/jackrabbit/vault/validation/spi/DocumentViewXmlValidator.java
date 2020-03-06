@@ -49,6 +49,27 @@ public interface DocumentViewXmlValidator extends Validator {
      * @param filePath the relative file path of the docview file containing this node
      * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
      * @return validation messages or {@code null}
+     * @deprecated Use {@link #validate(DocViewNode, NodeContext, boolean)} instead
      */
-    @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot);
+    @Deprecated
+    default @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Called for the beginning of each new JCR document view node.
+     * Deserialization of the node information was already done when this method is called!
+     * The node and attribute names have the string representation outlined in {@link Name} (i.e. including the namespace uri in the format <code>{namespaceURI}localPart</code>).
+     * This is also referred to as <a href="https://docs.adobe.com/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.2.5.1%20Expanded%20Form">JCR name expanded form</a>.
+     * To construct such names either use {@link NameUtil} or use the constants from {@link NameConstants}.
+     * 
+     * The node's label refers to the XML element name specifying the node. There shouldn't be any checks derived from it, but only from the expanded name.
+     * @param node the node which should be validated
+     * @param nodeContext the information about the node context (like path)
+     * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
+     * @return validation messages or {@code null}
+     */
+    default @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
+        return validate(node, nodeContext.getNodePath(), nodeContext.getFilePath(), isRoot);
+    }
 }

@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
@@ -48,6 +47,7 @@ import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedFilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedPropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidator;
+import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
  * This class is thread-safe (i.e. methods can be used from different threads on the same instance). 
  * @see ValidationExecutorFactory
  */
-public class ValidationExecutor {
+public final class ValidationExecutor {
 
     private final Map<String, DocumentViewXmlValidator> documentViewXmlValidators;
     private final Map<String, NodePathValidator> nodePathValidators;
@@ -69,7 +69,7 @@ public class ValidationExecutor {
     private final Map<String, JcrPathValidator> jcrPathValidators;
     private final Map<String, FilterValidator> filterValidators;
     private final Map<String, PropertiesValidator> propertiesValidators;
-    private final Map<String, Validator> validatorsById;
+    private final @NotNull Map<String, Validator> validatorsById;
 
     /**
      * the default logger
@@ -206,7 +206,7 @@ public class ValidationExecutor {
             for (Map.Entry<String, NodePathValidator> entry : nodePathValidators.entrySet()) {
                 enrichedMessages.add(new ValidationViolation(entry.getKey(), ValidationMessageSeverity.DEBUG, "Validate..."));
                 try {
-                    Collection<ValidationMessage> messages = entry.getValue().validate(nodePathAndLineNumber.getKey());
+                    Collection<ValidationMessage> messages = entry.getValue().validate(new NodeContextImpl(nodePathAndLineNumber.getKey(), filePath, basePath));
                     if (messages != null && !messages.isEmpty()) {
                         enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, nodePathAndLineNumber.getKey(),
                                 nodePathAndLineNumber.getValue().intValue(), 0));
@@ -219,10 +219,10 @@ public class ValidationExecutor {
         return enrichedMessages;
     }
 
-    private Collection<ValidationViolation> validateGenericMetaInfData(@Nullable InputStream input, @NotNull Path filePath, Path basePath) throws IOException {
+    private Collection<ValidationViolation> validateGenericMetaInfData(@Nullable InputStream input, @NotNull Path filePath, @NotNull Path basePath) throws IOException {
         Collection<ValidationViolation> enrichedMessages = new LinkedList<>();
         for (Map.Entry<String, MetaInfPathValidator> entry : metaInfPathValidators.entrySet()) {
-            Collection<ValidationMessage> messages = entry.getValue().validateMetaInfPath(filePath, input == null);
+            Collection<ValidationMessage> messages = entry.getValue().validateMetaInfPath(filePath, basePath, input == null);
             if (messages != null && !messages.isEmpty()) {
                 enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
             }
@@ -234,16 +234,17 @@ public class ValidationExecutor {
                 for (Map.Entry<String, GenericMetaInfDataValidator> entry : genericMetaInfDataValidators.entrySet()) {
                     try {
                         GenericMetaInfDataValidator validator = entry.getValue();
-                        if (validator.shouldValidateMetaInfData(filePath)) {
+                        if (validator.shouldValidateMetaInfData(filePath, basePath)) {
                             if (resettableInputStream == null) {
-                                if (isAnotherValidatorFulfillingPathPredicate(genericMetaInfDataValidators.values(), GenericMetaInfDataValidator::shouldValidateMetaInfData, validator, filePath)) {
+                                boolean isAnotherValidatorInterested = genericMetaInfDataValidators.values().stream().filter(t-> !t.equals(validator)).anyMatch(x -> x.shouldValidateMetaInfData(filePath, basePath));
+                                if (isAnotherValidatorInterested) {
                                     currentInput = resettableInputStream = new ResettableInputStream(input);
                                 }
                             } else {
                                 resettableInputStream.reset();
                             }
                             enrichedMessages.add(new ValidationViolation(entry.getKey(), ValidationMessageSeverity.DEBUG, "Validate..."));
-                            Collection<ValidationMessage> messages = validator.validateMetaInfData(currentInput, filePath);
+                            Collection<ValidationMessage> messages = validator.validateMetaInfData(currentInput, filePath, basePath);
                             if (messages != null && !messages.isEmpty()) {
                                 enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
                             }
@@ -263,11 +264,11 @@ public class ValidationExecutor {
         return enrichedMessages;
     }
 
-    private Collection<ValidationViolation> validateGenericJcrData(@Nullable InputStream input, @NotNull Path filePath, Path basePath) throws IOException {
+    private Collection<ValidationViolation> validateGenericJcrData(@Nullable InputStream input, @NotNull Path filePath, @NotNull Path basePath) throws IOException {
         Map<String, Integer> nodePathsAndLineNumbers = new HashMap<>();
         Collection<ValidationViolation> enrichedMessages = new LinkedList<>();
         for (Map.Entry<String, JcrPathValidator> entry : jcrPathValidators.entrySet()) {
-            Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(filePath, input == null);
+            Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(filePath, basePath, input == null);
             if (messages != null && !messages.isEmpty()) {
                 enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
             }
@@ -280,16 +281,17 @@ public class ValidationExecutor {
                 for (Map.Entry<String, GenericJcrDataValidator> entry : genericJcrDataValidators.entrySet()) {
                     try {
                         GenericJcrDataValidator validator = entry.getValue();
-                        if (validator.shouldValidateJcrData(filePath)) {
+                        if (validator.shouldValidateJcrData(filePath, basePath)) {
                             if (resettableInputStream == null) {
-                                if (isAnotherValidatorFulfillingPathPredicate(genericJcrDataValidators.values(), GenericJcrDataValidator::shouldValidateJcrData, validator, filePath)) {
+                                boolean isAnotherValidatorInterested = genericJcrDataValidators.values().stream().filter(t-> !t.equals(validator)).anyMatch(x -> x.shouldValidateJcrData(filePath, basePath));
+                                if (isAnotherValidatorInterested) {
                                     currentInput = resettableInputStream = new ResettableInputStream(input);
                                 }
                             } else {
                                 resettableInputStream.reset();
                             }
                             enrichedMessages.add(new ValidationViolation(entry.getKey(), ValidationMessageSeverity.DEBUG, "Validate..."));
-                            Collection<ValidationMessage> messages = validator.validateJcrData(currentInput, filePath, nodePathsAndLineNumbers);
+                            Collection<ValidationMessage> messages = validator.validateJcrData(currentInput, filePath, basePath, nodePathsAndLineNumbers);
                             if (messages != null && !messages.isEmpty()) {
                                 enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
                             }
@@ -330,10 +332,6 @@ public class ValidationExecutor {
         // convert to forward slashes and make absolute by prefixing it with "/"
         String platformPath = "/" + FilenameUtils.separatorsToUnix(filePath.toString());
         return PlatformNameFormat.getRepositoryPath(platformPath, true);
-    }
-
-    private static <T extends Validator> boolean isAnotherValidatorFulfillingPathPredicate(Collection<T> validators, BiPredicate<T,Path> predicate, T currentValidator, Path filePath) {
-        return validators.stream().filter(t -> !t.equals(currentValidator)).anyMatch(x -> predicate.test(x, filePath));
     }
 
     static <T> Map<String, T> filterValidatorsByClass(Map<String, Validator> allValidators, Class<T> type) {

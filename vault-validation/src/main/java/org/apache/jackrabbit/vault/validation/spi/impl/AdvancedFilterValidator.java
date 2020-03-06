@@ -84,10 +84,10 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
 
     private final boolean isSubPackage;
     private final Collection<String> validRoots;
-    private final ValidationMessageSeverity defaultSeverity;
-    private final ValidationMessageSeverity severityForUncoveredAncestorNode;
-    private final ValidationMessageSeverity severityForUncoveredFilterRootAncestors;
-    private final ValidationMessageSeverity severityForOrphanedFilterEntries;
+    private final @NotNull ValidationMessageSeverity defaultSeverity;
+    private final @NotNull ValidationMessageSeverity severityForUncoveredAncestorNode;
+    private final @NotNull ValidationMessageSeverity severityForUncoveredFilterRootAncestors;
+    private final @NotNull ValidationMessageSeverity severityForOrphanedFilterEntries;
     private final Collection<PackageInfo> dependenciesMetaInfo;
     private final WorkspaceFilter filter;
     private Map<String, FilterValidator> filterValidators;
@@ -300,7 +300,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
         return FILTER_XML_PATH.equals(filePath);
     }
 
-    private void removeFromOrphanedFilterEntries(String nodePath) {
+    private void removeFromOrphanedFilterEntries(@NotNull String nodePath) {
         // find all filter roots which match
         Iterator<java.util.Map.Entry<PathFilterSet, List<Entry<PathFilter>>>> iter = orphanedFilterSets.entrySet().iterator();
         while (iter.hasNext()) {

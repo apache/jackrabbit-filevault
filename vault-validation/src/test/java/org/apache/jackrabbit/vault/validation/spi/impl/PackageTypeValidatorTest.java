@@ -34,12 +34,12 @@ import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
-import org.apache.jackrabbit.vault.validation.spi.impl.PackageTypeValidator;
-import org.apache.jackrabbit.vault.validation.spi.impl.PackageTypeValidatorFactory;
+import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -67,31 +67,32 @@ public class PackageTypeValidatorTest {
     @Before
     public void setUp() {
         Mockito.when(parentContainerContext.getProperties()).thenReturn(parentContainerProperties);
+        Mockito.when(filter.covers(ArgumentMatchers.anyString())).thenReturn(Boolean.TRUE);
     }
 
     @Test
     public void testNullPackageType() {
-        validator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, null, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
-        Assert.assertThat(validator.validate("/apps/some/node"), AnyValidationMessageMatcher.noValidationInCollection());
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, null, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
+        Assert.assertThat(validator.validate(new NodeContextImpl("/apps/some/node", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
         Assert.assertThat(validator.validate(filter), AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(validator.validate(properties), new ValidationMessage(ValidationMessageSeverity.WARN, PackageTypeValidator.MESSAGE_NO_PACKAGE_TYPE_SET));
         // validate sub packages of type Content
-        PackageTypeValidator subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false,PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        PackageTypeValidator subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false,PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         ValidationExecutorTest.assertViolation(validator.validate(properties), new ValidationMessage(ValidationMessageSeverity.WARN, PackageTypeValidator.MESSAGE_NO_PACKAGE_TYPE_SET));
         // validate sub packages of type null
-        subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, null, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, null, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTENT);
         Assert.assertThat(subPackageValidator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
         // validate sub packages of type Application
-        subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.APPLICATION);
         Assert.assertThat(subPackageValidator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
     public void testMixedPackageType() {
-        validator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.ERROR, false, false, false,PackageType.MIXED, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
-        Assert.assertThat(validator.validate("/apps/some/node"), AnyValidationMessageMatcher.noValidationInCollection());
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.ERROR, false, false, false,PackageType.MIXED, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
+        Assert.assertThat(validator.validate(new NodeContextImpl("/apps/some/node", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
         Assert.assertThat(validator.validate(filter), AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(validator.validate(properties), new ValidationMessage(ValidationMessageSeverity.WARN, PackageTypeValidator.MESSAGE_NO_PACKAGE_TYPE_SET));
         // test mixed package type
@@ -99,31 +100,31 @@ public class PackageTypeValidatorTest {
         ValidationExecutorTest.assertViolation(validator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_LEGACY_TYPE, PackageType.MIXED.toString())));
         // validate sling:OsgiConfig node
         DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
-        Assert.assertThat(validator.validate("/apps/config/someconfigpid"), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(new NodeContextImpl("/apps/config/someconfigpid", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
         Assert.assertThat(validator.validate(node, "/apps/config/someconfigpid", Paths.get(""), true), AnyValidationMessageMatcher.noValidationInCollection());
         
         // validate sub packages of type Content
         Mockito.when(parentContainerProperties.getPackageType()).thenReturn(PackageType.MIXED);
-        PackageTypeValidator subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        PackageTypeValidator subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTENT);
         Assert.assertThat(subPackageValidator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
         // validate sub packages of type Application
-        subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.APPLICATION);
         Assert.assertThat(subPackageValidator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
     public void testContentPackageType() {
-        validator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
-        ValidationExecutorTest.assertViolation(validator.validate("/apps/some/node"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "/apps/some/node")));
-        ValidationExecutorTest.assertViolation(validator.validate("/apps"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "/apps")));
-        ValidationExecutorTest.assertViolation(validator.validate("/libs/some/node"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "/libs/some/node")));
-        ValidationExecutorTest.assertViolation(validator.validate("/libs"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "/libs")));
-        Assert.assertThat(validator.validate("/content/is/allowed"), AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validate("/etc/packages/some/sub/package.zip"), AnyValidationMessageMatcher.noValidationInCollection());
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/apps/some/node", Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "/apps/some/node")));
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/apps", Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "/apps")));
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/libs/some/node", Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "/libs/some/node")));
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/libs",  Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "/libs")));
+        Assert.assertThat(validator.validate(new NodeContextImpl("/content/is/allowed", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(new NodeContextImpl("/etc/packages/some/sub/package.zip", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
         
-        ValidationExecutorTest.assertViolation(validator.validate("/apps/install/muybundle-123.jar"), 
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/apps/install/muybundle-123.jar", Paths.get(""), Paths.get(""))), 
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "/apps/install/muybundle-123.jar")),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.CONTENT, "/apps/install/muybundle-123.jar"))
                 );
@@ -132,47 +133,59 @@ public class PackageTypeValidatorTest {
         Assert.assertThat(validator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
         Mockito.when(parentContainerProperties.getPackageType()).thenReturn(PackageType.CONTENT);
         // validate sub packages of type Content
-        PackageTypeValidator subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        PackageTypeValidator subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         Assert.assertThat(subPackageValidator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
         // validate sling:OsgiConfig node
         DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
-        Assert.assertThat(validator.validate("/content/config/someconfigpid"), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(new NodeContextImpl("/content/config/someconfigpid", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(
                 validator.validate(node, "/content/config/someconfigpid", Paths.get(""), true),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.CONTENT, "/content/config/someconfigpid")));
         
         // validate sub packages of type Application
-        subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.APPLICATION);
         ValidationExecutorTest.assertViolation(subPackageValidator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, PackageType.CONTENT, PackageType.CONTENT, PackageType.APPLICATION)));
     }
 
     @Test
     public void testContainerPackageType() {
-        validator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTAINER, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
-        ValidationExecutorTest.assertViolation(validator.validate("/apps/some/node"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_OR_SUB_PACKAGE, PackageType.CONTAINER, "/apps/some/node")));
-        ValidationExecutorTest.assertViolation(validator.validate("/libs/some/node"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_OR_SUB_PACKAGE, PackageType.CONTAINER, "/libs/some/node")));
-        ValidationExecutorTest.assertViolation(validator.validate("/content/some/node"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_OR_SUB_PACKAGE, PackageType.CONTAINER, "/content/some/node")));
-        
-        Assert.assertThat(validator.validate("/apps/install.runmode/somebundle.jar"), AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validate("/etc/packages/some/sub/package.zip"), AnyValidationMessageMatcher.noValidationInCollection());
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTAINER, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
+        Assert.assertThat(validator.validate(new NodeContextImpl("/apps/some/node", Paths.get("some", "file1"), Paths.get("base"))), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(new NodeContextImpl("/libs/some/node", Paths.get("some", "file2"), Paths.get("base"))), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(new NodeContextImpl("/content/some/node", Paths.get("some", "file3"), Paths.get("base"))), AnyValidationMessageMatcher.noValidationInCollection());
+        ValidationExecutorTest.assertViolation(validator.done(), 
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_OR_SUB_PACKAGE, PackageType.CONTAINER), "/apps/some/node", Paths.get("some", "file1"), Paths.get("base"), null),
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_OR_SUB_PACKAGE, PackageType.CONTAINER), "/libs/some/node", Paths.get("some", "file2"), Paths.get("base"), null),
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_OR_SUB_PACKAGE, PackageType.CONTAINER), "/content/some/node", Paths.get("some", "file3"), Paths.get("base"), null)
+                );
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTAINER, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
+        Assert.assertThat(validator.validate(new NodeContextImpl("/apps/install.runmode", Paths.get("runmode"), Paths.get("base"))), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(new NodeContextImpl("/apps/install.runmode/somebundle.jar", Paths.get("runmode", "somebundle.jar"), Paths.get("base"))), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(new NodeContextImpl("/etc/packages/some/sub/package.zip", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
+        // this node is outside the allowed parents
+        Assert.assertThat(validator.validate(new NodeContextImpl("/apps/install.runmode2", Paths.get("apps", "install", "runmode2"), Paths.get("base"))), AnyValidationMessageMatcher.noValidationInCollection());
         Assert.assertThat(validator.validate(filter), AnyValidationMessageMatcher.noValidationInCollection());
+        ValidationExecutorTest.assertViolation(validator.done(), 
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_OR_SUB_PACKAGE, PackageType.CONTAINER), "/apps/install.runmode2", Paths.get("apps", "install", "runmode2"), Paths.get("base"), null)
+        );
         
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTAINER, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTAINER);
         Assert.assertThat(validator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
         // validate sub packages of type Content
         Mockito.when(parentContainerProperties.getPackageType()).thenReturn(PackageType.CONTAINER);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTENT);
-        PackageTypeValidator subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        PackageTypeValidator subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         ValidationExecutorTest.assertViolation(subPackageValidator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, PackageType.CONTAINER, PackageType.APPLICATION, PackageType.CONTENT)));
         // validate sub packages of type Application
-        subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.APPLICATION);
         Assert.assertThat(subPackageValidator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
     
         // validate sling:OsgiConfig node
         DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
-        Assert.assertThat(validator.validate("/apps/config/someconfigpid"), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(new NodeContextImpl("/apps/config/someconfigpid", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
         Assert.assertThat(validator.validate(node, "/apps/config/someconfigpid", Paths.get(""), true), AnyValidationMessageMatcher.noValidationInCollection());
         
         // make sure no dependencies
@@ -183,17 +196,17 @@ public class PackageTypeValidatorTest {
 
     @Test
     public void testApplicationPackageType() throws IOException, ConfigurationException {
-        validator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
-        Assert.assertThat(validator.validate("/apps/some/script"), AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validate("/libs"), AnyValidationMessageMatcher.noValidationInCollection());
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
+        Assert.assertThat(validator.validate(new NodeContextImpl("/apps/some/script", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(new NodeContextImpl("/libs",  Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
         
-        ValidationExecutorTest.assertViolation(validator.validate("/content/some/node"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_APP_CONTENT_FOUND, PackageType.APPLICATION, "/content/some/node")));
-        ValidationExecutorTest.assertViolation(validator.validate("/etc/something"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_APP_CONTENT_FOUND, PackageType.APPLICATION, "/etc/something")));
-        ValidationExecutorTest.assertViolation(validator.validate("/conf/something"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_APP_CONTENT_FOUND, PackageType.APPLICATION, "/conf/something")));
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/content/some/node",  Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_APP_CONTENT_FOUND, PackageType.APPLICATION, "/content/some/node")));
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/etc/something",  Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_APP_CONTENT_FOUND, PackageType.APPLICATION, "/etc/something")));
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/conf/something",  Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_APP_CONTENT_FOUND, PackageType.APPLICATION, "/conf/something")));
         
         // no bundles/sub packages
-        ValidationExecutorTest.assertViolation(validator.validate("/apps/install/mybundle.jar"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.APPLICATION, "/apps/install/mybundle.jar")));
-        ValidationExecutorTest.assertViolation(validator.validate("/apps/install/config.cfg"), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.APPLICATION, "/apps/install/config.cfg")));
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/apps/install/mybundle.jar", Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.APPLICATION, "/apps/install/mybundle.jar")));
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/apps/install/config.cfg", Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.APPLICATION, "/apps/install/config.cfg")));
         
         // no hooks
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.APPLICATION);
@@ -217,7 +230,7 @@ public class PackageTypeValidatorTest {
         
         // validate sling:OsgiConfig node
         DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
-        Assert.assertThat(validator.validate("/apps/config/someconfigpid"), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(new NodeContextImpl("/apps/config/someconfigpid", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(
                 validator.validate(node, "/apps/config/someconfigpid", Paths.get(""), true),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.APPLICATION, "/apps/config/someconfigpid")));
@@ -225,10 +238,10 @@ public class PackageTypeValidatorTest {
         // validate sub packages of type Content
         Mockito.when(parentContainerProperties.getPackageType()).thenReturn(PackageType.APPLICATION);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTENT);
-        PackageTypeValidator subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        PackageTypeValidator subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         ValidationExecutorTest.assertViolation(subPackageValidator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_UNSUPPORTED_SUB_PACKAGE, PackageType.APPLICATION)));
         // validate sub packages of type Application
-        subPackageValidator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
+        subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, parentContainerContext);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.APPLICATION);
         Mockito.when(properties.getExternalHooks()).thenReturn(Collections.emptyMap());
         ValidationExecutorTest.assertViolation(subPackageValidator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_UNSUPPORTED_SUB_PACKAGE, PackageType.APPLICATION)));
@@ -236,7 +249,7 @@ public class PackageTypeValidatorTest {
 
     @Test
     public void testApplicationPackageTypeWithAllowedComplexFilters() throws IOException, ConfigurationException {
-        validator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, true, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, true, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         // with filters with include/exclude
         try (InputStream input = this.getClass().getResourceAsStream("/filter.xml")) {
@@ -247,7 +260,7 @@ public class PackageTypeValidatorTest {
 
     @Test
     public void testMutableContentProhibited() {
-        validator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.INFO, ValidationMessageSeverity.INFO, true, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.INFO, ValidationMessageSeverity.INFO, true, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.MIXED);
         ValidationExecutorTest.assertViolation(validator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, PackageType.MIXED)));
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTENT);
@@ -260,7 +273,7 @@ public class PackageTypeValidatorTest {
 
     @Test
     public void testImmutableContentProhibited() {
-        validator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.INFO, ValidationMessageSeverity.INFO, false, true, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.INFO, ValidationMessageSeverity.INFO, false, true, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.MIXED);
         ValidationExecutorTest.assertViolation(validator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, PackageType.MIXED)));
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTENT);
@@ -273,7 +286,7 @@ public class PackageTypeValidatorTest {
 
     @Test
     public void testIsOsgiBundleOrConfigurationFile() {
-        validator = new PackageTypeValidator(ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX, null);
         Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/install/mybundle-123.jar", true));
         Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/config/mmyconfig-123.cfg.json", true));
         Assert.assertTrue(validator.isOsgiBundleOrConfiguration("/apps/config/mmyconfig-123.cfg", true));

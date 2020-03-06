@@ -72,7 +72,7 @@ public class ValidationViolationTest {
         Assert.assertEquals("myid2", violation.getValidatorId());
         Assert.assertEquals(ValidationMessageSeverity.DEBUG, violation.getSeverity());
         Assert.assertEquals("message1", violation.getMessage());
-        Assert.assertEquals(Paths.get("base1","child1"), violation.getFilePath());
+        Assert.assertEquals(Paths.get("base1","child1"), violation.getAbsoluteFilePath());
         Assert.assertEquals("nodepath2", violation.getNodePath());
         Assert.assertEquals(10, violation.getLine());
         Assert.assertEquals(20, violation.getColumn());

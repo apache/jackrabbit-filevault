@@ -35,18 +35,23 @@ public interface JcrPathValidator extends Validator {
      * 
      * @param filePath the relative file/folder path to the jcr_root directory
      * @return validation messages or {@code null}
-     * @deprecated Use {@link #validateJcrPath(Path, boolean)} instead.
+     * @deprecated Use {@link #validateJcrPath(Path, Path, boolean)} instead.
      */
     @Deprecated 
-    default @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull Path filePath) { return null; };
-    
+    default @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull Path filePath) { 
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Called for each file/folder below jcr_root.
      * 
-     * @param filePath the relative file/folder path to the jcr_root directory
+     * @param filePath the relative file/folder path to the jcr_root directory (given in {@code basePath})
+     * @param basePath the absolute path to the jcr_root directory to which {@code filePath} is relative
      * @param isFolder {@code true} in case it is a folder, otherwise {@code false}
      * @return validation messages or {@code null}
      */
-    default @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull Path filePath, boolean isFolder) { return validateJcrPath(filePath); }
+    default @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull Path filePath, @NotNull Path basePath, boolean isFolder) { 
+        return validateJcrPath(filePath); 
+    }
    
 }

@@ -69,7 +69,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
     }
 
     @Override
-    public Collection<ValidationMessage> validateJcrData(@NotNull InputStream input, @NotNull Path filePath, @NotNull Map<String, Integer> nodePathsAndLineNumbers) throws IOException {
+    public Collection<ValidationMessage> validateJcrData(@NotNull InputStream input, @NotNull Path filePath, @NotNull Path basePath, @NotNull Map<String, Integer> nodePathsAndLineNumbers) throws IOException {
         Collection<ValidationMessage> messages = new LinkedList<>();
         // TODO: support other formats like sysview xml or generic xml
         // (https://jackrabbit.apache.org/filevault/vaultfs.html#Deserialization)
@@ -80,7 +80,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         Path documentViewXmlRootPath = getDocumentViewXmlRootPath(bufferedInput, filePath);
         if (documentViewXmlRootPath != null) {
             try {
-                messages.addAll(validateDocumentViewXml(bufferedInput, filePath, ValidationExecutor.filePathToNodePath(documentViewXmlRootPath),
+                messages.addAll(validateDocumentViewXml(bufferedInput, filePath, basePath, ValidationExecutor.filePathToNodePath(documentViewXmlRootPath),
                             nodePathsAndLineNumbers));
             } catch (SAXException e) {
                 throw new IOException("Could not parse xml", e);
@@ -136,11 +136,11 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         return rootPath;
     }
 
-    protected Collection<ValidationMessage> validateDocumentViewXml(InputStream input, Path filePath, String rootNodePath,
+    protected Collection<ValidationMessage> validateDocumentViewXml(InputStream input, Path filePath, Path basePath, String rootNodePath,
             Map<String, Integer> nodePathsAndLineNumbers) throws IOException, SAXException {
         List<ValidationMessage> enrichedMessages = new LinkedList<>();
         XMLReader xr = saxParser.getXMLReader();
-        final DocumentViewXmlContentHandler handler = new DocumentViewXmlContentHandler(filePath, rootNodePath,
+        final DocumentViewXmlContentHandler handler = new DocumentViewXmlContentHandler(filePath, basePath, rootNodePath,
                 docViewValidators);
         enrichedMessages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, "Detected DocView..."));
         xr.setContentHandler(handler);

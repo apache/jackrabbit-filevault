@@ -113,7 +113,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
         } else {
             allowComplexFilterRulesInApplicationPackages = false;
         }
-        return new PackageTypeValidator(settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, context.getProperties().getPackageType(), jcrInstallerNodePathRegex, additionalJcrInstallerFileNodePathRegex, context.getContainerValidationContext());
+        return new PackageTypeValidator(context.getFilter(), settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, context.getProperties().getPackageType(), jcrInstallerNodePathRegex, additionalJcrInstallerFileNodePathRegex, context.getContainerValidationContext());
     }
 
     @Override

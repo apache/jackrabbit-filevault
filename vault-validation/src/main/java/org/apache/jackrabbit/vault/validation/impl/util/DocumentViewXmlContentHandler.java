@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jcr.NamespaceException;
-import javax.xml.namespace.QName;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
@@ -42,6 +41,7 @@ import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
@@ -51,10 +51,11 @@ import org.xml.sax.helpers.DefaultHandler;
 /** TODO: reuse more logic from DocViewSAXImporter (https://issues.apache.org/jira/browse/JCRVLT-357) */
 public class DocumentViewXmlContentHandler extends DefaultHandler implements NamespaceResolver {
 
-    private final @NotNull Map<String, Integer> nodePathsAndLineNumbers;
+    private final @NotNull Map<@NotNull String, @NotNull Integer> nodePathsAndLineNumbers;
     private String rootNodeName;
     private String rootNodeParentPath; // must not end with "/"
-    private final Path filePath;
+    private final @NotNull Path filePath;
+    private final @NotNull Path basePath;
     private Locator locator;
     private Deque<String> elementNameStack;
     private Deque<DocViewNode> nodeStack;
@@ -77,11 +78,13 @@ public class DocumentViewXmlContentHandler extends DefaultHandler implements Nam
     /**
      * 
      * @param filePath the relative file to the docview file (relative to the jcr_root folder)
+     * @param basePath the absolute file path of the the jcr_root folder (to which {@code filePath} is relative)
      * @param rootNodePath the node path of the root node covered by this docview file
      * @param documentViewXmlValidators the validators to call for this docview file
      */
-    public DocumentViewXmlContentHandler(Path filePath, String rootNodePath, Map<String, DocumentViewXmlValidator> documentViewXmlValidators) {
+    public DocumentViewXmlContentHandler(@NotNull Path filePath, @NotNull Path basePath, String rootNodePath, Map<String, DocumentViewXmlValidator> documentViewXmlValidators) {
         this.filePath = filePath;
+        this.basePath = basePath;
         if (rootNodePath.equals("/")) {
             rootNodePath = "";
         }
@@ -193,7 +196,7 @@ public class DocumentViewXmlContentHandler extends DefaultHandler implements Nam
             violations.add(new ValidationViolation(ValidationMessageSeverity.DEBUG, "Validate node '" + node + "' start"));
             for (Map.Entry<String, DocumentViewXmlValidator> entry : validators.entrySet()) {
                 try {
-                    Collection<ValidationMessage> messages = entry.getValue().validate(node, nodePath.toString(), filePath, elementNameStack.size() <= 1);
+                    Collection<ValidationMessage> messages = entry.getValue().validate(node, new NodeContextImpl(nodePath.toString(), filePath, basePath), elementNameStack.size() <= 1);
                     if (messages != null && !messages.isEmpty()) {
                         violations.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, null, nodePath.toString(),
                                 locator.getLineNumber(), locator.getColumnNumber()));
@@ -211,7 +214,7 @@ public class DocumentViewXmlContentHandler extends DefaultHandler implements Nam
         }
     }
 
-    private DocViewNode getDocViewNode(Name name, String label, Attributes attributes) {
+    private @NotNull DocViewNode getDocViewNode(Name name, String label, Attributes attributes) {
         Map<String, DocViewProperty> propertyMap = new HashMap<>();
         
         String uuid = null;

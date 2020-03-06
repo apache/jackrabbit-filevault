@@ -20,21 +20,19 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * A ValidationViolation is a {@link ValidationMessage} enriched with additional meta information like
- * validator id, file path and node path.
+ * validator id
  */
-public class ValidationViolation extends ValidationMessage {
+public final class ValidationViolation extends ValidationMessage {
 
     private final String validatorId; // may only be null if message was not bound to a validator
-    private final Path filePath; // may be null
-    private final Path basePath; // may be null
-    private final String nodePath; // may be null
 
     public static final Collection<ValidationViolation> wrapMessages(String validatorId, Collection<? extends ValidationMessage> messages, Path filePath, Path basePath, String nodePath, int line, int column) {
         Collection<ValidationViolation> violations = new LinkedList<>();
@@ -51,9 +49,9 @@ public class ValidationViolation extends ValidationMessage {
             // take parameters from underlying violation and only overwrite if not set in delegate
             return new ValidationViolation(delegate.validatorId != null ? delegate.validatorId : validatorId, 
                     delegate,
-                    delegate.filePath != null ? delegate.filePath : filePath,
-                    delegate.basePath != null ? delegate.basePath : basePath,
-                    delegate.nodePath != null ? delegate.nodePath : nodePath, 
+                    delegate.getFilePath()!= null ? delegate.getFilePath() : filePath,
+                    delegate.getBasePath() != null ? delegate.getBasePath() : basePath,
+                    delegate.getNodePath() != null ? delegate.getNodePath() : nodePath, 
                     delegate.getLine() != 0 ? delegate.getLine() : line,
                     delegate.getColumn() != 0 ? delegate.getColumn() : column,
                     delegate.getThrowable());
@@ -64,31 +62,28 @@ public class ValidationViolation extends ValidationMessage {
 
     ValidationViolation(String validatorId, ValidationMessage message, Path filePath, Path basePath, String nodePath, int line, int column, Throwable t) {
         // potentially overwrite line, column and throwable from wrapped message (but only if not yet set there)
-        super(message.getSeverity(), message.getMessage(), message.getLine() != 0 ?  message.getLine() : line, message.getColumn() != 0 ? message.getColumn() : column, message.getThrowable() != null ? message.getThrowable() : t);
+        super(message.getSeverity(), message.getMessage(), message.getNodePath() != null ? message.getNodePath() : nodePath, message.getFilePath() != null ? message.getFilePath() : filePath, message.getBasePath() != null ? message.getBasePath() : basePath, message.getLine() != 0 ?  message.getLine() : line, message.getColumn() != 0 ? message.getColumn() : column, message.getThrowable() != null ? message.getThrowable() : t);
         
         this.validatorId = validatorId;
-        this.filePath = filePath;
-        this.basePath = basePath;
-        this.nodePath = nodePath;
     }
 
     private ValidationViolation(String validatorId, ValidationMessage message) {
         this(validatorId, message, null, null, null, 0, 0, null);
     }
 
-    public ValidationViolation(String validatorId, ValidationMessageSeverity severity, String message) {
+    public ValidationViolation(String validatorId, @NotNull ValidationMessageSeverity severity, @NotNull String message) {
         this(validatorId, new ValidationMessage(severity, message));
     }
 
-    public ValidationViolation(ValidationMessageSeverity severity, String message) {
+    public ValidationViolation(@NotNull ValidationMessageSeverity severity, @NotNull String message) {
         this(null, new ValidationMessage(severity, message));
     }
 
-    public ValidationViolation(ValidationMessageSeverity severity, String message, Path filePath, Path basePath, String nodePath, int line, int column, Throwable t) {
+    public ValidationViolation(@NotNull ValidationMessageSeverity severity, @NotNull String message, Path filePath, Path basePath, String nodePath, int line, int column, Throwable t) {
         this(null, new ValidationMessage(severity, message), filePath, basePath, nodePath, line, column, t);
     }
 
-    public ValidationViolation(String validatorId, ValidationMessageSeverity severity, String message, Path filePath, Path basePath, String nodePath, int line, int column, Throwable t) {
+    public ValidationViolation(String validatorId, @NotNull ValidationMessageSeverity severity, @NotNull String message, Path filePath, Path basePath, String nodePath, int line, int column, Throwable t) {
         this(validatorId, new ValidationMessage(severity, message), filePath, basePath, nodePath, line, column, t);
     }
 
@@ -96,19 +91,12 @@ public class ValidationViolation extends ValidationMessage {
      * Returns the file path bound to this message.
      * @return the absolute file path or {@code null} if the message does not belong to a file
      */
-    public @Nullable Path getFilePath() {
-        if (basePath != null && filePath != null) {
-            return basePath.resolve(filePath);
+    public @Nullable Path getAbsoluteFilePath() {
+        Path basePath = getBasePath();
+        if (basePath != null && getFilePath() != null) {
+            return basePath.resolve(getFilePath());
         }
-        return filePath;
-    }
-
-    /**
-     * Returns the node path bound to this message.
-     * @return the node path or {@code null} if the message does not belong to a specific node
-     */
-    public @Nullable String getNodePath() {
-        return nodePath;
+        return getFilePath();
     }
 
     /**
@@ -119,12 +107,11 @@ public class ValidationViolation extends ValidationMessage {
         return validatorId;
     }
 
+    
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
-        result = prime * result + ((nodePath == null) ? 0 : nodePath.hashCode());
         result = prime * result + ((validatorId == null) ? 0 : validatorId.hashCode());
         return result;
     }
@@ -138,16 +125,6 @@ public class ValidationViolation extends ValidationMessage {
         if (getClass() != obj.getClass())
             return false;
         ValidationViolation other = (ValidationViolation) obj;
-        if (filePath == null) {
-            if (other.filePath != null)
-                return false;
-        } else if (!filePath.equals(other.filePath))
-            return false;
-        if (nodePath == null) {
-            if (other.nodePath != null)
-                return false;
-        } else if (!nodePath.equals(other.nodePath))
-            return false;
         if (validatorId == null) {
             if (other.validatorId != null)
                 return false;
@@ -158,8 +135,8 @@ public class ValidationViolation extends ValidationMessage {
 
     @Override
     public String toString() {
-        return "ValidationViolation [" + (filePath != null ? "filePath=" + filePath + ", " : "")
-                + (nodePath != null ? "nodePath=" + nodePath + ", " : "") + (validatorId != null ? "validatorId=" + validatorId + ", " : "")
+        return "ValidationViolation [" 
+                + (validatorId != null ? "validatorId=" + validatorId + ", " : "")
                 + "super=" + super.toString() + "]";
     }
 }

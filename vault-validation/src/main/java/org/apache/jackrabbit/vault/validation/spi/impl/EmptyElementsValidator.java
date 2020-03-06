@@ -16,12 +16,9 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
-import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
@@ -29,6 +26,7 @@ import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
+import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -42,10 +40,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public class EmptyElementsValidator implements DocumentViewXmlValidator, NodePathValidator {
 
-    protected static final String MESSAGE_EMPTY_NODES = "Found empty nodes: %s (used for ordering only) without an accompanying folder which are included in the filter with mode=replace. Either remove the empty node or add at least the 'jcr:primaryType' attribute to make this node really get replaced.";
+    protected static final String MESSAGE_EMPTY_NODES = "Found empty node (used for ordering only) without an accompanying folder which are included in the filter with mode=replace. Either remove the empty node or add at least the 'jcr:primaryType' attribute to make this node really get replaced.";
     private final ValidationMessageSeverity severity;
-    private final Map<String, Path> emptyNodePathsAndFiles;
-    private final Collection<String> nonEmptyNodePaths;
+    private final List<NodeContext> emptyNodes;
+    private final List<String> nonEmptyNodePaths;
     private final WorkspaceFilter filter;
     
     private Collection<String> affectedFilterRoots;
@@ -53,7 +51,7 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, NodePat
     
     public EmptyElementsValidator(ValidationMessageSeverity severity, WorkspaceFilter filter) {
         this.severity = severity;
-        this.emptyNodePathsAndFiles = new LinkedHashMap<>();
+        this.emptyNodes = new LinkedList<>();
         this.nonEmptyNodePaths = new LinkedList<>();
         this.filter = filter;
         // collect all filter roots with import mode == replace
@@ -67,25 +65,23 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, NodePat
 
     @Override
     public Collection<ValidationMessage> done() {
-        emptyNodePathsAndFiles.keySet().removeAll(nonEmptyNodePaths);
-        if (!emptyNodePathsAndFiles.isEmpty()) {
-            String nodes = emptyNodePathsAndFiles.entrySet()
-                    .stream()
-                    .map(e -> "'" + e.getKey() + "' (in '" + e.getValue() + "')")
-                    .collect(Collectors.joining(", "));
-            return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_EMPTY_NODES, nodes)));
-        }
-        return null;
+        return emptyNodes.stream()
+            .filter(e -> nonEmptyNodePaths.stream().noneMatch(n -> n.equals(e.getNodePath())))
+            .map(e -> new ValidationMessage(severity, MESSAGE_EMPTY_NODES, e.getNodePath(), e.getFilePath(), e.getBasePath(), null))
+            .collect(Collectors.toList());
     }
 
     @Override
-    public Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
-        if (isBelowAffectedFilterRoots(nodePath)) {
-            if (node.primary == null && node.mixins == null && node.props.isEmpty() && filter.contains(nodePath) && filter.getImportMode(nodePath) == ImportMode.REPLACE) {
+    public Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
+        if (isBelowAffectedFilterRoots(nodeContext.getNodePath())) {
+            if (node.primary == null && node.mixins == null && node.props.isEmpty() && filter.contains(nodeContext.getNodePath()) && filter.getImportMode(nodeContext.getNodePath()) == ImportMode.REPLACE) {
                 // only relevant if no other merge mode
-                emptyNodePathsAndFiles.put(nodePath, filePath);
+                // ignore rep:policy nodes
+                if (!node.name.equals("rep:policy")) {
+                    emptyNodes.add(nodeContext);
+                }
             } else {
-                nonEmptyNodePaths.add(nodePath);
+                nonEmptyNodePaths.add(nodeContext.getNodePath());
             }
         }
         return null;
@@ -101,9 +97,9 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, NodePat
     }
 
     @Override
-    public @Nullable Collection<ValidationMessage> validate(@NotNull String nodePath) {
-        if (isBelowAffectedFilterRoots(nodePath)) {
-            nonEmptyNodePaths.add(nodePath);
+    public @Nullable Collection<ValidationMessage> validate(@NotNull NodeContext nodeContext) {
+        if (isBelowAffectedFilterRoots(nodeContext.getNodePath())) {
+            nonEmptyNodePaths.add(nodeContext.getNodePath());
         }
         return null;
     }

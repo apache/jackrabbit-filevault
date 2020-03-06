@@ -35,19 +35,22 @@ public interface MetaInfPathValidator extends Validator {
      * 
      * @param filePath the relative file/folder path to the META-INF directory
      * @return validation messages or {@code null}
-     * @deprecated Use {@link #validateMetaInfPath(Path, boolean)} instead.
+     * @deprecated Use {@link #validateMetaInfPath(Path, Path, boolean)} instead.
      */
     @Deprecated 
-    default @Nullable Collection<ValidationMessage> validateMetaInfPath(@NotNull Path filePath) { return null; };
+    default @Nullable Collection<ValidationMessage> validateMetaInfPath(@NotNull Path filePath) { 
+        throw new UnsupportedOperationException();
+    }
     
     /**
      * Called for each file/folder below META-INF.
      * 
-     * @param filePath the relative file/folder path to the META-INF directory
+     * @param filePath the relative file/folder path to the META-INF directory (given in {@code basePath})
+     * @param basePath the absolute path to the META-INF directory to which {@code filePath} is relative
      * @param isFolder {@code true} in case it is a folder, otherwise {@code false}
      * @return validation messages or {@code null}
      */
-    default @Nullable Collection<ValidationMessage> validateMetaInfPath(@NotNull Path filePath, boolean isFolder) { return validateMetaInfPath(filePath); }
+    default @Nullable Collection<ValidationMessage> validateMetaInfPath(@NotNull Path filePath, @NotNull Path basePath, boolean isFolder) { return validateMetaInfPath(filePath); }
    
    
 }

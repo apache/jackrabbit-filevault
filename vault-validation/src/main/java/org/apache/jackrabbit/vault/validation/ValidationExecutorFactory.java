@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Creates {@link ValidationExecutor}s. Holds a number of {@link ValidatorFactory} instances.
  */
-public class ValidationExecutorFactory {
+public final class ValidationExecutorFactory {
 
     /** All registered ValidatorFactories in the correct order (sorted by their ranking) */
     final List<ValidatorFactory> validatorFactories;

@@ -394,6 +394,21 @@ public class IntegrationTestBase  {
         return extractVaultPackage(name, null);
     }
 
+    /**
+     * Returns an ZipVaultPackage which has been extracted in the repository.
+     * 
+     * @param name either the name of a zip file or the name of a directory which contains an exploded package
+     * @return an extracted vault package
+     * @throws IOException
+     * @throws PackageException
+     * @throws RepositoryException
+     */
+    public VaultPackage extractVaultPackageStrict(String name) throws IOException, PackageException, RepositoryException {
+        ImportOptions  opts = getDefaultOptions();
+        opts.setStrict(true);
+        return extractVaultPackage(name, opts);
+    }
+
     public VaultPackage extractVaultPackage(String name, ImportOptions opts) throws IOException, PackageException, RepositoryException {
         if (opts == null) {
             opts = getDefaultOptions();

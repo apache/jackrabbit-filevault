@@ -209,7 +209,7 @@ public class PackageId implements Comparable<PackageId> {
     public PackageId(String group, String name, Version version) {
         fromPath = false;
         // validate group
-        if (group == null || group.equals(ETC_PACKAGES)) {
+        if (group.equals(ETC_PACKAGES)) {
             group = "";
         } else if (group.startsWith(ETC_PACKAGES_PREFIX)) {
             group = group.substring(ETC_PACKAGES_PREFIX.length());

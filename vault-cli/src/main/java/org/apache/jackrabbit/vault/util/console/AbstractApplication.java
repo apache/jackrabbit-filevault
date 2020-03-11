@@ -210,17 +210,6 @@ public abstract class AbstractApplication {
                         )
                         .create();
 
-        optInsecureHttps =
-                obuilder
-                        .withLongName("insecure")
-                        .withDescription("allow expired ssl certs for https")
-                        .withArgument(abuilder
-                                .withName("command")
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create();
-
         gbuilder
                 .withName("Global options:")
                 //.withOption(optPropertyFile)

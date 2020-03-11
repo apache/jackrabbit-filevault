@@ -217,8 +217,6 @@ public class PackageId implements Comparable<PackageId> {
             group = group.substring(1);
         }
         this.group = group;
-        if (name == null)
-            name = "";
         this.name = name;
         this.version = version == null ? Version.EMPTY : version;
         this.str = getString(this.group, name, this.version);

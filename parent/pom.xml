@@ -258,7 +258,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.8.2</version>
+                    <version>3.9.0</version>
                     <configuration>
                         <skip>true</skip>
                         <skipDeploy>true</skipDeploy>
@@ -267,7 +267,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                         <dependency>
                             <groupId>org.apache.maven.doxia</groupId>
                             <artifactId>doxia-module-markdown</artifactId>
-                            <version>1.9</version>
+                            <version>1.9.1</version>
                         </dependency>
                     </dependencies>
                 </plugin>

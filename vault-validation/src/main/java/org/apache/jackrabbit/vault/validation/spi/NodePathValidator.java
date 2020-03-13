@@ -50,7 +50,7 @@ public interface NodePathValidator extends Validator {
      * @param nodeContext the information about the node context
      * @return validation messages or {@code null}
      */
-    default @Nullable Collection<ValidationMessage> validate(@NotNull NodeContext nodeContext ) {
+    default @Nullable Collection<ValidationMessage> validate(@NotNull NodeContext nodeContext) {
         return validate(nodeContext.getNodePath());
     }
 }

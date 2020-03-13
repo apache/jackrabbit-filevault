@@ -54,11 +54,15 @@ import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.Text;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.impl.util.ValidationMessageErrorHandler;
+import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.FilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.GenericMetaInfDataValidator;
+import org.apache.jackrabbit.vault.validation.spi.JcrPathValidator;
+import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -67,7 +71,7 @@ import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-public final class AdvancedFilterValidator implements GenericMetaInfDataValidator, FilterValidator, NodePathValidator {
+public final class AdvancedFilterValidator implements GenericMetaInfDataValidator, FilterValidator, DocumentViewXmlValidator, JcrPathValidator {
 
     protected static final String MESSAGE_ORPHANED_FILTER_ENTRIES = "Found orphaned filter entries: %s";
     protected static final String MESSAGE_INVALID_PATTERN = "Invalid pattern given ('%s') which will never match for any descendants of the root path '%s'.";
@@ -235,6 +239,70 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
         return messages;
     }
 
+    private Collection<ValidationMessage> validateFileNodePath(@NotNull String nodePath) {
+        if (isSubPackage) {
+            return null; // not relevant for sub packages
+        }
+        // remove from orphaned list
+        removeFromOrphanedFilterEntries(nodePath);
+        
+        // now go through all includes
+        if (!filter.contains(nodePath)) {
+            if (filter.isAncestor(nodePath)) {
+                // consider valid roots
+                if (validRoots.contains(nodePath)) {
+                    return Collections.singleton(
+                            new ValidationMessage(severityForUncoveredAncestorNode,
+                                    String.format(MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT, nodePath)));
+                } else {
+                    // is this a folder only, then you cannot delete it!
+                    return Collections.singleton(
+                                new ValidationMessage(severityForUncoveredAncestorNode,
+                                        String.format(MESSAGE_ANCESTOR_NODE_NOT_COVERED, nodePath)));
+                }
+            } else {
+                return Collections
+                        .singleton(new ValidationMessage(defaultSeverity, String.format(MESSAGE_NODE_NOT_CONTAINED, nodePath)));
+            }
+        } else {
+            // is it a cleanup filter?
+            PathFilterSet pathFilterSet = filter.getCoveringFilterSet(nodePath);
+            if (pathFilterSet != null) {
+                if (PathFilterSet.TYPE_CLEANUP.equals(pathFilterSet.getType())) {
+                    return Collections
+                            .singleton(new ValidationMessage(defaultSeverity, String.format(MESSAGE_NODE_BELOW_CLEANUP_FILTER, nodePath)));
+                }
+            }
+        }
+        // check that all ancestor nodes till the root node are contained as well
+        String danglingNodePath = getDanglingAncestorNodePath(nodePath, filter);
+        if (danglingNodePath != null) {
+            return Collections.singleton(
+                    new ValidationMessage(defaultSeverity, "Ancestor node (" + danglingNodePath + ") of Node '" + nodePath +"' which is contained in a filter include element is not included!"));
+        }
+        return null;
+    }
+
+    @Override
+    public @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull NodeContext nodeContext,
+            boolean isFolder) {
+        if (!isFolder) {
+            return validateFileNodePath(nodeContext.getNodePath());
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext,
+            boolean isRoot) {
+        if (!isRoot) {
+            // root has been validated already with validateJcrPath(...)
+            validateFileNodePath(nodeContext.getNodePath());
+        }
+        return DocumentViewXmlValidator.super.validate(node, nodeContext, isRoot);
+    }
+
     /** Checks if the regex would at least have the chance to match if the matching path starts with root path.
      * 
      * @param regex
@@ -321,50 +389,6 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
                 }
             }
         }
-    }
-
-    @Override
-    public Collection<ValidationMessage> validate(@NotNull String nodePath) {
-        if (isSubPackage) {
-            return null; // not relevant for sub packages
-        }
-        // remove from orphaned list
-        removeFromOrphanedFilterEntries(nodePath);
-        
-        // now go through all includes
-        if (!filter.contains(nodePath)) {
-            if (filter.isAncestor(nodePath)) {
-                // consider valid roots
-                if (validRoots.contains(nodePath)) {
-                    return Collections.singleton(
-                            new ValidationMessage(severityForUncoveredAncestorNode,
-                                    String.format(MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT, nodePath)));
-                } else {
-                    return Collections.singleton(
-                                new ValidationMessage(severityForUncoveredAncestorNode,
-                                        String.format(MESSAGE_ANCESTOR_NODE_NOT_COVERED, nodePath)));
-                }
-            } else {
-                return Collections
-                        .singleton(new ValidationMessage(defaultSeverity, String.format(MESSAGE_NODE_NOT_CONTAINED, nodePath)));
-            }
-        } else {
-            // is it a cleanup filter?
-            PathFilterSet pathFilterSet = filter.getCoveringFilterSet(nodePath);
-            if (pathFilterSet != null) {
-                if (PathFilterSet.TYPE_CLEANUP.equals(pathFilterSet.getType())) {
-                    return Collections
-                            .singleton(new ValidationMessage(defaultSeverity, String.format(MESSAGE_NODE_BELOW_CLEANUP_FILTER, nodePath)));
-                }
-            }
-        }
-        // check that all ancestor nodes till the root node are contained as well
-        String danglingNodePath = getDanglingAncestorNodePath(nodePath, filter);
-        if (danglingNodePath != null) {
-            return Collections.singleton(
-                    new ValidationMessage(defaultSeverity, "Ancestor node (" + danglingNodePath + ") of Node '" + nodePath +"' which is contained in a filter include element is not included!"));
-        }
-        return null;
     }
 
     /**

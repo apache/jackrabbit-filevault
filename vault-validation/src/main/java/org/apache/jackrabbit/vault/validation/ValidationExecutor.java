@@ -38,6 +38,7 @@ import org.apache.jackrabbit.vault.validation.spi.GenericJcrDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.GenericMetaInfDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.JcrPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
+import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
 import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
@@ -267,12 +268,7 @@ public final class ValidationExecutor {
     private Collection<ValidationViolation> validateGenericJcrData(@Nullable InputStream input, @NotNull Path filePath, @NotNull Path basePath) throws IOException {
         Map<String, Integer> nodePathsAndLineNumbers = new HashMap<>();
         Collection<ValidationViolation> enrichedMessages = new LinkedList<>();
-        for (Map.Entry<String, JcrPathValidator> entry : jcrPathValidators.entrySet()) {
-            Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(filePath, basePath, input == null);
-            if (messages != null && !messages.isEmpty()) {
-                enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
-            }
-        }
+        
         if (input != null) {
             InputStream currentInput = input;
             ResettableInputStream resettableInputStream = null;
@@ -318,6 +314,14 @@ public final class ValidationExecutor {
         } else {
             // collect node path for folder only
             nodePathsAndLineNumbers.put(filePathToNodePath(filePath), 0);
+        }
+        // generate node context
+        NodeContext nodeContext = new NodeContextImpl(filePathToNodePath(filePath), filePath, basePath);
+        for (Map.Entry<String, JcrPathValidator> entry : jcrPathValidators.entrySet()) {
+            Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(nodeContext, input == null);
+            if (messages != null && !messages.isEmpty()) {
+                enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
+            }
         }
         enrichedMessages.addAll(validateNodePaths(filePath, basePath, nodePathsAndLineNumbers));
         return enrichedMessages;

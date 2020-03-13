@@ -39,6 +39,7 @@ import org.apache.jackrabbit.vault.validation.spi.GenericJcrDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.GenericMetaInfDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.JcrPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
+import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
 import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
@@ -169,16 +170,17 @@ public class ValidationExecutorTest {
         CapturingInputStreamFromArgumentAnswer<Void> answer2 = new CapturingInputStreamFromArgumentAnswer<>(StandardCharsets.US_ASCII, 0, null);
         Mockito.when(genericJcrDataValidator2.shouldValidateJcrData(Mockito.any(), Mockito.any())).thenReturn(true);
         Mockito.when(genericJcrDataValidator2.validateJcrData(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenAnswer(answer2);
-        Mockito.when(jcrPathValidator.validateJcrPath(Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "patherror")));
+        Mockito.when(jcrPathValidator.validateJcrPath(Mockito.any(), Mockito.anyBoolean())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "patherror")));
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/genericfile.xml")) {
             Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "apps/genericfile.xml", false);
             assertViolation(messages, 
-                    new ValidationViolation("jcrpathid", ValidationMessageSeverity.ERROR, "patherror", Paths.get("apps","genericfile.xml"), Paths.get(""), null, 0, 0, null),
-                    new ValidationViolation("genericjcrdataid", ValidationMessageSeverity.WARN, "error1", Paths.get("apps","genericfile.xml"), Paths.get(""), null, 0, 0, null));
+                    new ValidationViolation("genericjcrdataid", ValidationMessageSeverity.WARN, "error1", Paths.get("apps","genericfile.xml"), Paths.get(""), null, 0, 0, null),
+                    new ValidationViolation("jcrpathid", ValidationMessageSeverity.ERROR, "patherror", Paths.get("apps","genericfile.xml"), Paths.get(""), null, 0, 0, null));
             Assert.assertEquals("Test", answer.getValue());
             Assert.assertEquals("Test", answer2.getValue());
             Path expectedPath = Paths.get("apps/genericfile.xml");
-            Mockito.verify(jcrPathValidator).validateJcrPath(expectedPath, Paths.get(""), false);
+            NodeContext expectedNodeContext = new NodeContextImpl("/apps/genericfile.xml", expectedPath,  Paths.get(""));
+            Mockito.verify(jcrPathValidator).validateJcrPath(expectedNodeContext, false);
             Mockito.verify(genericJcrDataValidator, Mockito.atLeastOnce()).shouldValidateJcrData(expectedPath, Paths.get(""));
             Mockito.verify(genericJcrDataValidator).validateJcrData(Mockito.any(), Mockito.eq(expectedPath), Mockito.eq(Paths.get("")), Mockito.any());
             Mockito.verify(genericJcrDataValidator2, Mockito.atLeastOnce()).shouldValidateJcrData(expectedPath, Paths.get(""));
@@ -192,7 +194,7 @@ public class ValidationExecutorTest {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/genericfile.xml")) {
             Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "apps/genericfile.xml", false);
             Assert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
-            Mockito.verify(genericJcrDataValidator, Mockito.never()).validateJcrData(Mockito.any(), Mockito.any(), Mockito.any());
+            Mockito.verify(genericJcrDataValidator, Mockito.never()).validateJcrData(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         }
     }
 
@@ -200,8 +202,9 @@ public class ValidationExecutorTest {
     public void testJcrRootFolder() throws URISyntaxException, IOException, SAXException {
         Collection<ValidationViolation> messages = validateFolder(executor, Paths.get(""), "apps.dir", false);
         Assert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
-        Mockito.verify(jcrPathValidator).validateJcrPath(Paths.get("apps.dir"), Paths.get(""), true);
-        Mockito.verify(nodePathValidator).validate(new NodeContextImpl("/apps", Paths.get("apps.dir"), Paths.get("")));
+        NodeContext expectedNodeContext = new NodeContextImpl("/apps", Paths.get("apps.dir"), Paths.get(""));
+        Mockito.verify(jcrPathValidator).validateJcrPath(expectedNodeContext, true);
+        Mockito.verify(nodePathValidator).validate(expectedNodeContext);
     }
 
     @Test

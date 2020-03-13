@@ -79,8 +79,8 @@ public class DocumentViewParserValidatorTest {
 
     @Test
     public void testShouldValidate() {
-        Assert.assertTrue(validator.shouldValidateJcrData(Paths.get("some", "file.xml")));
-        Assert.assertFalse(validator.shouldValidateJcrData(Paths.get("some", "other", "file.json")));
+        Assert.assertTrue(validator.shouldValidateJcrData(Paths.get("some", "file.xml"), Paths.get("")));
+        Assert.assertFalse(validator.shouldValidateJcrData(Paths.get("some", "other", "file.json"), Paths.get("")));
     }
 
     @Test

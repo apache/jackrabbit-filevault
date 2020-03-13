@@ -50,9 +50,9 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
 
     private final Map<String, DocumentViewXmlValidator> docViewValidators;
     private final SAXParser saxParser;
-    private final ValidationMessageSeverity severity;
+    private final @NotNull ValidationMessageSeverity severity;
     
-    public DocumentViewParserValidator(SAXParser saxParser, ValidationMessageSeverity severity) {
+    public DocumentViewParserValidator(SAXParser saxParser, @NotNull ValidationMessageSeverity severity) {
         super();
         this.docViewValidators = new HashMap<>();
         this.saxParser = saxParser;
@@ -66,6 +66,12 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
     @Override
     public Collection<ValidationMessage> done() {
         return null;
+    }
+
+    @Override
+    public boolean shouldValidateJcrData(@NotNull Path filePath, @NotNull Path basePath) {
+        // support upper case extensions?
+        return filePath.toString().endsWith(".xml");
     }
 
     @Override
@@ -136,7 +142,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         return rootPath;
     }
 
-    protected Collection<ValidationMessage> validateDocumentViewXml(InputStream input, Path filePath, Path basePath, String rootNodePath,
+    protected Collection<ValidationMessage> validateDocumentViewXml(InputStream input, @NotNull Path filePath, @NotNull Path basePath, String rootNodePath,
             Map<String, Integer> nodePathsAndLineNumbers) throws IOException, SAXException {
         List<ValidationMessage> enrichedMessages = new LinkedList<>();
         XMLReader xr = saxParser.getXMLReader();
@@ -152,12 +158,6 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         }
         nodePathsAndLineNumbers.putAll(handler.getNodePaths());
         return enrichedMessages;
-    }
-
-    // support upper case extensions?
-    @Override
-    public boolean shouldValidateJcrData(@NotNull Path filePath) {
-        return filePath.toString().endsWith(".xml");
     }
 
 

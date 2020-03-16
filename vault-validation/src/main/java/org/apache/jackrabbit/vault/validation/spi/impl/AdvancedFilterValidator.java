@@ -298,9 +298,9 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
             boolean isRoot) {
         if (!isRoot) {
             // root has been validated already with validateJcrPath(...)
-            validateFileNodePath(nodeContext.getNodePath());
+            return validateFileNodePath(nodeContext.getNodePath());
         }
-        return DocumentViewXmlValidator.super.validate(node, nodeContext, isRoot);
+        return null;
     }
 
     /** Checks if the regex would at least have the chance to match if the matching path starts with root path.

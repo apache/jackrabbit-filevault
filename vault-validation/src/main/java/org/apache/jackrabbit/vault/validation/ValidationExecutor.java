@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -266,7 +267,7 @@ public final class ValidationExecutor {
     }
 
     private Collection<ValidationViolation> validateGenericJcrData(@Nullable InputStream input, @NotNull Path filePath, @NotNull Path basePath) throws IOException {
-        Map<String, Integer> nodePathsAndLineNumbers = new HashMap<>();
+        Map<String, Integer> nodePathsAndLineNumbers = new LinkedHashMap<>();
         Collection<ValidationViolation> enrichedMessages = new LinkedList<>();
         
         if (input != null) {
@@ -277,6 +278,7 @@ public final class ValidationExecutor {
                 for (Map.Entry<String, GenericJcrDataValidator> entry : genericJcrDataValidators.entrySet()) {
                     try {
                         GenericJcrDataValidator validator = entry.getValue();
+                        log.debug("Validate {} with validator '{}'", filePath, validator.getClass().getName());
                         if (validator.shouldValidateJcrData(filePath, basePath)) {
                             if (resettableInputStream == null) {
                                 boolean isAnotherValidatorInterested = genericJcrDataValidators.values().stream().filter(t-> !t.equals(validator)).anyMatch(x -> x.shouldValidateJcrData(filePath, basePath));
@@ -291,18 +293,19 @@ public final class ValidationExecutor {
                             if (messages != null && !messages.isEmpty()) {
                                 enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
                             }
-                        } else {
-                            // only do it if we haven't collected node paths from a previous run
-                            if (nodePathsAndLineNumbers.isEmpty()) {
-                                // convert file name to node path
-                                String nodePath = filePathToNodePath(filePath);
-                                log.debug("Found non-docview node '{}'", nodePath);
-                                nodePathsAndLineNumbers.put(nodePath, 0);
-                            }
+                        } 
+                        // only do it if we haven't collected node paths from a previous run
+                        if (nodePathsAndLineNumbers.isEmpty()) {
+                            // convert file name to node path
+                            String nodePath = filePathToNodePath(filePath);
+                            log.debug("Found non-docview node '{}'", nodePath);
+                            nodePathsAndLineNumbers.put(nodePath, 0);
                         }
                     } catch (RuntimeException e) {
                         if (!(e instanceof ValidatorException)) {
                             throw new ValidatorException(entry.getKey(), filePath, e);
+                        } else {
+                            throw e;
                         }
                     }
                 }
@@ -315,8 +318,9 @@ public final class ValidationExecutor {
             // collect node path for folder only
             nodePathsAndLineNumbers.put(filePathToNodePath(filePath), 0);
         }
+
         // generate node context
-        NodeContext nodeContext = new NodeContextImpl(filePathToNodePath(filePath), filePath, basePath);
+        NodeContext nodeContext = new NodeContextImpl(nodePathsAndLineNumbers.keySet().iterator().next(), filePath, basePath);
         for (Map.Entry<String, JcrPathValidator> entry : jcrPathValidators.entrySet()) {
             Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(nodeContext, input == null);
             if (messages != null && !messages.isEmpty()) {

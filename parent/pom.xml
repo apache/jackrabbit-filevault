@@ -230,6 +230,13 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                     <configuration>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.release</groupId>
+                            <artifactId>maven-release-oddeven-policy</artifactId>
+                            <version>2.5.3</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <!-- ====================================================================== -->
                 <!-- R A T P L U G I N -->

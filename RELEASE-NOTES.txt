@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.2
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.4
 
 Introduction
 ------------
@@ -8,6 +8,28 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.4.4
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.4.4
+This version requires Java 8, Oak 1.20 and Jackrabbit 2.20.0
+
+Bug
+    * [JCRVLT-409] - Validation: Emit node names in expanded form
+    * [JCRVLT-410] - PackageTypeValidator does not detect OSGi configurations of type sling:OsgiConfig
+    * [JCRVLT-414] - Embedding of Woodstox leads to non-necessary Import-Package statements
+    * [JCRVLT-415] - jackrabbit-emptyelements validator reports error for nested folders
+    * [JCRVLT-417] - Intermediate Node Types should be default node type of parent node type definition instead of "nt:folder"
+
+Improvement
+    * [JCRVLT-400] - '/etc/packages' should be a valid root
+    * [JCRVLT-401] - Clarify allowed contents of container package type
+    * [JCRVLT-402] - Clarify error message for validator "jackrabbit-emptyelements"
+    * [JCRVLT-406] - Improve logging of runtime exception in validators
+    * [JCRVLT-411] - PackageTypeValidator: Optionally allow complex filters
+    * [JCRVLT-413] - Clarify documentation about intermediate/ancestor nodes
+
 
 Changes in Jackrabbit FileVault 3.4.2
 --------------------------------------

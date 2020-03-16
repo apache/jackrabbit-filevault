@@ -31,7 +31,7 @@
     <!-- ====================================================================== -->
     <groupId>org.apache.jackrabbit.vault</groupId>
     <artifactId>parent</artifactId>
-    <version>3.4.4</version>
+    <version>3.4.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Apache Jackrabbit FileVault (Parent Project)</name>
@@ -60,9 +60,9 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     <!-- S C M D E F I N I T I O N -->
     <!-- ====================================================================== -->
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.4.4/parent</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.4.4/parent</developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/tags/jackrabbit-filevault-3.4.4/parent</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/parent</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/parent</developerConnection>
+        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/parent</url>
     </scm>
 
     <mailingLists>

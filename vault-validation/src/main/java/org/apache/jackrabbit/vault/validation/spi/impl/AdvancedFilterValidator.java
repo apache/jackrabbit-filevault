@@ -296,7 +296,8 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     @Override
     public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext,
             boolean isRoot) {
-        if (!isRoot) {
+        // skip root node, as it has been processed with validateJcrPath(...) and empty nodes only used for ordering
+        if (!isRoot && node.props.size() > 0) {
             // root has been validated already with validateJcrPath(...)
             return validateFileNodePath(nodeContext.getNodePath());
         }

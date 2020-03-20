@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.jcr.PropertyType;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -38,6 +39,8 @@ import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.impl.DefaultPackageInfo;
+import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.AnyValidationViolationMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
@@ -57,6 +60,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.xml.sax.SAXException;
+
+import com.google.common.collect.Maps;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AdvancedFilterValidatorTest {
@@ -178,6 +183,22 @@ public class AdvancedFilterValidatorTest {
         ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test3/invalid"), false),
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/test3/invalid")));
+        
+        // docview nodes root node should be skipped
+        Map<String, DocViewProperty> props = new HashMap<>();
+        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
+
+        DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "nt:unstructured");
+        Assert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained"), true), AnyValidationViolationMatcher.noValidationInCollection());
+        // order nodes should be skipped
+        node = new DocViewNode("ordernode", "ordernode", null, Collections.emptyMap(), null, null);
+        Assert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained/ordernode"), false), AnyValidationViolationMatcher.noValidationInCollection());
+        // regular nodes should not be skipped
+        node = new DocViewNode("regularnode", "regularnode", null, props, null, null);
+        
+        ValidationExecutorTest.assertViolation(validator.validate(node, getStandardNodeContext("/apps/notcontained/regularnode"), false),
+                new ValidationMessage(ValidationMessageSeverity.WARN,
+                        String.format(AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/notcontained/regularnode")));
     }
 
     @Test

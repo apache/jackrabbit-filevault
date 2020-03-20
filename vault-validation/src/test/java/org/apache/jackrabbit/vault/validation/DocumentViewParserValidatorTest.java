@@ -96,13 +96,18 @@ public class DocumentViewParserValidatorTest {
                     new ValidationViolation("docviewid", ValidationMessageSeverity.ERROR,
                             "startDocView", Paths.get("apps/.content.xml"), null, "/apps/somepath", 21, 29, null),
                     new ValidationViolation("docviewid", ValidationMessageSeverity.ERROR,
-                            "startDocView", Paths.get("apps/.content.xml"), null, "/apps/somepath/jc:content", 22, 54, null));
+                            "startDocView", Paths.get("apps/.content.xml"), null, "/apps/somepath/jc:content", 22, 54, null),
+                    new ValidationViolation("docviewid", ValidationMessageSeverity.ERROR,
+                            "startDocView", Paths.get("apps/.content.xml"), null, "/apps/0123_sample.jpg", 25, 29, null),
+                    new ValidationViolation("docviewid", ValidationMessageSeverity.ERROR,
+                            "startDocView", Paths.get("apps/.content.xml"), null, "/apps/01234_sample.jpg", 26, 55, null));
 
             // verify node names
             Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();
             expectedNodePathsAndLineNumber.put("/apps", 19);
             expectedNodePathsAndLineNumber.put("/apps/somepath", 21);
             expectedNodePathsAndLineNumber.put("/apps/somepath/jc:content", 22);
+            expectedNodePathsAndLineNumber.put("/apps/01234_sample.jpg", 26);
             Assert.assertEquals(expectedNodePathsAndLineNumber, nodePathsAndLineNumbers);
             Map<String, DocViewProperty> properties = new HashMap<>();
             properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),

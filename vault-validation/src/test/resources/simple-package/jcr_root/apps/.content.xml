@@ -22,4 +22,6 @@
         <jc:content jc:primaryType="nt:unstructured">
         </jc:content>
     </somepath>
+    <_x0030_123_sample.jpg/>
+    <_x0030_1234_sample.jpg jc:primaryType="nt:file"/>
 </jc:root>

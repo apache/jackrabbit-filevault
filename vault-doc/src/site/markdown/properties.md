@@ -69,7 +69,7 @@ Example:
 | lastWrapped | A date string in the format `±YYYY-MM-DDThh:mm:ss.SSSTZD` specifying when the package has been last wrapped (i.e. rebuilt) (see also [ISO8601][api.ISO8601]) | no | empty
 | lastWrappedBy | A user name indicating who last modified this package | no | empty
 | acHandling | See [AccessControlHandling][api.AccessControlHandling]. | no | ignore
-| cndPattern | A [Java regular expression pattern](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) which specifies where to look for CND files within the given package | no | `^/(apps|libs)/([^/]+/){1,2}nodetypes/.+\\.cnd$`
+| cndPattern | A [Java regular expression pattern](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) which specifies where to look for CND files within the given package (in addition to all `*.cnd` files below `META-INF/vault`) | no | `^/(apps|libs)/([^/]+/){1,2}nodetypes/.+\\.cnd$`
 | requiresRoot | If set to `true` indicates that only admin sessions can install this package | no | `false`
 | requiresRestart | If set to `true` indicates that the system should be restarted after this package has been installed | no | `false`
 | noIntermediateSaves | If set to `true` indicates no intermediate saves should be performed while installing this package | no | `false`

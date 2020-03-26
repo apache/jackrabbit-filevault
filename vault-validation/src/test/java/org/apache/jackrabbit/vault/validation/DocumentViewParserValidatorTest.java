@@ -211,12 +211,12 @@ public class DocumentViewParserValidatorTest {
             throws ParserConfigurationException, SAXException, URISyntaxException, IOException, NamespaceException {
 
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child1.xml")) {
-            Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "cq:child1.xml"), Paths.get(""), nodePathsAndLineNumbers);
+            Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "_cq_child1.xml"), Paths.get(""), nodePathsAndLineNumbers);
            
             ValidationExecutorTest.assertViolation(messages, 
                     new ValidationViolation(ValidationMessageSeverity.ERROR, 
                     "Invalid XML found: Given root node name 'cq:child1' (implicitly given via filename) cannot be resolved. The prefix used in the filename must be declared as XML namespace in the child docview XML as well!",
-                    Paths.get("apps", "cq:child1.xml"), Paths.get(""), "/apps/cq:child1",  0,0, null));
+                    Paths.get("apps", "_cq_child1.xml"), Paths.get(""), "/apps/cq:child1",  0,0, null));
         }
     }
 

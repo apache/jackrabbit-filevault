@@ -65,6 +65,9 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
+                    	<Import-Package>
+                            org.apache.jackrabbit.*;version=!,*
+                        </Import-Package>
                         <Bundle-Build>${buildNumber}</Bundle-Build>
                         <Bundle-Category>jcr,granite</Bundle-Category>
                         <Embed-Dependency>

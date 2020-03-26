@@ -42,7 +42,8 @@ env:
     # available build differs among platforms.
     - JDK="adopt@1.8"
     - JDK="adopt@1.11"
-    - JDK="adopt@1.14"
+    - JDK="adopt@1.13"
+    # compilation with Java 14 not yet supported: https://issues.apache.org/jira/browse/JCRVLT-424
 before_install:
   # Download the script
   - curl "${GRAVIS}.install-jdk-travis.sh" --output ~/.install-jdk-travis.sh

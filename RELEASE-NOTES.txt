@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.0
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.4
 
 Introduction
 ------------
@@ -8,6 +8,65 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.4.4
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.4.4
+This version requires Java 8, Oak 1.20 and Jackrabbit 2.20.0
+
+Bug
+    * [JCRVLT-409] - Validation: Emit node names in expanded form
+    * [JCRVLT-410] - PackageTypeValidator does not detect OSGi configurations of type sling:OsgiConfig
+    * [JCRVLT-414] - Embedding of Woodstox leads to non-necessary Import-Package statements
+    * [JCRVLT-415] - jackrabbit-emptyelements validator reports error for nested folders
+    * [JCRVLT-417] - Intermediate Node Types should be default node type of parent node type definition instead of "nt:folder"
+
+Improvement
+    * [JCRVLT-400] - '/etc/packages' should be a valid root
+    * [JCRVLT-401] - Clarify allowed contents of container package type
+    * [JCRVLT-402] - Clarify error message for validator "jackrabbit-emptyelements"
+    * [JCRVLT-406] - Improve logging of runtime exception in validators
+    * [JCRVLT-411] - PackageTypeValidator: Optionally allow complex filters
+    * [JCRVLT-413] - Clarify documentation about intermediate/ancestor nodes
+
+
+Changes in Jackrabbit FileVault 3.4.2
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.4.2
+This version requires Java 8, Oak 1.20 and Jackrabbit 2.20.0
+
+Bug fixes
+    * [JCRVLT-343] - Check for index definitions also considers ACL entries
+    * [JCRVLT-379] - CompressionUtilTest.testCompressibilityEstimation() fails sometimes
+    * [JCRVLT-386] - Eclipse/m2e: Could not get metadata for dependencies which are resolved via m2e workspace resolution or for multimodule builds with phases < package
+    * [JCRVLT-390] - filter based on content properties is not working
+
+New Features
+    * [JCRVLT-232] - Enforce constraints for package types
+    * [JCRVLT-345] - Support pluggable node/file/filter validators
+
+Improvements
+    * [JCRVLT-187] - Expose PackageProperties from MetaInf and VaultPackage from Archive
+    * [JCRVLT-361] - Validate that all includes/excludes are below the filter root
+    * [JCRVLT-365] - Migrate from JSR 305 to Jetbrains annotations
+    * [JCRVLT-368] - DefaultWorkspaceFilter.readFilter(Element) might throw j.u.r.PatternSyntaxException
+    * [JCRVLT-369] - Include package name in error message when dependencies are not satisfied
+    * [JCRVLT-371] - Include Maven groupId and artifactId of each dependency in the MANIFEST.MF and the properties.xml
+    * [JCRVLT-376] - test cases leak 'vaulttest*zip' temp files
+    * [JCRVLT-382] - DefaultWorkspaceFilter: Reset source for every modifying operation
+    * [JCRVLT-384] - Document config.xml, settings.xml, nodetypes.cnd and privileges.xml below META-INF/vault
+    * [JCRVLT-385] - AdvancedFilterValidator should also consider filter roots of nested subpackages
+    * [JCRVLT-399] - Update to Jackrabbit 2.20.0 / Oak 1.20.0
+
+Tasks
+    * [JCRVLT-161] - Document FileVault Workspace Property filter
+    * [JCRVLT-347] - Enable ignored principal-based ITs once Oak 1.18.0 is released
+    * [JCRVLT-391] - Remove copied classes of Xerces
+    * [JCRVLT-392] - Support Matrix builds on Windows/Linux with Travis
+    * [JCRVLT-393] - Java 13 Build Support
+
 
 Changes in Jackrabbit FileVault 3.4.0
 --------------------------------------

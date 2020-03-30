@@ -14,8 +14,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
     <modelVersion>4.0.0</modelVersion>
     <!-- ====================================================================== -->
     <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
@@ -24,7 +23,7 @@
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
         <version>21</version>
-        <relativePath/>
+        <relativePath />
     </parent>
 
     <!-- ====================================================================== -->
@@ -32,7 +31,7 @@
     <!-- ====================================================================== -->
     <groupId>org.apache.jackrabbit.vault</groupId>
     <artifactId>parent</artifactId>
-    <version>3.4.1-SNAPSHOT</version>
+    <version>3.4.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Apache Jackrabbit FileVault (Parent Project)</name>
@@ -48,8 +47,8 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     </description>
 
     <properties>
-        <jackrabbit.version>2.18.3</jackrabbit.version>
-        <oak.version>1.18.0</oak.version>
+        <jackrabbit.version>2.20.0</jackrabbit.version>
+        <oak.version>1.20.0</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
         <test.oak>false</test.oak>
         <test.vm.options>-Doak=$test.oak}</test.vm.options>
@@ -63,7 +62,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     <scm>
         <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/parent</connection>
         <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/parent</developerConnection>
-        <url>http://svn.apache.org/viewvc/asf/jackrabbit/commons/filevault/trunk/parent</url>
+        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/parent</url>
     </scm>
 
     <mailingLists>
@@ -157,7 +156,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>3.3.0</version>
+                    <version>4.2.1</version>
                     <inherited>true</inherited>
                     <configuration>
                         <outputDirectory>${basedir}/target/classes</outputDirectory>
@@ -190,7 +189,6 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                             </goals>
                             <configuration>
                                 <failOnError>true</failOnError>
-                                <comparisonVersion>LATEST</comparisonVersion>
                             </configuration>
                         </execution>
                         <!-- Configure extra execution of 'manifest' in process-classes phase to make sure SCR metadata is generated before
@@ -220,6 +218,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                                 <value>target/derby.log</value>
                             </property>
                         </systemProperties>
+                        <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
@@ -230,7 +229,15 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                     <artifactId>maven-release-plugin</artifactId>
                     <configuration>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <projectVersionPolicyId>OddEvenVersionPolicy</projectVersionPolicyId>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.release</groupId>
+                            <artifactId>maven-release-oddeven-policy</artifactId>
+                            <version>2.5.3</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <!-- ====================================================================== -->
                 <!-- R A T P L U G I N -->
@@ -259,7 +266,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.8.2</version>
+                    <version>3.9.0</version>
                     <configuration>
                         <skip>true</skip>
                         <skipDeploy>true</skipDeploy>
@@ -268,7 +275,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                         <dependency>
                             <groupId>org.apache.maven.doxia</groupId>
                             <artifactId>doxia-module-markdown</artifactId>
-                            <version>1.9</version>
+                            <version>1.9.1</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -393,9 +400,9 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>com.google.code.findbugs</groupId>
-                <artifactId>jsr305</artifactId>
-                <version>2.0.2</version>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>18.0.0</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -507,10 +514,6 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                         <plugin>
                             <artifactId>maven-javadoc-plugin</artifactId>
                             <configuration>
-                                <!-- only html4 output is working due to non HTML5 compliant javadoc 
-                                This is no longer supported with Java13 as it will always emit HTML5
-                                -->
-                                <additionalOptions>-html4</additionalOptions>
                                 <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
                                 <source>8</source>
                             </configuration>

@@ -36,6 +36,7 @@ import java.util.jar.JarFile;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
@@ -393,6 +394,21 @@ public class IntegrationTestBase  {
         return extractVaultPackage(name, null);
     }
 
+    /**
+     * Returns an ZipVaultPackage which has been extracted in the repository.
+     * 
+     * @param name either the name of a zip file or the name of a directory which contains an exploded package
+     * @return an extracted vault package
+     * @throws IOException
+     * @throws PackageException
+     * @throws RepositoryException
+     */
+    public VaultPackage extractVaultPackageStrict(String name) throws IOException, PackageException, RepositoryException {
+        ImportOptions  opts = getDefaultOptions();
+        opts.setStrict(true);
+        return extractVaultPackage(name, opts);
+    }
+
     public VaultPackage extractVaultPackage(String name, ImportOptions opts) throws IOException, PackageException, RepositoryException {
         if (opts == null) {
             opts = getDefaultOptions();
@@ -500,6 +516,12 @@ public class IntegrationTestBase  {
         } else {
             assertTrue(path + " should not exist or be empty", p.getString().length() == 0);
         }
+    }
+
+    public void assertNodeHasPrimaryType(String path, String primaryType) throws PathNotFoundException, RepositoryException {
+        Node node = admin.getNode(path);
+        assertNotNull("Node at '" + path + "' must exist", node);
+        assertEquals("Node at '" + path + "' does not have the expected node type", primaryType, node.getPrimaryNodeType().getName());
     }
 
     public void createNodes(Node parent, int maxDepth, int nodesPerFolder) throws RepositoryException {

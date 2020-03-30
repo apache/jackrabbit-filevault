@@ -16,19 +16,19 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
-import javax.annotation.CheckForNull;
-
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
 public final class PrimaryNodeTypeValidatorFactory implements ValidatorFactory {
 
     @Override
-    public @CheckForNull Validator createValidator(ValidationContext context, ValidatorSettings settings) {
+    public @Nullable Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         return new PrimaryNodeTypeValidator(settings.getDefaultSeverity(), context.getFilter());
     }
 
@@ -38,7 +38,7 @@ public final class PrimaryNodeTypeValidatorFactory implements ValidatorFactory {
     }
 
     @Override
-    public String getId() {
+    public @NotNull String getId() {
         return ValidatorFactory.ID_PREFIX_JACKRABBIT + "primarynodetype";
     }
 

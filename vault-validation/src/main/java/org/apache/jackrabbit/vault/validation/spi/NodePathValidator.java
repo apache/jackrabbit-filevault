@@ -18,9 +18,8 @@ package org.apache.jackrabbit.vault.validation.spi;
 
 import java.util.Collection;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 
@@ -37,7 +36,21 @@ public interface NodePathValidator extends Validator {
      * 
      * @param nodePath the absolute node path
      * @return validation messages or {@code null}
+     * @deprecated Use {@link #validate(NodeContext)} instead!
      */
-    @CheckForNull Collection<ValidationMessage> validate(@Nonnull String nodePath);
-   
+    @Deprecated
+    default @Nullable Collection<ValidationMessage> validate(@NotNull String nodePath) { 
+        throw new UnsupportedOperationException(); 
+    }
+    
+    /**
+     * Called for each node being found in a package.
+     * Empty node elements (in DocView files) are not included as they are only used for ordering purposes.
+     * 
+     * @param nodeContext the information about the node context
+     * @return validation messages or {@code null}
+     */
+    default @Nullable Collection<ValidationMessage> validate(@NotNull NodeContext nodeContext) {
+        return validate(nodeContext.getNodePath());
+    }
 }

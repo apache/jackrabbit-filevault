@@ -18,9 +18,8 @@ package org.apache.jackrabbit.vault.validation.spi;
 
 import java.util.ServiceLoader;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -40,7 +39,7 @@ public interface ValidatorFactory {
      * @param settings the validator settings
      * @return a new validator instance (lifecycle bound to the package outlined in context) or {@code null} in case there is no validation relevant for the given context
      */
-    @CheckForNull Validator createValidator(@Nonnull ValidationContext context, @Nonnull ValidatorSettings settings);
+    @Nullable Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings);
 
     /**
      * Returns whether the validator should by default also called for subpackages.
@@ -56,7 +55,7 @@ public interface ValidatorFactory {
      * The id should only contain lower case characters.
      * @return the id of the validator returned by {@link #createValidator(ValidationContext, ValidatorSettings)}
      */
-    @Nonnull String getId();
+    @NotNull String getId();
     
     /**
      * The service ranking will influence the order in which the validators will be called.

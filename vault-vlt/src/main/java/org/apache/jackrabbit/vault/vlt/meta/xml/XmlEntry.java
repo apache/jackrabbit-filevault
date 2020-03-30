@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.vlt.VltException;
@@ -31,9 +34,6 @@ import org.apache.jackrabbit.vault.vlt.meta.VltEntryInfo;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code Entry}...
@@ -245,20 +245,19 @@ public class XmlEntry implements VltEntry {
         put(theirs);
     }
 
-    public void write(ContentHandler handler) throws SAXException {
-        AttributesImpl attrs = new AttributesImpl();
-        attrs.addAttribute("", AN_NAME, "", "CDATA", name);
+    public void write(XMLStreamWriter writer) throws XMLStreamException {
+        writer.writeStartElement(EN_ENTRY);
+        writer.writeAttribute(AN_NAME,  name);
         if (repoRelPath != null) {
-            attrs.addAttribute("", AN_PATH, "", "CDATA", repoRelPath);
+            writer.writeAttribute(AN_PATH, repoRelPath);
         }
         if (aggregatePath != null) {
-            attrs.addAttribute("", AN_AGGREGATE_PATH, "", "CDATA", aggregatePath);
+            writer.writeAttribute(AN_AGGREGATE_PATH, aggregatePath);
         }
-        handler.startElement("", EN_ENTRY, "", attrs);
         for (VltEntryInfo info: infos.values()) {
-            ((XmlEntryInfo) info).write(handler);
+            ((XmlEntryInfo) info).write(writer);
         }
-        handler.endElement("", EN_ENTRY, "");
+        writer.writeEndElement();
         dirty = false;
     }
 

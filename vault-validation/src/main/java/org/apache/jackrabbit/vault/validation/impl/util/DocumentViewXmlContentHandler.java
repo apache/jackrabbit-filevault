@@ -25,11 +25,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
+import javax.jcr.NamespaceException;
 
 import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
+import org.apache.jackrabbit.spi.commons.conversion.NameParser;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
+import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.util.ISO9075;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.DocViewNode;
@@ -38,27 +41,31 @@ import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /** TODO: reuse more logic from DocViewSAXImporter (https://issues.apache.org/jira/browse/JCRVLT-357) */
-public class DocumentViewXmlContentHandler extends DefaultHandler {
+public class DocumentViewXmlContentHandler extends DefaultHandler implements NamespaceResolver {
 
-    private final Map<String, Integer> nodePathsAndLineNumbers;
+    private final @NotNull Map<@NotNull String, @NotNull Integer> nodePathsAndLineNumbers;
     private String rootNodeName;
     private String rootNodeParentPath; // must not end with "/"
-    private final Path filePath;
+    private final @NotNull Path filePath;
+    private final @NotNull Path basePath;
     private Locator locator;
     private Deque<String> elementNameStack;
     private Deque<DocViewNode> nodeStack;
     private Deque<String> nodePathStack;
     private final Map<String, DocumentViewXmlValidator> validators;
+    private final Map<String, String> namespaceRegistry;
 
-    private List<ValidationViolation> violations;
+    private @NotNull List<ValidationViolation> violations;
 
-    public @Nonnull List<ValidationViolation> getViolations() {
+    public @NotNull List<ValidationViolation> getViolations() {
         return violations;
     }
 
@@ -71,11 +78,13 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
     /**
      * 
      * @param filePath the relative file to the docview file (relative to the jcr_root folder)
+     * @param basePath the absolute file path of the the jcr_root folder (to which {@code filePath} is relative)
      * @param rootNodePath the node path of the root node covered by this docview file
      * @param documentViewXmlValidators the validators to call for this docview file
      */
-    public DocumentViewXmlContentHandler(Path filePath, String rootNodePath, Map<String, DocumentViewXmlValidator> documentViewXmlValidators) {
+    public DocumentViewXmlContentHandler(@NotNull Path filePath, @NotNull Path basePath, String rootNodePath, Map<String, DocumentViewXmlValidator> documentViewXmlValidators) {
         this.filePath = filePath;
+        this.basePath = basePath;
         if (rootNodePath.equals("/")) {
             rootNodePath = "";
         }
@@ -97,31 +106,81 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
         nodePathStack = new LinkedList<>();
         this.validators = documentViewXmlValidators;
         violations = new LinkedList<>();
+        namespaceRegistry = new HashMap<>();
+    }
+
+    
+    @Override
+    public void startPrefixMapping(String prefix, String uri) throws SAXException {
+        namespaceRegistry.put(prefix, uri);
+    }
+
+
+    @Override
+    public void endPrefixMapping(String prefix) throws SAXException {
+        namespaceRegistry.remove(prefix);
+    }
+
+    
+    @Override
+    public String getPrefix(String uri) throws NamespaceException {
+        throw new UnsupportedOperationException("Only resolving from prefix to URI is supported, but not vice-versa");
+    }
+
+
+    @Override
+    public String getURI(String prefix) throws NamespaceException {
+        if (prefix.isEmpty()) {
+            return Name.NS_DEFAULT_URI;
+        }
+        return namespaceRegistry.get(prefix);
+    }
+
+
+    private Name getExpandedName(String name) throws IllegalNameException, NamespaceException {
+        return NameParser.parse(name, this, NameFactoryImpl.getInstance());
+    }
+
+    /**
+     * Resolves the ISO-9075 encoding and removes a same-name sibling suffix from the name which is either a localName or qualified name
+     * @param name
+     * @return the normalized name
+     */
+    private String getNormalizedName(String name) {
+        // in the case of SNS nodes the name contains an index in brackets as suffix
+        name = ISO9075.decode(name);
+        int idx = name.lastIndexOf('[');
+        if (idx > 0) {
+            name = name.substring(0, idx);
+        }
+        return name;
     }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         // convert to DocViewNode (mostly taken over from DocViewSAXImporter#startElement)
-        String label = ISO9075.decode(qName);
-        if (elementNameStack.isEmpty()) {
-            if (localName.equals(NameConstants.JCR_ROOT.getLocalName())
+        String label = getNormalizedName(qName);
+        Name name;
+        if (elementNameStack.isEmpty() && localName.equals(NameConstants.JCR_ROOT.getLocalName())
                     && uri.equals(NameConstants.JCR_ROOT.getNamespaceURI())) {
                 // take over node name from file name
                 label = rootNodeName;
-            } else {
-                // element name takes precedence over file name
-                rootNodeName = label;
-            }
+                try {
+                    if (rootNodeName.equals("")) {
+                        name = NameConstants.JCR_ROOT;
+                    } else {
+                        // how to get name of root node?
+                        name = getExpandedName(rootNodeName);
+                    }
+                } catch (IllegalNameException|NamespaceException|IllegalArgumentException e) {
+                    throw new SAXException("Given root node name '" + rootNodeName + "' (implicitly given via filename) cannot be resolved. The prefix used in the filename must be declared as XML namespace in the child docview XML as well!", e);
+                }
+        } else {
+            name = NameFactoryImpl.getInstance().create(uri, getNormalizedName(localName));
         }
 
-        String name = label; // name is usually the same except for SNS nodes
-
-        // in the case of SNS nodes the name contains an index in brackets as suffix
-        int idx = name.lastIndexOf('[');
-        if (idx > 0) {
-            name = name.substring(0, idx);
-        }
-        elementNameStack.push(name);
+        // the path is being given via the qualified (prefixed) names
+        elementNameStack.push(label);
 
         // add fully qualified name
         StringBuilder nodePath = new StringBuilder(rootNodeParentPath);
@@ -130,27 +189,33 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
             nodePath.append("/").append(iterator.next());
         }
         nodePathStack.push(nodePath.toString());
+        
         try {
-            DocViewNode node = getDocViewNode(name, label, attributes);
+            DocViewNode node = getDocViewNode(name, qName, attributes);
             nodeStack.push(node);
+            violations.add(new ValidationViolation(ValidationMessageSeverity.DEBUG, "Validate node '" + node + "' start"));
             for (Map.Entry<String, DocumentViewXmlValidator> entry : validators.entrySet()) {
-                violations.add(new ValidationViolation(entry.getKey(), ValidationMessageSeverity.DEBUG, "Validate node '" + node + "' start"));
-                Collection<ValidationMessage> messages = entry.getValue().validate(node, nodePath.toString(), filePath, elementNameStack.size() <= 1);
-                if (messages != null && !messages.isEmpty()) {
-                    violations.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, null, nodePath.toString(),
-                            locator.getLineNumber(), locator.getColumnNumber()));
+                try {
+                    Collection<ValidationMessage> messages = entry.getValue().validate(node, new NodeContextImpl(nodePath.toString(), filePath, basePath), elementNameStack.size() <= 1);
+                    if (messages != null && !messages.isEmpty()) {
+                        violations.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, null, nodePath.toString(),
+                                locator.getLineNumber(), locator.getColumnNumber()));
+                    }
+                } catch (RuntimeException e) {
+                    throw new ValidatorException(entry.getKey(), e, filePath, locator.getLineNumber(), locator.getColumnNumber(), e);
                 }
             }
         } catch (IllegalArgumentException e) { // thrown from DocViewProperty.parse()
             violations.add(new ValidationViolation(ValidationMessageSeverity.ERROR, String.format(PARSE_VIOLATION_MESSAGE_STRING, qName, e.getMessage()), filePath, null, nodePath.toString(), locator.getLineNumber(), locator.getColumnNumber(), e));
         }
         // do not collect node paths for empty elements (as they represent order only)
+        // really?
         if (attributes.getLength() > 0) {
             nodePathsAndLineNumbers.put(nodePath.toString(), locator.getLineNumber());
         }
     }
 
-    private DocViewNode getDocViewNode(String name, String label, Attributes attributes) {
+    private @NotNull DocViewNode getDocViewNode(Name name, String label, Attributes attributes) {
         Map<String, DocViewProperty> propertyMap = new HashMap<>();
         
         String uuid = null;
@@ -170,12 +235,11 @@ public class DocumentViewXmlContentHandler extends DefaultHandler {
                 mixins = property.values;
             }
         }
-        
-        return new DocViewNode(name, label, uuid, propertyMap, mixins, primary);
+        return new DocViewNode(name.toString(), label, uuid, propertyMap, mixins, primary);
     }
 
     /** @return a Collection of absolute node paths (i.e. starting with "/") with "/" as path delimiter. */
-    public @Nonnull Map<String, Integer> getNodePaths() {
+    public @NotNull Map<String, Integer> getNodePaths() {
         return nodePathsAndLineNumbers;
     }
 

@@ -14,8 +14,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
     <modelVersion>4.0.0</modelVersion>
     <!-- ====================================================================== -->
     <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
@@ -24,14 +23,14 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.4.1-SNAPSHOT</version>
+        <version>3.4.5-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <artifactId>vault-doc</artifactId>
-    <version>3.4.1-SNAPSHOT</version>
+    <version>3.4.5-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Apache Jackrabbit FileVault Documentation</name>
@@ -43,7 +42,7 @@
         <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-doc</connection>
         <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-doc
         </developerConnection>
-        <url>http://svn.apache.org/viewvc/asf/jackrabbit/commons/filevault/trunk/vault-doc</url>
+        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-doc</url>
     </scm>
 
     <!-- ====================================================================== -->
@@ -117,7 +116,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
                 <configuration>
-                    <webAccessUrl>https://svn.apache.org/viewvc/asf/jackrabbit/commons/filevault/trunk</webAccessUrl>
+                    <webAccessUrl>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk</webAccessUrl>
                     <anonymousConnection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk</anonymousConnection>
                     <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk</developerConnection>
                 </configuration>

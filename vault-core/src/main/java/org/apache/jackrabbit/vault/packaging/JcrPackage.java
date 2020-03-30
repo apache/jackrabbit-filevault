@@ -19,13 +19,13 @@ package org.apache.jackrabbit.vault.packaging;
 
 import java.io.IOException;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -60,7 +60,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      *         not valid.
      * @throws RepositoryException if an error occurrs
      */
-    @CheckForNull
+    @Nullable
     JcrPackageDefinition getDefinition() throws RepositoryException;
 
     /**
@@ -73,7 +73,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * Returns the underlying node
      * @return the node
      */
-    @CheckForNull
+    @Nullable
     Node getNode();
 
     /**
@@ -89,7 +89,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * @throws RepositoryException if an error occurs
      * @throws IOException if an I/O error occurs
      */
-    @Nonnull
+    @NotNull
     VaultPackage getPackage() throws RepositoryException, IOException;
 
     /**
@@ -102,7 +102,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * @throws IOException if an I/O error occurs
      * @since 2.3.14
      */
-    void extract(@Nonnull ImportOptions opts)
+    void extract(@NotNull ImportOptions opts)
             throws RepositoryException, PackageException, IOException;
 
     /**
@@ -117,7 +117,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      *
      * @since 2.3.14
      */
-    void install(@Nonnull ImportOptions opts)
+    void install(@NotNull ImportOptions opts)
             throws RepositoryException, PackageException, IOException;
 
     /**
@@ -134,8 +134,8 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      *
      * @since 3.1.32
      */
-    @Nonnull
-    PackageId[] extractSubpackages(@Nonnull ImportOptions opts)
+    @NotNull
+    PackageId[] extractSubpackages(@NotNull ImportOptions opts)
             throws RepositoryException, PackageException, IOException;
 
     /**
@@ -145,7 +145,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * @throws RepositoryException if an error accessing the repository occurrs
      * @since 3.1.32
      */
-    @Nonnull
+    @NotNull
     Dependency[] getUnresolvedDependencies() throws RepositoryException;
 
     /**
@@ -154,7 +154,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * @throws RepositoryException if an error accessing the repository occurrs
      * @since 3.1.32
      */
-    @Nonnull
+    @NotNull
     PackageId[] getResolvedDependencies() throws RepositoryException;
 
     /**
@@ -170,8 +170,8 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      *
      * @since 2.0
      */
-    @CheckForNull
-    JcrPackage snapshot(@Nonnull ExportOptions opts, boolean replace)
+    @Nullable
+    JcrPackage snapshot(@NotNull ExportOptions opts, boolean replace)
             throws RepositoryException, PackageException, IOException;
 
     /**
@@ -181,7 +181,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      *
      * @since 2.0
      */
-    @CheckForNull
+    @Nullable
     JcrPackage getSnapshot() throws RepositoryException;
 
     /**
@@ -197,7 +197,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      *
      * @since 2.3.14
      */
-    void uninstall(@Nonnull ImportOptions opts)
+    void uninstall(@NotNull ImportOptions opts)
             throws RepositoryException, PackageException, IOException;
 
     /**
@@ -253,7 +253,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * @return the jcr:data property
      * @throws RepositoryException if an error occurrs
      */
-    @CheckForNull
+    @Nullable
     Property getData() throws RepositoryException;
 
     /**
@@ -261,7 +261,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * @return the definition node.
      * @throws RepositoryException if an error occurrs
      */
-    @CheckForNull
+    @Nullable
     Node getDefNode() throws RepositoryException;
 
 }

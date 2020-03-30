@@ -127,6 +127,14 @@ yes | no | yes | removed
 yes | yes | no | deserialized from content package
 yes | no | no | not existing
 
+### Uncovered ancestor nodes
+
+All *uncovered* ancestor nodes are either
+
+1. created with the node type and properties given in the package (in case the node type *is* given with a `.content.xml` at the right location and the node does not yet exist in the repo)
+1. since version 3.4.4 ([JCRVLT-417](https://issues.apache.org/jira/browse/JCRVLT-417)) created with the ancestor node type's default child type or if that is not set or prior to version 3.4.4 created with node type `nt:folder` (in case the the node type is *not* given with a `.content.xml` at the right location and the node does not yet exist in the repo) or
+1. not touched at all (in case they are already existing in the repo, no matter which node type is given with a `.content.xml` at the according location) 
+
 ### Example
 
 Content Package Filter
@@ -172,7 +180,6 @@ Content Package Serialized Content
     - property2="new"
 ```
 
-<!-- references -->
 [api.WorkspaceFilter]: apidocs/org/apache/jackrabbit/vault/fs/api/WorkspaceFilter.html
 [api.ImportMode]: apidocs/org/apache/jackrabbit/vault/fs/api/ImportMode.html
 [api.Pattern]: https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html

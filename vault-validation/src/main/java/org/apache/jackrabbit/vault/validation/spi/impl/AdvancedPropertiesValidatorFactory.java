@@ -20,13 +20,14 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
 public final class AdvancedPropertiesValidatorFactory implements ValidatorFactory {
 
     @Override
-    public Validator createValidator(ValidationContext context, ValidatorSettings settings) {
+    public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         return new AdvancedPropertiesValidator(settings.getDefaultSeverity());
     }
 
@@ -37,7 +38,7 @@ public final class AdvancedPropertiesValidatorFactory implements ValidatorFactor
     }
 
     @Override
-    public String getId() {
+    public @NotNull String getId() {
         return ValidatorFactory.ID_PREFIX_JACKRABBIT + "properties";
     }
 

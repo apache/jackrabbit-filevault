@@ -16,11 +16,10 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * {@code UsageReportImpl}...
@@ -39,19 +38,19 @@ public class DependencyReportImpl implements DependencyReport {
         this.resolved = resolved;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public PackageId getId() {
         return id;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public Dependency[] getUnresolvedDependencies() {
         return unresolved;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public PackageId[] getResolvedDependencies() {
         return resolved;

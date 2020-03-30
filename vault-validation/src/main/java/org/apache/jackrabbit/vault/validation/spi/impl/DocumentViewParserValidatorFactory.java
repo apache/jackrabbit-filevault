@@ -25,6 +25,7 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
 import org.xml.sax.SAXException;
 
@@ -41,7 +42,7 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
         saxParser = spf.newSAXParser();
     }
     @Override
-    public Validator createValidator(ValidationContext context, ValidatorSettings settings) {
+    public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         return new DocumentViewParserValidator(saxParser, settings.getDefaultSeverity());
     }
 
@@ -51,7 +52,7 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
     }
 
     @Override
-    public String getId() {
+    public @NotNull String getId() {
         return ValidatorFactory.ID_PREFIX_JACKRABBIT + "docviewparser";
     }
 

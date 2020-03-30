@@ -19,13 +19,13 @@ package org.apache.jackrabbit.vault.fs.spi.impl.jcr20;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.NamespaceException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +40,7 @@ public class JcrNamespaceHelper {
 
     private final ProgressTracker tracker;
 
-    public JcrNamespaceHelper(@Nonnull Session session, @Nullable ProgressTracker tracker) {
+    public JcrNamespaceHelper(@NotNull Session session, @Nullable ProgressTracker tracker) {
         this.session = session;
         this.tracker = tracker;
     }
@@ -50,7 +50,7 @@ public class JcrNamespaceHelper {
      * @param pfxToURI map from prefix to uri mappings
      * @throws RepositoryException if an error occurs
      */
-    public void registerNamespaces(@Nonnull Map<String, String> pfxToURI) throws RepositoryException {
+    public void registerNamespaces(@NotNull Map<String, String> pfxToURI) throws RepositoryException {
         if (!pfxToURI.isEmpty()) {
             for (Object o : pfxToURI.keySet()) {
                 String prefix = (String) o;
@@ -72,8 +72,8 @@ public class JcrNamespaceHelper {
      * @return the registered prefix
      * @throws RepositoryException if an error occurs
      */
-    @Nonnull
-    public String registerNamespace(@Nonnull String pfxHint, @Nonnull String uri) throws RepositoryException {
+    @NotNull
+    public String registerNamespace(@NotNull String pfxHint, @NotNull String uri) throws RepositoryException {
         int i = 0;
         String pfx = pfxHint;
         Throwable error = null;

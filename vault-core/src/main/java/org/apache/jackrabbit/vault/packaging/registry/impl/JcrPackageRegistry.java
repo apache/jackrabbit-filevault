@@ -24,11 +24,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -59,13 +57,14 @@ import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageDefinitionImpl;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageImpl;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
-import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,7 +122,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @param session the JCR session that is used to access the repository.
      * @param roots the root paths to store the packages.
      */
-    public JcrPackageRegistry(@Nonnull Session session, @Nullable String ... roots) {
+    public JcrPackageRegistry(@NotNull Session session, @Nullable String ... roots) {
         this.session = session;
         if (roots == null || roots.length == 0) {
             packRootPaths = new String[]{DEFAULT_PACKAGE_ROOT_PATH};
@@ -156,7 +155,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @param id package id
      * @param related related packages
      */
-    public void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId[] related) {
+    public void dispatch(@NotNull PackageEvent.Type type, @NotNull PackageId id, @Nullable PackageId[] related) {
         if (dispatcher == null) {
             return;
         }
@@ -194,7 +193,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * Returns the package root paths this registry is created with.
      * @return the package root paths.
      */
-    @Nonnull
+    @NotNull
     public String[] getPackRootPaths() {
         return packRootPaths;
     }
@@ -228,7 +227,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @return the list of package roots.
      * @throws RepositoryException if an error occurs.
      */
-    @Nonnull
+    @NotNull
     public List<Node> getPackageRoots() throws RepositoryException {
         List<Node> roots = new ArrayList<>(packRootPaths.length);
         for (int i=0; i<packRootPaths.length; i++) {
@@ -246,7 +245,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
 
     @Nullable
     @Override
-    public RegisteredPackage open(@Nonnull PackageId id) throws IOException {
+    public RegisteredPackage open(@NotNull PackageId id) throws IOException {
         try {
             Node node = getPackageNode(id);
             if (node == null && baseRegistry != null) {
@@ -259,7 +258,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Override
-    public boolean contains(@Nonnull PackageId id) throws IOException {
+    public boolean contains(@NotNull PackageId id) throws IOException {
         try {
             boolean result = getPackageNode(id) != null;
             if (result == false && baseRegistry != null) {
@@ -272,7 +271,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Nullable
-    private Node getPackageNode(@Nonnull PackageId id) throws RepositoryException {
+    private Node getPackageNode(@NotNull PackageId id) throws RepositoryException {
         String relPath = getRelativeInstallationPath(id);
         for (String pfx: packRootPaths) {
             String path = pfx + relPath;
@@ -344,9 +343,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public PackageId register(@Nonnull InputStream in, boolean replace) throws IOException, PackageExistsException {
+    public PackageId register(@NotNull InputStream in, boolean replace) throws IOException, PackageExistsException {
         try (JcrPackage pkg = upload(in, replace)){
             //noinspection resource
             return pkg.getPackage().getId();
@@ -378,13 +377,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
 
         final MetaInf inf = archive.getMetaInf();
-        PackagePropertiesImpl props = new PackagePropertiesImpl() {
-            @Override
-            protected Properties getPropertiesMap() {
-                return inf.getProperties();
-            }
-        };
-        PackageId pid = props.getId();
+        PackageId pid = inf.getPackageProperties().getId();
 
         // invalidate pid if path is unknown
         if (pid == null) {
@@ -441,9 +434,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public PackageId register(@Nonnull File file, boolean replace) throws IOException, PackageExistsException {
+    public PackageId register(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
         ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
         try (JcrPackage pkg = upload(pack, replace)) {
             //noinspection resource
@@ -453,9 +446,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public PackageId registerExternal(@Nonnull File file, boolean replace) throws IOException, PackageExistsException {
+    public PackageId registerExternal(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
         throw new UnsupportedOperationException("linking files to repository persistence is not supported.");
     }
 
@@ -588,8 +581,8 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      *
      * @since 2.3.0
      */
-    @Nonnull
-    public JcrPackage createNew(@Nonnull Node parent, @Nonnull PackageId pid, @Nullable VaultPackage pack, boolean autoSave)
+    @NotNull
+    public JcrPackage createNew(@NotNull Node parent, @NotNull PackageId pid, @Nullable VaultPackage pack, boolean autoSave)
             throws RepositoryException, IOException {
         Node node = parent.addNode(Text.getName(getInstallationPath(pid) + ".zip"), JcrConstants.NT_FILE);
         Node content = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
@@ -636,8 +629,8 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      *
      * @since 3.1
      */
-    @Nonnull
-    private JcrPackage createNew(@Nonnull Node parent, @Nonnull PackageId pid, @Nonnull Binary bin, @Nonnull MemoryArchive archive)
+    @NotNull
+    private JcrPackage createNew(@NotNull Node parent, @NotNull PackageId pid, @NotNull Binary bin, @NotNull MemoryArchive archive)
             throws RepositoryException, IOException {
         Node node = parent.addNode(Text.getName(getInstallationPath(pid) + ".zip"), JcrConstants.NT_FILE);
         Node content = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
@@ -658,7 +651,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
 
     @SuppressWarnings("resource")
     @Override
-    public void remove(@Nonnull PackageId id) throws IOException, NoSuchPackageException {
+    public void remove(@NotNull PackageId id) throws IOException, NoSuchPackageException {
         JcrRegisteredPackage pkg = (JcrRegisteredPackage) open(id);
         if (pkg == null) {
             throw new NoSuchPackageException().setId(id);
@@ -723,7 +716,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     }
 
 
-    @Nonnull
+    @NotNull
     @Override
     public Set<PackageId> packages() throws IOException {
         try {
@@ -779,7 +772,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Override
-    public void installPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts,
+    public void installPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts,
             boolean extract) throws IOException, PackageException {
         try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()) {
             if (extract) {
@@ -793,7 +786,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Override
-    public void uninstallPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts)
+    public void uninstallPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts)
             throws IOException, PackageException {
         try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()) {
             jcrPkg.uninstall(opts);

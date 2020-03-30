@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.apache.jackrabbit.vault.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,9 +74,14 @@ public class VaultAuthConfig extends AbstractConfig {
         repoConfigs.put(cfg.uri, cfg);
     }
 
+    @Deprecated
     protected void doWrite(ContentHandler handler) throws SAXException {
+        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+    }
+
+    protected void doWrite(XMLStreamWriter writer) throws XMLStreamException {
         for (RepositoryConfig cfg: repoConfigs.values()) {
-            cfg.write(handler);
+            cfg.write(writer);
         }
     }
 
@@ -132,12 +140,16 @@ public class VaultAuthConfig extends AbstractConfig {
             return cfg;
         }
 
-        public void write(ContentHandler handler) throws SAXException {
-            AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute("", ATTR_URI, "", "CDATA", uri);
-            handler.startElement("", ELEM_REPOSITORY, "", attrs);
-            creds.write(handler);
-            handler.endElement("", ELEM_REPOSITORY, "");
+        @Deprecated
+        public void write(ContentHandler contentHandler) throws XMLStreamException {
+            throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+        }
+
+        public void write(XMLStreamWriter writer) throws XMLStreamException {
+            writer.writeStartElement(ELEM_REPOSITORY);
+            writer.writeAttribute(ATTR_URI, uri);
+            creds.write(writer);
+            writer.writeEndElement();
         }
     }
 

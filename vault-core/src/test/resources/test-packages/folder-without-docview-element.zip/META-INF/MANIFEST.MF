@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Content-Package-Id: my_packages:test
+Content-Package-Roots: /test
+Content-Package-Type: content
+

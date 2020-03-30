@@ -18,13 +18,13 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 
 import java.util.regex.Pattern;
 
-import javax.annotation.CheckForNull;
-
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
@@ -36,6 +36,14 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
      */
     public static final String OPTION_JCR_INSTALLER_NODE_PATH_REGEX = "jcrInstallerNodePathRegex";
 
+    /**
+     * The option to specify the regex of the file node paths which all OSGi bundles and configuration within packages must match
+     * @see <a href="https://sling.apache.org/documentation/bundles/jcr-installer-provider.html">JCR Installer</a>
+     * 
+     * Some artifacts are not based on file nodes (e.g. sling:OsgiConfig nodes).
+     */
+    public static final String OPTION_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX = "additionalJcrInstallerFileNodePathRegex";
+
     public static final String OPTION_SEVERITY_FOR_LEGACY_TYPE = "legacyTypeSeverity";
 
     public static final String OPTION_SEVERITY_FOR_NO_TYPE = "noTypeSeverity";
@@ -44,13 +52,20 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
 
     public static final String OPTION_PROHIBIT_IMMUTABLE_CONTENT = "prohibitImmutableContent";
 
-    static final Pattern DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX = Pattern.compile("/([^/]*/){0,4}?(install|config)(\\.[^/]*)*/(\\d{1,3}/)?.+?\\.(jar|config|cfg|cfg\\.json|xml)$");
+    public static final String OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES = "allowComplexFilterRulesInApplicationPackages";
+
+    /**
+     *  option to disable exclude/include filter check
+     */
+    static final Pattern DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX = Pattern.compile("/([^/]*/){0,4}?(install|config)(\\.[^/]*)*/(\\d{1,3}/)?.+?");
+
+    static final Pattern DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX = Pattern.compile(".+?\\.(jar|config|cfg|cfg\\.json)");
 
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_LEGACY_TYPE = ValidationMessageSeverity.WARN;
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_NO_TYPE = ValidationMessageSeverity.WARN;
     
     @Override
-    public @CheckForNull Validator createValidator(ValidationContext context, ValidatorSettings settings) {
+    public @Nullable Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         // evaluate options
         final Pattern jcrInstallerNodePathRegex;
         if (settings.getOptions().containsKey(OPTION_JCR_INSTALLER_NODE_PATH_REGEX)) {
@@ -58,6 +73,13 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
             jcrInstallerNodePathRegex = Pattern.compile(optionValue);
         } else {
             jcrInstallerNodePathRegex = DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX;
+        }
+        final Pattern additionalJcrInstallerFileNodePathRegex;
+        if (settings.getOptions().containsKey(OPTION_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX)) {
+            String optionValue = settings.getOptions().get(OPTION_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX);
+            additionalJcrInstallerFileNodePathRegex = Pattern.compile(optionValue);
+        } else {
+            additionalJcrInstallerFileNodePathRegex = DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX;
         }
         final ValidationMessageSeverity severityForNoType;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_NO_TYPE)) {
@@ -85,7 +107,13 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
         } else {
             prohibitImmutableContent = false;
         }
-        return new PackageTypeValidator(settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, context.getProperties().getPackageType(), jcrInstallerNodePathRegex, context.getContainerValidationContext());
+        final boolean allowComplexFilterRulesInApplicationPackages;
+        if (settings.getOptions().containsKey(OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES)) {
+            allowComplexFilterRulesInApplicationPackages = Boolean.valueOf(settings.getOptions().get(OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES));
+        } else {
+            allowComplexFilterRulesInApplicationPackages = false;
+        }
+        return new PackageTypeValidator(context.getFilter(), settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, context.getProperties().getPackageType(), jcrInstallerNodePathRegex, additionalJcrInstallerFileNodePathRegex, context.getContainerValidationContext());
     }
 
     @Override
@@ -94,7 +122,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
     }
 
     @Override
-    public String getId() {
+    public @NotNull String getId() {
         return ValidatorFactory.ID_PREFIX_JACKRABBIT + "packagetype";
     }
 

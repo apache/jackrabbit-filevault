@@ -23,7 +23,7 @@
          name="Jackrabbit Filevault">
   <body>
     <menu name="Overview">
-      <item href="index.html" name="Jackrabbit Filevault" />
+      <item href="index.html" name="Jackrabbit FileVault" />
     </menu>
     <menu name="Concepts and architecture">
       <item href="overview.html" name="Overview" />
@@ -33,9 +33,16 @@
     </menu>
     <menu name="Using Filevault">
       <item href="usage.html" name="Getting Started" />
-      <item href="properties.html" name="Package Properties"/>
-      <item href="filter.html" name="Workspace Filter" />
-      <item href="importmode.html" name="Import Mode" />
+      <item href="metadata.html" name="Metadata" >
+        <item href="filter.html" name="Workspace Filter">
+            <item href="importmode.html" name="Import Mode" />
+        </item>
+        <item href="properties.html" name="Package Properties"/>
+        <item href="config.html" name="Vault FS Configuration"/>
+        <item href="settings.html" name="Settings"/>
+        <item href="nodetypes.html" name="Nodetypes"/>
+        <item href="privileges.html" name="Privileges"/>
+     </item>
       <item href="rcp.html" name="Vault Remote Copy" />
     </menu>
     <menu name="Developing">
@@ -45,7 +52,8 @@
     <menu ref="modules"/>
     <menu ref="reports" inherit="bottom"/>
     <menu name="Links">
-      <item href="http://jackrabbit.apache.org/" name="Apache Jackrabbit" />
+      <item href="https://jackrabbit.apache.org/" name="Apache Jackrabbit" />
+      <item href="https://jackrabbit.apache.org/filevault-package-maven-plugin" name="Apache Jackrabbit FileVault - Package Maven Plugin" />
     </menu>
   </body>
 

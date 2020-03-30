@@ -25,6 +25,7 @@ import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Makes sure that each node in a docview file containing at least one other property defines the primary type
@@ -32,10 +33,10 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 public class PrimaryNodeTypeValidator implements DocumentViewXmlValidator {
 
     protected static final String MESSAGE_MISSING_PRIMARY_TYPE = "Mandatory jcr:primaryType missing on node '%s'";
-    private final ValidationMessageSeverity severity;
-    private final WorkspaceFilter filter;
+    private final @NotNull ValidationMessageSeverity severity;
+    private final @NotNull WorkspaceFilter filter;
 
-    public PrimaryNodeTypeValidator(ValidationMessageSeverity severity, WorkspaceFilter filter) {
+    public PrimaryNodeTypeValidator(@NotNull ValidationMessageSeverity severity, @NotNull WorkspaceFilter filter) {
         super();
         this.severity = severity;
         this.filter = filter;
@@ -47,7 +48,7 @@ public class PrimaryNodeTypeValidator implements DocumentViewXmlValidator {
     }
 
     @Override
-    public Collection<ValidationMessage> validate(DocViewNode node, String nodePath, Path filePath, boolean isRoot) {
+    public Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
         if (node.primary == null) {
             // only an issue if contained in the filter
             // if other properties are set this node is not only used for ordering purposes

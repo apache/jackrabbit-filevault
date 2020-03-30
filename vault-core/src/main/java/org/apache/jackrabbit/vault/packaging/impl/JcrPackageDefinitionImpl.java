@@ -26,8 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
@@ -57,6 +55,8 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +74,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     /**
      * underlying node
      */
-    @Nonnull
+    @NotNull
     private Node defNode;
 
     @Nullable
@@ -84,14 +84,14 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      * Creates a new definition base on the underlying node.
      * @param definitionNode the definition node
      */
-    public JcrPackageDefinitionImpl(@Nonnull Node definitionNode) {
+    public JcrPackageDefinitionImpl(@NotNull Node definitionNode) {
         this.defNode = definitionNode;
     }
 
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NotNull
     public Node getNode() {
         return defNode;
     }
@@ -335,7 +335,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     /**
      * {@inheritDoc}
      */
-    public void setDependencies(@Nonnull Dependency[] dependencies, boolean autoSave) {
+    public void setDependencies(@NotNull Dependency[] dependencies, boolean autoSave) {
         try {
             final List<Value> values = new ArrayList<>(dependencies.length);
             final ValueFactory fac = defNode.getSession().getValueFactory();

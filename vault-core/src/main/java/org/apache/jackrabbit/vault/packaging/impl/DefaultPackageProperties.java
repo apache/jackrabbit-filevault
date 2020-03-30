@@ -16,7 +16,6 @@
  */
 package org.apache.jackrabbit.vault.packaging.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -26,10 +25,10 @@ import java.util.Properties;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
-import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * Implementing {@link PackageProperties} on top of an existing {@link File} or {@link InputStream}.
+ * Implementing {@link PackageProperties} on top of an existing {@link Path} or {@link InputStream}.
  */
 public class DefaultPackageProperties extends PackagePropertiesImpl {
 
@@ -53,7 +52,7 @@ public class DefaultPackageProperties extends PackagePropertiesImpl {
      * @return the package properties deserialized from the given input
      * @throws IOException in case deserializing from the input stream failed
      */
-    public static DefaultPackageProperties fromInputStream(InputStream input) throws IOException {
+    public static @NotNull DefaultPackageProperties fromInputStream(InputStream input) throws IOException {
         return new DefaultPackageProperties(input);
     }
 

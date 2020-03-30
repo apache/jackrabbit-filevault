@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.util.MD5;
@@ -28,8 +31,6 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.meta.MetaFile;
 import org.apache.jackrabbit.vault.vlt.meta.VltEntryInfo;
 import org.w3c.dom.Element;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -209,11 +210,9 @@ public class XmlEntryInfo implements VltEntryInfo {
                     || md5 != null && md5.equals(base.getMd5()));
     }
 
-    public void write(ContentHandler handler) throws SAXException {
-        AttributesImpl attrs = new AttributesImpl();
-        addAttributes(attrs);
-        handler.startElement("", type.name().toLowerCase(), "", attrs);
-        handler.endElement("", type.name().toLowerCase(), "");
+    public void write(XMLStreamWriter writer) throws XMLStreamException {
+        writer.writeStartElement(type.name().toLowerCase());
+        writer.writeEndElement();
         dirty = false;
     }
 

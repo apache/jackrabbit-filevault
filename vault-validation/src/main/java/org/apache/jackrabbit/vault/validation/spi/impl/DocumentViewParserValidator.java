@@ -41,6 +41,7 @@ import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.GenericJcrDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -49,9 +50,9 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
 
     private final Map<String, DocumentViewXmlValidator> docViewValidators;
     private final SAXParser saxParser;
-    private final ValidationMessageSeverity severity;
+    private final @NotNull ValidationMessageSeverity severity;
     
-    public DocumentViewParserValidator(SAXParser saxParser, ValidationMessageSeverity severity) {
+    public DocumentViewParserValidator(SAXParser saxParser, @NotNull ValidationMessageSeverity severity) {
         super();
         this.docViewValidators = new HashMap<>();
         this.saxParser = saxParser;
@@ -68,7 +69,13 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
     }
 
     @Override
-    public Collection<ValidationMessage> validateJcrData(InputStream input, Path filePath, Map<String, Integer> nodePathsAndLineNumbers) throws IOException {
+    public boolean shouldValidateJcrData(@NotNull Path filePath, @NotNull Path basePath) {
+        // support upper case extensions?
+        return filePath.toString().endsWith(".xml");
+    }
+
+    @Override
+    public Collection<ValidationMessage> validateJcrData(@NotNull InputStream input, @NotNull Path filePath, @NotNull Path basePath, @NotNull Map<String, Integer> nodePathsAndLineNumbers) throws IOException {
         Collection<ValidationMessage> messages = new LinkedList<>();
         // TODO: support other formats like sysview xml or generic xml
         // (https://jackrabbit.apache.org/filevault/vaultfs.html#Deserialization)
@@ -79,7 +86,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         Path documentViewXmlRootPath = getDocumentViewXmlRootPath(bufferedInput, filePath);
         if (documentViewXmlRootPath != null) {
             try {
-                messages.addAll(validateDocumentViewXml(bufferedInput, filePath, ValidationExecutor.filePathToNodePath(documentViewXmlRootPath),
+                messages.addAll(validateDocumentViewXml(bufferedInput, filePath, basePath, ValidationExecutor.filePathToNodePath(documentViewXmlRootPath),
                             nodePathsAndLineNumbers));
             } catch (SAXException e) {
                 throw new IOException("Could not parse xml", e);
@@ -135,28 +142,22 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         return rootPath;
     }
 
-    protected Collection<ValidationMessage> validateDocumentViewXml(InputStream input, Path filePath, String rootNodePath,
+    protected Collection<ValidationMessage> validateDocumentViewXml(InputStream input, @NotNull Path filePath, @NotNull Path basePath, String rootNodePath,
             Map<String, Integer> nodePathsAndLineNumbers) throws IOException, SAXException {
         List<ValidationMessage> enrichedMessages = new LinkedList<>();
         XMLReader xr = saxParser.getXMLReader();
-        final DocumentViewXmlContentHandler handler = new DocumentViewXmlContentHandler(filePath, rootNodePath,
+        final DocumentViewXmlContentHandler handler = new DocumentViewXmlContentHandler(filePath, basePath, rootNodePath,
                 docViewValidators);
         enrichedMessages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, "Detected DocView..."));
         xr.setContentHandler(handler);
         try {
             xr.parse(new InputSource(new CloseShieldInputStream(input)));
-            enrichedMessages.addAll(ValidationViolation.wrapMessages(null, handler.getViolations(), filePath, null, null, 0, 0));
+            enrichedMessages.addAll(ValidationViolation.wrapMessages(null, handler.getViolations(), filePath, basePath, rootNodePath, 0, 0));
         } catch (SAXException e) {
-            enrichedMessages.add(new ValidationViolation(severity, "Invalid XML found: " + e.getMessage(), filePath, null, null, 0, 0, e));
+            enrichedMessages.add(new ValidationViolation(severity, "Invalid XML found: " + e.getMessage(), filePath, basePath, rootNodePath, 0, 0, e));
         }
         nodePathsAndLineNumbers.putAll(handler.getNodePaths());
         return enrichedMessages;
-    }
-
-    // support upper case extensions?
-    @Override
-    public boolean shouldValidateJcrData(Path filePath) {
-        return filePath.toString().endsWith(".xml");
     }
 
 

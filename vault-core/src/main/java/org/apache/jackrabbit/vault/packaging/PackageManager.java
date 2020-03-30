@@ -24,6 +24,9 @@ import java.io.OutputStream;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.apache.jackrabbit.vault.fs.io.Archive;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -73,21 +76,38 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface PackageManager {
 
     /**
-     * Opens the given file and creates a package
-     * @param file the file
+     * Opens the given archive and creates a package
+     * @param archive the archive
      * @return the package
-     * @throws IOException if an error occurrs
+     * @throws IOException if an error occurs
      */
-    VaultPackage open(File file) throws IOException;
+    @NotNull VaultPackage open(@NotNull Archive archive) throws IOException;
+    
+    /**
+     * Opens the given archive and creates a package
+     * @param archive the archive
+     * @param strict if {@code true} the import is more strict with regards to errors.
+     * @return the package
+     * @throws IOException if an error occurs
+     */
+    @NotNull VaultPackage open(@NotNull Archive archive, boolean strict) throws IOException;
 
     /**
      * Opens the given file and creates a package
      * @param file the file
-     * @param strict if {@code true} the import is more strict in respect to errors.
      * @return the package
-     * @throws IOException if an error occurrs
+     * @throws IOException if an error occurs
      */
-    VaultPackage open(File file, boolean strict) throws IOException;
+    @NotNull VaultPackage open(@NotNull File file) throws IOException;
+
+    /**
+     * Opens the given file and creates a package
+     * @param file the file
+     * @param strict if {@code true} the import is more strict with regards to errors.
+     * @return the package
+     * @throws IOException if an error occurs
+     */
+    @NotNull VaultPackage open(@NotNull File file, boolean strict) throws IOException;
 
     /**
      * Assembles a package using the given meta information and file to
@@ -102,7 +122,7 @@ public interface PackageManager {
      * @throws RepositoryException if a repository error during building occurs.
      * @throws IllegalStateException if the package is not new.
      */
-    VaultPackage assemble(Session s, ExportOptions opts, File file)
+    @NotNull VaultPackage assemble(@NotNull Session s, @NotNull ExportOptions opts, @Nullable File file)
             throws IOException, RepositoryException;
 
     /**
@@ -116,7 +136,7 @@ public interface PackageManager {
      * @throws RepositoryException if a repository error during building occurs.
      * @throws IllegalStateException if the package is not new.
      */
-    void assemble(Session s, ExportOptions opts, OutputStream out)
+    void assemble(@NotNull Session s, @NotNull ExportOptions opts, @NotNull OutputStream out)
             throws IOException, RepositoryException;
 
     /**
@@ -132,7 +152,7 @@ public interface PackageManager {
      * @throws RepositoryException if a repository error during building occurs.
      * @throws IllegalStateException if the package is not new.
      */
-    VaultPackage rewrap(ExportOptions opts, VaultPackage src, File file)
+    @NotNull VaultPackage rewrap(@NotNull ExportOptions opts, @NotNull VaultPackage src, @Nullable File file)
             throws IOException, RepositoryException;
 
     /**
@@ -144,6 +164,6 @@ public interface PackageManager {
      * @param out destination output stream
      * @throws IOException if an I/O error occurs
      */
-    void rewrap(ExportOptions opts, VaultPackage src, OutputStream out)
+    void rewrap(@NotNull ExportOptions opts, @NotNull VaultPackage src, @NotNull OutputStream out)
             throws IOException;
 }

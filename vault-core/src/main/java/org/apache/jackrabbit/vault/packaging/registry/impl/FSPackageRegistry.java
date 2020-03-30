@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -29,12 +28,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
@@ -58,7 +54,6 @@ import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent.Type;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.packaging.impl.HollowVaultPackage;
-import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
@@ -66,6 +61,8 @@ import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -129,7 +126,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param homeDir the directory in which packages and their metadata is stored
      * @throws IOException If an I/O error occurs.
      */
-    public FSPackageRegistry(@Nonnull File homeDir) throws IOException {
+    public FSPackageRegistry(@NotNull File homeDir) throws IOException {
         this(homeDir, InstallationScope.UNSCOPED);
     }
 
@@ -140,7 +137,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param scope to set a corresponding workspacefilter
      * @throws IOException If an I/O error occurs.
      */
-    public FSPackageRegistry(@Nonnull File homeDir, InstallationScope scope) throws IOException {
+    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope) throws IOException {
         this.homeDir = homeDir;
         this.scope = scope;
         loadPackageCache();
@@ -209,7 +206,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param id package id
      * @param related related packages
      */
-    public void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId[] related) {
+    public void dispatch(@NotNull PackageEvent.Type type, @NotNull PackageId id, @Nullable PackageId[] related) {
         if (dispatcher == null) {
             return;
         }
@@ -218,18 +215,18 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     @Nullable
     @Override
-    public RegisteredPackage open(@Nonnull PackageId id) throws IOException {
+    public RegisteredPackage open(@NotNull PackageId id) throws IOException {
         FSInstallState state = getInstallState(id);
         return FSPackageStatus.NOTREGISTERED != state.getStatus() ? new FSRegisteredPackage(this, state) : null;
     }
 
     @Override
-    public boolean contains(@Nonnull PackageId id) throws IOException {
+    public boolean contains(@NotNull PackageId id) throws IOException {
         return stateCache.containsKey(id);
     }
 
     @Nullable
-    private File getPackageFile(@Nonnull PackageId id) {
+    private File getPackageFile(@NotNull PackageId id) {
         try {
             FSInstallState state = getInstallState(id);
             if (FSPackageStatus.NOTREGISTERED == state.getStatus()) {
@@ -243,7 +240,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         return null;
     }
 
-    private File buildPackageFile(@Nonnull PackageId id) {
+    private File buildPackageFile(@NotNull PackageId id) {
         String path = getInstallationPath(id);
         return new File(getHomeDir(), path + ".zip");
     }
@@ -254,8 +251,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param id The package Id.
      * @return the meta data file.
      */
-    @Nonnull
-    private File getPackageMetaDataFile(@Nonnull PackageId id) {
+    @NotNull
+    private File getPackageMetaDataFile(@NotNull PackageId id) {
         final String path = getInstallationPath(id);
         return new File(getHomeDir(), path + ".xml");
     }
@@ -266,8 +263,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @return the package
      * @throws IOException if an I/O error occurrs.
      */
-    @Nonnull
-    protected VaultPackage openPackageFile(@Nonnull PackageId id) throws IOException {
+    @NotNull
+    protected VaultPackage openPackageFile(@NotNull PackageId id) throws IOException {
         File pkg = getPackageFile(id);
         if (pkg == null) {
             throw new IOException("Could not find package file for id " + id);
@@ -288,9 +285,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NotNull
     @Override
-    public DependencyReport analyzeDependencies(@Nonnull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException {
+    public DependencyReport analyzeDependencies(@NotNull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException {
         List<Dependency> unresolved = new LinkedList<>();
         List<PackageId> resolved = new LinkedList<>();
         FSInstallState state = getInstallState(id);
@@ -355,17 +352,17 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NotNull
     @Override
-    public PackageId register(@Nonnull InputStream in, boolean replace) throws IOException, PackageExistsException {
+    public PackageId register(@NotNull InputStream in, boolean replace) throws IOException, PackageExistsException {
       return register(in, replace, null);
     }
     
     /**
      * {@inheritDoc}
      */
-    @Nonnull
-    private PackageId register(@Nonnull InputStream in, boolean replace, Dependency autoDependency) throws IOException, PackageExistsException {
+    @NotNull
+    private PackageId register(@NotNull InputStream in, boolean replace, Dependency autoDependency) throws IOException, PackageExistsException {
         ZipVaultPackage pkg = upload(in, replace);
 
         Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pkg, replace);
@@ -487,13 +484,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             }
 
             final MetaInf inf = archive.getMetaInf();
-            PackagePropertiesImpl props = new PackagePropertiesImpl() {
-                @Override
-                protected Properties getPropertiesMap() {
-                    return inf.getProperties();
-                }
-            };
-            PackageId pid = props.getId();
+            PackageId pid = inf.getPackageProperties().getId();
 
             // invalidate pid if path is unknown
             if (pid == null) {
@@ -527,9 +518,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NotNull
     @Override
-    public PackageId register(@Nonnull File file, boolean replace) throws IOException, PackageExistsException {
+    public PackageId register(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
         ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
         try {
             File pkgFile = buildPackageFile(pack.getId());
@@ -560,9 +551,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public PackageId registerExternal(@Nonnull File file, boolean replace) throws IOException, PackageExistsException {
+    public PackageId registerExternal(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
         if (!replace && pathIdMapping.containsKey(file.toPath())) {
             PackageId pid = pathIdMapping.get(file.toPath());
             throw new PackageExistsException("Package already exists: " + pid).setId(pid);
@@ -605,7 +596,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * {@inheritDoc}
      */
     @Override
-    public void remove(@Nonnull PackageId id) throws IOException, NoSuchPackageException {
+    public void remove(@NotNull PackageId id) throws IOException, NoSuchPackageException {
         FSInstallState state = getInstallState(id);
         File metaData = getPackageMetaDataFile(id);
 
@@ -624,7 +615,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NotNull
     @Override
     public Set<PackageId> packages() throws IOException {
         return packagesInitializied ? stateCache.keySet() : loadPackageCache();
@@ -675,7 +666,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * {@inheritDoc}
      */
     @Override
-    public void installPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts,
+    public void installPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts,
                                boolean extract) throws IOException, PackageException {
 
         // For now FS based persistence only supports extraction but no reversible installation
@@ -722,7 +713,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * Uninstallation not supported for FS based PackageRegistry
      */
     @Override
-    public void uninstallPackage(@Nonnull Session session, @Nonnull RegisteredPackage pkg, @Nonnull ImportOptions opts) throws IOException, PackageException {
+    public void uninstallPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts) throws IOException, PackageException {
         String msg = "Uninstallation not supported by FS based registry";
         log.error(msg);
         throw new PackageException(msg);
@@ -757,7 +748,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param state
      * @throws IOException
      */
-    private void setInstallState(@Nonnull FSInstallState state) throws IOException {
+    private void setInstallState(@NotNull FSInstallState state) throws IOException {
         PackageId pid = state.getPackageId();
         File metaData = getPackageMetaDataFile(pid);
 
@@ -780,7 +771,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      *
      * @throws IOException if an I/O error occurs.
      */
-    @Nonnull
+    @NotNull
     public FSInstallState getInstallState(PackageId pid) throws IOException {
         if (stateCache.containsKey(pid)) {
             return stateCache.get(pid);

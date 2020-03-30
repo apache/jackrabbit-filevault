@@ -23,12 +23,12 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import org.apache.jackrabbit.vault.packaging.PackageType;
-import org.apache.jackrabbit.vault.validation.ValidationExecutorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,15 +47,15 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
     static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES = ValidationMessageSeverity.INFO;
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS = ValidationMessageSeverity.WARN;
     static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES = ValidationMessageSeverity.INFO;
-    static final Collection<String> DEFAULT_VALID_ROOTS = new LinkedList<>(Arrays.asList("/","/libs","/apps","/etc","/var","/tmp","/content"));
+    static final Collection<String> DEFAULT_VALID_ROOTS = new LinkedList<>(Arrays.asList("/","/libs","/apps","/etc","/var","/tmp","/content","/etc/packages"));
 
     /**
      * the default logger
      */
-    private static final Logger log = LoggerFactory.getLogger(ValidationExecutorFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(AdvancedFilterValidatorFactory.class);
 
     @Override
-    public Validator createValidator(ValidationContext context, ValidatorSettings settings) {
+    public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         final ValidationMessageSeverity severityForUncoveredAncestorNode;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES);
@@ -92,7 +92,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         } else {
             validRoots.addAll(DEFAULT_VALID_ROOTS);
         }
-        return new AdvancedFilterValidator(settings.getDefaultSeverity(), severityForUncoveredAncestorNode, severityForUncoveredFilterRootAncestors, severityForOrphanedFilterRules, context.getContainerValidationContext() != null, context.getDependenciesMetaInfo(), context.getFilter(), validRoots);
+        return new AdvancedFilterValidator(settings.getDefaultSeverity(), severityForUncoveredAncestorNode, severityForUncoveredFilterRootAncestors, severityForOrphanedFilterRules, context.getContainerValidationContext() != null, context.getDependenciesPackageInfo(), context.getFilter(), validRoots);
     }
 
     @Override
@@ -102,7 +102,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
     }
 
     @Override
-    public String getId() {
+    public @NotNull String getId() {
         return ID;
     }
 

@@ -90,6 +90,9 @@ public class ValidationExecutorFactoryTest {
     public void testOrderOfValidators() throws ParserConfigurationException, SAXException {
         // first validate order
         ValidationExecutor executor =  executorFactory.createValidationExecutor(context, true, true, validatorsSettings);
+        if (executor == null) {
+            throw new IllegalStateException("Could not create validation executor!");
+        }
         Map<String, Validator> actualValidators = executor.getAllValidatorsById();
         Map<String, Validator> expectedValidators = new LinkedHashMap<>();
         expectedValidators.put("id1", validator1);
@@ -101,6 +104,9 @@ public class ValidationExecutorFactoryTest {
         Collections.shuffle(validatorFactories);
         executorFactory = new ValidationExecutorFactory(validatorFactories);
         executor =  executorFactory.createValidationExecutor(context, true, true, validatorsSettings);
+        if (executor == null) {
+            throw new IllegalStateException("Could not create validation executor!");
+        }
         actualValidators = executor.getAllValidatorsById();
         // the returned validators should still have the same order
         Assert.assertEquals(expectedValidators.toString(), actualValidators.toString());

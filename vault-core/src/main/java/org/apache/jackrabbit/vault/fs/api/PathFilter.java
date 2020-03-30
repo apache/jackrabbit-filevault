@@ -20,10 +20,9 @@ package org.apache.jackrabbit.vault.fs.api;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The item filter is used to include or exclude a set of paths.
@@ -142,7 +141,7 @@ public interface PathFilter extends Filter, Dumpable {
      * @return {@code true} if this filter matches the criteria;
      *         {@code false} otherwise.
      */
-    boolean matches(@Nonnull String path);
+    boolean matches(@NotNull String path);
 
     /**
      * Checks if the pattern is absolute, i.e. does not start with a wildcard.
@@ -156,6 +155,6 @@ public interface PathFilter extends Filter, Dumpable {
      * @return the new filter
      * @since 2.4.10
      */
-    @Nonnull
+    @NotNull
     PathFilter translate(@Nullable PathMapping mapping);
 }

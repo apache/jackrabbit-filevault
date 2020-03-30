@@ -20,29 +20,32 @@ package org.apache.jackrabbit.vault.fs.api;
 import java.io.InputStream;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * {@code WorkspaceFilter} defined a filter for items (node or property).
  */
+@ProviderType
 public interface WorkspaceFilter extends Dumpable {
 
     /**
      * Returns a list of path filter sets for node items.
      * @return the list of path filter sets.
      */
-    @Nonnull
+    @NotNull
     List<PathFilterSet> getFilterSets();
 
     /**
      * Returns a list of path filter sets for property items.
      * @return the list of path filter sets.
      */
-    @Nonnull
+    @NotNull
     List<PathFilterSet> getPropertyFilterSets();
 
     /**
@@ -51,7 +54,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @return the filter set or {@code null}
      */
     @Nullable
-    PathFilterSet getCoveringFilterSet(@Nonnull String path);
+    PathFilterSet getCoveringFilterSet(@NotNull String path);
 
     /**
      * Returns the import mode for the given node path.
@@ -59,8 +62,8 @@ public interface WorkspaceFilter extends Dumpable {
      * @return the import mode or {@link ImportMode#REPLACE} if the given path
      *         is not covered by this filter.
      */
-    @Nonnull
-    ImportMode getImportMode(@Nonnull String path);
+    @NotNull
+    ImportMode getImportMode(@NotNull String path);
 
     /**
      * Checks if the given node path is contained (and by that also covered)
@@ -75,7 +78,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @param path to check
      * @return {@code true} if the given path is included in this filter.
      */
-    boolean contains(@Nonnull String path);
+    boolean contains(@NotNull String path);
 
     /**
      * Checks if the given node path is covered in this workspace filter.
@@ -89,7 +92,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @param path the path to check
      * @return {@code true} if the given path is covered by this filter.
      */
-    boolean covers(@Nonnull String path);
+    boolean covers(@NotNull String path);
 
     /**
      * Checks if the given node path is an ancestor of any of the filter sets.
@@ -97,7 +100,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @param path the item to check
      * @return {@code true} if the given item is an ancestor
      */
-    boolean isAncestor(@Nonnull String path);
+    boolean isAncestor(@NotNull String path);
 
     /**
      * Checks if the given node path is globally ignored.
@@ -105,7 +108,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @param path the path to check.
      * @return {@code true} if the item is globally ignored.
      */
-    boolean isGloballyIgnored(@Nonnull String path);
+    boolean isGloballyIgnored(@NotNull String path);
 
     /**
      * Returns the source xml that constructs this filter
@@ -113,14 +116,14 @@ public interface WorkspaceFilter extends Dumpable {
      * 
      * @return the source xml
      */
-    @Nonnull
+    @NotNull
     InputStream getSource();
 
     /**
      * Returns the source xml that constructs this filter
      * @return the source xml
      */
-    @Nonnull
+    @NotNull
     String getSourceAsString();
 
     /**
@@ -130,7 +133,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @return a new workspace filter
      * @since 2.4.10
      */
-    @Nonnull
+    @NotNull
     WorkspaceFilter translate(@Nullable PathMapping mapping);
 
     /**
@@ -139,7 +142,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @param listener listener
      * @throws RepositoryException if an error occurs
      */
-    void dumpCoverage(@Nonnull Node rootNode, @Nonnull ProgressTrackerListener listener)
+    void dumpCoverage(@NotNull Node rootNode, @NotNull ProgressTrackerListener listener)
             throws RepositoryException;
 
     /**
@@ -152,6 +155,15 @@ public interface WorkspaceFilter extends Dumpable {
      * @param skipJcrContent {@code true} to skip jcr:content nodes
      * @throws RepositoryException if an error occurs
      */
-    void dumpCoverage(@Nonnull Session session, @Nonnull ProgressTrackerListener listener, boolean skipJcrContent)
+    void dumpCoverage(@NotNull Session session, @NotNull ProgressTrackerListener listener, boolean skipJcrContent)
             throws RepositoryException;
+
+    /**
+     * Tests if the given workspace filter includes the given property. If the filter does not cover the property,
+     * it returns {@code true}.
+     *
+     * @param propertyPath the path to the property
+     * @return {@code true} if the property is included in the filter
+     */
+    boolean includesProperty(String propertyPath);
 }

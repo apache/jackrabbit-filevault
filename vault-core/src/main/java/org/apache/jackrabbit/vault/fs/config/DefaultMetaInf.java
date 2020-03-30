@@ -30,8 +30,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.NamespaceException;
 
 import org.apache.commons.io.FileUtils;
@@ -45,8 +43,12 @@ import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeSet;
 import org.apache.jackrabbit.vault.fs.spi.PrivilegeDefinitions;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,7 +107,7 @@ public class DefaultMetaInf implements MetaInf {
      *
      * @since 3.1.32
      */
-    public boolean load(@Nullable InputStream in, @Nonnull String systemId) throws IOException, ConfigurationException {
+    public boolean load(@Nullable InputStream in, @NotNull String systemId) throws IOException, ConfigurationException {
         if (systemId.endsWith("/" + Constants.PACKAGE_DEFINITION_XML)) {
             setHasDefinition(true);
             log.trace("Contains package definition {}.", systemId);
@@ -156,7 +158,7 @@ public class DefaultMetaInf implements MetaInf {
      * @throws ConfigurationException
      * @throws IOException
      */
-    public void loadFilter(@Nonnull InputStream in, @Nonnull String systemId)
+    public void loadFilter(@NotNull InputStream in, @NotNull String systemId)
             throws ConfigurationException, IOException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.load(in);
@@ -171,14 +173,14 @@ public class DefaultMetaInf implements MetaInf {
      * @throws ConfigurationException
      * @throws IOException
      */
-    public void loadConfig(@Nonnull InputStream in, @Nonnull String systemId)
+    public void loadConfig(@NotNull InputStream in, @NotNull String systemId)
             throws ConfigurationException, IOException {
         VaultFsConfig config = AbstractVaultFsConfig.load(in, systemId);
         setConfig(config);
         log.trace("Loaded config from {}.", systemId);
     }
 
-    public void loadSettings(@Nonnull InputStream in, @Nonnull String systemId)
+    public void loadSettings(@NotNull InputStream in, @NotNull String systemId)
             throws ConfigurationException, IOException {
         VaultSettings settings = new VaultSettings();
         settings.load(in);
@@ -192,7 +194,7 @@ public class DefaultMetaInf implements MetaInf {
      * @param systemId
      * @throws IOException
      */
-    public void loadProperties(@Nonnull InputStream in, @Nonnull String systemId)
+    public void loadProperties(@NotNull InputStream in, @NotNull String systemId)
             throws IOException {
         Properties props = new Properties();
         // prevent the input stream from being closed for achieving a consistent behaviour
@@ -207,7 +209,7 @@ public class DefaultMetaInf implements MetaInf {
      * @param systemId
      * @throws IOException
      */
-    public void loadPrivileges(@Nonnull InputStream in, @Nonnull String systemId)
+    public void loadPrivileges(@NotNull InputStream in, @NotNull String systemId)
             throws IOException {
         try {
             PrivilegeDefinitionReader reader = new PrivilegeDefinitionReader(in, "text/xml");
@@ -222,7 +224,7 @@ public class DefaultMetaInf implements MetaInf {
         log.trace("Loaded privileges from {}.", systemId);
     }
 
-    public void save(@Nonnull File metaDir) throws IOException {
+    public void save(@NotNull File metaDir) throws IOException {
         if (metaDir.isDirectory()) {
             saveConfig(metaDir);
             saveFilter(metaDir);
@@ -313,7 +315,7 @@ public class DefaultMetaInf implements MetaInf {
         this.hasDefinition = hasDefinition;
     }
 
-    protected void loadSettings(@Nonnull File metaDir)
+    protected void loadSettings(@NotNull File metaDir)
             throws ConfigurationException, IOException {
         File file = new File(metaDir, Constants.SETTINGS_XML);
         if (file.isFile()) {
@@ -325,14 +327,14 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void saveSettings(@Nonnull File metaDir) throws IOException {
+    protected void saveSettings(@NotNull File metaDir) throws IOException {
         if (settings != null) {
             File file = new File(metaDir, Constants.SETTINGS_XML);
             settings.save(file);
         }
     }
 
-    protected void loadConfig(@Nonnull File metaDir)
+    protected void loadConfig(@NotNull File metaDir)
             throws ConfigurationException, IOException {
         File file = new File(metaDir, Constants.CONFIG_XML);
         if (file.isFile()) {
@@ -340,7 +342,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void saveConfig(@Nonnull File metaDir)
+    protected void saveConfig(@NotNull File metaDir)
             throws IOException {
         if (config != null) {
             File file = new File(metaDir, Constants.CONFIG_XML);
@@ -350,7 +352,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void loadFilter(@Nonnull File metaDir, boolean vltMode)
+    protected void loadFilter(@NotNull File metaDir, boolean vltMode)
             throws ConfigurationException, IOException {
         File file = new File(metaDir, Constants.FILTER_XML);
         if (vltMode) {
@@ -367,7 +369,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void saveFilter(@Nonnull File metaDir)
+    protected void saveFilter(@NotNull File metaDir)
             throws IOException {
         if (filter != null) {
             File file = new File(metaDir, Constants.FILTER_XML);
@@ -377,7 +379,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void loadProperties(@Nonnull File metaDir) throws IOException {
+    protected void loadProperties(@NotNull File metaDir) throws IOException {
         File file = new File(metaDir, Constants.PROPERTIES_XML);
         if (file.isFile()) {
             try (InputStream input = FileUtils.openInputStream(file)) {
@@ -388,7 +390,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void saveProperties(@Nonnull File metaDir) throws IOException {
+    protected void saveProperties(@NotNull File metaDir) throws IOException {
         if (properties != null) {
             File file = new File(metaDir, Constants.PROPERTIES_XML);
             try (OutputStream output = FileUtils.openOutputStream(file)) {
@@ -397,7 +399,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void loadPrivileges(@Nonnull File metaDir) throws IOException {
+    protected void loadPrivileges(@NotNull File metaDir) throws IOException {
         File file = new File(metaDir, Constants.PRIVILEGES_XML);
         if (file.isFile()) {
             try (InputStream in = FileUtils.openInputStream(file)) {
@@ -406,7 +408,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void loadCNDs(@Nonnull File metaDir) throws IOException {
+    protected void loadCNDs(@NotNull File metaDir) throws IOException {
         File[] files = metaDir.listFiles();
         if (files == null) {
             return;
@@ -424,4 +426,16 @@ public class DefaultMetaInf implements MetaInf {
             }
         }
     }
+
+    @Override
+    public PackageProperties getPackageProperties() {
+        return new PackagePropertiesImpl() {
+            
+            @Override
+            protected Properties getPropertiesMap() {
+                return getProperties();
+            }
+        };
+    }
+
 }

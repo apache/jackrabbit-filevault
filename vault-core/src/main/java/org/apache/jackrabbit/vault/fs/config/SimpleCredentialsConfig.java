@@ -25,6 +25,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.jcr.Credentials;
 import javax.jcr.SimpleCredentials;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
@@ -34,7 +36,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code SimpleCredentialsConfig}...
@@ -92,13 +93,19 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
         throw new ConfigurationException("mandatory element <user> missing.");
     }
 
+    @Deprecated
     public void writeInner(ContentHandler handler) throws SAXException {
+        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+    }
+
+    
+    @Override
+    protected void writeInner(XMLStreamWriter writer) throws XMLStreamException {
         if (creds != null) {
-            AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute("", ATTR_NAME, "", "CDATA", creds.getUserID());
-            attrs.addAttribute("", ATTR_PASSWORD, "", "CDATA", encrypt(new String(creds.getPassword())));
-            handler.startElement("", ELEM_USER, "", attrs);
-            handler.endElement("", ELEM_USER, "");
+            writer.writeStartElement(ELEM_USER);
+            writer.writeAttribute(ATTR_NAME, creds.getUserID());
+            writer.writeAttribute(ATTR_PASSWORD, encrypt(new String(creds.getPassword())));
+            writer.writeEndElement();
         }
     }
 

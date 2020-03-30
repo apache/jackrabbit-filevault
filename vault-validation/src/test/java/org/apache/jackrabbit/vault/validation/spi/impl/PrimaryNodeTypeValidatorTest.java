@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,19 +54,19 @@ public class PrimaryNodeTypeValidatorTest {
 
         // order node only (no other property)
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, null);
-        Assert.assertThat(validator.validate(node, "/apps/test", null, false), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, "/apps/test", Paths.get("/some/path"), false), AnyValidationMessageMatcher.noValidationInCollection());
 
         // primary node type set with additional properties
         node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "nt:unstructured");
-        Assert.assertThat(validator.validate(node, "/apps/test", null, false), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, "/apps/test", Paths.get("/some/path"), false), AnyValidationMessageMatcher.noValidationInCollection());
 
         // missing node type but not contained in filter (with properties)
         node = new DocViewNode("jcr:root", "jcr:root", null, props, null, null);
-        Assert.assertThat(validator.validate(node, "/apps/test2/invalid", null, false), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, "/apps/test2/invalid", Paths.get("/some/path"), false), AnyValidationMessageMatcher.noValidationInCollection());
 
         // missing node type and contained in filter (with properties)
         ValidationExecutorTest.assertViolation(
-                        validator.validate(node, "/apps/test", null, false),
+                        validator.validate(node, "/apps/test", Paths.get("/some/path"), false),
                         new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PrimaryNodeTypeValidator.MESSAGE_MISSING_PRIMARY_TYPE, "/apps/test")));
     }
 }

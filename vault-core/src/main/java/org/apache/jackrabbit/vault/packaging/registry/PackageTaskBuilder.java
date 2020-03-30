@@ -16,9 +16,8 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry;
 
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -32,15 +31,15 @@ public interface PackageTaskBuilder {
      * @param id the package id
      * @return this.
      */
-    @Nonnull
-    PackageTaskBuilder with(@Nonnull PackageId id);
+    @NotNull
+    PackageTaskBuilder with(@NotNull PackageId id);
 
     /**
      * Sets the type of this task
      * @param type the type
      * @return this.
      */
-    @Nonnull
-    ExecutionPlanBuilder with(@Nonnull PackageTask.Type type);
+    @NotNull
+    ExecutionPlanBuilder with(@NotNull PackageTask.Type type);
 
 }

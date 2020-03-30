@@ -19,10 +19,9 @@ package org.apache.jackrabbit.vault.fs.api;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Implements a path mapping that supports multiple symlinks
@@ -40,7 +39,7 @@ public class MultiPathMapping implements PathMapping {
      * @param dst destination path
      * @return this
      */
-    public MultiPathMapping link(@Nonnull String src, @Nonnull String dst) {
+    public MultiPathMapping link(@NotNull String src, @NotNull String dst) {
         links.put(src, dst);
         reverseLinks.put(dst, src);
         return this;
@@ -51,7 +50,7 @@ public class MultiPathMapping implements PathMapping {
      * @param base base mapping
      * @return this
      */
-    @Nonnull
+    @NotNull
     public MultiPathMapping merge(@Nullable MultiPathMapping base) {
         if (base != null) {
             this.links.putAll(base.links);
@@ -64,8 +63,8 @@ public class MultiPathMapping implements PathMapping {
      * {@inheritDoc}
      */
     @Override
-    @Nonnull
-    public String map(@Nonnull String path) {
+    @NotNull
+    public String map(@NotNull String path) {
         return map(path, false);
     }
 
@@ -73,8 +72,8 @@ public class MultiPathMapping implements PathMapping {
      * {@inheritDoc}
      */
     @Override
-    @Nonnull
-    public String map(@Nonnull String path, boolean reverse) {
+    @NotNull
+    public String map(@NotNull String path, boolean reverse) {
         if (path.length() == 0 || "/".equals(path)) {
             return path;
         }

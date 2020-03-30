@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
 import javax.jcr.Session;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -50,8 +50,9 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTaskBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
+import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
-import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -59,7 +60,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code ExecutionPlanBuilderImpl}...
@@ -97,35 +97,31 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         this.registry = registry;
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public ExecutionPlanBuilder save(@Nonnull OutputStream out) throws IOException, PackageException {
+    public ExecutionPlanBuilder save(@NotNull OutputStream out) throws IOException, PackageException {
         validate();
-        try {
-            XMLSerializer ser = new XMLSerializer(out, new OutputFormat("xml", "UTF-8", true));
-            ser.startDocument();
-            AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute(null, null, ATTR_VERSION, "CDATA", String.valueOf(version));
-            ser.startElement(null, null, TAG_EXECUTION_PLAN, attrs);
-
+        try (FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, new OutputFormat(4, false))) {
+            writer.writeStartDocument();
+            writer.writeStartElement(TAG_EXECUTION_PLAN);
+            writer.writeAttribute(ATTR_VERSION, String.valueOf(version));
             for (PackageTask task: plan.getTasks()) {
-                attrs = new AttributesImpl();
-                attrs.addAttribute(null, null, ATTR_CMD, "CDATA", task.getType().name().toLowerCase());
-                attrs.addAttribute(null, null, ATTR_PACKAGE_ID, "CDATA", task.getPackageId().toString());
-                ser.startElement(null, null, TAG_TASK, attrs);
-                ser.endElement(TAG_TASK);
+                writer.writeStartElement(TAG_TASK);
+                writer.writeAttribute(ATTR_CMD, task.getType().name().toLowerCase());
+                writer.writeAttribute(ATTR_PACKAGE_ID, task.getPackageId().toString());
+                writer.writeEndElement();
             }
-            ser.endElement(TAG_EXECUTION_PLAN);
-            ser.endDocument();
-        } catch (SAXException e) {
+            writer.writeEndElement();
+            writer.writeEndDocument();
+        } catch (XMLStreamException e) {
             throw new IllegalStateException(e);
         }
         return this;
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public ExecutionPlanBuilder load(@Nonnull InputStream in) throws IOException {
+    public ExecutionPlanBuilder load(@NotNull InputStream in) throws IOException {
         tasks.clear();
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -175,7 +171,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         addTask().with(id).with(type);
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public PackageTaskBuilder addTask() {
         TaskBuilder task = new TaskBuilder();
@@ -184,21 +180,21 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         return task;
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public ExecutionPlanBuilder with(@Nonnull Session session) {
+    public ExecutionPlanBuilder with(@NotNull Session session) {
         this.session = session;
         return this;
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public ExecutionPlanBuilder with(@Nonnull ProgressTrackerListener listener) {
+    public ExecutionPlanBuilder with(@NotNull ProgressTrackerListener listener) {
         this.listener = listener;
         return this;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public ExecutionPlanBuilder validate() throws IOException, PackageException {
         Map<PackageId, PackageTask> installTasks = new HashMap<PackageId, PackageTask>();
@@ -318,7 +314,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         uninstallTasks.put(id, PackageTaskImpl.MARKER);
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public ExecutionPlan execute() throws IOException, PackageException {
         if (plan == null) {
@@ -339,14 +335,14 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         private PackageId id;
         private PackageTask.Type type;
 
-        public PackageTaskBuilder with(@Nonnull PackageId id) {
+        public PackageTaskBuilder with(@NotNull PackageId id) {
             this.id = id;
             return this;
         }
 
-        @Nonnull
+        @NotNull
         @Override
-        public ExecutionPlanBuilder with(@Nonnull PackageTask.Type type) {
+        public ExecutionPlanBuilder with(@NotNull PackageTask.Type type) {
             this.type = type;
             return ExecutionPlanBuilderImpl.this;
         }

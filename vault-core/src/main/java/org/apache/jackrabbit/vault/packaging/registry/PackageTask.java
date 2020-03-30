@@ -16,10 +16,9 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -80,21 +79,21 @@ public interface PackageTask {
      * Returns the package id of this task.
      * @return the package id.
      */
-    @Nonnull
+    @NotNull
     PackageId getPackageId();
 
     /**
      * Returns the task type.
      * @return the task type.
      */
-    @Nonnull
+    @NotNull
     Type getType();
 
     /**
      * Returns the task state
      * @return the task state
      */
-    @Nonnull
+    @NotNull
     State getState();
 
     /**

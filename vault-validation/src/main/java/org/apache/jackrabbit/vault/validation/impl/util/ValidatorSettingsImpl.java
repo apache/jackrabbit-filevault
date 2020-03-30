@@ -21,31 +21,38 @@ import java.util.Map;
 
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
 
 public class ValidatorSettingsImpl implements ValidatorSettings {
-    private boolean isDisabled;
-    private ValidationMessageSeverity defaultSeverity;
-    private Map<String, String> options;
+    private final boolean isDisabled;
+    private final ValidationMessageSeverity defaultSeverity;
+    private final Map<String, String> options;
 
     public ValidatorSettingsImpl(boolean isDisabled) {
-        super();
-        this.isDisabled = isDisabled;
+        this(isDisabled, null, null);
     }
 
     public ValidatorSettingsImpl() {
-        
+        this(false, null, null);
     }
 
     public ValidatorSettingsImpl(ValidationMessageSeverity defaultSeverity) {
-        this.defaultSeverity = defaultSeverity;
+        this(false, defaultSeverity, null);
     }
 
     public ValidatorSettingsImpl(String optionKey, String optionValue) {
-        options = Collections.singletonMap(optionKey, optionValue);
+        this(false, null, Collections.singletonMap(optionKey, optionValue));
+    }
+
+    public ValidatorSettingsImpl(boolean isDisabled, ValidationMessageSeverity defaultSeverity, Map<String, String> options) {
+        super();
+        this.isDisabled = isDisabled;
+        this.defaultSeverity = defaultSeverity;
+        this.options = options;
     }
 
     @Override
-    public ValidationMessageSeverity getDefaultSeverity() {
+    public @NotNull ValidationMessageSeverity getDefaultSeverity() {
         if (defaultSeverity == null) {
             return ValidationMessageSeverity.ERROR;
         }
@@ -53,7 +60,7 @@ public class ValidatorSettingsImpl implements ValidatorSettings {
     }
 
     @Override
-    public Map<String, String> getOptions() {
+    public @NotNull Map<String, String> getOptions() {
         if (options == null) {
             return Collections.emptyMap();
         }

@@ -55,8 +55,8 @@ public class CompressionUtilTest {
     @Test
     public void testCompressibilityEstimation()
             throws IOException, RepositoryException {
-        assertTrue(seemsCompressible(newArtifact(incompressibleData(5*1024), null)) < 0);
-        assertTrue(seemsCompressible(newArtifact(compressibleData(5*1024), null)) > 0);
+        assertTrue(seemsCompressible(newArtifact(incompressibleData(50*1024), null)) < 0);
+        assertTrue(seemsCompressible(newArtifact(compressibleData(50*1024), null)) > 0);
     }
 
     @Test

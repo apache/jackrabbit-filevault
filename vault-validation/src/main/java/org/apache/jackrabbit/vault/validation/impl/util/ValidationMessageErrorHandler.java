@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -36,7 +37,7 @@ public class ValidationMessageErrorHandler
         this.errorMessageSeverity = errorMessageSeverity;
     }
 
-    private void print(SAXParseException x, ValidationMessageSeverity severity) {
+    private void print(@NotNull SAXParseException x, @NotNull ValidationMessageSeverity severity) {
         ValidationMessage message = new ValidationMessage(severity, x.getMessage(), Integer.valueOf(x.getLineNumber()),
                 Integer.valueOf(x.getColumnNumber()), null);
         messages.add(message);

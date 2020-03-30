@@ -28,6 +28,7 @@ import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @see <a href="https://issues.apache.org/jira/browse/JCRVLT-255">JCRVLT-255</a>
@@ -58,7 +59,7 @@ public class MergeLimitationsValidator implements DocumentViewXmlValidator {
     }
 
     @Override
-    public Collection<ValidationMessage> validate(DocViewNode node, String nodePath, Path filePath, boolean isRoot) {
+    public Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
         // find out if one of the filter roots is pointing to any of the aggregator's non-root nodes
         if (!isRoot && !node.props.isEmpty() && rootNodePathsOfMergeRules.contains(nodePath)) {
             return Collections.singleton(new ValidationMessage(severity, String.format(PACKAGE_NON_ROOT_NODE_MERGED, nodePath)));

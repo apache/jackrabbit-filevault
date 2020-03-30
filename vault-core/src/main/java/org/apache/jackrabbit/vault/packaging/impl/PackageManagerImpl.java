@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
@@ -43,6 +41,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.impl.AggregateManagerImpl;
+import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.JarExporter;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
@@ -53,6 +52,8 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Implements the package manager
@@ -68,6 +69,23 @@ public class PackageManagerImpl implements PackageManager {
     /**
      * {@inheritDoc}
      */
+    @Override
+    public @NotNull VaultPackage open(@NotNull Archive archive) throws IOException {
+        return new ZipVaultPackage(archive, false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public @NotNull VaultPackage open(@NotNull Archive archive, boolean strict) throws IOException {
+        return new ZipVaultPackage(archive, strict);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public VaultPackage open(File file) throws IOException {
         return open(file, false);
     }
@@ -75,6 +93,7 @@ public class PackageManagerImpl implements PackageManager {
     /**
      * {@inheritDoc}
      */
+    @Override
     public VaultPackage open(File file, boolean strict) throws IOException {
         return new ZipVaultPackage(file, false, strict);
     }
@@ -82,6 +101,7 @@ public class PackageManagerImpl implements PackageManager {
     /**
      * {@inheritDoc}
      */
+    @Override
     public VaultPackage assemble(Session s, ExportOptions opts, File file)
             throws IOException, RepositoryException {
         OutputStream out = null;
@@ -108,6 +128,7 @@ public class PackageManagerImpl implements PackageManager {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void assemble(Session s, ExportOptions opts, OutputStream out)
             throws IOException, RepositoryException {
         RepositoryAddress addr;
@@ -151,6 +172,7 @@ public class PackageManagerImpl implements PackageManager {
     /**
      * {@inheritDoc}
      */
+    @Override
     public VaultPackage rewrap(ExportOptions opts, VaultPackage src, File file)
             throws IOException, RepositoryException {
         OutputStream out = null;
@@ -179,6 +201,7 @@ public class PackageManagerImpl implements PackageManager {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void rewrap(ExportOptions opts, VaultPackage src, OutputStream out)
             throws IOException {
         MetaInf metaInf = opts.getMetaInf();
@@ -247,12 +270,11 @@ public class PackageManagerImpl implements PackageManager {
         this.dispatcher = dispatcher;
     }
 
-    void dispatch(@Nonnull PackageEvent.Type type, @Nonnull PackageId id, @Nullable PackageId[] related) {
+    void dispatch(@NotNull PackageEvent.Type type, @NotNull PackageId id, @Nullable PackageId[] related) {
         if (dispatcher == null) {
             return;
         }
         dispatcher.dispatch(type, id, related);
     }
-
 
 }

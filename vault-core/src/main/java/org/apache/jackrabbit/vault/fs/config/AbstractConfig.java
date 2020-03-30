@@ -25,11 +25,14 @@ import java.io.OutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
+import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
-import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
+import org.osgi.annotation.versioning.ProviderType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -38,12 +41,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code VaultUserConfig}...
  *
  */
+@ProviderType
 abstract public class AbstractConfig {
 
     protected static Logger log = LoggerFactory.getLogger(AbstractConfig.class);
@@ -123,14 +126,11 @@ abstract public class AbstractConfig {
     }
     
     public void save(OutputStream out) throws IOException {
-        OutputFormat fmt = new OutputFormat("xml", "UTF-8", true);
-        fmt.setLineWidth(0);
-        fmt.setIndent(2);
-        XMLSerializer ser = new XMLSerializer(out, fmt);
-        try {
-            write(ser);
-        } catch (SAXException e) {
-            throw new IOException(e.toString());
+        OutputFormat fmt = new OutputFormat(2, false);
+        try (FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, fmt)){
+            write(writer);
+        } catch (XMLStreamException e) {
+            throw new IOException(e.toString(), e);
         }
     }
 
@@ -146,15 +146,21 @@ abstract public class AbstractConfig {
         return configDir;
     }
 
+    @Deprecated
     protected void write(ContentHandler handler) throws SAXException {
-        handler.startDocument();
-        AttributesImpl attrs = new AttributesImpl();
-        attrs.addAttribute("", ATTR_VERSION, "", "CDATA", String.valueOf(version));
-        handler.startElement("", getRootElemName(), "", attrs);
-        doWrite(handler);
-        handler.endElement("", getRootElemName(), "");
-        handler.endDocument();
+        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+    }
+  
+    abstract protected void doWrite(ContentHandler handler) throws SAXException;
+    
+    protected void write(XMLStreamWriter writer) throws XMLStreamException {
+        writer.writeStartDocument();
+        writer.writeStartElement(getRootElemName());
+        writer.writeAttribute(ATTR_VERSION, String.valueOf(version));
+        doWrite(writer);
+        writer.writeEndElement();
+        writer.writeEndDocument();
     }
 
-    abstract protected void doWrite(ContentHandler handler) throws SAXException;
+    abstract protected void doWrite(XMLStreamWriter writer) throws XMLStreamException;
 }

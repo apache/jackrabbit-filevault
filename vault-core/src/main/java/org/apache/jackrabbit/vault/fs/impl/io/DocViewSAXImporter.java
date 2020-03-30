@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.annotation.Nonnull;
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Item;
 import javax.jcr.ItemNotFoundException;
@@ -71,6 +70,7 @@ import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.RejectingEntityDefaultHandler;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -973,7 +973,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 String propName = p.getName();
                 if (!PROTECTED_PROPERTIES.contains(propName)
                         && !ni.props.containsKey(propName)
-                        && !saveProperties.contains(p.getPath())) {
+                        && !saveProperties.contains(p.getPath())
+                        && wspFilter.includesProperty(p.getPath())) {
                     try {
                         vs.ensureCheckedOut();
                         p.remove();
@@ -1275,8 +1276,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
      * @return cugHandling for CUG related nodes, aclHandling for
      * everything else
      */
-    @Nonnull
-    private AccessControlHandling getAcHandling(@Nonnull String nodeName) {
+    @NotNull
+    private AccessControlHandling getAcHandling(@NotNull String nodeName) {
         if (cugHandling != null && "rep:cugPolicy".equals(nodeName)) {
             return cugHandling;
         } else {

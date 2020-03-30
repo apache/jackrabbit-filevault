@@ -18,11 +18,12 @@
 package org.apache.jackrabbit.vault.fs.config;
 
 import javax.jcr.Credentials;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.w3c.dom.Element;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code CredentialsConfig}...
@@ -50,13 +51,19 @@ public abstract class CredentialsConfig {
 
     public abstract Credentials getCredentials();
 
+    @Deprecated
     public void write(ContentHandler handler) throws SAXException {
-        AttributesImpl attrs = new AttributesImpl();
-        attrs.addAttribute("", ATTR_TYPE, "", "CDATA", type);
-        handler.startElement("", ELEM_CREDETIALS, "", attrs);
-        writeInner(handler);
-        handler.endElement("", ELEM_CREDETIALS, "");
+        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
     }
 
     protected abstract void writeInner(ContentHandler handler) throws SAXException;
+
+    public void write(XMLStreamWriter writer) throws XMLStreamException {
+        writer.writeStartElement(ELEM_CREDETIALS);
+        writer.writeAttribute(ATTR_TYPE, type);
+        writeInner(writer);
+        writer.writeEndElement();
+    }
+
+    protected abstract void writeInner(XMLStreamWriter writer) throws XMLStreamException;
 }

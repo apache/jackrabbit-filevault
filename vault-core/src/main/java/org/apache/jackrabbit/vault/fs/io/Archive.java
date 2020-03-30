@@ -22,12 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Specifies a filevault archive.
@@ -48,7 +46,7 @@ public interface Archive extends Closeable {
      * @return the input stream or {@code null} if the entry can't be read
      * @throws IOException if an error occurs
      */
-    @CheckForNull
+    @Nullable
     InputStream openInputStream(@Nullable Entry entry) throws IOException;
 
     /**
@@ -57,7 +55,7 @@ public interface Archive extends Closeable {
      * @return the input source or {@code null} if the entry can't be read
      * @throws IOException if an error occurs
      */
-    @CheckForNull
+    @Nullable
     VaultInputSource getInputSource(@Nullable Entry entry) throws IOException;
 
     /**
@@ -66,7 +64,7 @@ public interface Archive extends Closeable {
      * @return the jcr_root entry or {@code null}
      * @throws IOException if an error occurs
      */
-    @CheckForNull
+    @Nullable
     Entry getJcrRoot() throws IOException;
 
     /**
@@ -74,7 +72,7 @@ public interface Archive extends Closeable {
      * @return the root entry.
      * @throws IOException if an error occurs
      */
-    @Nonnull
+    @NotNull
     Entry getRoot() throws IOException;
 
     /**
@@ -83,7 +81,7 @@ public interface Archive extends Closeable {
      *
      * @return the meta inf.
      */
-    @Nonnull
+    @NotNull
     MetaInf getMetaInf();
 
     /**
@@ -92,8 +90,8 @@ public interface Archive extends Closeable {
      * @return the entry or {@code null} if not found.
      * @throws IOException if an error occurs
      */
-    @CheckForNull
-    Entry getEntry(@Nonnull String path) throws IOException;
+    @Nullable
+    Entry getEntry(@NotNull String path) throws IOException;
     
     /**
      * Returns a sub archive that is rooted at the given path.
@@ -106,8 +104,8 @@ public interface Archive extends Closeable {
      *         does not exist.
      * @throws IOException if an error occurs
      */
-    @CheckForNull
-    Archive getSubArchive(@Nonnull String root, boolean asJcrRoot) throws IOException;
+    @Nullable
+    Archive getSubArchive(@NotNull String root, boolean asJcrRoot) throws IOException;
 
     /**
      * closes the archive
@@ -123,7 +121,7 @@ public interface Archive extends Closeable {
          * Returns the (file) name of the entry
          * @return the name
          */
-        @Nonnull
+        @NotNull
         String getName();
 
         /**
@@ -136,7 +134,7 @@ public interface Archive extends Closeable {
          * Returns a collection of child entries.
          * @return a collection of child entries.
          */
-        @Nonnull
+        @NotNull
         Collection<? extends Entry> getChildren();
 
         /**
@@ -144,8 +142,8 @@ public interface Archive extends Closeable {
          * @param name name of the child entry
          * @return the entry or {@code null} if does not exist.
          */
-        @CheckForNull
-        Entry getChild(@Nonnull String name);
+        @Nullable
+        Entry getChild(@NotNull String name);
     }
 
 }

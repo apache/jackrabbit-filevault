@@ -16,11 +16,10 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry;
 
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Reports dependency usages.
@@ -31,7 +30,7 @@ public interface DependencyReport {
      * The id of the package this report is created for.
      * @return the package Id
      */
-    @Nonnull
+    @NotNull
     PackageId getId();
 
     /**
@@ -39,14 +38,14 @@ public interface DependencyReport {
      * will not installed if any unresolved dependencies are listed.
      * @return the array of unresolved dependencies.
      */
-    @Nonnull
+    @NotNull
     Dependency[] getUnresolvedDependencies();
 
     /**
      * Returns a list of the installed packages that this package depends on.
      * @return the array of resolved dependencies
      */
-    @Nonnull
+    @NotNull
     PackageId[] getResolvedDependencies();
 
 }

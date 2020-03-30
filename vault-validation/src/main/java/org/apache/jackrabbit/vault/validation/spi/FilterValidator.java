@@ -18,10 +18,9 @@ package org.apache.jackrabbit.vault.validation.spi;
 
 import java.util.Collection;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -36,5 +35,5 @@ public interface FilterValidator extends Validator {
      * @param filter the deserialized filter
      * @return validation messages or {@code null}
      */
-    @CheckForNull Collection<ValidationMessage> validate(@Nonnull WorkspaceFilter filter);
+    @Nullable Collection<ValidationMessage> validate(@NotNull WorkspaceFilter filter);
 }

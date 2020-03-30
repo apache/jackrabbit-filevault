@@ -31,9 +31,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.Binary;
 import javax.jcr.NamespaceException;
 import javax.jcr.Node;
@@ -78,6 +75,8 @@ import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,12 +121,12 @@ public class JcrPackageImpl implements JcrPackage {
     @Nullable
     private JcrPackageDefinitionImpl def;
 
-    public JcrPackageImpl(@Nonnull JcrPackageRegistry mgr, @Nullable Node node) throws RepositoryException {
+    public JcrPackageImpl(@NotNull JcrPackageRegistry mgr, @Nullable Node node) throws RepositoryException {
         this.mgr = mgr;
         this.node = node;
     }
 
-    public JcrPackageImpl(@Nonnull JcrPackageRegistry mgr, @Nullable Node node, @Nullable ZipVaultPackage pack) throws RepositoryException {
+    public JcrPackageImpl(@NotNull JcrPackageRegistry mgr, @Nullable Node node, @Nullable ZipVaultPackage pack) throws RepositoryException {
         this.mgr = mgr;
         this.node = node;
         this.pack = pack;
@@ -289,7 +288,7 @@ public class JcrPackageImpl implements JcrPackage {
      * @throws RepositoryException If a repository error occurrs.
      * @throws IOException if an i/o error occurrs.
      */
-    @Nonnull
+    @NotNull
     protected VaultPackage getPackage(boolean forceFileArchive) throws RepositoryException, IOException {
         if (forceFileArchive && pack != null && !(pack.getArchive() instanceof ZipArchive)) {
             pack.close();
@@ -555,9 +554,9 @@ public class JcrPackageImpl implements JcrPackage {
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NotNull
     @Override
-    public PackageId[] extractSubpackages(@Nonnull ImportOptions opts)
+    public PackageId[] extractSubpackages(@NotNull ImportOptions opts)
             throws RepositoryException, PackageException, IOException {
         Set<PackageId> processed = new HashSet<PackageId>();
         extractSubpackages(opts, processed);
@@ -567,7 +566,7 @@ public class JcrPackageImpl implements JcrPackage {
         return ret;
     }
 
-    private void extractSubpackages(@Nonnull ImportOptions opts, @Nonnull Set<PackageId> processed)
+    private void extractSubpackages(@NotNull ImportOptions opts, @NotNull Set<PackageId> processed)
             throws RepositoryException, PackageException, IOException {
         final VaultPackage pack = getPackage();
         final PackageId pId = pack.getId();
@@ -681,7 +680,7 @@ public class JcrPackageImpl implements JcrPackage {
         }
     }
 
-    private void findSubPackageEntries(@Nonnull List<Archive.Entry> entries, @Nonnull Archive.Entry folder) {
+    private void findSubPackageEntries(@NotNull List<Archive.Entry> entries, @NotNull Archive.Entry folder) {
         for (Archive.Entry e: folder.getChildren()) {
             final String name = e.getName();
             if (e.isDirectory()) {
@@ -859,8 +858,8 @@ public class JcrPackageImpl implements JcrPackage {
      * @throws PackageException if an error occurrs.
      * @throws IOException if an error occurrs.
      */
-    @CheckForNull
-    private JcrPackage snapshot(@Nonnull ExportOptions opts, boolean replace, @Nullable AccessControlHandling acHandling)
+    @Nullable
+    private JcrPackage snapshot(@NotNull ExportOptions opts, boolean replace, @Nullable AccessControlHandling acHandling)
             throws RepositoryException, PackageException, IOException {
         if (node == null) {
             return null;
@@ -918,7 +917,7 @@ public class JcrPackageImpl implements JcrPackage {
      * @return the package node
      * @throws RepositoryException if an error occurs
      */
-    @CheckForNull
+    @Nullable
     private Node getSnapshotNode() throws RepositoryException {
         if (node == null) {
             return null;
@@ -1072,7 +1071,7 @@ public class JcrPackageImpl implements JcrPackage {
      * @return the jcr:content node
      * @throws RepositoryException if an error occurrs
      */
-    @CheckForNull
+    @Nullable
     private Node getContent() throws RepositoryException {
         return node == null ? null : node.getNode(JcrConstants.JCR_CONTENT);
     }
@@ -1080,7 +1079,7 @@ public class JcrPackageImpl implements JcrPackage {
     /**
      * {@inheritDoc}
      */
-    @CheckForNull
+    @Nullable
     public Property getData() throws RepositoryException {
         Node content = getContent();
         return content == null ? null : content.getProperty(JcrConstants.JCR_DATA);
@@ -1089,7 +1088,7 @@ public class JcrPackageImpl implements JcrPackage {
     /**
      * {@inheritDoc}
      */
-    @CheckForNull
+    @Nullable
     public Node getDefNode() throws RepositoryException {
         Node content = getContent();
         return content != null && content.hasNode(NN_VLT_DEFINITION)

@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nonnull;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -28,6 +27,7 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlan;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class ExecutionPlanImpl implements ExecutionPlan {
         return tasks;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getId() {
         return id;
@@ -117,7 +117,7 @@ public class ExecutionPlanImpl implements ExecutionPlan {
         return false;
     }
 
-    @Nonnull
+    @NotNull
     public ExecutionPlan execute() throws IOException, PackageException {
         if (isExecuted()) {
             log.warn("executing plan that was already executed.");

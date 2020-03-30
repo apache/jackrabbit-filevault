@@ -29,8 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -62,6 +60,8 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
 
@@ -189,9 +189,9 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NotNull
     @Override
-    public PackageId[] extract(@Nonnull Archive archive, @Nonnull ImportOptions options, boolean replace)
+    public PackageId[] extract(@NotNull Archive archive, @NotNull ImportOptions options, boolean replace)
             throws RepositoryException, PackageException, IOException {
 
         SubPackageFilterArchive spfArchive = null;

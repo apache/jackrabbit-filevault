@@ -14,11 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.validation.spi.util.classloaderurl;
 
-/**
- * The FileVault validation framework SPI. Provides classes/interfaces to implement validators on FileVault packages.
- */
-@Version("1.2.0")
-package org.apache.jackrabbit.vault.validation.spi;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-import org.osgi.annotation.versioning.Version;
+public class URLFactory {
+    public static final String TCCL_PROTOCOL_PREFIX = "tccl:";
+    
+    private URLFactory() {
+        
+    }
+
+    public static URL createURL(String spec) throws MalformedURLException {
+        final URL url;
+        // which URLHandler to take
+        if (spec.startsWith(TCCL_PROTOCOL_PREFIX)) {
+            // use custom UrlStreamHandler
+            url = new URL(null, spec, new ThreadContextClassLoaderURLStreamHandler());
+        } else {
+            // use default UrlStreamHandler
+            url = new URL(spec);
+        }
+        return url;
+    }
+}

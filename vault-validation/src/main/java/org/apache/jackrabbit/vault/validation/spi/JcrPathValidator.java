@@ -28,6 +28,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * Validator interface for validating file paths for files and folders
  * below jcr_root.
  * Called after {@link GenericJcrDataValidator}.
+ * In contrast to {@link NodePathValidator} only called once per file and folder (even if those are covering multiple node paths).
  */
 @ProviderType
 public interface JcrPathValidator extends Validator {

@@ -24,7 +24,7 @@ import java.nio.file.Path;
 public class ValidatorException extends RuntimeException {
 
     private ValidatorException(String id, String messageSuffix, Throwable cause) {
-        super("Exception in validator '" + id + "'" + messageSuffix, cause);
+        super("Exception in validator '" + id + "'" + messageSuffix + ": " + cause.getMessage(), cause);
     }
 
     public ValidatorException(String id, Throwable cause) {

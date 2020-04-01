@@ -26,7 +26,7 @@ import org.osgi.annotation.versioning.ProviderType;
 /**
  * Validator interface for validating node paths.
  * For validators interested in the actual properties use either {@link DocumentViewXmlValidator} or {@link GenericJcrDataValidator}.
- * 
+ * In contrast to {@link JcrPathValidator} might be called multiple times per file in case it covers multiple nodes.
  */
 @ProviderType
 public interface NodePathValidator extends Validator {

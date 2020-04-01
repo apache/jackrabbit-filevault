@@ -14,11 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.validation.spi.util.classloaderurl;
 
-/**
- * The FileVault validation framework SPI. Provides classes/interfaces to implement validators on FileVault packages.
- */
-@Version("1.2.0")
-package org.apache.jackrabbit.vault.validation.spi;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 
-import org.osgi.annotation.versioning.Version;
+public class ThreadContextClassLoaderURLStreamHandler extends URLStreamHandler {
+
+    @Override
+    protected URLConnection openConnection(URL url) throws IOException {
+        return new ClassLoaderUrlConnection(Thread.currentThread().getContextClassLoader(), url);
+    }
+
+}

@@ -69,6 +69,7 @@ public abstract class AbstractApplication {
     private Option optLogLevel;
     private Option optVersion;
     private Option optHelp;
+    private Option optInsecureHttps;
 
     public String getVersion() {
         return getPomProperties().getVersion();
@@ -198,6 +199,17 @@ public abstract class AbstractApplication {
                         )
                         .create();
 
+        optInsecureHttps =
+                obuilder
+                        .withLongName("insecure")
+                        .withDescription("allow expired ssl certs for https")
+                        .withArgument(abuilder
+                                .withName("command")
+                                .withMaximum(1)
+                                .create()
+                        )
+                        .create();
+
         gbuilder
                 .withName("Global options:")
                 //.withOption(optPropertyFile)
@@ -206,6 +218,7 @@ public abstract class AbstractApplication {
                 .withOption(optVersion)
                 .withOption(optLogLevel)
                 .withOption(optHelp)
+                .withOption(optInsecureHttps)
                 .withMinimum(0);
         /*
         if (getConsole() != null) {

@@ -22,13 +22,20 @@ import java.util.Set;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 
+import org.osgi.annotation.versioning.ConsumerType;
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * {@code RepositoryProvider}...
  */
+@ProviderType
 public interface RepositoryFactory {
 
-    public Set<String> getSupportedSchemes();
+    Set<String> getSupportedSchemes();
 
-    public Repository createRepository(RepositoryAddress address)
+    Repository createRepository(RepositoryAddress address)
+            throws RepositoryException;
+
+    Repository createRepository(RepositoryAddress address, boolean allowInsecureHttps)
             throws RepositoryException;
 }

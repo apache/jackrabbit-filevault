@@ -31,6 +31,7 @@ import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.RepositoryFactory;
+import org.osgi.annotation.versioning.ConsumerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,9 +47,14 @@ public class RepositoryProvider {
 
     public Repository getRepository(RepositoryAddress address)
             throws RepositoryException {
+        return this.getRepository(address, false);
+    }
+
+    public Repository getRepository(RepositoryAddress address, boolean allowInsecureHttps)
+            throws RepositoryException {
         Repository rep = repos.get(address);
         if (rep == null) {
-            rep = createRepository(address);
+            rep = createRepository(address, allowInsecureHttps);
             repos.put(address, rep);
         }
         return rep;
@@ -56,13 +62,18 @@ public class RepositoryProvider {
 
     private Repository createRepository(RepositoryAddress address)
             throws RepositoryException {
+        return this.createRepository(address, false);
+    }
+
+    private Repository createRepository(RepositoryAddress address, boolean allowInsecureHttps)
+            throws RepositoryException {
         ServiceLoader<RepositoryFactory> loader = ServiceLoader.load(RepositoryFactory.class);
         Iterator<RepositoryFactory> iter = loader.iterator();
         Set<String> supported = new HashSet<String>();
         while (iter.hasNext()) {
             RepositoryFactory fac = iter.next();
             supported.addAll(fac.getSupportedSchemes());
-            Repository rep = fac.createRepository(address);
+            Repository rep = fac.createRepository(address, allowInsecureHttps);
             if (rep != null) {
                 // wrap JCR logger
                 if (Boolean.getBoolean("jcrlog.sysout") || System.getProperty("jcrlog.file") != null) {

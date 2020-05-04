@@ -87,6 +87,8 @@ public class VltContext {
 
     private PathFilter globalIgnored;
 
+    private boolean allowInsecureHttps = false;
+
     public VltContext(File cwd, File localFile,
             RepositoryProvider repProvider,
             CredentialsStore credsProvider)
@@ -244,7 +246,7 @@ public class VltContext {
                     filter.setImportMode(ImportMode.REPLACE);
                 }
 
-                Repository rep = repProvider.getRepository(mountpoint);
+                Repository rep = repProvider.getRepository(mountpoint, isAllowInsecureHttps());
                 Credentials creds = credsProvider.getCredentials(mountpoint);
                 fs = Mounter.mount(config, filter, rep, creds, mountpoint, fsRoot);
                 // hack to store credentials
@@ -422,4 +424,11 @@ public class VltContext {
         this.quiet = quiet;
     }
 
+    public boolean isAllowInsecureHttps() {
+        return allowInsecureHttps;
+    }
+
+    public void setAllowInsecureHttps(boolean allowInsecureHttps) {
+        this.allowInsecureHttps = allowInsecureHttps;
+    }
 }

@@ -35,7 +35,7 @@ import org.apache.jackrabbit.util.Text;
  *     packageIdFilter := packageNameFilter | groupNameFilter ":" packageNameFilter;
  *     groupNameFilter := "*" | groupName;
  *     packageNameFilter := "*" | packageName;
- *     option := "install" | "extract" | "add" | "ignore";
+ *     option := "install" | "extract" | "add" | "ignore" | "force_install" | "force_extract";
  * </pre>
  *
  *  Note that 'ignore' is currently not really supported as sub packages are part of the normal package content and
@@ -43,7 +43,7 @@ import org.apache.jackrabbit.util.Text;
  *  content, e.g. in a META-INF/vault/subpackages/ folder (see <a href="https://issues.apache.org/jira/browse/JCRVLT-33">JCRVLT-33</a>).
  *  
  *  <p>
- *  The sub package handling is being specified in the package properties xml within property {@link PackageProperties#NAME_SUB_PACKAGE_HANDLING}.
+ *  The sub package handling is being specified in the package properties xml within property {@link PackageProperties#NAME_SUB_PACKAGE_HANDLING} and is parsed via {@link SubPackageHandling#fromString(String)}.
  *  </p>
  *  @see PackageProperties
  */

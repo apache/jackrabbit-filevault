@@ -17,17 +17,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
     <modelVersion>4.0.0</modelVersion>
     <!-- ====================================================================== -->
-    <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
+    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>21</version>
+        <version>23</version>
         <relativePath />
     </parent>
 
     <!-- ====================================================================== -->
-    <!-- P R O J E C T D E S C R I P T I O N -->
+    <!-- P R O J E C T  D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <groupId>org.apache.jackrabbit.vault</groupId>
     <artifactId>parent</artifactId>
@@ -54,10 +54,11 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <test.vm.options>-Doak=$test.oak}</test.vm.options>
         <argLine>${test.vm.options}</argLine>
         <java.target.version>1.8</java.target.version>
+        <bnd.version>5.0.1</bnd.version>
     </properties>
 
     <!-- ====================================================================== -->
-    <!-- S C M D E F I N I T I O N -->
+    <!-- S C M  D E F I N I T I O N -->
     <!-- ====================================================================== -->
     <scm>
         <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/parent</connection>
@@ -96,49 +97,13 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     </ciManagement>
 
     <!-- ====================================================================== -->
-    <!-- B U I L D D E F I N I T I O N -->
+    <!-- B U I L D  D E F I N I T I O N -->
     <!-- ====================================================================== -->
     <build>
-        <plugins>
-            <!-- compiler stuff -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>${java.target.version}</source>
-                    <target>${java.target.version}</target>
-                    <debug>true</debug>
-                    <showDeprecation>false</showDeprecation>
-                    <showWarnings>true</showWarnings>
-                    <optimize>false</optimize>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M2</version>
-                <executions>
-                    <execution>
-                        <id>enforce-java</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireJavaVersion>
-                                    <version>${java.target.version}</version>
-                                </requireJavaVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
         <pluginManagement>
             <plugins>
                 <!-- ====================================================================== -->
-                <!-- S L I N G P L U G I N -->
+                <!-- S L I N G  P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.sling</groupId>
@@ -146,40 +111,46 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                     <version>2.4.2</version>
                     <configuration>
                         <slingUrl>http://localhost:4502</slingUrl>
-                        <slingUrlSuffix>/libs/system/install</slingUrlSuffix>
-                        <usePut>true</usePut>
+                        <slingUrlSuffix>/system/console</slingUrlSuffix>
+                        <deploymentMethod>WebConsole</deploymentMethod>
                     </configuration>
                 </plugin>
-                <!-- ====================================================================== -->
-                <!-- B U N D L E P L U G I N -->
-                <!-- ====================================================================== -->
                 <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>4.2.1</version>
-                    <inherited>true</inherited>
+                    <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>bnd-maven-plugin</artifactId>
+                    <version>${bnd.version}</version>
+                    <executions>
+                        <execution>
+                            <id>generate-osgi-metadata</id>
+                            <goals>
+                                <goal>bnd-process</goal>
+                            </goals>
+                            <configuration>
+                                <bnd><![CDATA[
+# we cannot let bnd-maven-plugin generate it automatically, as Maven applies some inheritance logic
+Bundle-DocURL: https://jackrabbit.apache.org/filevault/
+Bundle-Category: jackrabbit
+# https://github.com/bndtools/bnd/tree/master/maven/bnd-maven-plugin#reproducible-builds
+-noextraheaders: true
+-snapshot: SNAPSHOT
+# export all versioned packages except for conditional ones (https://github.com/bndtools/bnd/issues/3721#issuecomment-579026778)
+-exportcontents: ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
+                                ]]></bnd>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>bnd-baseline-maven-plugin</artifactId>
+                    <version>${bnd.version}</version>
                     <configuration>
-                        <outputDirectory>${basedir}/target/classes</outputDirectory>
-                        <obrRepository>NONE</obrRepository>
-                        <instructions>
-                            <Bundle-Category>jackrabbit</Bundle-Category>
-                            <Bundle-DocURL>http://jackrabbit.apache.org/filevault/</Bundle-DocURL>
-                            <Bundle-Vendor>The Apache Software Foundation</Bundle-Vendor>
-                            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                            <_provider-policy>[$(version;===;$(@)),$(version;=+;$(@)))</_provider-policy>
-                            <_consumer-policy>[$(version;===;$(@)),$(version;+;$(@)))</_consumer-policy>
-                            <_removeheaders>
-                                ReleaseRepository-Id,
-                                ReleaseRepository-Name,
-                                ReleaseRepository-URL,
-                                SnapshotRepository-Id,
-                                SnapshotRepository-Name,
-                                SnapshotRepository-URL,
-                                Include-Resource,
-                                Private-Package
-                            </_removeheaders>
-                        </instructions>
-                        <exportScr>true</exportScr>
+                        <includeDistributionManagement>false</includeDistributionManagement>
+                        <fullReport>true</fullReport>
+                        <diffignores>
+                            <!-- ignore Bundle-Version header for baseline, i.e. no enforcement of specific bundle versions -->
+                            <diffignore>Bundle-Version</diffignore>
+                        </diffignores>
                     </configuration>
                     <executions>
                         <execution>
@@ -187,25 +158,11 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                             <goals>
                                 <goal>baseline</goal>
                             </goals>
-                            <configuration>
-                                <failOnError>true</failOnError>
-                            </configuration>
-                        </execution>
-                        <!-- Configure extra execution of 'manifest' in process-classes phase to make sure SCR metadata is generated before
-                            unit test runs -->
-                        <execution>
-                            <id>scr-metadata</id>
-                            <goals>
-                                <goal>manifest</goal>
-                            </goals>
-                            <configuration>
-                                <supportIncrementalBuild>true</supportIncrementalBuild>
-                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- S U R E F I R E P L U G I N -->
+                <!-- S U R E F I R E  P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -222,7 +179,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- R E L E A S E P L U G I N -->
+                <!-- R E L E A S E  P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -235,19 +192,19 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                         <dependency>
                             <groupId>org.apache.maven.release</groupId>
                             <artifactId>maven-release-oddeven-policy</artifactId>
-                            <version>2.5.3</version>
+                            <version>3.0.0-M1</version>
                         </dependency>
                     </dependencies>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- R A T P L U G I N -->
+                <!-- R A T  P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.rat</groupId>
                     <artifactId>apache-rat-plugin</artifactId>
-                    <version>0.13</version>
                     <configuration>
                         <excludes>
+                            <excludes>.ratignore</excludes>
                             <exclude>release.properties</exclude>
                             <exclude>.git/**</exclude>
                             <exclude>.idea/**</exclude>
@@ -257,11 +214,10 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                             <exclude>.mvn/**</exclude>
                             <exclude>.no-defender.sh</exclude>
                         </excludes>
-                        <consoleOutput>true</consoleOutput>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- S I T E P L U G I N -->
+                <!-- S I T E  P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -296,6 +252,46 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+            </plugin>
+            <!-- compiler stuff -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.target.version}</source>
+                    <target>${java.target.version}</target>
+                    <debug>true</debug>
+                    <showDeprecation>false</showDeprecation>
+                    <showWarnings>true</showWarnings>
+                    <optimize>false</optimize>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-java</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>${java.target.version}</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        
     </build>
 
     <!-- ====================================================================== -->
@@ -313,7 +309,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     </reporting>
 
     <!-- ====================================================================== -->
-    <!-- D E P E N D E N C Y M A N A G E M E N T -->
+    <!-- D E P E N D E N C Y  M A N A G E M E N T -->
     <!-- ====================================================================== -->
     <dependencyManagement>
         <dependencies>
@@ -408,11 +404,42 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
             <!-- other -->
 
+            <!-- OSGi -->
+            <!-- OSGi framework 1.8, Core R6 (https://osgi.org/javadoc/r6/core/org/osgi/framework/package-summary.html) -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.framework</artifactId>
+                <version>1.8.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- Configuration Admin 1.6, Compendium R7 (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/cm/package-frame.html) -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.service.cm</artifactId>
+                <version>1.6.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- Service Component 1.4, Compendium R7 (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/component/package-frame.html) -->
+            <!-- and component property types (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/component/propertytypes/package-frame.html) -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.service.component</artifactId>
+                <version>1.4.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- Event Admin 1.3.1, Compendium R6 (https://osgi.org/javadoc/r6/cmpn/org/osgi/service/event/package-summary.html) -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.service.event</artifactId>
+                <version>1.3.1</version>
+                <scope>provided</scope>
+            </dependency>
+
             <!-- OSGi Annotations: @Version -->
             <dependency>
                 <groupId>org.osgi</groupId>
-                <artifactId>osgi.annotation</artifactId>
-                <version>6.0.1</version>
+                <artifactId>org.osgi.annotation.versioning</artifactId>
+                <version>1.1.0</version>
                 <scope>provided</scope>
             </dependency>
             <!-- Declarative Service Annotations -->
@@ -480,7 +507,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     <profiles>
         <profile>
             <!-- ====================================================================== -->
-            <!-- R A T P L U G I N -->
+            <!-- R A T  P L U G I N -->
             <!-- ====================================================================== -->
             <id>rat-check</id>
             <activation>
@@ -497,6 +524,9 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                                 <goals>
                                     <goal>check</goal>
                                 </goals>
+                                <configuration>
+                                    <consoleOutput>true</consoleOutput>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

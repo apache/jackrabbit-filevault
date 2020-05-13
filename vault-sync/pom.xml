@@ -52,9 +52,22 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>sling-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-baseline-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <slingUrlSuffix>/libs/crx/vault/install/</slingUrlSuffix>
-                    <slingUrl>http://localhost:4502/crx/repository/crx.default</slingUrl>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
                 </configuration>
             </plugin>
             <plugin>
@@ -118,7 +131,7 @@
         <!-- OSGi Annotations: @Version -->
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.annotation</artifactId>
+            <artifactId>org.osgi.annotation.versioning</artifactId>
         </dependency>
         <!-- Declarative Service Annotations -->
         <dependency>

@@ -31,12 +31,9 @@
     <!-- ====================================================================== -->
     <artifactId>org.apache.jackrabbit.vault</artifactId>
     <version>3.4.5-SNAPSHOT</version>
-    <packaging>bundle</packaging>
 
     <name>Apache Jackrabbit FileVault Core Bundle</name>
-    <description>
-        Builds an OSGi bundle for the file vault parts
-    </description>
+    <description>The core classes of Apache Jackrabbit FileVault</description>
 
     <!-- ====================================================================== -->
     <!-- S C M  D E F I N I T I O N                                             -->
@@ -53,44 +50,25 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.sling</groupId>
-                <artifactId>sling-maven-plugin</artifactId>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-baseline-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <slingUrlSuffix>/libs/system/install/</slingUrlSuffix>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-Build>${buildNumber}</Bundle-Build>
-                        <!-- remove the unused dependencies of shaded com.ctc.wstx.shaded.msv_core.driver.textui.Driver in Woodstox Core (JCRVLT-414) -->
-                        <Import-Package>
-                            org.apache.jackrabbit.*;version=!,
-                            org.apache.sling.jcr.api;resolution:=optional,
-                            javax.jcr,
-                            javax.jcr.lock,
-                            javax.jcr.nodetype,
-                            javax.jcr.observation,
-                            javax.jcr.query,
-                            javax.jcr.query.qom,
-                            javax.jcr.retention,
-                            javax.jcr.security,
-                            javax.jcr.util,
-                            javax.jcr.version,
-                            *
-                        </Import-Package>
-                        <!-- to load hook classes through this bundle's classloader -->
-                        <DynamicImport-Package>*</DynamicImport-Package>
-                        <Embed-Dependency>woodstox-core,stax2-api</Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
-                        <Include-Resource>
-                            @txw2-[0-9.]*.jar!/com/sun/xml/txw2/output/(IndentingXMLStreamWriter|DelegatingXMLStreamWriter).*
-                        </Include-Resource>
-                    </instructions>
-                </configuration>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>sling-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -98,26 +76,6 @@
                 <configuration>
                     <excludePackageNames>org.apache.jackrabbit.vault.util.xml.*</excludePackageNames>
                 </configuration>
-            </plugin>
-            <!-- ====================================================================== -->
-            <!-- R A T   P L U G I N                                                    -->
-            <!-- ====================================================================== -->
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <version>0.12</version>
-                <executions>
-                    <execution>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <basedir>${project.basedir}</basedir>
-                            <excludesFile>${project.basedir}/.ratignore</excludesFile>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -157,11 +115,10 @@
         
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>4.3.0</version>
+            <artifactId>org.osgi.framework</artifactId>
             <scope>provided</scope>
         </dependency>
-    
+
         <!-- StaX implementation for indentation -->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
@@ -201,7 +158,7 @@
         <!-- OSGi Annotations: @Version -->
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.annotation</artifactId>
+            <artifactId>org.osgi.annotation.versioning</artifactId>
         </dependency>
         <!-- Declarative Service Annotations -->
         <dependency>

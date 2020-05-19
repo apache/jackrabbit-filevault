@@ -12,6 +12,13 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+Import-Package: org.apache.jackrabbit.util;version="${range;[==,=+);2.4.0}",\
+                org.apache.jackrabbit.commons.iterator;version="${range;[==,=+);2.4.0}",\
+                org.apache.jackrabbit.api.security;version="${range;[==,=+);2.3.0}",\
+                org.apache.jackrabbit.webdav;version="${range;[==,=+);1.0.1}",\
+                org.apache.jackrabbit.webdav.client.methods;version="${range;[==,=+);1.1.0}",\
+                org.apache.jackrabbit.webdav.version.report;version="${range;[==,+);1.0.0}",\
+                *
 -includeresource: @vault-davex-[0-9.]*(-SNAPSHOT).jar,\
                   @jackrabbit-spi2dav-[0-9.]*.jar,\
                   @jackrabbit-jcr-client-[0-9.]*.jar,\

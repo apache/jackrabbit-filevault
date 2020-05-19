@@ -87,9 +87,41 @@
                     <excludesFile>${project.basedir}/.ratignore</excludesFile>
                 </configuration>
             </plugin>
+            
+            <!-- copy bundles for resolving into local target due to https://github.com/bndtools/bnd/issues/4077 -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-bundles-into-local-target</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/bundles</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>../target-osgi-environment/target/bundles</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-resolver-maven-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 
+    <!-- ====================================================================== -->
+    <!-- D E P E N D E N C Y  M A N A G E M E N T                               -->
+    <!-- ====================================================================== -->
+    <dependencyManagement>
+    </dependencyManagement>
     <!-- ====================================================================== -->
     <!-- D E P E N D E N C I E S                                                -->
     <!-- ====================================================================== -->

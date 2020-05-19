@@ -161,6 +161,33 @@ Bundle-Category: jackrabbit
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>bnd-resolver-maven-plugin</artifactId>
+                    <version>${bnd.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>resolve</goal>
+                            </goals>
+                            <phase>verify</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <!-- does not work due to https://github.com/bndtools/bnd/issues/4077 -->
+                        <bndruns>
+                            <bndrun>aem6.3.bndrun</bndrun>
+                        </bndruns>
+                        <bundles>
+                            <includes>
+                                <include>target/bundles/*.jar</include>
+                            </includes>
+                        </bundles>
+                        <useMavenDependencies>true</useMavenDependencies>
+                        <failOnChanges>false</failOnChanges>
+                        <writeOnChanges>false</writeOnChanges>
+                    </configuration>
+                </plugin>
                 <!-- ====================================================================== -->
                 <!-- S U R E F I R E  P L U G I N -->
                 <!-- ====================================================================== -->

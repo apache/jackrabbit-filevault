@@ -184,7 +184,7 @@ Bundle-Category: jackrabbit
                             </includes>
                         </bundles>
                         <useMavenDependencies>true</useMavenDependencies>
-                        <failOnChanges>false</failOnChanges>
+                        <failOnChanges>false</failOnChanges><!-- reuse for multiple bundles which all require different minimum container -->
                         <writeOnChanges>false</writeOnChanges>
                     </configuration>
                 </plugin>

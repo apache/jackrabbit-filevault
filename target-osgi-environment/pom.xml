@@ -191,6 +191,16 @@
                                     <artifactId>jackrabbit-spi</artifactId>
                                     <version>${jackrabbit.version}</version>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.sling</groupId>
+                                    <artifactId>org.apache.sling.jcr.base</artifactId>
+                                    <version>3.0.0</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.sling</groupId>
+                                    <artifactId>org.apache.sling.jcr.oak.server</artifactId>
+                                    <version>1.2.0</version> <!--  uses Oak 1.6.1 -->
+                                </artifactItem>
                             </artifactItems>
                             <outputDirectory>${project.build.directory}/bundles</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>

@@ -36,7 +36,6 @@
     <description>Provides Classes for diff and diff3.
     </description>
     <version>3.4.5-SNAPSHOT</version>
-    <packaging>bundle</packaging>
 
     <!-- ====================================================================== -->
     <!-- D E P E N D E N C I E S                                                -->
@@ -50,7 +49,6 @@
         <dependency>
             <groupId>commons-io</groupId>
               <artifactId>commons-io</artifactId>
-              <version>1.3.1</version>
               <scope>test</scope>
         </dependency>
         <dependency>
@@ -75,36 +73,6 @@
     <!-- ====================================================================== -->
     <build>
         <plugins>
-            <!-- bundle stuff -->
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-Category>jackrabbit-commons</Bundle-Category>
-                        <Export-Package>
-                            org.apache.jackrabbit.vault.util.diff.*;version=1.0.1
-                        </Export-Package>
-                    </instructions>
-                </configuration>
-            </plugin>
-            <!-- tests -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skip>false</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.0-beta-5</version>
-                <configuration>
-                    <scmCommentPrefix>#4208 - [maven-release] (RTC ok) :</scmCommentPrefix>
-                </configuration>
-            </plugin>
             <!-- exclude test resources from rat-check -->
             <plugin>
                 <groupId>org.apache.rat</groupId>
@@ -118,15 +86,4 @@
         </plugins>
     </build>
 
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <source>1.4</source>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
 </project>

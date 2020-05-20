@@ -15,18 +15,8 @@
 
 Import-Package: org.apache.jackrabbit.*;version=!,\
                             org.apache.sling.jcr.api;resolution:=optional,\
-                            javax.jcr,\
-                            javax.jcr.lock,\
-                            javax.jcr.nodetype,\
-                            javax.jcr.observation,\
-                            javax.jcr.query,\
-                            javax.jcr.query.qom,\
-                            javax.jcr.retention,\
-                            javax.jcr.security,\
-                            javax.jcr.util,\
-                            javax.jcr.version,\
                             *
 DynamicImport-Package: *
 -includeresource: @txw2-[0-9.]*.jar!/com/sun/xml/txw2/output/(IndentingXMLStreamWriter|DelegatingXMLStreamWriter).*,\
-                  @woodstox-core-[0-9.]*.jar,\
-                  @stax2-api-[0-9.]*.jar
+                  @woodstox-core-[0-9.]*.jar!/!module-info.class,\
+                  @stax2-api-[0-9.]*.jar!/!module-info.class,

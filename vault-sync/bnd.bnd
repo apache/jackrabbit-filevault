@@ -12,11 +12,4 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
-Import-Package: org.apache.jackrabbit.*;version=!,\
-                            org.apache.sling.jcr.api;resolution:=optional,\
-                            *
-DynamicImport-Package: *
--includeresource: @txw2-[0-9.]*.jar!/com/sun/xml/txw2/output/(IndentingXMLStreamWriter|DelegatingXMLStreamWriter).*,\
-                  @woodstox-core-[0-9.]*.jar!/!module-info.class,\
-                  @stax2-api-[0-9.]*.jar!/!module-info.class,
+-includeresource: @commons-jci-fam-[0-9.]*.jar

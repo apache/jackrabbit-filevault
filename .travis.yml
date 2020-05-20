@@ -23,6 +23,8 @@ os:
   - linux
 #  - osx
   - windows
+git:
+  symlinks: true
 env:
   global:
     # This is a convenience variable for shortening download commands

@@ -25,14 +25,20 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.Dependency;
+import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
+import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.impl.AdminPermissionChecker;
+import org.apache.jackrabbit.vault.packaging.impl.InstallHookProcessorImpl;
+import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
@@ -58,6 +64,17 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
      * default root path prefix for packages
      */
     public static final String DEFAULT_PACKAGE_ROOT_PATH_PREFIX = DEFAULT_PACKAGE_ROOT_PATH + "/";
+
+    protected final String[] additionalAuthorizableIdsAllowedToExecuteHooks;
+
+    protected final String[] additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot;
+
+    public AbstractPackageRegistry(String[] additionalAuthorizableIdsAllowedToExecuteHooks,
+            String[] additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot) {
+        super();
+        this.additionalAuthorizableIdsAllowedToExecuteHooks = additionalAuthorizableIdsAllowedToExecuteHooks;
+        this.additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot = additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot;
+    }
 
     /**
      * {@inheritDoc}
@@ -204,8 +221,15 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
         return b.toString();
     }
 
+    public String[] getAdditionalAuthorizableIdsAllowedToExecuteHooks() {
+        return additionalAuthorizableIdsAllowedToExecuteHooks;
+    }
 
-     /**
+    public String[] getAdditionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot() {
+        return additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot;
+    }
+
+    /**
      * Creates a random package id for packages that lack one.
      * 
      * @return a random package id.

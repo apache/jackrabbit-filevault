@@ -82,7 +82,7 @@ public class TestExecutionPlan extends IntegrationTestBase {
     public void setUp() throws Exception {
         super.setUp();
 
-        registry = new JcrPackageRegistry(admin);
+        registry = new JcrPackageRegistry(admin, null, null);
     }
 
     /**

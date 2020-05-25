@@ -32,6 +32,7 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
+import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,7 +55,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
     public void setUp() throws Exception {
         super.setUp();
 
-        registry = new JcrPackageRegistry(admin);
+        registry = new JcrPackageRegistry(admin, null, null);
     }
 
     /**
@@ -203,7 +204,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
         registry.register(getStream(TEST_PACKAGE_A_10), false);
         registry.register(getStream(TEST_PACKAGE_B_10), false);
         assertEquals("packages contains 2 elements", 2, registry.packages().size());
-        JcrPackageRegistry multiReg = new JcrPackageRegistry(admin, "/var/packages" , "/etc/packages");
+        AbstractPackageRegistry multiReg = new JcrPackageRegistry(admin, null, null, "/var/packages" , "/etc/packages");
         assertEquals("packages contains 2 elements", 2, multiReg.packages().size());
 
         // install 3rd package in /var
@@ -307,7 +308,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
 
     @Test
     public void testAlternativeRoot() throws IOException, PackageException, RepositoryException {
-        JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages" , "/etc/packages");
+        AbstractPackageRegistry reg = new JcrPackageRegistry(admin, null, null, "/var/packages" , "/etc/packages");
         File file = getTempFile("/test-packages/tmp.zip");
         PackageId id = reg.register(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
@@ -322,7 +323,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
         PackageId idB = registry.register(getStream(TEST_PACKAGE_B_10), false);
         assertNodeExists("/etc/packages/my_packages/test_b-1.0.zip");
 
-        JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages", "/etc/packages");
+        AbstractPackageRegistry reg = new JcrPackageRegistry(admin, null, null, "/var/packages", "/etc/packages");
         PackageId id = reg.register(getStream("/test-packages/tmp.zip"), false);
 
         assertNodeExists("/var/packages/my_packages/tmp.zip");
@@ -349,7 +350,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
 
     @Test
     public void testAlternativePackageRootCreatesOnlyOneNode() throws RepositoryException {
-        JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages", "/etc/packages");
+        JcrPackageRegistry reg = new JcrPackageRegistry(admin, null, null, "/var/packages", "/etc/packages");
         Node root = reg.getPrimaryPackageRoot(true);
         assertEquals("root has correct path", "/var/packages", root.getPath());
         List<Node> roots = reg.getPackageRoots();
@@ -359,7 +360,7 @@ public class TestPackageRegistry extends IntegrationTestBase {
     @Test
     public void testAlternativePackageRootReportsBothNodes() throws RepositoryException {
         registry.getPrimaryPackageRoot(true); // create legacy path
-        JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages", "/etc/packages");
+        JcrPackageRegistry reg = new JcrPackageRegistry(admin, null, null, "/var/packages", "/etc/packages");
         reg.getPrimaryPackageRoot(true); // create new path
         List<Node> roots = reg.getPackageRoots();
         assertEquals("Has 2 package root", 2, roots.size());

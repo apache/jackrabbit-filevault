@@ -17,7 +17,10 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -25,6 +28,8 @@ import javax.jcr.Session;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,9 +50,13 @@ public class AdminPermissionChecker {
      * @return whether the passed session is an admin session
      * @throws RepositoryException If an error occurrs.
      */
-    public static boolean hasAdministrativePermissions(Session session) throws RepositoryException {
+    public static boolean hasAdministrativePermissions(@NotNull Session session, String... additionalAdminAuthorizableIds) throws RepositoryException {
         String userId = session.getUserID();
         if (ADMIN_USER.equals(userId) || SYSTEM_USER.equals(userId)) {
+            return true;
+        }
+        List<String> additionalAdminIds = Arrays.asList(Optional.ofNullable(additionalAdminAuthorizableIds).orElse(new String[0]));
+        if (additionalAdminIds.contains(userId)) {
             return true;
         }
         if (!(session instanceof JackrabbitSession)) {
@@ -63,7 +72,11 @@ public class AdminPermissionChecker {
 
         Iterator<Group> groupIterator = authorizable.memberOf();
         while (groupIterator.hasNext()) {
-            if (ADMINISTRATORS_GROUP.equals(groupIterator.next().getID())) {
+            String groupId = groupIterator.next().getID();
+            if (ADMINISTRATORS_GROUP.equals(groupId)) {
+                return true;
+            }
+            if (additionalAdminIds.contains(groupId)) {
                 return true;
             }
         }

@@ -17,12 +17,20 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import static org.apache.jackrabbit.vault.packaging.JcrPackageDefinition.PN_DEPENDENCIES;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -43,31 +51,30 @@ import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
-import org.apache.jackrabbit.vault.fs.io.Importer;
-import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcherImpl;
+import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
+import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.tika.io.IOUtils;
 import org.junit.Assume;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
-
-import static org.apache.jackrabbit.vault.packaging.JcrPackageDefinition.PN_DEPENDENCIES;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import org.junit.rules.ExpectedException;
 
 /**
  * {@code TestPackageInstall}...
  */
 public class TestPackageInstall extends IntegrationTestBase {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     /**
      * Installs a package that contains and checks if everything is correct.
@@ -220,6 +227,90 @@ public class TestPackageInstall extends IntegrationTestBase {
         assertNotNull(pack);
         pack.install(getDefaultOptions());
         assertTrue(admin.propertyExists("/testroot/hook-example"));
+    }
+
+    /**
+     * Installs a package with an install hook and a not allowed user
+     */
+    @Test
+    public void testHookWithNotAllowedNonAdminUser() throws RepositoryException, IOException, PackageException {
+        if (admin.nodeExists("/testroot")) {
+            admin.getNode("/testroot").remove();
+        }
+        admin.getRootNode().addNode("testroot", "nt:unstructured").addNode("testnode", "nt:unstructured");
+        admin.save();
+        
+        // Create test user
+        UserManager userManager = ((JackrabbitSession)admin).getUserManager();
+        String userId = "user1";
+        String userPwd = "pwd1";
+        User user1 = userManager.createUser(userId, userPwd);
+        Principal principal1 = user1.getPrincipal();
+        
+        // Setup test user ACLs that there are no restrictions
+        AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, true);
+        admin.save();
+        
+        Session userSession = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
+        try {
+            packMgr = new JcrPackageManagerImpl(userSession, new String[0], null, null);
+    
+            PackageEventDispatcherImpl dispatcher = new PackageEventDispatcherImpl();
+            dispatcher.bindPackageEventListener(new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));
+            packMgr.setDispatcher(dispatcher);
+            
+            JcrPackage pack = packMgr.upload(getStream("/test-packages/test_hook.zip"), false);
+            assertNotNull(pack);
+            thrown.expect(PackageException.class);
+            thrown.expectMessage("Package extraction requires admin session as it has a hook");
+            packMgr.getInternalRegistry().installPackage(userSession, new JcrRegisteredPackage(pack), getDefaultOptions(), true);
+            
+        
+        } finally {
+            userSession.logout();
+        }
+    }
+
+    /**
+     * Installs a package with an install hook and an explicitly allowed user
+     */
+    @Test
+    public void testHookWithAllowedNonAdminUser() throws RepositoryException, IOException, PackageException {
+        if (admin.nodeExists("/testroot")) {
+            admin.getNode("/testroot").remove();
+        }
+        admin.getRootNode().addNode("testroot", "nt:unstructured").addNode("testnode", "nt:unstructured");
+        admin.save();
+        
+        // Create test user
+        UserManager userManager = ((JackrabbitSession)admin).getUserManager();
+        String userId = "user1";
+        String userPwd = "pwd1";
+        User user1 = userManager.createUser(userId, userPwd);
+        Principal principal1 = user1.getPrincipal();
+        
+        // Setup test user ACLs that there are no restrictions
+        AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, true);
+        admin.save();
+        
+        Session userSession = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
+        try {
+            packMgr = new JcrPackageManagerImpl(userSession, new String[0], new String[] {"user1"}, null);
+    
+            PackageEventDispatcherImpl dispatcher = new PackageEventDispatcherImpl();
+            dispatcher.bindPackageEventListener(new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));
+            packMgr.setDispatcher(dispatcher);
+            
+            JcrPackage pack = packMgr.upload(getStream("/test-packages/test_hook.zip"), false);
+            assertNotNull(pack);
+            packMgr.getInternalRegistry().installPackage(userSession, new JcrRegisteredPackage(pack), getDefaultOptions(), true);
+            assertTrue(admin.propertyExists("/testroot/hook-example"));
+            
+        } finally {
+            userSession.logout();
+        }
     }
 
     /**
@@ -682,7 +773,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         admin.save();
 
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0]);
+        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0], null, null);
         pack = userPackMgr.open(id);
         ImportOptions opts = getDefaultOptions();
         pack.install(opts);
@@ -725,7 +816,7 @@ public class TestPackageInstall extends IntegrationTestBase {
         admin.save();
 
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0]);
+        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0], null, null);
         pack = userPackMgr.open(id);
         ImportOptions opts = getDefaultOptions();
         pack.extract(opts);

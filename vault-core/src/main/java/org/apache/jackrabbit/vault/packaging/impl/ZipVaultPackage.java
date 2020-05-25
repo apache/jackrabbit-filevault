@@ -38,6 +38,8 @@ import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,10 +147,23 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
     }
 
     /**
+     * Extracts the current package allowing additional users to do that in case the package contains hooks or requires the root user
+     * @param session the session to user
+     * @param opts import options
+     * @param additionalAuthorizableIdsAllowedToExecuteHooks additional user/group ids to allow extraction of packages containing hooks
+     * @param additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot additional user/group ids to allow extraction of packages containing 'requiresRoot' flag
+     * @throws PackageException if an error during packaging occurs
+     * @throws RepositoryException if a repository error during installation occurs.
+     */
+    public void extract(Session session, ImportOptions opts, @Nullable String[] additionalAuthorizableIdsAllowedToExecuteHooks, @Nullable String[] additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot) throws PackageException, RepositoryException {
+        extract(prepareExtract(session, opts, additionalAuthorizableIdsAllowedToExecuteHooks, additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot), null);
+    }
+    
+    /**
      * {@inheritDoc}
      */
     public void extract(Session session, ImportOptions opts) throws RepositoryException, PackageException {
-        extract(prepareExtract(session, opts), null);
+        extract(session, opts, null, null);
     }
 
     /**
@@ -169,7 +184,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws IllegalStateException if the package is not valid.
      * @return installation context
      */
-    protected InstallContextImpl prepareExtract(Session session, ImportOptions opts) throws RepositoryException, PackageException {
+    protected InstallContextImpl prepareExtract(Session session, ImportOptions opts, @Nullable String[] additionalAuthorizableIdsAllowedToExecuteHooks, @Nullable String[] additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot) throws PackageException, RepositoryException {
         if (!isValid()) {
             throw new IllegalStateException("Package not valid.");
         }
@@ -181,12 +196,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
             hooks.registerHooks(archive, opts.getHookClassLoader());
         }
 
-        if (requiresRoot() || hooks.hasHooks()) {
-            if (!AdminPermissionChecker.hasAdministrativePermissions(session)) {
-                log.error("Package extraction requires admin session.");
-                throw new PackageException("Package extraction requires admin session (userid not allowed).");
-            }
-        }
+        checkAllowanceToInstallPackage(session, hooks, additionalAuthorizableIdsAllowedToExecuteHooks, additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot);
 
         Importer importer = new Importer(opts);
         AccessControlHandling ac = getACHandling();
@@ -204,6 +214,19 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
         return new InstallContextImpl(session, "/", this, importer, hooks);
     }
+
+    protected void checkAllowanceToInstallPackage(@NotNull Session session, @NotNull InstallHookProcessor hookProcessor, @Nullable String[] additionalAuthorizableIdsAllowedToExecuteHooks, @Nullable String[] additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot) throws PackageException, RepositoryException {
+       if (requiresRoot()) {
+           if (!AdminPermissionChecker.hasAdministrativePermissions(session, additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot)) {
+               throw new PackageException("Package extraction requires admin session as it has the 'requiresRoot' flag (userid '" + session.getUserID() + "' not allowed).");
+           }
+       }
+       if (hookProcessor.hasHooks()) {
+           if (!AdminPermissionChecker.hasAdministrativePermissions(session, additionalAuthorizableIdsAllowedToExecuteHooks)) {
+               throw new PackageException("Package extraction requires admin session as it has a hook (userid '" + session.getUserID() + "' not allowed).");
+           }
+       }
+   }
 
     /**
      * Same as above but the given subPackages argument receives a list of

@@ -16,8 +16,6 @@
  */
 package org.apache.jackrabbit.vault.packaging.impl;
 
-import java.util.Arrays;
-
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -71,28 +69,34 @@ public class PackagingImpl implements Packaging {
      */
     private final PackageManagerImpl pkgManager = new PackageManagerImpl();
 
-    private String[] packageRoots = new String[0];
+    private Config config;
 
     public PackagingImpl() {
         pkgManager.setDispatcher(eventDispatcher);
     }
 
     @ObjectClassDefinition(
-            name = "Apache Jackrabbit Packaging Service"
+            name = "Apache Jackrabbit FileVault Packaging Service"
     )
     @interface Config {
 
         /**
          * Defines the package roots of the package manager
          */
-        @AttributeDefinition
+        @AttributeDefinition(description = "The locations in the repository which are used by the package manager")
         String[] packageRoots() default {"/etc/packages"};
+        
+        @AttributeDefinition(description = "The authorizable ids which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
+        String[] authorizableIdsAllowedToExecuteHooks();
+        
+        @AttributeDefinition(description = "The authorizable ids which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
+        String[] authorizableIdsAllowedToInstallPackagesRequiringRoot();
     }
 
     @Activate
     private void activate(Config config) {
-        this.packageRoots = config.packageRoots();
-        log.info("Jackrabbit Filevault Packaging initialized with roots {}", Arrays.toString(packageRoots));
+        this.config = config;
+        log.info("Jackrabbit Filevault Packaging initialized with config {}", config.toString());
     }
 
     /**
@@ -106,7 +110,7 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackageManager getPackageManager(Session session) {
-        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, packageRoots);
+        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authorizableIdsAllowedToExecuteHooks(), config.authorizableIdsAllowedToInstallPackagesRequiringRoot());
         mgr.setDispatcher(eventDispatcher);
         mgr.getInternalRegistry().setBaseRegistry(baseRegistry);
         return mgr;

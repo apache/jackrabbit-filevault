@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.jackrabbit.vault.rcp.impl;
+package org.apache.jackrabbit.vault.rcp;
 
 import java.util.Map;
 
@@ -32,5 +32,7 @@ public interface RcpTaskManager {
     Map<String, RcpTask> getTasks();
 
     RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id);
+    
+    boolean removeTask(String taskId);
 
 }

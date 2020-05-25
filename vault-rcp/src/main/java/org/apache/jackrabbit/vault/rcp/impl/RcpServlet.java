@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
+import org.apache.jackrabbit.vault.rcp.RcpTask;
+import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
@@ -126,12 +128,15 @@ public class RcpServlet extends SlingAllMethodsServlet {
         }
         String cmd = data.optString(PARAM_CMD, "");
         RcpTask task;
+        final String id = data.optString(PARAM_ID, null);;
         try {
             // --------------------------------------------------------------------------------------------< create >---
             if ("create".equals(cmd)) {
                 String src = data.optString(PARAM_SRC, "");
+                if (src == null || src.length() == 0) {
+                    throw new IllegalArgumentException("Need src.");
+                }
                 String dst = data.optString(PARAM_DST, "");
-                String id = data.optString(PARAM_ID, null);
                 String srcCreds = data.optString(PARAM_SRC_CREDS, null);
 
                 RepositoryAddress address = new RepositoryAddress(src);
@@ -182,7 +187,6 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
             // ---------------------------------------------------------------------------------------------< start >---
             } else if ("start".equals(cmd)) {
-                String id = data.optString(PARAM_ID, null);
                 if (id == null || id.length() == 0) {
                     throw new IllegalArgumentException("Need task id.");
                 }
@@ -194,7 +198,6 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
             // ----------------------------------------------------------------------------------------------< stop >---
             } else if ("stop".equals(cmd)) {
-                String id = data.optString(PARAM_ID, null);
                 if (id == null || id.length() == 0) {
                     throw new IllegalArgumentException("Need task id.");
                 }
@@ -206,15 +209,12 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
             // --------------------------------------------------------------------------------------------< remove >---
             } else if ("remove".equals(cmd)) {
-                String id = data.optString(PARAM_ID, null);
                 if (id == null || id.length() == 0) {
                     throw new IllegalArgumentException("Need task id.");
                 }
-                task = taskMgr.getTasks().get(id);
-                if (task == null) {
+                if (!taskMgr.removeTask(id)) {
                     throw new IllegalArgumentException("No such task with id='" + id + "'");
                 }
-                task.remove();
 
             } else {
                 throw new IllegalArgumentException("Invalid command.");
@@ -226,7 +226,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
             w.setTidy(true);
             w.object();
             w.key("status").value("ok");
-            w.key("id").value(task.getId());
+            w.key("id").value(id);
             w.endObject();
 
         } catch (Exception e) {

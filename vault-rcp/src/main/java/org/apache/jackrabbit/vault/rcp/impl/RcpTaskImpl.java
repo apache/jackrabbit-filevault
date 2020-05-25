@@ -33,6 +33,7 @@ import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
+import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.util.RepositoryCopier;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.io.JSONWriter;
@@ -42,12 +43,12 @@ import org.slf4j.LoggerFactory;
 /**
  * {@code RcpTask}...
  */
-public class RcpTask implements Runnable {
+public class RcpTaskImpl implements Runnable, RcpTask {
 
     /**
      * default logger
      */
-    private static final Logger log = LoggerFactory.getLogger(RcpTask.class);
+    private static final Logger log = LoggerFactory.getLogger(RcpTaskImpl.class);
 
     enum STATE {
         NEW,
@@ -82,7 +83,7 @@ public class RcpTask implements Runnable {
 
     private Session dstSession;
 
-    public RcpTask(RcpTaskManagerImpl mgr, RepositoryAddress src, Credentials srcCreds, String dst, String id) {
+    public RcpTaskImpl(RcpTaskManagerImpl mgr, RepositoryAddress src, Credentials srcCreds, String dst, String id) {
         this.mgr = mgr;
         this.src = src;
         this.dst = dst;
@@ -101,14 +102,17 @@ public class RcpTask implements Runnable {
         });
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public RepositoryCopier getRcp() {
         return rcp;
     }
 
+    @Override
     public boolean stop() {
         // wait for thread
         if (state != STATE.STOPPED && state != STATE.STOPPING) {
@@ -142,12 +146,7 @@ public class RcpTask implements Runnable {
         return true;
     }
 
-    public boolean remove() {
-        stop();
-        mgr.remove(this);
-        return true;
-    }
-
+    @Override
     public boolean start(Session session) throws RepositoryException {
         if (state != STATE.NEW) {
             throw new IllegalStateException("Unable to start task " + id + ". wrong state = " + state);
@@ -211,18 +210,22 @@ public class RcpTask implements Runnable {
         return state;
     }
 
+    @Override
     public RepositoryAddress getSource() {
         return src;
     }
 
+    @Override
     public String getDestination() {
         return dst;
     }
 
+    @Override
     public void setRecursive(boolean b) {
         this.recursive = b;
     }
 
+    @Override
     public void addExclude(String exclude) throws ConfigurationException {
         excludes.add(exclude);
         // could be done better
@@ -236,6 +239,7 @@ public class RcpTask implements Runnable {
 
     }
 
+    @Override
     public void write(JSONWriter w) throws JSONException {
         w.object();
         w.key(RcpServlet.PARAM_ID).value(id);

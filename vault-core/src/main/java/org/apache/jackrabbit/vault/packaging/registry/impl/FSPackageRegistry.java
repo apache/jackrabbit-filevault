@@ -138,11 +138,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException If an I/O error occurs.
      */
     public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope) throws IOException {
-       this(homeDir, scope, null, null);
+       this(homeDir, scope, null);
     }
 
-    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope,  String[] authorizableIdsAllowedToExecuteHooks, String[] authorizableIdsAllowedToInstallPackagesRequiringRoot) throws IOException {
-        super(authorizableIdsAllowedToExecuteHooks, authorizableIdsAllowedToInstallPackagesRequiringRoot);
+    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig) throws IOException {
+        super(securityConfig);
         this.homeDir = homeDir;
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
         this.scope = scope;
@@ -159,8 +159,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                         new File(config.homePath()).isAbsolute() ? new File(config.homePath()) : new File(context.getProperty(REPOSITORY_HOME) + "/" + config.homePath()))  
                       : context.getDataFile(config.homePath()),
                 InstallationScope.valueOf(config.scope()),
-                config.authorizableIdsAllowedToExecuteHooks(),
-                config.authorizableIdsAllowedToInstallPackagesRequiringRoot());
+                new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()));
         if (!homeDir.exists()) {
             homeDir.mkdirs();
         }
@@ -188,10 +187,10 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         String scope() default "UNSCOPED";
         
         @AttributeDefinition(description = "The authorizable ids which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
-        String[] authorizableIdsAllowedToExecuteHooks();
+        String[] authIdsForHookExecution();
         
         @AttributeDefinition(description = "The authorizable ids which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
-        String[] authorizableIdsAllowedToInstallPackagesRequiringRoot();
+        String[] authIdsForRootInstallation();
     }
 
     /**
@@ -704,7 +703,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     // no need to set filter in other cases
                 
             }
-            ((ZipVaultPackage)vltPkg).extract(session, opts, additionalAuthorizableIdsAllowedToExecuteHooks, additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot);
+            ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig());
             dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
             updateInstallState(vltPkg.getId(), FSPackageStatus.EXTRACTED);
 

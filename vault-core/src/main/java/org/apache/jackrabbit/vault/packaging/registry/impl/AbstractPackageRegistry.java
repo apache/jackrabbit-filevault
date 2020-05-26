@@ -50,6 +50,24 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class AbstractPackageRegistry implements PackageRegistry, InternalPackageRegistry {
 
+    public static final class SecurityConfig {
+        private final String[] authIdsForHookExecution;
+        private final String[] authIdsForRootInstallation;
+        
+        public SecurityConfig(String[] authIdsForHooks, String[] authIdsForRoots) {
+            super();
+            this.authIdsForHookExecution = authIdsForHooks;
+            this.authIdsForRootInstallation = authIdsForRoots;
+        }
+
+        public String[] getAuthIdsForHookExecution() {
+            return authIdsForHookExecution;
+        }
+
+        public String[] getAuthIdsForRootInstallation() {
+            return authIdsForRootInstallation;
+        }
+    }
     /**
      * default root path for packages
      */
@@ -65,15 +83,16 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
      */
     public static final String DEFAULT_PACKAGE_ROOT_PATH_PREFIX = DEFAULT_PACKAGE_ROOT_PATH + "/";
 
-    protected final String[] additionalAuthorizableIdsAllowedToExecuteHooks;
+    protected final @NotNull SecurityConfig securityConfig;
 
-    protected final String[] additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot;
-
-    public AbstractPackageRegistry(String[] additionalAuthorizableIdsAllowedToExecuteHooks,
-            String[] additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot) {
+    public AbstractPackageRegistry(SecurityConfig securityConfig) {
         super();
-        this.additionalAuthorizableIdsAllowedToExecuteHooks = additionalAuthorizableIdsAllowedToExecuteHooks;
-        this.additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot = additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot;
+        if (securityConfig != null) {
+            this.securityConfig = securityConfig;
+        } else {
+            this.securityConfig = new SecurityConfig(null, null);
+        }
+        
     }
 
     /**
@@ -221,14 +240,6 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
         return b.toString();
     }
 
-    public String[] getAdditionalAuthorizableIdsAllowedToExecuteHooks() {
-        return additionalAuthorizableIdsAllowedToExecuteHooks;
-    }
-
-    public String[] getAdditionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot() {
-        return additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot;
-    }
-
     /**
      * Creates a random package id for packages that lack one.
      * 
@@ -236,6 +247,10 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
      */
     protected static PackageId createRandomPid() {
         return new PackageId("temporary", "pack_" + UUID.randomUUID().toString(), (String) null);
+    }
+
+    public @NotNull SecurityConfig getSecurityConfig() {
+        return securityConfig;
     }
 
 

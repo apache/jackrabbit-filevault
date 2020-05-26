@@ -152,7 +152,7 @@ public class TestNamespaceImport {
                 throws RepositoryException {
             repository = new Jcr().createRepository();
             admin = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
-            packMgr = new JcrPackageManagerImpl(admin, new String[0], null, null);
+            packMgr = new JcrPackageManagerImpl(admin, new String[0]);
         }
 
         Node getRootNode()

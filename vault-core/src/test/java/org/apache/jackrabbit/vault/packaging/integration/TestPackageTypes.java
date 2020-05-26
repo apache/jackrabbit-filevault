@@ -53,7 +53,7 @@ public class TestPackageTypes extends IntegrationTestBase {
     public void setUp() throws Exception {
         super.setUp();
 
-        registry = new JcrPackageRegistry(admin, null, null);
+        registry = new JcrPackageRegistry(admin);
     }
 
     private void verifyViaRegistry(String type) throws IOException, PackageExistsException {

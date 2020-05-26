@@ -123,7 +123,7 @@ public class PackageManagerMBeanImpl extends StandardMBean implements PackageMan
             try {
                 session = repository.loginAdministrative(null);
                 // todo: find a way to use the sling packaging service instead
-                JcrPackageManager pkgMgr = new JcrPackageManagerImpl(session, new String[0], null, null);
+                JcrPackageManager pkgMgr = new JcrPackageManagerImpl(session, new String[0]);
                 for (JcrPackage pkg: pkgMgr.listPackages()) {
                     try {
                         Object[] values = {

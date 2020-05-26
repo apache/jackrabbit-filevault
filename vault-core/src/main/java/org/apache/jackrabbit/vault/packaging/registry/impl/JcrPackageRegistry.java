@@ -65,7 +65,6 @@ import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,11 +107,6 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     private final String[] packRootPaths;
 
     /**
-     * the package root prefix of the primary root path.
-     */
-    private final String primaryPackRootPathPrefix;
-
-    /**
      * Fallback Registry can be registered if present in the system to be able to look up presatisfied dependencies
      */
     private PackageRegistry baseRegistry = null;
@@ -123,8 +117,12 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @param session the JCR session that is used to access the repository.
      * @param roots the root paths to store the packages.
      */
-    public JcrPackageRegistry(@NotNull Session session, @Nullable String[] additionalAuthorizableIdsAllowedToExecuteHooks, @Nullable String[] additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot, @Nullable String ... roots) {
-        super(additionalAuthorizableIdsAllowedToExecuteHooks, additionalAuthorizableIdsAllowedToInstallPackagesRequiringRoot);
+    public JcrPackageRegistry(@NotNull Session session, @Nullable String ... roots) {
+        this(session, null, roots);
+    }
+
+    public JcrPackageRegistry(@NotNull Session session, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig, @Nullable String... roots) {
+        super(securityConfig);
         this.session = session;
         if (roots == null || roots.length == 0) {
             packRootPaths = new String[]{DEFAULT_PACKAGE_ROOT_PATH};
@@ -132,10 +130,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             packRootPaths = roots;
         }
         packRoots = new Node[packRootPaths.length];
-        primaryPackRootPathPrefix = packRootPaths[0] + "/";
         initNodeTypes();
     }
-
+    
     /**
      * Sets fallback PackageRegistry for dependency lookup
      * @param baseRegisry

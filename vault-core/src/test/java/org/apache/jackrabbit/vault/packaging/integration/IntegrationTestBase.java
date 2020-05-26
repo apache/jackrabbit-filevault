@@ -274,7 +274,7 @@ public class IntegrationTestBase  {
         clean("/tmp");
         clean("/testroot");
 
-        packMgr = new JcrPackageManagerImpl(admin, new String[0], null, null);
+        packMgr = new JcrPackageManagerImpl(admin, new String[0]);
 
         PackageEventDispatcherImpl dispatcher = new PackageEventDispatcherImpl();
         dispatcher.bindPackageEventListener(new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));

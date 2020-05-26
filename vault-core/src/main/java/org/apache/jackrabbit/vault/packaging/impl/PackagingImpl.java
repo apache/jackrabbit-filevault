@@ -76,7 +76,7 @@ public class PackagingImpl implements Packaging {
     }
 
     @ObjectClassDefinition(
-            name = "Apache Jackrabbit FileVault Packaging Service"
+            name = "Apache Jackrabbit FileVault Packaging Service (Package Manager Configuration)"
     )
     @interface Config {
 
@@ -87,10 +87,10 @@ public class PackagingImpl implements Packaging {
         String[] packageRoots() default {"/etc/packages"};
         
         @AttributeDefinition(description = "The authorizable ids which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
-        String[] authorizableIdsAllowedToExecuteHooks();
+        String[] authIdsForHookExecution();
         
         @AttributeDefinition(description = "The authorizable ids which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
-        String[] authorizableIdsAllowedToInstallPackagesRequiringRoot();
+        String[] authIdsForRootInstallation();
     }
 
     @Activate
@@ -110,7 +110,7 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackageManager getPackageManager(Session session) {
-        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authorizableIdsAllowedToExecuteHooks(), config.authorizableIdsAllowedToInstallPackagesRequiringRoot());
+        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authIdsForHookExecution(), config.authIdsForRootInstallation());
         mgr.setDispatcher(eventDispatcher);
         mgr.getInternalRegistry().setBaseRegistry(baseRegistry);
         return mgr;

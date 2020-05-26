@@ -16,7 +16,6 @@
  */
 package org.apache.jackrabbit.vault.rcp.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,13 +29,12 @@ import org.apache.jackrabbit.vault.davex.DAVExRepositoryFactory;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.util.RepositoryCopier;
-import org.apache.sling.commons.json.JSONException;
-import org.apache.sling.commons.json.io.JSONWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,13 +48,6 @@ public class RcpTaskImpl implements Runnable, RcpTask {
      */
     private static final Logger log = LoggerFactory.getLogger(RcpTaskImpl.class);
 
-    enum STATE {
-        NEW,
-        RUNNING,
-        ENDED,
-        STOPPING,
-        STOPPED
-    }
     private final RcpTaskManagerImpl mgr;
 
     private final String id;
@@ -69,21 +60,65 @@ public class RcpTaskImpl implements Runnable, RcpTask {
 
     private final String dst;
 
-    private boolean recursive;
+    private final boolean recursive;
 
-    private volatile STATE state = STATE.NEW;
+    private volatile Result result;
 
-    private Exception error = null;
-
-    private List<String> excludes = new ArrayList<String>();
+    private List<String> excludes;
 
     private Thread thread;
 
     private Session srcSession;
 
     private Session dstSession;
+    
+    private final static class ResultImpl implements RcpTask.Result {
+
+        private final State state;
+        private final Throwable throwable;
+
+        public ResultImpl(State state) {
+            this(state, null);
+        }
+        
+        public ResultImpl(State state, Throwable throwable) {
+            super();
+            this.state = state;
+            this.throwable = throwable;
+        }
+
+        @Override
+        public State getState() {
+            return state;
+        }
+
+        @Override
+        public Throwable getThrowable() {
+            return throwable;
+        }
+        
+    }
 
     public RcpTaskImpl(RcpTaskManagerImpl mgr, RepositoryAddress src, Credentials srcCreds, String dst, String id) {
+        this(mgr, src, srcCreds, dst, id, (WorkspaceFilter)null, false);
+    }
+
+    public RcpTaskImpl(RcpTaskManagerImpl mgr, RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, boolean recursive) throws ConfigurationException {
+        this(mgr, src, srcCreds, dst, id, createFilterForExcludes(excludes), recursive);
+        this.excludes = excludes;
+    }
+
+    private static WorkspaceFilter createFilterForExcludes(List<String> excludes) throws ConfigurationException {
+        // could be done better
+        DefaultWorkspaceFilter srcFilter = new DefaultWorkspaceFilter();
+        PathFilterSet filterSet = new PathFilterSet("/");
+        for (String path: excludes) {
+            filterSet.addExclude(new DefaultPathFilter(path));
+        }
+        return srcFilter;
+    }
+
+    public RcpTaskImpl(RcpTaskManagerImpl mgr, RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter, boolean recursive) {
         this.mgr = mgr;
         this.src = src;
         this.dst = dst;
@@ -100,6 +135,11 @@ public class RcpTaskImpl implements Runnable, RcpTask {
                 log.error("{} {}", path, e.toString());
             }
         });
+        this.recursive = recursive;
+        if (srcFilter != null) {
+            rcp.setSourceFilter(srcFilter);
+        }
+        result = new ResultImpl(Result.State.NEW);
     }
 
     @Override
@@ -115,11 +155,11 @@ public class RcpTaskImpl implements Runnable, RcpTask {
     @Override
     public boolean stop() {
         // wait for thread
-        if (state != STATE.STOPPED && state != STATE.STOPPING) {
+        if (result.getState() != Result.State.STOPPED && result.getState() != Result.State.STOPPING) {
             rcp.abort();
             int cnt = 3;
             while (thread != null && thread.isAlive() && cnt-- > 0) {
-                state = STATE.STOPPING;
+                result = new ResultImpl(Result.State.STOPPING);
                 log.info("Stopping task {}...", id);
                 try {
                     thread.join(10000);
@@ -131,7 +171,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
                     thread.interrupt();
                 }
             }
-            state = STATE.STOPPED;
+            result = new ResultImpl(Result.State.STOPPED);
             thread = null;
             if (srcSession != null) {
                 srcSession.logout();
@@ -148,8 +188,8 @@ public class RcpTaskImpl implements Runnable, RcpTask {
 
     @Override
     public boolean start(Session session) throws RepositoryException {
-        if (state != STATE.NEW) {
-            throw new IllegalStateException("Unable to start task " + id + ". wrong state = " + state);
+        if (result.getState() != Result.State.NEW) {
+            throw new IllegalStateException("Unable to start task " + id + ". wrong state = " + result.getState());
         }
         // clone session
         dstSession = session.impersonate(new SimpleCredentials(session.getUserID(), new char[0]));
@@ -191,23 +231,22 @@ public class RcpTaskImpl implements Runnable, RcpTask {
     }
 
     public void run() {
-        state = STATE.RUNNING;
+        result = new ResultImpl(Result.State.RUNNING);
         log.info("Starting repository copy task id={}. From {} to {}.", new Object[]{
                 id, src.toString(), dst
         });
         try {
             rcp.copy(srcSession, src.getPath(), dstSession, dst, recursive);
-            state = STATE.ENDED;
-        } catch (Exception e) {
-            error = e;
-        } finally {
-            state = STATE.ENDED;
+            result = new ResultImpl(Result.State.ENDED);
+        } catch (Throwable e) {
+            result = new ResultImpl(Result.State.ENDED, e);
         }
         // todo: notify manager that we ended.
     }
 
-    public STATE getState() {
-        return state;
+    @Override
+    public Result getResult() {
+        return result;
     }
 
     @Override
@@ -221,54 +260,13 @@ public class RcpTaskImpl implements Runnable, RcpTask {
     }
 
     @Override
-    public void setRecursive(boolean b) {
-        this.recursive = b;
+    public boolean isRecursive() {
+        return recursive;
     }
 
     @Override
-    public void addExclude(String exclude) throws ConfigurationException {
-        excludes.add(exclude);
-        // could be done better
-        DefaultWorkspaceFilter srcFilter = new DefaultWorkspaceFilter();
-        PathFilterSet filterSet = new PathFilterSet("/");
-        for (String path: excludes) {
-            filterSet.addExclude(new DefaultPathFilter(path));
-        }
-        srcFilter.add(filterSet);
-        rcp.setSourceFilter(srcFilter);
-
+    public List<String> getExcludes() {
+        return excludes;
     }
 
-    @Override
-    public void write(JSONWriter w) throws JSONException {
-        w.object();
-        w.key(RcpServlet.PARAM_ID).value(id);
-        w.key(RcpServlet.PARAM_SRC).value(src.toString());
-        w.key(RcpServlet.PARAM_DST).value(dst);
-        w.key(RcpServlet.PARAM_RECURSIVE).value(recursive);
-        w.key(RcpServlet.PARAM_BATCHSIZE).value(rcp.getBatchSize());
-        w.key(RcpServlet.PARAM_UPDATE).value(rcp.isUpdate());
-        w.key(RcpServlet.PARAM_ONLY_NEWER).value(rcp.isOnlyNewer());
-        w.key(RcpServlet.PARAM_NO_ORDERING).value(rcp.isNoOrdering());
-        w.key(RcpServlet.PARAM_THROTTLE).value(rcp.getThrottle());
-        w.key(RcpServlet.PARAM_RESUME_FROM).value(rcp.getResumeFrom());
-        if (excludes.size() > 0) {
-            w.key(RcpServlet.PARAM_EXCLUDES).array();
-            for (String exclude: excludes) {
-                w.value(exclude);
-            }
-            w.endArray();
-        }
-        w.key("status").object();
-        w.key(RcpServlet.PARAM_STATE).value(state.name());
-        w.key("currentPath").value(rcp.getCurrentPath());
-        w.key("lastSavedPath").value(rcp.getLastKnownGood());
-        w.key("totalNodes").value(rcp.getTotalNodes());
-        w.key("totalSize").value(rcp.getTotalSize());
-        w.key("currentSize").value(rcp.getCurrentSize());
-        w.key("currentNodes").value(rcp.getCurrentNumNodes());
-        w.key("error").value(error == null ? "" : error.toString());
-        w.endObject();
-        w.endObject();
-    }
 }

@@ -16,16 +16,28 @@
  */
 package org.apache.jackrabbit.vault.rcp;
 
+import java.util.List;
+
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
-import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.util.RepositoryCopier;
-import org.apache.sling.commons.json.JSONException;
-import org.apache.sling.commons.json.io.JSONWriter;
 
 public interface RcpTask {
+
+    interface Result {
+        enum State {
+            NEW, RUNNING, ENDED, STOPPING, STOPPED
+        }
+
+        State getState();
+        /**
+         * 
+         * @return the exception in case of {@link #getState()} == ENDED and the execution was not successful otherwise {@code null}
+         */
+        Throwable getThrowable();
+    }
 
     String getId();
 
@@ -37,12 +49,12 @@ public interface RcpTask {
 
     boolean stop();
 
-    void setRecursive(boolean b);
-
     RepositoryCopier getRcp();
 
-    void addExclude(String exclude) throws ConfigurationException;
+    boolean isRecursive();
 
-    void write(JSONWriter w) throws JSONException;
+    Result getResult();
+
+    List<String> getExcludes();
 
 }

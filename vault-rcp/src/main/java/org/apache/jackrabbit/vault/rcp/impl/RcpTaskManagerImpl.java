@@ -18,11 +18,14 @@ package org.apache.jackrabbit.vault.rcp.impl;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Credentials;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
 import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
@@ -67,12 +70,23 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
     public Map<String, RcpTask> getTasks() {
         return Collections.unmodifiableMap(tasks);
     }
-
-    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id) {
+    
+    @Override
+    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, boolean recursive) throws ConfigurationException {
         if (id != null && id.length() > 0 && tasks.containsKey(id)) {
             throw new IllegalArgumentException("Task with id " + id + " already exists.");
         }
-        RcpTaskImpl task = new RcpTaskImpl(this, src, srcCreds, dst, id);
+        RcpTaskImpl task = new RcpTaskImpl(this, src, srcCreds, dst, id, excludes, recursive);
+        tasks.put(task.getId(), task);
+        return task;
+    }
+
+    @Override
+    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter, boolean recursive) {
+        if (id != null && id.length() > 0 && tasks.containsKey(id)) {
+            throw new IllegalArgumentException("Task with id " + id + " already exists.");
+        }
+        RcpTaskImpl task = new RcpTaskImpl(this, src, srcCreds, dst, id, srcFilter, recursive);
         tasks.put(task.getId(), task);
         return task;
     }

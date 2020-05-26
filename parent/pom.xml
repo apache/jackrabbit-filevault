@@ -174,15 +174,6 @@ Bundle-Category: jackrabbit
                         </execution>
                     </executions>
                     <configuration>
-                        <!-- this file needs to be symlinked below every using bundle due to https://github.com/bndtools/bnd/issues/4077 -->
-                        <bndruns>
-                            <bndrun>aem6.3.bndrun</bndrun>
-                        </bndruns>
-                        <bundles>
-                            <includes>
-                                <include>target/bundles/*.jar</include>
-                            </includes>
-                        </bundles>
                         <useMavenDependencies>true</useMavenDependencies>
                         <failOnChanges>false</failOnChanges><!-- reuse for multiple bundles which all require different minimum container -->
                         <writeOnChanges>false</writeOnChanges>

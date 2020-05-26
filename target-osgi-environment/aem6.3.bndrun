@@ -13,6 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+-standalone: ${fileuri;${.}/target/index.xml}
+
 -runfw: org.apache.felix.framework
 -runee: JavaSE-1.8
 
@@ -21,20 +23,3 @@
 # workaround for https://issues.apache.org/jira/browse/SLING-7608 and https://issues.apache.org/jira/browse/SLING-7604
 -runsystemcapabilities: osgi.service;objectClass=org.apache.sling.commons.classloader.DynamicClassLoaderManager,\
 osgi.service;objectClass:List<String>="javax.jcr.Repository,org.apache.sling.jcr.api.SlingRepository"
-  
--runbundles: \
-	com.google.guava;version='[15.0.0,15.0.1)',\
-	javax.jcr;version='[2.0.0,2.0.1)',\
-	org.apache.commons.collections;version='[3.2.2,3.2.3)',\
-	org.apache.commons.io;version='[2.5.0,2.5.1)',\
-	org.apache.felix.scr;version='[2.1.0,2.1.1)',\
-	org.apache.jackrabbit.jackrabbit-api;version='[2.14.0,2.14.1)',\
-	org.apache.jackrabbit.jackrabbit-jcr-commons;version='[2.14.0,2.14.1)',\
-	org.apache.jackrabbit.jackrabbit-spi;version='[2.14.0,2.14.1)',\
-	org.apache.jackrabbit.jackrabbit-spi-commons;version='[2.14.0,2.14.1)',\
-	org.apache.jackrabbit.vault;version='[3.4.5,3.4.6)',\
-	org.apache.sling.commons.log;version='[5.0.0,5.0.1)',\
-	slf4j.api;version='[1.7.21,1.7.22)',\
-	jcl.over.slf4j;version='[1.7.21,1.7.22)',\
-	org.apache.sling.jcr.api;version='[2.0.6,2.0.7)',\
-	vault-sync;version='[3.4.5,3.4.6)'

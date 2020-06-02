@@ -18,11 +18,16 @@ package org.apache.jackrabbit.vault.rcp.impl;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Credentials;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+import org.apache.jackrabbit.vault.rcp.RcpTask;
+import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
 import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -47,13 +52,13 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
     @Reference
     private DynamicClassLoaderManager dynLoaderMgr;
 
-    private final Map<String, RcpTask> tasks = new LinkedHashMap<String, RcpTask>();
+    private final Map<String, RcpTaskImpl> tasks = new LinkedHashMap<>();
 
     @Deactivate
     private void deactivate() {
         log.info("RcpTaskManager deactivated. Stopping running tasks...");
-        while (!tasks.isEmpty()) {
-            tasks.values().iterator().next().remove();
+        for (String id : tasks.keySet()) {
+            removeTask(id);
         }
         log.info("RcpTaskManager deactivated. Stopping running tasks...done.");
     }
@@ -65,18 +70,34 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
     public Map<String, RcpTask> getTasks() {
         return Collections.unmodifiableMap(tasks);
     }
-
-    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id) {
+    
+    @Override
+    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, boolean recursive) throws ConfigurationException {
         if (id != null && id.length() > 0 && tasks.containsKey(id)) {
             throw new IllegalArgumentException("Task with id " + id + " already exists.");
         }
-        RcpTask task = new RcpTask(this, src, srcCreds, dst, id);
+        RcpTaskImpl task = new RcpTaskImpl(this, src, srcCreds, dst, id, excludes, recursive);
         tasks.put(task.getId(), task);
         return task;
     }
 
-    protected void remove(RcpTask task)  {
-        tasks.remove(task.getId());
+    @Override
+    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter, boolean recursive) {
+        if (id != null && id.length() > 0 && tasks.containsKey(id)) {
+            throw new IllegalArgumentException("Task with id " + id + " already exists.");
+        }
+        RcpTaskImpl task = new RcpTaskImpl(this, src, srcCreds, dst, id, srcFilter, recursive);
+        tasks.put(task.getId(), task);
+        return task;
+    }
+
+    public boolean removeTask(String taskId)  {
+        RcpTask rcpTask = tasks.remove(taskId);
+        if (rcpTask != null) {
+            rcpTask.stop();
+            return true;
+        }
+        return false;
     }
 
     protected ClassLoader getDynamicClassLoader() {

@@ -19,6 +19,9 @@ package org.apache.jackrabbit.vault.rcp.impl;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.jcr.Credentials;
 import javax.jcr.Session;
@@ -29,6 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.rcp.RcpTask;
+import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
@@ -92,7 +98,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 RcpTask task = taskMgr.getTask(taskId);
 
                 if (task != null) {
-                    task.write(w);
+                    write(w, task);
                 } else {
                     // return empty object
                     w.object().endObject();
@@ -101,7 +107,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 w.object();
                 w.key("tasks").array();
                 for (RcpTask task: taskMgr.getTasks().values()) {
-                    task.write(w);
+                    write(w, task);
                 }
                 w.endArray();
                 w.endObject();
@@ -126,12 +132,15 @@ public class RcpServlet extends SlingAllMethodsServlet {
         }
         String cmd = data.optString(PARAM_CMD, "");
         RcpTask task;
+        final String id = data.optString(PARAM_ID, null);;
         try {
             // --------------------------------------------------------------------------------------------< create >---
             if ("create".equals(cmd)) {
                 String src = data.optString(PARAM_SRC, "");
+                if (src == null || src.length() == 0) {
+                    throw new IllegalArgumentException("Need src.");
+                }
                 String dst = data.optString(PARAM_DST, "");
-                String id = data.optString(PARAM_ID, null);
                 String srcCreds = data.optString(PARAM_SRC_CREDS, null);
 
                 RepositoryAddress address = new RepositoryAddress(src);
@@ -153,26 +162,29 @@ public class RcpServlet extends SlingAllMethodsServlet {
                                 srcCreds.substring(idx+1).toCharArray());
                     }
                 }
-
-                task = taskMgr.addTask(address, creds, dst, id);
+                boolean recursive = data.optBoolean(PARAM_RECURSIVE, false);
+                if (data.has(PARAM_EXCLUDES)) {
+                    List<String> excludeList = new LinkedList<>();
+                    JSONArray excludes = data.getJSONArray(PARAM_EXCLUDES);
+                    for (int idx = 0; idx < excludes.length(); idx++) {
+                        excludeList.add(excludes.getString(idx));
+                    }
+                    task = taskMgr.addTask(address, creds, dst, id, excludeList, recursive);
+                } else {
+                    task = taskMgr.addTask(address, creds, dst, id, (WorkspaceFilter)null, recursive);
+                }
 
                 // add additional data
                 if (data.has(PARAM_BATCHSIZE)) {
                     task.getRcp().setBatchSize((int) data.getLong(PARAM_BATCHSIZE));
                 }
-                task.setRecursive(data.optBoolean(PARAM_RECURSIVE, false));
                 task.getRcp().setUpdate(data.optBoolean(PARAM_UPDATE, false));
                 task.getRcp().setOnlyNewer(data.optBoolean(PARAM_ONLY_NEWER, false));
                 task.getRcp().setNoOrdering(data.optBoolean(PARAM_NO_ORDERING, false));
                 if (data.has(PARAM_THROTTLE)) {
                     task.getRcp().setThrottle(data.getLong(PARAM_THROTTLE));
                 }
-                if (data.has(PARAM_EXCLUDES)) {
-                    JSONArray excludes = data.getJSONArray(PARAM_EXCLUDES);
-                    for (int idx = 0; idx < excludes.length(); idx++) {
-                        task.addExclude(excludes.getString(idx));
-                    }
-                }
+                
                 if (data.has(PARAM_RESUME_FROM)) {
                     task.getRcp().setResumeFrom(data.getString(PARAM_RESUME_FROM));
                 }
@@ -182,7 +194,6 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
             // ---------------------------------------------------------------------------------------------< start >---
             } else if ("start".equals(cmd)) {
-                String id = data.optString(PARAM_ID, null);
                 if (id == null || id.length() == 0) {
                     throw new IllegalArgumentException("Need task id.");
                 }
@@ -194,7 +205,6 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
             // ----------------------------------------------------------------------------------------------< stop >---
             } else if ("stop".equals(cmd)) {
-                String id = data.optString(PARAM_ID, null);
                 if (id == null || id.length() == 0) {
                     throw new IllegalArgumentException("Need task id.");
                 }
@@ -206,15 +216,12 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
             // --------------------------------------------------------------------------------------------< remove >---
             } else if ("remove".equals(cmd)) {
-                String id = data.optString(PARAM_ID, null);
                 if (id == null || id.length() == 0) {
                     throw new IllegalArgumentException("Need task id.");
                 }
-                task = taskMgr.getTasks().get(id);
-                if (task == null) {
+                if (!taskMgr.removeTask(id)) {
                     throw new IllegalArgumentException("No such task with id='" + id + "'");
                 }
-                task.remove();
 
             } else {
                 throw new IllegalArgumentException("Invalid command.");
@@ -226,7 +233,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
             w.setTidy(true);
             w.object();
             w.key("status").value("ok");
-            w.key("id").value(task.getId());
+            w.key("id").value(id);
             w.endObject();
 
         } catch (Exception e) {
@@ -247,5 +254,36 @@ public class RcpServlet extends SlingAllMethodsServlet {
         }
     }
 
+    private static void write(JSONWriter w, RcpTask rcpTask) throws JSONException {
+        w.object();
+        w.key(RcpServlet.PARAM_ID).value(rcpTask.getId());
+        w.key(RcpServlet.PARAM_SRC).value(rcpTask.getSource().toString());
+        w.key(RcpServlet.PARAM_DST).value(rcpTask.getDestination());
+        w.key(RcpServlet.PARAM_RECURSIVE).value(rcpTask.isRecursive());
+        w.key(RcpServlet.PARAM_BATCHSIZE).value(rcpTask.getRcp().getBatchSize());
+        w.key(RcpServlet.PARAM_UPDATE).value(rcpTask.getRcp().isUpdate());
+        w.key(RcpServlet.PARAM_ONLY_NEWER).value(rcpTask.getRcp().isOnlyNewer());
+        w.key(RcpServlet.PARAM_NO_ORDERING).value(rcpTask.getRcp().isNoOrdering());
+        w.key(RcpServlet.PARAM_THROTTLE).value(rcpTask.getRcp().getThrottle());
+        w.key(RcpServlet.PARAM_RESUME_FROM).value(rcpTask.getRcp().getResumeFrom());
+        if (rcpTask.getExcludes().size() > 0) {
+            w.key(RcpServlet.PARAM_EXCLUDES).array();
+            for (String exclude: rcpTask.getExcludes()) {
+                w.value(exclude);
+            }
+            w.endArray();
+        }
+        w.key("status").object();
+        w.key(RcpServlet.PARAM_STATE).value(rcpTask.getResult().getState().name());
+        w.key("currentPath").value(rcpTask.getRcp().getCurrentPath());
+        w.key("lastSavedPath").value(rcpTask.getRcp().getLastKnownGood());
+        w.key("totalNodes").value(rcpTask.getRcp().getTotalNodes());
+        w.key("totalSize").value(rcpTask.getRcp().getTotalSize());
+        w.key("currentSize").value(rcpTask.getRcp().getCurrentSize());
+        w.key("currentNodes").value(rcpTask.getRcp().getCurrentNumNodes());
+        w.key("error").value(rcpTask.getResult().getThrowable() == null ? "" : rcpTask.getResult().getThrowable().toString());
+        w.endObject();
+        w.endObject();
+    }
 }
 

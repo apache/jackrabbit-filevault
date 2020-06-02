@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.jackrabbit.vault.rcp.impl;
+package org.apache.jackrabbit.vault.rcp;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Credentials;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 
 /**
  * {@code RcpTaskManager}...
@@ -31,6 +34,11 @@ public interface RcpTaskManager {
 
     Map<String, RcpTask> getTasks();
 
-    RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id);
+    boolean removeTask(String taskId);
+
+    RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter, boolean recursive);
+
+    RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, boolean recursive)
+            throws ConfigurationException;
 
 }

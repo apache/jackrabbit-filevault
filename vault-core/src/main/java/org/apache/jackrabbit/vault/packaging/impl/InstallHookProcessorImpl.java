@@ -141,15 +141,13 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
         for (Hook hook : hooks.values()) {
             try {
                 hook.getHook().execute(context);
-            } catch (PackageException e) {
+            } catch (Throwable e) {
                 // abort processing only for prepare and installed phase
                 if (context.getPhase() == InstallContext.Phase.PREPARE || context.getPhase() == InstallContext.Phase.INSTALLED) {
-                    log.warn("Hook " + hook.name +" threw package exception. {} aborted.", context.getPhase(), e);
+                    log.warn("Hook " + hook.name +" threw exception. {} aborted.", context.getPhase(), e);
                     return false;
                 }
-                log.warn("Hook " + hook.name +" threw package exception. Ignored", e);
-            } catch (Throwable e) {
-                log.warn("Hook " + hook.name +" threw runtime exception.", e);
+                log.warn("Hook " + hook.name +" threw exception. Ignored", e);
             }
             // if in end phase, shutdown hooks
             if (context.getPhase() == InstallContext.Phase.END) {

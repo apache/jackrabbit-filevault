@@ -35,15 +35,6 @@
     <name>Apache Jackrabbit FileVault Target OSGi Environment</name>
     <description>The bndrun files and the used bundles for resolving all FileVault bundles in the minimum support OSGi container</description>
 
-    <!-- ====================================================================== -->
-    <!-- S C M D E F I N I T I O N -->
-    <!-- ====================================================================== -->
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/target-osgi-environment</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/target-osgi-environment</developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/target-osgi-environment</url>
-    </scm>
-
     <properties>
         <jackrabbit.version>2.14.0</jackrabbit.version>
     </properties>

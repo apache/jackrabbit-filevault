@@ -36,15 +36,6 @@
     <description>The core classes of Apache Jackrabbit FileVault</description>
 
     <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N                                             -->
-    <!-- ====================================================================== -->
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-core</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-core</developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-core</url>
-    </scm>
-
-    <!-- ====================================================================== -->
     <!-- B U I L D                                                             -->
     <!-- ====================================================================== -->
     <build>

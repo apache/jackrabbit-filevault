@@ -64,17 +64,9 @@ Jackrabbit mailing lists as well as links to list archives, please see:
 Latest development
 ==================
 
-The latest FileVault source code is available via Subversion at
+The latest FileVault source code is available at
 
-   <https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/>
-
-or with ViewVC at
-
-   <https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/>
-
-To checkout the main source tree, run
-
-   svn checkout https://svn.apache.org/repos/asf/commons/filevault/trunk filevault
+   <https://github.com/apache/jackrabbit-filevault>
 
 Credits
 =======

@@ -34,6 +34,11 @@
     <name>Apache Jackrabbit FileVault Validation</name>
     <description>Provides a validation framework with SPI and API for performing validations on FileVault packages</description>
 
+    <properties>
+        <!-- http://maven.apache.org/ref/3.6.3/maven-model-builder/index.html#Inheritance_Assembly -->
+        <project.directory>vault-validation</project.directory>
+    </properties>
+
     <build>
         <plugins>
             <!-- ====================================================================== -->

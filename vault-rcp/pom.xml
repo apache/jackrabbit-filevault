@@ -39,6 +39,8 @@
     <properties>
         <!-- downgrade dependencies to make compatible with the minimum supported version -->
         <jackrabbit.version>2.14.0</jackrabbit.version>
+        <!-- http://maven.apache.org/ref/3.6.3/maven-model-builder/index.html#Inheritance_Assembly -->
+        <project.directory>vault-rcp</project.directory>
     </properties>
 
     <!-- ====================================================================== -->

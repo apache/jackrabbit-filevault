@@ -7,7 +7,7 @@ The FileVault introduces a JCR repository to filesystem mapping. The mapping
 is exposed by an API and used by the "FileVault Content Packages" which allow to
 create portable packages of repository content.
 
-The Vault Command Line Interface aka "vlt" provides a subversion like
+The Vault Command Line Interface aka "vlt" provides a Subversion like
 utility to work and develop with repository content.
 
 Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
@@ -25,10 +25,10 @@ You can build FileVault like this:
 
     mvn clean install
 
-You need Maven 3.3.9 (or higher) with Java 8 (or higher) for the build.
+You need Maven 3.6.2 (or higher) with Java 8 (or higher) for the build.
 For more instructions, please see the documentation at:
 
-   http://jackrabbit.apache.org/building-jackrabbit.html
+   <https://jackrabbit.apache.org/building-jackrabbit.html>
 
 License (see also LICENSE)
 ==============================
@@ -59,7 +59,7 @@ To get involved with the Apache Jackrabbit project, start by having a
 look at our website and joining our mailing lists. For more details about
 Jackrabbit mailing lists as well as links to list archives, please see:
 
-   http://jackrabbit.apache.org/mailing-lists.html
+   <https://jackrabbit.apache.org/mailing-lists.html>
 
 Latest development
 ==================
@@ -71,5 +71,5 @@ The latest FileVault source code is available at
 Credits
 =======
 
-See <http://jackrabbit.apache.org/jackrabbit-team.html> for the list of
+See <https://jackrabbit.apache.org/jackrabbit-team.html> for the list of
 Jackrabbit committers and main contributors.

@@ -36,16 +36,6 @@
     <name>Apache Jackrabbit FileVault Documentation</name>
 
     <!-- ====================================================================== -->
-    <!-- S C M D E F I N I T I O N -->
-    <!-- ====================================================================== -->
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-doc</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-doc
-        </developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-doc</url>
-    </scm>
-
-    <!-- ====================================================================== -->
     <!-- B U I L D -->
     <!-- ====================================================================== -->
     <build>
@@ -115,11 +105,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <configuration>
-                    <webAccessUrl>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk</webAccessUrl>
-                    <anonymousConnection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk</anonymousConnection>
-                    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk</developerConnection>
-                </configuration>
                 <reportSets>
                     <reportSet>
                         <reports>

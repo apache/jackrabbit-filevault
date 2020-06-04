@@ -39,16 +39,9 @@
     <properties>
         <!-- downgrade dependencies to make compatible with the minimum supported version -->
         <jackrabbit.version>2.14.0</jackrabbit.version>
+        <!-- http://maven.apache.org/ref/3.6.3/maven-model-builder/index.html#Inheritance_Assembly -->
+        <project.directory>vault-rcp</project.directory>
     </properties>
-
-    <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N                                             -->
-    <!-- ====================================================================== -->
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-rcp</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-rcp</developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-rcp</url>
-    </scm>
 
     <!-- ====================================================================== -->
     <!-- B U I L D                                                             -->

@@ -30,6 +30,8 @@ The base of the Jackrabbit FileVault is the [VaultFs](vaultfs.html) which provid
 
 ![Vault API](vault_api.png?raw=true)
 
+<!-- MACRO{toc} -->
+
 How it works
 ------------
 Jackrabbit FileVault works similar to subversion. Usually you checkout a local copy of the (partial) content of the repository and make modifications to it. Once you're finished you upload the modified stuff again. The content is mapped to a local filesystem structure using the VaultFs API. The mechanism works like Subversion where you have a copy of the unmodified file and some information about the entries.

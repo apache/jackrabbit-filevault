@@ -19,6 +19,8 @@ How To Create A Release
 ========================================================================================================================
 <!-- line width set to 120 characters. please break lines so that this file also looks good in vi -->
 
+<!-- MACRO{toc} -->
+
 Prerequisites for release managers
 ----------------------------------
 You need to be a Jackrabbit committer to prepare and perform a release, but anyone is welcome to help test the release

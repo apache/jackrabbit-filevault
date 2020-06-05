@@ -18,6 +18,11 @@
 FileVault DocView
 =================
 
+<!-- MACRO{toc} -->
+
+Overview
+----------
+
 FileVault uses a slightly different version of the Document View specified by [JCR 2.0][jcr-docview].
 In general all nodes can cannot be serialized as plain directories or as plain files are either
 serialized into DocView XML file. If the node can only be partially mapped to a directory or file,

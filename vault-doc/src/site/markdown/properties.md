@@ -22,6 +22,8 @@ the `META-INF/vault` directory. It defines defines several meta data around the 
 which are just used for informational purpose (like `lastModifiedBy`) and other properties which actually influence how the package
 is installed (like `subPackageHandling`). In addition to that there is the `MANIFEST.MF` within `META-INF` which contains only informational metadata.
 
+<!-- MACRO{toc} -->
+
 properties.xml
 -----------------
 The `properties.xml` follows the format of a Java properties file in XML format as defined by [java.util.Properties](https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html). The individual keys are defined within [PackageProperties][api.PackageProperties].

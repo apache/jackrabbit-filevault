@@ -20,6 +20,8 @@ Vault FS
 **NOTE**: Parts of the following documentation is outdated and needs review
 - - - 
 
+<!-- MACRO{toc} -->
+
 Introduction
 ------------
 we see in various applications the need for a simple jcr repository to filesystem mapping. for example in source management tools, fileserver bindings, import/export stuff etc. if a jcr repository would only consist of `nt:file` and `nt:folder`, this would be easy. but if other nodetypes are used (even a simple as extending from `nt:file`) the mapping to the filesystem is not so trivial anymore. the idea is to provide a general all-purpose mechanism to export to and import from a standard (java.io based) filesystem.

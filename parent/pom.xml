@@ -14,20 +14,22 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd " child.project.url.inherit.append.path="false">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd "
+    child.project.url.inherit.append.path="false">
     <modelVersion>4.0.0</modelVersion>
     <!-- ====================================================================== -->
-    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N -->
+    <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
         <version>23</version>
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <!-- ====================================================================== -->
-    <!-- P R O J E C T  D E S C R I P T I O N -->
+    <!-- P R O J E C T D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <groupId>org.apache.jackrabbit.vault</groupId>
     <artifactId>parent</artifactId>
@@ -47,6 +49,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     </description>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jackrabbit.version>2.20.0</jackrabbit.version>
         <oak.version>1.26.0</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
@@ -54,31 +57,34 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <test.vm.options>-Doak=$test.oak}</test.vm.options>
         <argLine>${test.vm.options}</argLine>
         <java.target.version>1.8</java.target.version>
-        <bnd.version>5.0.1</bnd.version>
+        <bnd.version>5.1.0</bnd.version>
         <maven.version>3.6.1</maven.version><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
+        <surefire.version>3.0.0-M4</surefire.version>
     </properties>
 
     <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N                                             -->
+    <!-- S C M D E F I N I T I O N -->
     <!-- ====================================================================== -->
     <!-- using adjusted inheritance rules: https://issues.apache.org/jira/browse/MNG-6059 -->
-    <scm child.scm.connection.inherit.append.path="false"
-         child.scm.developerConnection.inherit.append.path="false"
-         child.scm.url.inherit.append.path="true">
+    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false"
+        child.scm.url.inherit.append.path="true">
         <connection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</developerConnection>
         <url>https://github.com/apache/jackrabbit-filevault/tree/${project.scm.tag}</url>
         <tag>trunk</tag>
     </scm>
 
-    <mailingLists>
 
+    <!-- ====================================================================== -->
+    <!-- P R O J E C T  I N F O                                                 -->
+    <!-- ====================================================================== -->
+    <mailingLists>
         <mailingList>
             <name>Jackrabbit Developer List</name>
             <subscribe>dev-subscribe@jackrabbit.apache.org</subscribe>
             <unsubscribe>dev-unsubscribe@jackrabbit.apache.org</unsubscribe>
             <post>mailto:dev@jackrabbit.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/jackrabbit-dev/</archive>
+            <archive>https://lists.apache.org/list.html?dev@jackrabbit.apache.org</archive>
         </mailingList>
 
         <mailingList>
@@ -86,9 +92,8 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
             <subscribe>users-subscribe@jackrabbit.apache.org</subscribe>
             <unsubscribe>users-unsubscribe@jackrabbit.apache.org</unsubscribe>
             <post>mailto:users@jackrabbit.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/jackrabbit-users/</archive>
+            <archive>https://lists.apache.org/list.html?users@jackrabbit.apache.org</archive>
         </mailingList>
-
     </mailingLists>
 
     <issueManagement>
@@ -102,13 +107,13 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     </ciManagement>
 
     <!-- ====================================================================== -->
-    <!-- B U I L D  D E F I N I T I O N -->
+    <!-- B U I L D D E F I N I T I O N -->
     <!-- ====================================================================== -->
     <build>
         <pluginManagement>
             <plugins>
                 <!-- ====================================================================== -->
-                <!-- S L I N G  P L U G I N -->
+                <!-- S L I N G P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.sling</groupId>
@@ -185,12 +190,11 @@ Bundle-Category: jackrabbit
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- S U R E F I R E  P L U G I N -->
+                <!-- S U R E F I R E P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M4</version>
                     <configuration>
                         <systemProperties>
                             <property>
@@ -202,7 +206,7 @@ Bundle-Category: jackrabbit
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- R E L E A S E  P L U G I N -->
+                <!-- R E L E A S E P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -217,10 +221,16 @@ Bundle-Category: jackrabbit
                             <artifactId>maven-release-oddeven-policy</artifactId>
                             <version>3.0.0-M1</version>
                         </dependency>
+                        <!-- https://issues.apache.org/jira/browse/MRELEASE-1040 -->
+                        <dependency>
+                            <groupId>org.eclipse.aether</groupId>
+                            <artifactId>aether-util</artifactId>
+                            <version>1.0.0.v20140518</version>
+                        </dependency>
                     </dependencies>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- R A T  P L U G I N -->
+                <!-- R A T P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.rat</groupId>
@@ -240,16 +250,12 @@ Bundle-Category: jackrabbit
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- S I T E  P L U G I N -->
+                <!-- S I T E P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.9.0</version>
-                    <configuration>
-                        <skip>true</skip>
-                        <skipDeploy>true</skipDeploy>
-                    </configuration>
                     <dependencies>
                         <dependency>
                             <groupId>org.apache.maven.doxia</groupId>
@@ -262,11 +268,6 @@ Bundle-Category: jackrabbit
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>3.1.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-scm-publish-plugin</artifactId>
-                    <version>3.0.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -289,12 +290,11 @@ Bundle-Category: jackrabbit
                                         <version>${java.target.version}</version>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
-                                       <version>${maven.version}</version>
+                                        <version>${maven.version}</version>
                                     </requireMavenVersion>
                                 </rules>
                             </configuration>
                         </execution>
-                        <execution>enforce</execution>
                     </executions>
                 </plugin>
             </plugins>
@@ -322,7 +322,7 @@ Bundle-Category: jackrabbit
                 <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
         </plugins>
-        
+
     </build>
 
     <!-- ====================================================================== -->
@@ -340,7 +340,7 @@ Bundle-Category: jackrabbit
     </reporting>
 
     <!-- ====================================================================== -->
-    <!-- D E P E N D E N C Y  M A N A G E M E N T -->
+    <!-- D E P E N D E N C Y M A N A G E M E N T -->
     <!-- ====================================================================== -->
     <dependencyManagement>
         <dependencies>
@@ -538,7 +538,7 @@ Bundle-Category: jackrabbit
     <profiles>
         <profile>
             <!-- ====================================================================== -->
-            <!-- R A T  P L U G I N -->
+            <!-- R A T P L U G I N -->
             <!-- ====================================================================== -->
             <id>rat-check</id>
             <activation>

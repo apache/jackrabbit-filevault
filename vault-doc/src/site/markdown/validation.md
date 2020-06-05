@@ -17,6 +17,8 @@
 -->
 # Validation
 
+<!-- MACRO{toc} -->
+
 ## Overview
 
 The artifact `org.apache.jackrabbit.vault:vault-validation` provides both an API for validating FileVault packages as well as an SPI for implementing validators. In addition this JAR contains useful validators.

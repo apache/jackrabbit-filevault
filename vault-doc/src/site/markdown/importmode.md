@@ -19,6 +19,8 @@ Import Mode
 ===========
 The import mode defines how importing content is applied to existing content in the repository. It is controlled by the [ImportOptions][api.ImportOptions] and the [WorkspaceFilter][api.WorkspaceFilter] and defaults to `REPLACE`.
 
+<!-- MACRO{toc} -->
+
 Modes
 -----
 It is important to note, that the import mode always operates on entire nodes and subtrees, and never just on properties (with an exception of the group membership). For example an `ImportMode.MERGE` does **not** merge the properties from an existing node with those of the package.

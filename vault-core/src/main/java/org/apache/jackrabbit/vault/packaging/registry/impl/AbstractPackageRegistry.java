@@ -44,6 +44,23 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class AbstractPackageRegistry implements PackageRegistry, InternalPackageRegistry {
 
+    public static final class SecurityConfig {
+        private final String[] authIdsForHookExecution;
+        private final String[] authIdsForRootInstallation;
+
+        public SecurityConfig(String[] authIdsForHooks, String[] authIdsForRoots) {
+            this.authIdsForHookExecution = authIdsForHooks;
+            this.authIdsForRootInstallation = authIdsForRoots;
+        }
+
+        public String[] getAuthIdsForHookExecution() {
+            return authIdsForHookExecution;
+        }
+
+        public String[] getAuthIdsForRootInstallation() {
+            return authIdsForRootInstallation;
+        }
+    }
     /**
      * default root path for packages
      */
@@ -58,6 +75,17 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
      * default root path prefix for packages
      */
     public static final String DEFAULT_PACKAGE_ROOT_PATH_PREFIX = DEFAULT_PACKAGE_ROOT_PATH + "/";
+
+    protected final @NotNull SecurityConfig securityConfig;
+
+    public AbstractPackageRegistry(SecurityConfig securityConfig) {
+        if (securityConfig != null) {
+            this.securityConfig = securityConfig;
+        } else {
+            this.securityConfig = new SecurityConfig(null, null);
+        }
+        
+    }
 
     /**
      * {@inheritDoc}
@@ -204,14 +232,17 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
         return b.toString();
     }
 
-
-     /**
+    /**
      * Creates a random package id for packages that lack one.
      * 
      * @return a random package id.
      */
     protected static PackageId createRandomPid() {
         return new PackageId("temporary", "pack_" + UUID.randomUUID().toString(), (String) null);
+    }
+
+    public @NotNull SecurityConfig getSecurityConfig() {
+        return securityConfig;
     }
 
 

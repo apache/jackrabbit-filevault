@@ -19,7 +19,7 @@ package org.apache.jackrabbit.vault.rcp.impl;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -72,6 +73,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
     public static final String PARAM_THROTTLE = "throttle";
     public static final String PARAM_EXCLUDES = "excludes";
     public static final String PARAM_RESUME_FROM = "resumeFrom";
+    public static final String PARAM_FILTER = "filter";
 
     /**
      * default logger
@@ -171,7 +173,15 @@ public class RcpServlet extends SlingAllMethodsServlet {
                     }
                     task = taskMgr.addTask(address, creds, dst, id, excludeList, recursive);
                 } else {
-                    task = taskMgr.addTask(address, creds, dst, id, (WorkspaceFilter)null, recursive);
+                    final WorkspaceFilter filter;
+                    if (data.has(PARAM_FILTER)) {
+                        DefaultWorkspaceFilter filterImpl = new DefaultWorkspaceFilter();
+                        filterImpl.load(IOUtils.toInputStream(data.getString(PARAM_FILTER), StandardCharsets.UTF_8));
+                        filter = filterImpl;
+                    } else {
+                        filter = null;
+                    }
+                    task = taskMgr.addTask(address, creds, dst, id, filter, recursive);
                 }
 
                 // add additional data

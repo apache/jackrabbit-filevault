@@ -25,20 +25,14 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.Dependency;
-import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
-import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
-import org.apache.jackrabbit.vault.packaging.impl.AdminPermissionChecker;
-import org.apache.jackrabbit.vault.packaging.impl.InstallHookProcessorImpl;
-import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
@@ -53,9 +47,8 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
     public static final class SecurityConfig {
         private final String[] authIdsForHookExecution;
         private final String[] authIdsForRootInstallation;
-        
+
         public SecurityConfig(String[] authIdsForHooks, String[] authIdsForRoots) {
-            super();
             this.authIdsForHookExecution = authIdsForHooks;
             this.authIdsForRootInstallation = authIdsForRoots;
         }
@@ -86,7 +79,6 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
     protected final @NotNull SecurityConfig securityConfig;
 
     public AbstractPackageRegistry(SecurityConfig securityConfig) {
-        super();
         if (securityConfig != null) {
             this.securityConfig = securityConfig;
         } else {

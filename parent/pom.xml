@@ -256,6 +256,9 @@ Bundle-Category: jackrabbit
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.9.0</version>
+                    <configuration>
+                        <skipDeploy>true</skipDeploy><!-- always deploy via maven-scm-publish-plugin -->
+                    </configuration>
                     <dependencies>
                         <dependency>
                             <groupId>org.apache.maven.doxia</groupId>

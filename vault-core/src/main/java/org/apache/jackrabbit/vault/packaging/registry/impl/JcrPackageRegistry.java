@@ -107,11 +107,6 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     private final String[] packRootPaths;
 
     /**
-     * the package root prefix of the primary root path.
-     */
-    private final String primaryPackRootPathPrefix;
-    
-    /**
      * Fallback Registry can be registered if present in the system to be able to look up presatisfied dependencies
      */
     private PackageRegistry baseRegistry = null;
@@ -123,6 +118,11 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @param roots the root paths to store the packages.
      */
     public JcrPackageRegistry(@NotNull Session session, @Nullable String ... roots) {
+        this(session, null, roots);
+    }
+
+    public JcrPackageRegistry(@NotNull Session session, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig, @Nullable String... roots) {
+        super(securityConfig);
         this.session = session;
         if (roots == null || roots.length == 0) {
             packRootPaths = new String[]{DEFAULT_PACKAGE_ROOT_PATH};
@@ -130,10 +130,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             packRootPaths = roots;
         }
         packRoots = new Node[packRootPaths.length];
-        primaryPackRootPathPrefix = packRootPaths[0] + "/";
         initNodeTypes();
     }
-
+    
     /**
      * Sets fallback PackageRegistry for dependency lookup
      * @param baseRegisry
@@ -525,7 +524,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
         String parentPath = Text.getRelativeParent(path, 1);
         if (path == null || ("/".equals(path) && parentPath.equals(path))) {
-            throw new RepositoryException("could not crete intermediate nodes");
+            throw new RepositoryException("could not create intermediate nodes");
         }
         Node parent = mkdir(parentPath, autoSave);
         Node node = null;
@@ -774,7 +773,8 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     @Override
     public void installPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts,
             boolean extract) throws IOException, PackageException {
-        try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()) {
+        JcrRegisteredPackage registeredPackage = (JcrRegisteredPackage) pkg;
+        try (JcrPackage jcrPkg = registeredPackage.getJcrPackage()) {
             if (extract) {
                 jcrPkg.extract(opts);
             } else {

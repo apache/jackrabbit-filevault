@@ -17,6 +17,8 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import static org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,13 +59,13 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
+
+import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import static org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
 
 /**
  * Extends the {@code PackageManager} by JCR specific methods
@@ -82,17 +84,21 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
 
     /**
      * Creates a new package manager using the given session. This method allows to specify one more or package
-     * registry root paths, where the first will be the primary when installing new packages. The others server as
+     * registry root paths, where the first will be the primary when installing new packages. The others serve as
      * backward compatibility to read existing packages.
      *
      * @param session repository session
      * @param roots the root paths to store the packages.
      */
-    public JcrPackageManagerImpl(Session session, String[] roots) {
+    public JcrPackageManagerImpl(@NotNull Session session, @Nullable String[] roots) {
         this(new JcrPackageRegistry(session, roots));
     }
 
-    private JcrPackageManagerImpl(JcrPackageRegistry registry) {
+    public JcrPackageManagerImpl(@NotNull Session session, @Nullable String[] roots, @Nullable String[] authIdsForHookExecution, @Nullable String[] authIdsForRootInstallation) {
+        this(new JcrPackageRegistry(session, new AbstractPackageRegistry.SecurityConfig(authIdsForHookExecution, authIdsForRootInstallation), roots));
+    }
+
+    protected JcrPackageManagerImpl(JcrPackageRegistry registry) {
         this.registry = registry;
     }
 

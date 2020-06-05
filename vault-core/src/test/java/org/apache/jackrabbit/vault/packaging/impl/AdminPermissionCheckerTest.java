@@ -17,9 +17,11 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.UnsupportedRepositoryOperationException;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -99,5 +101,46 @@ public class AdminPermissionCheckerTest extends IntegrationTestBase {
         }
     }
 
+    @Test
+    public void testAdditionalAdminUser() throws AccessDeniedException, UnsupportedRepositoryOperationException, RepositoryException {
+        JackrabbitSession jackrabbitSession = (JackrabbitSession) admin;
+        Authorizable vip = jackrabbitSession.getUserManager().getAuthorizable(TEST_USER);
+        assertNull("test user must not exist", vip);
 
+        jackrabbitSession.getUserManager().createUser(TEST_USER, TEST_USER);
+        admin.save();
+
+        Session session = repository.login(new SimpleCredentials(TEST_USER, TEST_USER.toCharArray()));
+        try {
+            assertTrue(
+                    "\"" + TEST_USER + "\" is additional admin/system thus should have admin permissions",
+                    AdminPermissionChecker.hasAdministrativePermissions(session, TEST_USER));
+        } finally {
+            session.logout();
+        }
+    }
+
+    @Test
+    public void testAdditionalAdminGroup() throws Exception {
+        JackrabbitSession jackrabbitSession = (JackrabbitSession) admin;
+        Authorizable admins = jackrabbitSession.getUserManager().getAuthorizable("myadmins");
+        if (admins == null) {
+            admins = jackrabbitSession.getUserManager().createGroup("myadmins");
+        }
+        Group adminsGroup = (Group) admins;
+        User testUser = (User) jackrabbitSession.getUserManager().getAuthorizable(TEST_USER);
+        if (testUser == null) {
+            testUser = jackrabbitSession.getUserManager().createUser(TEST_USER, TEST_USER);
+        }
+        adminsGroup.addMember(testUser);
+        admin.save();
+        Session session = repository.login(new SimpleCredentials(TEST_USER, TEST_USER.toCharArray()));
+        try {
+            assertTrue(
+                    "user \"" + TEST_USER + "\" has been added to additional administrators group thus should have admin permissions",
+                    AdminPermissionChecker.hasAdministrativePermissions(session, "myadmins"));
+        } finally {
+            session.logout();
+        }
+    }
 }

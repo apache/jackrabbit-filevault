@@ -120,7 +120,7 @@ public interface PackageProperties {
     String NAME_DESCRIPTION = "description";
 
     /**
-     * Name of the flag that indicates in only admin sessions
+     * Name of the flag that indicates that only admin sessions
      * can extract this package.
      */
     String NAME_REQUIRES_ROOT = "requiresRoot";

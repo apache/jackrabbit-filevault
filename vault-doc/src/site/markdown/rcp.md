@@ -147,6 +147,7 @@ Creates a new task.
 | throttle     | \- | Number of seconds to sleep after each intermediate save. Default is _0_. |
 | resumeFrom   | \- | Source path to resume a prior aborted copy. Note that the algorithm simply skips all source nodes until the _resumeFrom_ path is found. It is necessary that the content structure of the source repository does not change in between runs, and that content already needs to be present in the detination location. |
 | excludes     | \- | Array of java regular expressions that exclude source paths. |
+| filter       | \- | Serialized [filter.xml](filter.html) specifing which repository areas to copy. Only used if `excludes` is not given. Make sure that the value is properly escaped. |
 
 
 ##### Example

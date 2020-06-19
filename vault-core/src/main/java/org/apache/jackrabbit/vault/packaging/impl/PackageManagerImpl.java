@@ -41,8 +41,10 @@ import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.impl.AggregateManagerImpl;
+import org.apache.jackrabbit.vault.fs.io.AbstractExporter;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.JarExporter;
+import org.apache.jackrabbit.vault.fs.io.NodeExporter;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageId;
@@ -154,7 +156,7 @@ public class PackageManagerImpl implements PackageManager {
         }
 
         VaultFileSystem jcrfs = Mounter.mount(config, metaInf.getFilter(), addr, opts.getRootPath(), s);
-        JarExporter exporter = new JarExporter(out, opts.getCompressionLevel());
+        AbstractExporter exporter = opts.isNodeOnly() ? new NodeExporter(out) : new JarExporter(out, opts.getCompressionLevel());
         exporter.setProperties(metaInf.getProperties());
         if (opts.getListener() != null) {
             exporter.setVerbose(opts.getListener());

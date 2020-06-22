@@ -44,7 +44,7 @@ public class FSRegisteredPackageTest {
     private File getTempFile(String name) throws IOException {
         File tmpFile = File.createTempFile("vaultpack", ".zip");
         try (InputStream in = getClass().getResourceAsStream(name);
-             FileOutputStream out = FileUtils.openOutputStream(tmpFile)) {
+            FileOutputStream out = FileUtils.openOutputStream(tmpFile)) {
             IOUtils.copy(in, out);
         }
         return tmpFile;
@@ -74,31 +74,28 @@ public class FSRegisteredPackageTest {
     @Test
     public void testGetPackageFromNonTruncatedFile() throws IOException {
         File packageFile = getTempFile("test-package.zip");
-        RegisteredPackage regPack = new FSRegisteredPackage(newRegistry(packageFile), newInstallState(packageFile));
-        try {
-            VaultPackage vltPack = regPack.getPackage();
+        try (RegisteredPackage regPack = new FSRegisteredPackage(newRegistry(packageFile), newInstallState(packageFile));
+                VaultPackage vltPack = regPack.getPackage()) {
             assertNotNull(vltPack);
             assertNotNull(vltPack.getArchive());
         } catch (IOException e) {
             fail("should not throw any exception, but thrown: " + e.getMessage());
         } finally {
-            regPack.close();
+            packageFile.delete();
         }
     }
 
     @Test
     public void testGetPackageFromTruncatedFile() throws IOException {
         File packageFile = getTempFile("test-package-truncated.zip");
-        RegisteredPackage regPack = new FSRegisteredPackage(newRegistry(packageFile), newInstallState(packageFile));
-        try {
-            VaultPackage vltPack = regPack.getPackage();
+        try (RegisteredPackage regPack = new FSRegisteredPackage(newRegistry(packageFile), newInstallState(packageFile));
+                VaultPackage vltPack = regPack.getPackage()) {
             assertNotNull(vltPack);
             assertNull(vltPack.getArchive());
         } catch (IOException e) {
             fail("should not throw any exception, but thrown: " + e.getMessage());
         } finally {
-            regPack.close();
+            packageFile.delete();
         }
     }
-
 }

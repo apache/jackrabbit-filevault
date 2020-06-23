@@ -55,11 +55,10 @@ public class DiffTest extends TestCase {
 
         DocumentDiff diff = d1.diff(d2);
         StringBuffer buf = new StringBuffer();
-        diff.write(buf, DiffWriter.LS_NATIVE, numCtx); // all txt files are cloned with native line ending by default
-        assertEquals("result", result, buf.toString());
-
+        diff.write(buf, DiffWriter.LS_NATIVE, numCtx);
+        assertEquals("result", result.replace("\r", ""), buf.toString().replace("\r", ""));
     }
-    
+
     private String getResource(String name) throws IOException {
         InputStream in = this.getClass().getClassLoader().getResourceAsStream(name);
         return IOUtils.toString(in);

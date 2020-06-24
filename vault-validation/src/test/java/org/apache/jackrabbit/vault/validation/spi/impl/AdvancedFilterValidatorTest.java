@@ -63,8 +63,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.xml.sax.SAXException;
 
-import com.google.common.collect.Maps;
-
 @RunWith(MockitoJUnitRunner.class)
 public class AdvancedFilterValidatorTest {
 
@@ -93,7 +91,7 @@ public class AdvancedFilterValidatorTest {
         dependenciesMetaInfo = new LinkedList<>();
         validRoots = new LinkedList<>();
         validRoots.addAll(AdvancedFilterValidatorFactory.DEFAULT_VALID_ROOTS);
-        factory = AdvancedFilterValidatorFactory.createFilterXsdAwareDocumentBuilder(Locale.US);
+        factory = AdvancedFilterValidatorFactory.createFilterXsdAwareDocumentBuilder(Locale.ROOT);
     }
 
     private NodeContext getStandardNodeContext(String nodePath) {

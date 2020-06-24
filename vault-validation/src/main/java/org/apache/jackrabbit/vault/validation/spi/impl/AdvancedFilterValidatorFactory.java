@@ -76,7 +76,6 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         factory.setNamespaceAware(true);
         try (InputStream xsdInput = AdvancedFilterValidatorFactory.class.getResourceAsStream("/filter.xsd")) {
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
             // load a WXS schema, represented by a Schema instance
             Source schemaFile = new StreamSource(xsdInput);
             Schema schema = schemaFactory.newSchema(schemaFile);

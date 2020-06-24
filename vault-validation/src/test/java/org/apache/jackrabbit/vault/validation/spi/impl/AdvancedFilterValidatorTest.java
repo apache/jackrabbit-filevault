@@ -130,7 +130,7 @@ public class AdvancedFilterValidatorTest {
             validatorsById.put("myself", validator);
             validator.setFilterValidators(validatorsById);
 
-            Collection<ValidationMessage> messages = validator.validateMetaInfData(input2, Paths.get("vault/filter.xml"));
+            Collection<ValidationMessage> messages = validator.validateMetaInfData(input2, Paths.get("vault/filter.xml"), Paths.get(""));
             ValidationExecutorTest.assertViolation(messages,
                     new ValidationViolation("id2", ValidationMessageSeverity.ERROR, "error1"));
             // all contained FilterSets are sealed (due to the call of AdvancedFilterValidator.validate(...) -> FilterSet.getEntries())
@@ -367,7 +367,7 @@ public class AdvancedFilterValidatorTest {
                     dependenciesMetaInfo,
                     filter,
                     validRoots);
-            Collection<ValidationMessage> messages = validator.validateMetaInfData(input, Paths.get("vault/filter.xml"));
+            Collection<ValidationMessage> messages = validator.validateMetaInfData(input, Paths.get("vault/filter.xml"), Paths.get(""));
             ValidationExecutorTest.assertViolation(messages,
                     new ValidationMessage(ValidationMessageSeverity.WARN,
                             "cvc-complex-type.3.2.2: Attribute 'mode' is not allowed to appear in element 'exclude'.", 20, 51, null),
@@ -397,7 +397,7 @@ public class AdvancedFilterValidatorTest {
         validator.setFilterValidators(Collections.singletonMap("filterid", validator));
         try (InputStream input = this.getClass()
                 .getResourceAsStream("/invalid-package/META-INF/vault/filter-non-matching-regex.xml")) {
-            Collection<ValidationMessage> messages = validator.validateMetaInfData(input, Paths.get("vault/filter-non-matching-regex.xml"));
+            Collection<ValidationMessage> messages = validator.validateMetaInfData(input, Paths.get("vault/filter-non-matching-regex.xml"), Paths.get(""));
             ValidationExecutorTest.assertViolation(messages,
                     new ValidationViolation("filterid", ValidationMessageSeverity.WARN,
                             String.format(AdvancedFilterValidator.MESSAGE_INVALID_PATTERN,

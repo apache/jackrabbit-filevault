@@ -1,7 +1,7 @@
 [![ASF Jira](https://img.shields.io/badge/ASF%20JIRA-JCRVLT-orange)](https://issues.apache.org/jira/projects/JCRVLT/summary)
 ![GitHub](https://img.shields.io/github/license/apache/jackrabbit-filevault)
 [![Maven Central](https://img.shields.io/maven-central/v/org.apache.jackrabbit.vault/vault-cli.svg?label=Maven%20Central)](https://search.maven.org/artifact//org.apache.jackrabbit.vault/vault-cli)
-[![Build Status](https://travis-ci.org/apache/jackrabbit-filevault.svg?branch=master)](https://travis-ci.org/apache/jackrabbit-filevault)
+[![Build Status](https://img.shields.io/travis/apache/jackrabbit-filevault/master)](https://travis-ci.org/apache/jackrabbit-filevault)
 
 Welcome to Apache Jackrabbit FileVault
 ===========================================================

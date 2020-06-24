@@ -25,9 +25,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.jcr.PropertyType;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -83,12 +85,15 @@ public class AdvancedFilterValidatorTest {
     private Collection<PackageInfo> dependenciesMetaInfo;
 
     private Collection<String> validRoots;
+    
+    private DocumentBuilderFactory factory;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         dependenciesMetaInfo = new LinkedList<>();
         validRoots = new LinkedList<>();
         validRoots.addAll(AdvancedFilterValidatorFactory.DEFAULT_VALID_ROOTS);
+        factory = AdvancedFilterValidatorFactory.createFilterXsdAwareDocumentBuilder(Locale.US);
     }
 
     private NodeContext getStandardNodeContext(String nodePath) {
@@ -110,6 +115,7 @@ public class AdvancedFilterValidatorTest {
             filter.load(input);
 
             validator = new AdvancedFilterValidator(
+                    factory,
                     ValidationMessageSeverity.WARN,
                     AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                     ValidationMessageSeverity.ERROR,
@@ -145,6 +151,7 @@ public class AdvancedFilterValidatorTest {
             filter.load(input);
         }
         validator = new AdvancedFilterValidator(
+                factory,
                 ValidationMessageSeverity.WARN,
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
@@ -167,6 +174,7 @@ public class AdvancedFilterValidatorTest {
             filter.load(input);
         }
         validator = new AdvancedFilterValidator(
+                factory,
                 ValidationMessageSeverity.WARN,
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
@@ -208,6 +216,7 @@ public class AdvancedFilterValidatorTest {
             filter.load(input);
         }
         validator = new AdvancedFilterValidator(
+                factory,
                 ValidationMessageSeverity.ERROR,
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
@@ -227,6 +236,7 @@ public class AdvancedFilterValidatorTest {
 
         // default severity ERROR
         validator = new AdvancedFilterValidator(
+                factory,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
@@ -244,6 +254,7 @@ public class AdvancedFilterValidatorTest {
         validRoots.add("/someroot");
         // default severity ERROR
         validator = new AdvancedFilterValidator(
+                factory,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.WARN,
                 ValidationMessageSeverity.ERROR,
@@ -271,6 +282,7 @@ public class AdvancedFilterValidatorTest {
         validRoots.add("/customroot");
         dependenciesMetaInfo.add(new DefaultPackageInfo(PackageId.fromString("group:dependency1"), dependencyFilter, PackageType.APPLICATION));
         validator = new AdvancedFilterValidator(
+                factory,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
@@ -296,6 +308,7 @@ public class AdvancedFilterValidatorTest {
             filter.load(input);
         }
         validator = new AdvancedFilterValidator(
+                factory,
                 ValidationMessageSeverity.INFO,
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
@@ -324,6 +337,7 @@ public class AdvancedFilterValidatorTest {
             filter.load(input);
         }
         validator = new AdvancedFilterValidator(
+                factory,
                 ValidationMessageSeverity.INFO,
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.INFO,
@@ -344,6 +358,7 @@ public class AdvancedFilterValidatorTest {
         try (InputStream input = this.getClass()
                 .getResourceAsStream("/invalid-package/META-INF/vault/filter.xml")) {
             validator = new AdvancedFilterValidator(
+                    factory,
                     ValidationMessageSeverity.WARN,
                     AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                     ValidationMessageSeverity.ERROR,
@@ -370,6 +385,7 @@ public class AdvancedFilterValidatorTest {
     public void testFilterWithNonMatchingRegex() throws URISyntaxException, IOException, SAXException,
             ParserConfigurationException, ConfigurationException {
         validator = new AdvancedFilterValidator(
+                factory,
                 ValidationMessageSeverity.WARN,
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,
@@ -417,6 +433,7 @@ public class AdvancedFilterValidatorTest {
             filter.load(input);
         }
         validator = new AdvancedFilterValidator(
+                factory,
                 ValidationMessageSeverity.WARN,
                 AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
                 ValidationMessageSeverity.ERROR,

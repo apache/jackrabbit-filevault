@@ -16,11 +16,22 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Set;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
@@ -32,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 @MetaInfServices
 public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
@@ -49,11 +61,42 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
     static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES = ValidationMessageSeverity.INFO;
     static final Collection<String> DEFAULT_VALID_ROOTS = new LinkedList<>(Arrays.asList("/","/libs","/apps","/etc","/var","/tmp","/content","/etc/packages"));
 
+    @NotNull private final DocumentBuilderFactory factory;
     /**
      * the default logger
      */
     private static final Logger log = LoggerFactory.getLogger(AdvancedFilterValidatorFactory.class);
 
+    public AdvancedFilterValidatorFactory() throws IOException {
+        factory = createFilterXsdAwareDocumentBuilder(null);
+    }
+
+    static @NotNull DocumentBuilderFactory createFilterXsdAwareDocumentBuilder(Locale locale) throws IOException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        try (InputStream xsdInput = AdvancedFilterValidatorFactory.class.getResourceAsStream("/filter.xsd")) {
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
+            // load a WXS schema, represented by a Schema instance
+            Source schemaFile = new StreamSource(xsdInput);
+            Schema schema = schemaFactory.newSchema(schemaFile);
+            factory.setSchema(schema);
+            if (xsdInput == null) {
+                throw new IllegalStateException("Can not load filter.xsd");
+            }
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            // optionally adjust locale, https://stackoverflow.com/a/18745978
+            if (locale != null) {
+                factory.setAttribute("http://apache.org/xml/properties/locale", locale);
+            }
+        } catch (SAXException e) {
+            throw new IOException("Could not parse input as xml", e);
+        } catch (ParserConfigurationException e) {
+            throw new IllegalStateException("Could not instantiate DOM parser", e);
+        }
+        return factory;
+    }
+    
     @Override
     public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         final ValidationMessageSeverity severityForUncoveredAncestorNode;
@@ -92,7 +135,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         } else {
             validRoots.addAll(DEFAULT_VALID_ROOTS);
         }
-        return new AdvancedFilterValidator(settings.getDefaultSeverity(), severityForUncoveredAncestorNode, severityForUncoveredFilterRootAncestors, severityForOrphanedFilterRules, context.getContainerValidationContext() != null, context.getDependenciesPackageInfo(), context.getFilter(), validRoots);
+        return new AdvancedFilterValidator(factory, settings.getDefaultSeverity(), severityForUncoveredAncestorNode, severityForUncoveredFilterRootAncestors, severityForOrphanedFilterRules, context.getContainerValidationContext() != null, context.getDependenciesPackageInfo(), context.getFilter(), validRoots);
     }
 
     @Override

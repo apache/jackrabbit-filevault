@@ -45,6 +45,13 @@ env:
     - JDK="adopt@1.8"
     - JDK="adopt@1.11"
     - JDK="adopt@1.14"
+jobs:
+  include:
+  - os: linux
+    env:
+       - JDK="adopt@1.8"
+       - LANG="de_DE.UTF-8"
+       - LC_ALL="de_DE.UTF-8"
 before_install:
   # Download the script
   - curl "${GRAVIS}.install-jdk-travis.sh" --output ~/.install-jdk-travis.sh

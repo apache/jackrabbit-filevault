@@ -31,6 +31,10 @@ import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 public class DefaultPathFilter implements PathFilter {
 
     /**
+     * 
+     */
+    private static final long serialVersionUID = 6720323970254051462L;
+    /**
      * the internal regex pattern
      */
     private Pattern regex;

@@ -16,6 +16,9 @@
  */
 package org.apache.jackrabbit.vault.rcp.impl;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,21 +41,18 @@ import org.apache.jackrabbit.vault.util.RepositoryCopier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * {@code RcpTask}...
- */
-public class RcpTaskImpl implements Runnable, RcpTask {
+/** {@code RcpTask}... */
+public class RcpTaskImpl implements Runnable, RcpTask, Serializable {
 
     /**
-     * default logger
+     * 
      */
+    private static final long serialVersionUID = -63586992801753312L;
+
+    /** default logger */
     private static final Logger log = LoggerFactory.getLogger(RcpTaskImpl.class);
 
-    private final RcpTaskManagerImpl mgr;
-
     private final String id;
-
-    private RepositoryCopier rcp = new RepositoryCopier();
 
     private final RepositoryAddress src;
 
@@ -62,17 +62,24 @@ public class RcpTaskImpl implements Runnable, RcpTask {
 
     private final boolean recursive;
 
-    private volatile Result result;
-
     private List<String> excludes;
 
-    private Thread thread;
+    private transient Result result;
 
-    private Session srcSession;
+    private transient RepositoryCopier rcp;
 
-    private Session dstSession;
-    
-    private final static class ResultImpl implements RcpTask.Result {
+    private transient Thread thread;
+
+    private transient Session srcSession;
+
+    private transient Session dstSession;
+
+    /** classloader used in the thread executing the task */
+    private transient ClassLoader classLoader;
+
+    private WorkspaceFilter filter;
+
+    private static final class ResultImpl implements RcpTask.Result {
 
         private final State state;
         private final Throwable throwable;
@@ -80,7 +87,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         public ResultImpl(State state) {
             this(state, null);
         }
-        
+
         public ResultImpl(State state, Throwable throwable) {
             super();
             this.state = state;
@@ -96,37 +103,51 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         public Throwable getThrowable() {
             return throwable;
         }
-        
     }
 
-    public RcpTaskImpl(RcpTaskManagerImpl mgr, RepositoryAddress src, Credentials srcCreds, String dst, String id) {
-        this(mgr, src, srcCreds, dst, id, (WorkspaceFilter)null, false);
+    public RcpTaskImpl(ClassLoader dynLoader, RepositoryAddress src, Credentials srcCreds, String dst, String id) {
+        this(dynLoader, src, srcCreds, dst, id, (WorkspaceFilter) null, false);
     }
 
-    public RcpTaskImpl(RcpTaskManagerImpl mgr, RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, boolean recursive) throws ConfigurationException {
-        this(mgr, src, srcCreds, dst, id, createFilterForExcludes(excludes), recursive);
+    public RcpTaskImpl(ClassLoader dynLoader, RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes,
+            boolean recursive) throws ConfigurationException {
+        this(dynLoader, src, srcCreds, dst, id, createFilterForExcludes(excludes), recursive);
         this.excludes = excludes;
     }
 
-    private static WorkspaceFilter createFilterForExcludes(List<String> excludes) throws ConfigurationException {
-        // could be done better
-        DefaultWorkspaceFilter srcFilter = new DefaultWorkspaceFilter();
-        PathFilterSet filterSet = new PathFilterSet("/");
-        for (String path: excludes) {
-            filterSet.addExclude(new DefaultPathFilter(path));
-        }
-        return srcFilter;
-    }
-
-    public RcpTaskImpl(RcpTaskManagerImpl mgr, RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter, boolean recursive) {
-        this.mgr = mgr;
+    public RcpTaskImpl(ClassLoader dynLoader, RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter,
+            boolean recursive) {
         this.src = src;
         this.dst = dst;
         this.srcCreds = srcCreds;
         this.id = id == null || id.length() == 0
                 ? UUID.randomUUID().toString()
                 : id;
-        rcp.setTracker(new ProgressTrackerListener(){
+        this.recursive = recursive;
+        this.filter = srcFilter;
+        initTransientData();
+        this.classLoader = dynLoader;
+    }
+
+    private static WorkspaceFilter createFilterForExcludes(List<String> excludes) throws ConfigurationException {
+        // could be done better
+        DefaultWorkspaceFilter srcFilter = new DefaultWorkspaceFilter();
+        PathFilterSet filterSet = new PathFilterSet("/");
+        for (String path : excludes) {
+            filterSet.addExclude(new DefaultPathFilter(path));
+        }
+        return srcFilter;
+    }
+
+    private void readObject(java.io.ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        initTransientData();
+    }
+
+    private void initTransientData() {
+        rcp = new RepositoryCopier();
+        rcp.setTracker(new ProgressTrackerListener() {
             public void onMessage(Mode mode, String action, String path) {
                 log.info("{} {}", action, path);
             }
@@ -135,11 +156,14 @@ public class RcpTaskImpl implements Runnable, RcpTask {
                 log.error("{} {}", path, e.toString());
             }
         });
-        this.recursive = recursive;
-        if (srcFilter != null) {
-            rcp.setSourceFilter(srcFilter);
+        if (filter != null) {
+            rcp.setSourceFilter(filter);
         }
         result = new ResultImpl(Result.State.NEW);
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
     @Override
@@ -193,17 +217,16 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         }
         // clone session
         dstSession = session.impersonate(new SimpleCredentials(session.getUserID(), new char[0]));
-        ClassLoader dynLoader = mgr.getDynamicClassLoader();
         ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(dynLoader);
+        Thread.currentThread().setContextClassLoader(classLoader);
         try {
             srcSession = getSourceSession(src);
         } finally {
             Thread.currentThread().setContextClassLoader(oldLoader);
         }
 
-        thread  = new Thread(this, "Vault RCP Task - " + id);
-        thread.setContextClassLoader(dynLoader);
+        thread = new Thread(this, "Vault RCP Task - " + id);
+        thread.setContextClassLoader(classLoader);
         thread.start();
         return true;
     }
@@ -232,7 +255,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
 
     public void run() {
         result = new ResultImpl(Result.State.RUNNING);
-        log.info("Starting repository copy task id={}. From {} to {}.", new Object[]{
+        log.info("Starting repository copy task id={}. From {} to {}.", new Object[] {
                 id, src.toString(), dst
         });
         try {
@@ -269,4 +292,104 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         return excludes;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((dst == null) ? 0 : dst.hashCode());
+        result = prime * result + ((excludes == null) ? 0 : excludes.hashCode());
+        result = prime * result + ((filter == null) ? 0 : filter.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + (recursive ? 1231 : 1237);
+        result = prime * result + ((src == null) ? 0 : src.hashCode());
+        result = prime * result + ((srcCreds == null) ? 0 : srcCreds.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RcpTaskImpl other = (RcpTaskImpl) obj;
+        if (dst == null) {
+            if (other.dst != null)
+                return false;
+        } else if (!dst.equals(other.dst))
+            return false;
+        if (excludes == null) {
+            if (other.excludes != null)
+                return false;
+        } else if (!excludes.equals(other.excludes))
+            return false;
+        if (filter == null) {
+            if (other.filter != null)
+                return false;
+        } else if (!filter.equals(other.filter))
+            return false;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        if (recursive != other.recursive)
+            return false;
+        if (src == null) {
+            if (other.src != null)
+                return false;
+        } else if (!src.equals(other.src))
+            return false;
+        if (!areCredentialsEqual(srcCreds, other.srcCreds)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "RcpTaskImpl [" + (id != null ? "id=" + id + ", " : "") + (src != null ? "src=" + src + ", " : "")
+                + (srcCreds != null ? "srcCreds=" + srcCreds + ", " : "") + (dst != null ? "dst=" + dst + ", " : "") + "recursive="
+                + recursive + ", " + (excludes != null ? "excludes=" + excludes + ", " : "") + (filter != null ? "filter=" + filter : "")
+                + "]";
+    }
+
+    /** @param credentials
+     * @return */
+    boolean areCredentialsEqual(Credentials credentials, Credentials otherCredentials) {
+        if (credentials == null || otherCredentials == null) {
+            if (otherCredentials != null || credentials != null) {
+                return false;
+            }
+        } else {
+            if (credentials.getClass() != otherCredentials.getClass()) {
+                return false;
+            }
+            if (!(credentials instanceof SimpleCredentials)) {
+                throw new IllegalArgumentException("Only equality check for SimpleCredentials supported!");
+            }
+            SimpleCredentials simpleCredentials = SimpleCredentials.class.cast(credentials);
+            SimpleCredentials simpleOtherCredentials = SimpleCredentials.class.cast(otherCredentials);
+
+            if (!Arrays.equals(simpleCredentials.getPassword(), simpleOtherCredentials.getPassword())) {
+                return false;
+            }
+            if (!simpleCredentials.getUserID().equals(simpleOtherCredentials.getUserID())) {
+                return false;
+            }
+
+            if (!Arrays.equals(simpleCredentials.getAttributeNames(), simpleOtherCredentials.getAttributeNames())) {
+                return false;
+            }
+
+            for (String attributeName : simpleCredentials.getAttributeNames()) {
+                if (!simpleCredentials.getAttribute(attributeName).equals(simpleOtherCredentials.getAttribute(attributeName))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

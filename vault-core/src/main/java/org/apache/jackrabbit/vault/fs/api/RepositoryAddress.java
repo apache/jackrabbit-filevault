@@ -17,6 +17,7 @@
 
 package org.apache.jackrabbit.vault.fs.api;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -39,7 +40,12 @@ import org.jetbrains.annotations.Nullable;
  * <li> scheme://host:port/prefix/workspace/jcr_root/path
  * </ul>
  */
-public class RepositoryAddress {
+public class RepositoryAddress implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -8908383584312413471L;
 
     /**
      * the (virtual) jcr root. 

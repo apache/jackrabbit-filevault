@@ -35,6 +35,11 @@ import javax.jcr.RepositoryException;
 public class ItemFilterSet extends FilterSet<ItemFilter> {
 
     /**
+     * 
+     */
+    private static final long serialVersionUID = 5031626199477577120L;
+
+    /**
      * The include all item filter set
      */
     public static final ItemFilterSet INCLUDE_ALL =

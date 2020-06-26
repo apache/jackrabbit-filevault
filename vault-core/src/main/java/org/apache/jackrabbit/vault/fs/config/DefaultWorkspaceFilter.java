@@ -71,6 +71,11 @@ import org.xml.sax.SAXException;
 public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
     /**
+     * 
+     */
+    private static final long serialVersionUID = -3447699591404393205L;
+
+    /**
      * default logger
      */
     private static final Logger log = LoggerFactory.getLogger(DefaultWorkspaceFilter.class);

@@ -57,7 +57,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <test.vm.options>-Doak=$test.oak}</test.vm.options>
         <argLine>${test.vm.options}</argLine>
         <java.target.version>1.8</java.target.version>
-        <bnd.version>5.1.0</bnd.version>
+        <bnd.version>5.1.1</bnd.version>
         <maven.version>3.6.1</maven.version><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
         <surefire.version>3.0.0-M4</surefire.version>
     </properties>
@@ -255,7 +255,7 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.9.0</version>
+                    <version>3.9.1</version>
                     <configuration>
                         <skipDeploy>true</skipDeploy><!-- always deploy via maven-scm-publish-plugin -->
                     </configuration>
@@ -275,7 +275,7 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

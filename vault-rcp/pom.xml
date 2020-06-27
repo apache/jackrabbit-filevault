@@ -94,6 +94,7 @@
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.jcr.api</artifactId>
             <version>2.4.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
@@ -143,6 +144,7 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.6.0</version><!-- to support PROPAGATE_TRANSIENT_MARKER -->
+            <scope>provided</scope>
         </dependency>
 
         <!-- the following three dependencies are no bundles and therefore must be embedded -->
@@ -187,6 +189,10 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>

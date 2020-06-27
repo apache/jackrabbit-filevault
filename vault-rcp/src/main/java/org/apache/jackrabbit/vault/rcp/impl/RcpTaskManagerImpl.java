@@ -20,78 +20,170 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.jcr.Credentials;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.jcr.SimpleCredentials;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
 import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
+import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+
 /** {@code RcpTaskManager}... */
-@Component(immediate = true, property = { "service.vendor=The Apache Software Foundation" })
+@Component(property = { "service.vendor=The Apache Software Foundation" })
+@Designate(ocd = RcpTaskManagerImpl.Configuration.class)
 public class RcpTaskManagerImpl implements RcpTaskManager {
 
+    @ObjectClassDefinition(name = "Apache Jackrabbit FileVault RCP Task Manager", description = "Manages tasks for RCP (remote copy)")
+    public static @interface Configuration {
+        @AttributeDefinition(name = "Configuration Node Path", description = "The absolute node path where to store the tasks in the repository")
+        String configNodePath() default "/conf/rcptaskmanagerimpl/tasks";
+    }
+
     private static final String TASKS_DATA_FILE_NAME = "tasks";
+    private static final String MIMETYPE_JSON = "application/json";
+
     /** default logger */
     private static final Logger log = LoggerFactory.getLogger(RcpTaskManagerImpl.class);
 
     private final DynamicClassLoaderManager dynLoaderMgr;
 
     Map<String, RcpTaskImpl> tasks;
-    
+
     private final File dataFile;
 
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    private final Configuration configuration;
+
+    private final SlingRepository repository;
+
     @Activate
-    public RcpTaskManagerImpl(BundleContext bundleContext, @Reference DynamicClassLoaderManager dynLoaderMgr) {
+    public RcpTaskManagerImpl(BundleContext bundleContext, Configuration configuration, @Reference DynamicClassLoaderManager dynLoaderMgr,
+            @Reference SlingRepository repository) {
+        mapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
+        mapper.addMixIn(RepositoryAddress.class, RepositoryAddressMixin.class);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(DefaultWorkspaceFilter.class, new DefaultWorkspaceFilterSerializer());
+        module.addDeserializer(WorkspaceFilter.class, new WorkspaceFilterDeserializer());
+        mapper.registerModule(module);
+        mapper.addMixIn(SimpleCredentials.class, SimpleCredentialsMixin.class);
+
+        this.configuration = configuration;
         this.dynLoaderMgr = dynLoaderMgr;
-        // load tasks from data file
-        dataFile = bundleContext.getDataFile(TASKS_DATA_FILE_NAME);
-        if (dataFile == null) {
-            log.warn("No filesystem support of OSGi provided, persisting/loading tasks not possible!");
+        this.repository = repository;
+        this.dataFile = bundleContext.getDataFile(TASKS_DATA_FILE_NAME);
+        try {
+            tasks = loadTasks(dataFile);
             return;
-        }
-        try (FileInputStream fis = new FileInputStream (dataFile);
-            ObjectInputStream ois = new ObjectInputStream (fis)) {
-            tasks = Map.class.cast(ois.readObject());
-            for (RcpTaskImpl task : tasks.values()) {
-                task.setClassLoader(getDynamicClassLoader());
-            }
-            log.info("Loaded RCP tasks from '{}'", dataFile);
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (ItemNotFoundException e) {
+            log.info("No previously persisted tasks found at '{}'", configuration.configNodePath());
+            log.debug("No previously persisted tasks found!", e);
+        } catch (IOException | RepositoryException e) {
             log.error("Could not restore previous tasks", e);
-            tasks = new LinkedHashMap<>();
         }
+        tasks = new LinkedHashMap<>();
     }
 
     @Deactivate
-    void deactivate() throws IOException {
+    void deactivate() throws IOException, RepositoryException {
         log.info("RcpTaskManager deactivated. Stopping running tasks...");
         for (RcpTask task : tasks.values()) {
             task.stop();
         }
         log.info("RcpTaskManager deactivated. Stopping running tasks...done.");
-        if (dataFile != null) {
-            try (FileOutputStream fos = new FileOutputStream (dataFile);
-                 ObjectOutputStream oos = new ObjectOutputStream (fos)) {
-                   oos.writeObject(tasks);
+        persistTasks(dataFile);
+    }
+
+    InputStream getInputStream() throws RepositoryException, IOException {
+        return new FileNodeBackedInputStream(repository, configuration.configNodePath());
+    }
+
+    private Map<String, RcpTaskImpl> loadTasks(File dataFile) throws IOException, RepositoryException {
+        try (InputStream input = getInputStream()) {
+            tasks = mapper.readValue(input, new TypeReference<Map<String, RcpTaskImpl>>() {
+            });
+        }
+        // additionally load credentials data from bundle context
+        if (dataFile != null && dataFile.exists()) {
+            loadTasksCredentials(tasks, dataFile);
+        } else {
+            log.info("No previously persisted task credentials found at '{}'", dataFile);
+        }
+        return tasks;
+    }
+
+    private void loadTasksCredentials(Map<String, RcpTaskImpl> tasks, File dataFile) throws IOException {
+        Properties props = new Properties();
+        try (FileInputStream inputStream = new FileInputStream(dataFile)) {
+            props.load(inputStream);
+        }
+        for (RcpTaskImpl task : tasks.values()) {
+            String serializedCredentials = props.getProperty(task.getId());
+            if (serializedCredentials != null) {
+                Credentials credentials = mapper.readValue(serializedCredentials, SimpleCredentials.class);
+                task.setSrcCreds(credentials);
             }
-            log.info("Persisted RCP tasks in '{}'", dataFile);
+        }
+    }
+
+    OutputStream getOutputStream() throws RepositoryException, IOException {
+        return new FileNodeBackedOutputStream(repository, configuration.configNodePath(), MIMETYPE_JSON);
+    }
+
+    private void persistTasks(File dataFile) throws RepositoryException, JsonGenerationException, JsonMappingException, IOException {
+        try (OutputStream out = getOutputStream()) {
+            mapper.writerWithDefaultPrettyPrinter().writeValue(out, tasks);
+        }
+        log.info("Persisted RCP tasks in '{}'", configuration.configNodePath());
+
+        // additionally persist the sensitive data in a data file
+        if (dataFile != null) {
+            persistTasksCredentials(dataFile);
+        }
+        log.info("Persisted sensitive part of RCP tasks in '{}'", dataFile);
+    }
+
+    private void persistTasksCredentials(File dataFile) throws IOException {
+        // persist credentials of tasks to data file
+        Properties props = new Properties();
+        for (RcpTaskImpl task : tasks.values()) {
+            // include type information
+            String value = mapper.writeValueAsString(task.getSrcCreds());
+            props.setProperty(task.getId(), value);
+        }
+        try (FileOutputStream output = new FileOutputStream(dataFile)) {
+            props.store(output, "Credentials used for Apache Jackrabbit FileVault RCP");
         }
     }
 

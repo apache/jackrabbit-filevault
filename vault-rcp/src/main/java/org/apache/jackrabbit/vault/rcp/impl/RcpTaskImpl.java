@@ -41,7 +41,17 @@ import org.apache.jackrabbit.vault.util.RepositoryCopier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /** {@code RcpTask}... */
+@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE,
+isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+setterVisibility = JsonAutoDetect.Visibility.NONE,
+creatorVisibility = JsonAutoDetect.Visibility.ANY,
+fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class RcpTaskImpl implements Runnable, RcpTask, Serializable {
 
     /**
@@ -56,7 +66,8 @@ public class RcpTaskImpl implements Runnable, RcpTask, Serializable {
 
     private final RepositoryAddress src;
 
-    private final Credentials srcCreds;
+    @JsonIgnore
+    private Credentials srcCreds;
 
     private final String dst;
 
@@ -105,18 +116,15 @@ public class RcpTaskImpl implements Runnable, RcpTask, Serializable {
         }
     }
 
-    public RcpTaskImpl(ClassLoader dynLoader, RepositoryAddress src, Credentials srcCreds, String dst, String id) {
-        this(dynLoader, src, srcCreds, dst, id, (WorkspaceFilter) null, false);
-    }
-
-    public RcpTaskImpl(ClassLoader dynLoader, RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes,
+    public RcpTaskImpl(ClassLoader classLoader, RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes,
             boolean recursive) throws ConfigurationException {
-        this(dynLoader, src, srcCreds, dst, id, createFilterForExcludes(excludes), recursive);
+        this(classLoader, src, srcCreds, dst, id, createFilterForExcludes(excludes), recursive);
         this.excludes = excludes;
     }
 
-    public RcpTaskImpl(ClassLoader dynLoader, RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter,
-            boolean recursive) {
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public RcpTaskImpl(@JsonProperty("classLoader") ClassLoader dynLoader, @JsonProperty("source") RepositoryAddress src, @JsonProperty("srcCreds") Credentials srcCreds, @JsonProperty("destination") String dst, @JsonProperty("id") String id, @JsonProperty("filter") WorkspaceFilter srcFilter,
+            @JsonProperty("recursive") boolean recursive) {
         this.src = src;
         this.dst = dst;
         this.srcCreds = srcCreds;
@@ -179,7 +187,7 @@ public class RcpTaskImpl implements Runnable, RcpTask, Serializable {
     @Override
     public boolean stop() {
         // wait for thread
-        if (result.getState() != Result.State.STOPPED && result.getState() != Result.State.STOPPING) {
+        if (result.getState() != Result.State.STOPPED && result.getState() != Result.State.STOPPING && result.getState() != Result.State.NEW) {
             rcp.abort();
             int cnt = 3;
             while (thread != null && thread.isAlive() && cnt-- > 0) {
@@ -275,6 +283,14 @@ public class RcpTaskImpl implements Runnable, RcpTask, Serializable {
     @Override
     public RepositoryAddress getSource() {
         return src;
+    }
+
+    Credentials getSrcCreds() {
+        return srcCreds;
+    }
+
+    void setSrcCreds(Credentials srcCreds) {
+        this.srcCreds = srcCreds;
     }
 
     @Override

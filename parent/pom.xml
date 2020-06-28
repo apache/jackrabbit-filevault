@@ -489,6 +489,12 @@ Bundle-Category: jackrabbit
                 <version>1.4.0</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.service.component</artifactId>
+                <version>1.4.0</version>
+                <scope>provided</scope>
+            </dependency>
             <!-- Metatype Annotations -->
             <dependency>
                 <groupId>org.osgi</groupId>

@@ -17,7 +17,9 @@
 package org.apache.jackrabbit.vault.validation.spi.impl.nodetype;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import javax.jcr.AccessDeniedException;
@@ -75,7 +77,7 @@ public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorag
     
     private final ItemDefinitionProvider itemDefinitionProvider;
 
-    public NodeTypeManagerProvider(Reader reader) throws IOException, RepositoryException, ParseException {
+    public NodeTypeManagerProvider() throws IOException, RepositoryException, ParseException {
         namespaceMapping = new NamespaceMapping();
         // add default mapping, the rest comes from the CDN provided via the reader
         namespaceMapping.setMapping(NamespaceRegistry.PREFIX_EMPTY, NamespaceRegistry.NAMESPACE_EMPTY);
@@ -86,7 +88,12 @@ public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorag
         nodeTypeRegistry = NodeTypeRegistryImpl.create(nodeTypeStorage, namespaceRegistry);
         nodeTypeManager = new NodeTypeManagerImpl(nodeTypeRegistry, this);
         itemDefinitionProvider = new ItemDefinitionProviderImpl(nodeTypeRegistry, null, null);
-        registerNodeTypes(reader);
+        // always provide default
+        try (Reader reader = new InputStreamReader(
+                this.getClass().getResourceAsStream("/default-nodetypes.cnd"),
+                StandardCharsets.US_ASCII)) {
+            registerNodeTypes(reader);
+        }
     }
 
     public void registerNodeTypes(Reader reader) throws InvalidNodeTypeDefinitionException, NodeTypeExistsException, UnsupportedRepositoryOperationException, ParseException, RepositoryException, IOException {

@@ -26,15 +26,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.Manifest;
 
-import javax.jcr.NamespaceException;
 import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.cnd.ParseException;
 import org.apache.jackrabbit.jcr2spi.nodetype.EffectiveNodeType;
-import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
@@ -86,30 +83,22 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
             severityForUnknownNodetypes = DEFAULT_SEVERITY_FOR_UNKNOWN_NODETYPE;
         }
 
-        NodeTypeManagerProvider ntManagerProvider = null;
-        for (String cndUrl : resolveJarUrls(cndUrls.split(","))) {
-            try (Reader reader = new InputStreamReader(URLFactory.createURL(cndUrl).openStream(), StandardCharsets.US_ASCII)) {
-                if (ntManagerProvider == null) {
-                    LOGGER.debug("Register node types from {}", cndUrl);
-                    ntManagerProvider = new NodeTypeManagerProvider(reader);
-                } else {
-                    LOGGER.debug("Register additional node types from {}", cndUrl);
-                    ntManagerProvider.registerNodeTypes(reader);
-                }
-            } catch (RepositoryException | IOException | ParseException e) {
-                throw new IllegalArgumentException("Error loading node types from CND at " + cndUrl, e);
-            }
-        }
-        if (ntManagerProvider == null) {
-            throw new IllegalArgumentException("At least one valid CND must be given!");
-        }
-
         try {
+            NodeTypeManagerProvider ntManagerProvider = null;
+            ntManagerProvider = new NodeTypeManagerProvider();
+            for (String cndUrl : resolveJarUrls(cndUrls.split(","))) {
+                try (Reader reader = new InputStreamReader(URLFactory.createURL(cndUrl).openStream(), StandardCharsets.US_ASCII)) {
+                    LOGGER.info("Register additional node types from {}", cndUrl);
+                    ntManagerProvider.registerNodeTypes(reader);
+                } catch (RepositoryException | IOException | ParseException e) {
+                    throw new IllegalArgumentException("Error loading node types from CND at " + cndUrl, e);
+                }
+            }
             EffectiveNodeType defaultEffectiveNodeType = ntManagerProvider.getEffectiveNodeTypeProvider()
                     .getEffectiveNodeType(ntManagerProvider.getNameResolver().getQName(defaultNodeType));
             return new NodeTypeValidator(context.getFilter(), ntManagerProvider, defaultEffectiveNodeType, settings.getDefaultSeverity(),
                     severityForUnknownNodetypes);
-        } catch (IllegalNameException | NoSuchNodeTypeException | NamespaceException e) {
+        } catch (IOException | RepositoryException | ParseException e) {
             throw new IllegalArgumentException("Error loading default node type " + defaultNodeType, e);
         }
     }

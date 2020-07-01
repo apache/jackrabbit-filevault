@@ -14,7 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// all node types defined by https://docs.adobe.com/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.7.11%20Standard%20Application%20Node%20Types
+// as well as some Jackrabbit/Oak specific ones
 <'nt'='http://www.jcp.org/jcr/nt/1.0'>
 <'oak'='http://jackrabbit.apache.org/oak/ns/1.0'>
 <'jcr'='http://www.jcp.org/jcr/1.0'>

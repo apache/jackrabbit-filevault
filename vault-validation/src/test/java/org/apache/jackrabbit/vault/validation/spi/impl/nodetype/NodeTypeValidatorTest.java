@@ -18,9 +18,6 @@ package org.apache.jackrabbit.vault.validation.spi.impl.nodetype;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,16 +64,11 @@ public class NodeTypeValidatorTest {
 
     static NodeTypeValidator createValidator(WorkspaceFilter filter, String defaultNodeType)
             throws IOException, RepositoryException, ParseException {
-        // create cnd reader
-        try (Reader reader = new InputStreamReader(
-                NodeTypeValidatorTest.class.getClassLoader().getResourceAsStream("default-nodetypes.cnd"),
-                StandardCharsets.US_ASCII)) {
-            NodeTypeManagerProvider ntManagerProvider = new NodeTypeManagerProvider(reader);
-            EffectiveNodeType defaultEffectiveNodeType = ntManagerProvider.getEffectiveNodeTypeProvider()
-                    .getEffectiveNodeType(ntManagerProvider.getNameResolver().getQName(defaultNodeType));
-            return new NodeTypeValidator(filter, ntManagerProvider, defaultEffectiveNodeType, ValidationMessageSeverity.ERROR,
-                    ValidationMessageSeverity.WARN);
-        }
+        NodeTypeManagerProvider ntManagerProvider = new NodeTypeManagerProvider();
+        EffectiveNodeType defaultEffectiveNodeType = ntManagerProvider.getEffectiveNodeTypeProvider()
+                .getEffectiveNodeType(ntManagerProvider.getNameResolver().getQName(defaultNodeType));
+        return new NodeTypeValidator(filter, ntManagerProvider, defaultEffectiveNodeType, ValidationMessageSeverity.ERROR,
+                ValidationMessageSeverity.WARN);
     }
 
     @Test
@@ -128,7 +120,7 @@ public class NodeTypeValidatorTest {
                 new String[] { JcrConstants.NT_FILE }, false, PropertyType.STRING));
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, JcrConstants.NT_FILE);
         Assert.assertThat(validator.validate(node, nodeContext, false), AnyValidationMessageMatcher.noValidationInCollection());
-        
+
         ValidationExecutorTest.assertViolation(validator.validateEnd(node, nodeContext, false),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(NodeTypeValidator.MESSAGE_MANDATORY_CHILD_NODE_MISSING,
@@ -174,15 +166,15 @@ public class NodeTypeValidatorTest {
         DocViewProperty prop = new DocViewProperty("{}invalid-prop", new String[] { "some-value" }, false, PropertyType.STRING);
         props.put("{}invalid-prop", prop);
         props.put(NameConstants.JCR_PRIMARYTYPE.toString(), new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(),
-                new String[] { "sling:Folder"}, false, PropertyType.STRING));
+                new String[] { "sling:Folder" }, false, PropertyType.STRING));
         // nt:file is only supposed to have jcr:created property
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "sling:Folder");
         ValidationExecutorTest.assertViolation(validator.validate(node, nodeContext, false),
                 new ValidationMessage(ValidationMessageSeverity.WARN,
-                        String.format(NodeTypeValidator.MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE, "sling: is not a registered namespace prefix.")));
+                        String.format(NodeTypeValidator.MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE,
+                                "sling: is not a registered namespace prefix.")));
     }
 
-    
     @Test
     public void testExistenceOfPrimaryNodeTypes() throws IOException, ConfigurationException, RepositoryException, ParseException {
         validator = createValidator(filter, NodeType.NT_UNSTRUCTURED);

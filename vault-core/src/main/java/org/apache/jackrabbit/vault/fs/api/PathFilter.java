@@ -18,9 +18,9 @@
 package org.apache.jackrabbit.vault.fs.api;
 
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.StringWriter;
 
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,17 +29,12 @@ import org.jetbrains.annotations.Nullable;
  * It is usually part of a {@link PathFilterSet}.
  *
  */
-public interface PathFilter extends Filter, Dumpable, Serializable {
+public interface PathFilter extends Filter, Dumpable {
 
     /**
      * The "Catch all" item filter.
      */
     PathFilter ALL = new PathFilter() {
-
-        /**
-         * 
-         */
-        private static final long serialVersionUID = -494310821410470590L;
 
         /**
          * Returns always {@code true}
@@ -92,11 +87,6 @@ public interface PathFilter extends Filter, Dumpable, Serializable {
      * The "Miss all" item filter.
      */
     PathFilter NONE = new PathFilter() {
-
-        /**
-         * 
-         */
-        private static final long serialVersionUID = -6234466171409392783L;
 
         /**
          * Returns always {@code false}

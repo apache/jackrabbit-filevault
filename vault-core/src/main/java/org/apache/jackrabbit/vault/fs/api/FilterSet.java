@@ -18,7 +18,6 @@
 package org.apache.jackrabbit.vault.fs.api;
 
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Iterator;
@@ -37,12 +36,7 @@ import org.jetbrains.annotations.Nullable;
  * if an item has not the node addressed by the root path as ancestor, it is
  * always excluded.
  */
-public abstract class FilterSet<E extends Filter> implements Dumpable, Serializable {
-
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 6974855223334062983L;
+public abstract class FilterSet<E extends Filter> implements Dumpable {
 
     /**
      * root path of this definition
@@ -303,12 +297,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable, Serializa
     /**
      * Holds a filter entry
      */
-    public static class Entry<E extends Filter> implements Dumpable, Serializable {
-
-        /**
-         * 
-         */
-        private static final long serialVersionUID = -138305780523722012L;
+    public static class Entry<E extends Filter> implements Dumpable {
 
         /**
          * The item filter

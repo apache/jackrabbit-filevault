@@ -67,6 +67,7 @@
                             <goal>index</goal>
                         </goals>
                         <configuration>
+                            <attach>false</attach>
                             <includeGzip>false</includeGzip>
                             <scopes>compile,runtime,provided</scopes>
                         </configuration>
@@ -221,6 +222,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <artifactId>org.apache.jackrabbit.vault</artifactId>
+            <version>3.1.38</version>
         </dependency>
     </dependencies>
 

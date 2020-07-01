@@ -35,11 +35,6 @@ import org.jetbrains.annotations.Nullable;
 public class PathFilterSet extends FilterSet<PathFilter> {
 
     /**
-     * 
-     */
-    private static final long serialVersionUID = 2772732931289986519L;
-
-    /**
      * PathFilterSets of this type are only used to remove nodes during import
      * and ignored for calculation of the package type.
      */

@@ -18,7 +18,6 @@
 package org.apache.jackrabbit.vault.fs.api;
 
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.List;
 
 import javax.jcr.Node;
@@ -33,7 +32,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * {@code WorkspaceFilter} defined a filter for items (node or property).
  */
 @ProviderType
-public interface WorkspaceFilter extends Dumpable, Serializable {
+public interface WorkspaceFilter extends Dumpable {
 
     /**
      * Returns a list of path filter sets for node items.

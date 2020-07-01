@@ -1,23 +1,24 @@
 <?xml version="1.0"?><!--
-  Licensed to the Apache Software Foundation (ASF) under one or more
-  contributor license agreements.  See the NOTICE file distributed with
-  this work for additional information regarding copyright ownership.
-  The ASF licenses this file to You under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with
-  the License.  You may obtain a copy of the License at
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements. See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License. You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-  -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
     <modelVersion>4.0.0</modelVersion>
     <!-- ====================================================================== -->
-    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
+    <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <parent>
         <groupId>org.apache.jackrabbit.vault</groupId>
@@ -27,15 +28,13 @@
     </parent>
 
     <!-- ====================================================================== -->
-    <!-- P R O J E C T  D E S C R I P T I O N                                   -->
+    <!-- P R O J E C T D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <artifactId>org.apache.jackrabbit.vault.rcp</artifactId>
 
     <name>Apache Jackrabbit FileVault RCP Server Bundle</name>
-    <description>
-        Builds an OSGi bundle that provides the vlt rcp manager
-    </description>
-    
+    <description>OSGi bundle containing the Jackrabbit FileVault RCP Manager used for copying (parts of) a repository from a remote repository to another repository (either remote or local)</description>
+
     <properties>
         <!-- downgrade dependencies to make compatible with the minimum supported version -->
         <jackrabbit.version>2.14.0</jackrabbit.version>
@@ -44,16 +43,13 @@
     </properties>
 
     <!-- ====================================================================== -->
-    <!-- B U I L D                                                             -->
+    <!-- B U I L D -->
     <!-- ====================================================================== -->
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>sling-maven-plugin</artifactId>
-                <configuration>
-                    <slingUrlSuffix>/libs/system/install/</slingUrlSuffix>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
@@ -87,7 +83,7 @@
     </build>
 
     <!-- ====================================================================== -->
-    <!-- D E P E N D E N C I E S                                                -->
+    <!-- D E P E N D E N C I E S -->
     <!-- ====================================================================== -->
     <dependencies>
         <dependency>
@@ -96,10 +92,12 @@
             <version>2.4.0</version>
             <scope>provided</scope>
         </dependency>
+        <!-- depend on older version to be still compatible with older distributions -->
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.4.5-SNAPSHOT</version>
+            <version>3.1.38</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -146,8 +144,46 @@
             <version>2.6.0</version><!-- to support PROPAGATE_TRANSIENT_MARKER -->
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.framework</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.cm</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- OSGi Annotations: @Version -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.annotation.versioning</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Declarative Service Annotations -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Metatype Annotations -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.metatype.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-        <!-- the following three dependencies are no bundles and therefore must be embedded -->
+        <!-- the following dependencies are no bundles and therefore must be embedded -->
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-jcr2spi</artifactId>
@@ -164,38 +200,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.framework</artifactId>
-        </dependency>
-        <!-- OSGi Annotations: @Version -->
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.annotation.versioning</artifactId>
-        </dependency>
-        <!-- Declarative Service Annotations -->
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.service.component.annotations</artifactId>
-        </dependency>
-        <!-- Metatype Annotations -->
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.service.metatype.annotations</artifactId>
-        </dependency>
-        <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.service.component</artifactId>
-                </dependency>
-        <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-davex</artifactId>
             <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>
@@ -213,7 +223,7 @@
             <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.converter</artifactId>
             <version>1.0.14</version>
@@ -223,6 +233,19 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.util.function</artifactId>
             <version>1.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>java-hamcrest</artifactId>
+            <version>2.0.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.10</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

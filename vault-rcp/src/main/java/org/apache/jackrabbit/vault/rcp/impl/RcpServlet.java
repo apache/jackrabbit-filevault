@@ -276,12 +276,16 @@ public class RcpServlet extends SlingAllMethodsServlet {
         w.key(RcpServlet.PARAM_NO_ORDERING).value(rcpTask.getRcp().isNoOrdering());
         w.key(RcpServlet.PARAM_THROTTLE).value(rcpTask.getRcp().getThrottle());
         w.key(RcpServlet.PARAM_RESUME_FROM).value(rcpTask.getRcp().getResumeFrom());
-        if (rcpTask.getExcludes().size() > 0) {
-            w.key(RcpServlet.PARAM_EXCLUDES).array();
-            for (String exclude: rcpTask.getExcludes()) {
-                w.value(exclude);
+        if (rcpTask.getExcludes() != null) {
+            if (rcpTask.getExcludes().size() > 0) {
+                w.key(RcpServlet.PARAM_EXCLUDES).array();
+                for (String exclude: rcpTask.getExcludes()) {
+                    w.value(exclude);
+                }
+                w.endArray();
             }
-            w.endArray();
+        } else {
+            w.key(RcpServlet.PARAM_FILTER).value(rcpTask.getFilter().getSourceAsString());
         }
         w.key("status").object();
         w.key(RcpServlet.PARAM_STATE).value(rcpTask.getResult().getState().name());

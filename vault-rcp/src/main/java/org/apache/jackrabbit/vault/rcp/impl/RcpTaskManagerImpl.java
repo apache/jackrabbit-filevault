@@ -20,16 +20,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.jcr.Credentials;
-import javax.jcr.ItemNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.SimpleCredentials;
 
@@ -39,11 +40,10 @@ import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
-import org.apache.sling.api.resource.observation.ResourceChange;
-import org.apache.sling.api.resource.observation.ResourceChangeListener;
 import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
-import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -63,41 +63,38 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /** {@code RcpTaskManager}... */
-@Component(property = { ResourceChangeListener.CHANGES+"=REMOVED", 
-        ResourceChangeListener.CHANGES+"=ADDED",
-        ResourceChangeListener.CHANGES+"=CHANGED"}
-)
+@Component
 @ServiceVendor("The Apache Software Foundation")
-@Designate(ocd = RcpTaskManagerImpl.Configuration.class)
-public class RcpTaskManagerImpl implements RcpTaskManager, ResourceChangeListener {
+@Designate(ocd = RcpTaskManagerImpl.ComponentPropertyType.class)
+public class RcpTaskManagerImpl implements RcpTaskManager {
 
     @ObjectClassDefinition(name = "Apache Jackrabbit FileVault RCP Task Manager", description = "Manages tasks for RCP (remote copy)")
-    public static @interface Configuration {
-        @AttributeDefinition(name = "Configuration Node Path", description = "The absolute node path where to store the tasks in the repository. Credentials are not stored in that node, but rather in the bundle context data file.")
-        String resource_paths() default "/conf/rcptaskmanagerimpl/tasks";
+    public static @interface ComponentPropertyType {
+        @AttributeDefinition(name = "Serialized Tasks", description = "The JSON serialization of all tasks. Credentials are not stored in here, but rather in the bundle context data file.")
+        String serialized_tasks_json() default "";
     }
 
     private static final String TASKS_DATA_FILE_NAME = "tasks";
-    private static final String MIMETYPE_JSON = "application/json";
+    private static final String PROP_TASKS_SERIALIZATION = "serialized.tasks.json";
+    private static final String PID = RcpTaskManagerImpl.class.getName();
 
     /** default logger */
     private static final Logger log = LoggerFactory.getLogger(RcpTaskManagerImpl.class);
 
     private final DynamicClassLoaderManager dynLoaderMgr;
 
-    Map<String, RcpTaskImpl> tasks;
+    SortedMap<String, RcpTaskImpl> tasks;
 
     private final File dataFile;
 
     private final ObjectMapper mapper = new ObjectMapper();
-
+    
     private final Configuration configuration;
 
-    private final SlingRepository repository;
 
     @Activate
-    public RcpTaskManagerImpl(BundleContext bundleContext, Configuration configuration, @Reference DynamicClassLoaderManager dynLoaderMgr,
-            @Reference SlingRepository repository) {
+    public RcpTaskManagerImpl(BundleContext bundleContext, @Reference DynamicClassLoaderManager dynLoaderMgr,
+            @Reference ConfigurationAdmin configurationAdmin) {
         mapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
         mapper.addMixIn(RepositoryAddress.class, RepositoryAddressMixin.class);
         SimpleModule module = new SimpleModule();
@@ -106,20 +103,17 @@ public class RcpTaskManagerImpl implements RcpTaskManager, ResourceChangeListene
         mapper.registerModule(module);
         mapper.addMixIn(SimpleCredentials.class, SimpleCredentialsMixin.class);
 
-        this.configuration = configuration;
         this.dynLoaderMgr = dynLoaderMgr;
-        this.repository = repository;
         this.dataFile = bundleContext.getDataFile(TASKS_DATA_FILE_NAME);
+        Configuration configuration;
         try {
-            tasks = loadTasks(dataFile);
-            return;
-        } catch (ItemNotFoundException e) {
-            log.info("No previously persisted tasks found at '{}'", configuration.resource_paths());
-            log.debug("No previously persisted tasks found!", e);
-        } catch (IOException | RepositoryException e) {
+            configuration = configurationAdmin.getConfiguration(PID);
+            tasks = loadTasks(configuration.getProperties(), dataFile);
+        } catch (IOException e) {
             log.error("Could not restore previous tasks", e);
+            configuration = null;
         }
-        tasks = new LinkedHashMap<>();
+        this.configuration = configuration;
     }
 
     @Deactivate
@@ -129,18 +123,30 @@ public class RcpTaskManagerImpl implements RcpTaskManager, ResourceChangeListene
             task.stop();
         }
         log.info("RcpTaskManager deactivated. Stopping running tasks...done.");
-        persistTasks(dataFile);
     }
-
-    InputStream getInputStream() throws RepositoryException, IOException {
-        return new FileNodeBackedInputStream(repository, configuration.resource_paths());
-    }
-
-    private Map<String, RcpTaskImpl> loadTasks(File dataFile) throws IOException, RepositoryException {
-        try (InputStream input = getInputStream()) {
-            tasks = mapper.readValue(input, new TypeReference<Map<String, RcpTaskImpl>>() {
-            });
+    
+    private void persistTasks() {
+        Dictionary<String, Object> configProperties = new Hashtable<>();
+        try {
+            persistTasks(configProperties, dataFile);
+            configuration.update(configProperties);
+            log.info("Persisted RCP tasks in OSGi configuration");
+        } catch (RepositoryException | IOException e) {
+            throw new IllegalStateException("Could not persist tasks", e);
         }
+    }
+
+    private SortedMap<String, RcpTaskImpl> loadTasks(Dictionary<String, Object> configProperties, File dataFile) throws IOException {
+        if (configProperties == null) {
+            log.info("No previously persisted tasks found in OSGi configuation");
+            return new TreeMap<>();
+        }
+        String serializedTasks = (String) configProperties.get(PROP_TASKS_SERIALIZATION);
+        if (serializedTasks == null) {
+            log.info("No previously persisted tasks found in OSGi configuation");
+            return new TreeMap<>();
+        }
+        SortedMap<String, RcpTaskImpl> tasks = mapper.readValue(serializedTasks, new TypeReference<SortedMap<String, RcpTaskImpl>>() {});
         // additionally load credentials data from bundle context
         if (dataFile != null && dataFile.exists()) {
             loadTasksCredentials(tasks, dataFile);
@@ -164,15 +170,9 @@ public class RcpTaskManagerImpl implements RcpTaskManager, ResourceChangeListene
         }
     }
 
-    OutputStream getOutputStream() throws RepositoryException, IOException {
-        return new FileNodeBackedOutputStream(repository, configuration.resource_paths(), MIMETYPE_JSON);
-    }
-
-    private void persistTasks(File dataFile) throws RepositoryException, JsonGenerationException, JsonMappingException, IOException {
-        try (OutputStream out = getOutputStream()) {
-            mapper.writerWithDefaultPrettyPrinter().writeValue(out, tasks);
-        }
-        log.info("Persisted RCP tasks in '{}'", configuration.resource_paths());
+    private void persistTasks(Dictionary<String, Object> configProperties, File dataFile) throws RepositoryException, JsonGenerationException, JsonMappingException, IOException {
+        String serializedTasks = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tasks);
+        configProperties.put(PROP_TASKS_SERIALIZATION, serializedTasks);
 
         // additionally persist the sensitive data in a data file
         if (dataFile != null) {
@@ -210,6 +210,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager, ResourceChangeListene
         }
         RcpTaskImpl task = new RcpTaskImpl(getDynamicClassLoader(), src, srcCreds, dst, id, excludes, recursive);
         tasks.put(task.getId(), task);
+        persistTasks();
         return task;
     }
 
@@ -221,6 +222,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager, ResourceChangeListene
         }
         RcpTaskImpl task = new RcpTaskImpl(getDynamicClassLoader(), src, srcCreds, dst, id, srcFilter, recursive);
         tasks.put(task.getId(), task);
+        persistTasks();
         return task;
     }
 
@@ -235,14 +237,5 @@ public class RcpTaskManagerImpl implements RcpTaskManager, ResourceChangeListene
 
     protected ClassLoader getDynamicClassLoader() {
         return dynLoaderMgr.getDynamicClassLoader();
-    }
-
-    @Override
-    public void onChange(List<ResourceChange> changes) {
-        try {
-            loadTasks(dataFile);
-        } catch (IOException | RepositoryException e) {
-            log.error("Could not load tasks from persisted data", e);
-        }
     }
 }

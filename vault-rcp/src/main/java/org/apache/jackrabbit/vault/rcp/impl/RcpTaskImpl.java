@@ -88,7 +88,7 @@ public class RcpTaskImpl implements Runnable, RcpTask, Serializable {
     /** classloader used in the thread executing the task */
     private transient ClassLoader classLoader;
 
-    private WorkspaceFilter filter;
+    WorkspaceFilter filter;
 
     private static final class ResultImpl implements RcpTask.Result {
 
@@ -306,6 +306,11 @@ public class RcpTaskImpl implements Runnable, RcpTask, Serializable {
     @Override
     public List<String> getExcludes() {
         return excludes;
+    }
+
+    @Override
+    public WorkspaceFilter getFilter() {
+        return filter;
     }
 
     @Override

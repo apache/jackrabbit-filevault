@@ -16,8 +16,6 @@
  */
 package org.apache.jackrabbit.vault.rcp.impl;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -52,12 +50,7 @@ isGetterVisibility = JsonAutoDetect.Visibility.NONE,
 setterVisibility = JsonAutoDetect.Visibility.NONE,
 creatorVisibility = JsonAutoDetect.Visibility.ANY,
 fieldVisibility = JsonAutoDetect.Visibility.ANY)
-public class RcpTaskImpl implements Runnable, RcpTask, Serializable {
-
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -63586992801753312L;
+public class RcpTaskImpl implements Runnable, RcpTask {
 
     /** default logger */
     private static final Logger log = LoggerFactory.getLogger(RcpTaskImpl.class);
@@ -145,12 +138,6 @@ public class RcpTaskImpl implements Runnable, RcpTask, Serializable {
             filterSet.addExclude(new DefaultPathFilter(path));
         }
         return srcFilter;
-    }
-
-    private void readObject(java.io.ObjectInputStream stream)
-            throws IOException, ClassNotFoundException {
-        stream.defaultReadObject();
-        initTransientData();
     }
 
     private void initTransientData() {

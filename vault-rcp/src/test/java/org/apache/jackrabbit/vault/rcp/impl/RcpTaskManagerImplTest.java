@@ -17,35 +17,24 @@
 package org.apache.jackrabbit.vault.rcp.impl;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.jcr.ItemNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.SimpleCredentials;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
-import org.apache.commons.lang3.builder.RecursiveToStringStyle;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
-import org.apache.sling.jcr.api.SlingRepository;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.collection.IsIterableContainingInOrder;
@@ -62,8 +51,6 @@ import org.mockito.stubbing.Answer;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
-import org.osgi.util.converter.Converter;
-import org.osgi.util.converter.Converters;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -99,10 +86,6 @@ public class RcpTaskManagerImplTest {
             }
         });
         Mockito.when(mockClassLoaderManager.getDynamicClassLoader()).thenReturn(mockClassLoader);
-        Converter c = Converters.standardConverter();
-        Map<String, String> configMap = new HashMap<>();
-        RcpTaskManagerImpl.ComponentPropertyType config = c.convert(configMap).to(RcpTaskManagerImpl.ComponentPropertyType.class);
-        File repoFile = folder.newFile();
         configProperties = null;
         Mockito.when(mockConfigurationAdmin.getConfiguration(Mockito.anyString())).thenReturn(mockConfiguration);
         Mockito.doAnswer(new Answer<Void>() {

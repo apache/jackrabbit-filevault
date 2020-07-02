@@ -32,7 +32,7 @@
     <artifactId>org.apache.jackrabbit.vault.rcp</artifactId>
 
     <name>Apache Jackrabbit FileVault RCP Server Bundle</name>
-    <description>OSGi bundle containing the Jackrabbit FileVault RCP Manager used for copying (parts of) a repository from a remote repository to another repository (either remote or local)</description>
+    <description>OSGi bundle containing the Jackrabbit FileVault RCP Manager used for copying (parts of) a remote repository to the local one</description>
 
     <properties>
         <!-- downgrade dependencies to make compatible with the minimum supported version -->

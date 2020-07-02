@@ -256,6 +256,18 @@ public class DocumentViewXmlContentHandler extends DefaultHandler implements Nam
         if (node == null || nodePath == null) {
             throw new IllegalStateException("Seems that the XML is not well formed");
         }
+        violations.add(new ValidationViolation(ValidationMessageSeverity.DEBUG, "Validate node '" + node + "' end"));
+        for (Map.Entry<String, DocumentViewXmlValidator> entry : validators.entrySet()) {
+            try {
+                Collection<ValidationMessage> messages = entry.getValue().validateEnd(node, new NodeContextImpl(nodePath, filePath, basePath), elementNameStack.size() < 1);
+                if (messages != null && !messages.isEmpty()) {
+                    violations.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, null, nodePath.toString(),
+                            locator.getLineNumber(), locator.getColumnNumber()));
+                }
+            } catch (RuntimeException e) {
+                throw new ValidatorException(entry.getKey(), e, filePath, locator.getLineNumber(), locator.getColumnNumber(), e);
+            }
+        }
     }
 
     @Override

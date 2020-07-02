@@ -48,6 +48,7 @@ import org.xml.sax.XMLReader;
 
 public class DocumentViewParserValidator implements GenericJcrDataValidator {
 
+    public static final String EXTENDED_FILE_AGGREGATE_FOLDER_SUFFIX = ".dir";
     private final Map<String, DocumentViewXmlValidator> docViewValidators;
     private final SAXParser saxParser;
     private final @NotNull ValidationMessageSeverity severity;
@@ -99,12 +100,11 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
        return messages;
     }
 
-
     /** @param input the given input stream must be reset later on
      * @param path
      * @return either the path of the root node of the given docview xml or {@code null} if no docview xml given
      * @throws IOException */
-    private static Path getDocumentViewXmlRootPath(BufferedInputStream input, Path path) throws IOException {
+    static Path getDocumentViewXmlRootPath(BufferedInputStream input, Path path) throws IOException {
         Path name = path.getFileName();
         Path rootPath = null;
 
@@ -112,6 +112,10 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         if (name.equals(Paths.get(Constants.DOT_CONTENT_XML))) {
             if (nameCount > 1) {
                 rootPath = path.subpath(0, nameCount - 1);
+                // fix root mapping for http://jackrabbit.apache.org/filevault/vaultfs.html#Extended_File_aggregates
+                if (rootPath.toString().endsWith(EXTENDED_FILE_AGGREGATE_FOLDER_SUFFIX)) {
+                    rootPath = Paths.get(rootPath.toString().substring(0, rootPath.toString().length() - EXTENDED_FILE_AGGREGATE_FOLDER_SUFFIX.length()));
+                }
             } else {
                 rootPath = Paths.get("");
             }

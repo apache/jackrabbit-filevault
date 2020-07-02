@@ -247,9 +247,13 @@ public class ValidationExecutorTest {
     }
 
     public static void assertViolation(Collection<? extends ValidationMessage> messages, ValidationMessageSeverity thresholdSeverity, ValidationMessage... violations) {
-        List<ValidationMessage> filteredMessages = messages.stream()
-                .filter(m -> m.getSeverity().ordinal() >= thresholdSeverity.ordinal()).collect(Collectors.toList());
-        Assert.assertThat(filteredMessages, Matchers.contains(violations));
+        if (messages == null) {
+            Assert.fail("No violations found at all!");
+        } else {
+            List<ValidationMessage> filteredMessages = messages.stream()
+                    .filter(m -> m.getSeverity().ordinal() >= thresholdSeverity.ordinal()).collect(Collectors.toList());
+            Assert.assertThat(filteredMessages, Matchers.contains(violations));
+        }
     }
 
     public static void assertViolation(Collection<? extends ValidationMessage> messages, ValidationMessage... violations) {

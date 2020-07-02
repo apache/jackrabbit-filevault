@@ -60,6 +60,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <bnd.version>5.1.1</bnd.version>
         <maven.version>3.6.1</maven.version><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
         <surefire.version>3.0.0-M4</surefire.version>
+        <sling.url>http://localhost:4502</sling.url>
     </properties>
 
     <!-- ====================================================================== -->
@@ -120,7 +121,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
                     <artifactId>sling-maven-plugin</artifactId>
                     <version>2.4.2</version>
                     <configuration>
-                        <slingUrl>http://localhost:4502</slingUrl>
+                        <!-- slingUrl dynamically set by property -->
                         <slingUrlSuffix>/system/console</slingUrlSuffix>
                         <deploymentMethod>WebConsole</deploymentMethod>
                     </configuration>
@@ -424,6 +425,12 @@ Bundle-Category: jackrabbit
                 <scope>provided</scope>
             </dependency>
             <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>1.2.12</version>
@@ -480,6 +487,12 @@ Bundle-Category: jackrabbit
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.service.component.annotations</artifactId>
+                <version>1.4.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.service.component</artifactId>
                 <version>1.4.0</version>
                 <scope>provided</scope>
             </dependency>

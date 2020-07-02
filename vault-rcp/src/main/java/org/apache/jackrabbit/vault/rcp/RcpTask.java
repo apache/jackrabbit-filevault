@@ -22,6 +22,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.RepositoryCopier;
 
 public interface RcpTask {
@@ -55,6 +56,16 @@ public interface RcpTask {
 
     Result getResult();
 
+    /**
+     * 
+     * @return either {@code null} in case no excludes are set or a list of excludes (regex patterns)
+     */
     List<String> getExcludes();
+
+    /**
+     * 
+     * @return internal filter used when the content is exported
+     */
+    WorkspaceFilter getFilter();
 
 }

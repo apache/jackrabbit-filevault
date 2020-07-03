@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.stream.Collectors;
 
@@ -71,7 +72,7 @@ public class RcpTaskManagerImplTest {
     @Mock
     Configuration mockConfiguration;
 
-    Dictionary configProperties;
+    Dictionary<String, Object> configProperties;
 
     @Rule
     public TemporaryFolder folder= new TemporaryFolder();
@@ -95,8 +96,8 @@ public class RcpTaskManagerImplTest {
                 return null;
             }
             
-        }).when(mockConfiguration).update(Mockito.any());
-        RcpTaskManagerImpl taskManager = new RcpTaskManagerImpl(mockBundleContext, mockClassLoaderManager, mockConfigurationAdmin);
+        }).when(mockConfiguration).updateIfDifferent(Mockito.any());
+        RcpTaskManagerImpl taskManager = new RcpTaskManagerImpl(mockBundleContext, mockClassLoaderManager, mockConfigurationAdmin, Collections.emptyMap());
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         try (InputStream input = this.getClass().getResourceAsStream("/filter.xml")) {
             filter.load(input);
@@ -104,8 +105,9 @@ public class RcpTaskManagerImplTest {
         taskManager.addTask(new RepositoryAddress("http://localhost:4502"), new SimpleCredentials("testUser", "pw".toCharArray()), "/target/path", "2", Arrays.asList("exclude1", "exclude2"), false);
         taskManager.addTask(new RepositoryAddress("http://localhost:8080"), new SimpleCredentials("testUser3", "pw3".toCharArray()), "/target/path5", "3", filter, true);
         taskManager.deactivate();
-        Mockito.when(mockConfiguration.getProperties()).thenReturn(configProperties);
-        RcpTaskManagerImpl taskManager2 = new RcpTaskManagerImpl(mockBundleContext, mockClassLoaderManager, mockConfigurationAdmin);
+        Assert.assertNotNull("The tasks should have been persisted here but are not!", configProperties);
+        // convert to Map
+        RcpTaskManagerImpl taskManager2 = new RcpTaskManagerImpl(mockBundleContext, mockClassLoaderManager, mockConfigurationAdmin, RcpTaskManagerImpl.createMapFromDictionary(configProperties));
         // how to get list ordered by id?
         Assert.assertThat(taskManager.tasks.values(), new TaskCollectionMatcher(taskManager2.tasks.values()));
     }

@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.jcr.Credentials;
 import javax.jcr.RepositoryException;
@@ -46,6 +48,7 @@ import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.propertytypes.ServiceVendor;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
@@ -90,10 +93,12 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
     
     private final Configuration configuration;
 
+    /** the serialized tasks which have been processed (for detecting relevant updates) */
+    private String serializedTasks;
 
     @Activate
     public RcpTaskManagerImpl(BundleContext bundleContext, @Reference DynamicClassLoaderManager dynLoaderMgr,
-            @Reference ConfigurationAdmin configurationAdmin) {
+            @Reference ConfigurationAdmin configurationAdmin, Map <String, Object> newConfigProperties) {
         mapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
         mapper.addMixIn(RepositoryAddress.class, RepositoryAddressMixin.class);
         SimpleModule module = new SimpleModule();
@@ -107,7 +112,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         Configuration configuration;
         try {
             configuration = configurationAdmin.getConfiguration(PID);
-            tasks = loadTasks(configuration.getProperties(), dataFile);
+            tasks = loadTasks((String)newConfigProperties.get(PROP_TASKS_SERIALIZATION), dataFile);
         } catch (IOException e) {
             log.error("Could not restore previous tasks", e);
             configuration = null;
@@ -123,36 +128,51 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         }
         log.info("RcpTaskManager deactivated. Stopping running tasks...done.");
     }
-    
-    private void persistTasks() {
-        Dictionary<String, Object> configProperties = new Hashtable<>();
-        try {
-            persistTasks(configProperties, dataFile);
-            configuration.update(configProperties);
-            log.info("Persisted RCP tasks in OSGi configuration");
-        } catch (RepositoryException | IOException e) {
-            throw new IllegalStateException("Could not persist tasks", e);
+
+    @Modified
+    void modified(Map <String, Object> newConfigProperties) throws IOException {
+        // might be triggered internally or externally
+        // only external events are relevant
+        if (!serializedTasks.equals(newConfigProperties.get(PROP_TASKS_SERIALIZATION))) {
+            log.info("Detected external properties change");
+            tasks = loadTasks((String) newConfigProperties.get(PROP_TASKS_SERIALIZATION), null);
         }
     }
 
-    private SortedMap<String, RcpTaskImpl> loadTasks(Dictionary<String, Object> configProperties, File dataFile) throws IOException {
-        if (configProperties == null) {
+    static Map<String, Object> createMapFromDictionary(Dictionary<String, Object> dictionary) {
+        // filter out irrelevant properties
+        List<String> keys = Collections.list(dictionary.keys());
+        return keys.stream().collect(Collectors.toMap(Function.identity(), dictionary::get));
+    }
+
+    private SortedMap<String, RcpTaskImpl> loadTasks(String serializedTasks, File dataFile) throws IOException {
+        if (serializedTasks != null && serializedTasks.isEmpty()) {
             log.info("No previously persisted tasks found in OSGi configuation");
             return new TreeMap<>();
         }
-        String serializedTasks = (String) configProperties.get(PROP_TASKS_SERIALIZATION);
         if (serializedTasks == null) {
             log.info("No previously persisted tasks found in OSGi configuation");
             return new TreeMap<>();
         }
         SortedMap<String, RcpTaskImpl> tasks = mapper.readValue(serializedTasks, new TypeReference<SortedMap<String, RcpTaskImpl>>() {});
+        validateTasks(tasks);
         // additionally load credentials data from bundle context
         if (dataFile != null && dataFile.exists()) {
             loadTasksCredentials(tasks, dataFile);
         } else {
             log.info("No previously persisted task credentials found at '{}'", dataFile);
         }
+        this.serializedTasks = serializedTasks;
         return tasks;
+    }
+
+    void validateTasks(SortedMap<String, RcpTaskImpl> tasks) {
+        for (Map.Entry<String, RcpTaskImpl> entry : tasks.entrySet()) {
+            // make sure id of map entry is task id
+            if (!entry.getKey().equals(entry.getValue().getId())) {
+                throw new IllegalArgumentException("Id of entry " + entry.getKey() + " does not match its task id " + entry.getValue().getId());
+            }
+        }
     }
 
     private void loadTasksCredentials(Map<String, RcpTaskImpl> tasks, File dataFile) throws IOException {
@@ -169,8 +189,19 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         }
     }
 
+    private void persistTasks() {
+        Dictionary<String, Object> configProperties = new Hashtable<>();
+        try {
+            persistTasks(configProperties, dataFile);
+            configuration.updateIfDifferent(configProperties);
+            log.info("Persisted RCP tasks in OSGi configuration");
+        } catch (RepositoryException | IOException e) {
+            throw new IllegalStateException("Could not persist tasks", e);
+        }
+    }
+
     private void persistTasks(Dictionary<String, Object> configProperties, File dataFile) throws RepositoryException, JsonGenerationException, JsonMappingException, IOException {
-        String serializedTasks = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tasks);
+        serializedTasks = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tasks);
         configProperties.put(PROP_TASKS_SERIALIZATION, serializedTasks);
 
         // additionally persist the sensitive data in a data file
@@ -229,6 +260,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         RcpTask rcpTask = tasks.remove(taskId);
         if (rcpTask != null) {
             rcpTask.stop();
+            persistTasks();
             return true;
         }
         return false;

@@ -285,7 +285,9 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 w.endArray();
             }
         } else {
-            w.key(RcpServlet.PARAM_FILTER).value(rcpTask.getFilter().getSourceAsString());
+            if (rcpTask.getFilter() != null) {
+                w.key(RcpServlet.PARAM_FILTER).value(rcpTask.getFilter().getSourceAsString());
+            }
         }
         w.key("status").object();
         w.key(RcpServlet.PARAM_STATE).value(rcpTask.getResult().getState().name());

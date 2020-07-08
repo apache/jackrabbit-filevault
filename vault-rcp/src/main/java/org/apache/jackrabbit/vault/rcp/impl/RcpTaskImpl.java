@@ -26,6 +26,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.davex.DAVExRepositoryFactory;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -85,6 +86,8 @@ public class RcpTaskImpl implements Runnable, RcpTask {
 
     WorkspaceFilter filter;
 
+    private final ConnectionOptions connectionOptions;
+
     private static final class ResultImpl implements RcpTask.Result {
 
         private final State state;
@@ -111,14 +114,14 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         }
     }
 
-    public RcpTaskImpl(ClassLoader classLoader, RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes,
+    public RcpTaskImpl(ClassLoader classLoader, RepositoryAddress src, ConnectionOptions connectionOptions, Credentials srcCreds, String dst, String id, List<String> excludes,
             @Nullable Boolean recursive) throws ConfigurationException {
-        this(classLoader, src, srcCreds, dst, id, createFilterForExcludes(excludes), recursive);
+        this(classLoader, src, connectionOptions, srcCreds, dst, id, createFilterForExcludes(excludes), recursive);
         this.excludes = excludes;
     }
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-    public RcpTaskImpl(@JsonProperty("classLoader") ClassLoader dynLoader, @JsonProperty("source") RepositoryAddress src, @JsonProperty("srcCreds") Credentials srcCreds, @JsonProperty("destination") String dst, @JsonProperty("id") String id, @JsonProperty("filter") WorkspaceFilter srcFilter,
+    public RcpTaskImpl(@JsonProperty("classLoader") ClassLoader dynLoader, @JsonProperty("source") RepositoryAddress src, @JsonProperty("connectionOptions") ConnectionOptions connectionOptions, @JsonProperty("srcCreds") Credentials srcCreds, @JsonProperty("destination") String dst, @JsonProperty("id") String id, @JsonProperty("filter") WorkspaceFilter srcFilter,
             @JsonProperty("recursive") @Nullable Boolean recursive) {
         this.src = src;
         this.dst = dst;
@@ -130,12 +133,14 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         this.filter = srcFilter;
         initTransientData();
         this.classLoader = dynLoader;
+        this.connectionOptions = connectionOptions;
     }
 
     // additional constructor for editing existing tasks, all arguments are optional except the first one
-    public RcpTaskImpl(@NotNull RcpTaskImpl oldTask, @Nullable RepositoryAddress src, @Nullable Credentials srcCreds, @Nullable String dst, @Nullable List<String> excludes, @Nullable WorkspaceFilter srcFilter,
+    public RcpTaskImpl(@NotNull RcpTaskImpl oldTask, @Nullable RepositoryAddress src, @Nullable ConnectionOptions connectionOptions, @Nullable Credentials srcCreds, @Nullable String dst, @Nullable List<String> excludes, @Nullable WorkspaceFilter srcFilter,
             @Nullable Boolean recursive) {
         this.src = src != null ? src : oldTask.src;
+        this.connectionOptions = connectionOptions != null ? connectionOptions : oldTask.connectionOptions;
         this.dst = dst != null ? dst : oldTask.dst;
         this.srcCreds = srcCreds != null ? srcCreds : oldTask.srcCreds;
         this.id = oldTask.id;
@@ -225,7 +230,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
 
     @Override
     public boolean start(Session session) throws RepositoryException {
-        if (result.getState() != Result.State.NEW) {
+        if (result.getState() == Result.State.RUNNING || result.getState() == Result.State.STOPPING) {
             throw new IllegalStateException("Unable to start task " + id + ". wrong state = " + result.getState());
         }
         // clone session
@@ -248,7 +253,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         DAVExRepositoryFactory factory = new DAVExRepositoryFactory();
         Repository srcRepo;
         try {
-            srcRepo = factory.createRepository(src);
+            srcRepo = factory.createRepository(src, connectionOptions);
         } catch (RepositoryException e) {
             log.error("Error while retrieving src repository {}: {}", src, e.toString());
             throw e;
@@ -275,6 +280,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
             rcp.copy(srcSession, src.getPath(), dstSession, dst, recursive);
             result = new ResultImpl(Result.State.ENDED);
         } catch (Throwable e) {
+            log.error("Error while executing RCP task {}", getId(), e);
             result = new ResultImpl(Result.State.ENDED, e);
         }
         // todo: notify manager that we ended.
@@ -288,6 +294,11 @@ public class RcpTaskImpl implements Runnable, RcpTask {
     @Override
     public RepositoryAddress getSource() {
         return src;
+    }
+
+    @Override
+    public ConnectionOptions getConnectionOptions() {
+        return connectionOptions;
     }
 
     Credentials getSourceCredentials() {

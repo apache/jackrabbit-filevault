@@ -30,6 +30,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
@@ -57,7 +58,7 @@ public class WorkspaceFilterDeserializer extends StdDeserializer<WorkspaceFilter
         try (InputStream input = new ByteArrayInputStream(filterXml.getBytes(StandardCharsets.UTF_8))) {
             filter.load(input);
         } catch (ConfigurationException e) {
-            throw new InvalidFormatException("Invalid filter", p.getCurrentLocation(), filterXml, DefaultWorkspaceFilter.class);
+            throw JsonMappingException.from(p, "Invalid filter", e);
         }
         p.nextToken();
         return filter;

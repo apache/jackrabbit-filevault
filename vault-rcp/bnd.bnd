@@ -12,10 +12,13 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
-# due to the non-backwards compatible change https://issues.apache.org/jira/browse/JCR-4067 make compatible also with newer versions
-Import-Package: org.apache.jackrabbit.webdav.client.methods;version="[1.1,3)", *
 -includeresource: @vault-davex-[0-9.]*(-SNAPSHOT)?.jar,\
-                  @jackrabbit-spi2dav-[0-9.]*.jar,\
-                  @jackrabbit-jcr-client-[0-9.]*.jar,\
-                  @jackrabbit-jcr2spi-[0-9.]*.jar
+                  @jackrabbit-webdav-[0-9.]*(-SNAPSHOT)?.jar,\
+                  @jackrabbit-spi-[0-9.]*(-SNAPSHOT)?.jar,\
+                  @jackrabbit-spi-commons-[0-9.]*(-SNAPSHOT)?.jar,\
+                  @jackrabbit-spi2dav-[0-9.]*(-SNAPSHOT)?.jar,\
+                  @jackrabbit-jcr-client-[0-9.]*(-SNAPSHOT)?.jar,\
+                  @jackrabbit-jcr2spi-[0-9.]*(-SNAPSHOT)?.jar
+-conditionalpackage: org.apache.jackrabbit.util,org.apache.jackrabbit.api.security
+# make sure to only export the relevant packages (https://github.com/bndtools/bnd/issues/4219)
+-exportcontents: org.apache.jackrabbit.vault.rcp

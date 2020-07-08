@@ -32,11 +32,11 @@ import javax.jcr.SimpleCredentials;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
-import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
 import org.hamcrest.Description;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
@@ -64,12 +64,6 @@ public class RcpTaskManagerImplTest {
     BundleContext mockBundleContext;
 
     @Mock
-    DynamicClassLoaderManager mockClassLoaderManager;
-
-    @Mock
-    ClassLoader mockClassLoader;
-
-    @Mock
     ConfigurationAdmin mockConfigurationAdmin;
 
     @Mock
@@ -91,7 +85,6 @@ public class RcpTaskManagerImplTest {
                 return new File(folder.getRoot(),name);
             }
         });
-        Mockito.when(mockClassLoaderManager.getDynamicClassLoader()).thenReturn(mockClassLoader);
         configProperties = null;
         Mockito.when(mockConfigurationAdmin.getConfiguration(Mockito.anyString())).thenReturn(mockConfiguration);
         Mockito.doAnswer(new Answer<Void>() {
@@ -102,7 +95,7 @@ public class RcpTaskManagerImplTest {
             }
             
         }).when(mockConfiguration).updateIfDifferent(Mockito.any());
-        taskManager = new RcpTaskManagerImpl(mockBundleContext, mockClassLoaderManager, mockConfigurationAdmin, Collections.emptyMap());
+        taskManager = new RcpTaskManagerImpl(mockBundleContext, mockConfigurationAdmin, Collections.emptyMap());
     }
 
     @Test 
@@ -111,12 +104,14 @@ public class RcpTaskManagerImplTest {
         try (InputStream input = this.getClass().getResourceAsStream("/filter.xml")) {
             filter.load(input);
         }
-        RcpTaskImpl taskOld = (RcpTaskImpl)taskManager.addTask(new RepositoryAddress("http://localhost:4502"), new SimpleCredentials("testUser", "pw".toCharArray()), "/target/path", "2", Arrays.asList("exclude1", "exclude2"), false);
-        RcpTaskImpl taskNew = (RcpTaskImpl)taskManager.editTask(taskOld.getId(), null, null, null, null, null, null);
+        ConnectionOptions.Builder connectionOptionsBuilder = ConnectionOptions.builder();
+        connectionOptionsBuilder.proxyHost("proxyHost");
+        RcpTaskImpl taskOld = (RcpTaskImpl)taskManager.addTask(new RepositoryAddress("http://localhost:4502"), connectionOptionsBuilder.build(), new SimpleCredentials("testUser", "pw".toCharArray()), "/target/path", "2", Arrays.asList("exclude1", "exclude2"), false);
+        RcpTaskImpl taskNew = (RcpTaskImpl)taskManager.editTask(taskOld.getId(), null, null, null, null, null, null, null);
         Assert.assertThat(taskNew, new TaskMatcher(taskOld));
         
         RepositoryAddress newSource = new RepositoryAddress("http://localhost:4503");
-        taskNew = (RcpTaskImpl)taskManager.editTask(taskOld.getId(), newSource, null, null, null, null, null);
+        taskNew = (RcpTaskImpl)taskManager.editTask(taskOld.getId(), newSource, null, null, null, null, null, null);
         Assert.assertThat(taskNew, Matchers.not(new TaskMatcher(taskOld)));
         Assert.assertEquals(newSource, taskNew.getSource());
     }
@@ -127,12 +122,16 @@ public class RcpTaskManagerImplTest {
         try (InputStream input = this.getClass().getResourceAsStream("/filter.xml")) {
             filter.load(input);
         }
-        taskManager.addTask(new RepositoryAddress("http://localhost:4502"), new SimpleCredentials("testUser", "pw".toCharArray()), "/target/path", "2", Arrays.asList("exclude1", "exclude2"), false);
-        taskManager.addTask(new RepositoryAddress("http://localhost:8080"), new SimpleCredentials("testUser3", "pw3".toCharArray()), "/target/path5", "3", filter, true);
+        ConnectionOptions.Builder connectionOptionsBuilder = ConnectionOptions.builder();
+        connectionOptionsBuilder.allowSelfSignedCertificates(true);
+        connectionOptionsBuilder.disableHostnameVerification(false);
+        connectionOptionsBuilder.socketTimeoutMs(100);
+        taskManager.addTask(new RepositoryAddress("http://localhost:4502"), connectionOptionsBuilder.build(), new SimpleCredentials("testUser", "pw".toCharArray()), "/target/path", "2", Arrays.asList("exclude1", "exclude2"), false);
+        taskManager.addTask(new RepositoryAddress("http://localhost:8080"), connectionOptionsBuilder.build(), new SimpleCredentials("testUser3", "pw3".toCharArray()), "/target/path5", "3", filter, true);
         taskManager.deactivate();
         Assert.assertNotNull("The tasks should have been persisted here but are not!", configProperties);
         // convert to Map
-        RcpTaskManagerImpl taskManager2 = new RcpTaskManagerImpl(mockBundleContext, mockClassLoaderManager, mockConfigurationAdmin, RcpTaskManagerImpl.createMapFromDictionary(configProperties));
+        RcpTaskManagerImpl taskManager2 = new RcpTaskManagerImpl(mockBundleContext, mockConfigurationAdmin, RcpTaskManagerImpl.createMapFromDictionary(configProperties));
         // how to get list ordered by id?
         Assert.assertThat(taskManager.tasks.values(), new TaskCollectionMatcher(taskManager2.tasks.values()));
     }

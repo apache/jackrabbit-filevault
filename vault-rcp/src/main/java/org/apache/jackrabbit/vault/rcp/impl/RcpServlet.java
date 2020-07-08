@@ -31,6 +31,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
@@ -75,6 +76,13 @@ public class RcpServlet extends SlingAllMethodsServlet {
     public static final String PARAM_EXCLUDES = "excludes";
     public static final String PARAM_RESUME_FROM = "resumeFrom";
     public static final String PARAM_FILTER = "filter";
+    // connection options
+    public static final String PARAM_ALLOW_SELF_SIGNED_CERTIFICATE = "allowSelfSignedCertificate";
+    public static final String PARAM_DISABLE_HOSTNAME_VERIFICATION = "disableHostnameVerification";
+    public static final String PARAM_CONNECTION_TIMEOUT_MS = "connectionTimeoutMs";
+    public static final String PARAM_REQUEST_TIMEOUT_MS = "requestTimeoutMs";
+    public static final String PARAM_SOCKET_TIMEOUT_MS = "socketTimeoutMs";
+    public static final String PARAM_USE_SYSTEM_PROPERTIES = "useSystemProperties";
 
     /**
      * default logger
@@ -168,6 +176,18 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 if (data.has(PARAM_RECURSIVE)) {
                     recursive = data.optBoolean(PARAM_RECURSIVE, false);
                 }
+
+                ConnectionOptions.Builder connectionOptionsBuilder = ConnectionOptions.builder();
+                connectionOptionsBuilder.useSystemProperties(data.optBoolean(PARAM_USE_SYSTEM_PROPERTIES));
+                connectionOptionsBuilder.allowSelfSignedCertificates(data.optBoolean(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE));
+                connectionOptionsBuilder.disableHostnameVerification(data.optBoolean(PARAM_DISABLE_HOSTNAME_VERIFICATION));
+                int connectionTimeoutMs = data.optInt(PARAM_CONNECTION_TIMEOUT_MS, -1);
+                connectionOptionsBuilder.connectionTimeoutMs(connectionTimeoutMs);
+                int requestTimeoutMs = data.optInt(PARAM_REQUEST_TIMEOUT_MS, -1);
+                connectionOptionsBuilder.requestTimeoutMs(requestTimeoutMs);
+                int socketTimeoutMs = data.optInt(PARAM_SOCKET_TIMEOUT_MS, -1);
+                connectionOptionsBuilder.socketTimeoutMs(socketTimeoutMs);
+
                 if (data.has(PARAM_EXCLUDES)) {
                     List<String> excludeList = new LinkedList<>();
                     JSONArray excludes = data.getJSONArray(PARAM_EXCLUDES);
@@ -175,9 +195,9 @@ public class RcpServlet extends SlingAllMethodsServlet {
                         excludeList.add(excludes.getString(idx));
                     }
                     if (isEdit) {
-                        task = taskMgr.editTask(id, address, creds, dst, excludeList, null, recursive);
+                        task = taskMgr.editTask(id, address, connectionOptionsBuilder.build(), creds, dst, excludeList, null, recursive);
                     } else {
-                        task = taskMgr.addTask(address, creds, dst, id, excludeList, recursive);
+                        task = taskMgr.addTask(address, connectionOptionsBuilder.build(), creds, dst, id, excludeList, recursive);
                     }
                 } else {
                     final WorkspaceFilter filter;
@@ -189,11 +209,12 @@ public class RcpServlet extends SlingAllMethodsServlet {
                         filter = null;
                     }
                     if (isEdit) {
-                        task = taskMgr.editTask(id, address, creds, dst, null, filter, recursive);
+                        task = taskMgr.editTask(id, address, connectionOptionsBuilder.build(), creds, dst, null, filter, recursive);
                     } else {
-                        task = taskMgr.addTask(address, creds, dst, id, filter, recursive);
+                        task = taskMgr.addTask(address, connectionOptionsBuilder.build(), creds, dst, id, filter, recursive);
                     }
                 }
+                
 
                 // add additional data
                 if (data.has(PARAM_BATCHSIZE)) {
@@ -335,6 +356,9 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 w.key(RcpServlet.PARAM_FILTER).value(rcpTask.getFilter().getSourceAsString());
             }
         }
+        w.key(PARAM_USE_SYSTEM_PROPERTIES).value(rcpTask.getConnectionOptions().isUseSystemPropertes());
+        w.key(PARAM_DISABLE_HOSTNAME_VERIFICATION).value(rcpTask.getConnectionOptions().isDisableHostnameVerification());
+        w.key(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE).value(rcpTask.getConnectionOptions().isAllowSelfSignedCertificates());
         w.key("status").object();
         w.key(RcpServlet.PARAM_STATE).value(rcpTask.getResult().getState().name());
         w.key("currentPath").value(rcpTask.getRcp().getCurrentPath());

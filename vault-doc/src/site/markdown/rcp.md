@@ -60,15 +60,9 @@ example this regexp `\p{ASCII}*([^\p{ASCII}]\p{ASCII}*)+` excludes all paths con
 
 ### HTTP Proxy
 
-HTTP Proxy can be enabled using the default Java proxy settings, as per
+HTTP Proxy can be enabled using the system properties outlined at [Java proxy settings](https://docs.oracle.com/javase/8/docs/technotes/guides/net/proxies.html).
 
-https://docs.oracle.com/javase/8/docs/technotes/guides/net/proxies.html
-
-and
-
-https://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/org/apache/http/impl/client/HttpClientBuilder.html#useSystemProperties()
-
-The system property is `jackrabbit.client.useSystemProperties` and needs to be set to `true`.
+For this to work in addition the system property `jackrabbit.client.useSystemProperties` needs to be set to `true`.
 
 #### Example:
 
@@ -149,6 +143,13 @@ Creates a new task.
 | resumeFrom   | \- | Source path to resume a prior aborted copy. Note that the algorithm simply skips all source nodes until the _resumeFrom_ path is found. It is necessary that the content structure of the source repository does not change in between runs, and that content already needs to be present in the detination location. |
 | excludes     | \- | Array of java regular expressions that exclude source paths. |
 | filter       | \- | Serialized [filter.xml](filter.html) specifing which repository areas to copy. Only used if `excludes` is not given. Make sure that the value is properly escaped. |
+| allowSelfSignedCertificate | \- | **true** to accept self-signed certificated. Only applicable if src URI starts with https. |
+| disableHostnameVerification | \- | **true** to disable host name verification against the certificate. Only applicable if src URI starts with https. |
+| connectionTimeoutMs | \- | The connection timeout in milliseconds. 0 for infinite, -1 for system default. |
+| requestTimeoutMs | \- | The request timeout in milliseconds. 0 for infinite, -1 for system default. |
+| socketTimeoutMs | \- | The socket timeout in milliseconds. 0 for infinite, -1 for system default. |
+| useSystemProperties | \- | **true** to use the java default system properties for connection settings. Further information at <https://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/org/apache/http/impl/client/HttpClientBuilder.html> |
+
 
 
 ##### Example

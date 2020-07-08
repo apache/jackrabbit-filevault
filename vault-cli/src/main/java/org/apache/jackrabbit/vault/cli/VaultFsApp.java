@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.jcr.Credentials;
 import javax.jcr.Repository;
@@ -33,6 +34,8 @@ import org.apache.commons.cli2.Option;
 import org.apache.commons.cli2.builder.ArgumentBuilder;
 import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
+import org.apache.commons.cli2.option.DefaultOption;
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.cli.extended.ExtendedOption;
 import org.apache.jackrabbit.vault.cli.extended.XDavEx;
 import org.apache.jackrabbit.vault.cli.extended.XJcrLog;
@@ -83,6 +86,7 @@ public class VaultFsApp extends AbstractApplication {
     public static final String KEY_DEFAULT_URI = "conf.uri";
     public static final String KEY_DEFAULT_CONFIG_XML = "conf.configxml";
     public static final String KEY_DEFAULT_FILTER_XML = "conf.filterxml";
+    private static final String KEY_CONNECTION_OPTIONS_PREFIX = "conf.connectionOptions.";
 
     private static final String DEFAULT_URI = "http://localhost:8080/crx/server/crx.default";
     private static final String DEFAULT_WSP = "crx.default";
@@ -107,6 +111,13 @@ public class VaultFsApp extends AbstractApplication {
     //private Option optMountpoint;
     private Option optConfig;
     private Option optUpdateCreds;
+    // connection options
+    private Option optAllowSelfSignedCertificate;
+    private Option optDisableHostnameValidation;
+    private Option optConnectionTimeoutMs;
+    private Option optRequestTimeoutMs;
+    private Option optSocketTimeoutMs;
+    private Option optUseSystemProperties;
 
     private ExtendedOption[] xOpts = new ExtendedOption[]{
             new XJcrLog(),
@@ -121,6 +132,7 @@ public class VaultFsApp extends AbstractApplication {
     private VaultFsConsoleExecutionContext ctxAfct;
 
     private Console console;
+
 
     public static void main(String[] args) {
         new VaultFsApp().run(args);
@@ -392,8 +404,9 @@ public class VaultFsApp extends AbstractApplication {
             throw new ExecutionException("Already connected to " + getProperty(KEY_URI));
         } else {
             String uri = getProperty(KEY_DEFAULT_URI);
+            ConnectionOptions options = ConnectionOptions.fromServiceFactoryParameters(KEY_CONNECTION_OPTIONS_PREFIX, getEnv());
             try {
-                rep = repProvider.getRepository(new RepositoryAddress(uri));
+                rep = repProvider.getRepository(new RepositoryAddress(uri), options);
                 setProperty(KEY_URI, uri);
                 StringBuffer info = new StringBuffer();
                 info.append(rep.getDescriptor(Repository.REP_NAME_DESC)).append(' ');
@@ -604,7 +617,49 @@ public class VaultFsApp extends AbstractApplication {
                         .create()
                 )
                 .create();
-
+        optUseSystemProperties = new DefaultOptionBuilder()
+                .withLongName("useSystemProperties")
+                .withDescription("Evaluating the default Java system properties for connection settings.")
+                .create();
+        optAllowSelfSignedCertificate = new DefaultOptionBuilder()
+                .withLongName("allowSelfSignedCertificates")
+                .withDescription("Allows to connect to HTTPS repo URLs whose certificate is self-signed.")
+                .create();
+        optDisableHostnameValidation = new DefaultOptionBuilder()
+                .withLongName("disableHostnameValidator")
+                .withDescription("Disables hostname validation for HTTPS repo URLs.")
+                .create();
+        optConnectionTimeoutMs = new DefaultOptionBuilder()
+                .withLongName("connectionTimeoutMs")
+                .withDescription("The connection timeout")
+                .withArgument(new ArgumentBuilder()
+                        .withDescription("Timeout in milliseconds")
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optRequestTimeoutMs = new DefaultOptionBuilder()
+                .withLongName("requestTimeoutMs")
+                .withDescription("The request timeout")
+                .withArgument(new ArgumentBuilder()
+                        .withDescription("Timeout in milliseconds")
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optSocketTimeoutMs = new DefaultOptionBuilder()
+                .withLongName("socketTimeoutMs")
+                .withDescription("The socket timeout")
+                .withArgument(new ArgumentBuilder()
+                        .withDescription("Timeout in milliseconds")
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        
         // register extended options
         for (ExtendedOption x: xOpts) {
             gbuilder.withOption(x.getOption());
@@ -615,6 +670,12 @@ public class VaultFsApp extends AbstractApplication {
         gbuilder.withOption(optUpdateCreds);
         //gbuilder.withOption(optMountpoint);
         gbuilder.withOption(optConfig);
+        gbuilder.withOption(optUseSystemProperties);
+        gbuilder.withOption(optAllowSelfSignedCertificate);
+        gbuilder.withOption(optDisableHostnameValidation);
+        gbuilder.withOption(optConnectionTimeoutMs);
+        gbuilder.withOption(optRequestTimeoutMs);
+        gbuilder.withOption(optSocketTimeoutMs);
         return super.addApplicationOptions(gbuilder);
     }
 
@@ -659,7 +720,24 @@ public class VaultFsApp extends AbstractApplication {
         if (cl.getValue(optConfig) != null) {
             setProperty(KEY_DEFAULT_CONFIG_XML, (String) cl.getValue(optConfig));
         }
+        
+        parseConnectionOptions(cl);
     }
+
+    private void parseConnectionOptions(CommandLine cl) {
+        ConnectionOptions.Builder builder = ConnectionOptions.builder();
+        builder.allowSelfSignedCertificates(cl.hasOption(optAllowSelfSignedCertificate));
+        builder.disableHostnameVerification(cl.hasOption(optDisableHostnameValidation));
+        builder.connectionTimeoutMs(Integer.parseInt(cl.getValue(optConnectionTimeoutMs, -1).toString()));
+        builder.requestTimeoutMs(Integer.parseInt(cl.getValue(optRequestTimeoutMs, -1).toString()));
+        builder.socketTimeoutMs(Integer.parseInt(cl.getValue(optSocketTimeoutMs, -1).toString()));
+        builder.useSystemProperties(cl.hasOption(optUseSystemProperties)));
+        Map<String, String> options = builder.build().toServiceFactoryParameters(KEY_CONNECTION_OPTIONS_PREFIX);
+        for (Map.Entry<String, String> entry : options.entrySet()) {
+            setProperty(entry.getKey(), entry.getValue());
+        }
+    }
+
 
     private static class PasswordPromptingCredentialsStore implements CredentialsStore {
 

@@ -21,6 +21,7 @@ import java.util.List;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.RepositoryCopier;
@@ -67,5 +68,7 @@ public interface RcpTask {
      * @return internal filter used when the content is exported
      */
     WorkspaceFilter getFilter();
+
+    ConnectionOptions getConnectionOptions();
 
 }

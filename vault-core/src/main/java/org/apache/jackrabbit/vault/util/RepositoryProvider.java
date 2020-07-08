@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.RepositoryFactory;
 import org.slf4j.Logger;
@@ -44,17 +45,21 @@ public class RepositoryProvider {
 
     private Map<RepositoryAddress, Repository> repos = new HashMap<RepositoryAddress, Repository>();
 
-    public Repository getRepository(RepositoryAddress address)
+    public Repository getRepository(RepositoryAddress address) throws RepositoryException {
+        return getRepository(address, null);
+    }
+
+    public Repository getRepository(RepositoryAddress address, ConnectionOptions options)
             throws RepositoryException {
         Repository rep = repos.get(address);
         if (rep == null) {
-            rep = createRepository(address);
+            rep = createRepository(address, options);
             repos.put(address, rep);
         }
         return rep;
     }
 
-    private Repository createRepository(RepositoryAddress address)
+    private Repository createRepository(RepositoryAddress address, ConnectionOptions options)
             throws RepositoryException {
         ServiceLoader<RepositoryFactory> loader = ServiceLoader.load(RepositoryFactory.class);
         Iterator<RepositoryFactory> iter = loader.iterator();
@@ -62,7 +67,7 @@ public class RepositoryProvider {
         while (iter.hasNext()) {
             RepositoryFactory fac = iter.next();
             supported.addAll(fac.getSupportedSchemes());
-            Repository rep = fac.createRepository(address);
+            Repository rep = fac.createRepository(address, options);
             if (rep != null) {
                 // wrap JCR logger
                 if (Boolean.getBoolean("jcrlog.sysout") || System.getProperty("jcrlog.file") != null) {

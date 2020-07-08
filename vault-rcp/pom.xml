@@ -35,8 +35,6 @@
     <description>OSGi bundle containing the Jackrabbit FileVault RCP Manager used for copying (parts of) a remote repository to the local one</description>
 
     <properties>
-        <!-- downgrade dependencies to make compatible with the minimum supported version -->
-        <jackrabbit.version>2.14.0</jackrabbit.version>
         <!-- http://maven.apache.org/ref/3.6.3/maven-model-builder/index.html#Inheritance_Assembly -->
         <project.directory>vault-rcp</project.directory>
     </properties>
@@ -180,7 +178,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- the following dependencies are no bundles and therefore must be embedded -->
+        <!-- include all relevant parts to be installable also on older distributions (having older Jackrabbit bundles) -->
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-jcr2spi</artifactId>
@@ -193,7 +191,22 @@
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-spi</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-spi-commons</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-spi2dav</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-webdav</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>

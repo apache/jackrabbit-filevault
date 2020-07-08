@@ -35,13 +35,13 @@ import javax.jcr.Credentials;
 import javax.jcr.RepositoryException;
 import javax.jcr.SimpleCredentials;
 
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
-import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
@@ -85,8 +85,6 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
     /** default logger */
     private static final Logger log = LoggerFactory.getLogger(RcpTaskManagerImpl.class);
 
-    private final DynamicClassLoaderManager dynLoaderMgr;
-
     SortedMap<String, RcpTaskImpl> tasks;
 
     private final File dataFile;
@@ -99,8 +97,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
     private String serializedTasks;
 
     @Activate
-    public RcpTaskManagerImpl(BundleContext bundleContext, @Reference DynamicClassLoaderManager dynLoaderMgr,
-            @Reference ConfigurationAdmin configurationAdmin, Map <String, Object> newConfigProperties) {
+    public RcpTaskManagerImpl(BundleContext bundleContext, @Reference ConfigurationAdmin configurationAdmin, Map <String, Object> newConfigProperties) {
         mapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
         mapper.addMixIn(RepositoryAddress.class, RepositoryAddressMixin.class);
         SimpleModule module = new SimpleModule();
@@ -108,8 +105,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         module.addDeserializer(WorkspaceFilter.class, new WorkspaceFilterDeserializer());
         mapper.registerModule(module);
         mapper.addMixIn(SimpleCredentials.class, SimpleCredentialsMixin.class);
-
-        this.dynLoaderMgr = dynLoaderMgr;
+        mapper.addMixIn(ConnectionOptions.class, ConnectionOptionsMixin.class);
         this.dataFile = bundleContext.getDataFile(TASKS_DATA_FILE_NAME);
         Configuration configuration;
         try {
@@ -118,6 +114,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         } catch (IOException e) {
             log.error("Could not restore previous tasks", e);
             configuration = null;
+            tasks = new TreeMap<>();
         }
         this.configuration = configuration;
     }
@@ -135,7 +132,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
     void modified(Map <String, Object> newConfigProperties) throws IOException {
         // might be triggered internally or externally
         // only external events are relevant
-        if (!serializedTasks.equals(newConfigProperties.get(PROP_TASKS_SERIALIZATION))) {
+        if (serializedTasks == null || !serializedTasks.equals(newConfigProperties.get(PROP_TASKS_SERIALIZATION))) {
             log.info("Detected external properties change");
             tasks = loadTasks((String) newConfigProperties.get(PROP_TASKS_SERIALIZATION), null);
         }
@@ -174,6 +171,8 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
             if (!entry.getKey().equals(entry.getValue().getId())) {
                 throw new IllegalArgumentException("Id of entry " + entry.getKey() + " does not match its task id " + entry.getValue().getId());
             }
+            // set classloader to use for retrieving the RepositoryImpl
+            entry.getValue().setClassLoader(getClassLoaderForRepositoryFactory());
         }
     }
 
@@ -243,24 +242,24 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
     }
 
     @Override
-    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, @Nullable Boolean recursive)
+    public RcpTask addTask(RepositoryAddress src, ConnectionOptions connectionOptions, Credentials srcCreds, String dst, String id, List<String> excludes, @Nullable Boolean recursive)
             throws ConfigurationException {
         if (id != null && id.length() > 0 && tasks.containsKey(id)) {
             throw new IllegalArgumentException("Task with id " + id + " already exists.");
         }
-        RcpTaskImpl task = new RcpTaskImpl(getDynamicClassLoader(), src, srcCreds, dst, id, excludes, recursive);
+        RcpTaskImpl task = new RcpTaskImpl(getClassLoaderForRepositoryFactory(), src, connectionOptions, srcCreds, dst, id, excludes, recursive);
         tasks.put(task.getId(), task);
         persistTasks();
         return task;
     }
 
     @Override
-    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter,
+    public RcpTask addTask(RepositoryAddress src, ConnectionOptions connectionOptions, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter,
             @Nullable Boolean recursive) {
         if (id != null && id.length() > 0 && tasks.containsKey(id)) {
             throw new IllegalArgumentException("Task with id " + id + " already exists.");
         }
-        RcpTaskImpl task = new RcpTaskImpl(getDynamicClassLoader(), src, srcCreds, dst, id, srcFilter, recursive);
+        RcpTaskImpl task = new RcpTaskImpl(getClassLoaderForRepositoryFactory(), src, connectionOptions, srcCreds, dst, id, srcFilter, recursive);
         tasks.put(task.getId(), task);
         persistTasks();
         return task;
@@ -268,13 +267,13 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
 
     
     @Override
-    public RcpTask editTask(@NotNull String taskId, @Nullable RepositoryAddress src, @Nullable Credentials srcCreds, @Nullable String dst, @Nullable List<String> excludes,
+    public RcpTask editTask(@NotNull String taskId, @Nullable RepositoryAddress src, @Nullable ConnectionOptions connectionOptions, @Nullable Credentials srcCreds, @Nullable String dst, @Nullable List<String> excludes,
             @Nullable WorkspaceFilter srcFilter, @Nullable Boolean recursive) throws ConfigurationException {
         RcpTaskImpl oldTask = tasks.get(taskId);
         if (oldTask == null) {
             throw new IllegalArgumentException("No such task with id='" + taskId + "'");
         }
-        return new RcpTaskImpl(oldTask, src, srcCreds, dst, excludes, srcFilter, recursive);
+        return new RcpTaskImpl(oldTask, src, connectionOptions, srcCreds, dst, excludes, srcFilter, recursive);
     }
 
     @Override
@@ -298,7 +297,8 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         persistTasksCredentials();
     }
 
-    protected ClassLoader getDynamicClassLoader() {
-        return dynLoaderMgr.getDynamicClassLoader();
+    protected ClassLoader getClassLoaderForRepositoryFactory() {
+        // everything is embedded in the current bundle, therefore just take the bundle classloader
+        return this.getClass().getClassLoader();
     }
 }

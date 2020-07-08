@@ -50,7 +50,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jackrabbit.version>2.20.1</jackrabbit.version>
+        <jackrabbit.version>2.21.3-SNAPSHOT</jackrabbit.version>
         <oak.version>1.30.0</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
         <test.oak>false</test.oak>
@@ -186,6 +186,8 @@ Bundle-Category: jackrabbit
                     </executions>
                     <configuration>
                         <useMavenDependencies>true</useMavenDependencies>
+                        <!-- do not include any regular scopes (https://github.com/bndtools/bnd/blob/38ef85e389678370304846d6b09ffd31f9efb87d/biz.aQute.bnd.maven/src/aQute/bnd/maven/lib/resolve/Scope.java#L13), compare with https://github.com/bndtools/bnd/issues/4207 -->
+                        <scopes>distro</scopes>
                         <failOnChanges>false</failOnChanges><!-- reuse for multiple bundles which all require different minimum container -->
                         <writeOnChanges>false</writeOnChanges>
                     </configuration>

@@ -139,7 +139,7 @@ Creates a new task.
 | cmd          | X  | Needs to be "**create**". |
 | id           | \- | Id for new task. if omitted a random id is used. |
 | src          | X  | URI of the remote source repository. |
-| srcCreds     | \- | Credentials to use for accessing the source repository in the format `<username>{:<password>}`. |
+| srcCreds     | \- | Credentials to use for accessing the source repository in the format `<username>{:<password>}`. Alternatively put those in the URI given in `src`. |
 | dst          | X  | Destination path in the local repository. |
 | batchsize    | \- | Size of batch until intermediate size. Default is 1024. |
 | recursive    | \- | **true** to descend recursively. Default is _false_. |

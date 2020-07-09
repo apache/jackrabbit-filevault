@@ -184,7 +184,7 @@ public class RepositoryCopier {
         abort = true;
     }
 
-    public void copy(RepositoryAddress src, RepositoryAddress dst, boolean recursive) {
+    public void copy(RepositoryAddress src, RepositoryAddress dst, boolean recursive) throws RepositoryException {
         track("", "Copy %s to %s (%srecursive)", src, dst, recursive ? "" : "non-");
 
         Session srcSession = null;
@@ -195,15 +195,13 @@ public class RepositoryCopier {
             try {
                 srcRepo = repProvider.getRepository(src);
             } catch (RepositoryException e) {
-                log.error("Error while retrieving src repository {}: {}", src, e.toString());
-                return;
+                throw new RepositoryException("Error while retrieving source repository " + src, e);
             }
             Repository dstRepo;
             try {
                 dstRepo = repProvider.getRepository(dst);
             } catch (RepositoryException e) {
-                log.error("Error while retrieving dst repository {}: {}", dst, e.toString());
-                return;
+                throw new RepositoryException("Error while retrieving destination repository " + dst, e);
             }
 
             try {
@@ -213,8 +211,7 @@ public class RepositoryCopier {
                 }
                 srcSession = srcRepo.login(srcCreds, src.getWorkspace());
             } catch (RepositoryException e) {
-                log.error("Error while logging in src repository {}: {}", src, e.toString());
-                return;
+                throw new RepositoryException("Could not log into source repository " + src, e);
             }
 
             try {
@@ -224,8 +221,7 @@ public class RepositoryCopier {
                 }
                 dstSession = dstRepo.login(dstCreds, dst.getWorkspace());
             } catch (RepositoryException e) {
-                log.error("Error while logging in dst repository {}: {}", dst, e.toString());
-                return;
+                throw new RepositoryException("Could not log into destination repository " + dst, e);
             }
             copy(srcSession, src.getPath(), dstSession, dst.getPath(), recursive);
         } finally {
@@ -238,7 +234,7 @@ public class RepositoryCopier {
         }
     }
 
-    public void copy(Session srcSession, String srcPath, Session dstSession, String dstPath, boolean recursive) {
+    public void copy(Session srcSession, String srcPath, Session dstSession, String dstPath, boolean recursive) throws RepositoryException {
         if (srcSession == null || dstSession == null) {
             throw new IllegalArgumentException("no src or dst session provided");
         }
@@ -252,39 +248,34 @@ public class RepositoryCopier {
         try {
             srcRoot = srcSession.getNode(srcPath);
         } catch (RepositoryException e) {
-            log.error("Error while retrieving src node {}: {}", srcPath, e.toString());
-            return;
+            throw new RepositoryException("Error while retrieving source node " + srcPath, e);
         }
         Node dstRoot;
         try {
             dstRoot = dstSession.getNode(dstParent);
         } catch (RepositoryException e) {
-            log.error("Error while retrieving dst parent node {}: {}", dstParent, e.toString());
-            return;
+            throw new RepositoryException("Error while retrieving destination parent node " + dstParent, e);
         }
         // check if the cq namespace exists
         try {
             cqLastModified = srcSession.getNamespacePrefix("http://www.day.com/jcr/cq/1.0") + ":lastModified";
         } catch (RepositoryException e) {
             // ignore
+            log.debug("Haven't found cq namespace", e);
         }
-        try {
-            numNodes = 0;
-            totalNodes = 0;
-            currentSize = 0;
-            totalSize = 0;
-            start = System.currentTimeMillis();
-            copy(srcRoot, dstRoot, dstName, recursive);
-            if (numNodes > 0) {
-                track("", "Saving %d nodes...", numNodes);
-                dstSession.save();
-                track("", "Done.");
-            }
-            long end = System.currentTimeMillis();
-            track("", "Copy completed. %d nodes in %dms. %d bytes", totalNodes, end-start, totalSize);
-        } catch (RepositoryException e) {
-            log.error("Error during copy: {}", e.toString());
+        numNodes = 0;
+        totalNodes = 0;
+        currentSize = 0;
+        totalSize = 0;
+        start = System.currentTimeMillis();
+        copy(srcRoot, dstRoot, dstName, recursive);
+        if (numNodes > 0) {
+            track("", "Saving %d nodes...", numNodes);
+            dstSession.save();
+            track("", "Done.");
         }
+        long end = System.currentTimeMillis();
+        track("", "Copy completed. %d nodes in %dms. %d bytes", totalNodes, end-start, totalSize);
     }
 
     private void copy(Node src, Node dstParent, String dstName, boolean recursive)
@@ -350,7 +341,11 @@ public class RepositoryCopier {
                 track(dstPath, "%06d A", ++totalNodes);
                 isNew = true;
             } catch (RepositoryException e) {
-                log.warn("Error while adding node {} (ignored): {}", dstPath, e.toString());
+                if (log.isDebugEnabled()) {
+                    log.debug("Error while adding node {} (ignored)", dstPath, e);
+                } else {
+                    log.warn("Error while adding node {} (ignored): {}", dstPath, e.getMessage());
+                }
                 return;
             }
         }

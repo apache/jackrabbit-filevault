@@ -272,11 +272,11 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         return src;
     }
 
-    Credentials getSrcCreds() {
+    Credentials getSourceCredentials() {
         return srcCreds;
     }
 
-    void setSrcCreds(Credentials srcCreds) {
+    public void setSourceCredentials(Credentials srcCreds) {
         this.srcCreds = srcCreds;
     }
 

@@ -35,6 +35,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -136,14 +137,14 @@ public class RcpTaskManagerImplTest {
             mismatchDescription.appendText("was ").appendValue(taskToString(item));
         }
         
-        private static String taskToString(RcpTaskImpl task) {
+        private static String taskToString(RcpTask task) {
             ReflectionToStringBuilder builder = new ReflectionToStringBuilder(task, ToStringStyle.SHORT_PREFIX_STYLE);
             return builder.toString();
         }
 
         @Override
         protected boolean matchesSafely(RcpTaskImpl otherTask) {
-            if (!EqualsBuilder.reflectionEquals(task.getSrcCreds(), otherTask.getSrcCreds())) {
+            if (!EqualsBuilder.reflectionEquals(task.getSourceCredentials(), otherTask.getSourceCredentials())) {
                 return false;
             }
             if (!task.getSource().equals(otherTask.getSource())) {

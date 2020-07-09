@@ -41,4 +41,6 @@ public interface RcpTaskManager {
     RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, boolean recursive)
             throws ConfigurationException;
 
+    void setSourceCredentials(String taskId, Credentials srcCreds);
+
 }

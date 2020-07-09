@@ -139,6 +139,7 @@ Creates a new task.
 | cmd          | X  | Needs to be "**create**". |
 | id           | \- | Id for new task. if omitted a random id is used. |
 | src          | X  | URI of the remote source repository. |
+| srcCreds     | \- | Credentials to use for accessing the source repository in the format `<username>{:<password>}`. Alternatively put those in the URI given in `src`. |
 | dst          | X  | Destination path in the local repository. |
 | batchsize    | \- | Size of batch until intermediate size. Default is 1024. |
 | recursive    | \- | **true** to descend recursively. Default is _false_. |
@@ -173,13 +174,44 @@ Creates a new task.
 
     HTTP/1.1 201 Created
     Content-Type: application/json;charset=utf-8
-    Location: /libs/granite/packaging/rcp.tasks/test-id-1234
+    Location: /system/jackrabbit/filevault/rcp/test-id-1234
     
     {
         "status": "ok",
         "id": "test-id-1234"
     }
     
+#### Set Task Credentials (POST)
+Sets credentials (or overwrites those) for an already existing task.
+
+| Property     | Required | Comment |
+| ------------ | -------- | ------- |
+| cmd          | X | Needs to be "**set-credentials**". |
+| id           | X | Task ID whose credentials should be set. |
+| srcCreds     | /- | Credentials to use for accessing the source repository in the format `<username>{:<password>}`. Leave out to remove credentials |
+
+
+
+##### Example
+    POST /system/jackrabbit/filevault/rcp HTTP/1.1
+    Host: localhost:4502
+    Content-Type: application/json
+    
+	{
+        "cmd":"set-credentials",
+        "id":"test-id-1234",
+        "srcCreds":"myusername:mypassword"
+    }
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json;charset=utf-8
+    
+    {
+        "status": "ok",
+        "id": "test-id-1234"
+    }
+
+
 #### Start Task (POST)
 Starts a previously created task.
 

@@ -53,11 +53,12 @@ import org.slf4j.LoggerFactory;
 @Component(service = Servlet.class,
         property = {
                 "service.vendor=The Apache Software Foundation",
-                "sling.servlet.paths=/system/jackrabbit/filevault/rcp"
+                "sling.servlet.paths=" + RcpServlet.SERVLET_PATH
         }
 )
 public class RcpServlet extends SlingAllMethodsServlet {
 
+    protected static final String SERVLET_PATH = "/system/jackrabbit/filevault/rcp";
     private static final long serialVersionUID = -4571680968447024900L;
     public static final String PARAM_SRC = "src";
     public static final String PARAM_SRC_CREDS = "srcCreds";
@@ -155,14 +156,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
                     );
                 }
                 if (srcCreds != null && srcCreds.length() > 0) {
-                    int idx = srcCreds.indexOf(':');
-                    if (idx < 0) {
-                        creds = new SimpleCredentials(srcCreds, new char[0]);
-                    } else {
-                        creds = new SimpleCredentials(
-                                srcCreds.substring(0, idx),
-                                srcCreds.substring(idx+1).toCharArray());
-                    }
+                    creds = createCredentials(srcCreds);
                 }
                 boolean recursive = data.optBoolean(PARAM_RECURSIVE, false);
                 if (data.has(PARAM_EXCLUDES)) {
@@ -199,7 +193,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
                     task.getRcp().setResumeFrom(data.getString(PARAM_RESUME_FROM));
                 }
                 response.setStatus(HttpServletResponse.SC_CREATED);
-                String path = "/libs/granite/packaging/rcp.tasks/" + task.getId();
+                String path = SERVLET_PATH + "/" + task.getId();
                 response.setHeader("Location", path);
 
             // ---------------------------------------------------------------------------------------------< start >---
@@ -232,7 +226,20 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 if (!taskMgr.removeTask(id)) {
                     throw new IllegalArgumentException("No such task with id='" + id + "'");
                 }
-
+            // --------------------------------------------------------------------------------------------< remove >---
+            } else if ("set-credentials".equals(cmd)) {
+                // only add the credentials for a certain task id
+                if (id == null || id.length() == 0) {
+                    throw new IllegalArgumentException("Need task id.");
+                }
+                String srcCreds = data.optString(PARAM_SRC_CREDS, "");
+                final Credentials credentials;
+                if (srcCreds.isEmpty()) {
+                    credentials = null;
+                } else {
+                    credentials = createCredentials(srcCreds);
+                }
+                taskMgr.setSourceCredentials(id, credentials);
             } else {
                 throw new IllegalArgumentException("Invalid command.");
             }
@@ -262,6 +269,19 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 // ignore
             }
         }
+    }
+
+    Credentials createCredentials(String credentialsAsString) {
+        Credentials creds;
+        int idx = credentialsAsString.indexOf(':');
+        if (idx < 0) {
+            creds = new SimpleCredentials(credentialsAsString, new char[0]);
+        } else {
+            creds = new SimpleCredentials(
+                    credentialsAsString.substring(0, idx),
+                    credentialsAsString.substring(idx+1).toCharArray());
+        }
+        return creds;
     }
 
     private static void write(JSONWriter w, RcpTask rcpTask) throws JSONException {

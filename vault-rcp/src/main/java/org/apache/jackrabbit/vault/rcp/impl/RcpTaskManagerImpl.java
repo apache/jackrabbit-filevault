@@ -184,7 +184,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
             String serializedCredentials = props.getProperty(task.getId());
             if (serializedCredentials != null) {
                 Credentials credentials = mapper.readValue(serializedCredentials, SimpleCredentials.class);
-                task.setSrcCreds(credentials);
+                task.setSourceCredentials(credentials);
             }
         }
     }
@@ -211,12 +211,20 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         log.info("Persisted sensitive part of RCP tasks in '{}'", dataFile);
     }
 
+    private void persistTasksCredentials() {
+        try {
+            persistTasksCredentials(dataFile);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not persist tasks credentials", e);
+        }
+    }
+
     private void persistTasksCredentials(File dataFile) throws IOException {
         // persist credentials of tasks to data file
         Properties props = new Properties();
         for (RcpTaskImpl task : tasks.values()) {
             // include type information
-            String value = mapper.writeValueAsString(task.getSrcCreds());
+            String value = mapper.writeValueAsString(task.getSourceCredentials());
             props.setProperty(task.getId(), value);
         }
         try (FileOutputStream output = new FileOutputStream(dataFile)) {
@@ -256,6 +264,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         return task;
     }
 
+    @Override
     public boolean removeTask(String taskId) {
         RcpTask rcpTask = tasks.remove(taskId);
         if (rcpTask != null) {
@@ -264,6 +273,16 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void setSourceCredentials(String taskId, Credentials srcCreds) {
+        RcpTaskImpl task = tasks.get(taskId);
+        if (task == null) {
+            throw new IllegalArgumentException("No such task with id='" + taskId + "'");
+        }
+        task.setSourceCredentials(srcCreds);
+        persistTasksCredentials();
     }
 
     protected ClassLoader getDynamicClassLoader() {

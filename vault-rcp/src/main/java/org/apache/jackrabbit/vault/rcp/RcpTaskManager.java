@@ -24,6 +24,8 @@ import javax.jcr.Credentials;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * {@code RcpTaskManager}...
@@ -36,11 +38,15 @@ public interface RcpTaskManager {
 
     boolean removeTask(String taskId);
 
-    RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter, boolean recursive);
+    RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter, @Nullable Boolean recursive);
 
-    RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, boolean recursive)
+    RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, @Nullable Boolean recursive)
             throws ConfigurationException;
 
-    void setSourceCredentials(String taskId, Credentials srcCreds);
+    void setSourceCredentials(@NotNull String taskId, Credentials srcCreds);
+
+    RcpTask editTask(@NotNull String taskId, @Nullable RepositoryAddress src, @Nullable Credentials srcCreds, @Nullable String dst,
+            @Nullable List<String> excludes, @Nullable WorkspaceFilter srcFilter, @Nullable Boolean recursive)
+            throws ConfigurationException;
 
 }

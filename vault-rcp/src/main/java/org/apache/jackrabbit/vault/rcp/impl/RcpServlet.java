@@ -138,9 +138,15 @@ public class RcpServlet extends SlingAllMethodsServlet {
         final String id = data.optString(PARAM_ID, null);;
         try {
             // --------------------------------------------------------------------------------------------< create >---
-            if ("create".equals(cmd)) {
+            if ("create".equals(cmd) || "edit".equals(cmd)) {
+                boolean isEdit = "edit".equals(cmd);
+                if (isEdit) {
+                    if (id == null || id.length() == 0) {
+                        throw new IllegalArgumentException("Need task id.");
+                    }
+                }
                 String src = data.optString(PARAM_SRC, "");
-                if (src == null || src.length() == 0) {
+                if (isEdit && (src == null || src.length() == 0)) {
                     throw new IllegalArgumentException("Need src.");
                 }
                 String dst = data.optString(PARAM_DST, "");
@@ -158,14 +164,21 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 if (srcCreds != null && srcCreds.length() > 0) {
                     creds = createCredentials(srcCreds);
                 }
-                boolean recursive = data.optBoolean(PARAM_RECURSIVE, false);
+                Boolean recursive = null;
+                if (data.has(PARAM_RECURSIVE)) {
+                    recursive = data.optBoolean(PARAM_RECURSIVE, false);
+                }
                 if (data.has(PARAM_EXCLUDES)) {
                     List<String> excludeList = new LinkedList<>();
                     JSONArray excludes = data.getJSONArray(PARAM_EXCLUDES);
                     for (int idx = 0; idx < excludes.length(); idx++) {
                         excludeList.add(excludes.getString(idx));
                     }
-                    task = taskMgr.addTask(address, creds, dst, id, excludeList, recursive);
+                    if (isEdit) {
+                        task = taskMgr.editTask(id, address, creds, dst, excludeList, null, recursive);
+                    } else {
+                        task = taskMgr.addTask(address, creds, dst, id, excludeList, recursive);
+                    }
                 } else {
                     final WorkspaceFilter filter;
                     if (data.has(PARAM_FILTER)) {
@@ -175,24 +188,37 @@ public class RcpServlet extends SlingAllMethodsServlet {
                     } else {
                         filter = null;
                     }
-                    task = taskMgr.addTask(address, creds, dst, id, filter, recursive);
+                    if (isEdit) {
+                        task = taskMgr.editTask(id, address, creds, dst, null, filter, recursive);
+                    } else {
+                        task = taskMgr.addTask(address, creds, dst, id, filter, recursive);
+                    }
                 }
 
                 // add additional data
                 if (data.has(PARAM_BATCHSIZE)) {
                     task.getRcp().setBatchSize((int) data.getLong(PARAM_BATCHSIZE));
                 }
-                task.getRcp().setUpdate(data.optBoolean(PARAM_UPDATE, false));
-                task.getRcp().setOnlyNewer(data.optBoolean(PARAM_ONLY_NEWER, false));
-                task.getRcp().setNoOrdering(data.optBoolean(PARAM_NO_ORDERING, false));
+                if (data.has(PARAM_UPDATE)) {
+                    task.getRcp().setUpdate(data.optBoolean(PARAM_UPDATE, false));
+                }
+                if (data.has(PARAM_ONLY_NEWER)) {
+                    task.getRcp().setOnlyNewer(data.optBoolean(PARAM_ONLY_NEWER, false));
+                }
+                if (data.has(PARAM_NO_ORDERING)) {
+                    task.getRcp().setNoOrdering(data.optBoolean(PARAM_NO_ORDERING, false));
+                }
                 if (data.has(PARAM_THROTTLE)) {
                     task.getRcp().setThrottle(data.getLong(PARAM_THROTTLE));
                 }
-                
                 if (data.has(PARAM_RESUME_FROM)) {
                     task.getRcp().setResumeFrom(data.getString(PARAM_RESUME_FROM));
                 }
-                response.setStatus(HttpServletResponse.SC_CREATED);
+                if (isEdit) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                } else {
+                    response.setStatus(HttpServletResponse.SC_CREATED);
+                }
                 String path = SERVLET_PATH + "/" + task.getId();
                 response.setHeader("Location", path);
 

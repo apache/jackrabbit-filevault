@@ -38,9 +38,11 @@ import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
 import org.hamcrest.Description;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -75,11 +77,13 @@ public class RcpTaskManagerImplTest {
 
     Dictionary<String, Object> configProperties;
 
+    RcpTaskManagerImpl taskManager;
+
     @Rule
     public TemporaryFolder folder= new TemporaryFolder();
 
-    @Test
-    public void testSerializeDeserialize() throws IOException, ConfigurationException, URISyntaxException, RepositoryException {
+    @Before
+    public void before() throws IOException {
         Mockito.when(mockBundleContext.getDataFile(Mockito.anyString())).then(new Answer<File>() {
             @Override
             public File answer(InvocationOnMock invocation) throws Throwable {
@@ -98,7 +102,27 @@ public class RcpTaskManagerImplTest {
             }
             
         }).when(mockConfiguration).updateIfDifferent(Mockito.any());
-        RcpTaskManagerImpl taskManager = new RcpTaskManagerImpl(mockBundleContext, mockClassLoaderManager, mockConfigurationAdmin, Collections.emptyMap());
+        taskManager = new RcpTaskManagerImpl(mockBundleContext, mockClassLoaderManager, mockConfigurationAdmin, Collections.emptyMap());
+    }
+
+    @Test 
+    public void testEditTask() throws IOException, ConfigurationException, URISyntaxException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        try (InputStream input = this.getClass().getResourceAsStream("/filter.xml")) {
+            filter.load(input);
+        }
+        RcpTaskImpl taskOld = (RcpTaskImpl)taskManager.addTask(new RepositoryAddress("http://localhost:4502"), new SimpleCredentials("testUser", "pw".toCharArray()), "/target/path", "2", Arrays.asList("exclude1", "exclude2"), false);
+        RcpTaskImpl taskNew = (RcpTaskImpl)taskManager.editTask(taskOld.getId(), null, null, null, null, null, null);
+        Assert.assertThat(taskNew, new TaskMatcher(taskOld));
+        
+        RepositoryAddress newSource = new RepositoryAddress("http://localhost:4503");
+        taskNew = (RcpTaskImpl)taskManager.editTask(taskOld.getId(), newSource, null, null, null, null, null);
+        Assert.assertThat(taskNew, Matchers.not(new TaskMatcher(taskOld)));
+        Assert.assertEquals(newSource, taskNew.getSource());
+    }
+
+    @Test
+    public void testSerializeDeserialize() throws IOException, ConfigurationException, URISyntaxException, RepositoryException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         try (InputStream input = this.getClass().getResourceAsStream("/filter.xml")) {
             filter.load(input);

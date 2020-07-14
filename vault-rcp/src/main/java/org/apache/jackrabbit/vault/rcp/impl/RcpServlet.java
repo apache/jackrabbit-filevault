@@ -379,6 +379,19 @@ public class RcpServlet extends SlingAllMethodsServlet {
         w.key(PARAM_USE_SYSTEM_PROPERTIES).value(rcpTask.getConnectionOptions().isUseSystemPropertes());
         w.key(PARAM_DISABLE_HOSTNAME_VERIFICATION).value(rcpTask.getConnectionOptions().isDisableHostnameVerification());
         w.key(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE).value(rcpTask.getConnectionOptions().isAllowSelfSignedCertificates());
+        w.key(PARAM_CONNECTION_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getConnectionTimeoutMs());
+        w.key(PARAM_REQUEST_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getRequestTimeoutMs());
+        w.key(PARAM_SOCKET_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getSocketTimeoutMs());
+        if (rcpTask.getConnectionOptions().getProxyHost() != null) {
+            w.key(PARAM_PROXY_HOST).value(rcpTask.getConnectionOptions().getProxyHost());
+            w.key(PARAM_PROXY_PORT).value(rcpTask.getConnectionOptions().getProxyPort());
+            if (rcpTask.getConnectionOptions().getProxyProtocol() != null) {
+                w.key(PARAM_PROXY_HOST).value(rcpTask.getConnectionOptions().getProxyProtocol());
+            }
+            if (rcpTask.getConnectionOptions().getProxyUsername() != null) {
+                w.key(PARAM_PROXY_USERNAME).value(rcpTask.getConnectionOptions().getProxyUsername());
+            }
+        }
         w.key("status").object();
         w.key(RcpServlet.PARAM_STATE).value(rcpTask.getResult().getState().name());
         w.key("currentPath").value(rcpTask.getRcp().getCurrentPath());

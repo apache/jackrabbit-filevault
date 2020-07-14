@@ -83,6 +83,12 @@ public class RcpServlet extends SlingAllMethodsServlet {
     public static final String PARAM_REQUEST_TIMEOUT_MS = "requestTimeoutMs";
     public static final String PARAM_SOCKET_TIMEOUT_MS = "socketTimeoutMs";
     public static final String PARAM_USE_SYSTEM_PROPERTIES = "useSystemProperties";
+    public static final String PARAM_PROXY_HOST = "proxyHost";
+    public static final String PARAM_PROXY_PORT = "proxyPort";
+    public static final String PARAM_PROXY_PROTOCOL = "proxyProtocol";
+    public static final String PARAM_PROXY_USERNAME = "proxyUsername";
+    public static final String PARAM_PROXY_PASSWORD = "proxyPassword";
+    
 
     /**
      * default logger
@@ -146,15 +152,9 @@ public class RcpServlet extends SlingAllMethodsServlet {
         final String id = data.optString(PARAM_ID, null);;
         try {
             // --------------------------------------------------------------------------------------------< create >---
-            if ("create".equals(cmd) || "edit".equals(cmd)) {
-                boolean isEdit = "edit".equals(cmd);
-                if (isEdit) {
-                    if (id == null || id.length() == 0) {
-                        throw new IllegalArgumentException("Need task id.");
-                    }
-                }
+            if ("create".equals(cmd)) {
                 String src = data.optString(PARAM_SRC, "");
-                if (isEdit && (src == null || src.length() == 0)) {
+                if (src == null || src.length() == 0) {
                     throw new IllegalArgumentException("Need src.");
                 }
                 String dst = data.optString(PARAM_DST, "");
@@ -172,10 +172,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 if (srcCreds != null && srcCreds.length() > 0) {
                     creds = createCredentials(srcCreds);
                 }
-                Boolean recursive = null;
-                if (data.has(PARAM_RECURSIVE)) {
-                    recursive = data.optBoolean(PARAM_RECURSIVE, false);
-                }
+                boolean recursive = data.optBoolean(PARAM_RECURSIVE, false);
 
                 ConnectionOptions.Builder connectionOptionsBuilder = ConnectionOptions.builder();
                 connectionOptionsBuilder.useSystemProperties(data.optBoolean(PARAM_USE_SYSTEM_PROPERTIES));
@@ -188,17 +185,28 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 int socketTimeoutMs = data.optInt(PARAM_SOCKET_TIMEOUT_MS, -1);
                 connectionOptionsBuilder.socketTimeoutMs(socketTimeoutMs);
 
+                if (data.has(PARAM_PROXY_HOST)) {
+                    connectionOptionsBuilder.proxyHost(data.getString(PARAM_PROXY_HOST));
+                    if (data.has(PARAM_PROXY_PORT)) {
+                        connectionOptionsBuilder.proxyPort(data.getInt(PARAM_PROXY_PORT));
+                    }
+                    if (data.has(PARAM_PROXY_PROTOCOL)) {
+                        connectionOptionsBuilder.proxyProtocol(data.getString(PARAM_PROXY_PROTOCOL));
+                    }
+                    if (data.has(PARAM_PROXY_USERNAME)) {
+                        connectionOptionsBuilder.proxyUsername(data.getString(PARAM_PROXY_USERNAME));
+                        if (data.has(PARAM_PROXY_PASSWORD)) {
+                            connectionOptionsBuilder.proxyPassword(data.getString(PARAM_PROXY_PASSWORD));
+                        }
+                    }
+                }
                 if (data.has(PARAM_EXCLUDES)) {
                     List<String> excludeList = new LinkedList<>();
                     JSONArray excludes = data.getJSONArray(PARAM_EXCLUDES);
                     for (int idx = 0; idx < excludes.length(); idx++) {
                         excludeList.add(excludes.getString(idx));
                     }
-                    if (isEdit) {
-                        task = taskMgr.editTask(id, address, connectionOptionsBuilder.build(), creds, dst, excludeList, null, recursive);
-                    } else {
-                        task = taskMgr.addTask(address, connectionOptionsBuilder.build(), creds, dst, id, excludeList, recursive);
-                    }
+                    task = taskMgr.addTask(address, connectionOptionsBuilder.build(), creds, dst, id, excludeList, recursive);
                 } else {
                     final WorkspaceFilter filter;
                     if (data.has(PARAM_FILTER)) {
@@ -208,11 +216,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
                     } else {
                         filter = null;
                     }
-                    if (isEdit) {
-                        task = taskMgr.editTask(id, address, connectionOptionsBuilder.build(), creds, dst, null, filter, recursive);
-                    } else {
-                        task = taskMgr.addTask(address, connectionOptionsBuilder.build(), creds, dst, id, filter, recursive);
-                    }
+                    task = taskMgr.addTask(address, connectionOptionsBuilder.build(), creds, dst, id, filter, recursive);
                 }
                 
 
@@ -220,26 +224,17 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 if (data.has(PARAM_BATCHSIZE)) {
                     task.getRcp().setBatchSize((int) data.getLong(PARAM_BATCHSIZE));
                 }
-                if (data.has(PARAM_UPDATE)) {
-                    task.getRcp().setUpdate(data.optBoolean(PARAM_UPDATE, false));
-                }
-                if (data.has(PARAM_ONLY_NEWER)) {
-                    task.getRcp().setOnlyNewer(data.optBoolean(PARAM_ONLY_NEWER, false));
-                }
-                if (data.has(PARAM_NO_ORDERING)) {
-                    task.getRcp().setNoOrdering(data.optBoolean(PARAM_NO_ORDERING, false));
-                }
+                task.getRcp().setUpdate(data.optBoolean(PARAM_UPDATE, false));
+                task.getRcp().setOnlyNewer(data.optBoolean(PARAM_ONLY_NEWER, false));
+                task.getRcp().setNoOrdering(data.optBoolean(PARAM_NO_ORDERING, false));
                 if (data.has(PARAM_THROTTLE)) {
                     task.getRcp().setThrottle(data.getLong(PARAM_THROTTLE));
                 }
+                
                 if (data.has(PARAM_RESUME_FROM)) {
                     task.getRcp().setResumeFrom(data.getString(PARAM_RESUME_FROM));
                 }
-                if (isEdit) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                } else {
-                    response.setStatus(HttpServletResponse.SC_CREATED);
-                }
+                response.setStatus(HttpServletResponse.SC_CREATED);
                 String path = SERVLET_PATH + "/" + task.getId();
                 response.setHeader("Location", path);
 

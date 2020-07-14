@@ -118,6 +118,11 @@ public class VaultFsApp extends AbstractApplication {
     private Option optRequestTimeoutMs;
     private Option optSocketTimeoutMs;
     private Option optUseSystemProperties;
+    private Option optProxyHost;
+    private Option optProxyPort;
+    private Option optProxyProtocol;
+    private Option optProxyUsername;
+    private Option optProxyPassword;
 
     private ExtendedOption[] xOpts = new ExtendedOption[]{
             new XJcrLog(),
@@ -659,7 +664,51 @@ public class VaultFsApp extends AbstractApplication {
                         .create()
                 )
                 .create();
-        
+        optProxyHost = new DefaultOptionBuilder()
+                .withLongName("proxyHost")
+                .withDescription("The host of the proxy to use")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optProxyPort = new DefaultOptionBuilder()
+                .withLongName("proxyPort")
+                .withDescription("The port where the proxy is running (requires proxyHost as well)")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optProxyProtocol = new DefaultOptionBuilder()
+                .withLongName("proxyProtocol")
+                .withDescription("The protocol for which to use the proxy (requires proxyHost as well)")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optProxyUsername = new DefaultOptionBuilder()
+                .withLongName("proxyUsername")
+                .withDescription("The username to use for authentication at the proxy (requires proxyHost as well)")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optProxyPassword = new DefaultOptionBuilder()
+                .withLongName("proxyPassword")
+                .withDescription("The password to use for authentication at the proxy (requires proxyUsername as well)")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
         // register extended options
         for (ExtendedOption x: xOpts) {
             gbuilder.withOption(x.getOption());
@@ -676,6 +725,7 @@ public class VaultFsApp extends AbstractApplication {
         gbuilder.withOption(optConnectionTimeoutMs);
         gbuilder.withOption(optRequestTimeoutMs);
         gbuilder.withOption(optSocketTimeoutMs);
+        gbuilder.withOption(optProxyHost).withOption(optProxyPort).withOption(optProxyProtocol).withOption(optProxyUsername).withOption(optProxyPassword);
         return super.addApplicationOptions(gbuilder);
     }
 
@@ -731,7 +781,12 @@ public class VaultFsApp extends AbstractApplication {
         builder.connectionTimeoutMs(Integer.parseInt(cl.getValue(optConnectionTimeoutMs, -1).toString()));
         builder.requestTimeoutMs(Integer.parseInt(cl.getValue(optRequestTimeoutMs, -1).toString()));
         builder.socketTimeoutMs(Integer.parseInt(cl.getValue(optSocketTimeoutMs, -1).toString()));
-        builder.useSystemProperties(cl.hasOption(optUseSystemProperties)));
+        builder.useSystemProperties(cl.hasOption(optUseSystemProperties));
+        builder.proxyHost(cl.getValue(optProxyHost).toString());
+        builder.proxyPort(Integer.parseInt(cl.getValue(optProxyPort, -1).toString()));
+        builder.proxyProtocol(cl.getValue(optProxyProtocol).toString());
+        builder.proxyUsername(cl.getValue(optProxyUsername).toString());
+        builder.proxyPassword(cl.getValue(optProxyPassword).toString());
         Map<String, String> options = builder.build().toServiceFactoryParameters(KEY_CONNECTION_OPTIONS_PREFIX);
         for (Map.Entry<String, String> entry : options.entrySet()) {
             setProperty(entry.getKey(), entry.getValue());

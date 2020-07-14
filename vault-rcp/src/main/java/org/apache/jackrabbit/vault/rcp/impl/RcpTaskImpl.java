@@ -36,6 +36,8 @@ import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.util.RepositoryCopier;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,24 +112,40 @@ public class RcpTaskImpl implements Runnable, RcpTask {
     }
 
     public RcpTaskImpl(ClassLoader classLoader, RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes,
-            boolean recursive) throws ConfigurationException {
+            @Nullable Boolean recursive) throws ConfigurationException {
         this(classLoader, src, srcCreds, dst, id, createFilterForExcludes(excludes), recursive);
         this.excludes = excludes;
     }
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public RcpTaskImpl(@JsonProperty("classLoader") ClassLoader dynLoader, @JsonProperty("source") RepositoryAddress src, @JsonProperty("srcCreds") Credentials srcCreds, @JsonProperty("destination") String dst, @JsonProperty("id") String id, @JsonProperty("filter") WorkspaceFilter srcFilter,
-            @JsonProperty("recursive") boolean recursive) {
+            @JsonProperty("recursive") @Nullable Boolean recursive) {
         this.src = src;
         this.dst = dst;
         this.srcCreds = srcCreds;
         this.id = id == null || id.length() == 0
                 ? UUID.randomUUID().toString()
                 : id;
-        this.recursive = recursive;
+        this.recursive = recursive != null ? recursive : false;
         this.filter = srcFilter;
         initTransientData();
         this.classLoader = dynLoader;
+    }
+
+    // additional constructor for editing existing tasks, all arguments are optional except the first one
+    public RcpTaskImpl(@NotNull RcpTaskImpl oldTask, @Nullable RepositoryAddress src, @Nullable Credentials srcCreds, @Nullable String dst, @Nullable List<String> excludes, @Nullable WorkspaceFilter srcFilter,
+            @Nullable Boolean recursive) {
+        this.src = src != null ? src : oldTask.src;
+        this.dst = dst != null ? dst : oldTask.dst;
+        this.srcCreds = srcCreds != null ? srcCreds : oldTask.srcCreds;
+        this.id = oldTask.id;
+        this.recursive = recursive != null ? recursive : oldTask.recursive;
+        this.excludes = excludes != null ? excludes : oldTask.excludes;
+        this.filter = srcFilter != null ? srcFilter : oldTask.filter;
+        // leave all other fields untouched
+        this.classLoader = oldTask.classLoader;
+        this.rcp = oldTask.rcp;
+        this.result = oldTask.result;
     }
 
     private static WorkspaceFilter createFilterForExcludes(List<String> excludes) throws ConfigurationException {

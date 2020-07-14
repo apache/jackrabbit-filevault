@@ -42,6 +42,8 @@ import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
 import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
@@ -241,7 +243,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
     }
 
     @Override
-    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, boolean recursive)
+    public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, @Nullable Boolean recursive)
             throws ConfigurationException {
         if (id != null && id.length() > 0 && tasks.containsKey(id)) {
             throw new IllegalArgumentException("Task with id " + id + " already exists.");
@@ -254,7 +256,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
 
     @Override
     public RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter,
-            boolean recursive) {
+            @Nullable Boolean recursive) {
         if (id != null && id.length() > 0 && tasks.containsKey(id)) {
             throw new IllegalArgumentException("Task with id " + id + " already exists.");
         }
@@ -262,6 +264,17 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         tasks.put(task.getId(), task);
         persistTasks();
         return task;
+    }
+
+    
+    @Override
+    public RcpTask editTask(@NotNull String taskId, @Nullable RepositoryAddress src, @Nullable Credentials srcCreds, @Nullable String dst, @Nullable List<String> excludes,
+            @Nullable WorkspaceFilter srcFilter, @Nullable Boolean recursive) throws ConfigurationException {
+        RcpTaskImpl oldTask = tasks.get(taskId);
+        if (oldTask == null) {
+            throw new IllegalArgumentException("No such task with id='" + taskId + "'");
+        }
+        return new RcpTaskImpl(oldTask, src, srcCreds, dst, excludes, srcFilter, recursive);
     }
 
     @Override

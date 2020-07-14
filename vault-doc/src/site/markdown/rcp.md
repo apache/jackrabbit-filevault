@@ -180,6 +180,56 @@ Creates a new task.
         "status": "ok",
         "id": "test-id-1234"
     }
+#### Edit Task (POST)
+Edits an existing task. Almost al properties are optional. Unset properties are not modified!
+
+| Property     | Required | Comment |
+| ------------ | -------- | ------- |
+| cmd          | X  | Needs to be "**edit**". |
+| id           | X | Id of existing task. |
+| src          | \-  | URI of the remote source repository. |
+| srcCreds     | \- | Credentials to use for accessing the source repository in the format `<username>{:<password>}`. Alternatively put those in the URI given in `src`. |
+| dst          | \-  | Destination path in the local repository. |
+| batchsize    | \- | Size of batch until intermediate size. Default is 1024. |
+| recursive    | \- | **true** to descend recursively. Default is _false_. |
+| update       | \- | **true** to overwrite and/or delete existing nodes. Default is _false_. |
+| newer        | \- | **true** to respect _lastModified_ properties for update. Default is _false_. |
+| throttle     | \- | Number of seconds to sleep after each intermediate save. Default is _0_. |
+| resumeFrom   | \- | Source path to resume a prior aborted copy. Note that the algorithm simply skips all source nodes until the _resumeFrom_ path is found. It is necessary that the content structure of the source repository does not change in between runs, and that content already needs to be present in the detination location. |
+| excludes     | \- | Array of java regular expressions that exclude source paths. |
+| filter       | \- | Serialized [filter.xml](filter.html) specifing which repository areas to copy. Only used if `excludes` is not given. Make sure that the value is properly escaped. |
+
+
+##### Example
+    POST /system/jackrabbit/filevault/rcp HTTP/1.1
+    Host: localhost:4502
+    Content-Type: application/json
+    
+	{
+        "cmd":"edit",
+        "id":"test-id-1234",
+        "src":"http://admin:admin@localhost:4503/crx/-/jcr:root/content/geometrixx",
+        "dst":"/tmp/test1",
+        "batchsize": 2048,
+        "update": true,
+        "onlyNewer": false,
+        "recursive": true,
+        "throttle": 1,
+        "resumeFrom": "/content/geometrixx/fr",
+        "excludes": [
+            "/content/geometrixx/(en|fr)/tools(/.*)?"
+        ]
+    }
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json;charset=utf-8
+    Location: /system/jackrabbit/filevault/rcp/test-id-1234
+    
+    {
+        "status": "ok",
+        "id": "test-id-1234"
+    }
+
     
 #### Set Task Credentials (POST)
 Sets credentials (or overwrites those) for an already existing task.

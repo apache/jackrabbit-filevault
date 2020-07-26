@@ -149,8 +149,11 @@ Creates a new task.
 | requestTimeoutMs | \- | The request timeout in milliseconds. 0 for infinite, -1 for system default. |
 | socketTimeoutMs | \- | The socket timeout in milliseconds. 0 for infinite, -1 for system default. |
 | useSystemProperties | \- | **true** to use the java default system properties for connection settings. Further information at <https://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/org/apache/http/impl/client/HttpClientBuilder.html> |
-
-
+| proxyHost | \- | The host name of the proxy to use. |
+| proxyPort | \- | The port of the proxy to use. Only applicable if `proxyHost` is set. |
+| proxyProtocol | \- | The protocol for which to use the proxy. Only applicable if `proxyHost` is set. Default (not set) means proxy is used for both HTTP and HTTPs. |
+| proxyUsername | \- | The username used for authentication at the proxy. Only applicable if `proxyHost` is set. |
+| proxyPassword | \- | The password used for authentication at the proxy. Only applicable if `proxyUsername ` is set. |
 
 ##### Example
     POST /system/jackrabbit/filevault/rcp HTTP/1.1
@@ -182,7 +185,7 @@ Creates a new task.
         "id": "test-id-1234"
     }
 #### Edit Task (POST)
-Edits an existing task. Almost al properties are optional. Unset properties are not modified!
+Edits an existing task. Almost al properties are optional. Unused properties are not modified!
 
 | Property     | Required | Comment |
 | ------------ | -------- | ------- |
@@ -199,6 +202,17 @@ Edits an existing task. Almost al properties are optional. Unset properties are 
 | resumeFrom   | \- | Source path to resume a prior aborted copy. Note that the algorithm simply skips all source nodes until the _resumeFrom_ path is found. It is necessary that the content structure of the source repository does not change in between runs, and that content already needs to be present in the detination location. |
 | excludes     | \- | Array of java regular expressions that exclude source paths. |
 | filter       | \- | Serialized [filter.xml](filter.html) specifing which repository areas to copy. Only used if `excludes` is not given. Make sure that the value is properly escaped. |
+| allowSelfSignedCertificate | \- | **true** to accept self-signed certificated. Only applicable if src URI starts with https. |
+| disableHostnameVerification | \- | **true** to disable host name verification against the certificate. Only applicable if src URI starts with https. |
+| connectionTimeoutMs | \- | The connection timeout in milliseconds. 0 for infinite, -1 for system default. |
+| requestTimeoutMs | \- | The request timeout in milliseconds. 0 for infinite, -1 for system default. |
+| socketTimeoutMs | \- | The socket timeout in milliseconds. 0 for infinite, -1 for system default. |
+| useSystemProperties | \- | **true** to use the java default system properties for connection settings. Further information at <https://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/org/apache/http/impl/client/HttpClientBuilder.html> |
+| proxyHost | \- | The host name of the proxy to use. |
+| proxyPort | \- | The port of the proxy to use. Only applicable if `proxyHost` is set. |
+| proxyProtocol | \- | The protocol for which to use the proxy. Only applicable if `proxyHost` is set. Default (not set) means proxy is used for both HTTP and HTTPs. |
+| proxyUsername | \- | The username used for authentication at the proxy. Only applicable if `proxyHost` is set. |
+| proxyPassword | \- | The password used for authentication at the proxy. Only applicable if `proxyUsername ` is set. |
 
 
 ##### Example

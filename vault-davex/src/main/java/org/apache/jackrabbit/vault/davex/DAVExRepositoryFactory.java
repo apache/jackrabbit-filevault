@@ -112,7 +112,7 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
                 parameters.put(Spi2davexRepositoryServiceFactory.PARAM_WORKSPACE_NAME_DEFAULT, workspace);
             }
             if (connectionOptions != null) {
-                parameters.putAll(connectionOptions.toServiceFactoryParameters("org.apache.jackrabbit.spi2davex"));
+                parameters.putAll(connectionOptions.toServiceFactoryParameters());
             }
             System.out.printf("Connecting via JCR remoting to %s%n", address.getSpecificURI().toString());
             return new RepositoryFactoryImpl().getRepository(parameters);

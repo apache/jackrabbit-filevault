@@ -50,7 +50,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jackrabbit.version>2.21.3-SNAPSHOT</jackrabbit.version>
+        <jackrabbit.version>2.21.3</jackrabbit.version><!-- unstable because JCR-4536 is not available in a stable release yet -->
         <oak.version>1.30.0</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
         <test.oak>false</test.oak>

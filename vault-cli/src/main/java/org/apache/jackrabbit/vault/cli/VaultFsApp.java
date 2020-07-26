@@ -34,7 +34,6 @@ import org.apache.commons.cli2.Option;
 import org.apache.commons.cli2.builder.ArgumentBuilder;
 import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.DefaultOption;
 import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.cli.extended.ExtendedOption;
 import org.apache.jackrabbit.vault.cli.extended.XDavEx;
@@ -86,7 +85,6 @@ public class VaultFsApp extends AbstractApplication {
     public static final String KEY_DEFAULT_URI = "conf.uri";
     public static final String KEY_DEFAULT_CONFIG_XML = "conf.configxml";
     public static final String KEY_DEFAULT_FILTER_XML = "conf.filterxml";
-    private static final String KEY_CONNECTION_OPTIONS_PREFIX = "conf.connectionOptions.";
 
     private static final String DEFAULT_URI = "http://localhost:8080/crx/server/crx.default";
     private static final String DEFAULT_WSP = "crx.default";
@@ -237,11 +235,6 @@ public class VaultFsApp extends AbstractApplication {
 
     public VaultFileSystem getVaultFileSystem() {
         return fs;
-    }
-
-    @Override
-    public String getCopyrightLine() {
-        return "Copyright 2018 by Apache Software Foundation. See LICENSE.txt for more information.";
     }
 
     protected void mount(String creds, String wsp, String root, String config,
@@ -409,7 +402,7 @@ public class VaultFsApp extends AbstractApplication {
             throw new ExecutionException("Already connected to " + getProperty(KEY_URI));
         } else {
             String uri = getProperty(KEY_DEFAULT_URI);
-            ConnectionOptions options = ConnectionOptions.fromServiceFactoryParameters(KEY_CONNECTION_OPTIONS_PREFIX, getEnv());
+            ConnectionOptions options = ConnectionOptions.fromServiceFactoryParameters(getEnv());
             try {
                 rep = repProvider.getRepository(new RepositoryAddress(uri), options);
                 setProperty(KEY_URI, uri);
@@ -628,17 +621,16 @@ public class VaultFsApp extends AbstractApplication {
                 .create();
         optAllowSelfSignedCertificate = new DefaultOptionBuilder()
                 .withLongName("allowSelfSignedCertificates")
-                .withDescription("Allows to connect to HTTPS repo URLs whose certificate is self-signed.")
+                .withDescription("Allows to connect to HTTPS repository urls whose certificate is self-signed.")
                 .create();
         optDisableHostnameValidation = new DefaultOptionBuilder()
                 .withLongName("disableHostnameValidator")
-                .withDescription("Disables hostname validation for HTTPS repo URLs.")
+                .withDescription("Disables hostname validation for HTTPS repository urls.")
                 .create();
         optConnectionTimeoutMs = new DefaultOptionBuilder()
                 .withLongName("connectionTimeoutMs")
-                .withDescription("The connection timeout")
+                .withDescription("The connection timeout in milliseconds.")
                 .withArgument(new ArgumentBuilder()
-                        .withDescription("Timeout in milliseconds")
                         .withMinimum(1)
                         .withMaximum(1)
                         .create()
@@ -646,9 +638,8 @@ public class VaultFsApp extends AbstractApplication {
                 .create();
         optRequestTimeoutMs = new DefaultOptionBuilder()
                 .withLongName("requestTimeoutMs")
-                .withDescription("The request timeout")
+                .withDescription("The request timeout in milliseconds.")
                 .withArgument(new ArgumentBuilder()
-                        .withDescription("Timeout in milliseconds")
                         .withMinimum(1)
                         .withMaximum(1)
                         .create()
@@ -656,9 +647,8 @@ public class VaultFsApp extends AbstractApplication {
                 .create();
         optSocketTimeoutMs = new DefaultOptionBuilder()
                 .withLongName("socketTimeoutMs")
-                .withDescription("The socket timeout")
+                .withDescription("The socket timeout in milliseconds.")
                 .withArgument(new ArgumentBuilder()
-                        .withDescription("Timeout in milliseconds")
                         .withMinimum(1)
                         .withMaximum(1)
                         .create()
@@ -666,7 +656,7 @@ public class VaultFsApp extends AbstractApplication {
                 .create();
         optProxyHost = new DefaultOptionBuilder()
                 .withLongName("proxyHost")
-                .withDescription("The host of the proxy to use")
+                .withDescription("The host of the proxy to use.")
                 .withArgument(new ArgumentBuilder()
                         .withMinimum(1)
                         .withMaximum(1)
@@ -675,7 +665,7 @@ public class VaultFsApp extends AbstractApplication {
                 .create();
         optProxyPort = new DefaultOptionBuilder()
                 .withLongName("proxyPort")
-                .withDescription("The port where the proxy is running (requires proxyHost as well)")
+                .withDescription("The port where the proxy is running (requires proxyHost as well).")
                 .withArgument(new ArgumentBuilder()
                         .withMinimum(1)
                         .withMaximum(1)
@@ -684,7 +674,7 @@ public class VaultFsApp extends AbstractApplication {
                 .create();
         optProxyProtocol = new DefaultOptionBuilder()
                 .withLongName("proxyProtocol")
-                .withDescription("The protocol for which to use the proxy (requires proxyHost as well)")
+                .withDescription("The protocol for which to use the proxy (requires proxyHost as well). If not set proxy is used for both HTTP and HTTPS.")
                 .withArgument(new ArgumentBuilder()
                         .withMinimum(1)
                         .withMaximum(1)
@@ -693,7 +683,7 @@ public class VaultFsApp extends AbstractApplication {
                 .create();
         optProxyUsername = new DefaultOptionBuilder()
                 .withLongName("proxyUsername")
-                .withDescription("The username to use for authentication at the proxy (requires proxyHost as well)")
+                .withDescription("The username to use for authentication at the proxy (requires proxyHost as well).")
                 .withArgument(new ArgumentBuilder()
                         .withMinimum(1)
                         .withMaximum(1)
@@ -782,12 +772,20 @@ public class VaultFsApp extends AbstractApplication {
         builder.requestTimeoutMs(Integer.parseInt(cl.getValue(optRequestTimeoutMs, -1).toString()));
         builder.socketTimeoutMs(Integer.parseInt(cl.getValue(optSocketTimeoutMs, -1).toString()));
         builder.useSystemProperties(cl.hasOption(optUseSystemProperties));
-        builder.proxyHost(cl.getValue(optProxyHost).toString());
-        builder.proxyPort(Integer.parseInt(cl.getValue(optProxyPort, -1).toString()));
-        builder.proxyProtocol(cl.getValue(optProxyProtocol).toString());
-        builder.proxyUsername(cl.getValue(optProxyUsername).toString());
-        builder.proxyPassword(cl.getValue(optProxyPassword).toString());
-        Map<String, String> options = builder.build().toServiceFactoryParameters(KEY_CONNECTION_OPTIONS_PREFIX);
+        if (cl.getValue(optProxyHost) != null) {
+            builder.proxyHost(cl.getValue(optProxyHost).toString());
+            builder.proxyPort(Integer.parseInt(cl.getValue(optProxyPort, -1).toString()));
+            if (cl.getValue(optProxyProtocol) != null) {
+                builder.proxyProtocol(cl.getValue(optProxyProtocol).toString());
+            }
+            if (cl.getValue(optProxyUsername) != null) {
+                builder.proxyUsername(cl.getValue(optProxyUsername).toString());
+            }
+            if (cl.getValue(optProxyPassword) != null) {
+                builder.proxyPassword(cl.getValue(optProxyPassword).toString());
+            }
+        }
+        Map<String, String> options = builder.build().toServiceFactoryParameters();
         for (Map.Entry<String, String> entry : options.entrySet()) {
             setProperty(entry.getKey(), entry.getValue());
         }

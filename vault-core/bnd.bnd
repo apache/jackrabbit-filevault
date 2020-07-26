@@ -19,4 +19,6 @@ Import-Package: org.apache.jackrabbit.*;version=!,\
 DynamicImport-Package: *
 -includeresource: @txw2-[0-9.]*.jar!/com/sun/xml/txw2/output/(IndentingXMLStreamWriter|DelegatingXMLStreamWriter).*,\
                   @woodstox-core-[0-9.]*.jar!/!module-info.class,\
-                  @stax2-api-[0-9.]*.jar!/!module-info.class,
+                  @stax2-api-[0-9.]*.jar!/!module-info.class
+# The following package contains the newly added ConnectionOptions which needs to be embedded here for this bundle to be compatible with older distributions
+-conditionalpackage: org.apache.jackrabbit.spi2dav

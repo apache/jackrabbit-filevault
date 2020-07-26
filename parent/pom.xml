@@ -186,8 +186,8 @@ Bundle-Category: jackrabbit
                     </executions>
                     <configuration>
                         <useMavenDependencies>true</useMavenDependencies>
-                        <!-- do not include any regular scopes (https://github.com/bndtools/bnd/blob/38ef85e389678370304846d6b09ffd31f9efb87d/biz.aQute.bnd.maven/src/aQute/bnd/maven/lib/resolve/Scope.java#L13), compare with https://github.com/bndtools/bnd/issues/4207 -->
-                        <scopes>distro</scopes>
+                        <!-- also include compile scoped dependencies (https://github.com/bndtools/bnd/blob/38ef85e389678370304846d6b09ffd31f9efb87d/biz.aQute.bnd.maven/src/aQute/bnd/maven/lib/resolve/Scope.java#L13), compare with https://github.com/bndtools/bnd/issues/4207 -->
+                        <scopes>compile</scopes>
                         <failOnChanges>false</failOnChanges><!-- reuse for multiple bundles which all require different minimum container -->
                         <writeOnChanges>false</writeOnChanges>
                     </configuration>

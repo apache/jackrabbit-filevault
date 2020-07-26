@@ -172,7 +172,7 @@ public class NodeTypeValidatorTest {
         ValidationExecutorTest.assertViolation(validator.validate(node, nodeContext, false),
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(NodeTypeValidator.MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE,
-                                "sling: is not a registered namespace prefix.")));
+                                "Invalid primary type sling:Folder: 'sling: is not a registered namespace prefix.'")));
     }
 
     @Test

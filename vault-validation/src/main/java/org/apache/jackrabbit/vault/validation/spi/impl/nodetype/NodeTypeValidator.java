@@ -75,7 +75,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator {
 
     static final String MESSAGE_MANDATORY_CHILD_NODE_MISSING = "Mandatory child node missing: %s";
     static final String MESSAGE_PROPERTY_ERROR = "Error while retrieving property '%s': %s";
-    static final String MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE = "Unknown node type or namespace: %s";
+    static final String MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE = "%s. Skip validation of nodes with that type";
     static final String MESSAGE_MISSING_PRIMARY_TYPE = "Mandatory jcr:primaryType missing on node '%s'";
     static final String MESSAGE_PROPERTY_NOT_ALLOWED = "Property '%s' is not allowed in node with types '[%s]': %s";
     static final String MESSAGE_MANDATORY_PROPERTY_MISSING = "Mandatory property '%s' missing in node with types [%s]";
@@ -162,24 +162,29 @@ public class NodeTypeValidator implements DocumentViewXmlValidator {
                 if (currentNodeNameAndType == null || !filter.contains(parentNodePath)) {
                     parentNodeType = defaultType;
                     useDefaultNodeType = true;
-                } else {
+                } else if (!currentNodeNameAndType.isUnknown()) {
                     parentNodeType = currentNodeNameAndType.getEffectiveNodeType();
+                    useDefaultNodeType = false;
+                } else {
+                    parentNodeType = null;
                     useDefaultNodeType = false;
                 }
 
-                String constraintViolation = getChildNodeConstraintViolation(node, parentNodeType,
-                        ntManagerProvider.getNodeTypeDefinitionProvider(),
-                        ntManagerProvider.getNameResolver(), ntManagerProvider.getItemDefinitionProvider(),
-                        allowProtectedSubNodesAndProperties);
-                if (constraintViolation != null) {
-                    messages.add(new ValidationMessage(defaultSeverity,
-                            String.format(
-                                    useDefaultNodeType ? MESSAGE_CHILD_NODE_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED
-                                            : MESSAGE_CHILD_NODE_NOT_ALLOWED,
-                                    getDocViewNodeLabel(node),
-                                    effectiveNodeTypeToString(ntManagerProvider.getNameResolver(), parentNodeType),
-                                    constraintViolation)));
-
+                if (parentNodeType != null) {
+                    String constraintViolation = getChildNodeConstraintViolation(node, parentNodeType,
+                            ntManagerProvider.getNodeTypeDefinitionProvider(),
+                            ntManagerProvider.getNameResolver(), ntManagerProvider.getItemDefinitionProvider(),
+                            allowProtectedSubNodesAndProperties);
+                    if (constraintViolation != null) {
+                        messages.add(new ValidationMessage(defaultSeverity,
+                                String.format(
+                                        useDefaultNodeType ? MESSAGE_CHILD_NODE_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED
+                                                : MESSAGE_CHILD_NODE_NOT_ALLOWED,
+                                        getDocViewNodeLabel(node),
+                                        effectiveNodeTypeToString(ntManagerProvider.getNameResolver(), parentNodeType),
+                                        constraintViolation)));
+    
+                    }
                 }
             }
 
@@ -226,6 +231,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator {
                         String.format(MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE, e.getMessage()), e));
                 loggedUnknownNodeTypeMessages.add(e.getMessage());
             }
+            currentNodeNameAndType = NodeNameAndType.createUnknownNodeNameAndType(currentNodeNameAndType);
         } catch (RepositoryException e) {
             throw new IllegalStateException("Could not validate nodes/properties against node types: " + e.getMessage(), e);
         }
@@ -241,7 +247,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator {
         }
 
         try {
-            if (currentNodeNameAndType != null) {
+            if (currentNodeNameAndType != null && !currentNodeNameAndType.isUnknown()) {
                 Collection<ValidationMessage> messages = new LinkedList<>();
                 for (QNodeDefinition mandatoryNodeType : currentNodeNameAndType.getEffectiveNodeType().getMandatoryQNodeDefinitions()) {
                     boolean foundRequiredChildNode = currentNodeNameAndType.getChildren().stream()
@@ -260,7 +266,8 @@ public class NodeTypeValidator implements DocumentViewXmlValidator {
                 return null;
             }
         } finally {
-            if (currentNodeNameAndType != null) {
+            // do not leave root 
+            if (currentNodeNameAndType != null && !isRoot) {
                 currentNodeNameAndType = currentNodeNameAndType.getParent();
             }
         }
@@ -391,8 +398,18 @@ public class NodeTypeValidator implements DocumentViewXmlValidator {
             NodeTypeDefinitionProvider nodeTypeDefinitionProvider,
             NameResolver nameResolver, ItemDefinitionProvider itemDefinitionProvider, boolean allowProtected)
             throws RepositoryException {
-        Name nodeName = nameResolver.getQName(node.name);
-        QNodeTypeDefinition nodeTypeDefinition = nodeTypeDefinitionProvider.getNodeTypeDefinition(nameResolver.getQName(node.primary));
+        final Name nodeName;
+        try {
+            nodeName = nameResolver.getQName(node.name);
+        } catch (IllegalNameException|NamespaceException e) {
+            throw new IllegalNameException("Invalid node name " + node.name+ ": '" + e.getMessage()+ "'", e);
+        }
+        QNodeTypeDefinition nodeTypeDefinition;
+        try {
+            nodeTypeDefinition = nodeTypeDefinitionProvider.getNodeTypeDefinition(nameResolver.getQName(node.primary));
+        } catch (IllegalNameException|NamespaceException e) {
+            throw new IllegalNameException("Invalid primary type " + node.primary + ": '" + e.getMessage() + "'", e);
+        }
         if (nodeTypeDefinition.isAbstract()) {
             return "Not allowed to add node with abstract node type as primary type";
         }

@@ -88,7 +88,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
             ntManagerProvider = new NodeTypeManagerProvider();
             for (String cndUrl : resolveJarUrls(cndUrls.split(","))) {
                 try (Reader reader = new InputStreamReader(URLFactory.createURL(cndUrl).openStream(), StandardCharsets.US_ASCII)) {
-                    LOGGER.info("Register additional node types from {}", cndUrl);
+                    LOGGER.info("Register node types from {}", cndUrl);
                     ntManagerProvider.registerNodeTypes(reader);
                 } catch (RepositoryException | IOException | ParseException e) {
                     throw new IllegalArgumentException("Error loading node types from CND at " + cndUrl, e);

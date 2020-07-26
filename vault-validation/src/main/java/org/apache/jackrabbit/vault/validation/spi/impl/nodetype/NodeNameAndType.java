@@ -40,19 +40,45 @@ import org.jetbrains.annotations.Nullable;
  * In addition stores references to the child node names and types.
  */
 final class NodeNameAndType {
-    private final @NotNull Name name;
-    private final @NotNull EffectiveNodeType effectiveNodeType;
+    private final Name name;
+    private final EffectiveNodeType effectiveNodeType;
     private final @NotNull List<NodeNameAndType> children;
     private final @Nullable NodeNameAndType parent;
 
+    public static NodeNameAndType createUnknownNodeNameAndType(@Nullable NodeNameAndType parent) {
+        return new NodeNameAndType(parent);
+    }
+
+    private NodeNameAndType(@Nullable NodeNameAndType parent) {
+        this.parent = parent;
+        if (parent != null) {
+            parent.addChild(this);
+        }
+        this.effectiveNodeType = null;
+        children = new LinkedList<>();
+        this.name = null;
+    }
+    
     @SuppressWarnings("null")
     public NodeNameAndType(@Nullable NodeNameAndType parent, @NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider, @NotNull DocViewNode node) throws IllegalNameException, NamespaceException, ConstraintViolationException, NoSuchNodeTypeException {
-        this.name = nameResolver.getQName(node.name);
+        try {
+            this.name = nameResolver.getQName(node.name);
+        } catch (IllegalNameException|NamespaceException e) {
+            throw new IllegalNameException("Invalid node name " + node.name + ": '" + e.getMessage() + "'", e);
+        }
         Collection<Name> types = new LinkedList<>();
-        types.add(nameResolver.getQName(node.primary));
+        try {
+            types.add(nameResolver.getQName(node.primary));
+        } catch (IllegalNameException|NamespaceException e) {
+            throw new IllegalNameException("Invalid primary type " + node.primary + ": '" + e.getMessage() + "'", e);
+        }
         if (node.mixins != null) {
             for (String mixin : node.mixins) {
-                types.add(nameResolver.getQName(mixin));
+                try {
+                    types.add(nameResolver.getQName(mixin));
+                } catch (IllegalNameException|NamespaceException e) { 
+                    throw new IllegalNameException("Invalid mixin type " + mixin + ": '" + e.getMessage() + "'", e);
+                }
             }
         }
         effectiveNodeType = effectiveNodeTypeProvider.getEffectiveNodeType(types.toArray(new Name[0]));
@@ -61,6 +87,10 @@ final class NodeNameAndType {
             parent.addChild(this);
         }
         this.parent = parent;
+    }
+
+    public boolean isUnknown() {
+        return this.effectiveNodeType == null && this.name == null;
     }
 
     public boolean fulfillsNodeDefinition(QNodeDefinition nodeDefinition) {
@@ -96,5 +126,12 @@ final class NodeNameAndType {
 
     public NodeNameAndType getParent() {
         return parent;
+    }
+
+    @Override
+    public String toString() {
+        return "NodeNameAndType [" + (name != null ? "name=" + name + ", " : "")
+                + (effectiveNodeType != null ? "effectiveNodeType=" + effectiveNodeType + ", " : "")
+                + (children != null ? "children=" + children + ", " : "") + (parent != null ? "parent=" + parent : "") + "]";
     }
 }

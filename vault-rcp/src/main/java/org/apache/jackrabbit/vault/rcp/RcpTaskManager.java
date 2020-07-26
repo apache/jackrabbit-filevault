@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.jcr.Credentials;
 
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
@@ -38,14 +39,14 @@ public interface RcpTaskManager {
 
     boolean removeTask(String taskId);
 
-    RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter, @Nullable Boolean recursive);
+    RcpTask addTask(RepositoryAddress src, ConnectionOptions connectionOptions, Credentials srcCreds, String dst, String id, WorkspaceFilter srcFilter, @Nullable Boolean recursive);
 
-    RcpTask addTask(RepositoryAddress src, Credentials srcCreds, String dst, String id, List<String> excludes, @Nullable Boolean recursive)
+    RcpTask addTask(RepositoryAddress src, ConnectionOptions connectionOptions, Credentials srcCreds, String dst, String id, List<String> excludes, @Nullable Boolean recursive)
             throws ConfigurationException;
 
     void setSourceCredentials(@NotNull String taskId, Credentials srcCreds);
 
-    RcpTask editTask(@NotNull String taskId, @Nullable RepositoryAddress src, @Nullable Credentials srcCreds, @Nullable String dst,
+    RcpTask editTask(@NotNull String taskId, @Nullable RepositoryAddress src, @Nullable ConnectionOptions connectionOptions, @Nullable Credentials srcCreds, @Nullable String dst,
             @Nullable List<String> excludes, @Nullable WorkspaceFilter srcFilter, @Nullable Boolean recursive)
             throws ConfigurationException;
 

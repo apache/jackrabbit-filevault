@@ -27,49 +27,60 @@ Vault Console Tool
 ------------------
 The console tool is called `vlt` and has the following usage:
 
-    $vlt --help
+	$vlt --help
     
-    ----------------------------------------------------------------------------------------------
-    Jackrabbit FileVault [version 3.2.2] Copyright 2018 by Apache Software Foundation.
-    See LICENSE.txt for more information.
-    ----------------------------------------------------------------------------------------------
-    Usage:
-      vlt [options] <command> [arg1 [arg2 [arg3] ..]]
-    ----------------------------------------------------------------------------------------------
-    
-    Global options:
-      -Xjcrlog <arg>           Extended JcrLog options (omit argument for help)
-      -Xdavex <arg>            Extended JCR remoting options (omit argument for help)
-      --credentials <arg>      The default credentials to use
-      --update-credentials     if present the credentials-to-host list is updated in the
-                               ~/.vault/auth.xml
-      --config <arg>           The JcrFs config to use
-      -v (--verbose)           verbose output
-      -q (--quiet)             print as little as possible
-      --version                print the version information and exit
-      --log-level <level>      the log4j log level
-      -h (--help) <command>    print this help
-    Commands:
-      export                   Export the Vault filesystem
-      import                   Import a Vault filesystem
-      checkout (co)            Checkout a Vault file system
-      status (st)              Print the status of working copy files and directories.
-      update (up)              Bring changes from the repository into the working copy.
-      info                     Displays information about a local file.
-      commit (ci)              Send changes from your working copy to the repository.
-      revert (rev)             Restore pristine working copy file (undo most local edits).
-      resolved (res)           Remove 'conflicted' state on working copy files or directories.
-      propget (pg)             Print the value of a property on files or directories.
-      proplist (pl)            Print the properties on files or directories.
-      propset (ps)             Set the value of a property on files or directories.
-      add                      Put files and directories under version control.
-      delete (del,rm)          Remove files and directories from version control.
-      diff (di)                Display the differences between two paths.
-      rcp                      Remote copy of repository content.
-      sync                     Control vault sync service
-      format                   Formats vault docview files.
-      console                  Run an interactive console
-    ----------------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------------------------------------------------
+	Jackrabbit FileVault [version 3.4.5] copyright 2013-2020 by Apache Software Foundation. See LICENSE.txt for more information.
+	----------------------------------------------------------------------------------------------------------------------------------
+	Usage:
+	  vlt [options] <command> [arg1 [arg2 [arg3] ..]]
+	----------------------------------------------------------------------------------------------------------------------------------
+	
+	Global options:
+	  -Xjcrlog <arg>                   Extended JcrLog options (omit argument for help)
+	  -Xdavex <arg>                    Extended JCR remoting options (omit argument for help)
+	  --credentials <arg>              The default credentials to use
+	  --update-credentials             if present the credentials-to-host list is updated in the ~/.vault/auth.xml
+	  --config <arg>                   The JcrFs config to use
+	  --useSystemProperties            Evaluating the default Java system properties for connection settings.
+	  --allowSelfSignedCertificates    Allows to connect to HTTPS repository urls whose certificate is self-signed.
+	  --disableHostnameValidator       Disables hostname validation for HTTPS repository urls.
+	  --connectionTimeoutMs <arg>      The connection timeout in milliseconds.
+	  --requestTimeoutMs <arg>         The request timeout in milliseconds.
+	  --socketTimeoutMs <arg>          The socket timeout in milliseconds.
+	  --proxyHost <arg>                The host of the proxy to use.
+	  --proxyPort <arg>                The port where the proxy is running (requires proxyHost as well).
+	  --proxyProtocol <arg>            The protocol for which to use the proxy (requires proxyHost as well). If not set proxy is used
+	                                   for both HTTP and HTTPS.
+	  --proxyUsername <arg>            The username to use for authentication at the proxy (requires proxyHost as well).
+	  --proxyPassword <arg>            The password to use for authentication at the proxy (requires proxyUsername as well)
+	  -v (--verbose)                   verbose output
+	  -q (--quiet)                     print as little as possible
+	  --version                        print the version information and exit
+	  --log-level <level>              the log4j log level
+	  -h (--help) <command>            print this help
+	Commands:
+	  export                           Export the Vault filesystem
+	  import                           Import a Vault filesystem
+	  checkout (co)                    Checkout a Vault file system
+	  status (st)                      Print the status of working copy files and directories.
+	  update (up)                      Bring changes from the repository into the working copy.
+	  info                             Displays information about a local file.
+	  commit (ci)                      Send changes from your working copy to the repository.
+	  revert (rev)                     Restore pristine working copy file (undo most local edits).
+	  resolved (res)                   Remove 'conflicted' state on working copy files or directories.
+	  propget (pg)                     Print the value of a property on files or directories.
+	  proplist (pl)                    Print the properties on files or directories.
+	  propset (ps)                     Set the value of a property on files or directories.
+	  add                              Put files and directories under version control.
+	  delete (del,rm)                  Remove files and directories from version control.
+	  diff (di)                        Display the differences between two paths.
+	  rcp                              Remote copy of repository content.
+	  sync                             Control vault sync service
+	  format                           Formats vault docview files.
+	  console                          Run an interactive console
+	----------------------------------------------------------------------------------------------------------------------------------
+
 
 Checkout
 --------

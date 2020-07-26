@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.jcr.Credentials;
 import javax.jcr.Repository;
@@ -33,6 +34,7 @@ import org.apache.commons.cli2.Option;
 import org.apache.commons.cli2.builder.ArgumentBuilder;
 import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.cli.extended.ExtendedOption;
 import org.apache.jackrabbit.vault.cli.extended.XDavEx;
 import org.apache.jackrabbit.vault.cli.extended.XJcrLog;
@@ -107,6 +109,18 @@ public class VaultFsApp extends AbstractApplication {
     //private Option optMountpoint;
     private Option optConfig;
     private Option optUpdateCreds;
+    // connection options
+    private Option optAllowSelfSignedCertificate;
+    private Option optDisableHostnameValidation;
+    private Option optConnectionTimeoutMs;
+    private Option optRequestTimeoutMs;
+    private Option optSocketTimeoutMs;
+    private Option optUseSystemProperties;
+    private Option optProxyHost;
+    private Option optProxyPort;
+    private Option optProxyProtocol;
+    private Option optProxyUsername;
+    private Option optProxyPassword;
 
     private ExtendedOption[] xOpts = new ExtendedOption[]{
             new XJcrLog(),
@@ -121,6 +135,7 @@ public class VaultFsApp extends AbstractApplication {
     private VaultFsConsoleExecutionContext ctxAfct;
 
     private Console console;
+
 
     public static void main(String[] args) {
         new VaultFsApp().run(args);
@@ -220,11 +235,6 @@ public class VaultFsApp extends AbstractApplication {
 
     public VaultFileSystem getVaultFileSystem() {
         return fs;
-    }
-
-    @Override
-    public String getCopyrightLine() {
-        return "Copyright 2018 by Apache Software Foundation. See LICENSE.txt for more information.";
     }
 
     protected void mount(String creds, String wsp, String root, String config,
@@ -392,8 +402,9 @@ public class VaultFsApp extends AbstractApplication {
             throw new ExecutionException("Already connected to " + getProperty(KEY_URI));
         } else {
             String uri = getProperty(KEY_DEFAULT_URI);
+            ConnectionOptions options = ConnectionOptions.fromServiceFactoryParameters(getEnv());
             try {
-                rep = repProvider.getRepository(new RepositoryAddress(uri));
+                rep = repProvider.getRepository(new RepositoryAddress(uri), options);
                 setProperty(KEY_URI, uri);
                 StringBuffer info = new StringBuffer();
                 info.append(rep.getDescriptor(Repository.REP_NAME_DESC)).append(' ');
@@ -604,7 +615,90 @@ public class VaultFsApp extends AbstractApplication {
                         .create()
                 )
                 .create();
-
+        optUseSystemProperties = new DefaultOptionBuilder()
+                .withLongName("useSystemProperties")
+                .withDescription("Evaluating the default Java system properties for connection settings.")
+                .create();
+        optAllowSelfSignedCertificate = new DefaultOptionBuilder()
+                .withLongName("allowSelfSignedCertificates")
+                .withDescription("Allows to connect to HTTPS repository urls whose certificate is self-signed.")
+                .create();
+        optDisableHostnameValidation = new DefaultOptionBuilder()
+                .withLongName("disableHostnameValidator")
+                .withDescription("Disables hostname validation for HTTPS repository urls.")
+                .create();
+        optConnectionTimeoutMs = new DefaultOptionBuilder()
+                .withLongName("connectionTimeoutMs")
+                .withDescription("The connection timeout in milliseconds.")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optRequestTimeoutMs = new DefaultOptionBuilder()
+                .withLongName("requestTimeoutMs")
+                .withDescription("The request timeout in milliseconds.")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optSocketTimeoutMs = new DefaultOptionBuilder()
+                .withLongName("socketTimeoutMs")
+                .withDescription("The socket timeout in milliseconds.")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optProxyHost = new DefaultOptionBuilder()
+                .withLongName("proxyHost")
+                .withDescription("The host of the proxy to use.")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optProxyPort = new DefaultOptionBuilder()
+                .withLongName("proxyPort")
+                .withDescription("The port where the proxy is running (requires proxyHost as well).")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optProxyProtocol = new DefaultOptionBuilder()
+                .withLongName("proxyProtocol")
+                .withDescription("The protocol for which to use the proxy (requires proxyHost as well). If not set proxy is used for both HTTP and HTTPS.")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optProxyUsername = new DefaultOptionBuilder()
+                .withLongName("proxyUsername")
+                .withDescription("The username to use for authentication at the proxy (requires proxyHost as well).")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
+        optProxyPassword = new DefaultOptionBuilder()
+                .withLongName("proxyPassword")
+                .withDescription("The password to use for authentication at the proxy (requires proxyUsername as well)")
+                .withArgument(new ArgumentBuilder()
+                        .withMinimum(1)
+                        .withMaximum(1)
+                        .create()
+                )
+                .create();
         // register extended options
         for (ExtendedOption x: xOpts) {
             gbuilder.withOption(x.getOption());
@@ -615,6 +709,13 @@ public class VaultFsApp extends AbstractApplication {
         gbuilder.withOption(optUpdateCreds);
         //gbuilder.withOption(optMountpoint);
         gbuilder.withOption(optConfig);
+        gbuilder.withOption(optUseSystemProperties);
+        gbuilder.withOption(optAllowSelfSignedCertificate);
+        gbuilder.withOption(optDisableHostnameValidation);
+        gbuilder.withOption(optConnectionTimeoutMs);
+        gbuilder.withOption(optRequestTimeoutMs);
+        gbuilder.withOption(optSocketTimeoutMs);
+        gbuilder.withOption(optProxyHost).withOption(optProxyPort).withOption(optProxyProtocol).withOption(optProxyUsername).withOption(optProxyPassword);
         return super.addApplicationOptions(gbuilder);
     }
 
@@ -659,7 +760,37 @@ public class VaultFsApp extends AbstractApplication {
         if (cl.getValue(optConfig) != null) {
             setProperty(KEY_DEFAULT_CONFIG_XML, (String) cl.getValue(optConfig));
         }
+        
+        parseConnectionOptions(cl);
     }
+
+    private void parseConnectionOptions(CommandLine cl) {
+        ConnectionOptions.Builder builder = ConnectionOptions.builder();
+        builder.allowSelfSignedCertificates(cl.hasOption(optAllowSelfSignedCertificate));
+        builder.disableHostnameVerification(cl.hasOption(optDisableHostnameValidation));
+        builder.connectionTimeoutMs(Integer.parseInt(cl.getValue(optConnectionTimeoutMs, -1).toString()));
+        builder.requestTimeoutMs(Integer.parseInt(cl.getValue(optRequestTimeoutMs, -1).toString()));
+        builder.socketTimeoutMs(Integer.parseInt(cl.getValue(optSocketTimeoutMs, -1).toString()));
+        builder.useSystemProperties(cl.hasOption(optUseSystemProperties));
+        if (cl.getValue(optProxyHost) != null) {
+            builder.proxyHost(cl.getValue(optProxyHost).toString());
+            builder.proxyPort(Integer.parseInt(cl.getValue(optProxyPort, -1).toString()));
+            if (cl.getValue(optProxyProtocol) != null) {
+                builder.proxyProtocol(cl.getValue(optProxyProtocol).toString());
+            }
+            if (cl.getValue(optProxyUsername) != null) {
+                builder.proxyUsername(cl.getValue(optProxyUsername).toString());
+            }
+            if (cl.getValue(optProxyPassword) != null) {
+                builder.proxyPassword(cl.getValue(optProxyPassword).toString());
+            }
+        }
+        Map<String, String> options = builder.build().toServiceFactoryParameters();
+        for (Map.Entry<String, String> entry : options.entrySet()) {
+            setProperty(entry.getKey(), entry.getValue());
+        }
+    }
+
 
     private static class PasswordPromptingCredentialsStore implements CredentialsStore {
 

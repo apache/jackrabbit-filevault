@@ -31,6 +31,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
@@ -75,6 +76,19 @@ public class RcpServlet extends SlingAllMethodsServlet {
     public static final String PARAM_EXCLUDES = "excludes";
     public static final String PARAM_RESUME_FROM = "resumeFrom";
     public static final String PARAM_FILTER = "filter";
+    // connection options
+    public static final String PARAM_ALLOW_SELF_SIGNED_CERTIFICATE = "allowSelfSignedCertificate";
+    public static final String PARAM_DISABLE_HOSTNAME_VERIFICATION = "disableHostnameVerification";
+    public static final String PARAM_CONNECTION_TIMEOUT_MS = "connectionTimeoutMs";
+    public static final String PARAM_REQUEST_TIMEOUT_MS = "requestTimeoutMs";
+    public static final String PARAM_SOCKET_TIMEOUT_MS = "socketTimeoutMs";
+    public static final String PARAM_USE_SYSTEM_PROPERTIES = "useSystemProperties";
+    public static final String PARAM_PROXY_HOST = "proxyHost";
+    public static final String PARAM_PROXY_PORT = "proxyPort";
+    public static final String PARAM_PROXY_PROTOCOL = "proxyProtocol";
+    public static final String PARAM_PROXY_USERNAME = "proxyUsername";
+    public static final String PARAM_PROXY_PASSWORD = "proxyPassword";
+    
 
     /**
      * default logger
@@ -138,8 +152,8 @@ public class RcpServlet extends SlingAllMethodsServlet {
         final String id = data.optString(PARAM_ID, null);;
         try {
             // --------------------------------------------------------------------------------------------< create >---
-            if ("create".equals(cmd) || "edit".equals(cmd)) {
-                boolean isEdit = "edit".equals(cmd);
+            boolean isEdit = "edit".equals(cmd);
+            if (isEdit || "create".equals(cmd)) {
                 if (isEdit) {
                     if (id == null || id.length() == 0) {
                         throw new IllegalArgumentException("Need task id.");
@@ -168,6 +182,33 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 if (data.has(PARAM_RECURSIVE)) {
                     recursive = data.optBoolean(PARAM_RECURSIVE, false);
                 }
+
+                ConnectionOptions.Builder connectionOptionsBuilder = ConnectionOptions.builder();
+                connectionOptionsBuilder.useSystemProperties(data.optBoolean(PARAM_USE_SYSTEM_PROPERTIES));
+                connectionOptionsBuilder.allowSelfSignedCertificates(data.optBoolean(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE));
+                connectionOptionsBuilder.disableHostnameVerification(data.optBoolean(PARAM_DISABLE_HOSTNAME_VERIFICATION));
+                int connectionTimeoutMs = data.optInt(PARAM_CONNECTION_TIMEOUT_MS, -1);
+                connectionOptionsBuilder.connectionTimeoutMs(connectionTimeoutMs);
+                int requestTimeoutMs = data.optInt(PARAM_REQUEST_TIMEOUT_MS, -1);
+                connectionOptionsBuilder.requestTimeoutMs(requestTimeoutMs);
+                int socketTimeoutMs = data.optInt(PARAM_SOCKET_TIMEOUT_MS, -1);
+                connectionOptionsBuilder.socketTimeoutMs(socketTimeoutMs);
+
+                if (data.has(PARAM_PROXY_HOST)) {
+                    connectionOptionsBuilder.proxyHost(data.getString(PARAM_PROXY_HOST));
+                    if (data.has(PARAM_PROXY_PORT)) {
+                        connectionOptionsBuilder.proxyPort(data.getInt(PARAM_PROXY_PORT));
+                    }
+                    if (data.has(PARAM_PROXY_PROTOCOL)) {
+                        connectionOptionsBuilder.proxyProtocol(data.getString(PARAM_PROXY_PROTOCOL));
+                    }
+                    if (data.has(PARAM_PROXY_USERNAME)) {
+                        connectionOptionsBuilder.proxyUsername(data.getString(PARAM_PROXY_USERNAME));
+                        if (data.has(PARAM_PROXY_PASSWORD)) {
+                            connectionOptionsBuilder.proxyPassword(data.getString(PARAM_PROXY_PASSWORD));
+                        }
+                    }
+                }
                 if (data.has(PARAM_EXCLUDES)) {
                     List<String> excludeList = new LinkedList<>();
                     JSONArray excludes = data.getJSONArray(PARAM_EXCLUDES);
@@ -175,9 +216,9 @@ public class RcpServlet extends SlingAllMethodsServlet {
                         excludeList.add(excludes.getString(idx));
                     }
                     if (isEdit) {
-                        task = taskMgr.editTask(id, address, creds, dst, excludeList, null, recursive);
+                        task = taskMgr.editTask(id, address, connectionOptionsBuilder.build(), creds, dst, excludeList, null, recursive);
                     } else {
-                        task = taskMgr.addTask(address, creds, dst, id, excludeList, recursive);
+                        task = taskMgr.addTask(address, connectionOptionsBuilder.build(), creds, dst, id, excludeList, recursive);
                     }
                 } else {
                     final WorkspaceFilter filter;
@@ -189,9 +230,9 @@ public class RcpServlet extends SlingAllMethodsServlet {
                         filter = null;
                     }
                     if (isEdit) {
-                        task = taskMgr.editTask(id, address, creds, dst, null, filter, recursive);
+                        task = taskMgr.editTask(id, address, connectionOptionsBuilder.build(), creds, dst, null, filter, recursive);
                     } else {
-                        task = taskMgr.addTask(address, creds, dst, id, filter, recursive);
+                        task = taskMgr.addTask(address, connectionOptionsBuilder.build(), creds, dst, id, filter, recursive);
                     }
                 }
 
@@ -333,6 +374,22 @@ public class RcpServlet extends SlingAllMethodsServlet {
         } else {
             if (rcpTask.getFilter() != null) {
                 w.key(RcpServlet.PARAM_FILTER).value(rcpTask.getFilter().getSourceAsString());
+            }
+        }
+        w.key(PARAM_USE_SYSTEM_PROPERTIES).value(rcpTask.getConnectionOptions().isUseSystemPropertes());
+        w.key(PARAM_DISABLE_HOSTNAME_VERIFICATION).value(rcpTask.getConnectionOptions().isDisableHostnameVerification());
+        w.key(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE).value(rcpTask.getConnectionOptions().isAllowSelfSignedCertificates());
+        w.key(PARAM_CONNECTION_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getConnectionTimeoutMs());
+        w.key(PARAM_REQUEST_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getRequestTimeoutMs());
+        w.key(PARAM_SOCKET_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getSocketTimeoutMs());
+        if (rcpTask.getConnectionOptions().getProxyHost() != null) {
+            w.key(PARAM_PROXY_HOST).value(rcpTask.getConnectionOptions().getProxyHost());
+            w.key(PARAM_PROXY_PORT).value(rcpTask.getConnectionOptions().getProxyPort());
+            if (rcpTask.getConnectionOptions().getProxyProtocol() != null) {
+                w.key(PARAM_PROXY_HOST).value(rcpTask.getConnectionOptions().getProxyProtocol());
+            }
+            if (rcpTask.getConnectionOptions().getProxyUsername() != null) {
+                w.key(PARAM_PROXY_USERNAME).value(rcpTask.getConnectionOptions().getProxyUsername());
             }
         }
         w.key("status").object();

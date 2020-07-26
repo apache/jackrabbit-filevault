@@ -36,6 +36,7 @@ import org.apache.jackrabbit.jcr2spi.Jcr2spiRepositoryFactory;
 import org.apache.jackrabbit.spi.Path;
 import org.apache.jackrabbit.spi.commons.conversion.PathResolver;
 import org.apache.jackrabbit.spi.commons.logging.WriterLogWriterProvider;
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.spi2davex.BatchReadConfig;
 import org.apache.jackrabbit.spi2davex.Spi2davexRepositoryServiceFactory;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
@@ -67,8 +68,12 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
         return SCHEMES;
     }
 
-    public Repository createRepository(RepositoryAddress address)
-            throws RepositoryException {
+    @Override
+    public Repository createRepository(RepositoryAddress address) throws RepositoryException {
+        return createRepository(address, null);
+    }
+
+    public Repository createRepository(RepositoryAddress address, ConnectionOptions connectionOptions) throws RepositoryException {
         if (!SCHEMES.contains(address.getSpecificURI().getScheme())) {
             return null;
         }
@@ -105,6 +110,9 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
             String workspace = address.getWorkspace();
             if (workspace != null) {
                 parameters.put(Spi2davexRepositoryServiceFactory.PARAM_WORKSPACE_NAME_DEFAULT, workspace);
+            }
+            if (connectionOptions != null) {
+                parameters.putAll(connectionOptions.toServiceFactoryParameters());
             }
             System.out.printf("Connecting via JCR remoting to %s%n", address.getSpecificURI().toString());
             return new RepositoryFactoryImpl().getRepository(parameters);

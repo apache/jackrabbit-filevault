@@ -337,9 +337,13 @@ public final class ValidationExecutor {
      * @return the node path
      */
     public static @NotNull String filePathToNodePath(@NotNull Path filePath) {
-        // convert to forward slashes and make absolute by prefixing it with "/"
-        String platformPath = "/" + FilenameUtils.separatorsToUnix(filePath.toString());
-        return PlatformNameFormat.getRepositoryPath(platformPath, true);
+        String platformPath = FilenameUtils.separatorsToUnix(filePath.toString());
+        String repositoryPath = PlatformNameFormat.getRepositoryPath(platformPath, true);
+        if (!repositoryPath.isEmpty()) {
+            // make repository path absolute by prefixing it with "/" in case it is not the root node path itself
+            repositoryPath = "/" + repositoryPath;
+        }
+        return repositoryPath;
     }
 
     static <T> Map<String, T> filterValidatorsByClass(Map<String, Validator> allValidators, Class<T> type) {

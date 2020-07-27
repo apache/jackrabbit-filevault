@@ -18,7 +18,6 @@ package org.apache.jackrabbit.vault.validation.spi.impl.nodetype;
 
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.nodetype.ConstraintViolationException;
@@ -42,38 +41,39 @@ import org.jetbrains.annotations.Nullable;
 final class NodeNameAndType {
     private final Name name;
     private final EffectiveNodeType effectiveNodeType;
-    private final @NotNull List<NodeNameAndType> children;
-    private final @Nullable NodeNameAndType parent;
 
     public static NodeNameAndType createUnknownNodeNameAndType(@Nullable NodeNameAndType parent) {
         return new NodeNameAndType(parent);
     }
 
     private NodeNameAndType(@Nullable NodeNameAndType parent) {
-        this.parent = parent;
-        if (parent != null) {
-            parent.addChild(this);
-        }
         this.effectiveNodeType = null;
-        children = new LinkedList<>();
         this.name = null;
     }
-    
-    @SuppressWarnings("null")
-    public NodeNameAndType(@Nullable NodeNameAndType parent, @NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider, @NotNull DocViewNode node) throws IllegalNameException, NamespaceException, ConstraintViolationException, NoSuchNodeTypeException {
+
+    public NodeNameAndType(@NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider, @NotNull DocViewNode node) throws IllegalNameException, NamespaceException, ConstraintViolationException, NoSuchNodeTypeException {
+        this(nameResolver, effectiveNodeTypeProvider, node.name, node.primary, node.mixins);
+    }
+
+    public  NodeNameAndType(@NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider, @NotNull String name, @NotNull String primaryType, String... mixinTypes) throws IllegalNameException, NamespaceException, ConstraintViolationException, NoSuchNodeTypeException {
         try {
-            this.name = nameResolver.getQName(node.name);
+            // special handling for root node (https://issues.apache.org/jira/browse/JCR-4625)
+            if (name.isEmpty()) {
+                this.name = NameConstants.ROOT;
+            } else {
+                this.name = nameResolver.getQName(name);
+            }
         } catch (IllegalNameException|NamespaceException e) {
-            throw new IllegalNameException("Invalid node name " + node.name + ": '" + e.getMessage() + "'", e);
+            throw new IllegalNameException("Invalid node name " + name + ": '" + e.getMessage() + "'", e);
         }
         Collection<Name> types = new LinkedList<>();
         try {
-            types.add(nameResolver.getQName(node.primary));
+            types.add(nameResolver.getQName(primaryType));
         } catch (IllegalNameException|NamespaceException e) {
-            throw new IllegalNameException("Invalid primary type " + node.primary + ": '" + e.getMessage() + "'", e);
+            throw new IllegalNameException("Invalid primary type " + primaryType + ": '" + e.getMessage() + "'", e);
         }
-        if (node.mixins != null) {
-            for (String mixin : node.mixins) {
+        if (mixinTypes != null) {
+            for (String mixin : mixinTypes) {
                 try {
                     types.add(nameResolver.getQName(mixin));
                 } catch (IllegalNameException|NamespaceException e) { 
@@ -82,11 +82,6 @@ final class NodeNameAndType {
             }
         }
         effectiveNodeType = effectiveNodeTypeProvider.getEffectiveNodeType(types.toArray(new Name[0]));
-        children = new LinkedList<>();
-        if (parent != null) {
-            parent.addChild(this);
-        }
-        this.parent = parent;
     }
 
     public boolean isUnknown() {
@@ -108,30 +103,15 @@ final class NodeNameAndType {
         return true;
     }
 
-    void addChild(NodeNameAndType nodeNameAndTypes) {
-        children.add(nodeNameAndTypes);
-    }
-
-    public List<NodeNameAndType> getChildren() {
-        return children;
-    }
-
-    public Name getName() {
-        return name;
-    }
-
     public EffectiveNodeType getEffectiveNodeType() {
         return effectiveNodeType;
-    }
-
-    public NodeNameAndType getParent() {
-        return parent;
     }
 
     @Override
     public String toString() {
         return "NodeNameAndType [" + (name != null ? "name=" + name + ", " : "")
-                + (effectiveNodeType != null ? "effectiveNodeType=" + effectiveNodeType + ", " : "")
-                + (children != null ? "children=" + children + ", " : "") + (parent != null ? "parent=" + parent : "") + "]";
+                + (effectiveNodeType != null ? "effectiveNodeType=" + effectiveNodeType : "") + "]";
     }
+
+    
 }

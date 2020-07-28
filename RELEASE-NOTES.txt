@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.4
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.6
 
 Introduction
 ------------
@@ -8,6 +8,37 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+
+Changes in Jackrabbit FileVault 3.4.6
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.4.6
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.6 and Jackrabbit 2.14
+
+Bug
+    * [JCRVLT-421] - filevault-package-maven-plugin 1.1.2: Empty nodes (used for ordering only) outside filter lead to error
+    * [JCRVLT-422] - filevault-package-maven-plugin 1.1.2: jackrabbit-emptyelements filter fails for nodes starting with numbers
+    * [JCRVLT-430] - Potential NPE in PackageTypeValidator.validate(...)
+    * [JCRVLT-436] - VLT-RCP bundle no longer working with older Jackrabbit/Oak versions
+    * [JCRVLT-441] - CompressionUtilTest.testCompressibilityEstimation() and testCompressibility fail sometimes
+    * [JCRVLT-444] - DiffTest failure on Windows
+    * [JCRVLT-445] - FSRegisteredPackageTest leaks temp files
+    * [JCRVLT-446] - AdvancedFilterValidatorTest.testFilterWithInvalidElements fails for non-english locale
+Improvement
+    * [JCRVLT-398] - Migrate Filevault to Git
+    * [JCRVLT-419] - Feature/enable insecure https host
+    * [JCRVLT-424] - Make compilable and Runnable with Java 14
+    * [JCRVLT-426] - Add nodetype validator
+    * [JCRVLT-427] - Allow installation of packages with hook for users without admin privileges
+    * [JCRVLT-429] - Switch to bnd-maven-plugin
+    * [JCRVLT-437] - VLT-RCP: allow to pass a filter.xml for more finegrained control
+    * [JCRVLT-438] - VLT-RCP: Provide API
+    * [JCRVLT-440] - Do not treat Throwables differently than PackageExceptions in Hooks
+    * [JCRVLT-449] - VLT-RCP: Optionally persist tasks
+    * [JCRVLT-451] - Upgrade to Jackrabbit 2.20.1 and Oak 1.32.0
+    * [JCRVLT-453] - RepositoryCopier should not catch exceptions
 
 Changes in Jackrabbit FileVault 3.4.4
 --------------------------------------

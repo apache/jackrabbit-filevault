@@ -21,4 +21,4 @@ DynamicImport-Package: *
                   @woodstox-core-[0-9.]*.jar!/!module-info.class,\
                   @stax2-api-[0-9.]*.jar!/!module-info.class
 # The following package contains the newly added ConnectionOptions which needs to be embedded here for this bundle to be compatible with older distributions
--conditionalpackage: org.apache.jackrabbit.spi2dav
+-includeresource: @jackrabbit-spi2dav-*.jar!/org/apache/jackrabbit/spi2dav/ConnectionOptions*.class

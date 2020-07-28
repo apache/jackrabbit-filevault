@@ -289,7 +289,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
                 NodeNameAndType nodeNameAndType = new NodeNameAndType(ntManagerProvider.getNameResolver(),
                         ntManagerProvider.getEffectiveNodeTypeProvider(), Text.getName(nodeContext.getNodePath()), NodeType.NT_FOLDER);
                 nodeTypePerPath.put(nodeContext.getNodePath(), nodeNameAndType);
-            } catch (NoSuchNodeTypeException e) {
+            } catch (NoSuchNodeTypeException | IllegalNameException | NamespaceException e) {
                 // log each unknown node type/namespace only once!
                 if (!loggedUnknownNodeTypeMessages.contains(e.getMessage())) {
                     loggedUnknownNodeTypeMessages.add(e.getMessage());

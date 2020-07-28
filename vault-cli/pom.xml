@@ -23,14 +23,14 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.4.6</version>
+        <version>3.4.7-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>vault-cli</artifactId>
-    <version>3.4.6</version>
+    <version>3.4.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Apache Jackrabbit FileVault Command Line Interface</name>
@@ -119,22 +119,22 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.4.6</version>
+            <version>3.4.7-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-vlt</artifactId>
-            <version>3.4.6</version>
+            <version>3.4.7-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-sync</artifactId>
-            <version>3.4.6</version>
+            <version>3.4.7-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-davex</artifactId>
-            <version>3.4.6</version>
+            <version>3.4.7-SNAPSHOT</version>
         </dependency>
 
         <!-- CLI Stuff -->
@@ -171,9 +171,4 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
-
-
-  <scm>
-    <tag>jackrabbit-filevault-3.4.6</tag>
-  </scm>
 </project>

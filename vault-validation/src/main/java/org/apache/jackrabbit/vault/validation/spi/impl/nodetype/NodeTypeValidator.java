@@ -78,7 +78,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
 
     static final String MESSAGE_MANDATORY_CHILD_NODE_MISSING = "Mandatory child node missing: %s";
     static final String MESSAGE_PROPERTY_ERROR = "Error while retrieving property '%s': %s";
-    static final String MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE = "%s. Skip validation of nodes with that type";
+    static final String MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE = "%s. Skip validation of nodes with that type/name";
     static final String MESSAGE_MISSING_PRIMARY_TYPE = "Mandatory jcr:primaryType missing on node '%s'";
     static final String MESSAGE_PROPERTY_NOT_ALLOWED = "Property '%s' is not allowed in node with types '[%s]': %s";
     static final String MESSAGE_MANDATORY_PROPERTY_MISSING = "Mandatory property '%s' missing in node with types [%s]";

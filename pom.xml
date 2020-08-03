@@ -108,6 +108,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <!-- only generate aggregate report (not main and test, https://maven.apache.org/plugins/maven-javadoc-plugin/examples/selective-javadocs-report.html) -->
+                        <id>aggregate</id>
+                        <reports>
+                            <report>aggregate</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
         </plugins>
     </reporting>

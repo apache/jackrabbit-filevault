@@ -265,7 +265,6 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         return task;
     }
 
-    
     @Override
     public RcpTask editTask(@NotNull String taskId, @Nullable RepositoryAddress src, @Nullable ConnectionOptions connectionOptions, @Nullable Credentials srcCreds, @Nullable String dst, @Nullable List<String> excludes,
             @Nullable WorkspaceFilter srcFilter, @Nullable Boolean recursive) throws ConfigurationException {
@@ -273,7 +272,10 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         if (oldTask == null) {
             throw new IllegalArgumentException("No such task with id='" + taskId + "'");
         }
-        return new RcpTaskImpl(oldTask, src, connectionOptions, srcCreds, dst, excludes, srcFilter, recursive);
+        RcpTaskImpl newTask = new RcpTaskImpl(oldTask, src, connectionOptions, srcCreds, dst, excludes, srcFilter, recursive);
+        tasks.put(taskId, newTask);
+        persistTasks();
+        return newTask;
     }
 
     @Override

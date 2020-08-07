@@ -91,13 +91,15 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
 
     private final ObjectMapper mapper = new ObjectMapper();
     
-    private final Configuration configuration;
+    private Configuration configuration;
+    
+    private final ConfigurationAdmin configurationAdmin;
 
     /** the serialized tasks which have been processed (for detecting relevant updates) */
     private String serializedTasks;
 
     @Activate
-    public RcpTaskManagerImpl(BundleContext bundleContext, @Reference ConfigurationAdmin configurationAdmin, Map <String, Object> newConfigProperties) {
+    public RcpTaskManagerImpl(BundleContext bundleContext, @Reference ConfigurationAdmin configurationAdmin, Map <String, Object> newConfigProperties) throws IOException {
         mapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
         mapper.addMixIn(RepositoryAddress.class, RepositoryAddressMixin.class);
         SimpleModule module = new SimpleModule();
@@ -107,16 +109,14 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         mapper.addMixIn(SimpleCredentials.class, SimpleCredentialsMixin.class);
         mapper.addMixIn(ConnectionOptions.class, ConnectionOptionsMixin.class);
         this.dataFile = bundleContext.getDataFile(TASKS_DATA_FILE_NAME);
-        Configuration configuration;
+        this.configurationAdmin = configurationAdmin;
+        this.configuration = configurationAdmin.getConfiguration(PID);
         try {
-            configuration = configurationAdmin.getConfiguration(PID);
             tasks = loadTasks((String)newConfigProperties.get(PROP_TASKS_SERIALIZATION), dataFile);
         } catch (IOException e) {
             log.error("Could not restore previous tasks", e);
-            configuration = null;
             tasks = new TreeMap<>();
         }
-        this.configuration = configuration;
     }
 
     @Deactivate
@@ -130,6 +130,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
 
     @Modified
     void modified(Map <String, Object> newConfigProperties) throws IOException {
+        this.configuration = configurationAdmin.getConfiguration(PID);
         // might be triggered internally or externally
         // only external events are relevant
         if (serializedTasks == null || !serializedTasks.equals(newConfigProperties.get(PROP_TASKS_SERIALIZATION))) {

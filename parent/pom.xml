@@ -145,6 +145,8 @@ Bundle-Category: jackrabbit
 -snapshot: SNAPSHOT
 # export all versioned packages except for conditional ones (https://github.com/bndtools/bnd/issues/3721#issuecomment-579026778)
 -exportcontents: ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
+# support only DS 1.3 (https://github.com/bndtools/bnd/pull/3121/files)
+-dsannotations-options: version;maximum=1.3.0
                                 ]]></bnd>
                             </configuration>
                         </execution>

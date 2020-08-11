@@ -121,7 +121,12 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         }
     }
 
-    // constructor, currently only used for testing
+    // default constructor, used by DS 1.3
+    public RcpTaskManagerImpl() {
+        
+    }
+
+    // alternative constructor, currently only used for testing
     public RcpTaskManagerImpl(BundleContext bundleContext, ConfigurationAdmin configurationAdmin, Map <String, Object> newConfigProperties) throws IOException {
         this.configurationAdmin = configurationAdmin;
         activate(bundleContext, newConfigProperties);

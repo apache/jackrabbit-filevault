@@ -76,7 +76,7 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
      */
     public static final String DEFAULT_PACKAGE_ROOT_PATH_PREFIX = DEFAULT_PACKAGE_ROOT_PATH + "/";
 
-    protected final @NotNull SecurityConfig securityConfig;
+    protected @NotNull SecurityConfig securityConfig;
 
     public AbstractPackageRegistry(SecurityConfig securityConfig) {
         if (securityConfig != null) {

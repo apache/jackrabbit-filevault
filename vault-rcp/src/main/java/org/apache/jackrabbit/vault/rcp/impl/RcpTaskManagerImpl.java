@@ -87,19 +87,22 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
 
     SortedMap<String, RcpTaskImpl> tasks;
 
-    private final File dataFile;
+    private File dataFile;
 
     private final ObjectMapper mapper = new ObjectMapper();
     
     private Configuration configuration;
     
-    private final ConfigurationAdmin configurationAdmin;
+    @Reference
+    ConfigurationAdmin configurationAdmin;
 
     /** the serialized tasks which have been processed (for detecting relevant updates) */
     private String serializedTasks;
-
+    
+    
+    
     @Activate
-    public RcpTaskManagerImpl(BundleContext bundleContext, @Reference ConfigurationAdmin configurationAdmin, Map <String, Object> newConfigProperties) throws IOException {
+    void activate(BundleContext bundleContext, Map <String, Object> newConfigProperties) throws IOException {
         mapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
         mapper.addMixIn(RepositoryAddress.class, RepositoryAddressMixin.class);
         SimpleModule module = new SimpleModule();
@@ -109,7 +112,6 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         mapper.addMixIn(SimpleCredentials.class, SimpleCredentialsMixin.class);
         mapper.addMixIn(ConnectionOptions.class, ConnectionOptionsMixin.class);
         this.dataFile = bundleContext.getDataFile(TASKS_DATA_FILE_NAME);
-        this.configurationAdmin = configurationAdmin;
         this.configuration = configurationAdmin.getConfiguration(PID);
         try {
             tasks = loadTasks((String)newConfigProperties.get(PROP_TASKS_SERIALIZATION), dataFile);
@@ -117,6 +119,17 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
             log.error("Could not restore previous tasks", e);
             tasks = new TreeMap<>();
         }
+    }
+
+    // default constructor, used by DS 1.3
+    public RcpTaskManagerImpl() {
+        
+    }
+
+    // alternative constructor, currently only used for testing
+    public RcpTaskManagerImpl(BundleContext bundleContext, ConfigurationAdmin configurationAdmin, Map <String, Object> newConfigProperties) throws IOException {
+        this.configurationAdmin = configurationAdmin;
+        activate(bundleContext, newConfigProperties);
     }
 
     @Deactivate

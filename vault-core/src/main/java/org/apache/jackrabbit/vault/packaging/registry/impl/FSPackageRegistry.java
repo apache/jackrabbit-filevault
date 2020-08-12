@@ -112,9 +112,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Reference
     private PackageEventDispatcher dispatcher;
 
-    private final File homeDir;
+    private File homeDir;
 
-    private final InstallationScope scope;
+    private InstallationScope scope = InstallationScope.UNSCOPED;
 
     private File getHomeDir() {
         return homeDir;
@@ -149,22 +149,25 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         loadPackageCache();
     }
     /**
-     * Deafult constructor for OSGi initialization (homeDir defined via activator)
+     * Default constructor for OSGi initialization (homeDir defined via activator)
      * @throws IOException 
      */
+    public FSPackageRegistry() throws IOException {
+        super(null); // set security config delayed (i.e. only after activate())
+    }
+
     @Activate
-    public FSPackageRegistry(BundleContext context, Config config) throws IOException {
-        this(
-                context.getProperty(REPOSITORY_HOME) != null ? ( 
-                        new File(config.homePath()).isAbsolute() ? new File(config.homePath()) : new File(context.getProperty(REPOSITORY_HOME) + "/" + config.homePath()))  
-                      : context.getDataFile(config.homePath()),
-                InstallationScope.valueOf(config.scope()),
-                new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()));
+    public void activate(BundleContext context, Config config) {
+        this.homeDir = context.getProperty(REPOSITORY_HOME) != null ? ( 
+                new File(config.homePath()).isAbsolute() ? new File(config.homePath()) : new File(context.getProperty(REPOSITORY_HOME) + "/" + config.homePath())) : 
+                context.getDataFile(config.homePath());
         if (!homeDir.exists()) {
             homeDir.mkdirs();
         }
+        log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
+        this.scope = InstallationScope.valueOf(config.scope());
+        this.securityConfig = new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation());
     }
-
 
     @ObjectClassDefinition(
             name = "Apache Jackrabbit FS Package Registry Service"

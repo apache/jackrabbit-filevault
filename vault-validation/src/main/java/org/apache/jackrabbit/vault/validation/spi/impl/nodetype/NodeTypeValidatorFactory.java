@@ -31,7 +31,6 @@ import javax.jcr.RepositoryException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.cnd.ParseException;
-import org.apache.jackrabbit.jcr2spi.nodetype.EffectiveNodeType;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
@@ -65,7 +64,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
         // either load map from classloader, from filesystem or from generic url
         if (StringUtils.isBlank(cndUrls)) {
             cndUrls = this.getClass().getClassLoader().getResource("default-nodetypes.cnd").toString();
-            LOGGER.warn("Using default nodetypes, consider specifying the nodetypes from the distribution you use!");
+            LOGGER.warn("Using default nodetypes, consider specifying the nodetypes from the repository you use!");
         }
 
         final String defaultNodeType;
@@ -94,9 +93,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
                     throw new IllegalArgumentException("Error loading node types from CND at " + cndUrl, e);
                 }
             }
-            EffectiveNodeType defaultEffectiveNodeType = ntManagerProvider.getEffectiveNodeTypeProvider()
-                    .getEffectiveNodeType(ntManagerProvider.getNameResolver().getQName(defaultNodeType));
-            return new NodeTypeValidator(context.getFilter(), ntManagerProvider, defaultEffectiveNodeType, settings.getDefaultSeverity(),
+            return new NodeTypeValidator(context.getFilter(), ntManagerProvider, ntManagerProvider.getNameResolver().getQName(defaultNodeType), settings.getDefaultSeverity(),
                     severityForUnknownNodetypes);
         } catch (IOException | RepositoryException | ParseException e) {
             throw new IllegalArgumentException("Error loading default node type " + defaultNodeType, e);

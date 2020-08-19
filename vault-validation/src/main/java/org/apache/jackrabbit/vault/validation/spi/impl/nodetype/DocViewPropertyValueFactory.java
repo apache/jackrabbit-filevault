@@ -27,6 +27,7 @@ import javax.jcr.ValueFormatException;
 import org.apache.jackrabbit.value.ValueFactoryImpl;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
 
+/** Creates JCR values from DocViewProperties */
 public class DocViewPropertyValueFactory {
 
     private final ValueFactory valueFactory;
@@ -36,6 +37,7 @@ public class DocViewPropertyValueFactory {
     
     private Value getValue(String value, int type) throws ValueFormatException {
         if (type == PropertyType.UNDEFINED) {
+            // simulate behaviour of DocViewProperty.apply(...) which leverages setProperty(String name, String value)
             type = PropertyType.STRING;
         }
         return valueFactory.createValue(value, type);

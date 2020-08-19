@@ -24,8 +24,8 @@ Overview
 ----------
 
 FileVault uses a slightly different version of the Document View specified by [JCR 2.0][jcr-docview].
-In general all nodes can cannot be serialized as plain directories or as plain files are either
-serialized into DocView XML file. If the node can only be partially mapped to a directory or file,
+In general all nodes that cannot be serialized as plain directories or as plain files are 
+serialized into DocView XML files. If the node can only be partially mapped to a directory or file,
 it will be accompanied with a `.content.xml` containing the residual content. 
 
 For example, a _full coverage_ content tree, starting at the node `example` will be serialized into
@@ -74,6 +74,8 @@ property-value := [ "{" property-type "}" ] ( value | "[" [ value { "," value } 
 ```
 
 If no type is specified, it defaults to [STRING][pt-string].
+As types all arguments accepted by [PropertyType.valueFromName(String)](https://docs.adobe.com/docs/en/spec/jsr170/javadocs/jcr-2.0/javax/jcr/PropertyType.html#valueFromName(java.lang.String)) are valid.
+This is all strings defined by the constants whose names start with `TYPENAME_` in [PropertyType](https://docs.adobe.com/docs/en/spec/jsr170/javadocs/jcr-2.0/javax/jcr/PropertyType.html).
 
 Examples:
 

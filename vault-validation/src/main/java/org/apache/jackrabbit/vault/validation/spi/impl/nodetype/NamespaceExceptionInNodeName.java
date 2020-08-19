@@ -14,10 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * The FileVault validation framework API. Provides classes to execute validations on FileVault packages.
- */
-@Version("2.1.0")
-package org.apache.jackrabbit.vault.validation;
+package org.apache.jackrabbit.vault.validation.spi.impl.nodetype;
 
-import org.osgi.annotation.versioning.Version;
+import javax.jcr.NamespaceException;
+
+public class NamespaceExceptionInNodeName extends NamespaceException {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
+    public NamespaceExceptionInNodeName(String message, Throwable rootCause) {
+        super(message, rootCause);
+    }
+
+    public NamespaceExceptionInNodeName(NamespaceException e) {
+        super(e.getLocalizedMessage(), e);
+    }
+}

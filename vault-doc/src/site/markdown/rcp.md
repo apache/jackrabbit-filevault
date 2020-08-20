@@ -78,8 +78,27 @@ The vault rcp server bundle provides a very simple vault remote copy task manage
 ### Usage
 The vault rcp server maintains a list of _remote copy tasks_ that can be controlled via the http interface at `/system/jackrabbit/filevault/rcp`. The request and responses are JSON formatted.
 
+#### Get Info (GET)
+Exposes information about the RCP ReST endpoint. Is triggered with selector `info` and extension `json`: `/system/jackrabbit/filevault/rcp.info.json`
+
+##### Example
+
+    GET /system/jackrabbit/filevault/rcp.info.json HTTP/1.1
+    Host: localhost:4502
+    
+    HTTP/1.1 200 OK
+    Content-Type: application/json;charset=utf-8
+    
+    {
+        "Bundle-SymbolicName": "org.apache.jackrabbit.vault.rcp",
+        "Bundle-Version": "3.4.7.SNAPSHOT",
+        "Bundle-Vendor": "The Apache Software Foundation"
+    }
+
 #### List Tasks (GET)
 Simply lists all available tasks. In addition to listing the parameters that were passed when the task was created, it also list some information about the current state of the task.
+
+Optionally you can limit the information to one specific task only by giving its task id as suffix in the form `/system/jackrabbit/filevault/rcp.json/<taskid>`.
 
 | Property | Comment |
 | -------- | ------- |

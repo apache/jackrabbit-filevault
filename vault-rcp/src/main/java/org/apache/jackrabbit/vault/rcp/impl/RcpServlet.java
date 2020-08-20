@@ -18,6 +18,7 @@
 package org.apache.jackrabbit.vault.rcp.impl;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
@@ -44,6 +45,11 @@ import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.json.io.JSONWriter;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -97,6 +103,13 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
     @Reference
     private RcpTaskManager taskMgr;
+    
+    private Bundle bundle;
+
+    @Activate
+    protected void activate(BundleContext context){
+        bundle = context.getBundle();
+    }
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
@@ -105,34 +118,47 @@ public class RcpServlet extends SlingAllMethodsServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
 
-        String taskId = request.getRequestPathInfo().getSuffix();
         try {
-            JSONWriter w = new JSONWriter(response.getWriter());
-            w.setTidy(true);
-
-            if (taskId != null) {
-                taskId = taskId.substring(1);
-                RcpTask task = taskMgr.getTask(taskId);
-
-                if (task != null) {
-                    write(w, task);
-                } else {
-                    // return empty object
-                    w.object().endObject();
-                }
+            if ("json".equals(request.getRequestPathInfo().getExtension()) && "info".equals(request.getRequestPathInfo().getSelectorString())) {
+                writeInfoJson(response.getWriter());
             } else {
-                w.object();
-                w.key("tasks").array();
-                for (RcpTask task: taskMgr.getTasks().values()) {
-                    write(w, task);
+                String taskId = request.getRequestPathInfo().getSuffix();
+                JSONWriter w = new JSONWriter(response.getWriter());
+                w.setTidy(true);
+    
+                if (taskId != null) {
+                    taskId = taskId.substring(1);
+                    RcpTask task = taskMgr.getTask(taskId);
+    
+                    if (task != null) {
+                        write(w, task);
+                    } else {
+                        // return empty object
+                        w.object().endObject();
+                    }
+                } else {
+                    w.object();
+                    w.key("tasks").array();
+                    for (RcpTask task: taskMgr.getTasks().values()) {
+                        write(w, task);
+                    }
+                    w.endArray();
+                    w.endObject();
                 }
-                w.endArray();
-                w.endObject();
             }
         } catch (JSONException e) {
             throw new IOException(e.toString());
         }
+    }
 
+    private void writeInfoJson(Writer writer) throws JSONException {
+        JSONWriter w = new JSONWriter(writer);
+        w.setTidy(true);
+        w.object();
+        w.key(Constants.BUNDLE_SYMBOLICNAME).value(bundle.getSymbolicName());
+        w.key(Constants.BUNDLE_VERSION).value(bundle.getVersion().toString());
+        w.key(Constants.BUNDLE_VENDOR).value(bundle.getHeaders().get(Constants.BUNDLE_VENDOR));
+        w.endObject();
     }
 
     @Override

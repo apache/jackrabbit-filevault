@@ -17,7 +17,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
     <modelVersion>4.0.0</modelVersion>
     <!-- ====================================================================== -->
-    <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
+    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <parent>
         <groupId>org.apache.jackrabbit.vault</groupId>
@@ -27,16 +27,15 @@
     </parent>
 
     <!-- ====================================================================== -->
-    <!-- P R O J E C T D E S C R I P T I O N -->
+    <!-- P R O J E C T  D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <artifactId>vault-validation</artifactId>
-    <packaging>bundle</packaging>
 
     <name>Apache Jackrabbit FileVault Validation</name>
     <description>Provides a validation framework with SPI and API for performing validations on FileVault packages</description>
 
     <!-- ====================================================================== -->
-    <!-- S C M D E F I N I T I O N -->
+    <!-- S C M  D E F I N I T I O N -->
     <!-- ====================================================================== -->
     <scm>
         <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-validation</connection>
@@ -47,7 +46,7 @@
     <build>
         <plugins>
             <!-- ====================================================================== -->
-            <!-- R A T   P L U G I N                                                    -->
+            <!-- R A T  P L U G I N                                                    -->
             <!-- ====================================================================== -->
             <plugin>
                 <groupId>org.apache.rat</groupId>
@@ -66,19 +65,21 @@
                 </executions>
             </plugin>
             <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <instructions>
-                            <Include-Resource>{maven-resources},META-INF/services=target/classes/META-INF/services</Include-Resource>
-                        </instructions>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>baseline</id>
-                        </execution>
-                    </executions>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-baseline-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -90,7 +91,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.4.5-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -125,7 +126,7 @@
 
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.annotation</artifactId>
+            <artifactId>org.osgi.annotation.versioning</artifactId>
             <scope>provided</scope>
         </dependency>
             

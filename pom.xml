@@ -47,6 +47,7 @@
     <!-- M O D U L E S                                                          -->
     <!-- ====================================================================== -->
     <modules>
+        <module>target-osgi-environment</module>
         <module>parent</module>
         <module>vault-core</module>
         <module>vault-diff</module>

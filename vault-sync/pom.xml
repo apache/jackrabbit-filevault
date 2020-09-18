@@ -31,9 +31,8 @@
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>vault-sync</artifactId>
-    <packaging>bundle</packaging>
-
     <name>Apache Jackrabbit FileVault Sync Service</name>
+    <description>Apache Jackrabbit FileVault supplemental bundle which allows to sync the repository with some folder on the filesystem</description>
 
     <!-- ====================================================================== -->
     <!-- S C M  D E F I N I T I O N                                             -->
@@ -44,6 +43,11 @@
         <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-sync</url>
     </scm>
 
+    <properties>
+        <!-- downgrade dependencies to make compatible with the minimum supported version -->
+        <jackrabbit.version>2.14.0</jackrabbit.version>
+    </properties>
+
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
     <!-- ====================================================================== -->
@@ -52,26 +56,27 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>sling-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-baseline-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <slingUrlSuffix>/libs/crx/vault/install/</slingUrlSuffix>
-                    <slingUrl>http://localhost:4502/crx/repository/crx.default</slingUrl>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-Category>cq5</Bundle-Category>
-                        <Private-Package>
-                            org.apache.jackrabbit.vault.sync.impl.*,
-                        </Private-Package>
-                        <Embed-Dependency>
-                            commons-jci-fam,jackrabbit-spi,jackrabbit-spi-commons
-                        </Embed-Dependency>
-                    </instructions>
-                </configuration>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-resolver-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
@@ -90,6 +95,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-jcr-commons</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
@@ -104,10 +110,12 @@
         <dependency>
             <groupId>javax.jcr</groupId>
             <artifactId>jcr</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -118,7 +126,7 @@
         <!-- OSGi Annotations: @Version -->
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.annotation</artifactId>
+            <artifactId>org.osgi.annotation.versioning</artifactId>
         </dependency>
         <!-- Declarative Service Annotations -->
         <dependency>

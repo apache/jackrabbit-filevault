@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 
 import java.util.regex.Pattern;
 
+import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
@@ -113,7 +114,8 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
         } else {
             allowComplexFilterRulesInApplicationPackages = false;
         }
-        return new PackageTypeValidator(context.getFilter(), settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, context.getProperties().getPackageType(), jcrInstallerNodePathRegex, additionalJcrInstallerFileNodePathRegex, context.getContainerValidationContext());
+        @NotNull PackageType packageType = (context.getProperties().getPackageType() != null) ? context.getProperties().getPackageType() : PackageType.MIXED;
+        return new PackageTypeValidator(context.getFilter(), settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, packageType, jcrInstallerNodePathRegex, additionalJcrInstallerFileNodePathRegex, context.getContainerValidationContext());
     }
 
     @Override

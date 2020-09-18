@@ -30,13 +30,16 @@
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>org.apache.jackrabbit.vault.rcp</artifactId>
-    <version>3.4.5-SNAPSHOT</version>
-    <packaging>bundle</packaging>
 
     <name>Apache Jackrabbit FileVault RCP Server Bundle</name>
     <description>
         Builds an OSGi bundle that provides the vlt rcp manager
     </description>
+    
+    <properties>
+        <!-- downgrade dependencies to make compatible with the minimum supported version -->
+        <jackrabbit.version>2.14.0</jackrabbit.version>
+    </properties>
 
     <!-- ====================================================================== -->
     <!-- S C M  D E F I N I T I O N                                             -->
@@ -60,20 +63,16 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <instructions>
-                        <Bundle-Build>${buildNumber}</Bundle-Build>
-                        <Bundle-Category>jcr,granite</Bundle-Category>
-                        <Embed-Dependency>
-                            vault-davex,
-                            jackrabbit-spi2dav,
-                            jackrabbit-jcr-client,
-                            jackrabbit-jcr2spi
-                        </Embed-Dependency>
-                    </instructions>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
                 </configuration>
             </plugin>
             <!-- exclude test resources from rat-check -->
@@ -86,6 +85,11 @@
                     </excludes>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-resolver-maven-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 
@@ -97,25 +101,12 @@
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
             <version>3.4.5-SNAPSHOT</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jackrabbit</groupId>
-            <artifactId>jackrabbit-jcr2spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jackrabbit</groupId>
-            <artifactId>jackrabbit-jcr-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jackrabbit</groupId>
-            <artifactId>jackrabbit-spi2dav</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
@@ -151,10 +142,27 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- the following three dependencies are no bundles and therefore must be embedded -->
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-jcr2spi</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-jcr-client</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-spi2dav</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        
         <!-- OSGi Annotations: @Version -->
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.annotation</artifactId>
+            <artifactId>org.osgi.annotation.versioning</artifactId>
         </dependency>
         <!-- Declarative Service Annotations -->
         <dependency>
@@ -170,8 +178,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-davex</artifactId>
-            <version>3.4.5-SNAPSHOT</version>
-            <scope>compile</scope>
+            <version>${project.version}</version>
         </dependency>
 
     </dependencies>

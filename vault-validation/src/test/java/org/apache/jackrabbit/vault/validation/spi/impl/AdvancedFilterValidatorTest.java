@@ -83,7 +83,7 @@ public class AdvancedFilterValidatorTest {
     private Collection<PackageInfo> dependenciesMetaInfo;
 
     private Collection<String> validRoots;
-    
+
     private DocumentBuilderFactory factory;
 
     @Before
@@ -158,11 +158,16 @@ public class AdvancedFilterValidatorTest {
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test/huhu"), false), AnyValidationViolationMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test"), false), AnyValidationViolationMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test2/valid"), false), AnyValidationViolationMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test3/valid"), false), AnyValidationViolationMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test4/test/valid"), false), AnyValidationViolationMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test/huhu"), false, false),
+                AnyValidationViolationMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test"), false, false),
+                AnyValidationViolationMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test2/valid"), false, false),
+                AnyValidationViolationMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test3/valid"), false, false),
+                AnyValidationViolationMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test4/test/valid"), false, false),
+                AnyValidationViolationMatcher.noValidationInCollection());
     }
 
     @Test
@@ -182,26 +187,29 @@ public class AdvancedFilterValidatorTest {
                 filter, // this is per test
                 validRoots);
 
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps"), true), AnyValidationViolationMatcher.noValidationInCollection());
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/notcontained"), false),
+        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps"), true, false),
+                AnyValidationViolationMatcher.noValidationInCollection());
+        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/notcontained"), false, false),
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/notcontained")));
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test3/invalid"), false),
+        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test3/invalid"), false, false),
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/test3/invalid")));
-        
+
         // docview nodes root node should be skipped
         Map<String, DocViewProperty> props = new HashMap<>();
-        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
+        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" }, false, PropertyType.STRING));
 
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "nt:unstructured");
-        Assert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained"), true), AnyValidationViolationMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained"), true),
+                AnyValidationViolationMatcher.noValidationInCollection());
         // order nodes should be skipped
         node = new DocViewNode("ordernode", "ordernode", null, Collections.emptyMap(), null, null);
-        Assert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained/ordernode"), false), AnyValidationViolationMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained/ordernode"), false),
+                AnyValidationViolationMatcher.noValidationInCollection());
         // regular nodes should not be skipped
         node = new DocViewNode("regularnode", "regularnode", null, props, null, null);
-        
+
         ValidationExecutorTest.assertViolation(validator.validate(node, getStandardNodeContext("/apps/notcontained/regularnode"), false),
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/notcontained/regularnode")));
@@ -225,10 +233,12 @@ public class AdvancedFilterValidatorTest {
                 validRoots);
 
         // default severity INFO
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps"), false), ValidationMessageSeverity.INFO,
+        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps"), false, false),
+                ValidationMessageSeverity.INFO,
                 new ValidationMessage(ValidationMessageSeverity.INFO,
                         String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT, "/apps")));
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test4"), false), ValidationMessageSeverity.INFO,
+        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test4"), false, false),
+                ValidationMessageSeverity.INFO,
                 new ValidationMessage(ValidationMessageSeverity.INFO,
                         String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps/test4")));
 
@@ -244,7 +254,8 @@ public class AdvancedFilterValidatorTest {
                 filter, // this is per test
                 validRoots);
 
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test4"), false), ValidationMessageSeverity.INFO,
+        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test4"), false, false),
+                ValidationMessageSeverity.INFO,
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps/test4")));
 
@@ -261,7 +272,8 @@ public class AdvancedFilterValidatorTest {
                 dependenciesMetaInfo,
                 filter, // this is per test
                 Collections.emptyList());
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps"), false), ValidationMessageSeverity.WARN,
+        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps"), false, false),
+                ValidationMessageSeverity.WARN,
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps")));
     }
@@ -272,13 +284,14 @@ public class AdvancedFilterValidatorTest {
         try (InputStream input = this.getClass().getResourceAsStream("/dependency1-filter.xml")) {
             dependencyFilter.load(input);
         }
-        
+
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         try (InputStream input = this.getClass().getResourceAsStream("/filter-with-uncovered-roots.xml")) {
             filter.load(input);
         }
         validRoots.add("/customroot");
-        dependenciesMetaInfo.add(new DefaultPackageInfo(PackageId.fromString("group:dependency1"), dependencyFilter, PackageType.APPLICATION));
+        dependenciesMetaInfo
+                .add(new DefaultPackageInfo(PackageId.fromString("group:dependency1"), dependencyFilter, PackageType.APPLICATION));
         validator = new AdvancedFilterValidator(
                 factory,
                 ValidationMessageSeverity.ERROR,
@@ -294,7 +307,8 @@ public class AdvancedFilterValidatorTest {
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNCOVERED, "/apps/uncovered")),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED, "/apps/covered2/excluded", "group:dependency1")),
+                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED, "/apps/covered2/excluded",
+                                "group:dependency1")),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNCOVERED, "/invalidroot")));
     }
@@ -317,15 +331,17 @@ public class AdvancedFilterValidatorTest {
                 validRoots);
         Collection<ValidationMessage> messages = validator.validate(filter);
 
-        messages = validator.validateJcrPath(getStandardNodeContext("/apps/test3"), false);
+        messages = validator.validateJcrPath(getStandardNodeContext("/apps/test3"), false, false);
         ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
                 new ValidationMessage(ValidationMessageSeverity.INFO,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_BELOW_CLEANUP_FILTER, "/apps/test3")));
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test2/something/anothervalid"), false), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test2/something/anothervalid"), false, false),
+                AnyValidationMessageMatcher.noValidationInCollection());
         messages = validator.done();
         ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(AdvancedFilterValidator.MESSAGE_ORPHANED_FILTER_ENTRIES, "entry with root '/apps/test', includes [regex: .*/valid] below root '/apps/test2', entry with root '/apps/test4/test'")));
+                        String.format(AdvancedFilterValidator.MESSAGE_ORPHANED_FILTER_ENTRIES,
+                                "entry with root '/apps/test', includes [regex: .*/valid] below root '/apps/test2', entry with root '/apps/test4/test'")));
     }
 
     @Test
@@ -395,7 +411,8 @@ public class AdvancedFilterValidatorTest {
         validator.setFilterValidators(Collections.singletonMap("filterid", validator));
         try (InputStream input = this.getClass()
                 .getResourceAsStream("/invalid-package/META-INF/vault/filter-non-matching-regex.xml")) {
-            Collection<ValidationMessage> messages = validator.validateMetaInfData(input, Paths.get("vault/filter-non-matching-regex.xml"), Paths.get(""));
+            Collection<ValidationMessage> messages = validator.validateMetaInfData(input, Paths.get("vault/filter-non-matching-regex.xml"),
+                    Paths.get(""));
             ValidationExecutorTest.assertViolation(messages,
                     new ValidationViolation("filterid", ValidationMessageSeverity.WARN,
                             String.format(AdvancedFilterValidator.MESSAGE_INVALID_PATTERN,

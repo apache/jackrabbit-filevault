@@ -170,7 +170,7 @@ public class ValidationExecutorTest {
         CapturingInputStreamFromArgumentAnswer<Void> answer2 = new CapturingInputStreamFromArgumentAnswer<>(StandardCharsets.US_ASCII, 0, null);
         Mockito.when(genericJcrDataValidator2.shouldValidateJcrData(Mockito.any(), Mockito.any())).thenReturn(true);
         Mockito.when(genericJcrDataValidator2.validateJcrData(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenAnswer(answer2);
-        Mockito.when(jcrPathValidator.validateJcrPath(Mockito.any(), Mockito.anyBoolean())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "patherror")));
+        Mockito.when(jcrPathValidator.validateJcrPath(Mockito.any(), Mockito.anyBoolean(), Mockito.anyBoolean())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "patherror")));
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/genericfile.xml")) {
             Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "apps/genericfile.xml", false);
             assertViolation(messages, 
@@ -180,7 +180,7 @@ public class ValidationExecutorTest {
             Assert.assertEquals("Test", answer2.getValue());
             Path expectedPath = Paths.get("apps/genericfile.xml");
             NodeContext expectedNodeContext = new NodeContextImpl("/apps/genericfile.xml", expectedPath,  Paths.get(""));
-            Mockito.verify(jcrPathValidator).validateJcrPath(expectedNodeContext, false);
+            Mockito.verify(jcrPathValidator).validateJcrPath(expectedNodeContext, false, false);
             Mockito.verify(genericJcrDataValidator, Mockito.atLeastOnce()).shouldValidateJcrData(expectedPath, Paths.get(""));
             Mockito.verify(genericJcrDataValidator).validateJcrData(Mockito.any(), Mockito.eq(expectedPath), Mockito.eq(Paths.get("")), Mockito.any());
             Mockito.verify(genericJcrDataValidator2, Mockito.atLeastOnce()).shouldValidateJcrData(expectedPath, Paths.get(""));
@@ -203,7 +203,7 @@ public class ValidationExecutorTest {
         Collection<ValidationViolation> messages = validateFolder(executor, Paths.get(""), "apps.dir", false);
         Assert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
         NodeContext expectedNodeContext = new NodeContextImpl("/apps", Paths.get("apps.dir"), Paths.get(""));
-        Mockito.verify(jcrPathValidator).validateJcrPath(expectedNodeContext, true);
+        Mockito.verify(jcrPathValidator).validateJcrPath(expectedNodeContext, true, true);
         Mockito.verify(nodePathValidator).validate(expectedNodeContext);
     }
 
@@ -244,6 +244,8 @@ public class ValidationExecutorTest {
     public void testFilePathToNodePath() {
         Assert.assertEquals("/apps/test", ValidationExecutor.filePathToNodePath(Paths.get("apps", "test")));
         Assert.assertEquals("/some/other/path", ValidationExecutor.filePathToNodePath(Paths.get("some", "other", "path")));
+        Assert.assertEquals("/apps/test", ValidationExecutor.filePathToNodePath(Paths.get("apps", "test", "property.binary")));
+        Assert.assertEquals("/", ValidationExecutor.filePathToNodePath(Paths.get("")));
     }
 
     public static void assertViolation(Collection<? extends ValidationMessage> messages, ValidationMessageSeverity thresholdSeverity, ValidationMessage... violations) {

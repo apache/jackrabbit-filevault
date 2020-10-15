@@ -14,10 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * The FileVault validation framework API. Provides classes to execute validations on FileVault packages.
- */
-@Version("2.1.0")
-package org.apache.jackrabbit.vault.validation;
+// https://jackrabbit.apache.org/jcr/node-type-notation.html
+<'my'='http://example.com/mynamespace2'>
 
-import org.osgi.annotation.versioning.Version;
+
+[my:nodeType1]
+  + my:namedChild1 (my:nodeType1) mandatory
+  + my:autoCreatedChild1 (my:nodeType2) = my:nodeType2 autocreated mandatory
+  + * (my:nodeType2) mandatory
+
+[my:nodeType2]
+  - my:property2 (String)
+  - my:mandatoryProperty (Date) mandatory
+  - *
+
+[my:nodeType3]
+  - my:property1 (String)
+  // https://docs.adobe.com/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.7.3.6%20Value%20Constraints
+  - my:constrainedStringProperty (String) < "prefix1.*",".*suffix1"
+  - my:protected (String) protected
+  - my:dateProperty (Date)
+  - my:mandatoryProperty (String) mandatory
+  - my:autoCreatedProperty (String) autocreated

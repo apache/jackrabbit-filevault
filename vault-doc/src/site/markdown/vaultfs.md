@@ -87,6 +87,7 @@ they aggregate an entire subtree. for example the complete serialization of a `n
 
 The following repository structure:
 
+```
     + nodetypes [nt:unstructured]
       + nt1 [nt:nodeType]
         + jcr:propertyDefinition [nt:propertyDefinition]
@@ -94,18 +95,22 @@ The following repository structure:
         + jcr:childNodeDefinition [nt:childNodeDefinition]
       + nt2 [nt:nodeType]
         ...
+```
 
 could be mapped to:
 
+```
     `- nodetypes
        |- nt1.cnd
        `- nt2.cnd
+```
 
 #### Generic aggregates
 generic aggregates cover a part of a content subtree, hence they have not a full coverage. they always consist at least of a primary artifact and a directory artifact. examples of those are the aggregation of a `cq:Page` structure or of `nt:unstructured` nodes. 
 
 the following repository structure:
 
+```
     + en [cq:Page]
       + jcr:content [cq:Content]
       + about [cq:Page]
@@ -114,10 +119,12 @@ the following repository structure:
             + image.jpg
       + solutions [cq:Page
         + jcr:content [cq:Content]
+```
 
 are mapped to:
 
-    `- en
+```
+    - `en
        |- .content.xml
        |- about
        |  |- _jcr_content
@@ -126,11 +133,13 @@ are mapped to:
        |  `- .content.xml
        `- solution
           `- .content.xml
+```
 
 the example above just excluded some direct child nodes of the aggregate root from the aggregation (with the exception of the `image.jpg` node). but this could be more complicated.
 
 overlapping example:
 
+```
     + apps [nt:unstructured]
       + example [nt:unstructured]
         + components [nt:unstructured]
@@ -138,9 +147,11 @@ overlapping example:
             + dialog [cq:Dialog]
               ...  
             + default.jsp [nt:file] 
+```
 
 is be mapped to:
 
+```
     `- apps
        |- .content.xml
        `- example
@@ -151,6 +162,7 @@ is be mapped to:
                 |- .content.xml
                 |- dialog.xml
                 `- default.jsp
+```
 
 this example has 6 aggregates:
 
@@ -174,6 +186,7 @@ but to keep the mapping lean, those properties are not part of the file aggregat
 
 example:
 
+```
     + foo [nt:folder]
       + example.jsp [nt:file]
         - jcr:created ...
@@ -181,6 +194,7 @@ example:
           - jcr:data
           - jcr:lastModified
           - jcr:mimeType
+```
 
 is mapped to:
 
@@ -231,30 +245,36 @@ example (although this is probably very rare):
 
 is mapped to:
 
+```
     `- foo
        |- .content.xml
        `- bar
           |- 0001
-          |  |- data1.bin
-          |  `- data2.bin
+          |  |- data1.binary
+          |  `- data2.binary
           `- 0002
-             |- data1.bin
-             `- data2.bin      
+             |- data1.binary
+             `- data2.binary
+```
 
 #### Resource Nodes
 there are some cases where `nt:resource` like structures are used that are not held below a `nt:file` node.
 
+```
     + foo [nt:unstructured]
       + cq:content [nt:resource]
         - jcr:mimeType "image/jpg"
         - jcr:data  
         - jcr:lastModified
+```
 
 this is mapped to:
 
+```
     `- foo
        |- .content.xml
        `- _cq_content.jpg
+```
 
 where as the mimetype and modification date can be recorded in the primary artifact. possible other properties like `jcr:uuid` etc would go to the parent aggregate.
 

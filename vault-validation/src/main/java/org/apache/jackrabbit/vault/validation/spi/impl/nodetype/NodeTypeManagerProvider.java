@@ -60,22 +60,22 @@ import org.apache.jackrabbit.spi.commons.nodetype.NodeTypeStorage;
 import org.apache.jackrabbit.spi.commons.nodetype.NodeTypeStorageImpl;
 import org.apache.jackrabbit.spi.commons.value.QValueFactoryImpl;
 import org.apache.jackrabbit.value.ValueFactoryImpl;
+import org.jetbrains.annotations.NotNull;
 
 public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorage {
 
-    
     // namespace related helpers
-    private final NamespaceMapping namespaceMapping;
-    private final NamespaceRegistry namespaceRegistry;
-    private final NamespaceResolver namespaceResolver;
-    private final NamePathResolver npResolver;
+    private final @NotNull NamespaceMapping namespaceMapping;
+    private final @NotNull NamespaceRegistry namespaceRegistry;
+    private final @NotNull NamespaceResolver namespaceResolver;
+    private final @NotNull NamePathResolver npResolver;
     
     // nodetype related helpers
-    private final NodeTypeStorage nodeTypeStorage;
-    private final NodeTypeRegistryImpl nodeTypeRegistry;
-    private final NodeTypeManagerImpl nodeTypeManager;
+    private final @NotNull NodeTypeStorage nodeTypeStorage;
+    private final @NotNull NodeTypeRegistryImpl nodeTypeRegistry;
+    private final @NotNull NodeTypeManagerImpl nodeTypeManager;
     
-    private final ItemDefinitionProvider itemDefinitionProvider;
+    private final @NotNull ItemDefinitionProvider itemDefinitionProvider;
 
     public NodeTypeManagerProvider() throws IOException, RepositoryException, ParseException {
         namespaceMapping = new NamespaceMapping();
@@ -88,7 +88,7 @@ public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorag
         nodeTypeRegistry = NodeTypeRegistryImpl.create(nodeTypeStorage, namespaceRegistry);
         nodeTypeManager = new NodeTypeManagerImpl(nodeTypeRegistry, this);
         itemDefinitionProvider = new ItemDefinitionProviderImpl(nodeTypeRegistry, null, null);
-        // always provide default
+        // always provide default nodetypes
         try (Reader reader = new InputStreamReader(
                 this.getClass().getResourceAsStream("/default-nodetypes.cnd"),
                 StandardCharsets.US_ASCII)) {
@@ -101,26 +101,26 @@ public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorag
     }
 
     @Override
-    public NamePathResolver getNamePathResolver() {
+    public @NotNull NamePathResolver getNamePathResolver() {
         return npResolver;
     }
 
     @Override
-    public NameResolver getNameResolver() {
+    public @NotNull NameResolver getNameResolver() {
         return npResolver;
     }
 
     @Override
-    public PathResolver getPathResolver() {
+    public @NotNull PathResolver getPathResolver() {
         return npResolver;
     }
 
     @Override
-    public NamespaceResolver getNamespaceResolver() {
+    public @NotNull NamespaceResolver getNamespaceResolver() {
         return namespaceResolver;
     }
 
-    public NodeTypeManager getNodeTypeManager() {
+    public @NotNull NodeTypeManager getNodeTypeManager() {
         return nodeTypeManager;
     }
 
@@ -145,27 +145,27 @@ public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorag
     }
 
     @Override
-    public ItemDefinitionProvider getItemDefinitionProvider() {
+    public @NotNull ItemDefinitionProvider getItemDefinitionProvider() {
         return itemDefinitionProvider;
     }
 
     @Override
-    public NodeTypeDefinitionProvider getNodeTypeDefinitionProvider() {
+    public @NotNull NodeTypeDefinitionProvider getNodeTypeDefinitionProvider() {
         return nodeTypeManager;
     }
 
     @Override
-    public EffectiveNodeTypeProvider getEffectiveNodeTypeProvider() {
+    public @NotNull EffectiveNodeTypeProvider getEffectiveNodeTypeProvider() {
         return nodeTypeRegistry;
     }
 
     @Override
-    public ValueFactory getJcrValueFactory() throws RepositoryException {
+    public @NotNull ValueFactory getJcrValueFactory() throws RepositoryException {
         return ValueFactoryImpl.getInstance();
     }
 
     @Override
-    public QValueFactory getQValueFactory() throws RepositoryException {
+    public @NotNull QValueFactory getQValueFactory() throws RepositoryException {
         return QValueFactoryImpl.getInstance();
     }
 
@@ -200,5 +200,4 @@ public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorag
             throws NamespaceException, UnsupportedRepositoryOperationException, AccessDeniedException, RepositoryException {
         namespaceMapping.removeMapping(uri);
     }
-
 }

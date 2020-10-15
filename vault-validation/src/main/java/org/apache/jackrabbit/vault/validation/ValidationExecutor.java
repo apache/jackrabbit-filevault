@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
+import org.apache.jackrabbit.vault.util.Text;
 import org.apache.jackrabbit.vault.validation.impl.util.EnhancedBufferedInputStream;
 import org.apache.jackrabbit.vault.validation.impl.util.ResettableInputStream;
 import org.apache.jackrabbit.vault.validation.impl.util.ValidatorException;
@@ -63,6 +64,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class ValidationExecutor {
 
+    public static final String EXTENSION_BINARY = ".binary";
     private final Map<String, DocumentViewXmlValidator> documentViewXmlValidators;
     private final Map<String, NodePathValidator> nodePathValidators;
     private final Map<String, GenericJcrDataValidator> genericJcrDataValidators;
@@ -270,6 +272,7 @@ public final class ValidationExecutor {
         Map<String, Integer> nodePathsAndLineNumbers = new LinkedHashMap<>();
         Collection<ValidationViolation> enrichedMessages = new LinkedList<>();
         
+        boolean isDocViewXml = true;
         if (input != null) {
             InputStream currentInput = input;
             ResettableInputStream resettableInputStream = null;
@@ -299,6 +302,7 @@ public final class ValidationExecutor {
                             // convert file name to node path
                             String nodePath = filePathToNodePath(filePath);
                             log.debug("Found non-docview node '{}'", nodePath);
+                            isDocViewXml = false;
                             nodePathsAndLineNumbers.put(nodePath, 0);
                         }
                     } catch (RuntimeException e) {
@@ -322,7 +326,7 @@ public final class ValidationExecutor {
         // generate node context
         NodeContext nodeContext = new NodeContextImpl(nodePathsAndLineNumbers.keySet().iterator().next(), filePath, basePath);
         for (Map.Entry<String, JcrPathValidator> entry : jcrPathValidators.entrySet()) {
-            Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(nodeContext, input == null);
+            Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(nodeContext, input == null, isDocViewXml);
             if (messages != null && !messages.isEmpty()) {
                 enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
             }
@@ -338,10 +342,16 @@ public final class ValidationExecutor {
      */
     public static @NotNull String filePathToNodePath(@NotNull Path filePath) {
         String platformPath = FilenameUtils.separatorsToUnix(filePath.toString());
+        // treat https://jackrabbit.apache.org/filevault/vaultfs.html#Binary_Properties specially
+        if (platformPath.endsWith(EXTENSION_BINARY)) {
+            platformPath = Text.getRelativeParent(platformPath, 1);
+        }
         String repositoryPath = PlatformNameFormat.getRepositoryPath(platformPath, true);
         if (!repositoryPath.isEmpty()) {
             // make repository path absolute by prefixing it with "/" in case it is not the root node path itself
             repositoryPath = "/" + repositoryPath;
+        } else {
+            repositoryPath = "/";
         }
         return repositoryPath;
     }

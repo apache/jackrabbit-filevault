@@ -447,7 +447,12 @@ public class IntegrationTestBase  {
 
     public ImportOptions getDefaultOptions() {
         ImportOptions opts = new ImportOptions();
-        opts.setListener(new ProgressTrackerListener() {
+        opts.setListener(getLoggingProgressTrackerListener());
+        return opts;
+    }
+
+    public ProgressTrackerListener getLoggingProgressTrackerListener() {
+        return new ProgressTrackerListener() {
             public void onMessage(Mode mode, String action, String path) {
                 log.info("{} {}", action, path);
             }
@@ -455,8 +460,7 @@ public class IntegrationTestBase  {
             public void onError(Mode mode, String path, Exception e) {
                 log.info("E {} {}", path, e.toString());
             }
-        });
-        return opts;
+        };
     }
 
     /**

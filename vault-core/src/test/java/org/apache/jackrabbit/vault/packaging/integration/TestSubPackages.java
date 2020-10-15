@@ -672,7 +672,8 @@ public class TestSubPackages extends IntegrationTestBase {
 
         // create new package
         JcrPackage pkg = packMgr.open(PACKAGE_ID_SUB_TEST);
-        packMgr.assemble(pkg, new DefaultProgressListener());
+        //
+        packMgr.assemble(pkg, getLoggingProgressTrackerListener());
 
         try (ZipInputStream in = new ZipInputStream(pkg.getData().getBinary().getStream())) {
             ZipEntry e;

@@ -49,9 +49,10 @@ jobs:
   include:
   - os: linux
     env:
-       - JDK="adopt@1.8"
+       - JDK="adopt@1.11"
        - LANG="de_DE.UTF-8"
        - LC_ALL="de_DE.UTF-8"
+       - SONARQUBE_EXECUTION=true
 before_install:
   # Download the script
   - curl "${GRAVIS}.install-jdk-travis.sh" --output ~/.install-jdk-travis.sh
@@ -60,10 +61,19 @@ before_install:
   - curl "${GRAVIS}.install-maven.sh" --output ~/.install-maven.sh
   # Download, install, configue the JDK, and export the configuration to the current shell
   - source ~/.install-maven.sh
+addons:
+  sonarcloud:
+    organization: "apache"
+    token:
+      secure: "EMpJMtN+fqjuyy69BByyUc08QGzgYCA8s40HDLofCExA/7i0o8tDMwLm2nVBUO5RNrvK8YDxdNI4P6zRAytws/KIw8WPJG4ycN3OFhaqccZit0zWzHO+JAD3r7rSc7dRTmC3KzeMjEHJbsbKQywLVUuaSy6vf8x5GJT2KG73hIU=" # encrypted value of your token
 # This is your main script
 script:
-  # Just an example. Do what you deem useful
-  - mvn verify -B
+  - | 
+    if [ "$SONARQUBE_EXECUTION" == "true" ]; then 
+      mvn clean verify sonar:sonar -B -Pjacoco-report -Dsonar.projectKey=apache_jackrabbit-filevault -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml
+    else
+      mvn clean verify -B
+    fi
 # If you use Gradle, cleanup the build cache from lock/temporary files
 before_cache:
   #- curl "${GRAVIS}.clean_gradle_cache.sh" --output ~/.clean_gradle_cache.sh

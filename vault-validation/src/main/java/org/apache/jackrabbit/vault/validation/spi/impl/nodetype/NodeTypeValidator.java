@@ -37,7 +37,6 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
-import org.apache.jackrabbit.oak.spi.nodetype.NodeTypeConstants;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
 import org.apache.jackrabbit.spi.commons.conversion.MalformedPathException;
@@ -300,7 +299,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
         List<ValidationMessage> messages = new ArrayList<>();
         boolean isImplicit = isImplicit(nodeContext.getNodePath());
         if (isFolder) {
-            messages.addAll(getOrCreateNewNode(nodeContext, isImplicit, NodeTypeConstants.NT_FOLDER));
+            messages.addAll(getOrCreateNewNode(nodeContext, isImplicit, JcrConstants.NT_FOLDER));
             //
             if (!nodeContext.getNodePath().equals("/")) {
                 messages.addAll(finalizeValidationForSiblings(nodeContext));
@@ -312,19 +311,19 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
                 // https://jackrabbit.apache.org/filevault/vaultfs.html#Binary_Properties
                 if (fileName.endsWith(ValidationExecutor.EXTENSION_BINARY)) {
                     // create parent if it does not exist yet
-                    messages.addAll(getOrCreateNewNode(nodeContext, isImplicit, NodeTypeConstants.NT_FOLDER));
+                    messages.addAll(getOrCreateNewNode(nodeContext, isImplicit, JcrConstants.NT_FOLDER));
                     String propertyName = fileName.substring(0, fileName.length() - ValidationExecutor.EXTENSION_BINARY.length());
                     messages.addAll(addProperty(nodeContext, propertyName, false, DUMMY_BINARY_VALUE));
                 } else {
                     // if binary node is not yet there
-                    messages.addAll(getOrCreateNewNode(nodeContext, isImplicit, NodeTypeConstants.NT_FILE));
+                    messages.addAll(getOrCreateNewNode(nodeContext, isImplicit, JcrConstants.NT_FILE));
                     // if a NT_FILE create a jcr:content sub node of type NT_RESOURCE
                     if (currentNodeTypeMetaData.getPrimaryNodeType().equals(NameConstants.NT_FILE)) {
                         // create new node context
                         nodeContext = new NodeContextImpl(nodeContext.getNodePath() + "/" + JcrConstants.JCR_CONTENT,
                                 nodeContext.getFilePath(), nodeContext.getBasePath());
                         messages.addAll(
-                                getOrCreateNewNode(nodeContext, isImplicit(nodeContext.getNodePath()), NodeTypeConstants.NT_RESOURCE));
+                                getOrCreateNewNode(nodeContext, isImplicit(nodeContext.getNodePath()), JcrConstants.NT_RESOURCE));
                     }
                     messages.addAll(addProperty(nodeContext, JcrConstants.JCR_DATA, false, DUMMY_BINARY_VALUE));
                     messages.addAll(addProperty(nodeContext, JcrConstants.JCR_MIMETYPE, false, DUMMY_STRING_VALUE));
@@ -349,9 +348,8 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
     @Override
     public @Nullable Collection<ValidationMessage> done() {
         // validate any outstanding nodes
-        // TODO: use correct node context impl
         try {
-            return finalizeValidationForSubtree(getNode("/").get(), new NodeContextImpl("/", Paths.get("/"), Paths.get("/")));
+            return finalizeValidationForSubtree(getNode("/").orElseThrow(() -> new IllegalStateException("Cannot get root node")), new NodeContextImpl("/", Paths.get("/"), Paths.get("/")));
         } catch (NamespaceException e) {
             throw new IllegalStateException("Can not print qualified path", e);
         }

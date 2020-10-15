@@ -32,18 +32,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.fs.api.FilterSet.Entry;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
@@ -286,7 +279,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
 
     @Override
     public @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull NodeContext nodeContext,
-            boolean isFolder) {
+            boolean isFolder, boolean isDocViewXml) {
         if (!isFolder) {
             return validateFileNodePath(nodeContext.getNodePath());
         } else {

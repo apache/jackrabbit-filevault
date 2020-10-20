@@ -36,6 +36,7 @@ import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.impl.OakIndexDefinitionValidator;
+import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,8 +74,8 @@ public class OakIndexDefinitionValidatorTest {
         props.put("includedPaths", new DocViewProperty("includedPaths", new String[] { "/home]" }, true, PropertyType.STRING));
         DocViewNode node = new DocViewNode("testindex", "testindex", null, props, null, "oak:QueryIndexDefinition");
 
-        Collection<ValidationMessage> messages = validator.validate(node, "/oak:index/testindex",
-                Paths.get("_oak_index/testindex/.content.xml"), true);
+        Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/oak:index/testindex",
+                Paths.get("_oak_index", "testindex", ".content.xml"), Paths.get("")), true);
         ValidationExecutorTest.assertViolation(messages,
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(OakIndexDefinitionValidator.MESSAGE_INDEX_AT_NODE, rootPackagePath, "/oak:index/testindex")));
@@ -86,8 +87,8 @@ public class OakIndexDefinitionValidatorTest {
         props.put("includedPaths", new DocViewProperty("includedPaths", new String[] { "/home]" }, true, PropertyType.STRING));
         DocViewNode node = new DocViewNode("indexDef", "indexDef", null, props, null, "oak:QueryIndexDefinition");
 
-        Collection<ValidationMessage> messages = validator.validate(node, "/apps/project/oak:index/indexDef",
-                Paths.get("apps", "project", "_oak_index", "content.xml"), false);
+        Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/project/oak:index/indexDef",
+                Paths.get("apps", "project", "_oak_index", "content.xml"), Paths.get("")), false);
         ValidationExecutorTest.assertViolation(messages,
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(OakIndexDefinitionValidator.MESSAGE_INDEX_AT_NODE, rootPackagePath, "/apps/project/oak:index/indexDef")));
@@ -105,12 +106,12 @@ public class OakIndexDefinitionValidatorTest {
         props.put("rep:policy", new DocViewProperty("rep:policy", new String[] { "/home]" }, true, PropertyType.STRING));
         DocViewNode node = new DocViewNode("rep:policy", "rep:policy", null, props, null, "rep:ACL");
 
-        Collection<ValidationMessage> messages = validator.validate(node, "/oak:index/rep:policy",
-                Paths.get("_oak_index", "_rep_policy.xml"), true);
+        Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/oak:index/rep:policy",
+                Paths.get("_oak_index", "_rep_policy.xml"), Paths.get("")), true);
         Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
         node = new DocViewNode("allow", "allow", null, props, null, "rep:GrantACE");
-        messages = validator.validate(node, "/oak:index/rep:policy/allow",
-                Paths.get("_oak_index", "_rep_policy.xml"), false);
+        messages = validator.validate(node, new NodeContextImpl("/oak:index/rep:policy/allow",
+                Paths.get("_oak_index", "_rep_policy.xml"), Paths.get("")), false);
         Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
     }
 }

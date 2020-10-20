@@ -83,7 +83,7 @@ public class PackageTypeValidatorTest {
         // validate sling:OsgiConfig node
         DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
         Assert.assertThat(validator.validate(new NodeContextImpl("/apps/config/someconfigpid", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validate(node, "/apps/config/someconfigpid", Paths.get(""), true), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, new NodeContextImpl("/apps/config/someconfigpid", Paths.get(""), Paths.get("")), true), AnyValidationMessageMatcher.noValidationInCollection());
         
         // validate sub packages of type Content
         Mockito.when(parentContainerProperties.getPackageType()).thenReturn(PackageType.MIXED);
@@ -121,7 +121,7 @@ public class PackageTypeValidatorTest {
         DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
         Assert.assertThat(validator.validate(new NodeContextImpl("/content/config/someconfigpid", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(
-                validator.validate(node, "/content/config/someconfigpid", Paths.get(""), true),
+                validator.validate(node, new NodeContextImpl("/content/config/someconfigpid", Paths.get(""), Paths.get("")), true),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.CONTENT, "/content/config/someconfigpid")));
         
         // validate sub packages of type Application
@@ -181,7 +181,7 @@ public class PackageTypeValidatorTest {
         // validate sling:OsgiConfig node
         DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
         Assert.assertThat(validator.validate(new NodeContextImpl("/apps/config/someconfigpid", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validate(node, "/apps/config/someconfigpid", Paths.get(""), true), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.validate(node, new NodeContextImpl("/apps/config/someconfigpid", Paths.get(""), Paths.get("")), true), AnyValidationMessageMatcher.noValidationInCollection());
         
         // make sure no dependencies
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTAINER);
@@ -227,7 +227,7 @@ public class PackageTypeValidatorTest {
         DocViewNode node = new DocViewNode("someconfigpid", "someconfigpid", null, Collections.emptyMap(), null, "sling:OsgiConfig");
         Assert.assertThat(validator.validate(new NodeContextImpl("/apps/config/someconfigpid", Paths.get(""), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(
-                validator.validate(node, "/apps/config/someconfigpid", Paths.get(""), true),
+                validator.validate(node, new NodeContextImpl("/apps/config/someconfigpid", Paths.get(""), Paths.get("")), true),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.APPLICATION, "/apps/config/someconfigpid")));
         
         // validate sub packages of type Content

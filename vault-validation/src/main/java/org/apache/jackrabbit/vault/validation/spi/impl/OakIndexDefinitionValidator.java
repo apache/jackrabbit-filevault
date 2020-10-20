@@ -30,6 +30,7 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.FilterValidator;
+import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
 public final class OakIndexDefinitionValidator implements FilterValidator, DocumentViewXmlValidator {
 
     static final String MESSAGE_POTENTIAL_INDEX_IN_FILTER = "Package '%s' contains filter rule overwriting a potential index definition below '%s' but the according property " + PackageProperties.NAME_ALLOW_INDEX_DEFINITIONS + " is not set to 'true'";
-    static final String MESSAGE_INDEX_AT_NODE = "Package '%s' contains index definition at node '%s but the according property " + PackageProperties.NAME_ALLOW_INDEX_DEFINITIONS + " is not set to 'true'";
+    static final String MESSAGE_INDEX_AT_NODE = "Package '%s' contains index definition but the according property " + PackageProperties.NAME_ALLOW_INDEX_DEFINITIONS + " is not set to 'true'";
     
     private final Path packageRootPathOfNotAllowedIndexDefinition;
     private final ValidationMessageSeverity defaultMessageSeverity;
@@ -74,10 +75,10 @@ public final class OakIndexDefinitionValidator implements FilterValidator, Docum
     }
 
     @Override
-    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
         ValidationMessage violation = null;
         if (IndexConstants.INDEX_DEFINITIONS_NODE_TYPE.equals(node.primary)) {
-            violation = new ValidationMessage(defaultMessageSeverity, String.format(MESSAGE_INDEX_AT_NODE, packageRootPathOfNotAllowedIndexDefinition, nodePath));
+            violation = new ValidationMessage(defaultMessageSeverity, String.format(MESSAGE_INDEX_AT_NODE, packageRootPathOfNotAllowedIndexDefinition));
         }
         return violation != null ? Collections.singleton(violation) : null;
     }

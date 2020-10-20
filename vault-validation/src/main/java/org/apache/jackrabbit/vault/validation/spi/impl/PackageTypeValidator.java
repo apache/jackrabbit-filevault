@@ -313,21 +313,18 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     }
 
     @Override
-    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath,
-            @NotNull Path filePath, boolean isRoot) {
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
         // check only type content and application
         switch (type) {
         case APPLICATION:
         case CONTENT:
-            if (jcrInstallerNodePathRegex.matcher(nodePath).matches()) {
-                if (SLING_OSGI_CONFIG.equals(node.primary)) {
-                    return Collections
-                            .singleton(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type, nodePath)));
-                }
+            if (jcrInstallerNodePathRegex.matcher(nodeContext.getNodePath()).matches() && SLING_OSGI_CONFIG.equals(node.primary)) {
+               return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type)));
             }
             break;
         case CONTAINER:
-
+        case MIXED:
+            break;
         }
         return null;
     }

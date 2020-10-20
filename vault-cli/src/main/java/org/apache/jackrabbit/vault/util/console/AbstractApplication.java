@@ -318,9 +318,9 @@ public abstract class AbstractApplication {
         }
         props.store(out, "Console Configuration");
         */
-        FileOutputStream out = new FileOutputStream(file);
-        globalEnv.store(out, "Console Configuration");
-        out.close();
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            globalEnv.store(out, "Console Configuration");
+        }
         log.info("Configuration saved to {}", file.getCanonicalPath());
     }
 

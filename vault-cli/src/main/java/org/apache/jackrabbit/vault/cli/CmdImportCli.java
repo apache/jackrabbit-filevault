@@ -32,7 +32,6 @@ import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.option.Command;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.io.Archive;
@@ -95,17 +94,17 @@ public class CmdImportCli extends AbstractVaultCommand {
         VaultFile vaultFile = vCtx.getFileSystem(addr).getFile(jcrPath);
 
         VaultFsApp.log.info("Importing {} to {}", localFile.getCanonicalPath(), vaultFile.getPath());
-        Archive archive;
-        if (localFile.isFile()) {
-            archive = new ZipArchive(localFile);
-        } else {
-            if (cl.hasOption(optSync)) {
-                VaultFsApp.log.warn("--sync is not supported yet");
-            }
-            archive = new FileArchive(localFile);
-        }
-        archive.open(false);
+        Archive archive = null;
         try {
+            if (localFile.isFile()) {
+                archive = new ZipArchive(localFile);
+            } else {
+                if (cl.hasOption(optSync)) {
+                    VaultFsApp.log.warn("--sync is not supported yet");
+                }
+                archive = new FileArchive(localFile);
+            }
+            archive.open(false);
             Importer importer = new Importer();
             if (verbose) {
                 importer.getOptions().setListener(new DefaultProgressListener());
@@ -113,7 +112,9 @@ public class CmdImportCli extends AbstractVaultCommand {
             Session s = vaultFile.getFileSystem().getAggregateManager().getSession();
             importer.run(archive, s, vaultFile.getPath());
         } finally {
-            archive.close();
+            if (archive != null) {
+                archive.close();
+            }
         }
         VaultFsApp.log.info("Importing done.");
     }

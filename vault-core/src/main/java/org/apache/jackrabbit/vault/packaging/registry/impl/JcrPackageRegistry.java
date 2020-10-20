@@ -296,6 +296,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
                 && node.hasProperty(JcrConstants.JCR_CONTENT + "/" + JcrConstants.JCR_DATA)) {
             return pack;
         } else {
+            pack.close();
             return null;
         }
     }
@@ -365,6 +366,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             Exception error = pump.getError();
             log.error("Error while reading from input stream.", error);
             bin.dispose();
+            archive.close();
             throw new IOException("Error while reading from input stream", error);
         }
 
@@ -372,6 +374,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             String msg = "Stream is not a content package. Missing 'jcr_root'.";
             log.error(msg);
             bin.dispose();
+            archive.close();
             throw new IOException(msg);
         }
 
@@ -384,6 +387,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
         if (!pid.isValid()) {
             bin.dispose();
+            archive.close();
             throw new RepositoryException("Unable to create package. Illegal package name.");
         }
 
@@ -409,6 +413,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             if (replace) {
                 parent.getNode(name).remove();
             } else {
+                archive.close();
                 throw new PackageExistsException("Package already exists: " + pid).setId(pid);
             }
         }

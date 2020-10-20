@@ -416,9 +416,10 @@ public class TreeSync {
         if (preserveFileDate) {
             cal.setTimeInMillis(e.file.lastModified());
         }
-        InputStream in = FileUtils.openInputStream(e.file);
-        Binary bin = content.getSession().getValueFactory().createBinary(in);
-        content.setProperty(Property.JCR_DATA, bin);
+        try (InputStream in = FileUtils.openInputStream(e.file)) {
+            Binary bin = content.getSession().getValueFactory().createBinary(in);
+            content.setProperty(Property.JCR_DATA, bin);
+        }
         content.setProperty(Property.JCR_LAST_MODIFIED, cal);
         content.setProperty(Property.JCR_MIMETYPE, MimeTypes.getMimeType(e.file.getName(), MimeTypes.APPLICATION_OCTET_STREAM));
         syncLog.log("%s jcr://%s", action, ntFile.getPath());

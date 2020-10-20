@@ -573,19 +573,29 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
                     continue;
                 }
                 JcrPackageImpl pack = new JcrPackageImpl(registry, child);
-                if (pack.isValid()) {
-                    // skip packages with illegal names
-                    JcrPackageDefinition jDef = pack.getDefinition();
-                    if (jDef != null && !jDef.getId().isValid()) {
-                        continue;
-                    }
-                    if (filter == null || filter.contains(child.getPath())) {
-                        if (!built || pack.getSize() > 0) {
-                            packages.add(pack);
+                try {
+                    if (pack.isValid()) {
+                        // skip packages with illegal names
+                        JcrPackageDefinition jDef = pack.getDefinition();
+                        if (jDef != null && !jDef.getId().isValid()) {
+                            pack.close();
+                            continue;
                         }
+                        if (filter == null || filter.contains(child.getPath())) {
+                            if (!built || pack.getSize() > 0) {
+                                packages.add(pack);
+                                continue;
+                            }
+                        }
+                        pack.close();
+                    } else if (child.hasNodes() && !shallow){
+                        listPackages(child, packages, filter, built, false);
+                    } else {
+                        pack.close();
                     }
-                } else if (child.hasNodes() && !shallow){
-                    listPackages(child, packages, filter, built, false);
+                } catch (RepositoryException e) {
+                    pack.close();
+                    throw e;
                 }
             }
         }

@@ -35,27 +35,36 @@ import org.jetbrains.annotations.Nullable;
 public class AccessControlValidator implements DocumentViewXmlValidator {
 
     protected static final JcrACLManagement ACL_MANAGEMENT = new JcrACLManagement();
-    protected static final String MESSAGE_IGNORED_ACCESS_CONTROL_LIST = "Found an access control list, but it is never considered during installation as the property 'acHandling' is set to 'ignore' or 'clear'!";
+    protected static final String MESSAGE_IGNORED_ACCESS_CONTROL_LIST = "Found an access control list, but it is never considered during installation as the property 'acHandling' is set to '%s'!";
+    protected static final String MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST = "Found no access control list, but there is supposed to be one contained as the property 'acHandling' is set to '%s'!";
     private final ValidationMessageSeverity severity;
     private final AccessControlHandling accessControlHandling;
-
+    private boolean hasFoundACLNode;
+    
     public AccessControlValidator(ValidationMessageSeverity severity, AccessControlHandling accessControlHandling) {
         super();
         this.severity = severity;
         this.accessControlHandling = accessControlHandling;
+        this.hasFoundACLNode = false;
     }
 
     @Override
     public Collection<ValidationMessage> done() {
+        // make sure that at least one rep:Policy node is contained
+        if (!hasFoundACLNode && accessControlHandling != AccessControlHandling.IGNORE && accessControlHandling != AccessControlHandling.CLEAR) {
+            return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST, accessControlHandling)));
+        }
         return null;
     }
 
     @Override
     public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext,
             boolean isRoot) {
-        // extract primary type
-        if ((accessControlHandling == AccessControlHandling.IGNORE || accessControlHandling == AccessControlHandling.CLEAR) && node.primary != null && ACL_MANAGEMENT.isACLNodeType(node.primary)) {
-            return Collections.singleton(new ValidationMessage(severity, MESSAGE_IGNORED_ACCESS_CONTROL_LIST));
+        if (node.primary != null && ACL_MANAGEMENT.isACLNodeType(node.primary)) {
+            hasFoundACLNode = true;
+            if (accessControlHandling == AccessControlHandling.IGNORE || accessControlHandling == AccessControlHandling.CLEAR) {
+                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_IGNORED_ACCESS_CONTROL_LIST, accessControlHandling)));
+            }
         }
         return null;
     }

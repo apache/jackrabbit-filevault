@@ -48,6 +48,33 @@ public class AccessControlValidatorTest {
         DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "rep:ACL");
         Collection<ValidationMessage> messages = validator.validate(node,  new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("base")), false);
         Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+    }
+
+    @Test
+    public void testWithoutACLsAndClear() {
+        validator = new AccessControlValidator(ValidationMessageSeverity.ERROR, AccessControlHandling.CLEAR);
+        
+        Map<String, DocViewProperty> props = new HashMap<>();
+        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
+
+        DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "unstructured");
+        Collection<ValidationMessage> messages = validator.validate(node,  new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("base")), false);
+        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+    }
+
+    @Test
+    public void testWithoutACLsAndMerge() {
+        validator = new AccessControlValidator(ValidationMessageSeverity.ERROR, AccessControlHandling.MERGE);
+        
+        Map<String, DocViewProperty> props = new HashMap<>();
+        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
+
+        DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "nt:unstructured");
+        Collection<ValidationMessage> messages = validator.validate(node,  new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("base")), false);
+        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        ValidationExecutorTest.assertViolation(validator.done(), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AccessControlValidator.MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST, AccessControlHandling.MERGE)));
     }
 
     @Test
@@ -61,7 +88,8 @@ public class AccessControlValidatorTest {
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("base")), false);
         
         ValidationExecutorTest.assertViolation(messages,
-                new ValidationMessage(ValidationMessageSeverity.ERROR, AccessControlValidator.MESSAGE_IGNORED_ACCESS_CONTROL_LIST));
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AccessControlValidator.MESSAGE_IGNORED_ACCESS_CONTROL_LIST, AccessControlHandling.CLEAR)));
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -75,6 +103,7 @@ public class AccessControlValidatorTest {
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("base")), false);
         
         ValidationExecutorTest.assertViolation(messages,
-                new ValidationMessage(ValidationMessageSeverity.ERROR, AccessControlValidator.MESSAGE_IGNORED_ACCESS_CONTROL_LIST));
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AccessControlValidator.MESSAGE_IGNORED_ACCESS_CONTROL_LIST, AccessControlHandling.IGNORE)));
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 }

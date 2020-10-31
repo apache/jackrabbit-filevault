@@ -527,8 +527,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @NotNull
     @Override
     public PackageId register(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
-        ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
-        try {
+        try (ZipVaultPackage pack = new ZipVaultPackage(file, false, true)) {
             File pkgFile = buildPackageFile(pack.getId());
             if (pkgFile.exists()) {
                 if (replace) {
@@ -550,10 +549,6 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     .withExternal(false);
             setInstallState(state);
             return pack.getId();
-        } finally {
-            if (!pack.isClosed()) {
-                pack.close();
-            }
         }
     }
 

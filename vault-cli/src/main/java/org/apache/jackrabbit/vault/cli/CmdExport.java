@@ -55,27 +55,33 @@ public class CmdExport extends AbstractJcrFsCommand {
         }
         File localFile = ctx.getVaultFsApp().getPlatformFile(localPath, false);
 
-        AbstractExporter exporter;
-        if (type.equals("platform")) {
-            if (!localFile.exists()) {
-                localFile.mkdirs();
+        AbstractExporter exporter = null;
+        try {
+            if (type.equals("platform")) {
+                if (!localFile.exists()) {
+                    localFile.mkdirs();
+                }
+                exporter = new PlatformExporter(localFile);
+                ((PlatformExporter) exporter).setPruneMissing(cl.hasOption(optPrune));
+            } else if (type.equals("jar")) {
+                exporter = new JarExporter(localFile);
+            } else {
+                throw new Exception("Type " + type + " not supported");
             }
-            exporter = new PlatformExporter(localFile);
-            ((PlatformExporter) exporter).setPruneMissing(cl.hasOption(optPrune));
-        } else if (type.equals("jar")) {
-            exporter = new JarExporter(localFile);
-        } else {
-            throw new Exception("Type " + type + " not supported");
+            if (jcrPath == null || !jcrPath.startsWith("/")) {
+                exporter.setRelativePaths(true);
+            }
+            VaultFsApp.log.info("Exporting {} to {}", vaultFile.getPath(), localFile.getCanonicalPath());
+            if (verbose) {
+                exporter.setVerbose(new DefaultProgressListener());
+            }
+            exporter.export(vaultFile);
+            VaultFsApp.log.info("Exporting done.");
+        } finally {
+            if (exporter != null) {
+                exporter.close();
+            }
         }
-        if (jcrPath == null || !jcrPath.startsWith("/")) {
-            exporter.setRelativePaths(true);
-        }
-        VaultFsApp.log.info("Exporting {} to {}", vaultFile.getPath(), localFile.getCanonicalPath());
-        if (verbose) {
-            exporter.setVerbose(new DefaultProgressListener());
-        }
-        exporter.export(vaultFile);
-        VaultFsApp.log.info("Exporting done.");
     }
 
     /**

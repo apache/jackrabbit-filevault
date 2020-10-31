@@ -18,6 +18,7 @@
 package org.apache.jackrabbit.vault.fs;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -111,40 +112,44 @@ public class SerializerArtifact extends AbstractArtifact implements ExportArtifa
      * {@inheritDoc}
      */
     public VaultInputSource getInputSource() throws IOException, RepositoryException {
-        final InputStream in;
-        final long size;
         try (DeferredFileOutputStream out = new DeferredFileOutputStream(8192, "vlttmp", ".tmp", null)) {
             spool(out);
-        
-            if (out.isInMemory()) {
-                in = new ByteArrayInputStream(out.getData());
-                size = out.getData().length;
-            } else {
-                in = new TempFileInputStream(out.getFile());
-                size = out.getFile().length();
-            }
+
+            return new VaultInputSource() {
+                private InputStream in = null;
+                private long size = -1;
+                @Override
+                public String getSystemId() {
+                    return SerializerArtifact.this.getRelativePath();
+                }
+
+                @Override
+                public InputStream getByteStream() {
+                    if (in == null) {
+                        if (out.isInMemory()) {
+                            in = new ByteArrayInputStream(out.getData());
+                            size = out.getData().length;
+                        } else {
+                            try {
+                                in = new TempFileInputStream(out.getFile());
+                            } catch (FileNotFoundException e) {
+                                throw new IllegalStateException("Could not find temp file", e);
+                            }
+                            size = out.getFile().length();
+                        }
+                    }
+                    return in;
+                }
+
+                public long getContentLength() {
+                    return size;
+                }
+
+                public long getLastModified() {
+                    return lastModified;
+                }
+            };
         }
-        return new VaultInputSource() {
-
-            @Override
-            public String getSystemId() {
-                return SerializerArtifact.this.getRelativePath();
-            }
-
-            @Override
-            public InputStream getByteStream() {
-                return in;
-            }
-
-
-            public long getContentLength() {
-                return size;
-            }
-
-            public long getLastModified() {
-                return lastModified;
-            }
-        };
     }
 
     /**

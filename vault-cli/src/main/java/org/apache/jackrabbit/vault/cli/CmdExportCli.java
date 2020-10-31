@@ -83,35 +83,41 @@ public class CmdExportCli extends AbstractVaultCommand {
         }
         File localFile = app.getPlatformFile(localPath, false);
 
-        AbstractExporter exporter;
-        VltContext vCtx;
-        if (type.equals("platform")) {
-            if (!localFile.exists()) {
-                localFile.mkdirs();
+        AbstractExporter exporter = null;
+        try {
+            VltContext vCtx;
+            if (type.equals("platform")) {
+                if (!localFile.exists()) {
+                    localFile.mkdirs();
+                }
+                exporter = new PlatformExporter(localFile);
+                ((PlatformExporter) exporter).setPruneMissing(cl.hasOption(optPrune));
+                vCtx = app.createVaultContext(localFile);
+            } else if (type.equals("jar")) {
+                exporter = new JarExporter(localFile);
+                vCtx = app.createVaultContext(localFile.getParentFile());
+            } else {
+                throw new Exception("Type " + type + " not supported");
             }
-            exporter = new PlatformExporter(localFile);
-            ((PlatformExporter) exporter).setPruneMissing(cl.hasOption(optPrune));
-            vCtx = app.createVaultContext(localFile);
-        } else if (type.equals("jar")) {
-            exporter = new JarExporter(localFile);
-            vCtx = app.createVaultContext(localFile.getParentFile());
-        } else {
-            throw new Exception("Type " + type + " not supported");
+    
+            vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
+            VaultFile vaultFile = vCtx.getFileSystem(addr).getFile(jcrPath);
+            if (vaultFile == null) {
+                VaultFsApp.log.error("Not such remote file: {}", jcrPath);
+                return;
+            }
+    
+            VaultFsApp.log.info("Exporting {} to {}", vaultFile.getPath(), localFile.getCanonicalPath());
+            if (verbose) {
+                exporter.setVerbose(new DefaultProgressListener());
+            }
+            exporter.export(vaultFile);
+            VaultFsApp.log.info("Exporting done.");
+        } finally {
+            if (exporter != null) {
+                exporter.close();
+            }
         }
-
-        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
-        VaultFile vaultFile = vCtx.getFileSystem(addr).getFile(jcrPath);
-        if (vaultFile == null) {
-            VaultFsApp.log.error("Not such remote file: {}", jcrPath);
-            return;
-        }
-
-        VaultFsApp.log.info("Exporting {} to {}", vaultFile.getPath(), localFile.getCanonicalPath());
-        if (verbose) {
-            exporter.setVerbose(new DefaultProgressListener());
-        }
-        exporter.export(vaultFile);
-        VaultFsApp.log.info("Exporting done.");
     }
 
     /**

@@ -112,14 +112,21 @@ public class UpdateableZipFile {
         if (!file.exists()) {
             return null;
         }
+        ZipInputStream zin = null;
         InputStream in = FileUtils.openInputStream(file);
-        ZipInputStream zin = new ZipInputStream(in);
-        ZipEntry entry = zin.getNextEntry();
-        while (entry != null) {
-            if (entry.getName().equals(name)) {
-                return zin;
+        try {
+            zin = new ZipInputStream(in);
+            ZipEntry entry = zin.getNextEntry();
+            while (entry != null) {
+                if (entry.getName().equals(name)) {
+                    return zin;
+                }
+                entry = zin.getNextEntry();
             }
-            entry = zin.getNextEntry();
+        } catch (IOException e) {
+            IOUtils.closeQuietly(zin);
+            IOUtils.closeQuietly(in);
+            throw e;
         }
         IOUtils.closeQuietly(zin);
         IOUtils.closeQuietly(in);
@@ -149,40 +156,39 @@ public class UpdateableZipFile {
         }
         // create tmp file
         File newZip = File.createTempFile(file.getName(), ".tmp", file.getParentFile());
-        ZipOutputStream out = new ZipOutputStream(
-                new BufferedOutputStream(new FileOutputStream(newZip)));
-        out.setLevel(Deflater.NO_COMPRESSION);
-
-        // add new files on top
-        for (Map.Entry<String, InputStream> update: toUpdate.entrySet()) {
-            ZipEntry entry = new ZipEntry(update.getKey());
-            out.putNextEntry(entry);
-            InputStream in = update.getValue();
-            copy(in, out);
-            IOUtils.closeQuietly(in);
-        }
-        // process existing zip entries
-        if (file.exists()) {
-            InputStream in = FileUtils.openInputStream(file);
-            ZipInputStream zin = new ZipInputStream(in);
-            ZipEntry entry = zin.getNextEntry();
-            while (entry != null) {
-                if (!toUpdate.containsKey(entry.getName()) && !toDelete.contains(entry.getName())) {
-                    ZipEntry newEntry = entry;
-                    if (toMove.containsKey(entry.getName())) {
-                        newEntry = new ZipEntry(toMove.get(entry.getName()));
-                        newEntry.setTime(entry.getTime());
-                        //newEntry.setSize(entry.getSize());
-                    }
-                    out.putNextEntry(newEntry);
-                    copy(zin, out);
-                }
-                entry = zin.getNextEntry();
+        try (ZipOutputStream out = new ZipOutputStream(
+                new BufferedOutputStream(new FileOutputStream(newZip)))) {
+            out.setLevel(Deflater.NO_COMPRESSION);
+    
+            // add new files on top
+            for (Map.Entry<String, InputStream> update: toUpdate.entrySet()) {
+                ZipEntry entry = new ZipEntry(update.getKey());
+                out.putNextEntry(entry);
+                InputStream in = update.getValue();
+                copy(in, out);
+                IOUtils.closeQuietly(in);
             }
-            IOUtils.closeQuietly(zin);
-            IOUtils.closeQuietly(in);
+            // process existing zip entries
+            if (file.exists()) {
+                try (InputStream in = FileUtils.openInputStream(file);
+                     ZipInputStream zin = new ZipInputStream(in)) {
+                    ZipEntry entry = zin.getNextEntry();
+                    while (entry != null) {
+                        if (!toUpdate.containsKey(entry.getName()) && !toDelete.contains(entry.getName())) {
+                            ZipEntry newEntry = entry;
+                            if (toMove.containsKey(entry.getName())) {
+                                newEntry = new ZipEntry(toMove.get(entry.getName()));
+                                newEntry.setTime(entry.getTime());
+                                //newEntry.setSize(entry.getSize());
+                            }
+                            out.putNextEntry(newEntry);
+                            copy(zin, out);
+                        }
+                        entry = zin.getNextEntry();
+                    }
+                }
+            }
         }
-        out.close();
         toDelete.clear();
         toUpdate.clear();
         

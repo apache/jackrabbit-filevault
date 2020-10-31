@@ -51,12 +51,10 @@ public class SyncLog {
         line.append(dateFmt.format(new Date()));
         line.append(msg);
         line.append("\n");
-        try {
-            FileWriter writer = new FileWriter(logFile, true);
+        try (FileWriter writer = new FileWriter(logFile, true)) {
             writer.write(line.toString());
-            writer.close();
         } catch (IOException e) {
-            log.error("Unable to update log file: " + e.toString());
+            log.error("Unable to update log file: {}", e);
         }
     }
 }

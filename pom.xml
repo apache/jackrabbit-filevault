@@ -76,8 +76,9 @@
                     <detectLinks>true</detectLinks>
                     <detectJavaApiLink>true</detectJavaApiLink>
                     <links>
-                        <link>https://docs.adobe.com/docs/en/spec/javax.jcr/javadocs/jcr-2.0</link>
-                        <link>http://jackrabbit.apache.org/api/2.18</link>
+                        <link>https://docs.adobe.com/content/docs/en/spec/javax.jcr/javadocs/jcr-2.0/</link>
+                        <link>https://jackrabbit.apache.org/api/2.20/</link>
+                        <link>https://www.javadoc.io/doc/org.apache.jackrabbit/oak-jackrabbit-api/1.32.0/</link>
                     </links>
                 </configuration>
                 <executions>

@@ -521,6 +521,11 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                     + values.length + " values were passed!");
         }
 
+        if (values.length == 0) {
+            // unable to proceed when no value is present
+            return;
+        }
+
         Name qName;
         try {
             qName = namePathResolver.getQName(name);

@@ -259,4 +259,18 @@ public class NodeTypeValidatorTest {
                 AnyValidationMessageMatcher.noValidationInCollection());
     }
 
+    @Test
+    public void testMultiValuePropertyWithEmptyValueArray() {
+        NodeContext nodeContext = new NodeContextImpl("/apps/test/node4", Paths.get("node4"), Paths.get(""));
+
+        Map<String, DocViewProperty> props = new HashMap<>();
+        DocViewProperty prop = new DocViewProperty("mvProperty", new String[0], true, PropertyType.STRING);
+        props.put("mvProperty", prop);
+        props.put(NameConstants.JCR_PRIMARYTYPE.toString(), new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(),
+                new String[] { JcrConstants.NT_UNSTRUCTURED }, false, PropertyType.STRING));
+        DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, JcrConstants.NT_UNSTRUCTURED);
+        Assert.assertThat(validator.validate(node, nodeContext, false),
+                AnyValidationMessageMatcher.noValidationInCollection());
+    }
+
 }

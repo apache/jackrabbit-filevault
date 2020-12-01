@@ -559,9 +559,6 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
         } catch (ConstraintViolationException t) {
             return Optional.of(CONSTRAINT_PROPERTY_NOT_ALLOWED);
         }
-        if (applicablePropertyDefinition.isAutoCreated() && !ALLOWED_PROTECTED_PROPERTIES.contains(name)) {
-            return Optional.of(CONSTRAINT_PROPERTY_AUTO_CREATED);
-        }
         if (applicablePropertyDefinition.isProtected() && !allowProtected && !ALLOWED_PROTECTED_PROPERTIES.contains(name)) {
             return Optional.of(CONSTRAINT_PROPERTY_PROTECTED);
         }

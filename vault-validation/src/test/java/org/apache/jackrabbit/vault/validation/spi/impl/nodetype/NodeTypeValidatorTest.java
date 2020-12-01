@@ -240,4 +240,23 @@ public class NodeTypeValidatorTest {
                 AnyValidationMessageMatcher.noValidationInCollection());
 
     }
+
+    /**
+     * The mixin mix:lastModified defines an autocreated unprotected property jcr:lastModifiedBy.
+     * Setting it to any value should not lead to a validation error (JCRVLT-479).
+     */
+    @Test
+    public void testAutoCreatedUnprotectedProperty() {
+        NodeContext nodeContext = new NodeContextImpl("/apps/test/node4", Paths.get("node4"), Paths.get(""));
+
+        Map<String, DocViewProperty> props = new HashMap<>();
+        DocViewProperty prop = new DocViewProperty("jcr:lastModifiedBy", new String[] { "some-value" }, false, PropertyType.STRING);
+        props.put("jcr:lastModifiedBy", prop);
+        props.put(NameConstants.JCR_PRIMARYTYPE.toString(), new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(),
+                new String[] { JcrConstants.NT_UNSTRUCTURED }, false, PropertyType.STRING));
+        DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, new String[] { NameConstants.MIX_LASTMODIFIED.toString() }, JcrConstants.NT_UNSTRUCTURED);
+        Assert.assertThat(validator.validate(node, nodeContext, false),
+                AnyValidationMessageMatcher.noValidationInCollection());
+    }
+
 }

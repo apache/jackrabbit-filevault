@@ -130,7 +130,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         validRoots.add("");
         if (settings.getOptions().containsKey(OPTION_VALID_ROOTS)) {
             String optionValue = settings.getOptions().get(OPTION_VALID_ROOTS);
-            validRoots.addAll(Arrays.asList(optionValue.split(",")));
+            validRoots.addAll(Arrays.asList(optionValue.split("\\s*,\\s*")));
         } else {
             validRoots.addAll(DEFAULT_VALID_ROOTS);
         }

@@ -22,8 +22,14 @@ import java.io.Reader;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.jar.Manifest;
 
 import javax.jcr.RepositoryException;
@@ -50,6 +56,8 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
     /** The default node type to assume if no other node type is given */
     public static final String OPTION_DEFAULT_NODE_TYPES = "defaultNodeType";
     public static final String OPTION_SEVERITY_FOR_UNKNOWN_NODETYPES = "severityForUnknownNodetypes";
+    /** Comma-separated list of name spaces that are known as valid (even if not defined in the CND files). Use syntax "prefix1=ns-uri1,prefix2=nsuri2,...". */
+    public static final String OPTION_VALID_NAMESPACES = "validNameSpaces";
 
     static final @NotNull String DEFAULT_DEFAULT_NODE_TYPE = JcrConstants.NT_FOLDER;
 
@@ -82,6 +90,14 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
             severityForUnknownNodetypes = DEFAULT_SEVERITY_FOR_UNKNOWN_NODETYPE;
         }
 
+        Map<String,String> validNameSpaces; 
+        if (settings.getOptions().containsKey(OPTION_VALID_NAMESPACES)) {
+            validNameSpaces = parseNamespaces(settings.getOptions().get(OPTION_VALID_NAMESPACES));
+        }
+        else {
+            validNameSpaces = Collections.emptyMap();
+        }
+
         try {
             NodeTypeManagerProvider ntManagerProvider = null;
             ntManagerProvider = new NodeTypeManagerProvider();
@@ -92,6 +108,9 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
                 } catch (RepositoryException | IOException | ParseException e) {
                     throw new IllegalArgumentException("Error loading node types from CND at " + cndUrl, e);
                 }
+            }
+            for (Map.Entry<String, String> entry : validNameSpaces.entrySet()) {
+                ntManagerProvider.registerNamespace(entry.getKey(), entry.getValue());
             }
             return new NodeTypeValidator(context.getFilter(), ntManagerProvider, ntManagerProvider.getNameResolver().getQName(defaultNodeType), settings.getDefaultSeverity(),
                     severityForUnknownNodetypes);
@@ -132,6 +151,18 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
             }
         }
         return resolvedUrls;
+    }
+
+    static Map<String,String> parseNamespaces(String optionValue) {
+        Map<String,String> result = new HashMap<>();
+        String[] namespaces = optionValue.split("\\s*,\\s*");
+        for (String namespace : namespaces) {
+            String[] namespaceParts = namespace.split("\\s*=\\s*");
+            if (namespaceParts.length == 2 && StringUtils.isNoneBlank(namespaceParts[0], namespaceParts[1])) {
+                result.put(namespaceParts[0], namespaceParts[1]);
+            }
+        }
+        return result;
     }
 
     @Override

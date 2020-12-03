@@ -18,6 +18,9 @@ package org.apache.jackrabbit.vault.validation.spi.impl.nodetype;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,10 +29,10 @@ import java.util.Map;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
 
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.cnd.ParseException;
+import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
@@ -42,6 +45,7 @@ import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
+import org.apache.jackrabbit.vault.validation.spi.util.classloaderurl.URLFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -58,13 +62,20 @@ public class NodeTypeValidatorTest {
         try (InputStream input = this.getClass().getResourceAsStream("/filter.xml")) {
             filter.load(input);
         }
-        validator = createValidator(filter, JcrConstants.NT_FOLDER);
+        validator = createValidator(filter, NameConstants.NT_FOLDER);
     }
 
-    static NodeTypeValidator createValidator(WorkspaceFilter filter, String defaultNodeType)
+    static NodeTypeValidator createValidator(WorkspaceFilter filter, Name defaultNodeType, String... cndUrls)
             throws IOException, RepositoryException, ParseException {
         NodeTypeManagerProvider ntManagerProvider = new NodeTypeManagerProvider();
-        return new NodeTypeValidator(filter, ntManagerProvider, NameConstants.NT_FOLDER, ValidationMessageSeverity.ERROR,
+        for (String cndUrl : cndUrls) {
+            try (Reader reader = new InputStreamReader(URLFactory.createURL(cndUrl).openStream(), StandardCharsets.US_ASCII)) {
+                ntManagerProvider.registerNodeTypes(reader);
+            } catch (RepositoryException | IOException | ParseException e) {
+                throw new IllegalArgumentException("Error loading node types from CND at " + cndUrl, e);
+            }
+        }
+        return new NodeTypeValidator(filter, ntManagerProvider, defaultNodeType, ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.WARN);
     }
 
@@ -211,7 +222,7 @@ public class NodeTypeValidatorTest {
     
     @Test
     public void testExistenceOfPrimaryNodeTypes() throws IOException, ConfigurationException, RepositoryException, ParseException {
-        validator = createValidator(filter, NodeType.NT_UNSTRUCTURED);
+        validator = createValidator(filter, NameConstants.NT_UNSTRUCTURED);
         Map<String, DocViewProperty> props = new HashMap<>();
         props.put("{}prop1", new DocViewProperty("{}prop1", new String[] { "value1" }, false, PropertyType.STRING));
 
@@ -269,6 +280,19 @@ public class NodeTypeValidatorTest {
         props.put(NameConstants.JCR_PRIMARYTYPE.toString(), new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(),
                 new String[] { JcrConstants.NT_UNSTRUCTURED }, false, PropertyType.STRING));
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, JcrConstants.NT_UNSTRUCTURED);
+        Assert.assertThat(validator.validate(node, nodeContext, false),
+                AnyValidationMessageMatcher.noValidationInCollection());
+    }
+
+    @Test
+    public void testMandatoryVersioningProperties() throws IOException, RepositoryException, ParseException {
+        validator = createValidator(filter, NameConstants.NT_UNSTRUCTURED, "tccl:test-nodetypes.cnd");
+        NodeContext nodeContext = new NodeContextImpl("/apps/test/node4", Paths.get("node4"), Paths.get(""));
+
+        Map<String, DocViewProperty> props = new HashMap<>();
+        props.put(NameConstants.JCR_PRIMARYTYPE.toString(), new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(),
+                new String[] { "WorkflowModel" }, false, PropertyType.STRING));
+        DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, new String[] { NameConstants.MIX_VERSIONABLE.toString() }, "WorkflowModel");
         Assert.assertThat(validator.validate(node, nodeContext, false),
                 AnyValidationMessageMatcher.noValidationInCollection());
     }

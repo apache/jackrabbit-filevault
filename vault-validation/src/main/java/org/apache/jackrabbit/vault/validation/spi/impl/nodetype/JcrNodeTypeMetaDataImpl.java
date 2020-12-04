@@ -80,8 +80,8 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
 
     static final String MESSAGE_CHILD_NODE_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED = "Node '%s [%s]' is not allowed as child of not contained node with potential default types '[%s]': %s";
     static final String MESSAGE_CHILD_NODE_NOT_ALLOWED = "Node '%s [%s]' is not allowed as child of node with types [%s]: %s";
-    static final String MESSAGE_PROPERTY_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED = null;
-    static final String MESSAGE_PROPERTY_NOT_ALLOWED = "Property '%s' [%s] is not allowed in node with potential default types [%s]: %s";
+    static final String MESSAGE_PROPERTY_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED = "Property '%s' [%s] is not allowed in node with potential default types [%s]: %s";;
+    static final String MESSAGE_PROPERTY_NOT_ALLOWED = "Property '%s' [%s] is not allowed in node with types [%s]: %s";
     static final String MESSAGE_MANDATORY_CHILD_NODE_MISSING = "Mandatory child node missing: %s inside node with types [%s] at %s";
     static final String MESSAGE_MANDATORY_UNCONTAINED_CHILD_NODE_MISSING = "Mandatory child node missing: %s inside node with types [%s] at %s (outside of filter rules)";
     static final String MESSAGE_MANDATORY_PROPERTY_MISSING = "Mandatory property '%s' missing in node with types [%s] at %s";

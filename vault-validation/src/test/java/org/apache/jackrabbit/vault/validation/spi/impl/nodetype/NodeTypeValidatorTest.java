@@ -292,7 +292,6 @@ public class NodeTypeValidatorTest {
         Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
-    @Ignore("JCRVLT-485")
     @Test
     public void testMandatoryVersioningProperties() throws IOException, RepositoryException, ParseException {
         validator = createValidator(filter, NameConstants.NT_UNSTRUCTURED, "tccl:test-nodetypes.cnd");

@@ -101,7 +101,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
         try {
             NodeTypeManagerProvider ntManagerProvider = null;
             ntManagerProvider = new NodeTypeManagerProvider();
-            for (String cndUrl : resolveJarUrls(cndUrls.split(","))) {
+            for (String cndUrl : resolveJarUrls(cndUrls.split("\\s*,\\s*"))) {
                 try (Reader reader = new InputStreamReader(URLFactory.createURL(cndUrl).openStream(), StandardCharsets.US_ASCII)) {
                     LOGGER.info("Register node types from {}", cndUrl);
                     ntManagerProvider.registerNodeTypes(reader);
@@ -139,7 +139,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
                     if (slingNodetypes == null) {
                         LOGGER.warn("No 'Sling-Nodetypes' header found in manifest of '{}'", jarUrl);
                     } else {
-                        for (String nodetype : slingNodetypes.split(",")) {
+                        for (String nodetype : slingNodetypes.split("\\s*,\\s*")) {
                             resolvedUrls.add(jarUrl.toString() + nodetype);
                         }
                     }

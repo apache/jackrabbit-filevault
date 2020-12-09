@@ -118,6 +118,7 @@ public class NodeTypeValidatorTest {
         
         Assert.assertThat(validator.validate(node, nodeContext, true), AnyValidationMessageMatcher.noValidationInCollection());
         Assert.assertThat(validator.validateEnd(node, nodeContext, true), AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -137,6 +138,7 @@ public class NodeTypeValidatorTest {
                         String.format(JcrNodeTypeMetaDataImpl.MESSAGE_CHILD_NODE_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED,
                                 "test", "nt:unstructured", JcrConstants.NT_FOLDER,
                                 "Node type does not allow arbitrary child nodes and does not allow this specific name and node type either!"), nodeContext));
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -153,6 +155,7 @@ public class NodeTypeValidatorTest {
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_CHILD_NODE_MISSING,
                                 "jcr:content [nt:base]", "nt:file", "/apps/test/node4")));
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -204,6 +207,7 @@ public class NodeTypeValidatorTest {
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(NodeTypeValidator.MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE,
                                 "Invalid primary type 'sling:Folder': sling: is not a registered namespace prefix."), nodeContext));
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -217,6 +221,7 @@ public class NodeTypeValidatorTest {
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(NodeTypeValidator.MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE,
                                 "Invalid node name 'cq:dialog': cq: is not a registered namespace prefix."), nodeContext));
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     
@@ -249,6 +254,7 @@ public class NodeTypeValidatorTest {
         node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "nt:unstructured");
         Assert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test", Paths.get("/some/path"), Paths.get("")), false),
                 AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
 
     }
 
@@ -268,6 +274,7 @@ public class NodeTypeValidatorTest {
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, new String[] { NameConstants.MIX_LASTMODIFIED.toString() }, JcrConstants.NT_UNSTRUCTURED);
         Assert.assertThat(validator.validate(node, nodeContext, false),
                 AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -282,8 +289,10 @@ public class NodeTypeValidatorTest {
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, JcrConstants.NT_UNSTRUCTURED);
         Assert.assertThat(validator.validate(node, nodeContext, false),
                 AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
+    @Ignore("JCRVLT-485")
     @Test
     public void testMandatoryVersioningProperties() throws IOException, RepositoryException, ParseException {
         validator = createValidator(filter, NameConstants.NT_UNSTRUCTURED, "tccl:test-nodetypes.cnd");
@@ -295,6 +304,7 @@ public class NodeTypeValidatorTest {
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, new String[] { NameConstants.MIX_VERSIONABLE.toString() }, "WorkflowModel");
         Assert.assertThat(validator.validate(node, nodeContext, false),
                 AnyValidationMessageMatcher.noValidationInCollection());
+        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
 }

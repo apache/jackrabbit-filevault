@@ -108,11 +108,11 @@ public class RcpTaskManagerImplTest {
         connectionOptionsBuilder.proxyHost("proxyHost");
         RcpTaskImpl taskOld = (RcpTaskImpl)taskManager.addTask(new RepositoryAddress("http://localhost:4502"), connectionOptionsBuilder.build(), new SimpleCredentials("testUser", "pw".toCharArray()), "/target/path", "2", Arrays.asList("exclude1", "exclude2"), false);
         RcpTaskImpl taskNew = (RcpTaskImpl)taskManager.editTask(taskOld.getId(), null, null, null, null, null, null, null);
-        Assert.assertThat(taskNew, new TaskMatcher(taskOld));
+        Assert.assertThat(taskNew, Matchers.equalTo(taskOld));
         
         RepositoryAddress newSource = new RepositoryAddress("http://localhost:4503");
         taskNew = (RcpTaskImpl)taskManager.editTask(taskOld.getId(), newSource, null, null, null, null, null, null);
-        Assert.assertThat(taskNew, Matchers.not(new TaskMatcher(taskOld)));
+        Assert.assertThat(taskNew, Matchers.not(Matchers.equalTo(taskOld)));
         Assert.assertEquals(newSource, taskNew.getSource());
     }
 
@@ -126,67 +126,17 @@ public class RcpTaskManagerImplTest {
         connectionOptionsBuilder.allowSelfSignedCertificates(true);
         connectionOptionsBuilder.disableHostnameVerification(false);
         connectionOptionsBuilder.socketTimeoutMs(100);
-        taskManager.addTask(new RepositoryAddress("http://localhost:4502"), connectionOptionsBuilder.build(), new SimpleCredentials("testUser", "pw".toCharArray()), "/target/path", "2", Arrays.asList("exclude1", "exclude2"), false);
+        RcpTask task1 = taskManager.addTask(new RepositoryAddress("http://localhost:4502"), connectionOptionsBuilder.build(), new SimpleCredentials("testUser", "pw".toCharArray()), "/target/path", "2", Arrays.asList("exclude1", "exclude2"), false);
+        task1.getRcp().setBatchSize(200);
+        task1.getRcp().setUpdate(true);
+        task1.getRcp().setThrottle(30);
+        task1.getRcp().setOnlyNewer(true);
         taskManager.addTask(new RepositoryAddress("http://localhost:8080"), connectionOptionsBuilder.build(), new SimpleCredentials("testUser3", "pw3".toCharArray()), "/target/path5", "3", filter, true);
         taskManager.deactivate();
         Assert.assertNotNull("The tasks should have been persisted here but are not!", configProperties);
         // convert to Map
         RcpTaskManagerImpl taskManager2 = new RcpTaskManagerImpl(mockBundleContext, mockConfigurationAdmin, RcpTaskManagerImpl.createMapFromDictionary(configProperties));
         // how to get list ordered by id?
-        Assert.assertThat(taskManager.tasks.values(), new TaskCollectionMatcher(taskManager2.tasks.values()));
-    }
-    
-    private final static class TaskCollectionMatcher extends IsIterableContainingInOrder<RcpTaskImpl> {
-
-        public TaskCollectionMatcher(Collection<RcpTaskImpl> tasks) {
-            super(tasks.stream().map(TaskMatcher::new).collect(Collectors.toList()));
-        }
-    }
-    
-    private final static class TaskMatcher extends TypeSafeMatcher<RcpTaskImpl> {
-        private final RcpTaskImpl task;
-        
-        public TaskMatcher(RcpTaskImpl task) {
-            this.task = task;
-        }
-
-        @Override
-        public void describeTo(Description description) {
-            description.appendValue(taskToString(task));
-        }
-
-        @Override
-        protected void describeMismatchSafely(RcpTaskImpl item, Description mismatchDescription) {
-            mismatchDescription.appendText("was ").appendValue(taskToString(item));
-        }
-        
-        private static String taskToString(RcpTask task) {
-            ReflectionToStringBuilder builder = new ReflectionToStringBuilder(task, ToStringStyle.SHORT_PREFIX_STYLE);
-            return builder.toString();
-        }
-
-        @Override
-        protected boolean matchesSafely(RcpTaskImpl otherTask) {
-            if (!EqualsBuilder.reflectionEquals(task.getSourceCredentials(), otherTask.getSourceCredentials())) {
-                return false;
-            }
-            if (!task.getSource().equals(otherTask.getSource())) {
-                return false;
-            }
-            if (!task.getDestination().equals(otherTask.getDestination())) {
-                return false;
-            }
-            if (!(task.getExcludes() == null ? otherTask.getExcludes() == null : task.getExcludes().equals(otherTask.getExcludes()))) {
-                return false;
-            }
-            if (task.isRecursive() != otherTask.isRecursive()) {
-                return false;
-            }
-            if (!EqualsBuilder.reflectionEquals(task.filter, otherTask.filter, "source")) {
-                return false;
-            }
-            return true;
-        }
-        
+        Assert.assertThat(taskManager2.tasks.values(), IsIterableContainingInOrder.contains(taskManager.tasks.values().toArray()));
     }
 }

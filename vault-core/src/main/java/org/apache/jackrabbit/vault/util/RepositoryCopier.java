@@ -56,29 +56,34 @@ public class RepositoryCopier {
 
     protected ProgressTrackerListener tracker;
 
-    private int numNodes = 0;
+    private transient int numNodes = 0;
 
-    private int totalNodes = 0;
+    private transient int totalNodes = 0;
 
-    private long totalSize = 0;
+    private transient long totalSize = 0;
 
-    private long currentSize = 0;
+    private transient long currentSize = 0;
 
+    private transient long start = 0;
+
+    private transient String lastKnownGood;
+
+    private transient String currentPath;
+
+    private transient String cqLastModified;
+
+    private volatile boolean abort;
+
+    /** actual settings used by the copy process */
     private int batchSize = 1024;
 
     private long throttle = 0;
 
-    private long start = 0;
-
-    private String lastKnownGood;
-
-    private String currentPath;
-
-    private String resumeFrom;
+    private transient String resumeFrom;
 
     private WorkspaceFilter srcFilter;
 
-    private Map<String, String> prefixMapping = new HashMap<String, String>();
+    private Map<String, String> prefixMapping = new HashMap<>();
 
     private boolean onlyNewer;
 
@@ -86,15 +91,7 @@ public class RepositoryCopier {
 
     private boolean noOrdering;
 
-    private Session srcSession;
-
-    private Session dstSession;
-
-    private String  cqLastModified;
-
     private CredentialsProvider credentialsProvider;
-
-    private volatile boolean abort;
 
     public void setTracker(ProgressTrackerListener tracker) {
         this.tracker = tracker;
@@ -238,12 +235,10 @@ public class RepositoryCopier {
         if (srcSession == null || dstSession == null) {
             throw new IllegalArgumentException("no src or dst session provided");
         }
-        this.srcSession = srcSession;
-        this.dstSession = dstSession;
 
         // get root nodes
         String dstParent = Text.getRelativeParent(dstPath, 1);
-        String dstName = checkNameSpace(Text.getName(dstPath));
+        String dstName = checkNameSpace(Text.getName(dstPath), srcSession, dstSession);
         Node srcRoot;
         try {
             srcRoot = srcSession.getNode(srcPath);
@@ -363,7 +358,7 @@ public class RepositoryCopier {
                     }
                     // add mixins
                     for (NodeType nt: src.getMixinNodeTypes()) {
-                        String mixName = checkNameSpace(nt.getName());
+                        String mixName = checkNameSpace(nt.getName(), src.getSession(), dst.getSession());
                         if (!names.remove(mixName)) {
                             dst.addMixin(nt.getName());
                         }
@@ -375,7 +370,7 @@ public class RepositoryCopier {
                 } else {
                     // add mixins
                     for (NodeType nt: src.getMixinNodeTypes()) {
-                        dst.addMixin(checkNameSpace(nt.getName()));
+                        dst.addMixin(checkNameSpace(nt.getName(), src.getSession(), dst.getSession()));
                     }
                 }
 
@@ -384,13 +379,13 @@ public class RepositoryCopier {
                 if (!isNew) {
                     PropertyIterator iter = dst.getProperties();
                     while (iter.hasNext()) {
-                        names.add(checkNameSpace(iter.nextProperty().getName()));
+                        names.add(checkNameSpace(iter.nextProperty().getName(), src.getSession(), dst.getSession()));
                     }
                 }
                 PropertyIterator iter = src.getProperties();
                 while (iter.hasNext()) {
                     Property p = iter.nextProperty();
-                    String pName = checkNameSpace(p.getName());
+                    String pName = checkNameSpace(p.getName(), src.getSession(), dst.getSession());
                     names.remove(pName);
                     // ignore protected
                     if (p.getDefinition().isProtected()) {
@@ -436,13 +431,13 @@ public class RepositoryCopier {
                 if (overwrite && !isNew) {
                     NodeIterator niter = dst.getNodes();
                     while (niter.hasNext()) {
-                        names.add(checkNameSpace(niter.nextNode().getName()));
+                        names.add(checkNameSpace(niter.nextNode().getName(), src.getSession(), dst.getSession()));
                     }
                 }
                 NodeIterator niter = src.getNodes();
                 while (niter.hasNext()) {
                     Node child = niter.nextNode();
-                    String cName = checkNameSpace(child.getName());
+                    String cName = checkNameSpace(child.getName(), src.getSession(), dst.getSession());
                     names.remove(cName);
                     copy(child, dst, cName, true);
                 }
@@ -482,7 +477,7 @@ public class RepositoryCopier {
             try {
                 track("", "Intermediate saving %d nodes (%d kB)...", numNodes, currentSize/1000);
                 long now = System.currentTimeMillis();
-                dstSession.save();
+                dst.getSession().save();
                 long end = System.currentTimeMillis();
                 track("", "Done in %d ms. Total time: %d, total nodes %d, %d kB", end-now, end-start, totalNodes, totalSize/1000);
                 lastKnownGood = currentPath;
@@ -552,7 +547,7 @@ public class RepositoryCopier {
         }
     }
 
-    private String checkNameSpace(String name) {
+    private String checkNameSpace(String name, Session srcSession, Session dstSession) {
         try {
             int idx = name.indexOf(':');
             if (idx > 0) {
@@ -600,6 +595,67 @@ public class RepositoryCopier {
 
     public CredentialsProvider getCredentialsProvider() {
         return credentialsProvider;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (abort ? 1231 : 1237);
+        result = prime * result + batchSize;
+        result = prime * result + (noOrdering ? 1231 : 1237);
+        result = prime * result + (onlyNewer ? 1231 : 1237);
+        result = prime * result + ((prefixMapping == null) ? 0 : prefixMapping.hashCode());
+        result = prime * result + ((resumeFrom == null) ? 0 : resumeFrom.hashCode());
+        result = prime * result + ((srcFilter == null) ? 0 : srcFilter.hashCode());
+        result = prime * result + (int) (throttle ^ (throttle >>> 32));
+        result = prime * result + ((tracker == null) ? 0 : tracker.hashCode());
+        result = prime * result + (update ? 1231 : 1237);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RepositoryCopier other = (RepositoryCopier) obj;
+        if (abort != other.abort)
+            return false;
+        if (batchSize != other.batchSize)
+            return false;
+        if (noOrdering != other.noOrdering)
+            return false;
+        if (onlyNewer != other.onlyNewer)
+            return false;
+        if (prefixMapping == null) {
+            if (other.prefixMapping != null)
+                return false;
+        } else if (!prefixMapping.equals(other.prefixMapping))
+            return false;
+        if (resumeFrom == null) {
+            if (other.resumeFrom != null)
+                return false;
+        } else if (!resumeFrom.equals(other.resumeFrom))
+            return false;
+        if (srcFilter == null) {
+            if (other.srcFilter != null)
+                return false;
+        } else if (!srcFilter.equals(other.srcFilter))
+            return false;
+        if (throttle != other.throttle)
+            return false;
+        if (tracker == null) {
+            if (other.tracker != null)
+                return false;
+        } else if (!tracker.equals(other.tracker))
+            return false;
+        if (update != other.update)
+            return false;
+        return true;
     }
 
 }

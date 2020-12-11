@@ -73,7 +73,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
 
     private transient Result result;
 
-    private transient RepositoryCopier rcp;
+    private final RepositoryCopier rcp;
 
     private transient Thread thread;
 
@@ -130,10 +130,23 @@ public class RcpTaskImpl implements Runnable, RcpTask {
                 ? UUID.randomUUID().toString()
                 : id;
         this.recursive = recursive != null ? recursive : false;
-        this.filter = srcFilter;
-        initTransientData();
         this.classLoader = dynLoader;
         this.connectionOptions = connectionOptions;
+        this.filter = srcFilter;
+        rcp = new RepositoryCopier();
+        rcp.setTracker(new ProgressTrackerListener() {
+            public void onMessage(Mode mode, String action, String path) {
+                log.info("{} {}", action, path);
+            }
+
+            public void onError(Mode mode, String path, Exception e) {
+                log.error("{} {}", path, e.toString());
+            }
+        });
+        if (srcFilter != null) {
+            rcp.setSourceFilter(srcFilter);
+        }
+        result = new ResultImpl(Result.State.NEW);
     }
 
     // additional constructor for editing existing tasks, all arguments are optional except the first one
@@ -161,23 +174,6 @@ public class RcpTaskImpl implements Runnable, RcpTask {
             filterSet.addExclude(new DefaultPathFilter(path));
         }
         return srcFilter;
-    }
-
-    private void initTransientData() {
-        rcp = new RepositoryCopier();
-        rcp.setTracker(new ProgressTrackerListener() {
-            public void onMessage(Mode mode, String action, String path) {
-                log.info("{} {}", action, path);
-            }
-
-            public void onError(Mode mode, String path, Exception e) {
-                log.error("{} {}", path, e.toString());
-            }
-        });
-        if (filter != null) {
-            rcp.setSourceFilter(filter);
-        }
-        result = new ResultImpl(Result.State.NEW);
     }
 
     public void setClassLoader(ClassLoader classLoader) {
@@ -362,11 +358,9 @@ public class RcpTaskImpl implements Runnable, RcpTask {
                 return false;
         } else if (!excludes.equals(other.excludes))
             return false;
-        if (filter == null) {
-            if (other.filter != null)
-                return false;
-        } else if (!filter.equals(other.filter))
+        if (!areFiltersEqual(filter, other.filter)) {
             return false;
+        }
         if (id == null) {
             if (other.id != null)
                 return false;
@@ -382,6 +376,10 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         if (!areCredentialsEqual(srcCreds, other.srcCreds)) {
             return false;
         }
+        // equals for RCP
+        if (!areRepositoryCopiersEqual(rcp, other.rcp)) {
+            return false;
+        }
         return true;
     }
 
@@ -389,13 +387,12 @@ public class RcpTaskImpl implements Runnable, RcpTask {
     public String toString() {
         return "RcpTaskImpl [" + (id != null ? "id=" + id + ", " : "") + (src != null ? "src=" + src + ", " : "")
                 + (srcCreds != null ? "srcCreds=" + srcCreds + ", " : "") + (dst != null ? "dst=" + dst + ", " : "") + "recursive="
-                + recursive + ", " + (excludes != null ? "excludes=" + excludes + ", " : "") + (filter != null ? "filter=" + filter : "")
-                + "]";
+                + recursive + ", " + (excludes != null ? "excludes=" + excludes + ", " : "") + (filter != null ? "filter=" + filter.getSourceAsString() + ", "  : "") + (rcp != null ? "rcp=" + repositoryCopierToString(rcp) + ", " : "") + "]";
     }
 
     /** @param credentials
      * @return */
-    boolean areCredentialsEqual(Credentials credentials, Credentials otherCredentials) {
+    static boolean areCredentialsEqual(Credentials credentials, Credentials otherCredentials) {
         if (credentials == null || otherCredentials == null) {
             if (otherCredentials != null || credentials != null) {
                 return false;
@@ -428,5 +425,49 @@ public class RcpTaskImpl implements Runnable, RcpTask {
             }
         }
         return true;
+    }
+    
+    /** Cannot rely on RepositoryCopier.equals() as not implemented in older versions of FileVault */
+    static boolean areRepositoryCopiersEqual(RepositoryCopier rcp, RepositoryCopier otherRcp) {
+        if (rcp == null || otherRcp == null) {
+            if (otherRcp != null || rcp != null) {
+                return false;
+            }
+        } else {
+            if (rcp.getBatchSize() != otherRcp.getBatchSize()) {
+                return false;
+            }
+            if (rcp.getThrottle() != otherRcp.getThrottle()) {
+                return false;
+            }
+            if (rcp.isOnlyNewer() != otherRcp.isOnlyNewer()) {
+                return false;
+            }
+            if (rcp.isUpdate() != otherRcp.isUpdate()) {
+                return false;
+            }
+            if (rcp.isNoOrdering() != otherRcp.isNoOrdering()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /** Cannot rely on RepositoryCopier.equals() as not implemented in older versions of FileVault */
+    static boolean areFiltersEqual(WorkspaceFilter filter, WorkspaceFilter otherFilter) {
+        if (filter == null || otherFilter == null) {
+            if (otherFilter != null || filter != null) {
+                return false;
+            }
+        } else {
+            if (!filter.getSourceAsString().equals(otherFilter.getSourceAsString())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static String repositoryCopierToString(RepositoryCopier rcp) {
+        return "RepositoryCopier [batchSize=" + rcp.getBatchSize() + ", onlyNewer="+ rcp.isOnlyNewer() + ", update=" + rcp.isUpdate() + ", noOrdering=" + rcp.isNoOrdering() + ", throttle=" + rcp.getThrottle() + "]";
     }
 }

@@ -42,6 +42,7 @@ import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
+import org.apache.jackrabbit.vault.util.RepositoryCopier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
@@ -111,6 +112,7 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         mapper.registerModule(module);
         mapper.addMixIn(SimpleCredentials.class, SimpleCredentialsMixin.class);
         mapper.addMixIn(ConnectionOptions.class, ConnectionOptionsMixin.class);
+        mapper.addMixIn(RepositoryCopier.class, RepositoryCopierMixin.class);
         this.dataFile = bundleContext.getDataFile(TASKS_DATA_FILE_NAME);
         this.configuration = configurationAdmin.getConfiguration(PID);
         try {
@@ -138,6 +140,8 @@ public class RcpTaskManagerImpl implements RcpTaskManager {
         for (RcpTask task : tasks.values()) {
             task.stop();
         }
+        // necessary again, because tasks are not fully immutable (i.e. may be modified after addTask or editTask has been called)
+        persistTasks();
         log.info("RcpTaskManager deactivated. Stopping running tasks...done.");
     }
 

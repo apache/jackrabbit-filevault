@@ -45,7 +45,8 @@ public class PlatformNameTest {
              {"cq_:test.jpg", "cq_%3atest.jpg"},
              {"_", "_"},
              {":", "%3a"},
-             {":test", "%3atest"}
+             {":test", "%3atest"},
+             {":oak:mount-libs-nodetype", "%3aoak%3amount-libs-nodetype"}
        });
     }
 

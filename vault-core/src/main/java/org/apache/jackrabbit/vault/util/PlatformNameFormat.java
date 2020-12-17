@@ -64,7 +64,7 @@ public class PlatformNameFormat {
      * @return the (escaped) platform name.
      */
     public static String getPlatformName(String repositoryName) {
-        StringBuffer buf = new StringBuffer("_");
+        StringBuilder buf = new StringBuilder("_");
         boolean escapeColon = false;
         boolean useUnderscore = false;
         int numUnderscore = 0;
@@ -135,7 +135,7 @@ public class PlatformNameFormat {
      * @return the (unescaped) repository name.
      */
     public static String getRepositoryName(String platformName) {
-        StringBuffer buffer = new StringBuffer("_");
+        StringBuilder buffer = new StringBuilder("_");
         boolean firstUnderscore = false;
         for (int i=0; i<platformName.length(); i++) {
             char c = platformName.charAt(i);

@@ -87,11 +87,13 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
     static final String MESSAGE_MANDATORY_PROPERTY_MISSING = "Mandatory property '%s' missing in node with types [%s] at %s";
     static final String MESSAGE_MANDATORY_PROPERTY_WITH_WRONG_TYPE = "Mandatory property '%s' has type '%s' while it should have '%s' in node with types [%s] at %s";
 
-    // do not validate protected/mandatory for JCR system properties that are handled by FileVault specially 
-    // (https://github.com/apache/jackrabbit-filevault/blob/f785fcb24d4cbd01c734e9273310a925c29ae15b/vault-core/src/main/java/org/apache/jackrabbit/vault/fs/impl/io/DocViewSAXImporter.java#L921)
+    // do not validate protected JCR system properties that are handled by FileVault specially in https://github.com/apache/jackrabbit-filevault/blob/f785fcb24d4cbd01c734e9273310a925c29ae15b/vault-core/src/main/java/org/apache/jackrabbit/vault/fs/impl/io/DocViewSAXImporter.java#L123 and 
+    // https://github.com/apache/jackrabbit-filevault/blob/f785fcb24d4cbd01c734e9273310a925c29ae15b/vault-core/src/main/java/org/apache/jackrabbit/vault/fs/impl/io/DocViewSAXImporter.java#L140
     private static final Collection<Name> JCR_SYSTEM_PROPERTIES = Arrays.asList(
             NameConstants.JCR_PRIMARYTYPE, NameConstants.JCR_MIXINTYPES, NameConstants.JCR_UUID,
-            NameConstants.JCR_BASEVERSION, NameConstants.JCR_PREDECESSORS, NameConstants.JCR_SUCCESSORS, NameConstants.JCR_VERSIONHISTORY);
+            NameConstants.JCR_BASEVERSION, NameConstants.JCR_PREDECESSORS, NameConstants.JCR_SUCCESSORS, 
+            NameConstants.JCR_VERSIONHISTORY, NameConstants.JCR_ISCHECKEDOUT, 
+            NameFactoryImpl.getInstance().create("http://jackrabbit.apache.org/oak/ns/1.0", "counter"));
 
     private static final Name NT_REP_POLICY = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "Policy");
     private static final Name NT_REP_AUTHORIZABLE = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "Authorizable");

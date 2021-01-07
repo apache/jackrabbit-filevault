@@ -22,9 +22,9 @@ package org.apache.jackrabbit.vault.util;
  * 
  * <p>Illegal characters a
  * generally escaped using the url escaping format, i.e. replacing the char
- * by a '%' hex(char) sequence. special treatment is used for the ':' char
- * since it's used quite often as namespace prefix separator. the
- * PREFIX ':' NAME sequence is replaced by '_' PREFIX '_' NAME. item names
+ * by a '%' hex(char) sequence. Special treatment is used for the ':' char
+ * since it's used quite often as namespace prefix separator. The
+ * PREFIX ':' NAME sequence is replaced by '_' PREFIX '_' NAME. Item names
  * that would generate the same pattern are escaped with an extra leading '_'.
  * 
  * <p>Examples:
@@ -47,7 +47,7 @@ package org.apache.jackrabbit.vault.util;
  * +-------------------+----------------------+----+----+
  * </pre>
  * 
- * note for the 2nd set of examples the cases are very rare and justify the
+ * Note for the 2nd set of examples the cases are very rare and justify the
  * ugly '%' escaping.
  *
  */
@@ -80,6 +80,7 @@ public class PlatformNameFormat {
                          buf.append('_');
                      } else {
                          buf.append("%3a");
+                         escapeColon = true;
                      }
                      break;
                  case '_':

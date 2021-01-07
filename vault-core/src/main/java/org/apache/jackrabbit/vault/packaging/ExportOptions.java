@@ -39,6 +39,16 @@ public class ExportOptions {
 
     private int compressionLevel = Deflater.DEFAULT_COMPRESSION;
 
+    private boolean nodeOnly;
+
+    public boolean isNodeOnly() {
+        return nodeOnly;
+    }
+
+    public void setNodeOnly(boolean nodeOnly) {
+        this.nodeOnly = nodeOnly;
+    }
+
     /**
      * Returns the progress tracker listener.
      * @return the progress tracker listener.

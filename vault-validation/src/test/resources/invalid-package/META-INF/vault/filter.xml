@@ -16,9 +16,12 @@
   limitations under the License.
   -->
 <workspaceFilter version="1.0">
-    <filter root="/etc/project1">
+    <filter root="/etc/project1" mode="invalid">
         <exclude pattern=".*\.gif" mode="merge" />
         <include pattern="["/> <!-- invalid regex -->
         <invalidelement />
+    </filter>
+    <filter>
+        <include root=""/>
     </filter>
 </workspaceFilter>

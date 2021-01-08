@@ -51,8 +51,6 @@ import org.apache.jackrabbit.vault.validation.spi.FilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
-import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedFilterValidator;
-import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedFilterValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.junit.Assert;
 import org.junit.Before;
@@ -384,14 +382,27 @@ public class AdvancedFilterValidatorTest {
             Collection<ValidationMessage> messages = validator.validateMetaInfData(input, Paths.get("vault/filter.xml"), Paths.get(""));
             ValidationExecutorTest.assertViolation(messages,
                     new ValidationMessage(ValidationMessageSeverity.WARN,
+                            "cvc-enumeration-valid: Value 'invalid' is not facet-valid with respect to enumeration '[replace, merge, update]'. It must be a value from the enumeration.", 19, 49, null),
+                    new ValidationMessage(ValidationMessageSeverity.WARN,
+                        "cvc-attribute.3: The value 'invalid' of attribute 'mode' on element 'filter' is not valid with respect to its type, 'null'.", 19, 49, null), // unclear why type is 'null'
+                    new ValidationMessage(ValidationMessageSeverity.WARN,
                             "cvc-complex-type.3.2.2: Attribute 'mode' is not allowed to appear in element 'exclude'.", 20, 51, null),
                     new ValidationMessage(ValidationMessageSeverity.WARN,
                             "cvc-complex-type.2.4.a: Invalid content was found starting with element 'invalidelement'. One of '{exclude, include}' is expected.",
                             22, 27, null),
+                    new ValidationMessage(ValidationMessageSeverity.WARN,
+                            "cvc-complex-type.4: Attribute 'root' must appear on element 'filter'.",
+                            24, 13, null),
+                    new ValidationMessage(ValidationMessageSeverity.WARN,
+                            "cvc-complex-type.3.2.2: Attribute 'root' is not allowed to appear in element 'include'.",
+                            25, 27, null),
+                    new ValidationMessage(ValidationMessageSeverity.WARN,
+                            "cvc-complex-type.4: Attribute 'pattern' must appear on element 'include'.",
+                            25, 27, null),
                     new ValidationMessage(ValidationMessageSeverity.WARN, AdvancedFilterValidator.MESSAGE_INVALID_FILTER_XML)); // because
                                                                                                                                 // of
                                                                                                                                 // invalid
-                                                                                                                                // regex
+                                                                                                                                // mode value
         }
     }
 

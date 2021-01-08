@@ -17,48 +17,55 @@
 
 package org.apache.jackrabbit.vault.util;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
 
-import junit.framework.TestCase;
+import java.util.Arrays;
+import java.util.Collection;
 
-/**
- * {@code PlatformNameTest}...
- *
- */
-public class PlatformNameTest extends TestCase {
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-    private Map<String, String> names = new HashMap<String, String>();
-
-
-    protected void setUp() throws Exception {
-        names.put("test.jpg", "test.jpg");
-        names.put("cq:content", "_cq_content");
-        names.put("cq:test_image.jpg", "_cq_test_image.jpg");
-        names.put("test_image.jpg", "test_image.jpg");
-        names.put("_testimage.jpg", "_testimage.jpg");
-        names.put("_test_image.jpg", "__test_image.jpg");
-        names.put("cq:test:image.jpg", "_cq_test%3aimage.jpg");
-        names.put("_cq_:test.jpg", "__cq_%3atest.jpg");
-        names.put("_cq:test.jpg", "_cq%3atest.jpg");
-        names.put("cq_:test.jpg", "cq_%3atest.jpg");
-        names.put("_", "_");
-        names.put(":", "%3a");
-        names.put(":test", "%3atest");
+@RunWith(Parameterized.class)
+public class PlatformNameTest {
+    
+    @Parameters(name = "platform: {0}, repo: {1}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {     
+             { "test.jpg", "test.jpg" },
+             {"cq:content", "_cq_content"},
+             {"cq:test_image.jpg", "_cq_test_image.jpg"},
+             {"test_image.jpg", "test_image.jpg"},
+             {"_testimage.jpg", "_testimage.jpg"},
+             {"_test_image.jpg", "__test_image.jpg"},
+             {"cq:test:image.jpg", "_cq_test%3aimage.jpg"},
+             {"_cq_:test.jpg", "__cq_%3atest.jpg"},
+             {"_cq:test.jpg", "_cq%3atest.jpg"},
+             {"cq_:test.jpg", "cq_%3atest.jpg"},
+             {"_", "_"},
+             {":", "%3a"},
+             {":test", "%3atest"},
+             {":oak:mount-libs-nodetype", "%3aoak%3amount-libs-nodetype"}
+       });
     }
 
-    public void testToPlatform() {
-        for (String repName: names.keySet()) {
-            String pfName = names.get(repName);
-            assertEquals("Repo("+repName+")->Platform", pfName, PlatformNameFormat.getPlatformName(repName));
-        }
+    private final String repoName;
+    private final String platformName;
+    
+    public PlatformNameTest(String repoName, String platformName) {
+        this.repoName = repoName;
+        this.platformName = platformName;
     }
 
-    public void testToRepo() {
-        for (String repName: names.keySet()) {
-            String pfName = names.get(repName);
-            assertEquals("Platform("+pfName+")->Repo", repName, PlatformNameFormat.getRepositoryName(pfName));
-        }
+    @Test
+    public void toPlatform() {
+        assertEquals(platformName, PlatformNameFormat.getPlatformName(repoName));
+    }
+
+    @Test
+    public void toRepo() {
+        assertEquals(repoName, PlatformNameFormat.getRepositoryName(platformName));
     }
 
 }

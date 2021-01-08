@@ -53,6 +53,10 @@
         <module>vault-validation</module>
     </modules>
 
+    <properties>
+        <project.build.outputTimestamp>2021-01-08T06:47:27Z</project.build.outputTimestamp>
+    </properties>
+
     <!-- ====================================================================== -->
     <!-- B U I L D                                                              -->
     <!-- ====================================================================== -->

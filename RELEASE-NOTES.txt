@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.6
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.8
 
 Introduction
 ------------

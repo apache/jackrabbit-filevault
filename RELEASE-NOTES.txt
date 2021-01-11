@@ -9,6 +9,34 @@ create portable packages of repository content.
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
 
+Changes in Jackrabbit FileVault 3.4.8
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.4.8
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.6 and Jackrabbit 2.14
+
+Bug
+    * [JCRVLT-459] - VLT-RCP: Edit operation does not work
+    * [JCRVLT-460] - VLT-RCP: IllegalStateException thrown by Configuration.updateIfDifferent
+    * [JCRVLT-461] - jackrabbit-nodetypes: Mandatory property ''{http://www.jcp.org/jcr/1.0}data' missing in node with types [oak:Resource]
+    * [JCRVLT-462] - Nodetype validator complains about root node
+    * [JCRVLT-463] - jackrabbit-nodetypes: Mandatory child node missing: jcr:content [nt:base]
+    * [JCRVLT-465] - VLT-RCP and Core require DS 1.4 due to constructor injection
+    * [JCRVLT-480] - NPE when validating not allowed properties
+    * [JCRVLT-482] - ArrayIndexOutOfBoundsException when validating multivalue property with empty value array
+    * [JCRVLT-485] - Validation fails for nodetypes extending mix:versionable
+    * [JCRVLT-488] - PlatformNameFormat incorrectly sets repository names for nodes with double colons
+    * [JCRVLT-489] - jackrabbit-nodetypes validator errors for cq:WorkflowModel
+New Feature
+    * [JCRVLT-486] - nodetype validation: Allow to define list of valid namespaces
+Improvement
+    * [JCRVLT-433] - Validator for acHandling
+    * [JCRVLT-470] - VLT-RCP: Expose version via servlet
+    * [JCRVLT-475] - Enable Sonarcloud.io analysis with Travis
+    * [JCRVLT-479] - jackrabbit-nodetypes validator: validation fails "overeager" for autocreated properties
+    * [JCRVLT-484] - Filter settings should ignore whitespaces when splitting comma-separated strings
+    * [JCRVLT-487] - VLT-RCP: Persist also options set on RepositoryCopier
 
 Changes in Jackrabbit FileVault 3.4.6
 --------------------------------------

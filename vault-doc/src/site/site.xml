@@ -42,6 +42,7 @@
         <item href="settings.html" name="Settings"/>
         <item href="nodetypes.html" name="Nodetypes"/>
         <item href="privileges.html" name="Privileges"/>
+        <item href="installhooks.html" name="Install Hooks"/>
      </item>
       <item href="rcp.html" name="Vault Remote Copy" />
     </menu>

@@ -28,4 +28,5 @@ This is
 * [Settings (settings.xml)](settings.html), optional
 * [Nodetypes (*.cnd)](nodetypes.html), optional
 * [Privileges (privileges.xml)](privileges.html), optional
+* [Install Hooks](installhooks.html), optional
 * Package Definition (definition/.content.xml), TODO, optional

@@ -37,7 +37,9 @@
         <item href="filter.html" name="Workspace Filter">
             <item href="importmode.html" name="Import Mode" />
         </item>
-        <item href="properties.html" name="Package Properties"/>
+        <item href="properties.html" name="Package Properties">
+            <item href="packagetypes.html" name="Package Types" />
+        </item>
         <item href="config.html" name="Vault FS Configuration"/>
         <item href="settings.html" name="Settings"/>
         <item href="nodetypes.html" name="Nodetypes"/>

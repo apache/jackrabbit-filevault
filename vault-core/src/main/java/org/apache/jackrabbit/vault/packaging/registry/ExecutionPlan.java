@@ -48,7 +48,9 @@ public interface ExecutionPlan {
     boolean isExecuted();
 
     /**
-     * checks if this plan has error
+     * Checks if execution of any of the tasks in the plan resulted in an error.
+     * Only returns a valid result in case {@link #isExecuted()} returns {@code true}.
+     * The concrete errors must be looked up from {@link #getTasks()}.
      * @return {@code true} if it has errors.
      */
     boolean hasErrors();

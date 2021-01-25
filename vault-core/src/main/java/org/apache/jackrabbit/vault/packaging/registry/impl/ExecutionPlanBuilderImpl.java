@@ -357,7 +357,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     @Override
     public Set<PackageId> preview() throws IOException, PackageException {
         validate();
-        if (plan.getTasks().size() == 0) {
+        if (plan.getTasks().isEmpty()) {
             return Collections.emptySet();
         } else {
             Set<PackageId> packages = new HashSet<>();

@@ -19,7 +19,6 @@ package org.apache.jackrabbit.vault.packaging.registry;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Set;
 
 import javax.jcr.Session;
@@ -64,7 +63,7 @@ public interface ExecutionPlanBuilder {
 
     /**
      * Validates this plan.
-     * @return this.
+     * @return this
      * @throws IOException if an I/O error occurrs.
      * @throws PackageException if the plan is not valid.
      */
@@ -74,7 +73,7 @@ public interface ExecutionPlanBuilder {
     /**
      * Sets the JCR session for this execution plan.
      * @param session the session
-     * @return this.
+     * @return this
      */
     @NotNull
     ExecutionPlanBuilder with(@NotNull Session session);
@@ -82,7 +81,7 @@ public interface ExecutionPlanBuilder {
     /**
      * Sets the progress tracker listener for this plan.
      * @param listener the listener
-     * @return this.
+     * @return this
      */
     @NotNull
     ExecutionPlanBuilder with(@NotNull ProgressTrackerListener listener);
@@ -91,26 +90,29 @@ public interface ExecutionPlanBuilder {
     /**
      * Sets packages handled externally ahead of execution for prevalidation of plan
      * @param externalPackages Set of package ids handled by other builder
-     * @return this.
+     * @return this
      */
     @NotNull
     ExecutionPlanBuilder with(@NotNull Set<PackageId> externalPackages);
 
     /**
-     * Triggers Validation and returns PackageIds of all packages to be installed
+     * Triggers validation and returns {@link PackageId}s of all packages to be installed
      * by this builder
      * @return Set of packages to be installed by this builder.
-     * @throws IOException if an I/O error occurrs.
+     * @throws IOException if an I/O error occurs.
      * @throws PackageException if the plan is not valid.
      */
     @NotNull
     Set<PackageId> preview() throws IOException, PackageException;
     
     /**
-     * builds an executes the plan synchronously.
+     * Builds an executes the plan synchronously. Does not throw an exception in case one or 
+     * multiple task executions fail, therefore the caller should check {@link ExecutionPlan#hasErrors()} 
+     * after calling this method.
+     * 
      * @return the execution plan.
-     * @throws IOException if an I/O error occurrs.
-     * @throws PackageException if a package operation fails.
+     * @throws IOException if an I/O error occurs.
+     * @throws PackageException if the plan contains an unsupported task.
      */
     @NotNull
     ExecutionPlan execute() throws IOException, PackageException;

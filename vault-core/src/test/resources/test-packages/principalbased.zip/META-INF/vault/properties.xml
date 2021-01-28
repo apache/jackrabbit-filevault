@@ -4,17 +4,19 @@
 <comment>FileVault Package Properties</comment>
 <entry key="createdBy">admin</entry>
 <entry key="name">principalbased_overwrite</entry>
-<entry key="lastModified">2019-07-23T10:20:20.089+02:00</entry>
+<entry key="lastModified">2019-07-23T10:20:20.089Z</entry>
 <entry key="lastModifiedBy">admin</entry>
 <entry key="created">2019-07-23T10:20:20.170+02:00</entry>
 <entry key="buildCount">1</entry>
-<entry key="version"/>
+<entry key="version">2</entry>
 <entry key="packageType">content</entry>
-<entry key="dependencies"/>
+<entry key="dependencies">depgroup:dep1:1,depgroup:dep2:2</entry>
 <entry key="packageFormatVersion">2</entry>
 <entry key="description"/>
 <entry key="lastWrapped">2019-07-23T10:20:20.089+02:00</entry>
 <entry key="group">integrationtesting</entry>
 <entry key="lastWrappedBy">admin</entry>
 <entry key="acHandling">OVERWRITE</entry>
+<entry key="requiresRoot">true</entry>
+<entry key="foo">bar</entry>
 </properties>

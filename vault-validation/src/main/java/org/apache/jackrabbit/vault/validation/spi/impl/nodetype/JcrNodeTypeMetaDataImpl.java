@@ -106,7 +106,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
     private final @NotNull Map<Name, JcrNodeTypeMetaDataImpl> childNodesByName;
     private final @Nullable JcrNodeTypeMetaDataImpl parentNode;
     private final Collection<ValidationMessage> messages;
-    private final boolean isAuthenticationOrAuthorizationContext;
+    private boolean isAuthenticationOrAuthorizationContext;
     private final boolean isImplicit; // if this is true, the node type is set implicitly (not explicitly set in package, used as is in the
                                       // repository)
     private boolean isValidationDone;
@@ -151,6 +151,9 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
         if (effectiveNodeType == null || !effectiveNodeType.includesNodeTypes(types.toArray(new Name[0]))) {
             this.primaryNodeType = types.get(0);
             this.effectiveNodeType = effectiveNodeTypeProvider.getEffectiveNodeType(types.toArray(new Name[0]));
+            if (!isAuthenticationOrAuthorizationContext) {
+                isAuthenticationOrAuthorizationContext = isAclOrAuthorizableNodeType(effectiveNodeType);
+            }
         }
     }
 

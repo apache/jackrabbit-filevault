@@ -24,6 +24,8 @@ Install hooks are just Java classes which are called during package installation
 
 Install hooks must implement the interface [`org.apache.jackrabbit.vault.packaging.InstallHook`][api.InstallHook].
 
+Execution of install hooks is only allowed for certain users. Prior to FileVault 3.4.6 this was only possible for users `admin`, `system` or members of group `administrators`, in newer versions the allowed user ids are configurable via OSGi configuration with PID `org.apache.jackrabbit.vault.packaging.impl.PackagingImpl` ([JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427)). Installation of packages containing install hooks for other users lead to a `PackageException`.
+
 
 Internal Install Hooks
 ------

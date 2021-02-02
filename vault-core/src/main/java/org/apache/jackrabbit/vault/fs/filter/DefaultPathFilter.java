@@ -97,7 +97,8 @@ public class DefaultPathFilter implements PathFilter {
      */
     @Override
     public boolean isAbsolute() {
-        return regex.pattern().startsWith("/");
+        String pattern = regex.pattern();
+        return pattern.startsWith("/") || pattern.startsWith("\\Q/");
     }
 
     /**
@@ -108,12 +109,11 @@ public class DefaultPathFilter implements PathFilter {
         if (mapping == null) {
             return this;
         }
-        String pattern = regex.pattern();
-        if (!pattern.startsWith("/")) {
+        if (!isAbsolute()) {
             return this;
         }
         try {
-            return new DefaultPathFilter(mapping.map(pattern));
+            return new DefaultPathFilter(mapping.map(regex.pattern()));
         } catch (ConfigurationException e) {
             // should not happen as pattern is always valid
             return this;

@@ -17,7 +17,10 @@
 
 package org.apache.jackrabbit.vault.fs.filter;
 
+import java.util.regex.Pattern;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.junit.Test;
@@ -66,11 +69,24 @@ public class DefaultPathFilterTest {
         test("/foo(/.*)?", "/foobar/foo", false);
     }
 
+    @Test
+    public void testQuotedPattern() throws ConfigurationException {
+        String path = "/some(loaded/path";
+        test(Pattern.quote(path), path, true);
+    }
+
+    @Test
+    public void testAbsoluteQuotedPattern() throws ConfigurationException {
+        String path = "/some(loaded/path";
+        assertTrue(new DefaultPathFilter(Pattern.quote(path)).isAbsolute());
+    }
+
+
     @Test(expected = ConfigurationException.class)
     public void testInvalidPattern() throws ConfigurationException {
         new DefaultPathFilter("[");
     }
-    
+
     private void test(String pattern, String path, boolean result) throws ConfigurationException {
         DefaultPathFilter f = new DefaultPathFilter(pattern);
         assertEquals("Pattern '" + pattern + "' matches '" + path + "'", result, f.matches(path));

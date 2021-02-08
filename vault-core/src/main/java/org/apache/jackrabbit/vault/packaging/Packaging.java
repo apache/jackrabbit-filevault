@@ -17,10 +17,14 @@
 
 package org.apache.jackrabbit.vault.packaging;
 
+import java.io.IOException;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
+import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -68,4 +72,26 @@ public interface Packaging {
      * @since 2.3.0
      */
     JcrPackage open(Node node, boolean allowInvalid) throws RepositoryException;
+    
+    /**
+     * Returns a new composite package registry which acts on all currently registered package registries and 
+     * a JCR-based registry for the current configuration and the given session.
+     * All operations creating new packages will act on the primary registry which is determined by argument
+     * {@code useJcrRegistryAsPrimaryRegistry}.
+     * Due to the dynamic nature of package registries the return value should not be persisted.
+     * 
+     * @param session the JCR session to use for the JCR-based registry
+     * @param useJcrRegistryAsPrimaryRegistry if {@code true} the JCR-based registry will be used as primary
+     * registry, otherwise the first registered package registry is used and the JCR-based registry will be inserted as last registry. 
+     * @return the composite package registry
+     * @throws IOException 
+     */
+    PackageRegistry getCompositePackageRegistry(Session session, boolean useJcrRegistryAsPrimaryRegistry) throws IOException;
+
+    /**
+     * Returns a JCR-based package registry using the given session.
+     * @param session the JCR session to use for reading/writing nodes in the repository
+     * @return the JCR-based package registry
+     */
+    JcrPackageRegistry getJcrPackageRegistry(Session session);
 }

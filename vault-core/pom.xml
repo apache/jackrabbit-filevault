@@ -280,7 +280,12 @@
             <version>2.6.0</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.converter</artifactId>
+            <version>1.0.14</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <!-- ====================================================================== -->

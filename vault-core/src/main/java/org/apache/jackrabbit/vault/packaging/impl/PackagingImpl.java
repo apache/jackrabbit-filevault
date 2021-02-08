@@ -70,17 +70,17 @@ public class PackagingImpl implements Packaging {
     @Reference (cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC,
             policyOption = ReferencePolicyOption.GREEDY)
-    private volatile List<PackageRegistry> registries;
+    volatile List<PackageRegistry> registries;
 
     /**
      * package manager is a singleton
      */
     private final PackageManagerImpl pkgManager = new PackageManagerImpl();
 
-    private Config config;
+    Config config;
 
     public PackagingImpl() {
-        pkgManager.setDispatcher(eventDispatcher);
+        
     }
 
     @ObjectClassDefinition(
@@ -104,7 +104,8 @@ public class PackagingImpl implements Packaging {
     @Activate
     private void activate(Config config) {
         this.config = config;
-        log.info("Jackrabbit Filevault Packaging initialized with config {}", config.toString());
+        pkgManager.setDispatcher(eventDispatcher);
+        log.info("Jackrabbit Filevault Packaging initialized with config {}", config);
     }
 
     /**
@@ -151,7 +152,7 @@ public class PackagingImpl implements Packaging {
     @Override
     public PackageRegistry getCompositePackageRegistry(Session session, boolean useJcrRegistryAsPrimaryRegistry) throws IOException {
         List<PackageRegistry> allRegistries = new ArrayList<>(registries);
-        JcrPackageRegistry jcrPackageRegistry = getJcrPackageRegistry(session);
+        JcrPackageRegistry jcrPackageRegistry = getJcrPackageRegistry(session, false);
         if (useJcrRegistryAsPrimaryRegistry) {
             allRegistries.add(0, jcrPackageRegistry);
         } else {
@@ -162,9 +163,15 @@ public class PackagingImpl implements Packaging {
 
     @Override
     public JcrPackageRegistry getJcrPackageRegistry(Session session) {
+        return getJcrPackageRegistry(session, true);
+    }
+
+    private JcrPackageRegistry getJcrPackageRegistry(Session session, boolean useBaseRegistry) {
         JcrPackageRegistry registry = new JcrPackageRegistry(session, new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()), config.packageRoots());
         registry.setDispatcher(eventDispatcher);
-        setBaseRegistry(registry, registries);
+        if (useBaseRegistry) {
+            setBaseRegistry(registry, registries);
+        }
         return registry;
     }
 }

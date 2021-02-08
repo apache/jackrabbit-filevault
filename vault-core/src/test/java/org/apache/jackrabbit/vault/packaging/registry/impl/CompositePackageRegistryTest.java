@@ -20,9 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,106 +28,12 @@ import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
-import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
-import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
-import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
-import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 public class CompositePackageRegistryTest {
-
-    public static final class MockPackageRegistry implements PackageRegistry {
-
-        private static final PackageId NEW_PACKAGE_ID = PackageId.fromString("group:newpackage:1.0");
-        private Set<PackageId> containedPackageIds;
-
-        public MockPackageRegistry(String... packageIds) {
-            this(Stream.of(packageIds).map(PackageId::fromString).collect(Collectors.toList()));
-        }
-
-        public MockPackageRegistry(PackageId... packageIds) {
-            this(Arrays.asList(packageIds));
-        }
-
-        MockPackageRegistry(Collection<PackageId> packageIds) {
-            this.containedPackageIds = new HashSet<>(packageIds);
-        }
-
-        @Override
-        public boolean contains(@NotNull PackageId id) throws IOException {
-            return containedPackageIds.contains(id);
-        }
-
-        @Override
-        public @NotNull Set<PackageId> packages() throws IOException {
-            return new HashSet<>(containedPackageIds);
-        }
-
-        @Override
-        public @Nullable RegisteredPackage open(@NotNull PackageId id) throws IOException {
-            if (containedPackageIds.contains(id)) {
-                return Mockito.mock(RegisteredPackage.class);
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public @NotNull PackageId register(@NotNull InputStream in, boolean replace) throws IOException, PackageExistsException {
-            this.containedPackageIds.add(NEW_PACKAGE_ID);
-            return NEW_PACKAGE_ID;
-        }
-
-        @Override
-        public @NotNull PackageId register(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
-            this.containedPackageIds.add(NEW_PACKAGE_ID);
-            return NEW_PACKAGE_ID;
-        }
-
-        @Override
-        public @NotNull PackageId registerExternal(@NotNull File file, boolean replace)
-                throws IOException, PackageExistsException {
-            this.containedPackageIds.add(NEW_PACKAGE_ID);
-            return NEW_PACKAGE_ID;
-        }
-
-        @Override
-        public void remove(@NotNull PackageId id) throws IOException, NoSuchPackageException {
-            if (!containedPackageIds.remove(id)) {
-                throw new NoSuchPackageException("Could not find package with id " + id);
-            }
-        }
-
-        @Override
-        public @NotNull DependencyReport analyzeDependencies(@NotNull PackageId id, boolean onlyInstalled)
-                throws IOException, NoSuchPackageException {
-            if (containedPackageIds.contains(id)) {
-                return Mockito.mock(DependencyReport.class);
-            } else {
-                throw new NoSuchPackageException("Could not find package with id " + id);
-            }
-        }
-
-        @Override
-        public @Nullable PackageId resolve(@NotNull Dependency dependency, boolean onlyInstalled) throws IOException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public @NotNull PackageId[] usage(@NotNull PackageId id) throws IOException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public @NotNull ExecutionPlanBuilder createExecutionPlan() {
-            throw new UnsupportedOperationException();
-        }
-
-    }
 
     private static final PackageId PACKAGE1 = PackageId.fromString("my.group:package1:1.0");
     private static final PackageId PACKAGE2 = PackageId.fromString("my.group:package1:2.0");
@@ -251,5 +154,30 @@ public class CompositePackageRegistryTest {
                 new MockPackageRegistry(PACKAGE2)
                 );
         registry.analyzeDependencies(PACKAGE3, true);
+    }
+
+    @Test
+    public void testResolve() throws IOException {
+        CompositePackageRegistry registry = new CompositePackageRegistry(
+                new MockPackageRegistry(PACKAGE1),
+                new MockPackageRegistry(PACKAGE2)
+                );
+        Dependency dependency = Dependency.fromString("my.group:package1:2.0");
+        Assert.assertEquals(PACKAGE2, registry.resolve(dependency, true));
+        dependency = Dependency.fromString("my.group:unknown-package1:2.0");
+        Assert.assertNull(registry.resolve(dependency, true));
+    }
+
+    @Test
+    public void testUsage() throws IOException {
+        MockPackageRegistry registry1 = new MockPackageRegistry();
+        registry1.addPackageWithDependencies("package1", "my.group:package1:2.0");
+        MockPackageRegistry registry2 = new MockPackageRegistry();
+        
+        registry2.addPackageWithDependencies("package3", "my.group:package1:2.0");
+        registry2.addPackageWithDependencies("package2", "my.group:package1:2.0");
+        CompositePackageRegistry compositeRegistry = new CompositePackageRegistry(registry1, registry2);
+        MatcherAssert.assertThat(Arrays.asList(compositeRegistry.usage(PackageId.fromString("my.group:package1:2.0"))), 
+                Matchers.containsInAnyOrder(PackageId.fromString("package1"), PackageId.fromString("package2"), PackageId.fromString("package3")));
     }
 }

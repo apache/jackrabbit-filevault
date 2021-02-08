@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -173,12 +174,14 @@ public class CompositePackageRegistry implements PackageRegistry {
 
     @Override
     public @NotNull PackageId[] usage(@NotNull PackageId id) throws IOException {
+        List<PackageId> dependentPackageIds = new ArrayList<>();
         for (PackageRegistry registry : registries) {
-            if (registry.contains(id)) {
-                return registry.usage(id);
+            PackageId[] packageIds = registry.usage(id);
+            if (packageIds.length > 0) {
+                dependentPackageIds.addAll(Arrays.asList(packageIds));
             }
         }
-        return new PackageId[] {};
+        return dependentPackageIds.toArray(new PackageId[0]);
     }
 
     @Override

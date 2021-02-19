@@ -56,7 +56,7 @@ public class TestExportWithQuotedPattern extends IntegrationTestBase {
         String path = "/tmp/" + NAME;
 
         PathFilterSet nodes = new PathFilterSet(path);
-        nodes.addInclude(new DefaultPathFilter(quote(path)));
+        nodes.addInclude(new DefaultPathFilter(Pattern.quote(path)));
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(nodes);
@@ -73,16 +73,6 @@ public class TestExportWithQuotedPattern extends IntegrationTestBase {
             assertNodeMissing(path + "/bar");
         } finally {
             pkgFile.delete();
-        }
-    }
-
-    private String quote(String path) {
-        if (path == null) {
-            return null;
-        } else if (path.startsWith("/")) {
-            return "/" + Pattern.quote(path.substring(1));
-        } else {
-            return Pattern.quote(path);
         }
     }
 

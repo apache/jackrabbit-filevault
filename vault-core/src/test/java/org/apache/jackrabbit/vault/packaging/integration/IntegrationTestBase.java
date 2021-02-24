@@ -200,9 +200,10 @@ public class IntegrationTestBase  {
             admin.save();
             admin.logout();
         } else {
-            InputStream in = IntegrationTestBase.class.getResourceAsStream("repository.xml");
-            RepositoryConfig cfg = RepositoryConfig.create(in, REPO_HOME);
-            repository = RepositoryImpl.create(cfg);
+            try (InputStream in = IntegrationTestBase.class.getResourceAsStream("repository.xml")) {
+                RepositoryConfig cfg = RepositoryConfig.create(in, REPO_HOME);
+                repository = RepositoryImpl.create(cfg);
+            }
         }
         log.info("repository created: {} {}",
                 repository.getDescriptor(Repository.REP_NAME_DESC),

@@ -296,10 +296,19 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <argLine>-Doak=true -Xmx1024m</argLine>
+                            <reportNameSuffix>OAK</reportNameSuffix>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>oak</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -309,10 +318,18 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Doak=true -Xmx1024m</argLine>
+                            <reportNameSuffix>JR</reportNameSuffix>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>jr</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -325,30 +342,25 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>oak</id>
                                 <goals>
-                                    <goal>test</goal>
+                                    <goal>integration-test</goal>
                                 </goals>
                                 <configuration>
                                     <argLine>-Doak=true -Xmx1024m</argLine>
                                     <reportNameSuffix>OAK</reportNameSuffix>
-                                    <skip>false</skip>
                                 </configuration>
                             </execution>
                             <execution>
                                 <id>jr</id>
                                 <goals>
-                                    <goal>test</goal>
+                                    <goal>integration-test</goal>
                                 </goals>
                                 <configuration>
                                     <reportNameSuffix>JR</reportNameSuffix>
-                                    <skip>false</skip>
                                 </configuration>
                             </execution>
                         </executions>

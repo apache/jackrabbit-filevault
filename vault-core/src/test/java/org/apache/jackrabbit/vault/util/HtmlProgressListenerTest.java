@@ -16,14 +16,12 @@
  */
 package org.apache.jackrabbit.vault.util;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.StringWriter;
 
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.junit.Test;
-
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *

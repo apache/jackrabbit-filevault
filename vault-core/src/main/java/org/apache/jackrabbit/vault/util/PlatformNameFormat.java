@@ -17,6 +17,7 @@
 
 package org.apache.jackrabbit.vault.util;
 
+import org.apache.jackrabbit.util.Text;
 /**
  * Implements a repository to platform name formatter. 
  * 

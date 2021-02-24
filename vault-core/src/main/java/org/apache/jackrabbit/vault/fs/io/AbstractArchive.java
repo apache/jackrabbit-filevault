@@ -20,7 +20,7 @@ package org.apache.jackrabbit.vault.fs.io;
 import java.io.IOException;
 
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * Base class for archives

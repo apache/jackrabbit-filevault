@@ -27,7 +27,9 @@ import org.apache.commons.io.FileUtils;
 
 /**
  * SHA1 abstraction
+ * @deprecated Rather use {@link MessageDigest#getInstance(String)}
  */
+@Deprecated
 public class SHA1 {
 
     public final static SHA1 NULL = new SHA1(0,0,0,0,0);

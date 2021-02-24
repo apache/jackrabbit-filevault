@@ -32,7 +32,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.api.VaultFsTransaction;
 import org.apache.jackrabbit.vault.util.FileInputSource;
 import org.apache.jackrabbit.vault.util.PathUtil;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 
 /**

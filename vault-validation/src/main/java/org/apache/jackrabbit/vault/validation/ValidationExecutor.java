@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.validation.impl.util.EnhancedBufferedInputStream;
 import org.apache.jackrabbit.vault.validation.impl.util.ResettableInputStream;
 import org.apache.jackrabbit.vault.validation.impl.util.ValidatorException;

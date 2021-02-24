@@ -19,7 +19,7 @@ package org.apache.jackrabbit.vault.packaging;
 
 import java.util.ArrayList;
 
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

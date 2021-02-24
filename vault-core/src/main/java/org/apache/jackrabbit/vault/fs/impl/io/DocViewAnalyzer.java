@@ -32,7 +32,7 @@ import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.util.ISO9075;
 import org.apache.jackrabbit.vault.fs.io.DocViewAnalyzerListener;
 import org.apache.jackrabbit.vault.util.RejectingEntityDefaultHandler;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;

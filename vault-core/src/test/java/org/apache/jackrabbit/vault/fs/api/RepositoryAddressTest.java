@@ -19,7 +19,7 @@ package org.apache.jackrabbit.vault.fs.api;
 
 import javax.jcr.SimpleCredentials;
 
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 
 import junit.framework.TestCase;
 

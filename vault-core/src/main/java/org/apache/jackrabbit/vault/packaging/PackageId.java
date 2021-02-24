@@ -18,7 +18,7 @@
 package org.apache.jackrabbit.vault.packaging;
 
 import org.apache.jackrabbit.util.XMLChar;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * {@code PackageId} provides the basic metrics for identifying a package.

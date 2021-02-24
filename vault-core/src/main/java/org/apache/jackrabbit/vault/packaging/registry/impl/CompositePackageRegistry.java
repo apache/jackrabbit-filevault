@@ -41,6 +41,7 @@ import org.jetbrains.annotations.Nullable;
  * Package registry wrapping a number of {@link PackageRegistry} instances.
  * This registry only works, if each package id contained in any of the registries
  * is unique among all registries.
+ * In case duplicates are detected exceptions are thrown.
  * The first given registry is used for registering new packages.
  */
 public class CompositePackageRegistry implements PackageRegistry {

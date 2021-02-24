@@ -44,6 +44,25 @@
     <!-- B U I L D                                                             -->
     <!-- ====================================================================== -->
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>report-merged</id>
+                            <configuration>
+                                <!-- https://github.com/jacoco/jacoco/issues/34 -->
+                                <includes>
+                                    <include>org/apache/jackrabbit/vault/**</include>
+                                </includes>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
@@ -298,7 +317,10 @@
                     <plugin>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Doak=true -Xmx1024m</argLine>
+                            <systemPropertyVariables>
+                                <oak>true</oak>
+                            </systemPropertyVariables>
+                            <argLine>@{jacoco.command} -Xmx1024m</argLine>
                             <reportNameSuffix>OAK</reportNameSuffix>
                         </configuration>
                         <executions>
@@ -350,7 +372,10 @@
                                     <goal>integration-test</goal>
                                 </goals>
                                 <configuration>
-                                    <argLine>-Doak=true -Xmx1024m</argLine>
+                                    <systemPropertyVariables>
+                                        <oak>true</oak>
+                                    </systemPropertyVariables>
+                                    <argLine>@{jacoco.command} -Xmx1024m</argLine>
                                     <reportNameSuffix>OAK</reportNameSuffix>
                                 </configuration>
                             </execution>

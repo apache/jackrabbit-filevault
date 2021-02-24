@@ -33,7 +33,6 @@ import java.util.zip.ZipFile;
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.impl.io.CompressionUtil;
@@ -99,7 +98,7 @@ public class JarExporter extends AbstractExporter {
 
     /**
      * Constructs a new jar exporter that writes to the output stream.
-     *
+     * The given output stream is closed when calling {@link #close()}.
      * @param out the output stream
      */
     public JarExporter(OutputStream out) {
@@ -108,7 +107,8 @@ public class JarExporter extends AbstractExporter {
 
     /**
      * Constructs a new jar exporter that writes to the output stream.
-     *
+     * The given output stream is closed when calling {@link #close()}.
+     * 
      * @param out   the output stream
      * @param level level the compression level
      */
@@ -141,6 +141,10 @@ public class JarExporter extends AbstractExporter {
         if (jOut != null) {
             jOut.close();
             jOut = null;
+        } else {
+            if (out != null) {
+                out.close();
+            }
         }
     }
 
@@ -227,6 +231,5 @@ public class JarExporter extends AbstractExporter {
             jOut.setLevel(level);
         }
     }
-
 
 }

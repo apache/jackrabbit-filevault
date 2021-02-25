@@ -39,6 +39,7 @@ import javax.jcr.nodetype.NodeType;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;

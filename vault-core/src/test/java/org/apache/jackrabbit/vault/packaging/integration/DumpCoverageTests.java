@@ -32,7 +32,7 @@ import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

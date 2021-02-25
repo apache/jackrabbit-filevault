@@ -120,7 +120,6 @@
             <artifactId>jackrabbit-spi2dav</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <!-- JCR Stuff -->
         <dependency>
             <groupId>javax.jcr</groupId>

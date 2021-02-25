@@ -37,7 +37,7 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.w3c.dom.Element;
 
 /**

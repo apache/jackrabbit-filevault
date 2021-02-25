@@ -35,6 +35,7 @@ import org.apache.jackrabbit.api.ReferenceBinary;
 import org.apache.jackrabbit.commons.jackrabbit.SimpleReferenceBinary;
 import org.apache.jackrabbit.util.XMLChar;
 import org.apache.jackrabbit.value.ValueHelper;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * Helper class that represents a (jcr) property in the document view format.

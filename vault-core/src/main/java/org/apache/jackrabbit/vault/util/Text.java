@@ -27,7 +27,9 @@ import java.util.Properties;
 
 /**
  * This Class provides some text related utilities
+ * @deprecated Use {@link org.apache.jackrabbit.util.Text} instead
  */
+@Deprecated
 public class Text {
 
     /**

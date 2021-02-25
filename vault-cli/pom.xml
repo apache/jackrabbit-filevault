@@ -154,6 +154,13 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- Jackrabbit Util -->
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-jcr-commons</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- SLF4j / Log4j -->
         <dependency>
             <groupId>org.slf4j</groupId>

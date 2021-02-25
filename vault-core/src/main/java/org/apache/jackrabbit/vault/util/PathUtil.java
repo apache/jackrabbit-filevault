@@ -21,6 +21,7 @@ import java.io.File;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * {@code PathUtil}...

@@ -50,7 +50,7 @@ import org.apache.jackrabbit.value.StringValue;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.validation.ValidationExecutor;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.JcrPathValidator;

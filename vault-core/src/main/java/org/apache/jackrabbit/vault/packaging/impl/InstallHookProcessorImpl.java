@@ -39,7 +39,7 @@ import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

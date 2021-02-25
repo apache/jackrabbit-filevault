@@ -35,7 +35,7 @@ import org.apache.jackrabbit.vault.fs.io.AbstractExporter;
 import org.apache.jackrabbit.vault.fs.io.JarExporter;
 import org.apache.jackrabbit.vault.fs.io.PlatformExporter;
 import org.apache.jackrabbit.vault.util.DefaultProgressListener;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 
 /**

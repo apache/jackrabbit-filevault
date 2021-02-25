@@ -31,7 +31,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * Implements a Vault filesystem exporter that exports Vault files to a JCR

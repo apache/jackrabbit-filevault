@@ -82,7 +82,7 @@ import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.Tree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

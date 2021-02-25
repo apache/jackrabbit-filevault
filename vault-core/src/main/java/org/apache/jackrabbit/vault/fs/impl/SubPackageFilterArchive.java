@@ -26,7 +26,7 @@ import java.util.List;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.Archive;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

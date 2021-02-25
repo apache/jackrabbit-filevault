@@ -45,7 +45,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.util.ItemNameComparator2;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * The docview sax formatter generates SAX events to a given ContentHandler based on the aggregate tree.

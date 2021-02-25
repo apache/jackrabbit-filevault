@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.util;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * {@code Tree}...

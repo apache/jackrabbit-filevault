@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -58,8 +59,8 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     protected static final String MESSAGE_NO_PACKAGE_TYPE_SET = "No package type set, make sure that property 'packageType' is set in the properties.xml!";
     protected static final String MESSAGE_OSGI_BUNDLE_OR_CONFIG = "Package of type '%s' is not supposed to contain OSGi bundles or configurations!";
     protected static final String MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_OR_SUB_PACKAGE = "Package of type '%s' is not supposed to contain anything but OSGi bundles/configurations and sub packages!";
-    protected static final String MESSAGE_APP_CONTENT = "Package of type '%s' is not supposed to contain content inside '/libs' and '/apps'!";
-    protected static final String MESSAGE_NO_APP_CONTENT_FOUND = "Package of type '%s' is not supposed to contain content outside '/libs' and '/apps'!";
+    protected static final String MESSAGE_APP_CONTENT = "Package of type '%s' is not supposed to contain content below root nodes %s!";
+    protected static final String MESSAGE_NO_APP_CONTENT_FOUND = "Package of type '%s' is not supposed to contain content outside root nodes %s!";
     protected static final String MESSAGE_INDEX_DEFINITIONS = "Package of type '%s' is not supposed to contain Oak index definitions but has 'allowIndexDefinitions' set to true.";
     protected static final String MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE = "All mutable package types are prohibited and this package is of mutable type '%s'";
     protected static final String MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE = "All mutable package types are prohibited and this package is of mutable type '%s'";
@@ -76,6 +77,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     private final boolean prohibitImmutableContent;
     private final boolean allowComplexFilterRulesInApplicationPackages;
     private final @NotNull WorkspaceFilter filter;
+    private final Set<String> immutableRootNodeNames;
     private List<String> validContainerNodePaths;
     private List<NodeContext> potentiallyDisallowedContainerNodes;
 
@@ -83,7 +85,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
             @NotNull ValidationMessageSeverity severityForNoPackageType, @NotNull ValidationMessageSeverity severityForLegacyType,
             boolean prohibitMutableContent, boolean prohibitImmutableContent, boolean allowComplexFilterRulesInApplicationPackages,
             @NotNull PackageType type, @NotNull Pattern jcrInstallerNodePathRegex, @NotNull Pattern additionalJcrInstallerFileNodePathRegex,
-            @Nullable ValidationContext containerValidationContext) {
+            @NotNull Set<String> immutableRootNodeNames, @Nullable ValidationContext containerValidationContext) {
         this.type = type;
         this.severity = severity;
         this.severityForNoPackageType = severityForNoPackageType;
@@ -93,6 +95,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         this.allowComplexFilterRulesInApplicationPackages = allowComplexFilterRulesInApplicationPackages;
         this.jcrInstallerNodePathRegex = jcrInstallerNodePathRegex;
         this.additionalJcrInstallerFileNodePathRegex = additionalJcrInstallerFileNodePathRegex;
+        this.immutableRootNodeNames = immutableRootNodeNames;
         this.containerValidationContext = containerValidationContext;
         this.filter = workspaceFilter;
         this.validContainerNodePaths = new LinkedList<>();
@@ -114,8 +117,9 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         return (nodePath.endsWith(".zip"));
     }
 
-    static boolean isAppContent(String nodePath) {
-        return "/apps".equals(nodePath) || nodePath.startsWith("/apps/") || "/libs".equals(nodePath) || nodePath.startsWith("/libs/");
+    boolean isImmutableContent(String nodePath) {
+        return immutableRootNodeNames.stream().anyMatch( 
+                rootNodeName ->  ("/"+rootNodeName).equals(nodePath) || nodePath.startsWith( "/"+rootNodeName + "/"));
     }
 
     @Override
@@ -142,16 +146,16 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         Collection<ValidationMessage> messages = new LinkedList<>();
         switch (type) {
         case CONTENT:
-            if (isAppContent(nodeContext.getNodePath())) {
-                messages.add(new ValidationMessage(severity, String.format(MESSAGE_APP_CONTENT, type)));
+            if (isImmutableContent(nodeContext.getNodePath())) {
+                messages.add(new ValidationMessage(severity, String.format(MESSAGE_APP_CONTENT, type, immutableRootNodeNames.stream().collect(Collectors.joining("' or '", "'", "'")))));
             }
             if (isOsgiBundleOrConfiguration(nodeContext.getNodePath(), true)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type)));
             }
             break;
         case APPLICATION:
-            if (!isAppContent(nodeContext.getNodePath())) {
-                messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_APP_CONTENT_FOUND, type)));
+            if (!isImmutableContent(nodeContext.getNodePath())) {
+                messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_APP_CONTENT_FOUND, type, immutableRootNodeNames.stream().collect(Collectors.joining("' or '", "'", "'")))));
             }
             if (isOsgiBundleOrConfiguration(nodeContext.getNodePath(), true)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_OSGI_BUNDLE_OR_CONFIG, type)));

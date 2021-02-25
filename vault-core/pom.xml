@@ -44,6 +44,25 @@
     <!-- B U I L D                                                             -->
     <!-- ====================================================================== -->
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>report-merged</id>
+                            <configuration>
+                                <!-- https://github.com/jacoco/jacoco/issues/34 -->
+                                <includes>
+                                    <include>org/apache/jackrabbit/vault/**</include>
+                                </includes>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
@@ -296,10 +315,22 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Doak=true -Xmx1024m</argLine>
+                            <systemPropertyVariables>
+                                <oak>true</oak>
+                            </systemPropertyVariables>
+                            <argLine>@{jacoco.command} -Xmx1024m</argLine>
+                            <reportNameSuffix>OAK</reportNameSuffix>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>oak</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -309,10 +340,18 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Doak=true -Xmx1024m</argLine>
+                            <reportNameSuffix>JR</reportNameSuffix>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>jr</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -325,30 +364,28 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>oak</id>
                                 <goals>
-                                    <goal>test</goal>
+                                    <goal>integration-test</goal>
                                 </goals>
                                 <configuration>
-                                    <argLine>-Doak=true -Xmx1024m</argLine>
+                                    <systemPropertyVariables>
+                                        <oak>true</oak>
+                                    </systemPropertyVariables>
+                                    <argLine>@{jacoco.command} -Xmx1024m</argLine>
                                     <reportNameSuffix>OAK</reportNameSuffix>
-                                    <skip>false</skip>
                                 </configuration>
                             </execution>
                             <execution>
                                 <id>jr</id>
                                 <goals>
-                                    <goal>test</goal>
+                                    <goal>integration-test</goal>
                                 </goals>
                                 <configuration>
                                     <reportNameSuffix>JR</reportNameSuffix>
-                                    <skip>false</skip>
                                 </configuration>
                             </execution>
                         </executions>

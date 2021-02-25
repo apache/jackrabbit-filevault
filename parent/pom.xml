@@ -59,6 +59,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <maven.version>3.6.1</maven.version><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
         <surefire.version>3.0.0-M4</surefire.version>
         <sling.url>http://localhost:4502</sling.url>
+        <jacoco.command></jacoco.command><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
     </properties>
 
     <!-- ====================================================================== -->
@@ -662,14 +663,14 @@ Bundle-Category: jackrabbit
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>${jacoco.command}</argLine>
+                            <argLine>@{jacoco.command}</argLine>
                         </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>${jacoco.command}</argLine>
+                            <argLine>@{jacoco.command}</argLine>
                             <systemPropertyVariables>
                                 <!--
                                 for IT where you need a forked JVM to run the tests you can use this system property to make sure that

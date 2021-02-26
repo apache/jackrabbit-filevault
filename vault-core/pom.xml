@@ -23,14 +23,14 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.4.10</version>
+        <version>3.4.11-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>org.apache.jackrabbit.vault</artifactId>
-    <version>3.4.10</version>
+    <version>3.4.11-SNAPSHOT</version>
 
     <name>Apache Jackrabbit FileVault Core Bundle</name>
     <description>The core classes of Apache Jackrabbit FileVault</description>
@@ -394,8 +394,4 @@
             </build>
         </profile>
     </profiles>
-
-  <scm>
-    <tag>jackrabbit-filevault-3.4.10</tag>
-  </scm>
 </project>

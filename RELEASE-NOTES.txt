@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.8
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.10
 
 Introduction
 ------------
@@ -8,6 +8,28 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.4.10
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.4.10
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.6 and Jackrabbit 2.14
+
+Bug
+    * [JCRVLT-448] - JcrPackageManagerImpl.rewrap and assemble do not close passed output stream
+    * [JCRVLT-496] - Clarify usage of oak:index in application packages
+    * [JCRVLT-497] - NodeTypeValidator: Incorrect errors emitted for rep:Authorizable nodes
+    * [JCRVLT-499] - JcrPackageDefinitionImpl:getDate does not fully support ISO8601 format
+    * [JCRVLT-500] - DefaultPathFilter#isAbsolute fails with quoted patterns
+Improvement
+    * [JCRVLT-450] - Deprecate duplicate/unused util classes
+    * [JCRVLT-492] - Document install hooks
+    * [JCRVLT-493] - Document restrictions of package types
+    * [JCRVLT-494] - Clarify javadoc of ExecutionPlanBuilder.execute()
+    * [JCRVLT-503] - Introduce CompositePackageRegistry
+    * [JCRVLT-505] - Separate unit test from integration tests
+    * [JCRVLT-507] - Update to Oak 1.38.0
 
 Changes in Jackrabbit FileVault 3.4.8
 --------------------------------------

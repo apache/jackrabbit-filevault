@@ -118,7 +118,10 @@ public final class MockPackageRegistry implements PackageRegistry {
     public @NotNull DependencyReport analyzeDependencies(@NotNull PackageId id, boolean onlyInstalled)
             throws IOException, NoSuchPackageException {
         if (containedPackageIdsAndDependencies.containsKey(id)) {
-            return Mockito.mock(DependencyReport.class);
+            DependencyReport report = Mockito.mock(DependencyReport.class);
+            Mockito.when(report.getUnresolvedDependencies()).thenReturn(new Dependency[0]);
+            Mockito.when(report.getResolvedDependencies()).thenReturn(new PackageId[0]);
+            return report;
         } else {
             throw new NoSuchPackageException("Could not find package with id " + id);
         }

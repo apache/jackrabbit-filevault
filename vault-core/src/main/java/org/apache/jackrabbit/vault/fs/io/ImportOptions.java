@@ -405,4 +405,109 @@ public class ImportOptions {
     public void setDependencyHandling(DependencyHandling dependencyHandling) {
         this.dependencyHandling = dependencyHandling;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((acHandling == null) ? 0 : acHandling.hashCode());
+        result = prime * result + autoSave;
+        result = prime * result + ((cndPattern == null) ? 0 : cndPattern.hashCode());
+        result = prime * result + ((cugHandling == null) ? 0 : cugHandling.hashCode());
+        result = prime * result + ((dependencyHandling == null) ? 0 : dependencyHandling.hashCode());
+        result = prime * result + (dryRun ? 1231 : 1237);
+        result = prime * result + ((filter == null) ? 0 : filter.hashCode());
+        result = prime * result + ((hookClassLoader == null) ? 0 : hookClassLoader.hashCode());
+        result = prime * result + ((importMode == null) ? 0 : importMode.hashCode());
+        result = prime * result + ((listener == null) ? 0 : listener.hashCode());
+        result = prime * result + (nonRecursive ? 1231 : 1237);
+        result = prime * result + ((patchDirectory == null) ? 0 : patchDirectory.hashCode());
+        result = prime * result + (patchKeepInRepo ? 1231 : 1237);
+        result = prime * result + ((patchParentPath == null) ? 0 : patchParentPath.hashCode());
+        result = prime * result + ((pathMapping == null) ? 0 : pathMapping.hashCode());
+        result = prime * result + (strict ? 1231 : 1237);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ImportOptions other = (ImportOptions) obj;
+        if (acHandling != other.acHandling)
+            return false;
+        if (autoSave != other.autoSave)
+            return false;
+        if (cndPattern == null) {
+            if (other.cndPattern != null)
+                return false;
+        } else if (!cndPattern.pattern().equals(other.cndPattern.pattern()))
+            return false;
+        if (cugHandling != other.cugHandling)
+            return false;
+        if (dependencyHandling != other.dependencyHandling)
+            return false;
+        if (dryRun != other.dryRun)
+            return false;
+        if (filter == null) {
+            if (other.filter != null)
+                return false;
+        } else if (!filter.equals(other.filter))
+            return false;
+        if (hookClassLoader == null) {
+            if (other.hookClassLoader != null)
+                return false;
+        } else if (!hookClassLoader.equals(other.hookClassLoader))
+            return false;
+        if (importMode != other.importMode)
+            return false;
+        if (listener == null) {
+            if (other.listener != null)
+                return false;
+        } else if (!listener.equals(other.listener))
+            return false;
+        if (nonRecursive != other.nonRecursive)
+            return false;
+        if (patchDirectory == null) {
+            if (other.patchDirectory != null)
+                return false;
+        } else if (!patchDirectory.equals(other.patchDirectory))
+            return false;
+        if (patchKeepInRepo != other.patchKeepInRepo)
+            return false;
+        if (patchParentPath == null) {
+            if (other.patchParentPath != null)
+                return false;
+        } else if (!patchParentPath.equals(other.patchParentPath))
+            return false;
+        if (pathMapping == null) {
+            if (other.pathMapping != null)
+                return false;
+        } else if (!pathMapping.equals(other.pathMapping))
+            return false;
+        if (strict != other.strict)
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ImportOptions [strict=" + strict + ", " + (listener != null ? "listener=" + listener + ", " : "")
+                + (patchParentPath != null ? "patchParentPath=" + patchParentPath + ", " : "")
+                + (patchDirectory != null ? "patchDirectory=" + patchDirectory + ", " : "") + "patchKeepInRepo=" + patchKeepInRepo
+                + ", nonRecursive=" + nonRecursive + ", dryRun=" + dryRun + ", autoSave=" + autoSave + ", "
+                + (acHandling != null ? "acHandling=" + acHandling + ", " : "")
+                + (cugHandling != null ? "cugHandling=" + cugHandling + ", " : "")
+                + (importMode != null ? "importMode=" + importMode + ", " : "")
+                + (cndPattern != null ? "cndPattern=" + cndPattern + ", " : "") + (filter != null ? "filter=" + filter + ", " : "")
+                + (hookClassLoader != null ? "hookClassLoader=" + hookClassLoader + ", " : "")
+                + (pathMapping != null ? "pathMapping=" + pathMapping + ", " : "")
+                + (dependencyHandling != null ? "dependencyHandling=" + dependencyHandling : "") + "]";
+    }
+    
+    
 }

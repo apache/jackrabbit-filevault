@@ -22,6 +22,8 @@ import java.io.IOException;
 
 import javax.jcr.Session;
 
+import org.apache.jackrabbit.vault.fs.api.ImportMode;
+import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlan;
@@ -54,6 +56,12 @@ public class ExecutionPlanBuilderImplTest {
     public void testSaveAndLoad() throws IOException, PackageException {
         ImportOptions importOptions = new ImportOptions();
         importOptions.setStrict(true);
+        importOptions.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
+        importOptions.setAutoSaveThreshold(123);
+        importOptions.setCugHandling(AccessControlHandling.CLEAR);
+        importOptions.setImportMode(ImportMode.UPDATE);
+        importOptions.setDryRun(true);
+        importOptions.setNonRecursive(true);
         PackageTaskOptions options = new ImportOptionsPackageTaskOption(importOptions);
         builder.addTask().with(MockPackageRegistry.NEW_PACKAGE_ID).withOptions(options).with(PackageTask.Type.INSTALL);
         
@@ -63,7 +71,6 @@ public class ExecutionPlanBuilderImplTest {
         builder.load(new ByteArrayInputStream(out.toByteArray()));
         builder.with(session);
         ExecutionPlan plan = builder.execute();
-        importOptions.setStrict(true);
         PackageTaskImpl expectedTask = new PackageTaskImpl(MockPackageRegistry.NEW_PACKAGE_ID, Type.INSTALL, options);
         expectedTask.state = State.COMPLETED;
         MatcherAssert.assertThat(plan.getTasks(), Matchers.contains(expectedTask));

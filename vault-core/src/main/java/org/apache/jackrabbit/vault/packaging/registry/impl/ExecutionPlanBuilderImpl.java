@@ -130,7 +130,6 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     public ExecutionPlanBuilder load(@NotNull InputStream in) throws IOException {
         tasks.clear();
         try {
-            // TODO: use Stax for loading as well!
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             DocumentBuilder builder = factory.newDocumentBuilder();

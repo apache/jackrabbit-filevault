@@ -180,11 +180,6 @@ public class TransactionImpl implements VaultFsTransaction {
                         // force generic
                         serType = SerializationType.GENERIC;
                     }
-                } else if (ext.equals(".xcnd")) {
-                    aType = ArtifactType.PRIMARY;
-                    serType = SerializationType.CND;
-                    repoName = base;
-                    extension = ext;
                 } else if (ext.equals(".binary")) {
                     aType = ArtifactType.BINARY;
                     repoName = base;

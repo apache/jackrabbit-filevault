@@ -21,10 +21,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
+import javax.jcr.nodetype.InvalidNodeTypeDefinitionException;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.NodeTypeExistsException;
 
+import org.apache.jackrabbit.commons.cnd.CndImporter;
+import org.apache.jackrabbit.commons.cnd.ParseException;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
@@ -57,19 +64,25 @@ public class NodeTypeArtifactHandler extends AbstractArtifactHandler {
         if (primary.getSerializationType() != SerializationType.CND) {
             return null;
         }
+        ImportInfoImpl info = new ImportInfoImpl();
         String path = PathUtil.getPath(parent, primary.getRelativePath());
         if (wspFilter.getImportMode(path) == ImportMode.MERGE) {
-            ImportInfoImpl info = new ImportInfoImpl();
             info.onNop(path);
             return info;
         }
         // do import
-        CNDImporter importer = new CNDImporter();
         try (InputStream in = primary.getInputStream()) {
-            Reader r = new InputStreamReader(in, "utf-8");
-            return importer.doImport(parent, primary.getRelativePath(), r, primary.getRelativePath());
+            Reader r = new InputStreamReader(in, StandardCharsets.UTF_8);
+            try {
+                for (NodeType nodeType : CndImporter.registerNodeTypes(r, parent.getSession(), true)) {
+                    // node types don't have a real path
+                    info.onCreated(path + "/" + nodeType.getName());
+                }
+            } catch (ParseException e) {
+                throw new RepositoryException("Invalid CND file " + name, e);
+            }
         }
+        return info;
     }
-
 
 }

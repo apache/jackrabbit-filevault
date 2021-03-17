@@ -15,7 +15,7 @@
    limitations under the License.
 -->
 
-Nodetypes
+Node Types
 ===========
 
-Packages can register custom [JCR nodetypes](https://docs.adobe.com/docs/en/spec/jcr/2.0/8_Node_Type_Discovery.html) during import by carrying arbitrarily many `.cnd` files. All files names matching the regular expression pattern set in [package property](properties.html) `cndPattern` as well as all `*.cnd` files below `META-INF/vault` are considered. Details around the CND file format can be found at <https://jackrabbit.apache.org/jcr/node-type-notation.html>.
+Packages can register custom [JCR node types](https://docs.adobe.com/docs/en/spec/jcr/2.0/8_Node_Type_Discovery.html) during import by carrying arbitrarily many `.cnd` files. All files names matching the regular expression pattern set in [package property](properties.html) `cndPattern` as well as all `*.cnd` files below `META-INF/vault` are considered. Details around the CND file format can be found at <https://jackrabbit.apache.org/jcr/node-type-notation.html>.

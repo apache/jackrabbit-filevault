@@ -99,6 +99,9 @@ public class PackagingImpl implements Packaging {
         
         @AttributeDefinition(description = "The authorizable ids which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForRootInstallation();
+        
+        @AttributeDefinition(description = "The default value for strict imports (i.e. whether it just logs certain errors or always throws exceptions")
+        boolean isStrict() default true;
     }
 
     @Activate
@@ -119,7 +122,7 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackageManager getPackageManager(Session session) {
-        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authIdsForHookExecution(), config.authIdsForRootInstallation());
+        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authIdsForHookExecution(), config.authIdsForRootInstallation(), config.isStrict());
         mgr.setDispatcher(eventDispatcher);
         setBaseRegistry(mgr.getInternalRegistry(), registries);
         return mgr;
@@ -167,7 +170,7 @@ public class PackagingImpl implements Packaging {
     }
 
     private JcrPackageRegistry getJcrPackageRegistry(Session session, boolean useBaseRegistry) {
-        JcrPackageRegistry registry = new JcrPackageRegistry(session, new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()), config.packageRoots());
+        JcrPackageRegistry registry = new JcrPackageRegistry(session, new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()), config.isStrict(), config.packageRoots());
         registry.setDispatcher(eventDispatcher);
         if (useBaseRegistry) {
             setBaseRegistry(registry, registries);

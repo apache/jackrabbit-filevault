@@ -386,7 +386,7 @@ public class JcrPackageImpl implements JcrPackage {
             // MAX_VALUE disables saving completely, therefore we have to use a lower value!
             opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
         }
-        InstallContextImpl ctx = pack.prepareExtract(node.getSession(), opts, mgr.getSecurityConfig());
+        InstallContextImpl ctx = pack.prepareExtract(node.getSession(), opts, mgr.getSecurityConfig(), mgr.isStrictByDefault());
         JcrPackage snap = null;
         if (!opts.isDryRun() && createSnapshot) {
             ExportOptions eOpts = new ExportOptions();
@@ -483,7 +483,7 @@ public class JcrPackageImpl implements JcrPackage {
             try {
                 DependencyUtil.sortPackages(subPacks);
             } catch (CyclicDependencyException e) {
-                if (opts.isStrict()) {
+                if (opts.isStrict(mgr.isStrictByDefault())) {
                     throw e;
                 }
             }
@@ -986,7 +986,7 @@ public class JcrPackageImpl implements JcrPackage {
                 : ((JcrPackageDefinitionImpl) snap.getDefinition()).getSubPackages();
 
         if (snap == null) {
-            if (opts.isStrict()) {
+            if (opts.isStrict(mgr.isStrictByDefault())) {
                 throw new PackageException("Unable to uninstall package. No snapshot present.");
             }
             log.warn("Unable to revert package content {}. Snapshot missing.", getDefinition().getId());

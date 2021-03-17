@@ -111,18 +111,17 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      */
     private PackageRegistry baseRegistry = null;
 
-
     /**
      * Creates a new JcrPackageRegistry based on the given session.
      * @param session the JCR session that is used to access the repository.
      * @param roots the root paths to store the packages.
      */
     public JcrPackageRegistry(@NotNull Session session, @Nullable String ... roots) {
-        this(session, null, roots);
+        this(session, null, false, roots);
     }
 
-    public JcrPackageRegistry(@NotNull Session session, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig, @Nullable String... roots) {
-        super(securityConfig);
+    public JcrPackageRegistry(@NotNull Session session, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig,  boolean isStrict, @Nullable String... roots) {
+        super(securityConfig, isStrict);
         this.session = session;
         if (roots == null || roots.length == 0) {
             packRootPaths = new String[]{DEFAULT_PACKAGE_ROOT_PATH};

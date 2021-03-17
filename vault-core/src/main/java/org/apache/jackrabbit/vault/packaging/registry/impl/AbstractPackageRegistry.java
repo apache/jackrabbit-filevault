@@ -78,13 +78,22 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
 
     protected @NotNull SecurityConfig securityConfig;
 
-    public AbstractPackageRegistry(SecurityConfig securityConfig) {
+    /** whether package imports should be strict by default (can be overwritten by {@link ImportOptions#setStrict(boolean)})
+     * 
+     */
+    private final boolean isStrictByDefault;
+
+    public AbstractPackageRegistry(SecurityConfig securityConfig, boolean isStrictByDefault) {
         if (securityConfig != null) {
             this.securityConfig = securityConfig;
         } else {
             this.securityConfig = new SecurityConfig(null, null);
         }
-        
+        this.isStrictByDefault = isStrictByDefault;
+    }
+
+    public boolean isStrictByDefault() {
+        return isStrictByDefault;
     }
 
     /**

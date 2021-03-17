@@ -254,7 +254,7 @@ public class PackageInstallIT extends IntegrationTestBase {
         
         Session userSession = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
         try {
-            packMgr = new JcrPackageManagerImpl(userSession, new String[0], null, null);
+            packMgr = new JcrPackageManagerImpl(userSession, new String[0]);
     
             PackageEventDispatcherImpl dispatcher = new PackageEventDispatcherImpl();
             dispatcher.bindPackageEventListener(new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));
@@ -297,7 +297,7 @@ public class PackageInstallIT extends IntegrationTestBase {
         
         Session userSession = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
         try {
-            packMgr = new JcrPackageManagerImpl(userSession, new String[0], new String[] {"user1"}, null);
+            packMgr = new JcrPackageManagerImpl(userSession, new String[0], new String[] {"user1"}, null, false);
     
             PackageEventDispatcherImpl dispatcher = new PackageEventDispatcherImpl();
             dispatcher.bindPackageEventListener(new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));
@@ -773,7 +773,7 @@ public class PackageInstallIT extends IntegrationTestBase {
         admin.save();
 
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0], null, null);
+        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0]);
         pack = userPackMgr.open(id);
         ImportOptions opts = getDefaultOptions();
         pack.install(opts);
@@ -816,7 +816,7 @@ public class PackageInstallIT extends IntegrationTestBase {
         admin.save();
 
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0], null, null);
+        JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0]);
         pack = userPackMgr.open(id);
         ImportOptions opts = getDefaultOptions();
         pack.extract(opts);

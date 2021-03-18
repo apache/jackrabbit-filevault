@@ -155,15 +155,15 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws PackageException if an error during packaging occurs
      * @throws RepositoryException if a repository error during installation occurs.
      */
-    public void extract(Session session, ImportOptions opts, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig) throws PackageException, RepositoryException {
-        extract(prepareExtract(session, opts, securityConfig), null);
+    public void extract(Session session, ImportOptions opts, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrict) throws PackageException, RepositoryException {
+        extract(prepareExtract(session, opts, securityConfig, isStrict), null);
     }
     
     /**
      * {@inheritDoc}
      */
     public void extract(Session session, ImportOptions opts) throws RepositoryException, PackageException {
-        extract(session, opts, new AbstractPackageRegistry.SecurityConfig(null, null));
+        extract(session, opts, new AbstractPackageRegistry.SecurityConfig(null, null), false);
     }
 
     /**
@@ -184,7 +184,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws IllegalStateException if the package is not valid.
      * @return installation context
      */
-    protected InstallContextImpl prepareExtract(Session session, ImportOptions opts,@NotNull AbstractPackageRegistry.SecurityConfig securityConfig) throws PackageException, RepositoryException {
+    protected InstallContextImpl prepareExtract(Session session, ImportOptions opts, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrictByDefault) throws PackageException, RepositoryException {
         if (!isValid()) {
             throw new IllegalStateException("Package not valid.");
         }
@@ -198,7 +198,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
         checkAllowanceToInstallPackage(session, hooks, securityConfig);
 
-        Importer importer = new Importer(opts);
+        Importer importer = new Importer(opts, isStrictByDefault);
         AccessControlHandling ac = getACHandling();
         if (opts.getAccessControlHandling() == null) {
             opts.setAccessControlHandling(ac);
@@ -265,7 +265,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 hooks.execute(ctx);
                 throw new PackageException("Error while executing an install hook during installed phase.");
             }
-            if (importer.hasErrors() && ctx.getOptions().isStrict()) {
+            if (importer.hasErrors() && ctx.getOptions().isStrict(importer.isStrictByDefault())) {
                 ctx.setPhase(InstallContext.Phase.INSTALL_FAILED);
                 hooks.execute(ctx);
                 throw new PackageException("Errors during import.");

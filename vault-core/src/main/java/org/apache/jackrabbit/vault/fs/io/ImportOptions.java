@@ -27,13 +27,14 @@ import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Option that control the package import.
  */
 public class ImportOptions {
 
-    private boolean strict;
+    private Boolean strict;
 
     private ProgressTrackerListener listener;
 
@@ -123,12 +124,26 @@ public class ImportOptions {
         return ret;
     }
 
+    public boolean isStrict(boolean isStrictByDefault) {
+        if (strict == null) {
+            return isStrictByDefault;
+        } else {
+            return strict;
+        }
+    }
+
     /**
      * Returns the 'strict' flag.
-     * @return the 'strict' flag.
+     * @return the 'strict' flag or {@code null} in case this is not set
+     * @deprecated Use {@link #isStrict(boolean)} instead.
      */
+    @Deprecated
     public boolean isStrict() {
-        return strict;
+        if (strict == null) {
+            return false;
+        } else {
+            return strict;
+        }
     }
 
     /**

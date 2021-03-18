@@ -125,7 +125,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      *
      * @param homeDir the directory in which packages and their metadata is stored
      * @throws IOException If an I/O error occurs.
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean)} instead
      */
+    @Deprecated
     public FSPackageRegistry(@NotNull File homeDir) throws IOException {
         this(homeDir, InstallationScope.UNSCOPED);
     }
@@ -136,24 +138,40 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param homeDir the directory in which packages and their metadata is stored
      * @param scope to set a corresponding workspacefilter
      * @throws IOException If an I/O error occurs.
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean)} instead
      */
+    @Deprecated
     public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope) throws IOException {
        this(homeDir, scope, null);
     }
 
+    /**
+     * 
+     * @param homeDir
+     * @param scope
+     * @param securityConfig
+     * @throws IOException
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean)} instead
+     */
+    @Deprecated
     public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig) throws IOException {
-        super(securityConfig);
+        this(homeDir, scope, securityConfig, false);
+    }
+
+    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrict) throws IOException {
+        super(securityConfig, isStrict);
         this.homeDir = homeDir;
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
         this.scope = scope;
         loadPackageCache();
     }
+
     /**
      * Default constructor for OSGi initialization (homeDir defined via activator)
      * @throws IOException 
      */
     public FSPackageRegistry() throws IOException {
-        super(null); // set security config delayed (i.e. only after activate())
+        super(null, false); // set security config delayed (i.e. only after activate())
     }
 
     @Activate
@@ -701,7 +719,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     // no need to set filter in other cases
                 
             }
-            ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig());
+            ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault());
             dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
             updateInstallState(vltPkg.getId(), FSPackageStatus.EXTRACTED);
 

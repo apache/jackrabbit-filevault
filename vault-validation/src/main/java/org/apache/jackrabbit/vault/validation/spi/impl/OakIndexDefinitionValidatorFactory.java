@@ -54,7 +54,7 @@ public final class OakIndexDefinitionValidatorFactory implements ValidatorFactor
     }
     
     static boolean areIndexDefinitionsAllowed(PackageProperties properties) {
-        return "true".equals(properties.getProperty(PackageProperties.NAME_ALLOW_INDEX_DEFINITIONS));
+        return "true".equalsIgnoreCase(properties.getProperty(PackageProperties.NAME_ALLOW_INDEX_DEFINITIONS));
     }
 
     @Override

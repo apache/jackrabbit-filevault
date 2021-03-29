@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -206,9 +207,16 @@ public class PackageTypeValidatorTest {
         ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/apps/install/mybundle.jar", Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.APPLICATION, "/apps/install/mybundle.jar")));
         ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/apps/install/config.cfg", Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.APPLICATION, "/apps/install/config.cfg")));
         
+        // mutable node
+        ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/oak:index/testindex", Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_APP_CONTENT_FOUND, PackageType.APPLICATION, "'apps' or 'libs'")));
+        
         // no hooks
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.APPLICATION);
         Assert.assertThat(validator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
+
+        Mockito.when(properties.getProperty(PackageProperties.NAME_ALLOW_INDEX_DEFINITIONS)).thenReturn("true");
+        Assert.assertThat(validator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
+
         // with hooks
         Map<String, String> hooks = Collections.singletonMap("key", "com.example.ExtenalHook");
         Mockito.when(properties.getExternalHooks()).thenReturn(hooks);
@@ -232,7 +240,7 @@ public class PackageTypeValidatorTest {
         ValidationExecutorTest.assertViolation(
                 validator.validate(node, new NodeContextImpl("/apps/config/someconfigpid", Paths.get(""), Paths.get("")), true),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_OSGI_BUNDLE_OR_CONFIG, PackageType.APPLICATION, "/apps/config/someconfigpid")));
-        
+
         // validate sub packages of type Content
         Mockito.when(parentContainerProperties.getPackageType()).thenReturn(PackageType.APPLICATION);
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTENT);
@@ -244,7 +252,6 @@ public class PackageTypeValidatorTest {
         Mockito.when(properties.getExternalHooks()).thenReturn(Collections.emptyMap());
         ValidationExecutorTest.assertViolation(subPackageValidator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_UNSUPPORTED_SUB_PACKAGE, PackageType.APPLICATION)));
     }
-
 
     @Test
     public void testApplicationPackageTypeWithOakIndex() throws IOException, ConfigurationException {

@@ -214,7 +214,7 @@ public class PackageTypeValidatorTest {
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.APPLICATION);
         Assert.assertThat(validator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
 
-        Mockito.when(properties.getProperty(PackageProperties.NAME_ALLOW_INDEX_DEFINITIONS)).thenReturn("true");
+        // validation of regular properties should not lead to issues
         Assert.assertThat(validator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
 
         // with hooks

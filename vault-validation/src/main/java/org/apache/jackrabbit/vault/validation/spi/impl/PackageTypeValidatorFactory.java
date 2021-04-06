@@ -59,6 +59,8 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
 
     public static final String OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES = "allowComplexFilterRulesInApplicationPackages";
 
+    public static final String OPTION_ALLOW_INSTALL_HOOKS_IN_APPLICATION_PACKAGES = "allowInstallHooksInApplicationPackages";
+
     private static final String OPTION_IMMUTABLE_ROOT_NODE_NAMES = "immutableRootNodeNames";
 
     /**
@@ -123,6 +125,12 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
         } else {
             allowComplexFilterRulesInApplicationPackages = false;
         }
+        final boolean allowInstallHooksInApplicationPackages;
+        if (settings.getOptions().containsKey(OPTION_ALLOW_INSTALL_HOOKS_IN_APPLICATION_PACKAGES)) {
+            allowInstallHooksInApplicationPackages = Boolean.valueOf(settings.getOptions().get(OPTION_ALLOW_INSTALL_HOOKS_IN_APPLICATION_PACKAGES));
+        } else {
+            allowInstallHooksInApplicationPackages = false;
+        }
         final Set<String> immutableRootNodeNames;
         if (settings.getOptions().containsKey(OPTION_IMMUTABLE_ROOT_NODE_NAMES)) {
             String immutableRootNodeNamesValue = settings.getOptions().get(OPTION_IMMUTABLE_ROOT_NODE_NAMES);
@@ -131,7 +139,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
             immutableRootNodeNames = DEFAULT_IMMUTABLE_ROOT_NODE_NAMES;
         }
         @NotNull PackageType packageType = (context.getProperties().getPackageType() != null) ? context.getProperties().getPackageType() : PackageType.MIXED;
-        return new PackageTypeValidator(context.getFilter(), settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, packageType, jcrInstallerNodePathRegex, additionalJcrInstallerFileNodePathRegex, immutableRootNodeNames, context.getContainerValidationContext());
+        return new PackageTypeValidator(context.getFilter(), settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, allowInstallHooksInApplicationPackages, packageType, jcrInstallerNodePathRegex, additionalJcrInstallerFileNodePathRegex, immutableRootNodeNames, context.getContainerValidationContext());
     }
 
     @Override

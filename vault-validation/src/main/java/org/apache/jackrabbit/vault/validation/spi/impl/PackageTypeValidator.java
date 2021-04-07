@@ -75,6 +75,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     private final boolean prohibitMutableContent;
     private final boolean prohibitImmutableContent;
     private final boolean allowComplexFilterRulesInApplicationPackages;
+    private final boolean allowInstallHooksInApplicationPackages;
     private final @NotNull WorkspaceFilter filter;
     private final Set<String> immutableRootNodeNames;
     private List<String> validContainerNodePaths;
@@ -83,8 +84,9 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     public PackageTypeValidator(@NotNull WorkspaceFilter workspaceFilter, @NotNull ValidationMessageSeverity severity,
             @NotNull ValidationMessageSeverity severityForNoPackageType, @NotNull ValidationMessageSeverity severityForLegacyType,
             boolean prohibitMutableContent, boolean prohibitImmutableContent, boolean allowComplexFilterRulesInApplicationPackages,
-            @NotNull PackageType type, @NotNull Pattern jcrInstallerNodePathRegex, @NotNull Pattern additionalJcrInstallerFileNodePathRegex,
-            @NotNull Set<String> immutableRootNodeNames, @Nullable ValidationContext containerValidationContext) {
+            boolean allowInstallHooksInApplicationPackages, @NotNull PackageType type, @NotNull Pattern jcrInstallerNodePathRegex, 
+            @NotNull Pattern additionalJcrInstallerFileNodePathRegex, @NotNull Set<String> immutableRootNodeNames, 
+            @Nullable ValidationContext containerValidationContext) {
         this.type = type;
         this.severity = severity;
         this.severityForNoPackageType = severityForNoPackageType;
@@ -92,6 +94,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         this.prohibitMutableContent = prohibitMutableContent;
         this.prohibitImmutableContent = prohibitImmutableContent;
         this.allowComplexFilterRulesInApplicationPackages = allowComplexFilterRulesInApplicationPackages;
+        this.allowInstallHooksInApplicationPackages = allowInstallHooksInApplicationPackages;
         this.jcrInstallerNodePathRegex = jcrInstallerNodePathRegex;
         this.additionalJcrInstallerFileNodePathRegex = additionalJcrInstallerFileNodePathRegex;
         this.immutableRootNodeNames = immutableRootNodeNames;
@@ -217,7 +220,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         switch (packageType) {
         case APPLICATION:
             // must not contain hooks (this detects external hooks)
-            if (!properties.getExternalHooks().isEmpty()) {
+            if (!properties.getExternalHooks().isEmpty() && !allowInstallHooksInApplicationPackages) {
                 messages.add(new ValidationMessage(severity,
                         String.format(MESSAGE_PACKAGE_HOOKS, properties.getPackageType(), properties.getExternalHooks())));
             }
@@ -302,7 +305,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     public Collection<ValidationMessage> validateMetaInfPath(@NotNull Path filePath, @NotNull Path basePath, boolean isFolder) {
         switch (type) {
         case APPLICATION:
-            if (filePath.startsWith(PATH_HOOKS))
+            if (filePath.startsWith(PATH_HOOKS) && !allowInstallHooksInApplicationPackages)
                 // must not contain hooks (this detects internal hooks)
                 return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_PACKAGE_HOOKS, type, filePath)));
         default:

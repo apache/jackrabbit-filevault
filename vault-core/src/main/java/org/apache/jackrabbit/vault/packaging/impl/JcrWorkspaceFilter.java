@@ -25,9 +25,14 @@ import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
+import javax.jcr.ValueFormatException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.version.VersionException;
 
+import org.apache.jackrabbit.vault.fs.api.FilterSet;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
-import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
+import org.apache.jackrabbit.vault.fs.api.PathFilter;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
@@ -53,35 +58,31 @@ public class JcrWorkspaceFilter  {
             if (root.length() == 0) {
                 continue;
             }
+            boolean isPropertyFilter = false;
+            if (filter.getName().startsWith("p")) {
+                isPropertyFilter = true;
+            }
             String mode = filter.hasProperty(JcrPackageDefinitionImpl.PN_MODE)
                     ? filter.getProperty(JcrPackageDefinitionImpl.PN_MODE).getString()
                     : "";
             PathFilterSet set = new PathFilterSet(root);
+            PathFilterSet propertySet = new PathFilterSet(root);
             if (mode.length() > 0) {
                 set.setImportMode(ImportMode.valueOf(mode.toUpperCase()));
+                propertySet.setImportMode(ImportMode.valueOf(mode.toUpperCase()));
             }
+            
             if (filter.hasProperty(JcrPackageDefinitionImpl.PN_RULES)) {
-                // new version with mv rules property
-                Property p = filter.getProperty(JcrPackageDefinitionImpl.PN_RULES);
-                Value[] values = p.getDefinition().isMultiple() ? p.getValues() : new Value[]{p.getValue()};
-                for (Value value: values) {
-                    String rule = value.getString();
-                    int idx = rule.indexOf(':');
-                    String type = idx > 0 ? rule.substring(0, idx) : "include";
-                    String patt = idx > 0 ? rule.substring(idx + 1) : "";
-                    DefaultPathFilter pf;
-                    try {
-                        pf = new DefaultPathFilter(patt);
-                    } catch (ConfigurationException e) {
-                        throw new RepositoryException("Can not load filter from node " + defNode.getPath(), e);
+                try {
+                    loadRules(set, filter, JcrPackageDefinitionImpl.PN_RULES);
+                    if (!loadRules(propertySet, filter, JcrPackageDefinitionImpl.PN_PROPERTY_RULES)) {
+                        propertySet = null;
                     }
-                    if ("include".equals(type)) {
-                        set.addInclude(pf);
-                    } else {
-                        set.addExclude(pf);
-                    }
+                } catch (ConfigurationException e) {
+                    throw new RepositoryException("Can not load filter from node " + defNode.getPath(), e);
                 }
             } else {
+                // this is the legacy format
                 for (NodeIterator rules = filter.getNodes(); rules.hasNext();) {
                     Node rule = rules.nextNode();
                     String type = rule.getProperty(JcrPackageDefinitionImpl.PN_TYPE).getString();
@@ -98,12 +99,40 @@ public class JcrWorkspaceFilter  {
                         set.addExclude(pf);
                     }
                 }
+                propertySet = null;
             }
-            wsp.add(set);
+            if (propertySet != null) {
+                wsp.add(set, propertySet);
+            } else {
+                wsp.add(set);
+            }
         }
         return wsp;
     }
 
+    private static boolean loadRules(PathFilterSet set, Node filterNode, String propertyName) throws ConfigurationException, RepositoryException {
+        if (!filterNode.hasProperty(propertyName)) {
+            return false;
+        }
+        Property p = filterNode.getProperty(propertyName);
+        Value[] values = p.getDefinition().isMultiple() ? p.getValues() : new Value[]{p.getValue()};
+        for (Value value: values) {
+            String rule = value.getString();
+            int idx = rule.indexOf(':');
+            String type = idx > 0 ? rule.substring(0, idx) : "include";
+            String patt = idx > 0 ? rule.substring(idx + 1) : "";
+            DefaultPathFilter pf = new DefaultPathFilter(patt);
+            
+            if ("include".equals(type)) {
+                set.addInclude(pf);
+            } else {
+                set.addExclude(pf);
+            }
+        }
+        return true;
+    }
+
+    @Deprecated
     public static void saveLegacyFilter(WorkspaceFilter filter, Node defNode, boolean save)
             throws RepositoryException {
         // delete all nodes first
@@ -115,7 +144,7 @@ public class JcrWorkspaceFilter  {
             Node setNode = defNode.addNode("f" + nr);
             setNode.setProperty(JcrPackageDefinitionImpl.PN_ROOT, set.getRoot());
             int eNr = 0;
-            for (ItemFilterSet.Entry e: set.getEntries()) {
+            for (FilterSet.Entry<PathFilter> e: set.getEntries()) {
                 // expect path filter
                 if (!(e.getFilter() instanceof DefaultPathFilter)) {
                     throw new IllegalArgumentException("Can only handle default path filters.");
@@ -139,28 +168,51 @@ public class JcrWorkspaceFilter  {
             defNode.getNode(JcrPackageDefinitionImpl.NN_FILTER).remove();
         }
         Node filterNode = defNode.addNode(JcrPackageDefinitionImpl.NN_FILTER);
-        int nr = 0;
-        for (PathFilterSet set: filter.getFilterSets()) {
-            Node setNode = filterNode.addNode("f" + nr);
-            setNode.setProperty(JcrPackageDefinitionImpl.PN_ROOT, set.getRoot());
-            setNode.setProperty(JcrPackageDefinitionImpl.PN_MODE, set.getImportMode().name().toLowerCase());
-            List<String> rules = new LinkedList<String>();
-            for (ItemFilterSet.Entry e: set.getEntries()) {
-                // expect path filter
-                if (!(e.getFilter() instanceof DefaultPathFilter)) {
-                    throw new IllegalArgumentException("Can only handle default path filters.");
-                }
-                String type = e.isInclude() ? "include" : "exclude";
-                String patt = ((DefaultPathFilter) e.getFilter()).getPattern();
-                rules.add(type + ":" + patt);
-            }
-            setNode.setProperty(JcrPackageDefinitionImpl.PN_RULES, rules.toArray(new String[rules.size()]));
-            nr++;
-        }
+        savePathFilterSet(filter.getFilterSets(), filter.getPropertyFilterSets(), filterNode);
+        
         if (save) {
             defNode.getSession().save();
         }
     }
 
 
+    private static void savePathFilterSet(List<PathFilterSet> pathFilterSets, List<PathFilterSet> propertyFilterSets, Node filterNode) throws RepositoryException {
+        int no = 0;
+        for (PathFilterSet set: pathFilterSets) {
+            Node setNode = filterNode.addNode("f" + no);
+            setNode.setProperty(JcrPackageDefinitionImpl.PN_ROOT, set.getRoot());
+            setNode.setProperty(JcrPackageDefinitionImpl.PN_MODE, set.getImportMode().name().toLowerCase());
+            
+            saveRules(setNode, set.getEntries(), JcrPackageDefinitionImpl.PN_RULES);
+            // find property filter for same root
+            PathFilterSet propertyFilterSet = getSetForRoot(propertyFilterSets, set.getRoot());
+            if (propertyFilterSet != null) {
+                saveRules(setNode, propertyFilterSet.getEntries(), JcrPackageDefinitionImpl.PN_PROPERTY_RULES);
+            }
+            no++;
+        }
+    }
+
+    private static PathFilterSet getSetForRoot(List<PathFilterSet> filterSets, String root) {
+        for (PathFilterSet set : filterSets) {
+            if (set.getRoot().equals(root)) {
+                return set;
+            }
+        }
+        return null;
+    }
+
+    private static void saveRules(Node setNode, List<FilterSet.Entry<PathFilter>> entries, String propertyName) throws ValueFormatException, VersionException, LockException, ConstraintViolationException, RepositoryException {
+        List<String> rules = new LinkedList<>();
+        for (FilterSet.Entry<PathFilter> e: entries) {
+            // expect path filter
+            if (!(e.getFilter() instanceof DefaultPathFilter)) {
+                throw new IllegalArgumentException("Can only handle default path filters.");
+            }
+            String type = e.isInclude() ? "include" : "exclude";
+            String patt = ((DefaultPathFilter) e.getFilter()).getPattern();
+            rules.add(type + ":" + patt);
+        }
+        setNode.setProperty(propertyName, rules.toArray(new String[rules.size()]));
+    }
 }

@@ -252,11 +252,11 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      */
     @Override
     public void dump(@NotNull DumpContext ctx, boolean isLast) {
-        ctx.printf(false, "root: %s", getRoot());
+        ctx.printf(false, "root: %s, mode %s", getRoot(), getImportMode());
         if (entries != null) {
             Iterator<Entry<E>> iter = entries.iterator();
             while (iter.hasNext()) {
-                Entry e = iter.next();
+                Entry<E> e = iter.next();
                 e.dump(ctx, !iter.hasNext());
             }
         }
@@ -280,7 +280,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         if (this == o) return true;
         if (!(o instanceof FilterSet)) return false;
 
-        FilterSet filterSet = (FilterSet) o;
+        FilterSet<E> filterSet = (FilterSet<E>) o;
         if (entries != null ? !entries.equals(filterSet.entries) : filterSet.entries != null) return false;
         return root.equals(filterSet.root);
 

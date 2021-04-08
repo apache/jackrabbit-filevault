@@ -488,7 +488,16 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         Iterator<PathFilterSet> iter = nodesFilterSets.iterator();
         while (iter.hasNext()) {
             PathFilterSet set = iter.next();
-            ctx.println(!iter.hasNext(), "ItemFilterSet");
+            ctx.println(!iter.hasNext(), "NodeFilterSet");
+            ctx.indent(!iter.hasNext());
+            set.dump(ctx, false);
+            ctx.outdent();
+        }
+        
+        iter = propsFilterSets.iterator();
+        while (iter.hasNext()) {
+            PathFilterSet set = iter.next();
+            ctx.println(!iter.hasNext(), "PropertyFilterSet");
             ctx.indent(!iter.hasNext());
             set.dump(ctx, false);
             ctx.outdent();

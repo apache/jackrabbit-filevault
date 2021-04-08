@@ -162,9 +162,14 @@ public interface JcrPackageDefinition extends PackageProperties {
     String PN_MODE = "mode";
 
     /**
-     * Property name of the filter rules
+     * Property name of the path filter rules
      */
     String PN_RULES = "rules";
+
+    /**
+     * Property name of the property filter rules
+     */
+    String PN_PROPERTY_RULES = "propertyRules";
 
     /**
      * Property name of the rule type

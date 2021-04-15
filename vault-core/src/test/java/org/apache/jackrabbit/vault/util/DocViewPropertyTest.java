@@ -204,9 +204,7 @@ public class DocViewPropertyTest {
     }
 
     private void assertEscaped(String original, String expected, boolean multi) {
-        StringBuffer buf = new StringBuffer();
-        DocViewProperty.escape(buf, original, multi);
-        Assert.assertEquals(expected, buf.toString());
+        Assert.assertEquals(expected, DocViewProperty.escape(original, multi));
     }
 
     private void assertEquals(DocViewProperty p, boolean multi, int type, String... values) {

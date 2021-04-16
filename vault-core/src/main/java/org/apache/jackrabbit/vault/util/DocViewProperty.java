@@ -42,11 +42,12 @@ import org.apache.jackrabbit.value.ValueHelper;
  * Helper class that represents a (jcr) property in the document view format.
  * It contains formatting and parsing methods for writing/reading enhanced
  * docview properties.
- * <p/>
+ * <br>
  * The string representation adheres to the following grammar:
  * <pre>
  * <code>prop:= [ "{" type "}" ] ( value | "[" [ value { "," value } ] "]" )
  * type := {@link PropertyType#nameFromValue(int)} | {@link #BINARY_REF}
+ * value := is a string representation of the value where the following characters are escaped: ',\[{' with a leading '\'
  * </code>
  * </pre>
  * 

@@ -221,7 +221,7 @@ public class PackageTypeValidatorTest {
         Map<String, String> hooks = Collections.singletonMap("key", "com.example.ExternalHook");
         Mockito.when(properties.getExternalHooks()).thenReturn(hooks);
         ValidationExecutorTest.assertViolation(validator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_PACKAGE_HOOKS, PackageType.APPLICATION, hooks)));
-        ValidationExecutorTest.assertViolation(validator.validateMetaInfPath(Paths.get("vault", "hooks", "myhook.jar"), Paths.get(""), false), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_PACKAGE_HOOKS, PackageType.APPLICATION, "vault/hooks/myhook.jar")));
+        ValidationExecutorTest.assertViolation(validator.validateMetaInfPath(Paths.get("vault", "hooks", "myhook.jar"), Paths.get(""), false), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_PACKAGE_HOOKS, PackageType.APPLICATION, Paths.get("vault", "hooks", "myhook.jar"))));
         
         // with regular filter
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();

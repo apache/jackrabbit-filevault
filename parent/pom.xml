@@ -55,7 +55,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <test.vm.options>-Doak=$test.oak}</test.vm.options>
         <argLine>${test.vm.options}</argLine>
         <java.target.version>1.8</java.target.version>
-        <bnd.version>5.2.0</bnd.version>
+        <bnd.version>5.3.0</bnd.version>
         <maven.version>3.6.1</maven.version><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
         <surefire.version>3.0.0-M4</surefire.version>
         <sling.url>http://localhost:4502</sling.url>
@@ -201,6 +201,7 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M5</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
@@ -208,6 +209,7 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.0.0-M5</version>
                     <configuration>
                         <systemProperties>
                             <!-- put derby.log (created for Jackrabbit based ITs below target instead of the current directory) -->
@@ -225,6 +227,7 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
+                    <version>3.0.0-M4</version>
                     <configuration>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <projectVersionPolicyId>OddEvenVersionPolicy</projectVersionPolicyId>
@@ -234,12 +237,6 @@ Bundle-Category: jackrabbit
                             <groupId>org.apache.maven.release</groupId>
                             <artifactId>maven-release-oddeven-policy</artifactId>
                             <version>3.0.0-M1</version>
-                        </dependency>
-                        <!-- https://issues.apache.org/jira/browse/MRELEASE-1040 -->
-                        <dependency>
-                            <groupId>org.eclipse.aether</groupId>
-                            <artifactId>aether-util</artifactId>
-                            <version>1.0.0.v20140518</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -294,7 +291,7 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0-M2</version>
+                    <version>3.0.0-M3</version>
                     <executions>
                         <execution>
                             <id>enforce-java-and-maven</id>

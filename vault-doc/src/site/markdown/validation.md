@@ -67,7 +67,7 @@ The SPI is exported from the artifact `org.apache.jackrabbit.vault:vault-validat
 
 The validator which is returned via the `ValidatorFactory` is one of the following types below package `org.apache.jackrabbit.filevault.maven.packaging.validator`
 
-Validator Class | Description | `META-INF` or `jcr_root` | Called from another validator
+Validator Class | Description | Scope | Called from another validator
 --- | --- | --- | ---
 `DocumentViewXmlValidator` | Called for each node serialized into a DocView element | `jcr_root` | no
 `NodePathValidator` | Called for each node path contained in the package (even for ones not listed in the filter.xml) | `jcr_root` | no

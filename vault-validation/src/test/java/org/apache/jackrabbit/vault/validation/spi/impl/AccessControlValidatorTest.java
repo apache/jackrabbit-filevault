@@ -31,7 +31,7 @@ import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
-import org.junit.Assert;
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
 public class AccessControlValidatorTest {
@@ -47,8 +47,8 @@ public class AccessControlValidatorTest {
 
         DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "rep:ACL");
         Collection<ValidationMessage> messages = validator.validate(node,  new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("base")), false);
-        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -60,8 +60,8 @@ public class AccessControlValidatorTest {
 
         DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "unstructured");
         Collection<ValidationMessage> messages = validator.validate(node,  new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("base")), false);
-        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class AccessControlValidatorTest {
 
         DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "nt:unstructured");
         Collection<ValidationMessage> messages = validator.validate(node,  new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("base")), false);
-        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(validator.done(), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AccessControlValidator.MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST, AccessControlHandling.MERGE)));
     }
 
@@ -89,7 +89,7 @@ public class AccessControlValidatorTest {
         
         ValidationExecutorTest.assertViolation(messages,
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AccessControlValidator.MESSAGE_IGNORED_ACCESS_CONTROL_LIST, AccessControlHandling.CLEAR)));
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -104,6 +104,6 @@ public class AccessControlValidatorTest {
         
         ValidationExecutorTest.assertViolation(messages,
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AccessControlValidator.MESSAGE_IGNORED_ACCESS_CONTROL_LIST, AccessControlHandling.IGNORE)));
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 }

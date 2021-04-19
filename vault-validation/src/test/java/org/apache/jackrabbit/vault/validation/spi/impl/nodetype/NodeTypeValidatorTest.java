@@ -47,6 +47,7 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.apache.jackrabbit.vault.validation.spi.util.classloaderurl.URLFactory;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -120,15 +121,15 @@ public class NodeTypeValidatorTest {
                 new String[] { "rep:AccessControllable", "rep:RepoAccessControllable" }, true, PropertyType.STRING));
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "rep:root");
         
-        Assert.assertThat(validator.validate(node, nodeContext, true), AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validateEnd(node, nodeContext, true), AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.validate(node, nodeContext, true), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.validateEnd(node, nodeContext, true), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
     public void testInvalidChildNodeTypeBelowDefault() {
         NodeContext nodeContext = new NodeContextImpl("/apps", Paths.get("apps"), Paths.get(""));
-        Assert.assertThat(validator.validateJcrPath(nodeContext, true, false), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.validateJcrPath(nodeContext, true, false), AnyValidationMessageMatcher.noValidationInCollection());
         nodeContext = new NodeContextImpl("/apps/test", Paths.get("apps", "test"), Paths.get(""));
 
         Map<String, DocViewProperty> props = new HashMap<>();
@@ -142,7 +143,7 @@ public class NodeTypeValidatorTest {
                         String.format(JcrNodeTypeMetaDataImpl.MESSAGE_CHILD_NODE_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED,
                                 "test", "nt:unstructured", JcrConstants.NT_FOLDER,
                                 "Node type does not allow arbitrary child nodes and does not allow this specific name and node type either!"), nodeContext));
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -153,13 +154,13 @@ public class NodeTypeValidatorTest {
         props.put(NameConstants.JCR_PRIMARYTYPE.toString(), new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(),
                 new String[] { JcrConstants.NT_FILE }, false, PropertyType.STRING));
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, JcrConstants.NT_FILE);
-        Assert.assertThat(validator.validate(node, nodeContext, false), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.validate(node, nodeContext, false), AnyValidationMessageMatcher.noValidationInCollection());
 
         ValidationExecutorTest.assertViolation(validator.done(),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_CHILD_NODE_MISSING,
                                 "jcr:content [nt:base]", "nt:file", "/apps/test/node4")));
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -211,7 +212,7 @@ public class NodeTypeValidatorTest {
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(NodeTypeValidator.MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE,
                                 "Invalid primary type 'sling:Folder': sling: is not a registered namespace prefix."), nodeContext));
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -225,7 +226,7 @@ public class NodeTypeValidatorTest {
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(NodeTypeValidator.MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE,
                                 "Invalid node name 'cq:dialog': cq: is not a registered namespace prefix."), nodeContext));
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     
@@ -237,12 +238,12 @@ public class NodeTypeValidatorTest {
 
         // order node only (no other property)
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, null);
-        Assert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test", Paths.get("/some/path"), Paths.get("")), false),
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test", Paths.get("/some/path"), Paths.get("")), false),
                 AnyValidationMessageMatcher.noValidationInCollection());
 
         // missing node type but not contained in filter (with properties)
         node = new DocViewNode("jcr:root", "jcr:root", null, props, null, null);
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 validator.validate(node, new NodeContextImpl("/apps/test2/invalid", Paths.get("/some/path"), Paths.get("")), false),
                 AnyValidationMessageMatcher.noValidationInCollection());
 
@@ -256,9 +257,9 @@ public class NodeTypeValidatorTest {
         props.put(NameConstants.JCR_PRIMARYTYPE.toString(), new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(),
                 new String[] { "nt:unstructured" }, false, PropertyType.STRING));
         node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "nt:unstructured");
-        Assert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test", Paths.get("/some/path"), Paths.get("")), false),
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test", Paths.get("/some/path"), Paths.get("")), false),
                 AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
 
     }
 
@@ -276,9 +277,9 @@ public class NodeTypeValidatorTest {
         props.put(NameConstants.JCR_PRIMARYTYPE.toString(), new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(),
                 new String[] { JcrConstants.NT_UNSTRUCTURED }, false, PropertyType.STRING));
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, new String[] { NameConstants.MIX_LASTMODIFIED.toString() }, JcrConstants.NT_UNSTRUCTURED);
-        Assert.assertThat(validator.validate(node, nodeContext, false),
+        MatcherAssert.assertThat(validator.validate(node, nodeContext, false),
                 AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -291,9 +292,9 @@ public class NodeTypeValidatorTest {
         props.put(NameConstants.JCR_PRIMARYTYPE.toString(), new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(),
                 new String[] { JcrConstants.NT_UNSTRUCTURED }, false, PropertyType.STRING));
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, JcrConstants.NT_UNSTRUCTURED);
-        Assert.assertThat(validator.validate(node, nodeContext, false),
+        MatcherAssert.assertThat(validator.validate(node, nodeContext, false),
                 AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
@@ -309,16 +310,16 @@ public class NodeTypeValidatorTest {
         props.put(NameConstants.JCR_ISCHECKEDOUT.toString(), new DocViewProperty(NameConstants.JCR_ISCHECKEDOUT.toString(),
                 new String[] { "true" }, false, PropertyType.BOOLEAN));
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, new String[] { NameConstants.MIX_VERSIONABLE.toString() }, "WorkflowModel");
-        Assert.assertThat(validator.validate(node, nodeContext, false),
+        MatcherAssert.assertThat(validator.validate(node, nodeContext, false),
                 AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
     public void testAuthorizableNodes() {
         // the folder is detected first
         NodeContext nodeContext = new NodeContextImpl("/home/users/system/systemuser", Paths.get("node4"), Paths.get(""));
-        Assert.assertThat(validator.validateJcrPath(nodeContext, true, false),
+        MatcherAssert.assertThat(validator.validateJcrPath(nodeContext, true, false),
                 AnyValidationMessageMatcher.noValidationInCollection());
         Map<String, DocViewProperty> props = new HashMap<>();
         props.put(NameConstants.JCR_PRIMARYTYPE.toString(), new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(),
@@ -331,8 +332,8 @@ public class NodeTypeValidatorTest {
                 new String[] { "systemuser" }, false, PropertyType.STRING));
         // then the actual doctype with the user
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, new String[] { }, "rep:SystemUser");
-        Assert.assertThat(validator.validate(node, nodeContext, true),
+        MatcherAssert.assertThat(validator.validate(node, nodeContext, true),
                 AnyValidationMessageMatcher.noValidationInCollection());
-        Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 }

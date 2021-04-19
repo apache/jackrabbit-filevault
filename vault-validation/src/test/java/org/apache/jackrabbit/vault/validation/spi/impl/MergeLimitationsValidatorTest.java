@@ -33,9 +33,8 @@ import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
-import org.apache.jackrabbit.vault.validation.spi.impl.MergeLimitationsValidator;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
-import org.junit.Assert;
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -70,7 +69,7 @@ public class MergeLimitationsValidatorTest {
 
         DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "nt:unstructured");
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), true);
-        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
     }
 
 }

@@ -25,8 +25,8 @@ import java.util.Properties;
 
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class PackagePropertiesImplTest {
@@ -48,32 +48,32 @@ public class PackagePropertiesImplTest {
     @Test
     public void testGetDependenciesLocations() throws URISyntaxException {
         PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0=maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.singletonMap(PackageId.fromString("group1:name1:1.0"), new URI("maven:com.example.mygroupid:myartifactId:1.0.0:zip"))));
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.singletonMap(PackageId.fromString("group1:name1:1.0"), new URI("maven:com.example.mygroupid:myartifactId:1.0.0:zip"))));
         
         packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0=maven:com.example.mygroupid:myartifactId:1.0.0:zip,group2:name2:2.0=maven:com.example.mygroupid2:myartifactId2:2.0.0:zip,"));
         Map<PackageId, URI> expectedDependenciesLocations = new HashMap<>();
         expectedDependenciesLocations.put(PackageId.fromString("group1:name1:1.0"), new URI("maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
         expectedDependenciesLocations.put(PackageId.fromString("group2:name2:2.0"), new URI("maven:com.example.mygroupid2:myartifactId2:2.0.0:zip"));
         
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(expectedDependenciesLocations));
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(expectedDependenciesLocations));
     }
 
     @Test
     public void testGetInvalidDependenciesLocations() throws URISyntaxException {
         PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
         // no key=value format
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
         // invalid key (pid)
         packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "=maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
         // invalid value (uri)
         packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0=maven:invalid uri"));
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
     }
 
     @Test
     public void testGetNotSetDependenciesLocations() throws URISyntaxException {
         PackageProperties packageProperties = new SimplePackageProperties(Collections.emptyMap());
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
     }
 }

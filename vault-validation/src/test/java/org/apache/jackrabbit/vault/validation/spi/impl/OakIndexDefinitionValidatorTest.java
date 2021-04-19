@@ -35,9 +35,8 @@ import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
-import org.apache.jackrabbit.vault.validation.spi.impl.OakIndexDefinitionValidator;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
-import org.junit.Assert;
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -100,7 +99,7 @@ public class OakIndexDefinitionValidatorTest {
         try (InputStream input = this.getClass().getResourceAsStream("/oak-index/filter-with-acl.xml")) {
             DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
             filter.load(input);
-            Assert.assertThat(validator.validate(filter), AnyValidationMessageMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(validator.validate(filter), AnyValidationMessageMatcher.noValidationInCollection());
         }
         Map<String, DocViewProperty> props = new HashMap<>();
         props.put("rep:policy", new DocViewProperty("rep:policy", new String[] { "/home]" }, true, PropertyType.STRING));
@@ -108,10 +107,10 @@ public class OakIndexDefinitionValidatorTest {
 
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/oak:index/rep:policy",
                 Paths.get("_oak_index", "_rep_policy.xml"), Paths.get("")), true);
-        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
         node = new DocViewNode("allow", "allow", null, props, null, "rep:GrantACE");
         messages = validator.validate(node, new NodeContextImpl("/oak:index/rep:policy/allow",
                 Paths.get("_oak_index", "_rep_policy.xml"), Paths.get("")), false);
-        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
     }
 }

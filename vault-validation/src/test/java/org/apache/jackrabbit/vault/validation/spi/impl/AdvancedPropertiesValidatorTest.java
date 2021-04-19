@@ -36,7 +36,6 @@ import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
-import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedPropertiesValidator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

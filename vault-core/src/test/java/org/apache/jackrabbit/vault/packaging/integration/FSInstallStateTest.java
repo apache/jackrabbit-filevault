@@ -17,6 +17,8 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,11 +34,9 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSInstallState;
 import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageStatus;
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.xmlunit.matchers.CompareMatcher;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  * Test the Package registry interface
@@ -71,7 +71,7 @@ public class FSInstallStateTest {
         state.save(out);
         out.close();
 
-        assertThat(out.toString("utf-8"), CompareMatcher.isIdenticalTo(TEST_XML));
+        MatcherAssert.assertThat(out.toString("utf-8"), CompareMatcher.isIdenticalTo(TEST_XML));
         assertEquals(TEST_XML, out.toString("utf-8"));
     }
 

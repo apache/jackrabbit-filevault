@@ -34,9 +34,8 @@ import org.apache.jackrabbit.vault.packaging.impl.DefaultPackageInfo;
 import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
-import org.apache.jackrabbit.vault.validation.spi.impl.DependencyValidator;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,13 +67,13 @@ public class DependencyValidatorTest {
         resolvedPackageInfos.add(getPackageInfo("group1:package1:0.1", "/filter.xml", null));
         resolvedPackageInfos.add(getPackageInfo("group2:package2:2.9", "/simple-package/META-INF/vault/filter.xml", null));
         
-        Assert.assertThat(validator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
     public void testValidateWithUnresolvedDependencies() {
         resolvedPackageInfos.add(getPackageInfo("group1:package1:0.1", "/filter.xml", null));
-        Assert.assertThat(validator.validate(properties), 
+        MatcherAssert.assertThat(validator.validate(properties), 
                 Matchers.contains(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(String.format(DependencyValidator.MESSAGE_UNRESOLVED_DEPENDENCY, "group2:package2:(2,3)")))));
     }
 
@@ -82,7 +81,7 @@ public class DependencyValidatorTest {
     public void testValidateWithDependenciesWithOverlappingFilterRoots() {
         resolvedPackageInfos.add(getPackageInfo("group1:package1:0.1", "/simple-package/META-INF/vault/filter.xml", null));
         resolvedPackageInfos.add(getPackageInfo("group2:package2:2.9", "/simple-package/META-INF/vault/filter.xml", null));
-        Assert.assertThat(validator.validate(properties), 
+        MatcherAssert.assertThat(validator.validate(properties), 
                 Matchers.contains(new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(String.format(String.format(DependencyValidator.MESSAGE_DEPENDENCIES_WITH_OVERLAPPING_FILTERS,
                         "group2:package2:2.9", "/etc/project1", "group1:package1:0.1"))))));
     }

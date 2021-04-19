@@ -21,25 +21,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
-import java.util.stream.Collectors;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.SimpleCredentials;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
-import org.hamcrest.Description;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Assert;
 import org.junit.Before;
@@ -108,11 +102,11 @@ public class RcpTaskManagerImplTest {
         connectionOptionsBuilder.proxyHost("proxyHost");
         RcpTaskImpl taskOld = (RcpTaskImpl)taskManager.addTask(new RepositoryAddress("http://localhost:4502"), connectionOptionsBuilder.build(), new SimpleCredentials("testUser", "pw".toCharArray()), "/target/path", "2", Arrays.asList("exclude1", "exclude2"), false);
         RcpTaskImpl taskNew = (RcpTaskImpl)taskManager.editTask(taskOld.getId(), null, null, null, null, null, null, null);
-        Assert.assertThat(taskNew, Matchers.equalTo(taskOld));
+        MatcherAssert.assertThat(taskNew, Matchers.equalTo(taskOld));
         
         RepositoryAddress newSource = new RepositoryAddress("http://localhost:4503");
         taskNew = (RcpTaskImpl)taskManager.editTask(taskOld.getId(), newSource, null, null, null, null, null, null);
-        Assert.assertThat(taskNew, Matchers.not(Matchers.equalTo(taskOld)));
+        MatcherAssert.assertThat(taskNew, Matchers.not(Matchers.equalTo(taskOld)));
         Assert.assertEquals(newSource, taskNew.getSource());
     }
 
@@ -137,6 +131,6 @@ public class RcpTaskManagerImplTest {
         // convert to Map
         RcpTaskManagerImpl taskManager2 = new RcpTaskManagerImpl(mockBundleContext, mockConfigurationAdmin, RcpTaskManagerImpl.createMapFromDictionary(configProperties));
         // how to get list ordered by id?
-        Assert.assertThat(taskManager2.tasks.values(), IsIterableContainingInOrder.contains(taskManager.tasks.values().toArray()));
+        MatcherAssert.assertThat(taskManager2.tasks.values(), IsIterableContainingInOrder.contains(taskManager.tasks.values().toArray()));
     }
 }

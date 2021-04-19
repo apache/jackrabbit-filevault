@@ -47,6 +47,7 @@ import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -256,7 +257,7 @@ public class JcrNodeTypeMetaDataImplTest {
 
         // calling a second time will not lead to anything
         messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR, filter);
-        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
         
         // now add mandatory child node
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
@@ -270,7 +271,7 @@ public class JcrNodeTypeMetaDataImplTest {
                 "my:nodeType1");
         messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR,
                 new DefaultWorkspaceFilter());
-        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
 
         // add arbitrary property to root
         root.addProperty(createSimpleNodeContext("/"), ntManagerProvider.getNamePathResolver(),
@@ -399,13 +400,13 @@ public class JcrNodeTypeMetaDataImplTest {
     private static void assertNoValidationErrors(JcrNodeTypeMetaData node) {
         Collection<ValidationMessage> messages = new ArrayList<>();
         node.fetchAndClearValidationMessages(messages);
-        Assert.assertThat(messages, Matchers.empty());
+        MatcherAssert.assertThat(messages, Matchers.empty());
     }
 
     private static void assertValidationMessage(JcrNodeTypeMetaData node, ValidationMessage... expectedMessages) {
         Collection<ValidationMessage> actualMessages = new ArrayList<>();
         node.fetchAndClearValidationMessages(actualMessages);
-        Assert.assertThat(actualMessages, Matchers.contains(expectedMessages));
+        MatcherAssert.assertThat(actualMessages, Matchers.contains(expectedMessages));
     }
 
 }

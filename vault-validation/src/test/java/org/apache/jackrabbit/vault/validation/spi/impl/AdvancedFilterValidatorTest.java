@@ -52,6 +52,7 @@ import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -136,7 +137,7 @@ public class AdvancedFilterValidatorTest {
             Mockito.verify(filterValidator2).validate(filter);
 
             // as this is a cleanup filter no orphaned entries should be there
-            Assert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
         }
     }
 
@@ -156,15 +157,15 @@ public class AdvancedFilterValidatorTest {
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test/huhu"), false, false),
+        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test/huhu"), false, false),
                 AnyValidationViolationMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test"), false, false),
+        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test"), false, false),
                 AnyValidationViolationMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test2/valid"), false, false),
+        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test2/valid"), false, false),
                 AnyValidationViolationMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test3/valid"), false, false),
+        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test3/valid"), false, false),
                 AnyValidationViolationMatcher.noValidationInCollection());
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test4/test/valid"), false, false),
+        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test4/test/valid"), false, false),
                 AnyValidationViolationMatcher.noValidationInCollection());
     }
 
@@ -185,7 +186,7 @@ public class AdvancedFilterValidatorTest {
                 filter, // this is per test
                 validRoots);
 
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps"), true, false),
+        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps"), true, false),
                 AnyValidationViolationMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/notcontained"), false, false),
                 new ValidationMessage(ValidationMessageSeverity.WARN,
@@ -199,11 +200,11 @@ public class AdvancedFilterValidatorTest {
         props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" }, false, PropertyType.STRING));
 
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "nt:unstructured");
-        Assert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained"), true),
+        MatcherAssert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained"), true),
                 AnyValidationViolationMatcher.noValidationInCollection());
         // order nodes should be skipped
         node = new DocViewNode("ordernode", "ordernode", null, Collections.emptyMap(), null, null);
-        Assert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained/ordernode"), false),
+        MatcherAssert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained/ordernode"), false),
                 AnyValidationViolationMatcher.noValidationInCollection());
         // regular nodes should not be skipped
         node = new DocViewNode("regularnode", "regularnode", null, props, null, null);
@@ -333,7 +334,7 @@ public class AdvancedFilterValidatorTest {
         ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
                 new ValidationMessage(ValidationMessageSeverity.INFO,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_BELOW_CLEANUP_FILTER, "/apps/test3")));
-        Assert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test2/something/anothervalid"), false, false),
+        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test2/something/anothervalid"), false, false),
                 AnyValidationMessageMatcher.noValidationInCollection());
         messages = validator.done();
         ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,

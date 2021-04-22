@@ -23,6 +23,8 @@ import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -104,7 +106,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
 
             Node node = parent.getNode(dir.getRelativePath());
             if (wspFilter.contains(node.getPath()) && !nodeType.equals(node.getPrimaryNodeType().getName())) {
-                node = modifyPrimaryType(node, info);
+                modifyPrimaryType(node, info);
             }
             NodeIterator iter = node.getNodes();
             while (iter.hasNext()) {
@@ -138,23 +140,26 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
         return info;
     }
 
-    private Node modifyPrimaryType(Node node, ImportInfoImpl info) throws RepositoryException {
-        String name = node.getName();
-        Node parent = node.getParent();
-
+    /**
+     * This is potentially a destructive operation as it will remove all (non-protected) properties before doing the conversion
+     * @param node
+     * @param info
+     * @throws RepositoryException
+     */
+    private void modifyPrimaryType(Node node, ImportInfoImpl info) throws RepositoryException {
         // check versionable
         ensureCheckedOut(node, info);
 
-        ChildNodeStash recovery = new ChildNodeStash(node.getSession());
-        recovery.stashChildren(node);
-        node.remove();
-        
-        // now create the new node
-        Node newNode = parent.addNode(name, nodeType);
-        info.onReplaced(newNode.getPath());
-        // move the children back
-        recovery.recoverChildren(newNode, info);
-        return newNode;
+        // remove all non-allowed properties
+        PropertyIterator propertyIterator = node.getProperties();
+        while (propertyIterator.hasNext()) {
+            Property property = propertyIterator.nextProperty();
+            if (!property.getDefinition().isProtected()) {
+                property.remove();
+            }
+        }
+        node.setPrimaryType(nodeType);
+       
     }
 
     private void ensureCheckedOut(Node node, ImportInfoImpl info) throws RepositoryException {

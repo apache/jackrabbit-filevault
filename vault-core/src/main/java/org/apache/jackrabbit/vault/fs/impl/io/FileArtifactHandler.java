@@ -32,6 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.ImportArtifact;
@@ -44,13 +45,13 @@ import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.PathUtil;
-import org.apache.jackrabbit.util.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
  * Creates nt:file structures from  {@link SerializationType#XML_GENERIC} or
- * {@link SerializationType#GENERIC} artifacts.
+ * {@link SerializationType#GENERIC} artifacts as well complex node structure for full-coverage artifacts 
+ * with {@link SerializationType#XML_DOCVIEW}.
  *
  */
 public class FileArtifactHandler extends AbstractArtifactHandler  {

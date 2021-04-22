@@ -43,7 +43,12 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
+import javax.jcr.ValueFormatException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
+import javax.jcr.version.VersionException;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
@@ -71,6 +76,7 @@ import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.RejectingEntityDefaultHandler;
 import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -642,19 +648,21 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     log.trace("Skipping ignored element {}", name);
                 }
             } else {
+                final String path = (!node.getPath().equals("/") ? node.getPath() : "")+ "/" + name;
                 if (attributes.getLength() == 0) {
                     // only ordering node. skip
-                    log.trace("Skipping empty node {}", node.getPath() + "/" + name);
+                    log.trace("Skipping empty node {}", path);
                     stack = stack.push();
                 } else if (snsNode) {
                     // skip SNS nodes with index > 1
-                    log.warn("Skipping unsupported SNS node with index > 1. Some content will be missing after import: {}", node.getPath() + "/" + label);
+                    log.warn("Skipping unsupported SNS node with index > 1. Some content will be missing after import: {}", path);
                     stack = stack.push();
                 } else {
                     try {
-                        AccessControlHandling acHandling = getAcHandling(label);
                         DocViewNode ni = new DocViewNode(name, label, attributes, npResolver);
+                        // is policy node?
                         if (aclManagement.isACLNodeType(ni.primary)) {
+                            AccessControlHandling acHandling = getAcHandling(label);
                             if (acHandling != AccessControlHandling.CLEAR && acHandling != AccessControlHandling.IGNORE) {
                                 log.trace("Access control policy element detected. starting special transformation {}/{}", node.getPath(), name);
                                 if (aclManagement.ensureAccessControllable(node, ni.primary)) {
@@ -676,25 +684,22 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 stack = stack.push();
                             }
                         } else if (userManagement != null && userManagement.isAuthorizableNodeType(ni.primary)) {
+                            // is authorizable node?
                             handleAuthorizable(node, ni);
                         } else {
+                            // regular node
                             stack = stack.push(addNode(ni));
                         }
-                    } catch (RepositoryException e) {
-                        String errPath = node.getPath();
-                        if (errPath.length() > 1) {
-                            errPath += "/";
-                        }
-                        errPath += name;
-                        log.error("Error during processing of {}: {}", errPath, e.toString());
-                        importInfo.onError(errPath, e);
+                    } catch (RepositoryException | IOException e) {
+                        log.error("Error during processing of {}: {}", path, e.toString());
+                        importInfo.onError(path, e);
                         stack = stack.push();
                     }
                 }
             }
-        } catch (Exception e) {
-            throw new SAXException(e);
-        }
+        }  catch (RepositoryException e) {
+            throw new SAXException("Fatal exception while parsing", e);
+        } 
     }
 
     /**
@@ -718,7 +723,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             // just import the authorizable node
             log.trace("Authorizable element detected. starting sysview transformation {}", newPath);
             stack = stack.push();
-            stack.adapter = new JcrSysViewTransformer(node);
+            stack.adapter = new JcrSysViewTransformer(node, wspFilter.getImportMode(newPath));
             stack.adapter.startNode(ni);
             importInfo.onCreated(newPath);
             return;
@@ -761,7 +766,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 // just replace the entire subtree for now.
                 log.trace("Authorizable element detected. starting sysview transformation {}", newPath);
                 stack = stack.push();
-                stack.adapter = new JcrSysViewTransformer(node);
+                stack.adapter = new JcrSysViewTransformer(node, mode);
                 stack.adapter.startNode(ni);
                 importInfo.onReplaced(newPath);
                 break;
@@ -769,7 +774,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             case UPDATE:
                 log.trace("Authorizable element detected. starting sysview transformation {}", newPath);
                 stack = stack.push();
-                stack.adapter = new JcrSysViewTransformer(node, oldPath);
+                stack.adapter = new JcrSysViewTransformer(node, oldPath, mode);
                 // we need to tweak the ni.name so that the sysview import does not
                 // rename the authorizable node name
                 String newName = Text.getName(oldPath);
@@ -847,12 +852,15 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             oldNode = null;
         }
 
+        // TODO: under which condition do we end up here?
         if (oldNode != null) {
             // check versionable
             new VersioningState(stack, oldNode).ensureCheckedOut();
 
-            ChildNodeStash recovery = new ChildNodeStash(session);
-            recovery.stashChildren(oldNode);
+            String oldNodePath = oldNode.getPath();
+            ImportMode importMode = wspFilter.getImportMode(oldNodePath);
+            NodeStash recovery = new NodeStash(session, oldNodePath, importMode);
+            recovery.stash();
 
             // ensure that existing binaries are not sourced from a property
             // that is about to be removed
@@ -865,10 +873,11 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
             oldNode.remove();
             // now create the new node
-            node = createNode(currentNode, ni);
+            node = createNewNode(currentNode, ni);
 
+            
             // move the children back
-            recovery.recoverChildren(node, importInfo);
+            recovery.recover(importInfo);
 
             importInfo.onReplaced(node.getPath());
             return new StackElement(node, false);
@@ -879,8 +888,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         boolean isCheckedIn = coProp != null && "false".equals(coProp.values[0]);
 
         // create or update node
-        boolean isNew = false;
-        if (node == null) {
+        boolean isNew = node == null;
+        if (isNew) {
             // workaround for bug in jcr2spi if mixins are empty
             if (!ni.props.containsKey(JcrConstants.JCR_MIXINTYPES)) {
                 ni.props.put(JcrConstants.JCR_MIXINTYPES,
@@ -888,7 +897,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             }
 
             stack.ensureCheckedOut();
-            node = createNode(currentNode, ni);
+            node = createNewNode(currentNode, ni);
             if (node.isNodeType(JcrConstants.NT_RESOURCE)) {
                 if (!node.hasProperty(JcrConstants.JCR_DATA)) {
                     importInfo.onMissing(node.getPath() + "/" + JcrConstants.JCR_DATA);
@@ -898,53 +907,56 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 importInfo.registerToVersion(node.getPath());
             }
             importInfo.onCreated(node.getPath());
-            isNew = true;
 
         } else if (isIncluded(node, node.getDepth() - rootDepth)) {
-            boolean modified = false;
-
             if (isCheckedIn) {
                 // don't rely on isVersionable here, since SPI might not have this info yet
                 importInfo.registerToVersion(node.getPath());
             }
-            VersioningState vs = new VersioningState(stack, node);
-
-            // set new primary type (but never set rep:root)
-            if (!"rep:root".equals(ni.primary)) {
-                if (!node.getPrimaryNodeType().getName().equals(ni.primary)) {
-                    vs.ensureCheckedOut();
-                    node.setPrimaryType(ni.primary);
-                    modified = true;
-                }
-            }
-
-            // remove the 'system' properties from the set
-            ni.props.remove(JcrConstants.JCR_PRIMARYTYPE);
-            ni.props.remove(JcrConstants.JCR_MIXINTYPES);
-            ni.props.remove(JcrConstants.JCR_UUID);
-            ni.props.remove(JcrConstants.JCR_BASEVERSION);
-            ni.props.remove(JcrConstants.JCR_PREDECESSORS);
-            ni.props.remove(JcrConstants.JCR_SUCCESSORS);
-            ni.props.remove(JcrConstants.JCR_VERSIONHISTORY);
-
-            // adjust mixins
-            Set<String> newMixins = new HashSet<String>();
-            boolean isAtomicCounter = false;
-            AccessControlHandling acHandling = getAcHandling(ni.name);
-            if (ni.mixins != null) {
-                for (String mixin : ni.mixins) {
-                    // omit name if mix:AccessControllable and CLEAR
-                    if (!aclManagement.isAccessControllableMixin(mixin)
-                            || acHandling != AccessControlHandling.CLEAR) {
-                        newMixins.add(mixin);
-
-                        if ("mix:atomicCounter".equals(mixin)) {
-                            isAtomicCounter = true;
-                        }
+            ImportMode importMode = wspFilter.getImportMode(node.getPath());
+            if (updateExistingNode(node, ni, importMode)) {
+                if (node.isNodeType(JcrConstants.NT_RESOURCE)) {
+                    if (!node.hasProperty(JcrConstants.JCR_DATA)) {
+                        importInfo.onMissing(node.getPath() + "/" + JcrConstants.JCR_DATA);
                     }
                 }
+                importInfo.onModified(node.getPath());
+            } else {
+                importInfo.onNop(node.getPath());
             }
-            // remove mixin not in package
+        } else {
+            // remove registered binaries outside of the filter (JCR-126)
+            binaries.remove(node.getPath());
+        }
+        return new StackElement(node, isNew);
+    }
+
+    private boolean updateExistingNode(@NotNull Node node, @NotNull DocViewNode ni, @NotNull ImportMode importMode) throws RepositoryException {
+        VersioningState vs = new VersioningState(stack, node);
+        boolean modified = false;
+        // set new primary type (but never set rep:root)
+        if (importMode == ImportMode.REPLACE && !"rep:root".equals(ni.primary)) {
+            if (!node.getPrimaryNodeType().getName().equals(ni.primary)) {
+                vs.ensureCheckedOut();
+                node.setPrimaryType(ni.primary);
+                modified = true;
+            }
+        }
+
+        // calculate mixins
+        Set<String> newMixins = new HashSet<>();
+        AccessControlHandling acHandling = getAcHandling(ni.name);
+        if (ni.mixins != null) {
+            for (String mixin : ni.mixins) {
+                // omit name if mix:AccessControllable and CLEAR
+                if (!aclManagement.isAccessControllableMixin(mixin)
+                        || acHandling != AccessControlHandling.CLEAR) {
+                    newMixins.add(mixin);
+                }
+            }
+        }
+        // remove mixin not in package
+        if (importMode == ImportMode.REPLACE) {
             for (NodeType mix : node.getMixinNodeTypes()) {
                 String name = mix.getName();
                 if (!newMixins.remove(name)) {
@@ -958,15 +970,17 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     }
                 }
             }
+        }
+        
+        // add remaining mixins (for all import modes)
+        for (String mixin : newMixins) {
+            vs.ensureCheckedOut();
+            node.addMixin(mixin);
+            modified = true;
+        }
 
-            // add remaining mixins
-            for (String mixin : newMixins) {
-                vs.ensureCheckedOut();
-                node.addMixin(mixin);
-                modified = true;
-            }
-
-            // remove properties not in the set
+        // remove properties not in package
+        if (importMode == ImportMode.REPLACE) {
             PropertyIterator pIter = node.getProperties();
             while (pIter.hasNext()) {
                 Property p = pIter.nextProperty();
@@ -984,56 +998,19 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     }
                 }
             }
-            // add properties
-            for (DocViewProperty prop : ni.props.values()) {
-                if (prop != null && !PROTECTED_PROPERTIES.contains(prop.name)) {
-                    try {
-                        modified |= prop.apply(node);
-                    } catch (RepositoryException e) {
-                        try {
-                            // try again with checked out node
-                            vs.ensureCheckedOut();
-                            modified |= prop.apply(node);
-                        } catch (RepositoryException e1) {
-                            log.warn("Error while setting property (ignore): " + e1);
-                        }
-                    }
-                }
-            }
-            // adjust oak atomic counter
-            if (isAtomicCounter) {
-                long previous = 0;
-                if (node.hasProperty("oak:counter")) {
-                    previous = node.getProperty("oak:counter").getLong();
-                }
-                long counter = 0;
-                try {
-                    counter = Long.valueOf(ni.getValue("oak:counter"));
-                } catch (NumberFormatException e) {
-                    // ignore
-                }
-                node.setProperty("oak:increment", counter - previous);
-                modified = true;
-            }
-
-            if (modified) {
-                if (node.isNodeType(JcrConstants.NT_RESOURCE)) {
-                    if (!node.hasProperty(JcrConstants.JCR_DATA)) {
-                        importInfo.onMissing(node.getPath() + "/" + JcrConstants.JCR_DATA);
-                    }
-                }
-                importInfo.onModified(node.getPath());
-            } else {
-                importInfo.onNop(node.getPath());
-            }
-        } else {
-            // remove registered binaries outside of the filter (JCR-126)
-            binaries.remove(node.getPath());
         }
-        return new StackElement(node, isNew);
+        // add properties
+        modified |= setUnprotectedProperties(node, ni, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs);
+        return modified;
     }
-
-    private Node createNode(Node currentNode, DocViewNode ni)
+    /**
+     * Creates a new node via system view XML and {@link Session#importXML(String, InputStream, int)} to be able to set protected properties as well
+     * @param currentNode
+     * @param ni
+     * @return
+     * @throws RepositoryException
+     */
+    private @NotNull Node createNewNode(Node currentNode, DocViewNode ni)
             throws RepositoryException {
         try {
             String parentPath = currentNode.getPath();
@@ -1049,7 +1026,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             AttributesImpl attrs = new AttributesImpl();
             attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", ni.name);
             handler.startElement(Name.NS_SV_URI, "node", "sv:node", attrs);
-
+    
             // check if SNS and a helper uuid if needed
             boolean addMixRef = false;
             if (!ni.label.equals(ni.name) && ni.uuid == null) {
@@ -1098,7 +1075,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             }
             handler.endElement(Name.NS_SV_URI, "node", "sv:node");
             handler.endDocument();
-
+    
             // retrieve newly created node either by uuid, label or name
             Node node = null;
             if (ni.uuid != null) {
@@ -1123,39 +1100,13 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     throw e;
                 }
             }
-
-            // handle non protected properties
-            for (DocViewProperty p : ni.props.values()) {
-                if (p != null && p.values != null) {
-                    if (!PROTECTED_PROPERTIES.contains(p.name)) {
-                        try {
-                            p.apply(node);
-                        } catch (RepositoryException e) {
-                            log.warn("Error while setting property (ignore): " + e);
-                        }
-                    }
-                }
-            }
-
-            // check for atomic counter
-            if (ni.mixins != null) {
-                for (String mixin : ni.mixins) {
-                    if ("mix:atomicCounter".equals(mixin)) {
-                        String counter = ni.getValue("oak:counter");
-                        if (counter != null) {
-                            node.setProperty("oak:increment", counter, PropertyType.LONG);
-                        }
-                        break;
-                    }
-                }
-            }
-
+            setUnprotectedProperties(node, ni, true, null);
             // remove mix referenceable if it was temporarily added
             if (addMixRef) {
                 node.removeMixin(JcrConstants.MIX_REFERENCEABLE);
             }
             return node;
-
+    
         } catch (SAXException e) {
             Exception root = e.getException();
             if (root instanceof RepositoryException) {
@@ -1166,6 +1117,54 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 throw new RepositoryException("Error while creating node", root);
             }
         }
+    }
+
+    private boolean setUnprotectedProperties(@NotNull Node node, @NotNull DocViewNode ni, boolean overwriteExistingProperties, @Nullable VersioningState vs) throws RepositoryException {
+        boolean isAtomicCounter = false;
+        if (ni.mixins != null) {
+            for (String mixin : ni.mixins) {
+                if ("mix:atomicCounter".equals(mixin)) {
+                    isAtomicCounter = true;
+                }
+            }
+        }
+        boolean modified = false;
+        // add properties
+        for (DocViewProperty prop : ni.props.values()) {
+            if (prop != null && !PROTECTED_PROPERTIES.contains(prop.name) && (overwriteExistingProperties || !node.hasProperty(prop.name))) {
+                try {
+                    modified |= prop.apply(node);
+                } catch (RepositoryException e) {
+                    if (vs == null) {
+                        throw e;
+                    }
+                    try {
+                        // try again with checked out node
+                        vs.ensureCheckedOut();
+                        modified |= prop.apply(node);
+                    } catch (RepositoryException e1) {
+                        log.warn("Error while setting property (ignore): " + e1);
+                    }
+                }
+            }
+        }
+
+        // adjust oak atomic counter
+        if (isAtomicCounter) {
+            long previous = 0;
+            if (node.hasProperty("oak:counter")) {
+                previous = node.getProperty("oak:counter").getLong();
+            }
+            long counter = 0;
+            try {
+                counter = Long.valueOf(ni.getValue("oak:counter"));
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+            node.setProperty("oak:increment", counter - previous);
+            modified = true;
+        }
+        return modified;
     }
 
     /**

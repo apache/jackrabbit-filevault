@@ -24,6 +24,7 @@ import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -104,9 +105,14 @@ public class ImportModeIT extends IntegrationTestBase {
         setUpNode(parent, "replace");
         setUpNode(parent, "merge");
         setUpNode(parent, "update");
+        setUpNode(parent, "merge_properties");
+        setUpNode(parent, "update_properties");
         admin.save();
-        assertProperty("/testroot/merge/propertyold", "old");
-        assertProperty("/testroot/update/propertyold", "old");
+        
+        assertProperty("/testroot/replace/propertyold", "old");
+        assertProperty("/testroot/replace/propertyupdate", "old");
+        assertNodeExists("/testroot/replace/old");
+        assertProperty("/testroot/replace/existing/propertyold", "old");
         
         extractVaultPackage("/test-packages/import_modes_test_a.zip");
         
@@ -116,28 +122,47 @@ public class ImportModeIT extends IntegrationTestBase {
         assertProperty("/testroot/replace/propertyupdate", "new");
         assertProperty("/testroot/replace/propertynew", "new");
         assertPropertyMissing("/testroot/replace/propertyold");
-        assertProperty("/testroot/replace/update/propertynew", "new");
-        assertPropertyMissing("/testroot/replace/update/propertyold");
+        assertProperty("/testroot/replace/existing/propertynew", "new");
+        assertPropertyMissing("/testroot/replace/existing/propertyold");
         assertNodeExists("/testroot/replace/new");
         assertNodeMissing("/testroot/replace/old");
         
+        /*
         // Update (neither delete existing nodes nor properties)
         assertProperty("/testroot/update/propertyupdate", "new");
         assertProperty("/testroot/update/propertynew", "new");
         assertProperty("/testroot/update/propertyold", "old");
-        assertProperty("/testroot/update/update/propertynew", "new");
-        assertProperty("/testroot/update/update/propertyold", "old");
+        assertProperty("/testroot/update/existing/propertynew", "new");
+        assertProperty("/testroot/update/existing/propertyold", "old");
         assertNodeExists("/testroot/update/new");
         assertNodeExists("/testroot/update/old");
         
         // Merge (don't touch existing nodes, except for adding new children)
         assertProperty("/testroot/merge/propertyupdate", "old");
-        assertPropertyMissing("/testroot/merge/propertynew");
+        assertProperty("/testroot/merge/propertynew", "new");
         assertProperty("/testroot/merge/propertyold", "old");
-        assertPropertyMissing("/testroot/merge/update/propertynew");
-        assertProperty("/testroot/merge/update/propertyold", "old");
+        assertProperty("/testroot/merge/existing/propertynew", "new");
+        assertProperty("/testroot/merge/existing/propertyold", "old");
         assertNodeMissing("/testroot/merge/new");
         assertNodeExists("/testroot/merge/old");
+        */
+        // Property Update (neither delete existing nodes nor properties, but update them and add new properties/nodes)
+        assertProperty("/testroot/update_properties/propertyupdate", "new");
+        assertProperty("/testroot/update_properties/propertynew", "new");
+        assertProperty("/testroot/update_properties/propertyold", "old");
+        assertProperty("/testroot/update_properties/existing/propertynew", "new");
+        assertProperty("/testroot/update_properties/existing/propertyold", "old");
+        assertNodeExists("/testroot/update_properties/new");
+        assertNodeExists("/testroot/update_properties/old");
+        
+        // Property Merge (don't touch existing nodes nor properties, only add new properties/nodes)
+        assertProperty("/testroot/merge_properties/propertyupdate", "old");
+        assertProperty("/testroot/merge_properties/propertynew", "new");
+        assertProperty("/testroot/merge_properties/propertyold", "old");
+        assertProperty("/testroot/merge_properties/existing/propertynew", "new");
+        assertProperty("/testroot/merge_properties/existing/propertyold", "old");
+        assertNodeExists("/testroot/merge_properties/new");
+        assertNodeExists("/testroot/merge_properties/old");
     }
 
     private void setUpNode(Node parent, String name) throws RepositoryException {
@@ -145,8 +170,8 @@ public class ImportModeIT extends IntegrationTestBase {
         node.setProperty("propertyold", "old");
         node.setProperty("propertyupdate", "old");
         node.addNode("old");
-        Node update = node.addNode("update");
-        update.setProperty("propertyold", "old");
+        Node existing = node.addNode("existing");
+        existing.setProperty("propertyold", "old");
     }
 
 }

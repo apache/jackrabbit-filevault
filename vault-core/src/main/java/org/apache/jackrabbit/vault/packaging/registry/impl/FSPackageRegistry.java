@@ -246,6 +246,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     @Override
     public boolean contains(@NotNull PackageId id) throws IOException {
+        if (!packagesInitializied) {
+            loadPackageCache();
+        }
         return stateCache.containsKey(id);
     }
 

@@ -198,7 +198,10 @@ public class FSInstallState {
                 return null;
             }
             String packageId = doc.getAttribute(ATTR_PACKAGE_ID);
-            Path filePath = Paths.get(doc.getAttribute(ATTR_FILE_PATH));
+            Path filePath = null;
+            if (doc.hasAttribute(ATTR_FILE_PATH)) {
+                filePath = Paths.get(doc.getAttribute(ATTR_FILE_PATH));
+            }
             Long installTime = null;
             if (doc.hasAttribute(ATTR_INSTALLATION_TIME)) {
                 installTime = Long.valueOf(doc.getAttribute(ATTR_INSTALLATION_TIME));
@@ -287,7 +290,7 @@ public class FSInstallState {
                             DefaultPathFilter pf = new DefaultPathFilter(((Element) rule).getAttribute(ATTR_INCLUDE));
                             pfs.addInclude(pf);
                         } else if (((Element) rule).hasAttribute(ATTR_EXCLUDE)) {
-                            DefaultPathFilter pf = new DefaultPathFilter(((Element) rule).getAttribute(ATTR_INCLUDE));
+                            DefaultPathFilter pf = new DefaultPathFilter(((Element) rule).getAttribute(ATTR_EXCLUDE));
                             pfs.addExclude(pf);
                         }
                     }
@@ -326,7 +329,9 @@ public class FSInstallState {
             if (installTime != null) {
                 writer.writeAttribute(ATTR_INSTALLATION_TIME, Long.toString(installTime));
             }
-            writer.writeAttribute(ATTR_FILE_PATH, filePath.toString());
+            if (filePath != null) {
+                writer.writeAttribute(ATTR_FILE_PATH, filePath.toString());
+            }
             writer.writeAttribute(ATTR_EXTERNAL, Boolean.toString(external));
             writer.writeAttribute(ATTR_PACKAGE_STATUS, status.name().toLowerCase());
 
@@ -416,5 +421,85 @@ public class FSInstallState {
 
     public Properties getProperties() {
         return properties;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((dependencies == null) ? 0 : dependencies.hashCode());
+        result = prime * result + (external ? 1231 : 1237);
+        result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+        result = prime * result + ((filter == null) ? 0 : filter.hashCode());
+        result = prime * result + ((installTime == null) ? 0 : installTime.hashCode());
+        result = prime * result + ((packageId == null) ? 0 : packageId.hashCode());
+        result = prime * result + ((properties == null) ? 0 : properties.hashCode());
+        result = prime * result + (int) (size ^ (size >>> 32));
+        result = prime * result + ((status == null) ? 0 : status.hashCode());
+        result = prime * result + ((subPackages == null) ? 0 : subPackages.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FSInstallState other = (FSInstallState) obj;
+        if (dependencies == null) {
+            if (other.dependencies != null)
+                return false;
+        } else if (!dependencies.equals(other.dependencies))
+            return false;
+        if (external != other.external)
+            return false;
+        if (filePath == null) {
+            if (other.filePath != null)
+                return false;
+        } else if (!filePath.equals(other.filePath))
+            return false;
+        if (filter == null) {
+            if (other.filter != null)
+                return false;
+        } else if (!filter.equals(other.filter))
+            return false;
+        if (installTime == null) {
+            if (other.installTime != null)
+                return false;
+        } else if (!installTime.equals(other.installTime))
+            return false;
+        if (packageId == null) {
+            if (other.packageId != null)
+                return false;
+        } else if (!packageId.equals(other.packageId))
+            return false;
+        if (properties == null) {
+            if (other.properties != null)
+                return false;
+        } else if (!properties.equals(other.properties))
+            return false;
+        if (size != other.size)
+            return false;
+        if (status != other.status)
+            return false;
+        if (subPackages == null) {
+            if (other.subPackages != null)
+                return false;
+        } else if (!subPackages.equals(other.subPackages))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "FSInstallState [" + (packageId != null ? "packageId=" + packageId + ", " : "")
+                + (status != null ? "status=" + status + ", " : "") + (filePath != null ? "filePath=" + filePath + ", " : "") + "external="
+                + external + ", " + (dependencies != null ? "dependencies=" + dependencies + ", " : "")
+                + (subPackages != null ? "subPackages=" + subPackages + ", " : "")
+                + (installTime != null ? "installTime=" + installTime + ", " : "") + "size=" + size + ", "
+                + (filter != null ? "filter=" + filter + ", " : "") + (properties != null ? "properties=" + properties : "") + "]";
     }
 }

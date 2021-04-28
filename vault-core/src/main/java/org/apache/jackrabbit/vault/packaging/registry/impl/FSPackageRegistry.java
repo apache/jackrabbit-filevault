@@ -87,7 +87,7 @@ import org.slf4j.LoggerFactory;
 @Designate(ocd = FSPackageRegistry.Config.class)
 public class FSPackageRegistry extends AbstractPackageRegistry {
 
-    private static final String REPOSITORY_HOME = "repository.home";
+    protected static final String REPOSITORY_HOME = "repository.home";
 
     /**
      * default logger
@@ -97,7 +97,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     /**
      * Suffixes for metadata files
      */
-    private final String[] META_SUFFIXES = {"xml"};
+    private static final String[] META_SUFFIXES = {"xml"};
 
     private Map<PackageId, FSInstallState> stateCache = new ConcurrentHashMap<>();
 
@@ -105,9 +105,6 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * Contains a map of all filesystem paths to package IDs
      */
     private Map<Path, PackageId> pathIdMapping = new ConcurrentHashMap<>();
-
-
-    private boolean packagesInitializied = false;
 
     @Reference
     private PackageEventDispatcher dispatcher;
@@ -175,7 +172,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Activate
-    public void activate(BundleContext context, Config config) {
+    public void activate(BundleContext context, Config config) throws IOException {
         this.homeDir = context.getProperty(REPOSITORY_HOME) != null ? ( 
                 new File(config.homePath()).isAbsolute() ? new File(config.homePath()) : new File(context.getProperty(REPOSITORY_HOME) + "/" + config.homePath())) : 
                 context.getDataFile(config.homePath());
@@ -185,6 +182,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
         this.scope = InstallationScope.valueOf(config.scope());
         this.securityConfig = new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation());
+        loadPackageCache();
     }
 
     @ObjectClassDefinition(
@@ -381,10 +379,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     public PackageId register(@NotNull InputStream in, boolean replace) throws IOException, PackageExistsException {
       return register(in, replace, null);
     }
-    
-    /**
-     * {@inheritDoc}
-     */
+
     @NotNull
     private PackageId register(@NotNull InputStream in, boolean replace, Dependency autoDependency) throws IOException, PackageExistsException {
         ZipVaultPackage pkg = upload(in, replace);
@@ -480,10 +475,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ZipVaultPackage upload(InputStream in, boolean replace)
+    protected ZipVaultPackage upload(InputStream in, boolean replace)
             throws IOException, PackageExistsException {
 
         MemoryArchive archive = new MemoryArchive(false);
@@ -637,7 +629,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @NotNull
     @Override
     public Set<PackageId> packages() throws IOException {
-        return packagesInitializied ? stateCache.keySet() : loadPackageCache();
+        return stateCache.keySet();
     }
 
     /**
@@ -660,13 +652,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 if (id != null) {
                     cacheEntries.put(id, state);
                     idMapping.put(state.getFilePath(), id);
-                    
                 }
             }
         }
         stateCache.putAll(cacheEntries);
         pathIdMapping.putAll(idMapping);
-        packagesInitializied = true;
         return cacheEntries.keySet();
     }
 

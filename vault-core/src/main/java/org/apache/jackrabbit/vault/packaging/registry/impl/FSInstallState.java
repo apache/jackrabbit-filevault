@@ -16,12 +16,13 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +35,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.FilterSet.Entry;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -60,7 +60,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- * Internal (immutable) State object to cache and pass the relevant metadata around.
+ * Internal (immutable) state object for a package to cache and pass the relevant metadata around.
  */
 public class FSInstallState {
 
@@ -98,9 +98,9 @@ public class FSInstallState {
 
     private static final String TAG_PACKAGEPROPERTIES = "packageproperties";
 
-    private final PackageId packageId;
-    private final FSPackageStatus status;
-    private Path filePath;
+    private final @NotNull PackageId packageId;
+    private final @NotNull FSPackageStatus status;
+    private final @NotNull Path filePath;
     private boolean external;
     private Set<Dependency> dependencies = Collections.emptySet();
     private Map<PackageId, SubPackageHandling.Option> subPackages = Collections.emptyMap();
@@ -109,14 +109,10 @@ public class FSInstallState {
     private WorkspaceFilter filter;
     private Properties properties = new Properties();
 
-    public FSInstallState(@NotNull PackageId pid, @NotNull FSPackageStatus status) {
+    public FSInstallState(@NotNull PackageId pid, @NotNull FSPackageStatus status, @NotNull Path filePath) {
         this.packageId = pid;
         this.status = status;
-    }
-
-    public FSInstallState withFilePath(Path filePath) {
         this.filePath = filePath;
-        return this;
     }
 
     public FSInstallState withExternal(boolean external) {
@@ -167,12 +163,12 @@ public class FSInstallState {
      * @throws IOException in case root tag is correct but structure not parsable as expected
      */
     @Nullable
-    public static FSInstallState fromFile(File metaFile) throws IOException {
-        if (!metaFile.exists()) {
+    public static FSInstallState fromFile(Path metaFile) throws IOException {
+        if (!Files.exists(metaFile)) {
             return null;
         }
-        try (InputStream in = FileUtils.openInputStream(metaFile)) {
-            return fromStream(in, metaFile.getPath());
+        try (InputStream in = Files.newInputStream(metaFile)) {
+            return fromStream(in, metaFile.toString());
         }
     }
 
@@ -198,10 +194,7 @@ public class FSInstallState {
                 return null;
             }
             String packageId = doc.getAttribute(ATTR_PACKAGE_ID);
-            Path filePath = null;
-            if (doc.hasAttribute(ATTR_FILE_PATH)) {
-                filePath = Paths.get(doc.getAttribute(ATTR_FILE_PATH));
-            }
+            Path filePath = Paths.get(doc.getAttribute(ATTR_FILE_PATH));
             Long installTime = null;
             if (doc.hasAttribute(ATTR_INSTALLATION_TIME)) {
                 installTime = Long.valueOf(doc.getAttribute(ATTR_INSTALLATION_TIME));
@@ -235,8 +228,7 @@ public class FSInstallState {
                 }
 
             }
-            return new FSInstallState(PackageId.fromString(packageId), status)
-                    .withFilePath(filePath)
+            return new FSInstallState(PackageId.fromString(packageId), status, filePath)
                     .withExternal(external)
                     .withSize(size)
                     .withFilter(filter)
@@ -308,8 +300,9 @@ public class FSInstallState {
      * @param file The files to save the state to
      * @throws IOException if an error occurs.
      */
-    public void save(File file) throws IOException {
-        try (OutputStream out = FileUtils.openOutputStream(file)) {
+    public void save(Path file) throws IOException {
+        Files.createDirectories(file.getParent());
+        try (OutputStream out = Files.newOutputStream(file, StandardOpenOption.CREATE)) {
             save(out);
         }
     }
@@ -329,9 +322,7 @@ public class FSInstallState {
             if (installTime != null) {
                 writer.writeAttribute(ATTR_INSTALLATION_TIME, Long.toString(installTime));
             }
-            if (filePath != null) {
-                writer.writeAttribute(ATTR_FILE_PATH, filePath.toString());
-            }
+            writer.writeAttribute(ATTR_FILE_PATH, filePath.toString());
             writer.writeAttribute(ATTR_EXTERNAL, Boolean.toString(external));
             writer.writeAttribute(ATTR_PACKAGE_STATUS, status.name().toLowerCase());
 

@@ -272,7 +272,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     private Node getPackageNode(@NotNull PackageId id) throws RepositoryException {
         String relPath = getRelativeInstallationPath(id);
         for (String pfx: packRootPaths) {
-            String path = pfx + relPath;
+            String path = pfx + "/" + relPath;
             String[] exts = new String[]{"", ".zip", ".jar"};
             for (String ext: exts) {
                 if (session.nodeExists(path + ext)) {
@@ -357,21 +357,14 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             throws RepositoryException, IOException, PackageExistsException {
 
         MemoryArchive archive = new MemoryArchive(true);
-        InputStreamPump pump = new InputStreamPump(in , archive);
-
-        // this will cause the input stream to be consumed and the memory archive being initialized.
-        Binary bin = session.getValueFactory().createBinary(pump);
-        if (pump.getError() != null) {
-            Exception error = pump.getError();
-            log.error("Error while reading from input stream.", error);
-            bin.dispose();
-            archive.close();
-            throw new IOException("Error while reading from input stream", error);
+        Binary bin;
+        try (InputStreamPump pump = new InputStreamPump(in , archive)) {
+            // this will cause the input stream to be consumed and the memory archive being initialized.
+            bin = session.getValueFactory().createBinary(pump);
         }
 
         if (archive.getJcrRoot() == null) {
             String msg = "Stream is not a content package. Missing 'jcr_root'.";
-            log.error(msg);
             bin.dispose();
             archive.close();
             throw new IOException(msg);
@@ -771,7 +764,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @since 2.2
      */
     public String getInstallationPath(PackageId id) {
-        return packRootPaths[0] + getRelativeInstallationPath(id);
+        return packRootPaths[0] + "/" + getRelativeInstallationPath(id);
     }
 
     @Override

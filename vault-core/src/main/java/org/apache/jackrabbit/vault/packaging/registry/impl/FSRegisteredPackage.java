@@ -21,6 +21,7 @@ import java.util.Calendar;
 
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.Dependency;
+import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
@@ -38,7 +39,7 @@ public class FSRegisteredPackage implements RegisteredPackage {
     /**
      * default logger
      */
-    private static final Logger log = LoggerFactory.getLogger(FSPackageRegistry.class);
+    private static final Logger log = LoggerFactory.getLogger(FSRegisteredPackage.class);
 
     private FSPackageRegistry registry;
 
@@ -69,7 +70,11 @@ public class FSRegisteredPackage implements RegisteredPackage {
     @Override
     public VaultPackage getPackage() throws IOException {
         if (this.vltPkg == null) {
-            this.vltPkg = registry.openPackageFile(getId());
+            try {
+                this.vltPkg = registry.openPackageFile(getId());
+            } catch (NoSuchPackageException e) {
+                throw new IOException("Registry does not/no longer know package with id " + getId(), e);
+            }
         }
         return this.vltPkg;
     }

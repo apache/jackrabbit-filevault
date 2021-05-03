@@ -41,12 +41,11 @@ import org.osgi.framework.BundleContext;
 import org.osgi.util.converter.Converter;
 import org.osgi.util.converter.Converters;
 
-
 public class FSPackageRegistryTest {
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
-    
+
     private static final PackageId TEST_PACKAGE_ID = new PackageId("test", "test-package-with-etc", "1.0");
     
     private void copyResourceStreamToFile(Path targetFile, String name) throws IOException {

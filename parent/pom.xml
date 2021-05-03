@@ -51,9 +51,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <jackrabbit.version>2.20.2</jackrabbit.version>
         <oak.version>1.38.0</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
-        <test.oak>false</test.oak>
-        <test.vm.options>-Doak=$test.oak}</test.vm.options>
-        <argLine>${test.vm.options}</argLine>
+        <test.oak>false</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
         <java.target.version>1.8</java.target.version>
         <bnd.version>5.3.0</bnd.version>
         <maven.version>3.6.1</maven.version><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
@@ -211,13 +209,11 @@ Bundle-Category: jackrabbit
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>3.0.0-M5</version>
                     <configuration>
-                        <systemProperties>
+                        <systemPropertyVariables>
                             <!-- put derby.log (created for Jackrabbit based ITs below target instead of the current directory) -->
-                            <property>
-                                <name>derby.stream.error.file</name>
-                                <value>target/derby.log</value>
-                            </property>
-                        </systemProperties>
+                            <derby.stream.error.file>target/derby.log</derby.stream.error.file>
+                            <oak>${test.oak}</oak>
+                        </systemPropertyVariables>
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
@@ -675,14 +671,11 @@ Bundle-Category: jackrabbit
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>@{jacoco.command}</argLine>
-                            <systemPropertyVariables>
-                                <!--
-                                for IT where you need a forked JVM to run the tests you can use this system property to make sure that
-                                the JaCoCo agent correctly instruments your code
-                                 -->
-                                <jacoco.command>${jacoco.command}</jacoco.command>
-                            </systemPropertyVariables>
+                            <!-- 
+                            for IT where you need a forked JVM to run the tests you can use this system property to make sure that
+                            the JaCoCo agent correctly instruments your code
+                            set system property also via argLine as only that allows late evaluation -->
+                            <argLine>@{jacoco.command} -Djacoco.command=@{jacoco.command}</argLine>
                         </configuration>
                     </plugin>
                 </plugins>

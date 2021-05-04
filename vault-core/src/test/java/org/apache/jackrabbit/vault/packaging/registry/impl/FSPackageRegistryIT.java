@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -46,6 +47,7 @@ import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlan;
@@ -216,6 +218,12 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         assertTrue("file should still exist", file.exists());
         registry.register(file, true);
         file.delete();
+        // make sure package is still accessible after original has been deleted
+        try (RegisteredPackage registeredPackage = registry.open(id)) {
+            try (VaultPackage pack = registeredPackage.getPackage()) {
+                assertNotEquals(file, pack.getFile());
+            }
+        }
     }
     
     /**

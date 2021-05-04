@@ -537,9 +537,18 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     throw new PackageExistsException("Package already exists: " + pack.getId()).setId(pack.getId());
                 }
             }
+            final Path newPackageFile;
+            if (!external) {
+                // copy to registry path
+                newPackageFile = getPackageFile(pack.getId());
+                Files.createDirectories(newPackageFile.getParent());
+                Files.copy(file.toPath(), newPackageFile);
+            } else {
+                newPackageFile = file.toPath();
+            }
             Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pack, replace);
             Set<Dependency> dependencies = new HashSet<>(Arrays.asList(pack.getDependencies()));
-            FSInstallState targetState = new FSInstallState(pack.getId(), FSPackageStatus.REGISTERED, file.toPath())
+            FSInstallState targetState = new FSInstallState(pack.getId(), FSPackageStatus.REGISTERED, newPackageFile)
                     .withDependencies(dependencies)
                     .withSubPackages(subpackages)
                     .withFilter(pack.getArchive().getMetaInf().getFilter())

@@ -180,7 +180,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 description = "Allows to limit the installation scope of this Apache Jackrabbit FS Package Registry Service. "
                         + "Packages installed from this registry may be unscoped (unfiltered), "
                         + "application scoped (only content for /apps & /libs) "
-                        + "or content scoped (all content despite of /libs & /apps)",
+                        + "or content scoped (all content except for /libs & /apps)",
                 options = {
                     @Option(label = "Unscoped", value = "UNSCOPED"),
                     @Option(label = "Application Scoped", value = "APPLICATION_SCOPED"),

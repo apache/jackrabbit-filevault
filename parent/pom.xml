@@ -631,6 +631,8 @@ Bundle-Category: jackrabbit
                                 </goals>
                                 <configuration>
                                     <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                                     <!-- potentially ITs fork Java again (e.g. for testing Maven plugins), therefore always append to destFile as multiple VMs would then write to the same file -->
+                                    <append>true</append>
                                 </configuration>
                             </execution>
                             <execution>

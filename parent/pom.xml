@@ -51,7 +51,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <jackrabbit.version>2.20.2</jackrabbit.version>
         <oak.version>1.38.0</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
-        <test.oak>false</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
+        <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
         <java.target.version>1.8</java.target.version>
         <bnd.version>5.3.0</bnd.version>
         <maven.version>3.6.1</maven.version><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->

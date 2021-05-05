@@ -17,25 +17,18 @@
 
 Vault FS
 ========
-**NOTE**: Parts of the following documentation is outdated and needs review
-- - - 
 
 <!-- MACRO{toc} -->
 
 Introduction
 ------------
-we see in various applications the need for a simple jcr repository to filesystem mapping. for example in source management tools, fileserver bindings, import/export stuff etc. if a jcr repository would only consist of `nt:file` and `nt:folder`, this would be easy. but if other nodetypes are used (even a simple as extending from `nt:file`) the mapping to the filesystem is not so trivial anymore. the idea is to provide a general all-purpose mechanism to export to and import from a standard (java.io based) filesystem.
+We see in various applications the need for a simple JCR repository to filesystem mapping to be used in source management tools, fileserver bindings, import/export stuff etc. If a JCR repository would only consist of `nt:file` and `nt:folder`, this would be easy but if other nodetypes are used (even a simple as extending from `nt:file`) the mapping to the filesystem is not so trivial anymore. The idea is to provide a general all-purpose mechanism to export to and import from a standard (java.io based) filesystem.
 
 The VaultFs is designed to provide a general filesystem abstraction of a JCR repository. It provides the following features:
 
-intuitive mapping
-: A `nt:file` should just map to a simple file, a `nt:folder` to a directory. More complex node types should map to a `nodename.xml` and a possible `nodename` folder that contains the child nodes or be aggregated to a complete or partial serialization.
-
-universal api
-: the api should be suitable for all filesystem based applications like WebDAV, CIFS, SCM Integration, FileVault, etc.
-
-extendable
-: A plugin mechanism should allow to extend the mapping layer for further conversions filters and aggregators.
+- **intuitive mapping**: A `nt:file` should just map to a simple file, a `nt:folder` to a directory. More complex node types should map to a `nodename.xml` and a possible `nodename` folder that contains the child nodes or be aggregated to a complete or partial serialization.
+- **universal API**: the API should be suitable for all filesystem based applications like WebDAV, CIFS, SCM Integration, FileVault, etc.
+- **extendable**: A plugin mechanism should allow to extend the mapping layer for further conversions filters and aggregators.
 
 Overview
 --------
@@ -49,22 +42,16 @@ On top of the aggregate tree is the _Vault File System_ that accesses the aggreg
 
 Aggregate Manager
 -----------------
-The aggregate manager is configured with a set of aggregators and serializers. Once the manager is mounted on a jcr repository it exposes a tree of aggregates. They are collected using an aggregator that matches the respective repository node. For example the _nt:file aggregator_ produces an artifacts node that allows no further child nodes and provides (usually) one primary artifact (which represents the content of the file).
+The aggregate manager is configured with a set of aggregators and serializers. Its configuration can be overridden in [`META-INF/vault/config.xml` of content packages](config.html). Once the manager is mounted on a jcr repository it exposes a tree of aggregates. They are collected using an aggregator that matches the respective repository node. For example the _nt:file aggregator_ produces an artifacts node that allows no further child nodes and provides (usually) one primary artifact (which represents the content of the file).
+
 
 ### Artifacts
-an artifact is one aspect or part of a content aggregation. the following artifact types exist:
+An artifact is one aspect or part of a content aggregation. The following artifact types exist:
 
-Directory Artifacts 
-: represent the folder aspect of an aggregate. For example a pure `nt:folder` would produce an aggregate with just one sole directory artifact.
-
-File Artifacts
-: represent file aggregates. since the `nt:file` handling is very special there is an special type for it.
-
-Primary Artifacts
-: represent the main aggregate. This usually contains all nodes and properties that belong to the aggregate that cannot be expressed by another type.
-
-Binary Artifacts 
-: represent binary content that is not included in the primary or file artifacts. This is for example suitable for binary properties that were not included in a xml deserialization. This allows keeping the deserializations leaner and more efficient.
+- **Directory Artifacts**: represent the folder aspect of an aggregate. For example a pure `nt:folder` would produce an aggregate with just one sole directory artifact.
+- **File Artifacts**: represent file aggregates. since the `nt:file` handling is very special there is an special type for it.
+- **Primary Artifacts**: represent the main aggregate. This usually contains all nodes and properties that belong to the aggregate that cannot be expressed by another type.
+- **Binary Artifacts**: represent binary content that is not included in the primary or file artifacts. This is for example suitable for binary properties that were not included in a xml deserialization. This allows keeping the deserializations leaner and more efficient.
 
 Content Aggregation
 -------------------
@@ -78,9 +65,9 @@ the mechanism how content aggregation works is defined by a set of _filters_ wit
 4. if aggregator allows child nodes descend into the excluded nodes
 
 ### Aggregates
-an aggregate is a tree of repository items that belong together and are mapped to (a set of) artifacts. the artifacts represent filesystem resources. the aggregate type is defined by the aggregator type and not primarily by the content. i.e. the selected aggregator must return stable coverage information which is not dependent of the actual content.
+An aggregate is a tree of repository items that belong together and are mapped to (a set of) artifacts. The artifacts represent filesystem resources. The aggregate type is defined by the aggregator type and not primarily by the content, i.e. the selected aggregator must return stable coverage information which is not dependent of the actual content.
 
-there can be identified 4 types of aggregates.
+There are mainly 4 types of aggregates:
 
 #### Full coverage aggregates
 they aggregate an entire subtree. for example the complete serialization of a `nt:nodeType` node or a _dialog definition_. they are very simple to deal with, since the root node of the aggregate is usually serialized into 1 filesystem file.
@@ -317,9 +304,6 @@ Depending on the configuration those input sources can be handled differently. c
 
 **generic data** produces a `nt:file` having the data as `nt:resource` content.
 
-Vault File System Layer
------------------------
-The VaultFs layer provides a mapping from the aggregate tree to a file system. The goal is to keep the amount of files lean and as natural as possible with a minimum amount of extra files. 
 
 Terminology
 -----------

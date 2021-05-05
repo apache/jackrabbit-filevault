@@ -17,7 +17,17 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.security.Principal;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.jcr.AccessDeniedException;
+import javax.jcr.LoginException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
@@ -27,13 +37,10 @@ import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
+import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
 import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
 import org.junit.After;
 import org.junit.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Testcase for {@link AdminPermissionChecker}
@@ -142,5 +149,29 @@ public class AdminPermissionCheckerIT extends IntegrationTestBase {
         } finally {
             session.logout();
         }
+    }
+
+    @Test
+    public void testBoundPrincipalIsAdmin() throws LoginException, RepositoryException {
+        assertFalse(AdminPermissionChecker.hasAdministrativePermissionsWithPrincipals(admin, Collections.singletonList("myadmin")));
+        // emulate Oak 1.40 with custom attribute
+        SimpleCredentials creds = new SimpleCredentials("admin", "admin".toCharArray());
+        Set<Principal> principals = new HashSet<>();
+        principals.add(new PrincipalImpl("someprincipalname"));
+        principals.add(new PrincipalImpl("myadmin"));
+        creds.setAttribute("oak.bound-principals", principals);
+        Session newSession = repository.login(creds);
+        try {
+            assertFalse(AdminPermissionChecker.hasAdministrativePermissionsWithPrincipals(newSession, Collections.singletonList("myadmin2")));
+            assertTrue(AdminPermissionChecker.hasAdministrativePermissionsWithPrincipals(newSession, Collections.singletonList("myadmin")));
+        } finally {
+            newSession.logout();
+        }
+    }
+
+    @Test
+    public void testIsOak140() {
+        // this test must be adjusted once the Oak dependency is updated to 1.40 or newer
+        assertFalse(AdminPermissionChecker.isOakVersionExposingBoundPrincipals(repository));
     }
 }

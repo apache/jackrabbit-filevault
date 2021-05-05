@@ -15,18 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.jackrabbit.vault.packaging.integration;
+package org.apache.jackrabbit.vault.packaging.registry.impl;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.jcr.RepositoryException;
@@ -41,26 +47,25 @@ import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlan;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
-import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask.Type;
-import org.apache.jackrabbit.vault.packaging.registry.impl.FSInstallState;
-import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageRegistry;
-import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageStatus;
-import org.apache.jackrabbit.vault.packaging.registry.impl.InstallationScope;
+import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
+import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageRegistry.Config;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+import org.osgi.framework.BundleContext;
+import org.osgi.util.converter.Converter;
+import org.osgi.util.converter.Converters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Test the Package registry interface
@@ -81,6 +86,11 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             "/tmp/foo"
     };
     
+    private static final PackageId TEST_PACKAGE_ID = new PackageId("test", "test-package-with-etc", "1.0");
+
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
+
     private FSPackageRegistry registry;
     private File registryHome;
 
@@ -208,6 +218,12 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         assertTrue("file should still exist", file.exists());
         registry.register(file, true);
         file.delete();
+        // make sure package is still accessible after original has been deleted
+        try (RegisteredPackage registeredPackage = registry.open(id)) {
+            try (VaultPackage pack = registeredPackage.getPackage()) {
+                assertNotEquals(file, pack.getFile());
+            }
+        }
     }
     
     /**
@@ -237,6 +253,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
     /**
      * registers a file as external package twice with 
      */
+    @SuppressWarnings("deprecation")
     @Test
     public void testRegisterExternalFileTwiceFailsLoadedRegistry() throws IOException, PackageException {
         File file = getTempFile("/test-packages/tmp.zip");
@@ -312,11 +329,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         assertFalse(registry.open(PACKAGE_ID_SUB_A).isInstalled());
         assertFalse(registry.open(PACKAGE_ID_SUB_B).isInstalled());
     }
-    
-    
 
-
-    @SuppressWarnings("deprecation")
     @Test
     public void testInstallExternalUnScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
         File file = getTempFile("/test-packages/mixed_package.zip");
@@ -337,7 +350,6 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         checkFiltered(CONTENT_PATHS, new String[] {}, listener.paths);
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testInstallExternalContentScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
         File file = getTempFile("/test-packages/mixed_package.zip");
@@ -357,14 +369,12 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         checkFiltered(CONTENT_PATHS, APPLICATION_PATHS, listener.paths);
     }
 
-    @SuppressWarnings("deprecation")
     private void cleanPaths(String[] paths) throws IOException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException  {
         for (String path : paths) {
             clean(path);
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testInstallExternalApplicationScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
         File file = getTempFile("/test-packages/mixed_package.zip");
@@ -629,7 +639,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         assertTrue("Installation time for idC too early", registry.open(idC).getInstallationTime().compareTo(before) >= 0);
 
     }
-    
+
     @Test
     public void testUnsupportedUninstall() throws Exception {
         PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
@@ -658,27 +668,41 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             //expected
         }
     }
-    
-    @Test
-    public void testNonMetaXmlFile() throws Exception {
-        PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
 
-        assertEquals(idC, registry.getInstallState(idC).getPackageId());
-        assertEquals(FSPackageStatus.REGISTERED, registry.getInstallState(idC).getStatus());
-        
-        Field stateCache = registry.getClass().getDeclaredField("stateCache");
-        stateCache.setAccessible(true);
-        stateCache.set(registry, new HashMap<String, FSInstallState>()  );
-        Method getPackageMetaDataFile = registry.getClass().getDeclaredMethod("getPackageMetaDataFile", new Class<?>[]{idC.getClass()});
-        getPackageMetaDataFile.setAccessible(true);
-        Method loadPackageCache = registry.getClass().getDeclaredMethod("loadPackageCache");
-        loadPackageCache.setAccessible(true);
-        File metaFile = (File)getPackageMetaDataFile.invoke(registry, idC);
-        FileUtils.copyToFile(getStream("repository.xml"), metaFile);
-        loadPackageCache.invoke(registry);
-        assertEquals(FSPackageStatus.NOTREGISTERED, registry.getInstallState(idC).getStatus());
+    @Test
+    public void testInvalidMetaXmlFile() throws Exception {
+        getFreshRegistryWithDefaultConstructor("test-package.zip", "invalid-metadata.xml");
+        assertNull(registry.getInstallState(TEST_PACKAGE_ID));
     }
-    
+
+    @Test
+    public void testCacheInitializedAfterOSGiActivate() throws IOException {
+         new FSPackageRegistry();
+        getFreshRegistryWithDefaultConstructor("test-package.zip", "test-package.xml");
+        assertTrue(registry.contains(TEST_PACKAGE_ID));
+        assertEquals(Collections.singleton(TEST_PACKAGE_ID), registry.packages());
+    }
+
+    private void getFreshRegistryWithDefaultConstructor(String packageName, String packageMetadataName) throws IOException {
+        if (this.registryHome != null && this.registryHome.exists()) {
+            this.registryHome.delete();
+        }
+        this.registryHome = new File(DIR_REGISTRY_HOME, UUID.randomUUID().toString());
+        FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(packageName), new File(this.registryHome, "package1.zip"));
+        FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(packageMetadataName), new File(this.registryHome, "package1.zip.xml"));
+        
+        BundleContext context = Mockito.mock(BundleContext.class);
+        Mockito.when(context.getProperty(FSPackageRegistry.REPOSITORY_HOME)).thenReturn(DIR_REGISTRY_HOME.toString());
+        Converter converter = Converters.standardConverter();
+        Map<String, Object> map = new HashMap<>();
+        map.put("homePath", registryHome.getName());
+        map.put("authIdsForHookExecution", new String[0]);
+        map.put("authIdsForRootInstallation", new String[0]);
+        Config config = converter.convert(map).to(Config.class);
+        registry.activate(context, config);
+    }
+
+    @SuppressWarnings("deprecation")
     private void getFreshRegistry(InstallationScope... scope) throws IOException {
         if (this.registryHome != null && this.registryHome.exists()) {
             this.registryHome.delete();

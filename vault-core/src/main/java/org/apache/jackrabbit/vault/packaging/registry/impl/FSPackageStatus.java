@@ -22,7 +22,6 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 public enum FSPackageStatus {
     
     REGISTERED,
-    EXTRACTED,
-    NOTREGISTERED
+    EXTRACTED
 
 }

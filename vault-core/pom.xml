@@ -330,6 +330,12 @@
                                     <goal>integration-test</goal>
                                 </goals>
                             </execution>
+                            <execution>
+                                <id>verify-its</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
@@ -351,6 +357,12 @@
                                     <goal>integration-test</goal>
                                 </goals>
                             </execution>
+                            <execution>
+                                <id>verify-its</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
@@ -367,7 +379,7 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>oak</id>
+                                <id>it-with-oak</id>
                                 <goals>
                                     <goal>integration-test</goal>
                                 </goals>
@@ -380,12 +392,24 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>jr</id>
+                                <id>it-with-jr</id>
                                 <goals>
                                     <goal>integration-test</goal>
                                 </goals>
                                 <configuration>
                                     <reportNameSuffix>JR</reportNameSuffix>
+                                    <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-jr.xml</summaryFile>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>verify-its</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <summaryFiles>
+                                        <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-jr.xml</summaryFile>
+                                    </summaryFiles>
                                 </configuration>
                             </execution>
                         </executions>

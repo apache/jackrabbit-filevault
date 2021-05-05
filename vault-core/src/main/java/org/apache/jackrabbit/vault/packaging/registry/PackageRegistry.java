@@ -42,14 +42,14 @@ public interface PackageRegistry {
      * Checks if this registry contains the package with the given id.
      * @param id the package id.
      * @return {@code true} if the package is registered.
-     * @throws IOException if an I/O error occurrs.
+     * @throws IOException if an I/O error occurs.
      */
     boolean contains(@NotNull PackageId id) throws IOException;
 
     /**
      * Returns as set of all packages registered in this registry.
      * @return a set of package ids.
-     * @throws IOException if an I/O error occurrs.
+     * @throws IOException if an I/O error occurs.
      */
     @NotNull
     Set<PackageId> packages() throws IOException;
@@ -58,7 +58,7 @@ public interface PackageRegistry {
      * Opens the package with the given id.
      * @param id the package id
      * @return the package or {@code null} if it does not exists.
-     * @throws IOException if an I/O error occurrs.
+     * @throws IOException if an I/O error occurs.
      */
     @Nullable
     RegisteredPackage open(@NotNull PackageId id) throws IOException;
@@ -70,7 +70,7 @@ public interface PackageRegistry {
      * @param in the input stream to the package data
      * @param replace {@code true} if existing package should be replaced.
      * @return the new package id.
-     * @throws IOException if an I/O error occurrs.
+     * @throws IOException if an I/O error occurs.
      * @throws PackageExistsException if the package exists and {@code replace} is {@code false}.
      */
     @NotNull

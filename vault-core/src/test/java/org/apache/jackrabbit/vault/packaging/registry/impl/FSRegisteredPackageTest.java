@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.HollowVaultPackage;
@@ -58,7 +59,7 @@ public class FSRegisteredPackageTest {
         }
     }
 
-    private FSPackageRegistry newRegistry(File packageFile) throws IOException {
+    private FSPackageRegistry newRegistry(File packageFile) throws IOException, NoSuchPackageException {
         FSPackageRegistry registry = Mockito.mock(FSPackageRegistry.class);
         Mockito.when(registry.openPackageFile(DUMMY_ID)).thenReturn(safeLoadVaultPackage(packageFile));
         return registry;
@@ -72,7 +73,7 @@ public class FSRegisteredPackageTest {
     }
 
     @Test
-    public void testGetPackageFromNonTruncatedFile() throws IOException {
+    public void testGetPackageFromNonTruncatedFile() throws IOException, NoSuchPackageException {
         File packageFile = getTempFile("test-package.zip");
         try (RegisteredPackage regPack = new FSRegisteredPackage(newRegistry(packageFile), newInstallState(packageFile));
                 VaultPackage vltPack = regPack.getPackage()) {
@@ -86,7 +87,7 @@ public class FSRegisteredPackageTest {
     }
 
     @Test
-    public void testGetPackageFromTruncatedFile() throws IOException {
+    public void testGetPackageFromTruncatedFile() throws IOException, NoSuchPackageException {
         File packageFile = getTempFile("test-package-truncated.zip");
         try (RegisteredPackage regPack = new FSRegisteredPackage(newRegistry(packageFile), newInstallState(packageFile));
                 VaultPackage vltPack = regPack.getPackage()) {

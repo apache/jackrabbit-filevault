@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.jackrabbit.vault.packaging.integration;
+package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import static org.junit.Assert.assertEquals;
 
@@ -23,17 +23,21 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
-import org.apache.jackrabbit.vault.packaging.registry.impl.FSInstallState;
-import org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageStatus;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.xmlunit.matchers.CompareMatcher;
@@ -60,8 +64,7 @@ public class FSInstallStateTest {
         Map<PackageId, SubPackageHandling.Option> subs = new HashMap<>();
         subs.put(TMP_PACKAGE_ID, SubPackageHandling.Option.ADD);
 
-        FSInstallState state = new FSInstallState(TMP_PACKAGE_ID, FSPackageStatus.EXTRACTED)
-                .withFilePath(testFile.toPath())
+        FSInstallState state = new FSInstallState(TMP_PACKAGE_ID, FSPackageStatus.EXTRACTED, testFile.toPath())
                 .withExternal(true)
                 .withDependencies(deps)
                 .withSubPackages(subs)
@@ -77,9 +80,10 @@ public class FSInstallStateTest {
 
     @Test
     public void testReadInstallStateNonExistent() throws IOException {
-        FSInstallState state = FSInstallState.fromFile(new File("nonexist.xml"));
+        FSInstallState state = FSInstallState.fromFile(Paths.get("nonexisting.xml"));
         assertEquals(null, state);
     }
+
     @Test
     public void testReadInstallState() throws IOException {
         Set<Dependency> deps = new HashSet<>();
@@ -96,6 +100,29 @@ public class FSInstallStateTest {
         assertEquals(subs, state.getSubPackages());
         assertEquals(1234L, state.getSize());
         assertEquals((Long) 1234L, state.getInstallationTime());
+    }
 
+    @Test
+    public void testSaveLoad() throws IOException, ConfigurationException {
+        PackageId packageId = new PackageId("group", "name", "1.1.1");
+        FSInstallState fsInstallState = new FSInstallState(packageId, FSPackageStatus.REGISTERED, Paths.get(""));
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet pathFilterSet = new PathFilterSet("/apps/mytest");
+        pathFilterSet.addExclude(new DefaultPathFilter("/apps/mytest/exclude"));
+        pathFilterSet.addInclude(new DefaultPathFilter("/apps/mytest/include"));
+        pathFilterSet.seal();
+        filter.add(pathFilterSet);
+        fsInstallState.withFilter(filter);
+        fsInstallState.withDependencies(Collections.singleton(new Dependency(new PackageId("group", "other", "1.0.0"))));
+        fsInstallState.withInstallTime(1234L);
+        fsInstallState.withSize(333);
+        fsInstallState.withSubPackages(Collections.singletonMap(new PackageId("group", "subpackage", "1.0.0"), SubPackageHandling.Option.FORCE_EXTRACT));
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            fsInstallState.save(output);
+            try (InputStream input = new ByteArrayInputStream(output.toByteArray())) {
+                FSInstallState fsInstallState2 = FSInstallState.fromStream(input, "systemId");
+                assertEquals(fsInstallState, fsInstallState2);
+            }
+        }
     }
 }

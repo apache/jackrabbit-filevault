@@ -24,16 +24,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.security.Principal;
 import java.util.Collections;
-import java.util.Properties;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
@@ -832,28 +826,7 @@ public class PackageInstallIT extends IntegrationTestBase {
      */
     @Test
     public void testPackageInstallWith0MtimeZipEntry() throws IOException, RepositoryException, NoSuchFieldException, IllegalAccessException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ZipOutputStream zout = new ZipOutputStream(out);
-        Properties p = new Properties();
-        p.setProperty("name", TMP_PACKAGE_ID.getName());
-        p.setProperty("group", TMP_PACKAGE_ID.getGroup());
-        p.setProperty("version", TMP_PACKAGE_ID.getVersionString());
-        ZipEntry e = new ZipEntry("META-INF/vault/properties.xml");
-
-        Field field = ZipEntry.class.getDeclaredField("xdostime");
-        field.setAccessible(true);
-        field.setLong(e, 0);
-        zout.putNextEntry(e);
-        p.storeToXML(zout, "", "utf-8");
-        zout.closeEntry();
-
-        zout.putNextEntry(new ZipEntry("jcr_root/"));
-        zout.closeEntry();
-
-        zout.close();
-        out.close();
-
-        JcrPackage pack = packMgr.upload(new ByteArrayInputStream(out.toByteArray()), true);
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/properties-with-0mtime.zip"), true, true);
         assertEquals("packageid", TMP_PACKAGE_ID, pack.getDefinition().getId());
     }
 

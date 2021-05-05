@@ -16,12 +16,13 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +35,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.FilterSet.Entry;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -60,7 +60,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- * Internal (immutable) State object to cache and pass the relevant metadata around.
+ * Internal (immutable) state object for a package to cache and pass the relevant metadata around.
  */
 public class FSInstallState {
 
@@ -98,9 +98,9 @@ public class FSInstallState {
 
     private static final String TAG_PACKAGEPROPERTIES = "packageproperties";
 
-    private final PackageId packageId;
-    private final FSPackageStatus status;
-    private Path filePath;
+    private final @NotNull PackageId packageId;
+    private final @NotNull FSPackageStatus status;
+    private final @NotNull Path filePath;
     private boolean external;
     private Set<Dependency> dependencies = Collections.emptySet();
     private Map<PackageId, SubPackageHandling.Option> subPackages = Collections.emptyMap();
@@ -109,14 +109,10 @@ public class FSInstallState {
     private WorkspaceFilter filter;
     private Properties properties = new Properties();
 
-    public FSInstallState(@NotNull PackageId pid, @NotNull FSPackageStatus status) {
+    public FSInstallState(@NotNull PackageId pid, @NotNull FSPackageStatus status, @NotNull Path filePath) {
         this.packageId = pid;
         this.status = status;
-    }
-
-    public FSInstallState withFilePath(Path filePath) {
         this.filePath = filePath;
-        return this;
     }
 
     public FSInstallState withExternal(boolean external) {
@@ -167,12 +163,12 @@ public class FSInstallState {
      * @throws IOException in case root tag is correct but structure not parsable as expected
      */
     @Nullable
-    public static FSInstallState fromFile(File metaFile) throws IOException {
-        if (!metaFile.exists()) {
+    public static FSInstallState fromFile(Path metaFile) throws IOException {
+        if (!Files.exists(metaFile)) {
             return null;
         }
-        try (InputStream in = FileUtils.openInputStream(metaFile)) {
-            return fromStream(in, metaFile.getPath());
+        try (InputStream in = Files.newInputStream(metaFile)) {
+            return fromStream(in, metaFile.toString());
         }
     }
 
@@ -232,8 +228,7 @@ public class FSInstallState {
                 }
 
             }
-            return new FSInstallState(PackageId.fromString(packageId), status)
-                    .withFilePath(filePath)
+            return new FSInstallState(PackageId.fromString(packageId), status, filePath)
                     .withExternal(external)
                     .withSize(size)
                     .withFilter(filter)
@@ -287,7 +282,7 @@ public class FSInstallState {
                             DefaultPathFilter pf = new DefaultPathFilter(((Element) rule).getAttribute(ATTR_INCLUDE));
                             pfs.addInclude(pf);
                         } else if (((Element) rule).hasAttribute(ATTR_EXCLUDE)) {
-                            DefaultPathFilter pf = new DefaultPathFilter(((Element) rule).getAttribute(ATTR_INCLUDE));
+                            DefaultPathFilter pf = new DefaultPathFilter(((Element) rule).getAttribute(ATTR_EXCLUDE));
                             pfs.addExclude(pf);
                         }
                     }
@@ -305,8 +300,9 @@ public class FSInstallState {
      * @param file The files to save the state to
      * @throws IOException if an error occurs.
      */
-    public void save(File file) throws IOException {
-        try (OutputStream out = FileUtils.openOutputStream(file)) {
+    public void save(Path file) throws IOException {
+        Files.createDirectories(file.getParent());
+        try (OutputStream out = Files.newOutputStream(file, StandardOpenOption.CREATE)) {
             save(out);
         }
     }
@@ -416,5 +412,85 @@ public class FSInstallState {
 
     public Properties getProperties() {
         return properties;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((dependencies == null) ? 0 : dependencies.hashCode());
+        result = prime * result + (external ? 1231 : 1237);
+        result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+        result = prime * result + ((filter == null) ? 0 : filter.hashCode());
+        result = prime * result + ((installTime == null) ? 0 : installTime.hashCode());
+        result = prime * result + ((packageId == null) ? 0 : packageId.hashCode());
+        result = prime * result + ((properties == null) ? 0 : properties.hashCode());
+        result = prime * result + (int) (size ^ (size >>> 32));
+        result = prime * result + ((status == null) ? 0 : status.hashCode());
+        result = prime * result + ((subPackages == null) ? 0 : subPackages.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FSInstallState other = (FSInstallState) obj;
+        if (dependencies == null) {
+            if (other.dependencies != null)
+                return false;
+        } else if (!dependencies.equals(other.dependencies))
+            return false;
+        if (external != other.external)
+            return false;
+        if (filePath == null) {
+            if (other.filePath != null)
+                return false;
+        } else if (!filePath.equals(other.filePath))
+            return false;
+        if (filter == null) {
+            if (other.filter != null)
+                return false;
+        } else if (!filter.equals(other.filter))
+            return false;
+        if (installTime == null) {
+            if (other.installTime != null)
+                return false;
+        } else if (!installTime.equals(other.installTime))
+            return false;
+        if (packageId == null) {
+            if (other.packageId != null)
+                return false;
+        } else if (!packageId.equals(other.packageId))
+            return false;
+        if (properties == null) {
+            if (other.properties != null)
+                return false;
+        } else if (!properties.equals(other.properties))
+            return false;
+        if (size != other.size)
+            return false;
+        if (status != other.status)
+            return false;
+        if (subPackages == null) {
+            if (other.subPackages != null)
+                return false;
+        } else if (!subPackages.equals(other.subPackages))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "FSInstallState [" + (packageId != null ? "packageId=" + packageId + ", " : "")
+                + (status != null ? "status=" + status + ", " : "") + (filePath != null ? "filePath=" + filePath + ", " : "") + "external="
+                + external + ", " + (dependencies != null ? "dependencies=" + dependencies + ", " : "")
+                + (subPackages != null ? "subPackages=" + subPackages + ", " : "")
+                + (installTime != null ? "installTime=" + installTime + ", " : "") + "size=" + size + ", "
+                + (filter != null ? "filter=" + filter + ", " : "") + (properties != null ? "properties=" + properties : "") + "]";
     }
 }

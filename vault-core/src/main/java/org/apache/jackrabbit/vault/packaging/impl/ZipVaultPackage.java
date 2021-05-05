@@ -17,6 +17,7 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -48,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * Implements a vault package that is a zipped representation of a file vault
  * export.
  */
-public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPackage {
+public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPackage, Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(ZipVaultPackage.class);
 

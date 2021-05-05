@@ -22,11 +22,19 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.commons.io.input.TeeInputStream;
+import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@code InputStreamPump}...
+ * An input stream pump feeds a {@link InputStreamPump.Pump} in a dedicated thread with the input read from
+ * the given input stream.
+ * This is similar to a {@link TeeInputStream} but leverages {@link PipedInputStream} and {@link PipedOutputStream}
+ * and can execute additional tasks in the additional thread consuming the PipedInputStream.
+ * Only after calling {@link #close()} the PipedInputStream has been fully consumed (as it waits for the pump's thread to complete).
+ * 
+ * @see MemoryArchive
  */
 public class InputStreamPump extends InputStream {
 
@@ -43,7 +51,7 @@ public class InputStreamPump extends InputStream {
 
     private Thread pumpThread;
 
-    private Exception error;
+    private volatile Exception error;
 
     public InputStreamPump(InputStream source, final Pump pump) throws IOException {
         this.source = source;
@@ -76,6 +84,13 @@ public class InputStreamPump extends InputStream {
         void run(InputStream in) throws Exception;
     }
 
+    /**
+     * 
+     * @return exception which has occurred in the pump thread or {@code null}.
+     * @deprecated Rather call {@link #close()}, as otherwise this might be called too early (before the thread finished).
+     * {@code close()} will automatically wrap the potential exception from the pump in an IOException and throws it as well
+     */
+    @Deprecated
     public Exception getError() {
         return error;
     }
@@ -127,6 +142,9 @@ public class InputStreamPump extends InputStream {
             in.close();
         } catch (InterruptedException e) {
             throw new IOException(e);
+        }
+        if (error != null) {
+            throw new IOException(error);
         }
     }
 

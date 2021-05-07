@@ -22,6 +22,7 @@ package org.apache.jackrabbit.vault.fs.api;
  * to the existing content in the repository.
  * 
  * <table border="1">
+ * <caption>"Import Mode Effects"</caption>
  * <tr><th rowspan="2">Import Mode</th><th colspan="3">Property/Node (at a specific path)</th></tr>
  * <tr><th>In Package</th><th>In Repository Before Installation</th><th>In Repository After Installation</th></tr>
  * <tr><td rowspan="3">{@link #REPLACE}</td><td>non-existing</td><td>existing</td><td>removed</td></tr>
@@ -49,14 +50,13 @@ public enum ImportMode {
      * Existing content is not modified, i.e. only new content is added and
      * none is deleted or modified
      * <p>
-     * <strong>Only considered for 
+     * <strong>Only considered for</strong>
      * <ul>
-     * <li>Binaries, i.e. they will never be imported if the parent node has this import mode.</li>
+     * <li>Binaries: they will never be imported if the parent node has this import mode.</li>
      * <li>Authorizable nodes: only {@code rep:members} of existing authorizables is updated, no other property.</li>
      * <li>Simple files: i.e. they will never be imported in case the repo has this file already.
      * <li>Other docview files: It will ignore them in case the docview's root node does already exist in the repo (both full coverage and .content.xml). It skips non-existing child nodes/properties in the docview as well.</li>
      * </ul>
-     *  <strong></p>
      * 
      * @deprecated As this behaves inconsistently for the different serialization formats, rather use {@link #MERGE_PROPERTIES}.
      */

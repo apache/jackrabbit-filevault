@@ -50,7 +50,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Creates nt:file structures from  {@link SerializationType#XML_GENERIC} or
- * {@link SerializationType#GENERIC} artifacts as well complex node structure for full-coverage artifacts 
+ * {@link SerializationType#GENERIC} artifacts as well as complex node structure for full-coverage artifacts (ones not having a Directory type)
  * with {@link SerializationType#XML_DOCVIEW}.
  *
  */

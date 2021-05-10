@@ -44,7 +44,7 @@ env:
     # available build differs among platforms.
     - JDK="adopt@1.8"
     - JDK="adopt@1.11"
-    - JDK="adopt@1.15"
+    - JDK="adopt@1.16"
 jobs:
   include:
   - os: linux

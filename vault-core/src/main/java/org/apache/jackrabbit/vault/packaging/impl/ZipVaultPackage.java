@@ -41,7 +41,6 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -198,6 +197,12 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         }
 
         checkAllowanceToInstallPackage(session, hooks, securityConfig);
+
+        // check for disable intermediate saves (JCRVLT-520)
+        if (Boolean.parseBoolean(getProperty(PackageProperties.NAME_DISABLE_INTERMEDIATE_SAVE))) {
+            // MAX_VALUE disables saving completely, therefore we have to use a lower value!
+            opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
+        }
 
         Importer importer = new Importer(opts, isStrictByDefault);
         AccessControlHandling ac = getACHandling();

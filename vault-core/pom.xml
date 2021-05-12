@@ -113,6 +113,14 @@
     <!-- D E P E N D E N C I E S                                                -->
     <!-- ====================================================================== -->
     <dependencies>
+        <!-- for resolving against a target OSGi container the target OSGi container must be built first -->
+        <dependency>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <artifactId>org.apache.jackrabbit.vault.target-osgi-environment</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
         <!-- jackrabbit -->
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
@@ -235,6 +243,12 @@
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.testing.osgi-mock</artifactId>
             <version>2.3.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-api</artifactId>
+            <version>2.16.0</version><!-- use a newer test dependency due to usage of JackrabbitAccessControlList.isMultiValueRestriction in tests -->
             <scope>test</scope>
         </dependency>
         <dependency>

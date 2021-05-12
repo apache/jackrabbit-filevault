@@ -61,48 +61,33 @@
     <!-- B U I L D                                                              -->
     <!-- ====================================================================== -->
     <build>
-        <plugins>
-            <!-- ====================================================================== -->
-            <!-- J A V A D O C   P L U G I N                                            -->
-            <!-- ====================================================================== -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <!-- Default configuration for all reports -->
-                    <windowtitle>Apache Jackrabbit FileVault ${project.version} API</windowtitle>
-                    <doctitle>Apache Jackrabbit FileVault ${project.version} API</doctitle>
-                    <excludePackageNames>
-                        org.apache.jackrabbit.vault.cli*,org.apache.jackrabbit.vault.davex,*.impl*,org.apache.jackrabbit.vault.util.xml,org.apache.jackrabbit.vault.vlt.actions,org.apache.jackrabbit.vault.vlt.meta.*,org.apache.jackrabbit.vault.packaging.hotfix,org.apache.jackrabbit.vault.validation.impl*,org.apache.jackrabbit.vault.validation.spi.impl
-                    </excludePackageNames>
-                    <reportOutputDirectory>${basedir}/vault-doc/target/site</reportOutputDirectory>
-                    <additionalparam>-notimestamp</additionalparam>
-                    <detectLinks>true</detectLinks>
-                    <detectJavaApiLink>true</detectJavaApiLink>
-                    <links>
-                        <link>https://docs.adobe.com/content/docs/en/spec/javax.jcr/javadocs/jcr-2.0/</link>
-                        <link>https://jackrabbit.apache.org/api/2.20/</link>
-                        <link>https://www.javadoc.io/doc/org.apache.jackrabbit/oak-jackrabbit-api/1.32.0/</link>
-                    </links>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>aggregate</id>
-                        <goals>
-                            <goal>aggregate</goal>
-                        </goals>
-                        <phase>site</phase>
-                    </execution>
-                    <execution>
-                        <id>aggregate-jar</id>
-                        <goals>
-                            <goal>aggregate-jar</goal>
-                        </goals>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <!-- ====================================================================== -->
+                <!-- J A V A D O C   P L U G I N                                            -->
+                <!-- ====================================================================== -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <!-- Default configuration for all reports -->
+                        <windowtitle>Apache Jackrabbit FileVault ${project.version} API</windowtitle>
+                        <doctitle>Apache Jackrabbit FileVault ${project.version} API</doctitle>
+                        <excludePackageNames>
+                            org.apache.jackrabbit.vault.cli*,org.apache.jackrabbit.vault.davex,*.impl*,org.apache.jackrabbit.vault.util.xml,org.apache.jackrabbit.vault.vlt.actions,org.apache.jackrabbit.vault.vlt.meta.*,org.apache.jackrabbit.vault.packaging.hotfix,org.apache.jackrabbit.vault.validation.impl*,org.apache.jackrabbit.vault.validation.spi.impl
+                        </excludePackageNames>
+                        <reportOutputDirectory>${basedir}/vault-doc/target/site</reportOutputDirectory>
+                        <detectLinks>true</detectLinks>
+                        <detectJavaApiLink>true</detectJavaApiLink>
+                        <links>
+                            <link>https://docs.adobe.com/content/docs/en/spec/javax.jcr/javadocs/jcr-2.0/</link>
+                            <link>https://jackrabbit.apache.org/api/2.20/</link>
+                            <link>https://www.javadoc.io/doc/org.apache.jackrabbit/oak-jackrabbit-api/1.32.0/</link>
+                        </links>
+                    </configuration>
+                </plugin>
+           </plugins>
+        </pluginManagement>
     </build>
 
     <!-- ====================================================================== -->
@@ -139,6 +124,25 @@
             </properties>
             <build>
                 <plugins>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>aggregate</id>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                                <phase>site</phase>
+                            </execution>
+                            <execution>
+                                <id>aggregate-jar</id>
+                                <goals>
+                                    <goal>aggregate-jar</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <executions>

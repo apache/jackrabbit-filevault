@@ -126,9 +126,9 @@ public class IntegrationTestBase  {
     private static final Logger log = LoggerFactory.getLogger(IntegrationTestBase.class);
 
     private static final String REPO_HOME = "target/repository";
-    private static final File DIR_REPO_HOME = new File(REPO_HOME);
-    private static final File DIR_DATA_STORE = new File(REPO_HOME + "/datastore");
-    private static final File DIR_BLOB_STORE = new File(REPO_HOME + "/blobstore");
+    private static final File DIR_REPO_HOME = new File(REPO_HOME + System.getProperty("repoIndex", "0"));
+    private static final File DIR_DATA_STORE = new File(DIR_REPO_HOME, "datastore");
+    private static final File DIR_BLOB_STORE = new File(DIR_REPO_HOME, "blobstore");
 
     public static final PackageId TMP_PACKAGE_ID = new PackageId("my_packages", "tmp", "");
 
@@ -201,7 +201,7 @@ public class IntegrationTestBase  {
             admin.logout();
         } else {
             try (InputStream in = IntegrationTestBase.class.getResourceAsStream("repository.xml")) {
-                RepositoryConfig cfg = RepositoryConfig.create(in, REPO_HOME);
+                RepositoryConfig cfg = RepositoryConfig.create(in, DIR_REPO_HOME.getPath());
                 repository = RepositoryImpl.create(cfg);
             }
         }

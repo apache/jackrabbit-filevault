@@ -154,7 +154,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     mode = wspFilter.getImportMode(path);
                 }
                 // only update if not MERGE (i.e. is REPLACE or UPDATE)
-                if (mode != ImportMode.MERGE) {
+                if (mode != ImportMode.MERGE && mode != ImportMode.MERGE_PROPERTIES) {
                     InputSource source = primary.getInputSource();
                     if (source != null) {
                         info.merge(importDocView(parent, source, artifacts, wspFilter));
@@ -180,7 +180,8 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                         if (file instanceof ImportArtifact) {
                             Node fileNode = parent.getNode(fileName);
                             // check import mode, only replace if not MERGE
-                            if (wspFilter.getImportMode(fileNode.getPath()) != ImportMode.MERGE) {
+                            ImportMode mode = wspFilter.getImportMode(fileNode.getPath());
+                            if (mode != ImportMode.MERGE && mode != ImportMode.MERGE_PROPERTIES) {
                                 if (!fileNode.hasNode(Node.JCR_CONTENT)) {
                                     // apparently no nt:file, recreate file node
                                     fileNode.remove();
@@ -219,29 +220,20 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     newSet.setCoverage(ItemFilterSet.INCLUDE_ALL);
 
                     // check import mode
-                    ImportMode mode = ImportMode.REPLACE;
-                    String path = PathUtil.getPath(newParent, newName);
-                    if (newName.length() == 0 || newParent.hasNode(newName)) {
-                        mode = wspFilter.getImportMode(path);
-                    }
-                    if (mode != ImportMode.MERGE) {
-                        try {
-                            DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter);
-                            handler.setAclHandling(getAcHandling());
-                            handler.setCugHandling(getCugHandling());
-                            SAXParserFactory factory = SAXParserFactory.newInstance();
-                            factory.setNamespaceAware(true);
-                            factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
-                            SAXParser parser = factory.newSAXParser();
-                            parser.parse(file.getInputSource(), handler);
-                            info.merge(handler.getInfo());
-                        } catch (ParserConfigurationException e) {
-                            throw new RepositoryException(e);
-                        } catch (SAXException e) {
-                            throw new RepositoryException(e);
-                        }
-                    } else {
-                        info.onNop(path);
+                    try {
+                        DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter);
+                        handler.setAclHandling(getAcHandling());
+                        handler.setCugHandling(getCugHandling());
+                        SAXParserFactory factory = SAXParserFactory.newInstance();
+                        factory.setNamespaceAware(true);
+                        factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
+                        SAXParser parser = factory.newSAXParser();
+                        parser.parse(file.getInputSource(), handler);
+                        info.merge(handler.getInfo());
+                    } catch (ParserConfigurationException e) {
+                        throw new RepositoryException(e);
+                    } catch (SAXException e) {
+                        throw new RepositoryException(e);
                     }
                 } else {
                     throw new IllegalArgumentException("Files of type " + file.getSerializationType() + " can't be handled by this handler " + this);
@@ -258,7 +250,9 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     path = path.substring(idx + 1);
                 }
                 // only update binary if import mode is not MERGE
-                if (wspFilter.getImportMode(parentNode.getPath()) != ImportMode.MERGE) {
+                // TODO: why? if not existing yet even with merge should be set afterwards
+                ImportMode mode = wspFilter.getImportMode(parentNode.getPath());
+                if (mode != ImportMode.MERGE && mode != ImportMode.MERGE_PROPERTIES) {
                     Value value = factory.createValue(binary.getInputStream());
                     if (!parentNode.hasProperty(path)
                             || !value.equals(parentNode.getProperty(path).getValue())) {

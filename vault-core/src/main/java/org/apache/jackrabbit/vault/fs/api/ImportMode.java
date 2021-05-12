@@ -35,8 +35,6 @@ package org.apache.jackrabbit.vault.fs.api;
  * <tr><td>existing</td><td>existing</td><td>replaced</td></tr>
  * <tr><td>existing</td><td>non-existing</td><td>created</td></tr>
  * </table>
- * 
- * TODO: Handling of {code oak:incrementalCounter}.
  */
 public enum ImportMode {
 
@@ -74,6 +72,7 @@ public enum ImportMode {
     /**
      * Existing properties are not touched, new nodes/properties are added, no existing nodes/properties are deleted
      * The only existing properties potentially touched is the multi value property {@code jcr:mixinType}.
+     * Authorizable nodes: only {@code rep:members} of existing authorizables is updated, no other property.
      */
     MERGE_PROPERTIES,
 

@@ -72,7 +72,7 @@ The following `types` are known:
 
 Type | Used Class | Description
 --- | --- | ---
-`file` | `FileArtifactHandler` | Deserializes `nt:file`s from generic or XML generic serializations
+`file` | `FileArtifactHandler` | Deserializes `nt:file`s from generic or XML generic serializations as well as full-coverage DocView XMLs (ones not named `.content.xml`)
 `folder` | `FolderArtifactHandler` | Deserializes folders
 `nodetype` | `NodeTypeArtifactHandler` | Deserializes `nt:nodeType` nodes from `*.xcnd` files
 `generic` | `GenericArtifactHandler` | Deserializes DocView artifacts, the default if no `type` is set

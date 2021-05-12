@@ -196,12 +196,12 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
     /**
      * map of hint nodes in the same artifact set
      */
-    private Set<String> hints = new HashSet<String>();
+    private Set<String> hints = new HashSet<>();
 
     /**
      * properties that should not be deleted
      */
-    private Set<String> saveProperties = new HashSet<String>();
+    private Set<String> preserveProperties = new HashSet<>();
 
     /**
      * the default name path resolver
@@ -325,14 +325,14 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         if (a.getType() == ArtifactType.FILE && a instanceof PropertyValueArtifact) {
             // hack, mark "file" properties just as present
             String parentPath = ((PropertyValueArtifact) a).getProperty().getParent().getPath();
-            saveProperties.add(parentPath + "/" + JcrConstants.JCR_DATA);
-            saveProperties.add(parentPath + "/" + JcrConstants.JCR_LASTMODIFIED);
+            preserveProperties.add(parentPath + "/" + JcrConstants.JCR_DATA);
+            preserveProperties.add(parentPath + "/" + JcrConstants.JCR_LASTMODIFIED);
         } else {
-            saveProperties.add(path);
+            preserveProperties.add(path);
             // hack, mark "file" properties just as present
-            saveProperties.add(path + "/jcr:content/jcr:data");
-            saveProperties.add(path + "/jcr:content/jcr:lastModified");
-            saveProperties.add(path + "/jcr:content/jcr:mimeType");
+            preserveProperties.add(path + "/jcr:content/jcr:data");
+            preserveProperties.add(path + "/jcr:content/jcr:lastModified");
+            preserveProperties.add(path + "/jcr:content/jcr:mimeType");
             String parentPath = Text.getRelativeParent(path, 1);
             String name = Text.getName(path);
             Map<String, DocViewSAXImporter.BlobInfo> infoSet = binaries.get(parentPath);
@@ -750,6 +750,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
         switch (mode) {
             case MERGE:
+            case MERGE_PROPERTIES:
                 // remember desired memberships.
                 // todo: how to deal with multi-node memberships? see JCRVLT-69
                 DocViewProperty prop = ni.props.get("rep:members");
@@ -772,6 +773,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 break;
 
             case UPDATE:
+            case UPDATE_PROPERTIES:
                 log.trace("Authorizable element detected. starting sysview transformation {}", newPath);
                 stack = stack.push();
                 stack.adapter = new JcrSysViewTransformer(node, oldPath, mode);
@@ -987,7 +989,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 String propName = p.getName();
                 if (!PROTECTED_PROPERTIES.contains(propName)
                         && !ni.props.containsKey(propName)
-                        && !saveProperties.contains(p.getPath())
+                        && !preserveProperties.contains(p.getPath())
                         && wspFilter.includesProperty(p.getPath())) {
                     try {
                         vs.ensureCheckedOut();
@@ -999,7 +1001,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 }
             }
         }
-        // add properties
+        // add/modify properties contained in package
         modified |= setUnprotectedProperties(node, ni, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs);
         return modified;
     }
@@ -1131,7 +1133,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         boolean modified = false;
         // add properties
         for (DocViewProperty prop : ni.props.values()) {
-            if (prop != null && !PROTECTED_PROPERTIES.contains(prop.name) && (overwriteExistingProperties || !node.hasProperty(prop.name))) {
+            if (prop != null && !PROTECTED_PROPERTIES.contains(prop.name) && (overwriteExistingProperties || !node.hasProperty(prop.name)) && wspFilter.includesProperty(node.getPath() + "/" + prop.name)) {
                 try {
                     modified |= prop.apply(node);
                 } catch (RepositoryException e) {
@@ -1161,8 +1163,10 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             } catch (NumberFormatException e) {
                 // ignore
             }
-            node.setProperty("oak:increment", counter - previous);
-            modified = true;
+            if (counter != 0) {
+                node.setProperty("oak:increment", counter - previous);
+                modified = true;
+            }
         }
         return modified;
     }

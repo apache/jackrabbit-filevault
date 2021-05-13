@@ -41,20 +41,19 @@ Building FileVault Site
 ============================================
 
 The FileVault documentation lives as Markdown files in `src/site/markdown` such
-that it easy to view e.g. from GitHub. Alternatively the Maven site plugin
-can be used to build and deploy a web site as follows:
+that it easy to view e.g. from GitHub. The Maven site plugin
+can be used to build and deploy a web site from those sources as follows:
 
 1. From the reactor build the site with javadoc:
 
         $ mvn site
 
 2. Review the site at `target/site`
-3. Deploy the site to `http://jackrabbit.apache.org/filevault/` using:
+3. Deploy the site to <https://jackrabbit.apache.org/filevault/> using:
 
-        $ cd vault-doc
         $ mvn site-deploy
 
-4. Finally review the site at `http://jackrabbit.apache.org/filevault/index.html`.
+4. Finally review the site at <https://jackrabbit.apache.org/filevault/index.html>.
 
 
 Note: To skip the final commit use `-Dscmpublish.skipCheckin=true`. You can then

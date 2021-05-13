@@ -44,7 +44,6 @@
         <module>vault-diff</module>
         <module>vault-rcp</module>
         <module>vault-davex</module>
-        <module>vault-doc</module>
         <module>vault-vlt</module>
         <module>vault-cli</module>
         <module>vault-hook-example</module>
@@ -57,6 +56,13 @@
         <project.build.outputTimestamp>2021-02-26T08:34:48Z</project.build.outputTimestamp>
     </properties>
 
+    <distributionManagement>
+        <site>
+            <id>jackrabbit.filevault.site-deploy</id>
+            <url>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/site/live/filevault</url>
+        </site>
+    </distributionManagement>
+    
     <!-- ====================================================================== -->
     <!-- B U I L D                                                              -->
     <!-- ====================================================================== -->
@@ -88,6 +94,65 @@
                 </plugin>
            </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <generateReports>true</generateReports>
+                    <skip>false</skip>
+                    <relativizeDecorationLinks>false</relativizeDecorationLinks>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-publish-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>scm-publish</id>
+                        <phase>site-deploy</phase>
+                        <goals>
+                            <goal>publish-scm</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <content>target/site</content>
+                    <checkinComment>@trivial: Site checkin for project ${project.name}-${project.version}
+                    </checkinComment>
+                    <ignorePathsToDelete>
+                        <ignorePathToDelete>apidocs</ignorePathToDelete>
+                    </ignorePathsToDelete>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/site</outputDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+        
+        <resources>
+            <resource>
+                <directory>src/site/markdown</directory>
+                <includes>
+                    <include>*.png</include>
+                    <include>*.jpg</include>
+                    <include>*.jpeg</include>
+                    <include>*.gif</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 
     <!-- ====================================================================== -->
@@ -102,8 +167,33 @@
                     <reportSet>
                         <!-- only generate aggregate report (not main and test, https://maven.apache.org/plugins/maven-javadoc-plugin/examples/selective-javadocs-report.html) -->
                         <id>aggregate</id>
+                        <inherited>false</inherited>
                         <reports>
                             <report>aggregate</report>
+                        </reports>
+                    </reportSet>
+                    <reportSet>
+                        <id>default</id>
+                        <reports>
+                            <report>javadoc</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <!-- don't generate index, due to the links to modules not having sites -->
+                            <report>team</report>
+                            <report>mailing-lists</report>
+                            <report>ci-management</report>
+                            <report>issue-management</report>
+                            <report>licenses</report>
+                            <report>scm</report>
+                            <report>distribution-management</report>
                         </reports>
                     </reportSet>
                 </reportSets>
@@ -127,13 +217,6 @@
                     <plugin>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <executions>
-                            <execution>
-                                <id>aggregate</id>
-                                <goals>
-                                    <goal>aggregate</goal>
-                                </goals>
-                                <phase>site</phase>
-                            </execution>
                             <execution>
                                 <id>aggregate-jar</id>
                                 <goals>

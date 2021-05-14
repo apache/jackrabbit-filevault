@@ -18,13 +18,15 @@
 Config
 ===========
 
+<!-- MACRO{toc} -->
+
 The FileVault Filesystem Configuration can be adjusted with a `META-INF/vault/config.xml` file in content packages or in the [Vault CLI](usage.html).
 
 It allows to tweak aggregation settings of the [Vault FS](vaultfs.html). The default config is at <https://github.com/apache/jackrabbit-filevault/blob/trunk/vault-core/src/main/resources/org/apache/jackrabbit/vault/fs/config/defaultConfig-1.1.xml>.
 
 The following XML elements below the root element `vaultfs` are considered. 
 
-## `properties`
+## Properties
 
 
 To exclude binaries from exports/imports you can use the property
@@ -36,7 +38,7 @@ To exclude binaries from exports/imports you can use the property
     </properties>
 ```
 
-## `aggregates`
+## Aggregates
 
 Aggregates which influence the serialization during exports are configured in `aggregate` child elements having an optional `type` attribute and a `title`.
 
@@ -62,7 +64,7 @@ Filter attribute | Values | Additional attributes | Used Filter Class | Descript
 `name` | the qualified name | - |`NameItemFilter` | Only applies to items having the given name
 `isMandatory` | Either `true` or `false` (the default) | - | `IsMandatoryFilter` | Only applies to properties/nodes which are marked as (non-)mandatory in the node type definition depending on the given value.
 
-## `handlers`
+## Handlers
 
 Handlers which deserialize nodes from packages during import are registered in `handler` child elements having an optional `type` attribute.
 

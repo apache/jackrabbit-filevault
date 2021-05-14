@@ -45,14 +45,13 @@
         <item href="nodetypes.html" name="Node Types"/>
         <item href="privileges.html" name="Privileges"/>
         <item href="installhooks.html" name="Install Hooks"/>
-     </item>
+      </item>
       <item href="rcp.html" name="Vault Remote Copy" />
     </menu>
     <menu name="Developing">
       <item href="apidocs/index.html" name="API docs" />
       <item href="howto_release.html" name="How to create a release" />
     </menu>
-    <menu ref="modules"/>
     <menu ref="reports" inherit="bottom"/>
     <menu name="Links">
       <item href="https://jackrabbit.apache.org/filevault-package-maven-plugin" name="Apache Jackrabbit FileVault - Package Maven Plugin" />

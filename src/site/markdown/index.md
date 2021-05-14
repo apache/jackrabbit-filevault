@@ -14,14 +14,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-Package Handling
-================
-(work in progress)
 
-## naming
-## storage
-## versions
-## snapshots / package receipts
-## installing / uninstalling
-## sub packages (filter vs meta-inf)
-## dependencies (enforcing)
+Apache Jackrabbit FileVault
+========
+
+The FileVault introduces a JCR repository to filesystem mapping. The mapping is exposed by an API and used by the "FileVault Content Packages" which allow to create portable packages of repository content. The Vault Command Line Interface aka "vlt" provides a subversion like utility to work and develop with repository content. 
+
+Apache Jackrabbit FileVault is a project of the Apache Software Foundation.

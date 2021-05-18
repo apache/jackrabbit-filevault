@@ -29,7 +29,6 @@ import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.util.MimeTypes;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -44,7 +43,7 @@ public class ImportModeIT extends IntegrationTestBase {
     public void testReplace() throws RepositoryException, IOException, PackageException {
         Node tmp = admin.getRootNode().addNode("tmp");
         Node foo = tmp.addNode("foo");
-        Node old = foo.addNode("old");
+        foo.addNode("old");
         admin.save();
         assertNodeExists("/tmp/foo/old");
         assertNodeMissing("/tmp/foo/bar");
@@ -64,7 +63,7 @@ public class ImportModeIT extends IntegrationTestBase {
     public void testMerge() throws RepositoryException, IOException, PackageException {
         Node tmp = admin.getRootNode().addNode("tmp");
         Node foo = tmp.addNode("foo");
-        Node old = foo.addNode("old");
+        foo.addNode("old");
         Node bar = foo.addNode("bar");
         bar.setProperty("testProperty", "old");
         admin.save();
@@ -87,7 +86,7 @@ public class ImportModeIT extends IntegrationTestBase {
     public void testUpdate() throws RepositoryException, IOException, PackageException {
         Node tmp = admin.getRootNode().addNode("tmp");
         Node foo = tmp.addNode("foo");
-        Node old = foo.addNode("old");
+        foo.addNode("old");
         Node bar = foo.addNode("bar");
         bar.setProperty("testProperty", "old");
         admin.save();
@@ -169,8 +168,7 @@ public class ImportModeIT extends IntegrationTestBase {
     }
 
     @Test
-    @Ignore("The package nodes are not treated by FileArtifactHandler but GenericArtifactHandler")
-    public void testComplexImportModesWithFileArtifactHandler() throws RepositoryException, IOException, PackageException {
+    public void testComplexImportModesFullCoverageWithGenericArtifactHandler() throws RepositoryException, IOException, PackageException {
         // initial state
         Node parent = admin.getRootNode().addNode("testroot");
         setUpNode(parent, "replace");
@@ -185,7 +183,8 @@ public class ImportModeIT extends IntegrationTestBase {
         assertNodeExists("/testroot/replace/old");
         assertProperty("/testroot/replace/existing/propertyold", "old");
         
-        extractVaultPackage("/test-packages/import_modes_test_filehandler_docview.zip");
+        // full coverage nodes on another level
+        extractVaultPackage("/test-packages/import_modes_test_generichandler2_docview.zip");
         
         // test update, creation and deletion of properties and nodes
         // Replace
@@ -208,11 +207,11 @@ public class ImportModeIT extends IntegrationTestBase {
 
         // Merge (don't touch existing nodes, except for adding new children)
         assertProperty("/testroot/merge/propertyupdate", "old");
-        assertProperty("/testroot/merge/propertynew", "new");
+        assertPropertyMissing("/testroot/merge/propertynew"); // not imported as whole docview is skipped
         assertProperty("/testroot/merge/propertyold", "old");
-        assertProperty("/testroot/merge/existing/propertynew", "new");
+        assertPropertyMissing("/testroot/merge/existing/propertynew"); // not imported as whole docview is skipped
         assertProperty("/testroot/merge/existing/propertyold", "old");
-        assertNodeExists("/testroot/merge/new"); // works, because import mode for testroot (docview root level) is REPLACE
+        assertNodeMissing("/testroot/merge/new"); // not imported as whole docview is skipped
         assertNodeExists("/testroot/merge/old");
 
         // Property Update (neither delete existing nodes nor properties, but update them and add new properties/nodes)
@@ -234,13 +233,12 @@ public class ImportModeIT extends IntegrationTestBase {
         assertNodeExists("/testroot/merge_properties/old");
     }
 
-
     @Test
     public void testMergingUpdatingNewRestrictedProperties() throws RepositoryException, IOException, PackageException {
         // initial state
         Node parent = admin.getRootNode().addNode("testroot");
         // existing nodes are heavily restricted (nt:file)
-        //setUpFileNode(parent, "replace");
+        setUpFileNode(parent, "replace");
         setUpFileNode(parent, "merge_properties");
         setUpFileNode(parent, "update_properties");
         admin.save();

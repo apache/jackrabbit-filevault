@@ -50,8 +50,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Creates nt:file structures from  {@link SerializationType#XML_GENERIC} or
- * {@link SerializationType#GENERIC} artifacts as well as complex node structure for full-coverage artifacts (ones not having a Directory type)
- * with {@link SerializationType#XML_DOCVIEW}.
+ * {@link SerializationType#GENERIC} artifacts.
  *
  */
 public class FileArtifactHandler extends AbstractArtifactHandler  {
@@ -154,7 +153,8 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     mode = wspFilter.getImportMode(path);
                 }
                 // only update if not MERGE (i.e. is REPLACE or UPDATE)
-                if (mode != ImportMode.MERGE && mode != ImportMode.MERGE_PROPERTIES) {
+                // this is for maintaining backwards-compatibility the rest of the import modes are evaluated in DocViewSAXImporter
+                if (mode != ImportMode.MERGE) {
                     InputSource source = primary.getInputSource();
                     if (source != null) {
                         info.merge(importDocView(parent, source, artifacts, wspFilter));
@@ -205,7 +205,8 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                         }
                     }
                 } else if (file.getSerializationType() == SerializationType.XML_DOCVIEW) {
-                    // special case for full coverage files below a intermediate node
+                    // special case for full coverage files below an intermediate node
+                    // TODO: this can probably be removed as never called by the Importer
                     String relPath = Text.getRelativeParent(file.getRelativePath(), 1);
                     String newName = Text.getName(file.getRelativePath());
                     Node newParent = parent;
@@ -220,20 +221,29 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     newSet.setCoverage(ItemFilterSet.INCLUDE_ALL);
 
                     // check import mode
-                    try {
-                        DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter);
-                        handler.setAclHandling(getAcHandling());
-                        handler.setCugHandling(getCugHandling());
-                        SAXParserFactory factory = SAXParserFactory.newInstance();
-                        factory.setNamespaceAware(true);
-                        factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
-                        SAXParser parser = factory.newSAXParser();
-                        parser.parse(file.getInputSource(), handler);
-                        info.merge(handler.getInfo());
-                    } catch (ParserConfigurationException e) {
-                        throw new RepositoryException(e);
-                    } catch (SAXException e) {
-                        throw new RepositoryException(e);
+                    ImportMode mode = ImportMode.REPLACE;
+                    String path = PathUtil.getPath(newParent, newName);
+                    if (newName.length() == 0 || newParent.hasNode(newName)) {
+                        mode = wspFilter.getImportMode(path);
+                    }
+                    if (mode != ImportMode.MERGE) {
+                        try {
+                            DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter);
+                            handler.setAclHandling(getAcHandling());
+                            handler.setCugHandling(getCugHandling());
+                            SAXParserFactory factory = SAXParserFactory.newInstance();
+                            factory.setNamespaceAware(true);
+                            factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
+                            SAXParser parser = factory.newSAXParser();
+                            parser.parse(file.getInputSource(), handler);
+                            info.merge(handler.getInfo());
+                        } catch (ParserConfigurationException e) {
+                            throw new RepositoryException(e);
+                        } catch (SAXException e) {
+                            throw new RepositoryException(e);
+                        }
+                    } else {
+                        info.onNop(path);
                     }
                 } else {
                     throw new IllegalArgumentException("Files of type " + file.getSerializationType() + " can't be handled by this handler " + this);

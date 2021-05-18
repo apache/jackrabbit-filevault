@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<workspaceFilter version="1.0">
-    <filter root="/intermediate/testroot/replace" mode="replace"/>
-    <filter root="/intermediate/testroot/merge" mode="merge"/>
-    <filter root="/intermediate/testroot/update" mode="update"/>
-    <filter root="/intermediate/testroot/merge_properties" mode="merge_properties"/>
-    <filter root="/intermediate/testroot/update_properties" mode="update_properties"/>
-</workspaceFilter>

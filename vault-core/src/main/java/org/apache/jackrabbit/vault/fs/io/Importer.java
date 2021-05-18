@@ -78,7 +78,6 @@ import org.apache.jackrabbit.vault.fs.spi.PrivilegeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
-import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.Constants;
@@ -89,35 +88,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@code AbstractImporter}
+ * Imports an {@link Archive} into a repository.
  *
  * file/directory combinations
- *
- * 1. plain files
+ * <ol>
+ * <li>plain file
+ * <pre>
  *    + foo
- *      - test.gif
- *
- * 2. plain files + special folder
+ *      - test.gif</pre>
+ * </li>
+ * <li>plain files + special folder
+ * <pre>
  *    + foo
  *      - .content.xml
  *      + bar
- *        - test.gif
- *
- * 3. special file
+ *        - test.gif</pre>
+ * </li>
+ * <li>special file
+ * <pre>
  *    + foo
  *      - test.gif
  *      - test.gif.dir
- *        - .content.xml
- *
- * 4. special file + sub files
+ *        - .content.xml</pre>
+ * </li>
+ * <li>special file + sub files
+ * <pre>
  *    + foo
  *      - test.gif
  *      - test.gif.dir
  *        - .content.xml
  *        + _jcr_content
- *          - thumbnail.gif
- *
- * 4. special file + sub special files
+ *          - thumbnail.gif</pre>
+ * </li>
+ * <li>special file + sub special files
+ * <pre>
  *    + foo
  *      - test.gif
  *      - test.gif.dir
@@ -125,16 +129,18 @@ import org.slf4j.LoggerFactory;
  *        + _jcr_content
  *          - thumbnail.gif
  *          + thumbnail.gif.dir
- *            - .content.xml
- *
- * 5. file/folder structure
+ *            - .content.xml</pre>
+ * </li>
+ * <li>file/folder structure
+ * <pre>
  *    + foo
  *      + en
  *        - .content.xml
  *        + _cq_content
  *          - thumbnail.gif
  *        + company
- *          - .content.xml
+ *          - .content.xml</pre>
+ * </li>
  */
 public class Importer {
 

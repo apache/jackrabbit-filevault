@@ -206,7 +206,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     }
                 } else if (file.getSerializationType() == SerializationType.XML_DOCVIEW) {
                     // special case for full coverage files below an intermediate node
-                    // TODO: this can probably be removed as never called by the Importer
+                    // this is never used from {@link Importer} but only from {@link TransactionImpl}
                     String relPath = Text.getRelativeParent(file.getRelativePath(), 1);
                     String newName = Text.getName(file.getRelativePath());
                     Node newParent = parent;

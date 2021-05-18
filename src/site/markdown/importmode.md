@@ -17,11 +17,11 @@
 
 Import Mode
 ===========
-The import mode defines how imported content affects existing content in the repository. It is controlled by the [ImportOptions][api.ImportOptions] set in the [Workspace Filter](filter.html) and defaults to `REPLACE`.
+The import mode defines how imported content affects existing content in the repository. It is controlled by the [ImportMode][api.ImportMode] set in the [Workspace Filter](filter.html) and defaults to `REPLACE`.
 
 <!-- MACRO{toc} -->
 
-The import mode handling is inconsistent and has many edge cases for the mode `MERGE` and `UPDATE`. Therefore FileVault 3.5.0 introduces the new modes `MERGE_PROPERTIES` and `UPDATE_PROPERTIES` (in [JCRVLT-255][JCRVLT-255]) which behave much more predicatable. The details are outlined at the [JavaDoc][api.ImportOptions].
+The import mode handling is inconsistent and has many edge cases for the mode `MERGE` and `UPDATE`. Therefore FileVault 3.5.0 introduces the new modes `MERGE_PROPERTIES` and `UPDATE_PROPERTIES` (in [JCRVLT-255][JCRVLT-255]) which behave much more predicatable. The details are outlined at the [JavaDoc][api.ImportMode].
 
 Import Mode behaviour on authorizables
 ----------------------------------------------------
@@ -59,5 +59,4 @@ However, the importer keeps track of potential remapping of existing users and t
 <!-- references -->
 [api.WorkspaceFilter]: apidocs/org/apache/jackrabbit/vault/fs/api/WorkspaceFilter.html
 [api.ImportMode]: apidocs/org/apache/jackrabbit/vault/fs/api/ImportMode.html
-[api.ImportOptions]: apidocs/org/apache/jackrabbit/vault/fs/io/ImportOptions.html
 [JCRVLT-255]: https://issues.apache.org/jira/browse/JCRVLT-255

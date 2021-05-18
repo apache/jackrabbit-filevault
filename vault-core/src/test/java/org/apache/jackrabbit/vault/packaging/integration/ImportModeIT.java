@@ -103,7 +103,7 @@ public class ImportModeIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testComplexImportModesWithGenericArtifactHandler() throws RepositoryException, IOException, PackageException {
+    public void testAllImportModesWithGenericArtifactHandler() throws RepositoryException, IOException, PackageException {
         // initial state
         Node parent = admin.getRootNode().addNode("testroot");
         setUpNode(parent, "replace");
@@ -168,7 +168,7 @@ public class ImportModeIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testComplexImportModesFullCoverageWithGenericArtifactHandler() throws RepositoryException, IOException, PackageException {
+    public void testAllImportModesFullCoverageWithGenericArtifactHandler() throws RepositoryException, IOException, PackageException {
         // initial state
         Node parent = admin.getRootNode().addNode("testroot");
         setUpNode(parent, "replace");
@@ -231,6 +231,38 @@ public class ImportModeIT extends IntegrationTestBase {
         assertProperty("/testroot/merge_properties/existing/propertyold", "old");
         assertNodeExists("/testroot/merge_properties/new");
         assertNodeExists("/testroot/merge_properties/old");
+    }
+
+    @Test
+    public void testAllImportModesWithFileArtifactHandler() throws RepositoryException, IOException, PackageException {
+     // initial state
+        Node parent = admin.getRootNode().addNode("testroot");
+        setUpFileNode(parent, "replace");
+        setUpFileNode(parent, "merge");
+        setUpFileNode(parent, "update");
+        setUpFileNode(parent, "merge_properties");
+        setUpFileNode(parent, "update_properties");
+        admin.save();
+        
+        assertProperty("/testroot/replace/jcr:content/jcr:data", "test");
+        
+        extractVaultPackage("/test-packages/import_modes_test_filehandler.zip");
+        
+        // test update, creation and deletion of properties and nodes
+        // Replace
+        assertProperty("/testroot/replace/jcr:content/jcr:data", "new");
+
+        // Update (neither delete existing nodes nor properties)
+        assertProperty("/testroot/update/jcr:content/jcr:data", "new");
+
+        // Merge (don't touch existing nodes, except for adding new children)
+        assertProperty("/testroot/merge/jcr:content/jcr:data", "test");
+
+        // Property Update (neither delete existing nodes nor properties, but update them and add new properties/nodes)
+        assertProperty("/testroot/update_properties/jcr:content/jcr:data", "new");
+        
+        // Property Merge (don't touch existing nodes nor properties, only add new properties/nodes)
+        assertProperty("/testroot/merge_properties/jcr:content/jcr:data", "test");
     }
 
     @Test

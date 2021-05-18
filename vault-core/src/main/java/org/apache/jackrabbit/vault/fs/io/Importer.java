@@ -78,6 +78,7 @@ import org.apache.jackrabbit.vault.fs.spi.PrivilegeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
+import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.Constants;
@@ -186,6 +187,9 @@ public class Importer {
      * general flag that indicates if the import had (recoverable) errors
      */
     private boolean hasErrors = false;
+
+    /** If {@link #hasErrors} = {@code true} this one contains the first exception during package import */
+    private Exception firstException = null;
 
     /**
      * overall handler for importing folder artifacts
@@ -493,6 +497,9 @@ public class Importer {
         } else {
             if (hasErrors) {
                 track("Package imported (with errors, check logs!)", "");
+                if (opts.isStrict(isStrictByDefault)) {
+                    throw new RepositoryException("Some errors occurred while installing packages. Please check the logs for details. First exception is logged as cause.", firstException);
+                }
                 log.error("There were errors during package install. Please check the logs for details.");
             } else {
                 track("Package imported.", "");
@@ -1007,6 +1014,9 @@ public class Importer {
                             track(error, path);
                         }
                         hasErrors = true;
+                        if (firstException == null) {
+                            firstException = error;
+                        }
                         break;
                 }
 

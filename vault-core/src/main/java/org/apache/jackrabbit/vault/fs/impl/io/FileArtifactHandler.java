@@ -249,8 +249,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     parentNode = parent.getNode(path.substring(0, idx));
                     path = path.substring(idx + 1);
                 }
-                // only update binary if import mode is not MERGE
-                // TODO: why? if not existing yet even with merge should be set afterwards
+                // only update binary if import mode is not MERGE (because binaries have only mandatory properties)
                 ImportMode mode = wspFilter.getImportMode(parentNode.getPath());
                 if (mode != ImportMode.MERGE && mode != ImportMode.MERGE_PROPERTIES) {
                     Value value = factory.createValue(binary.getInputStream());

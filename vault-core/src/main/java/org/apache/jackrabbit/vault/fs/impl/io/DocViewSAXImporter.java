@@ -112,6 +112,8 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements NamespaceResolver {
 
+    private static final String PROP_OAK_COUNTER = "oak:counter";
+
     /**
      * the default logger
      */
@@ -136,13 +138,13 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         props.add(JcrConstants.JCR_PREDECESSORS);
         props.add(JcrConstants.JCR_SUCCESSORS);
         props.add(JcrConstants.JCR_VERSIONHISTORY);
-        props.add("oak:counter");
+        props.add(PROP_OAK_COUNTER);
         PROTECTED_PROPERTIES = Collections.unmodifiableSet(props);
     }
 
     static {
         Set<String> props = new HashSet<String>();
-        props.add("oak:counter");
+        props.add(PROP_OAK_COUNTER);
         IGNORED_PROPERTIES = Collections.unmodifiableSet(props);
     }
 
@@ -691,8 +693,14 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                             stack = stack.push(addNode(ni));
                         }
                     } catch (RepositoryException | IOException e) {
-                        log.error("Error during processing of {}: {}", path, e.toString());
-                        importInfo.onError(path, e);
+                        if (e instanceof ConstraintViolationException && wspFilter.getImportMode(path) != ImportMode.REPLACE) {
+                            // only warn in case of constraint violations for mode != replace (as best effort is used in that case)
+                            log.warn("Error during processing of {}: {}, skip node due to import mode {}", path, e.toString(), wspFilter.getImportMode(path));
+                            importInfo.onNop(path);
+                        } else {
+                            log.error("Error during processing of {}: {}", path, e.toString());
+                            importInfo.onError(path, e);
+                        }
                         stack = stack.push();
                     }
                 }
@@ -788,7 +796,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                         ni.mixins,
                         ni.primary
                 );
-                // but we need to be augment with a potential rep:authorizableId
+                // but we need to augment with a potential rep:authorizableId
                 if (authNode.hasProperty("rep:authorizableId")) {
                     DocViewProperty authId = new DocViewProperty(
                             "rep:authorizableId",
@@ -877,7 +885,6 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             // now create the new node
             node = createNewNode(currentNode, ni);
 
-            
             // move the children back
             recovery.recover(importInfo);
 
@@ -900,6 +907,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
             stack.ensureCheckedOut();
             node = createNewNode(currentNode, ni);
+            if (node.getDefinition() == null) {
+                throw new RepositoryException("Child node not allowed.");
+            }
             if (node.isNodeType(JcrConstants.NT_RESOURCE)) {
                 if (!node.hasProperty(JcrConstants.JCR_DATA)) {
                     importInfo.onMissing(node.getPath() + "/" + JcrConstants.JCR_DATA);
@@ -1077,31 +1087,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             }
             handler.endElement(Name.NS_SV_URI, "node", "sv:node");
             handler.endDocument();
-    
+
             // retrieve newly created node either by uuid, label or name
-            Node node = null;
-            if (ni.uuid != null) {
-                try {
-                    node = currentNode.getSession().getNodeByUUID(ni.uuid);
-                } catch (RepositoryException e) {
-                    log.warn("Newly created node not found by uuid {}: {}", parentPath + "/" + ni.name, e.toString());
-                }
-            }
-            if (node == null) {
-                try {
-                    node = currentNode.getNode(ni.label);
-                } catch (RepositoryException e) {
-                    log.warn("Newly created node not found by label {}: {}", parentPath + "/" + ni.name, e.toString());
-                }
-            }
-            if (node == null) {
-                try {
-                    node = currentNode.getNode(ni.name);
-                } catch (RepositoryException e) {
-                    log.warn("Newly created node not found by name {}: {}", parentPath + "/" + ni.name, e.toString());
-                    throw e;
-                }
-            }
+            Node node = getNodeByUUIDLabelOrName(currentNode, ni);
             setUnprotectedProperties(node, ni, true, null);
             // remove mix referenceable if it was temporarily added
             if (addMixRef) {
@@ -1112,6 +1100,15 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         } catch (SAXException e) {
             Exception root = e.getException();
             if (root instanceof RepositoryException) {
+                if (root instanceof ConstraintViolationException) {
+                    // potentially rollback changes in the transient space (only relevant for Oak, https://issues.apache.org/jira/browse/OAK-9436), as otherwise the same exception is thrown again at Session.save()
+                    try {
+                        Node node = getNodeByUUIDLabelOrName(currentNode, ni);
+                        node.remove();
+                    } catch (RepositoryException re) {
+                        // ignore as no node found when the transient space is clean already
+                    }
+                }
                 throw (RepositoryException) root;
             } else if (root instanceof RuntimeException) {
                 throw (RuntimeException) root;
@@ -1119,6 +1116,33 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 throw new RepositoryException("Error while creating node", root);
             }
         }
+    }
+
+    private Node getNodeByUUIDLabelOrName(@NotNull Node currentNode, @NotNull DocViewNode ni) throws RepositoryException {
+        Node node = null;
+        if (ni.uuid != null) {
+            try {
+                node = currentNode.getSession().getNodeByUUID(ni.uuid);
+            } catch (RepositoryException e) {
+                log.warn("Newly created node not found by uuid {}: {}", currentNode.getPath() + "/" + ni.name, e.toString());
+            }
+        }
+        if (node == null) {
+            try {
+                node = currentNode.getNode(ni.label);
+            } catch (RepositoryException e) {
+                log.warn("Newly created node not found by label {}: {}", currentNode.getPath() + "/" + ni.name, e.toString());
+            }
+        }
+        if (node == null) {
+            try {
+                node = currentNode.getNode(ni.name);
+            } catch (RepositoryException e) {
+                log.warn("Newly created node not found by name {}: {}", currentNode.getPath() + "/" + ni.name, e.toString());
+                throw e;
+            }
+        }
+        return node;
     }
 
     private boolean setUnprotectedProperties(@NotNull Node node, @NotNull DocViewNode ni, boolean overwriteExistingProperties, @Nullable VersioningState vs) throws RepositoryException {
@@ -1134,6 +1158,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         // add properties
         for (DocViewProperty prop : ni.props.values()) {
             if (prop != null && !PROTECTED_PROPERTIES.contains(prop.name) && (overwriteExistingProperties || !node.hasProperty(prop.name)) && wspFilter.includesProperty(node.getPath() + "/" + prop.name)) {
+                // check if property is allowed
                 try {
                     modified |= prop.apply(node);
                 } catch (RepositoryException e) {
@@ -1146,24 +1171,25 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                         modified |= prop.apply(node);
                     } catch (RepositoryException e1) {
                         log.warn("Error while setting property (ignore): " + e1);
+                        continue;
                     }
                 }
             }
         }
 
         // adjust oak atomic counter
-        if (isAtomicCounter) {
+        if (isAtomicCounter && wspFilter.includesProperty(node.getPath() + "/" + PROP_OAK_COUNTER)) {
             long previous = 0;
-            if (node.hasProperty("oak:counter")) {
-                previous = node.getProperty("oak:counter").getLong();
+            if (node.hasProperty(PROP_OAK_COUNTER)) {
+                previous = node.getProperty(PROP_OAK_COUNTER).getLong();
             }
             long counter = 0;
             try {
-                counter = Long.valueOf(ni.getValue("oak:counter"));
+                counter = Long.valueOf(ni.getValue(PROP_OAK_COUNTER));
             } catch (NumberFormatException e) {
                 // ignore
             }
-            if (counter != 0) {
+            if (counter != previous) {
                 node.setProperty("oak:increment", counter - previous);
                 modified = true;
             }

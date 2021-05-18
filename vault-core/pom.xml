@@ -362,6 +362,10 @@
                     <plugin>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
+                            <systemPropertyVariables>
+                                <oak>false</oak>
+                            </systemPropertyVariables>
+                            <argLine>@{jacoco.command} -Xmx1024m</argLine>
                             <reportNameSuffix>JR</reportNameSuffix>
                         </configuration>
                         <executions>
@@ -414,10 +418,14 @@
                                     <goal>integration-test</goal>
                                 </goals>
                                 <configuration>
+                                    <systemPropertyVariables>
+                                        <oak>false</oak>
+                                        <repoIndex>${surefire.forkNumber}</repoIndex>
+                                    </systemPropertyVariables>
                                     <reportNameSuffix>JR</reportNameSuffix>
                                     <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-jr.xml</summaryFile>
-                                    <forkCount>4</forkCount>
-                                    <reuseForks>true</reuseForks>
+                                    <!-- <forkCount>4</forkCount>
+                                    <reuseForks>true</reuseForks> -->
                                 </configuration>
                             </execution>
                             <execution>

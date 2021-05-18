@@ -51,7 +51,7 @@ public enum ImportMode {
      * <strong>Only considered for</strong>
      * <ul>
      * <li>Binaries: they will never be imported if the parent node has this import mode.</li>
-     * <li>Authorizable nodes: only {@code rep:members} of existing authorizables is updated, no other property.</li>
+     * <li>Authorizable nodes: only {@code rep:members} of existing authorizables is updated, no other property on those node types is added/modified.</li>
      * <li>Simple files: i.e. they will never be imported in case the repo has this file already.
      * <li>Other docview files: It will ignore them in case the docview's root node does already exist in the repo (both full coverage and .content.xml). It skips non-existing child nodes/properties in the docview as well.</li>
      * </ul>
@@ -71,14 +71,18 @@ public enum ImportMode {
 
     /**
      * Existing properties are not touched, new nodes/properties are added, no existing nodes/properties are deleted
-     * The only existing properties potentially touched is the multi value property {@code jcr:mixinType}.
-     * Authorizable nodes: only {@code rep:members} of existing authorizables is updated, no other property.
+     * The only existing properties potentially touched is the multi value property {@code jcr:mixinType}. 
+     * As the primary type is never changed
+     * it will skip new properties/nodes which are not allowed by the node type definition of primary + mixin types.
+     * Authorizable nodes: only {@code rep:members} of existing authorizables is updated, no other property on those node types is added/modified.
      */
     MERGE_PROPERTIES,
 
     /**
      * Existing properties are replaced, new nodes/properties are added, no existing nodes/properties are deleted
      * Existing multi-value properties are replaced and not extended except for {@code jcr:mixinType} which is extended.
+     * As the primary type is never changed
+     * it will skip new properties/child nodes which are not allowed by the node type definition of primary + mixin types.
      */
     UPDATE_PROPERTIES
 }

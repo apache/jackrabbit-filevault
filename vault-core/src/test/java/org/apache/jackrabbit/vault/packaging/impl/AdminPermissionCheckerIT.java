@@ -164,6 +164,8 @@ public class AdminPermissionCheckerIT extends IntegrationTestBase {
         try {
             assertFalse(AdminPermissionChecker.hasAdministrativePermissionsWithPrincipals(newSession, Collections.singletonList("myadmin2")));
             assertTrue(AdminPermissionChecker.hasAdministrativePermissionsWithPrincipals(newSession, Collections.singletonList("myadmin")));
+            // there are not defaults for principal names
+            assertFalse(AdminPermissionChecker.hasAdministrativePermissionsWithPrincipals(newSession, Collections.singletonList("admin")));
         } finally {
             newSession.logout();
         }

@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.10
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.5.0
 
 Introduction
 ------------
@@ -8,6 +8,28 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.5.0
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.5.0
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
+
+Bug
+    * [JCRVLT-255] - ImportModes act on file serialization level not on node level
+    * [JCRVLT-513] - Don't check for property 'allowIndexDefinitions' in package type validator
+    * [JCRVLT-514] - JcrWorkspaceFilter does not support property filters
+    * [JCRVLT-517] - FSPackageRegistry.contains does not initialize packages
+    * [JCRVLT-520] - ZipVaultPackage does not respect the noIntermediateSaves property.
+Improvement
+    * [JCRVLT-396] - Import mode "MERGE" and "UPDATE" still may remove properties during import
+    * [JCRVLT-509] - Make DocView import failures fail the whole installation
+    * [JCRVLT-511] - Allow to parameterize PackageTasks
+    * [JCRVLT-512] - Add flag to allow install hooks for "application" packages
+    * [JCRVLT-515] - AdminPermissionChecker should evaluate all principals bound to the Session
+    * [JCRVLT-516] - Ease usage of DocViewProperty outside a repository context
+    * [JCRVLT-521] - Drop support of Jackrabbit API 2.14 and Declarative Services 1.3
 
 Changes in Jackrabbit FileVault 3.4.10
 --------------------------------------

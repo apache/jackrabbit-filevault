@@ -28,7 +28,6 @@ The following XML elements below the root element `vaultfs` are considered.
 
 ## Properties
 
-
 To exclude binaries from exports/imports you can use the property
 
 ```xml
@@ -40,7 +39,7 @@ To exclude binaries from exports/imports you can use the property
 
 ## Aggregates
 
-Aggregates which influence the serialization during exports are configured in `aggregate` child elements having an optional `type` attribute and a `title`.
+Aggregates which influence the serialization during *exports* are configured in `aggregate` child elements having an optional `type` attribute and a `title`.
 
 The following `types` are known: 
 
@@ -64,7 +63,7 @@ Filter attribute | Values | Additional attributes | Used Filter Class | Descript
 `name` | the qualified name | - |`NameItemFilter` | Only applies to items having the given name
 `isMandatory` | Either `true` or `false` (the default) | - | `IsMandatoryFilter` | Only applies to properties/nodes which are marked as (non-)mandatory in the node type definition depending on the given value.
 
-## Handlers
+## Handlers (only used for Vault CLI)
 
 Handlers which deserialize nodes from packages during import are registered in `handler` child elements having an optional `type` attribute.
 

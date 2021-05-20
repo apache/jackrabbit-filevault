@@ -32,6 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.ImportArtifact;
@@ -44,7 +45,6 @@ import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.PathUtil;
-import org.apache.jackrabbit.util.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -153,6 +153,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     mode = wspFilter.getImportMode(path);
                 }
                 // only update if not MERGE (i.e. is REPLACE or UPDATE)
+                // this is for maintaining backwards-compatibility the rest of the import modes are evaluated in DocViewSAXImporter
                 if (mode != ImportMode.MERGE) {
                     InputSource source = primary.getInputSource();
                     if (source != null) {
@@ -179,7 +180,8 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                         if (file instanceof ImportArtifact) {
                             Node fileNode = parent.getNode(fileName);
                             // check import mode, only replace if not MERGE
-                            if (wspFilter.getImportMode(fileNode.getPath()) != ImportMode.MERGE) {
+                            ImportMode mode = wspFilter.getImportMode(fileNode.getPath());
+                            if (mode != ImportMode.MERGE && mode != ImportMode.MERGE_PROPERTIES) {
                                 if (!fileNode.hasNode(Node.JCR_CONTENT)) {
                                     // apparently no nt:file, recreate file node
                                     fileNode.remove();
@@ -203,7 +205,8 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                         }
                     }
                 } else if (file.getSerializationType() == SerializationType.XML_DOCVIEW) {
-                    // special case for full coverage files below a intermediate node
+                    // special case for full coverage files below an intermediate node
+                    // this is never used from {@link Importer} but only from {@link TransactionImpl}
                     String relPath = Text.getRelativeParent(file.getRelativePath(), 1);
                     String newName = Text.getName(file.getRelativePath());
                     Node newParent = parent;
@@ -256,8 +259,9 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     parentNode = parent.getNode(path.substring(0, idx));
                     path = path.substring(idx + 1);
                 }
-                // only update binary if import mode is not MERGE
-                if (wspFilter.getImportMode(parentNode.getPath()) != ImportMode.MERGE) {
+                // only update binary if import mode is not MERGE (because binaries have only mandatory properties)
+                ImportMode mode = wspFilter.getImportMode(parentNode.getPath());
+                if (mode != ImportMode.MERGE && mode != ImportMode.MERGE_PROPERTIES) {
                     Value value = factory.createValue(binary.getInputStream());
                     if (!parentNode.hasProperty(path)
                             || !value.equals(parentNode.getProperty(path).getValue())) {

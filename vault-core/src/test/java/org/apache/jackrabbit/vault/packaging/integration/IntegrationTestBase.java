@@ -304,7 +304,7 @@ public class IntegrationTestBase  {
     }
 
     public static boolean isOak() {
-        return Boolean.getBoolean("oak");
+        return Boolean.parseBoolean(System.getProperty("oak", "true"));
     }
 
     public void clean(String path) {

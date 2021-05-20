@@ -46,7 +46,7 @@ public enum ImportMode {
 
     /**
      * Existing content is not modified, i.e. only new content is added and
-     * none is deleted or modified
+     * none is deleted or modified.
      * <p>
      * <strong>Only considered for</strong>
      * <ul>
@@ -64,25 +64,25 @@ public enum ImportMode {
     /**
      * Existing properties are replaced (except for {@code jcr:primaryType}), new properties and nodes are added and no existing properties or nodes are deleted. 
      * <strong>Only affects authorizable nodes (not their child nodes). Other nodes are imported in mode {@link #REPLACE}.</strong>
-     * @deprecated rather use {@link #UPDATE_PROPERTIES}
+     * @deprecated As this behaves inconsistently for the different serialization formats, rather use {@link #UPDATE_PROPERTIES}
      */
     @Deprecated()
     UPDATE,
 
     /**
-     * Existing properties are not touched, new nodes/properties are added, no existing nodes/properties are deleted
-     * The only existing properties potentially touched is the multi value property {@code jcr:mixinType}. 
+     * Existing properties are not touched, new nodes/properties are added, no existing nodes/properties are deleted.
+     * The only existing property potentially touched is the multi-value property {@code jcr:mixinType} which is extended with the values from the imported content. 
      * As the primary type is never changed
-     * it will skip new properties/nodes which are not allowed by the node type definition of primary + mixin types.
+     * import will skip new properties/nodes which are not allowed by the node type definition of primary + mixin types.
      * Authorizable nodes: only {@code rep:members} of existing authorizables is updated, no other property on those node types is added/modified.
      */
     MERGE_PROPERTIES,
 
     /**
-     * Existing properties are replaced, new nodes/properties are added, no existing nodes/properties are deleted
-     * Existing multi-value properties are replaced and not extended except for {@code jcr:mixinType} which is extended.
+     * Existing properties are replaced, new nodes/properties are added, no existing nodes/properties are deleted.
+     * Existing multi-value properties are replaced completely and not extended except for {@code jcr:mixinType} which is extended with the values from the imported content.
      * As the primary type is never changed
-     * it will skip new properties/child nodes which are not allowed by the node type definition of primary + mixin types.
+     * import will skip new properties/child nodes which are not allowed by the node type definition of primary + mixin types.
      */
     UPDATE_PROPERTIES
 }

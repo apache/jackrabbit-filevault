@@ -278,7 +278,7 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>3.1.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -311,7 +311,7 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.6</version>
+                    <version>0.8.7</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -360,18 +360,6 @@ Bundle-Category: jackrabbit
     <!-- ====================================================================== -->
     <dependencyManagement>
         <dependencies>
-            <!-- CLI Stuff -->
-            <dependency>
-                <groupId>org.apache.mahout.commons</groupId>
-                <artifactId>commons-cli</artifactId>
-                <version>2.0-mahout</version>
-            </dependency>
-            <dependency>
-                <groupId>jline</groupId>
-                <artifactId>jline</artifactId>
-                <version>0.9.94</version>
-            </dependency>
-
             <!-- jackrabbit -->
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>

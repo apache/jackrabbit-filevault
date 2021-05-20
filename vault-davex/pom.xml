@@ -23,14 +23,14 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.5.0</version>
+        <version>3.5.1-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>vault-davex</artifactId>
-    <version>3.5.0</version>
+    <version>3.5.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Apache Jackrabbit FileVault JCR Remoting Service</name>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.5.0</version>
+            <version>3.5.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
@@ -88,8 +88,4 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
     </dependencies>
-
-  <scm>
-    <tag>jackrabbit-filevault-3.5.0</tag>
-  </scm>
 </project>

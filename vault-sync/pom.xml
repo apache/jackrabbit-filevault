@@ -24,7 +24,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.4.11-SNAPSHOT</version>
+        <version>3.5.0</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -159,4 +159,8 @@
         </dependency>
 
     </dependencies>
+
+  <scm>
+    <tag>jackrabbit-filevault-3.5.0</tag>
+  </scm>
 </project>

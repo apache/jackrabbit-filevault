@@ -20,4 +20,5 @@ DynamicImport-Package: *
 -includeresource: @txw2-[0-9.]*.jar!/com/sun/xml/txw2/output/(IndentingXMLStreamWriter|DelegatingXMLStreamWriter).*,\
                   @woodstox-core-[0-9.]*.jar!/!module-info.class,\
                   @stax2-api-[0-9.]*.jar!/!module-info.class,\
-                  @jackrabbit-spi2dav-*.jar!/org/apache/jackrabbit/spi2dav/ConnectionOptions*.class
+                  @jackrabbit-spi2dav-*.jar!/org/apache/jackrabbit/spi2dav/ConnectionOptions*.class,\
+                  @maven-artifact-*.jar!/org/apache/maven/artifact/versioning/ComparableVersion*.class

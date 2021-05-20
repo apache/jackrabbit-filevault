@@ -56,7 +56,6 @@ Note that the workspace filter of the package refers on the content of the packa
 
 However, the importer keeps track of potential remapping of existing users and tries to calculate the filters accordingly.
 
-<!-- references -->
 [api.WorkspaceFilter]: apidocs/org/apache/jackrabbit/vault/fs/api/WorkspaceFilter.html
 [api.ImportMode]: apidocs/org/apache/jackrabbit/vault/fs/api/ImportMode.html
 [JCRVLT-255]: https://issues.apache.org/jira/browse/JCRVLT-255

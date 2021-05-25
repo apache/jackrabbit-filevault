@@ -36,7 +36,6 @@
     <body>
         <breadcrumbs>
             <item name="Jackrabbit" href="http://jackrabbit.apache.org/"/>
-            <item name="Jackrabbit FileVault" href="http://jackrabbit.apache.org/filevault/" />
         </breadcrumbs>
     </body>
 

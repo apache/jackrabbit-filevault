@@ -82,14 +82,14 @@ Release management tasks
    (they're automatically archived):
 
     ```` 
-    svn move -m "Apache Jackrabbit Filevault $version" \
+    svn move -m "Apache Jackrabbit FileVault $version" \
         https://dist.apache.org/repos/dist/dev/jackrabbit/filevault/$version \
         https://dist.apache.org/repos/dist/release/jackrabbit/filevault/$version
     ````
 
-1. release the [staged repository][2] for synchronization to Maven central.
+1. release the [staged repository][2] for synchronization to Maven Central.
 
-1. update the website by first checking out the released tag, then execute `mvn clean site` on the reactor project (this will copy the aggregate javadoc to the `vault-doc/target` folder). Afterwards check the generated site and push it via `mvn site-deploy` (only relevant on module `vault-doc`)
+1. update the website by first checking out the released tag, then execute `mvn clean site` on the reactor project. Afterwards check the generated site and publish it via `mvn site-deploy`
 
 1. mark the version as released in [Jira][3]:
     _Jira Project Home_ -> _Project Summary_ -> _Administer Project_. 
@@ -103,7 +103,7 @@ Release management tasks
     From the issue list you have the option to bulk update all of the included issues. 
     Just *Transition Issues* from *Resolved* to *Closed* and you are done!
 
-1. Update the Jackrabbit web site to point to the new release.
+1. Update the Jackrabbit web site to point to the new release in <http://svn.apache.org/repos/asf/jackrabbit/site/trunk/src/site/markdown/downloads.md>.
 
 1. Send the release announcement **once** the web site and download mirrors have been synced.
 

@@ -302,7 +302,7 @@ public class FSInstallState {
      */
     public void save(Path file) throws IOException {
         Files.createDirectories(file.getParent());
-        try (OutputStream out = Files.newOutputStream(file, StandardOpenOption.CREATE)) {
+        try (OutputStream out = Files.newOutputStream(file)) {
             save(out);
         }
     }

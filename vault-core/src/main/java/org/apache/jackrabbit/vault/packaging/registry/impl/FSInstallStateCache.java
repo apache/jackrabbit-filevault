@@ -17,6 +17,7 @@
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap;
@@ -33,27 +34,10 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Persisted cache of all {@link FSInstallState} objects for all packages in a registry.
  * Populated on demand and written back immediately for every modifying operation.
+ * All map operations might throw {@link java.io.UncheckedIOException}.
  * Is thread-safe.
  */
 class FSInstallStateCache extends AbstractMap<PackageId, FSInstallState> {
-
-    /** Wraps a checked IOExceptioin in a unchecked exception, this is potentially thrown from all Map operations */
-    final class UncheckedIOException extends RuntimeException {
-        /**
-         * 
-         */
-        private static final long serialVersionUID = 1188317232809121358L;
-        private final IOException ioException;
-
-        public UncheckedIOException(IOException ioException) {
-            super(ioException.getMessage(), ioException);
-            this.ioException = ioException;
-        }
-
-        public IOException getIOException() {
-            return ioException;
-        }
-    }
 
     /**
      * Extension for metadata files

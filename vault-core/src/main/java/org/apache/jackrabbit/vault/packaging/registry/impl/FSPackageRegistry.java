@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -234,8 +235,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     FSInstallState getInstallState(@NotNull PackageId id) throws IOException {
         try {
             return stateCache.get(id);
-        } catch (FSInstallStateCache.UncheckedIOException e) {
-            throw e.getIOException();
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
         }
     }
 

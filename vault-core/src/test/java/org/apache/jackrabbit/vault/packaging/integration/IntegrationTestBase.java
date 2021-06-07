@@ -342,7 +342,7 @@ public class IntegrationTestBase  {
     public File getTempFile(String name) throws IOException {
         InputStream in = getStream(name);
 
-        File tmpFile = File.createTempFile("vaultpack", ".zip");
+        File tmpFile = tempFolder.newFile();
         FileOutputStream out = FileUtils.openOutputStream(tmpFile);
         IOUtils.copy(in, out);
         in.close();

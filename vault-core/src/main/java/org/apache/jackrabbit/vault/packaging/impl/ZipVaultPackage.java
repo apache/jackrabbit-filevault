@@ -192,33 +192,41 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         InstallHookProcessor hooks = opts instanceof InstallHookProcessorFactory ?
                 ((InstallHookProcessorFactory) opts).createInstallHookProcessor()
                 : new InstallHookProcessorImpl();
-        if (!opts.isDryRun()) {
-            hooks.registerHooks(archive, opts.getHookClassLoader());
-        }
-
-        checkAllowanceToInstallPackage(session, hooks, securityConfig);
-
-        // check for disable intermediate saves (JCRVLT-520)
-        if (Boolean.parseBoolean(getProperty(PackageProperties.NAME_DISABLE_INTERMEDIATE_SAVE))) {
-            // MAX_VALUE disables saving completely, therefore we have to use a lower value!
-            opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
-        }
-
-        Importer importer = new Importer(opts, isStrictByDefault);
-        AccessControlHandling ac = getACHandling();
-        if (opts.getAccessControlHandling() == null) {
-            opts.setAccessControlHandling(ac);
-        }
-        String cndPattern = getProperty(NAME_CND_PATTERN);
-        if (cndPattern != null) {
-            try {
-                opts.setCndPattern(cndPattern);
-            } catch (PatternSyntaxException e) {
-                throw new PackageException("Specified CND pattern not valid.", e);
+        try {
+            if (!opts.isDryRun()) {
+                hooks.registerHooks(archive, opts.getHookClassLoader());
             }
+            checkAllowanceToInstallPackage(session, hooks, securityConfig);
+    
+            // check for disable intermediate saves (JCRVLT-520)
+            if (Boolean.parseBoolean(getProperty(PackageProperties.NAME_DISABLE_INTERMEDIATE_SAVE))) {
+                // MAX_VALUE disables saving completely, therefore we have to use a lower value!
+                opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
+            }
+    
+            Importer importer = new Importer(opts, isStrictByDefault);
+            AccessControlHandling ac = getACHandling();
+            if (opts.getAccessControlHandling() == null) {
+                opts.setAccessControlHandling(ac);
+            }
+            String cndPattern = getProperty(NAME_CND_PATTERN);
+            if (cndPattern != null) {
+                try {
+                    opts.setCndPattern(cndPattern);
+                } catch (PatternSyntaxException e) {
+                    throw new PackageException("Specified CND pattern not valid.", e);
+                }
+            }
+    
+            return new InstallContextImpl(session, "/", this, importer, hooks);
+        } catch (RepositoryException|PackageException e) {
+            try {
+                hooks.close();
+            } catch (IOException exceptionDuringClose) {
+                e.addSuppressed(exceptionDuringClose);
+            }
+            throw e;
         }
-
-        return new InstallContextImpl(session, "/", this, importer, hooks);
     }
 
     protected void checkAllowanceToInstallPackage(@NotNull Session session, @NotNull InstallHookProcessor hookProcessor, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig) throws PackageException, RepositoryException {
@@ -279,6 +287,11 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         } finally {
             ctx.setPhase(InstallContext.Phase.END);
             hooks.execute(ctx);
+            try {
+                hooks.close();
+            } catch (IOException e) {
+                log.warn("Error closing hook processor", e);
+            }
         }
         if (subPackages != null) {
             subPackages.addAll(importer.getSubPackages());

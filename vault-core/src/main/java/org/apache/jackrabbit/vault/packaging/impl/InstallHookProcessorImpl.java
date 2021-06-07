@@ -17,20 +17,20 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
@@ -39,7 +39,6 @@ import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +52,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
      */
     private static final Logger log = LoggerFactory.getLogger(InstallHookProcessorImpl.class);
 
-    private final TreeMap<String, Hook> hooks = new TreeMap<String, Hook>();
+    private final TreeMap<String, Hook> hooks = new TreeMap<>();
 
     public void registerHooks(Archive archive, ClassLoader classLoader) throws PackageException {
         try {
@@ -104,14 +103,17 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
 
     public void registerHook(VaultInputSource input, ClassLoader classLoader) throws IOException, PackageException {
         // first we need to spool the jar file to disk.
-        File jarFile = File.createTempFile("vaulthook", ".jar");
+        Path jarFile = Files.createTempFile("vaulthook", ".jar");
         Hook hook = new Hook(input.getSystemId(), jarFile, classLoader);
 
-        try (OutputStream out = FileUtils.openOutputStream(jarFile);
-             InputStream in = input.getByteStream()) {
-            IOUtils.copy(in, out);
+        try (InputStream in = input.getByteStream()) {
+            Files.copy(in, jarFile, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            hook.destroy();
+            try {
+                hook.destroy();
+            } catch (IOException ioeDuringDestroy) {
+                e.addSuppressed(ioeDuringDestroy);
+            }
             throw e;
         }
         initHook(hook);
@@ -120,13 +122,13 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
     private void initHook(Hook hook) throws IOException, PackageException {
         try {
             hook.init();
-        } catch (IOException e) {
+        } catch (IOException|PackageException e) {
             log.error("Error while initializing hook: {}", e.toString());
-            hook.destroy();
-            throw e;
-        } catch (PackageException e) {
-            log.error("Error while initializing hook: {}", e.toString());
-            hook.destroy();
+            try {
+                hook.destroy();
+            } catch (IOException ioeDuringDestroy) {
+                e.addSuppressed(ioeDuringDestroy);
+            }
             throw e;
         }
         hooks.put(hook.name, hook);
@@ -144,24 +146,38 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             } catch (Throwable e) {
                 // abort processing only for prepare and installed phase
                 if (context.getPhase() == InstallContext.Phase.PREPARE || context.getPhase() == InstallContext.Phase.INSTALLED) {
-                    log.warn("Hook " + hook.name +" threw exception. {} aborted.", context.getPhase(), e);
+                    log.warn("Hook {} threw exception. {} aborted.", hook.name, context.getPhase(), e);
                     return false;
                 }
-                log.warn("Hook " + hook.name +" threw exception. Ignored", e);
-            }
-            // if in end phase, shutdown hooks
-            if (context.getPhase() == InstallContext.Phase.END) {
-                hook.destroy();
+                log.warn("Hook {} threw exception. Ignored", hook.name, e);
             }
         }
         return true;
+    }
+
+    @Override
+    public void close() throws IOException {
+        IOException ioException = null;
+        for (Hook hook : hooks.values()) {
+            try {
+                hook.destroy();
+            } catch (IOException e) {
+                if (ioException == null) {
+                    ioException = new IOException("Error while destroying one or more hooks. Look at suppressed exceptions for details!");
+                }
+                ioException.addSuppressed(e);
+            }
+        }
+        if (ioException != null) {
+            throw ioException;
+        }
     }
 
     private class Hook {
 
         private final String name;
 
-        private final File jarFile;
+        private final Path jarFile;
 
         private ClassLoader parentClassLoader;
 
@@ -176,17 +192,17 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             this.jarFile = null;
         }
 
-        private Hook(String name, File jarFile, ClassLoader parentClassLoader) {
+        private Hook(String name, Path jarFile, ClassLoader parentClassLoader) {
             this.name = name;
             this.jarFile = jarFile;
             this.parentClassLoader = parentClassLoader;
         }
 
-        private void destroy() {
+        private void destroy() throws IOException {
             parentClassLoader = null;
             hook = null;
             if (jarFile != null) {
-                FileUtils.deleteQuietly(jarFile);
+                Files.deleteIfExists(jarFile);
             }
         }
 
@@ -194,7 +210,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             try {
                 if (jarFile != null) {
                     // open jar file and extract classname from manifest
-                    try (JarFile jar = new JarFile(jarFile)) {
+                    try (JarFile jar = new JarFile(jarFile.toFile())) {
                         Manifest mf = jar.getManifest();
                         if (mf == null) {
                             throw new PackageException("hook jar file does not have a manifest: " + name);
@@ -209,17 +225,17 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                         try {
                             // 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
                             loadMainClass(URLClassLoader.newInstance(
-                                    new URL[] { jarFile.toURI().toURL() },
+                                    new URL[] { jarFile.toUri().toURL() },
                                     this.getClass().getClassLoader()));
                         } catch (ClassNotFoundException cnfe) {
                             // 2nd fallback is the thread context classloader
                             loadMainClass(URLClassLoader.newInstance(
-                                    new URL[] { jarFile.toURI().toURL() },
+                                    new URL[] { jarFile.toUri().toURL() },
                                     Thread.currentThread().getContextClassLoader()));
                         }
                     } else {
                         loadMainClass(URLClassLoader.newInstance(
-                                new URL[] { jarFile.toURI().toURL() },
+                                new URL[] { jarFile.toUri().toURL() },
                                 parentClassLoader));
                     }
                 } else {

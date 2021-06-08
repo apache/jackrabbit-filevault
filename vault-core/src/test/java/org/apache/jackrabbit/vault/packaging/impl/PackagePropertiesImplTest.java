@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,9 +94,6 @@ public class PackagePropertiesImplTest {
         checkDateParsing("2021-05-26T15:12:21.673+0200","2021-05-26T13:12:21.673Z");
         checkDateParsing("2021-05-26T15:12:21.673-0230","2021-05-26T17:42:21.673Z");
 
-        // missing timezone is treated as UTC. TODO is that right?
-        checkDateParsing("2021-05-26T15:12:21.673","2021-05-26T15:12:21.673Z");
-
         // check that some edge cases don't break
         checkDateParsing("nonsense",null);
         checkDateParsing("",null);
@@ -106,8 +104,8 @@ public class PackagePropertiesImplTest {
         PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_CREATED, original));
         Calendar created = packageProperties.getCreated();
         if (expected != null) {
-            MatcherAssert.assertThat("Date was not be parsed: " + original, created, Matchers.notNullValue());
-            MatcherAssert.assertThat(created.toInstant().toString(), Matchers.equalTo(expected));
+            MatcherAssert.assertThat("Date could not be parsed: " + original, created, Matchers.notNullValue());
+            MatcherAssert.assertThat(created.toInstant().atOffset(ZoneOffset.UTC).toString(), Matchers.equalTo(expected));
         } else {
             MatcherAssert.assertThat("Invalid date must return null when parsing: " + original, created, Matchers.nullValue());
         }

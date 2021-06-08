@@ -19,16 +19,17 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
@@ -48,8 +49,10 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
 
     private static final Logger log = LoggerFactory.getLogger(PackagePropertiesImpl.class);
 
-    /** Matches dates with timezone like +02 or +0200 so that these can be transformed to +02:00 in {@link #getDateProperty(String)}. */
-    private static final Pattern TIMEZONE_FIX_PATTERN = Pattern.compile("(?<dateUptoTzHours>.*[+-]\\d\\d)(?<tzMinutes>\\d\\d)?");
+    /** supports parsing dates given out via {@code SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")} */
+    private static final DateTimeFormatter DATE_TIME_FORMATTER_LEGACY = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    /** supports parsing dates given out via {@code SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")}" */
+    private static final DateTimeFormatter DATE_TIME_FORMATTER_ISO_8601 = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     private PackageId id;
 
@@ -224,21 +227,16 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     public Calendar getDateProperty(String name) {
         Calendar result = null;
         try {
-            // TODO: add timezone if not there?
             String p = getProperty(name);
             if (p != null) {
-                result = ISO8601.parse(p);
-                if (result == null) {
-                    // Perhaps this is due to unusual timezone format +02 or +0200 that aren't supported by ISO8601.parse
-                    // but sometimes produced by maven plugins, compare https://issues.apache.org/jira/browse/JCRVLT-276
-                    Matcher splittedDate = TIMEZONE_FIX_PATTERN.matcher(p);
-                    if (splittedDate.matches()) {
-                        String tzminutes = splittedDate.group("tzMinutes");
-                        tzminutes = tzminutes != null ? tzminutes : "00";
-                        String reformattedDate = splittedDate.group("dateUptoTzHours") + ":" + tzminutes;
-                        result = ISO8601.parse(reformattedDate);
-                    }
+                ZonedDateTime zonedDateTime;
+                try {
+                    zonedDateTime = ZonedDateTime.parse(p, DATE_TIME_FORMATTER_ISO_8601);
+                } catch (DateTimeParseException e) {
+                    // support dates in legacy format (used in package-maven-plugin till version 1.0.3, compare with https://issues.apache.org/jira/browse/JCRVLT-276)
+                    zonedDateTime = ZonedDateTime.parse(p, DATE_TIME_FORMATTER_LEGACY);
                 }
+                result = GregorianCalendar.from(zonedDateTime);
             }
         } catch (Exception e) {
             log.error("Error while converting date property", e);

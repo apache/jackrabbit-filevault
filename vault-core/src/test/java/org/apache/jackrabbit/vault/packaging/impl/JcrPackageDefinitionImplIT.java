@@ -54,11 +54,12 @@ public class JcrPackageDefinitionImplIT extends IntegrationTestBase {
     }
 
     void assertPackagePropertiesEquals(PackageProperties expectedProperties, PackageProperties actualProperties) {
-        Assert.assertEquals("lastModified is different", expectedProperties.getLastModified(), actualProperties.getLastModified());
+        // only compare dates, as JCR disregards time zone information from Calendar
+        Assert.assertEquals("lastModified is different", expectedProperties.getLastModified().getTime(), actualProperties.getLastModified().getTime());
         Assert.assertEquals("lastModifiedBy is different", expectedProperties.getLastModifiedBy(), actualProperties.getLastModifiedBy());
-        Assert.assertEquals("created is different", expectedProperties.getCreated(), actualProperties.getCreated());
+        Assert.assertEquals("created is different", expectedProperties.getCreated().getTime(), actualProperties.getCreated().getTime());
         Assert.assertEquals("createdBy is different", expectedProperties.getCreatedBy(), actualProperties.getCreatedBy());
-        Assert.assertEquals("lastWrapped is different", expectedProperties.getLastWrapped(), actualProperties.getLastWrapped());
+        Assert.assertEquals("lastWrapped is different", expectedProperties.getLastWrapped().getTime(), actualProperties.getLastWrapped().getTime());
         Assert.assertEquals("lastWrappedBy is different", expectedProperties.getLastWrappedBy(), actualProperties.getLastWrappedBy());
         Assert.assertEquals("description is different", expectedProperties.getDescription(), actualProperties.getDescription());
         Assert.assertEquals("acHandling is different", expectedProperties.getACHandling(), actualProperties.getACHandling());

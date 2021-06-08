@@ -49,6 +49,11 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
 
     private static final Logger log = LoggerFactory.getLogger(PackagePropertiesImpl.class);
 
+    /** supports parsing dates given out via {@code SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")} */
+    private static final DateTimeFormatter DATE_TIME_FORMATTER_LEGACY = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    /** supports parsing dates given out via {@code SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")}" */
+    private static final DateTimeFormatter DATE_TIME_FORMATTER_ISO_8601 = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
     private PackageId id;
 
     @Override
@@ -226,11 +231,10 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
             if (p != null) {
                 ZonedDateTime zonedDateTime;
                 try {
-                    // supports date in format new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-                    zonedDateTime = ZonedDateTime.parse(p, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                    zonedDateTime = ZonedDateTime.parse(p, DATE_TIME_FORMATTER_ISO_8601);
                 } catch (DateTimeParseException e) {
-                    // support dates given out via new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ"); as well (used in package-maven-plugin till version 1.0.3, compare with https://issues.apache.org/jira/browse/JCRVLT-276)
-                    zonedDateTime = ZonedDateTime.parse(p, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX"));
+                    // support dates in legacy format (used in package-maven-plugin till version 1.0.3, compare with https://issues.apache.org/jira/browse/JCRVLT-276)
+                    zonedDateTime = ZonedDateTime.parse(p, DATE_TIME_FORMATTER_LEGACY);
                 }
                 result = GregorianCalendar.from(zonedDateTime);
             }

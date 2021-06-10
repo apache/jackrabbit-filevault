@@ -80,7 +80,7 @@ public class NodeTypeValidatorTest {
                 throw new IllegalArgumentException("Error loading node types from CND at " + cndUrl, e);
             }
         }
-        return new NodeTypeValidator(filter, ntManagerProvider, defaultNodeType, ValidationMessageSeverity.ERROR,
+        return new NodeTypeValidator(false, filter, ntManagerProvider, defaultNodeType, ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.WARN);
     }
 

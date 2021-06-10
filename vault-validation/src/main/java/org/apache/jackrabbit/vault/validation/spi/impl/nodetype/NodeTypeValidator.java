@@ -80,7 +80,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
     private final @NotNull Name defaultType;
     private JcrNodeTypeMetaData currentNodeTypeMetaData;
 
-    public NodeTypeValidator(@NotNull WorkspaceFilter filter, @NotNull NodeTypeManagerProvider ntManagerProvider,
+    public NodeTypeValidator(boolean isIncremental, @NotNull WorkspaceFilter filter, @NotNull NodeTypeManagerProvider ntManagerProvider,
             @NotNull Name defaultPrimaryNodeType, @NotNull ValidationMessageSeverity defaultSeverity,
             @NotNull ValidationMessageSeverity severityForUnknownNodeTypes)
             throws IllegalNameException, ConstraintViolationException, NoSuchNodeTypeException {
@@ -92,7 +92,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
         this.docViewPropertyValueFactory = new DocViewPropertyValueFactory();
         this.loggedUnknownNodeTypeMessages = new HashSet<>();
 
-        this.currentNodeTypeMetaData = JcrNodeTypeMetaDataImpl.createRoot(ntManagerProvider.getEffectiveNodeTypeProvider());
+        this.currentNodeTypeMetaData = JcrNodeTypeMetaDataImpl.createRoot(isIncremental, ntManagerProvider.getEffectiveNodeTypeProvider());
     }
 
     static String getDocViewNodeLabel(DocViewNode node) {

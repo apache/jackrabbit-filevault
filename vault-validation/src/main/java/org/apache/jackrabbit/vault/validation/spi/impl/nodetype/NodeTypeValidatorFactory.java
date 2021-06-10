@@ -22,14 +22,11 @@ import java.io.Reader;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.jar.Manifest;
 
 import javax.jcr.RepositoryException;
@@ -112,7 +109,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
             for (Map.Entry<String, String> entry : validNameSpaces.entrySet()) {
                 ntManagerProvider.registerNamespace(entry.getKey(), entry.getValue());
             }
-            return new NodeTypeValidator(context.getFilter(), ntManagerProvider, ntManagerProvider.getNameResolver().getQName(defaultNodeType), settings.getDefaultSeverity(),
+            return new NodeTypeValidator(context.isIncremental(), context.getFilter(), ntManagerProvider, ntManagerProvider.getNameResolver().getQName(defaultNodeType), settings.getDefaultSeverity(),
                     severityForUnknownNodetypes);
         } catch (IOException | RepositoryException | ParseException e) {
             throw new IllegalArgumentException("Error loading default node type " + defaultNodeType, e);

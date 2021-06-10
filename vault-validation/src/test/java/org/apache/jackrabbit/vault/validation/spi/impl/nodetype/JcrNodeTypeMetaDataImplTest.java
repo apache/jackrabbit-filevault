@@ -65,7 +65,7 @@ public class JcrNodeTypeMetaDataImplTest {
     @Before
     public void setUp() throws IOException, RepositoryException, ParseException {
         ntManagerProvider = new NodeTypeManagerProvider();
-        root = JcrNodeTypeMetaDataImpl.createRoot(ntManagerProvider.getEffectiveNodeTypeProvider());
+        root = JcrNodeTypeMetaDataImpl.createRoot(false, ntManagerProvider.getEffectiveNodeTypeProvider());
     }
 
     static NodeContext createSimpleNodeContext(String nodePath) {
@@ -220,7 +220,7 @@ public class JcrNodeTypeMetaDataImplTest {
     }
 
     @Test
-    public void testValidateMandatoryChildNode() throws IllegalNameException, NoSuchNodeTypeException, RepositoryException,
+    public void testValidateMandatoryChildNodesAndProperties() throws IllegalNameException, NoSuchNodeTypeException, RepositoryException,
             IOException, ParseException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-restricted-nodetypes.cnd");
                 Reader reader = new InputStreamReader(input, StandardCharsets.US_ASCII)) {
@@ -305,6 +305,43 @@ public class JcrNodeTypeMetaDataImplTest {
                         "my:nodeType2", "/nodeForMandatoryProperties2")));
     }
 
+    @Test
+    public void testValidateMandatoryChildNodesAndPropertiesDuringIncrementalBuild() throws InvalidNodeTypeDefinitionException, NodeTypeExistsException, UnsupportedRepositoryOperationException, ParseException, RepositoryException, IOException {
+        try (InputStream input = this.getClass().getResourceAsStream("/simple-restricted-nodetypes.cnd");
+                Reader reader = new InputStreamReader(input, StandardCharsets.US_ASCII)) {
+            ntManagerProvider.registerNodeTypes(reader);
+        }
+        // enable incremental validation
+        root = JcrNodeTypeMetaDataImpl.createRoot(true, ntManagerProvider.getEffectiveNodeTypeProvider());
+        // add valid node
+        JcrNodeTypeMetaData node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
+                ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, createSimpleNodeContext("name"),
+                "my:nodeType1");
+        assertNoValidationErrors(node);
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+
+        node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
+                ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, createSimpleNodeContext("name2"),
+                "my:nodeType1");
+        
+        // mandatory child node missing but not reported due to incremental validation
+        filter.add(new PathFilterSet("/"));
+        Collection<ValidationMessage> messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR, filter);
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+
+        // mandatory property missing but not reported due to incremental validation
+        NodeContext nodeContext = createSimpleNodeContext("nodeForMandatoryProperties");
+        node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
+                ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, nodeContext, "my:nodeType2");
+        assertNoValidationErrors(node);
+        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR, filter);
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+    }
+    
     @Test(expected = IllegalNameException.class)
     public void testAddPropertyWithUndeclaredNamespace() throws RepositoryException {
         root.addProperty(createSimpleNodeContext("/"), ntManagerProvider.getNamePathResolver(),

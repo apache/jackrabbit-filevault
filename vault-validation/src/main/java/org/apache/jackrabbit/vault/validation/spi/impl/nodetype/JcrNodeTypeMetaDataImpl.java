@@ -110,8 +110,9 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
     private final boolean isImplicit; // if this is true, the node type is set implicitly (not explicitly set in package, used as is in the
                                       // repository)
     private boolean isValidationDone;
+    private final boolean isIncremental;
 
-    private JcrNodeTypeMetaDataImpl(@NotNull Name name, @Nullable Name primaryNodeType, @Nullable EffectiveNodeType effectiveNodeType,
+    private JcrNodeTypeMetaDataImpl(boolean isIncremental, @NotNull Name name, @Nullable Name primaryNodeType, @Nullable EffectiveNodeType effectiveNodeType,
             JcrNodeTypeMetaDataImpl parentNode, boolean isAuthenticationOrAuthorizationContext, boolean isImplicit) {
         super();
         this.name = name; // fully namespaced (taking into account local namespace declaration for Docview XML)
@@ -124,6 +125,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
         this.isAuthenticationOrAuthorizationContext = isAuthenticationOrAuthorizationContext;
         this.isImplicit = isImplicit;
         this.isValidationDone = false;
+        this.isIncremental = isIncremental;
     }
 
     @Override
@@ -228,7 +230,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
     }
 
     private @NotNull JcrNodeTypeMetaDataImpl addUnknownChildNode(@NotNull Name name) throws IllegalNameException {
-        JcrNodeTypeMetaDataImpl childNode = new JcrNodeTypeMetaDataImpl(name, null, null, this, false, false);
+        JcrNodeTypeMetaDataImpl childNode = new JcrNodeTypeMetaDataImpl(this.isIncremental, name, null, null, this, false, false);
         childNodesByName.put(name, childNode);
         return childNode;
     }
@@ -299,7 +301,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
         if (!isAuthenticationOrAuthorizationContext) {
             isAuthenticationOrAuthorizationContext = this.isAuthenticationOrAuthorizationContext;
         }
-        JcrNodeTypeMetaDataImpl newNode = new JcrNodeTypeMetaDataImpl(qName, newPrimaryNodeType, newEffectiveNodeType, this,
+        JcrNodeTypeMetaDataImpl newNode = new JcrNodeTypeMetaDataImpl(this.isIncremental, qName, newPrimaryNodeType, newEffectiveNodeType, this,
                 isAuthenticationOrAuthorizationContext, isImplicit);
         childNodesByName.put(qName, newNode);
         return newNode;
@@ -350,10 +352,13 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
             @NotNull ValidationMessageSeverity severity, @NotNull WorkspaceFilter filter) throws NamespaceException {
         if (!isValidationDone) {
             Collection<ValidationMessage> messages = new LinkedList<>();
-            messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG,
-                    "Validate mandatory children and properties of " + getQualifiedPath(namePathResolver)));
-            messages.addAll(validateMandatoryChildNodes(namePathResolver, severity, filter));
-            messages.addAll(validateMandatoryProperties(namePathResolver, severity));
+            // in incremental validations ignore missing mandatory properties and child nodes (as they might not be visible to the validator)
+            if (!isIncremental) {
+                messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG,
+                        "Validate mandatory children and properties of " + getQualifiedPath(namePathResolver)));
+                messages.addAll(validateMandatoryChildNodes(namePathResolver, severity, filter));
+                messages.addAll(validateMandatoryProperties(namePathResolver, severity));
+            }
             // only remove child nodes on 2nd level to be able to validate mandatory properties of parent
             childNodesByName.clear();
             isValidationDone = true;
@@ -624,9 +629,9 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
         return true;
     }
 
-    public static @NotNull JcrNodeTypeMetaDataImpl createRoot(@NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider)
+    public static @NotNull JcrNodeTypeMetaDataImpl createRoot(boolean isIncremental, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider)
             throws ConstraintViolationException, NoSuchNodeTypeException {
-        return new JcrNodeTypeMetaDataImpl(NameConstants.ROOT, NameConstants.REP_ROOT, effectiveNodeTypeProvider.getEffectiveNodeType(
+        return new JcrNodeTypeMetaDataImpl(isIncremental, NameConstants.ROOT, NameConstants.REP_ROOT, effectiveNodeTypeProvider.getEffectiveNodeType(
                 new Name[] {
                         NameConstants.REP_ROOT,
                         NameConstants.REP_ACCESS_CONTROLLABLE,

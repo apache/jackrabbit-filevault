@@ -63,7 +63,7 @@ public class ArchiveExtractionIT extends IntegrationTestBase {
     }
 
     @Override
-    public Archive getFileArchive(String name) {
+    public Archive getFileArchive(String name) throws IOException {
         if (streamBufferSize > 0) {
             try {
                 return super.getStreamArchive(name, streamBufferSize);

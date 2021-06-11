@@ -17,11 +17,21 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +40,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -49,7 +60,6 @@ import javax.jcr.security.AccessControlPolicyIterator;
 import javax.jcr.security.Privilege;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlEntry;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
@@ -83,6 +93,7 @@ import org.apache.jackrabbit.oak.spi.security.user.UserConstants;
 import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction;
 import org.apache.jackrabbit.oak.spi.xml.ImportBehavior;
 import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.FileArchive;
@@ -98,7 +109,6 @@ import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
-import org.apache.jackrabbit.util.Text;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -107,13 +117,6 @@ import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * {@code IntegrationTestBase}...
@@ -334,26 +337,35 @@ public class IntegrationTestBase  {
     }
 
     public InputStream getStream(String name) {
-        InputStream in;
-        in = getClass().getResourceAsStream(name);
-        return in;
+        return Objects.requireNonNull(getClass().getResourceAsStream(name), "Could not find class resource with name '" + name + "'");
     }
 
-    public File getTempFile(String name) throws IOException {
-        InputStream in = getStream(name);
-
-        File tmpFile = tempFolder.newFile();
-        FileOutputStream out = FileUtils.openOutputStream(tmpFile);
-        IOUtils.copy(in, out);
-        in.close();
-        out.close();
-        return tmpFile;
+    /**
+     * 
+     * @param name
+     * @return either a new tmp file (deleted automatically at the end of the unit test) or the original file name if not encapsulated in a JAR
+     * @throws IOException
+     */
+    public File getFile(String name) throws IOException {
+        URI uri;
+        try {
+            uri = Objects.requireNonNull(getClass().getResource(name),  "Could not find class resource with name '" + name + "'").toURI();
+        } catch (URISyntaxException e) {
+            throw new IOException("Could not convert class resource URL to URI", e);
+        }
+        if (uri.isOpaque()) { // non hierarchical URIs (for resources in a JAR)  can not use classical file operations
+            File tmpFile = tempFolder.newFile();
+            try (InputStream in = getStream(name)) {
+                Files.copy(in, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+            return tmpFile;
+        } else {
+            return new File(uri);
+        }
     }
 
-    public Archive getFileArchive(String name) {
-        final URL packageURL = getClass().getResource(name);
-        final String filename = packageURL.getFile();
-        final File file = new File(filename);
+    public Archive getFileArchive(String name) throws IOException {
+        final File file = getFile(name);
         if (file.isDirectory()) {
             return new FileArchive(file);
         } else {
@@ -362,9 +374,7 @@ public class IntegrationTestBase  {
     }
 
     public Archive getStreamArchive(String name, int size) throws IOException {
-        final URL packageURL = getClass().getResource(name);
-        final String filename = packageURL.getFile();
-        final File file = new File(filename);
+        final File file = getFile(name);
         if (file.isDirectory()) {
             throw new IllegalArgumentException("Can't create stream archive from directory");
         } else {

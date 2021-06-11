@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -681,6 +682,25 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         getFreshRegistryWithDefaultConstructor("test-package.zip", "test-package.xml");
         assertTrue(registry.contains(TEST_PACKAGE_ID));
         assertEquals(Collections.singleton(TEST_PACKAGE_ID), registry.packages());
+    }
+
+    @Test
+    public void testMetadataPersistance() throws IOException, PackageException {
+        File file = getTempFile("/test-packages/package_1.0.zip");
+        PackageId pkg = registry.register(file, false);
+        // check metadata
+        assertEquals(FSPackageStatus.REGISTERED, registry.getInstallState(pkg).getStatus());
+        RegisteredPackage registeredPackage = registry.open(pkg);
+        assertNotNull(registeredPackage);
+        registry.installPackage(admin, registeredPackage, getDefaultOptions(), true);
+        // check metadata
+        assertEquals(FSPackageStatus.EXTRACTED, registry.getInstallState(pkg).getStatus());
+        // reload FSRegistry
+        this.registry = new FSPackageRegistry(registryHome);
+        FSInstallState installState = registry.getInstallState(pkg);
+        assertNotNull(installState);
+        // check metadata
+        assertEquals(FSPackageStatus.EXTRACTED, installState.getStatus());
     }
 
     private void getFreshRegistryWithDefaultConstructor(String packageName, String packageMetadataName) throws IOException {

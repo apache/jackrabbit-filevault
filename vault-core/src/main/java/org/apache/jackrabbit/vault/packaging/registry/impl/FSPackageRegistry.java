@@ -627,9 +627,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     // no need to set filter in other cases
                 
             }
-            ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault());
-            dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
-            stateCache.updatePackageStatus(vltPkg.getId(), FSPackageStatus.EXTRACTED);
+            if (vltPkg instanceof ZipVaultPackage) {
+                ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault());
+                dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
+                stateCache.updatePackageStatus(vltPkg.getId(), FSPackageStatus.EXTRACTED);
+            } else {
+                throw new IllegalArgumentException("Only ZipVaultPackages can be installed but given package is " + vltPkg.getClass());
+            }
 
         } catch (RepositoryException e) {
             throw new IOException(e);

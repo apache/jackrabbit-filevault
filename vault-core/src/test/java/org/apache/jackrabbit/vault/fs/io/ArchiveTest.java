@@ -26,7 +26,11 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -92,7 +96,7 @@ public class ArchiveTest {
     }
 
     @Test 
-    public void testReadEntries() throws IOException {
+    public void testReadEntries() throws IOException, ParseException {
         archive.open(true);
         Entry root = archive.getRoot();
         assertNotNull(root);
@@ -113,7 +117,14 @@ public class ArchiveTest {
             assertEquals("Package Name", "atomic-counter-test", metaInf.getProperties().getProperty("name"));
         }
         assertEquals(747, vaultInputSource.getContentLength());
-        assertEquals(1487061202000l, vaultInputSource.getLastModified());
+        
+        // the last modified date uses the default timezone (and not GMT)
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.ENGLISH);
+        cal.setTime(sdf.parse("2017-02-14T09:33:22.000+01:00"));
+        Calendar actualCalendar = Calendar.getInstance();
+        actualCalendar.setTimeInMillis(vaultInputSource.getLastModified());
+        assertEquals(cal.getTime(), actualCalendar.getTime());
     }
 
     @Test

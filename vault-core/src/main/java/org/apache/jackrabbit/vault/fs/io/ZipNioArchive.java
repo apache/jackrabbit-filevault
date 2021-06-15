@@ -94,7 +94,7 @@ public class ZipNioArchive extends AbstractArchive {
             return;
         }
         try {
-            zipFileSystem = FileSystems.newFileSystem(path, null);
+            zipFileSystem = FileSystems.newFileSystem(path, (ClassLoader)null);
         } catch (ProviderNotFoundException e) {
             throw new IOException("Can not open zip file '" + path + "'", e);
         }

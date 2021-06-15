@@ -121,9 +121,12 @@ public class ArchiveTest {
 
         Calendar expectedCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.ENGLISH);
-        expectedCalendar.setTime(sdf.parse("2017-02-14T08:33:22.000+00:00"));
+        expectedCalendar.setTime(sdf.parse("2017-02-14T09:33:22.000+00:00"));
+        
         Calendar actualCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        actualCalendar.setTimeInMillis(vaultInputSource.getLastModified());
+        // comparing getLastModified is tricky, as ZIP doesn't store normalized dates but just in MS-DOS format (https://docs.oracle.com/javase/8/docs/api/java/util/zip/ZipEntry.html#getTime--)
+        // normalize to UTC
+        actualCalendar.setTimeInMillis(vaultInputSource.getLastModified() + TimeZone.getDefault().getOffset(vaultInputSource.getLastModified()));
         assertEquals(sdf.format(expectedCalendar.getTime()), sdf.format(actualCalendar.getTime()));
     }
 

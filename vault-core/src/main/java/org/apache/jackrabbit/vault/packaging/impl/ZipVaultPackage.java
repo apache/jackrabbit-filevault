@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.impl;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.PatternSyntaxException;
@@ -33,6 +34,7 @@ import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
+import org.apache.jackrabbit.vault.fs.io.ZipNioArchive;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
@@ -52,6 +54,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
     private static final Logger log = LoggerFactory.getLogger(ZipVaultPackage.class);
 
+    private static final String PROP_USE_NIO_ARCHIVE = "vault.useNioArchive"; // system or framework property, indicating that ZipNioArchive should be used instead of ZipArchive
     private Archive archive;
 
     public ZipVaultPackage(File file, boolean isTmpFile) throws IOException {
@@ -60,9 +63,14 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
     public ZipVaultPackage(File file, boolean isTmpFile, boolean strict)
             throws IOException {
-        this(new ZipArchive(file, isTmpFile), strict);
+        this(file.toPath(), isTmpFile, strict);
     }
 
+    public ZipVaultPackage(Path file, boolean isTmpFile, boolean strict) throws IOException {
+        this(OsgiAwarePropertiesUtil.getBooleanProperty(PROP_USE_NIO_ARCHIVE) ? new ZipNioArchive(file, isTmpFile) : new ZipArchive(file.toFile(), isTmpFile), strict);
+    }
+
+    
     public ZipVaultPackage(Archive archive, boolean strict)
             throws IOException {
         this.archive = archive;

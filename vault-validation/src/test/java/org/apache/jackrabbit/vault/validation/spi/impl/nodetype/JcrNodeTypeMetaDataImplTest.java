@@ -22,7 +22,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.jcr.NamespaceException;
@@ -48,7 +47,6 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,19 +77,16 @@ public class JcrNodeTypeMetaDataImplTest {
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(), severity,
                 createSimpleNodeContext("my"),
                 NodeType.NT_FOLDER);
-        assertNoValidationErrors(child);
         JcrNodeTypeMetaData grandChild = child.addChildNode(ntManagerProvider.getNameResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(), severity,
                 createSimpleNodeContext("test"),
                 NodeType.NT_FOLDER);
-        assertNoValidationErrors(grandChild);
         JcrNodeTypeMetaData child2 = root.addChildNode(ntManagerProvider.getNameResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(), severity,
                 createSimpleNodeContext("test2"),
                 NodeType.NT_FOLDER);
-        assertNoValidationErrors(child2);
         Assert.assertEquals(child2,
                 grandChild.getNode(ntManagerProvider.getNamePathResolver(), "/test2").get());
     }
@@ -142,81 +137,87 @@ public class JcrNodeTypeMetaDataImplTest {
                         StandardCharsets.US_ASCII)) {
             ntManagerProvider.registerNodeTypes(reader);
         }
-
-        // add child node with mixin type as primary
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        
+        // add node with mixin type as primary
         NodeContext nodeContext = createSimpleNodeContext("name");
+        
         JcrNodeTypeMetaData node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, nodeContext,
                 "mix:mimeType");
-        assertValidationMessage(node, new ValidationMessage(ValidationMessageSeverity.ERROR,
+        ValidationExecutorTest.assertViolation(root.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(),
+                ValidationMessageSeverity.ERROR, filter),
+                new ValidationMessage(ValidationMessageSeverity.ERROR,
                 String.format(JcrNodeTypeMetaDataImpl.MESSAGE_CHILD_NODE_NOT_ALLOWED, "name", "mix:mimeType", ROOT_NODE_TYPES,
-                        JcrNodeTypeMetaDataImpl.CONSTRAINT_MIXIN_TYPE_AS_PRIMARY_TYPE),
-                nodeContext));
+                        JcrNodeTypeMetaDataImpl.CONSTRAINT_MIXIN_TYPE_AS_PRIMARY_TYPE), nodeContext));
 
-        // add child node with abstract type
+        // add node with abstract type
+        root = JcrNodeTypeMetaDataImpl.createRoot(false, ntManagerProvider.getEffectiveNodeTypeProvider());
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, nodeContext,
                 "nt:hierarchyNode");
-        assertValidationMessage(node, new ValidationMessage(ValidationMessageSeverity.ERROR,
+        ValidationExecutorTest.assertViolation(root.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(),
+                ValidationMessageSeverity.ERROR, filter),
+                new ValidationMessage(ValidationMessageSeverity.ERROR,
                 String.format(JcrNodeTypeMetaDataImpl.MESSAGE_CHILD_NODE_NOT_ALLOWED, "name", "nt:hierarchyNode", ROOT_NODE_TYPES,
-                        JcrNodeTypeMetaDataImpl.CONSTRAINT_ABSTRACT_TYPE_AS_PRIMARY_TYPE),
-                nodeContext));
+                        JcrNodeTypeMetaDataImpl.CONSTRAINT_ABSTRACT_TYPE_AS_PRIMARY_TYPE), nodeContext));
 
+        // add node for version storage
+        root = JcrNodeTypeMetaDataImpl.createRoot(false, ntManagerProvider.getEffectiveNodeTypeProvider());
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR,
                 createSimpleNodeContext("versionedNode"), "rep:versionStorage");
-        assertNoValidationErrors(node);
-
         // add child node with protected node which is ACL (i.e. accepted)
-        JcrNodeTypeMetaData childNode = node.addChildNode(ntManagerProvider.getNamePathResolver(),
+        node.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR,
                 createSimpleNodeContext("rep:policy"), "rep:Policy");
-        assertNoValidationErrors(childNode);
-
-        // add child node with protected node which is not ACL (i.e. accepted)
-        childNode = node.addChildNode(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
+        // add child node with protected node which is not ACL (i.e. not accepted)
+        root = JcrNodeTypeMetaDataImpl.createRoot(false, ntManagerProvider.getEffectiveNodeTypeProvider());
+        node.addChildNode(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR,
                 nodeContext, "nt:versionHistory");
-        assertValidationMessage(childNode, new ValidationMessage(ValidationMessageSeverity.ERROR,
+        ValidationExecutorTest.assertViolation(node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(),
+                ValidationMessageSeverity.ERROR, filter), new ValidationMessage(ValidationMessageSeverity.ERROR,
                 String.format(JcrNodeTypeMetaDataImpl.MESSAGE_CHILD_NODE_NOT_ALLOWED, "name", "nt:versionHistory", "rep:versionStorage",
-                        JcrNodeTypeMetaDataImpl.CONSTRAINT_CHILD_NODE_PROTECTED),
-                nodeContext));
+                        JcrNodeTypeMetaDataImpl.CONSTRAINT_CHILD_NODE_PROTECTED), nodeContext));
 
         // add valid child node
+        root = JcrNodeTypeMetaDataImpl.createRoot(false, ntManagerProvider.getEffectiveNodeTypeProvider());
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, createSimpleNodeContext("name"),
                 "my:nodeType1");
-        assertNoValidationErrors(node);
-
-        // add auto-created child node
+        // below that add auto-created child node
         nodeContext = createSimpleNodeContext("my:autoCreatedChild1");
-        childNode = node.addChildNode(ntManagerProvider.getNamePathResolver(),
+        node.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR,
                 nodeContext, "my:nodeType2");
-        assertValidationMessage(childNode, new ValidationMessage(ValidationMessageSeverity.ERROR,
-                String.format(JcrNodeTypeMetaDataImpl.MESSAGE_CHILD_NODE_NOT_ALLOWED, "my:autoCreatedChild1", "my:nodeType2",
-                        "my:nodeType1",
-                        JcrNodeTypeMetaDataImpl.CONSTRAINT_CHILD_NODE_AUTO_CREATED),
-                nodeContext));
-
-        // below that add child node which is not allowed
-        nodeContext = createSimpleNodeContext("name2");
-        childNode = node.addChildNode(ntManagerProvider.getNamePathResolver(),
+        // and next to it a child node which is not allowed
+        NodeContext nodeContext2 = createSimpleNodeContext("name2");
+        node.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
-                ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, nodeContext,
+                ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, nodeContext2,
                 "my:nodeType1");
-        assertValidationMessage(childNode, new ValidationMessage(ValidationMessageSeverity.ERROR,
+        ValidationExecutorTest.assertViolation(node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(),
+                ValidationMessageSeverity.ERROR, filter), 
+                new ValidationMessage(ValidationMessageSeverity.ERROR,
+                        String.format(JcrNodeTypeMetaDataImpl.MESSAGE_CHILD_NODE_NOT_ALLOWED, "my:autoCreatedChild1", "my:nodeType2",
+                                "my:nodeType1",
+                                JcrNodeTypeMetaDataImpl.CONSTRAINT_CHILD_NODE_AUTO_CREATED), nodeContext),
+                new ValidationMessage(ValidationMessageSeverity.ERROR,
                 String.format(JcrNodeTypeMetaDataImpl.MESSAGE_CHILD_NODE_NOT_ALLOWED, "name2", "my:nodeType1", "my:nodeType1",
-                        JcrNodeTypeMetaDataImpl.CONSTRAINT_CHILD_NODE_NOT_ALLOWED),
-                nodeContext));
+                        JcrNodeTypeMetaDataImpl.CONSTRAINT_CHILD_NODE_NOT_ALLOWED), nodeContext2));
     }
 
     @Test
@@ -232,16 +233,14 @@ public class JcrNodeTypeMetaDataImplTest {
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, createSimpleNodeContext("name"),
                 "my:nodeType1");
-        assertNoValidationErrors(node);
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
 
         // mandatory child node missing outside filter
-        Collection<ValidationMessage> messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(),
+        Collection<ValidationMessage> messages = root.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR, filter);
-        ValidationExecutorTest.assertViolation(messages, new ValidationMessage(ValidationMessageSeverity.ERROR,
-                String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_UNCONTAINED_CHILD_NODE_MISSING, "my:namedChild1 [my:nodeType1]", "my:nodeType1",
-                        "/name")));
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
 
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
@@ -250,13 +249,15 @@ public class JcrNodeTypeMetaDataImplTest {
         
         // mandatory child node missing inside filter
         filter.add(new PathFilterSet("/"));
-        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR, filter);
+        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(),ValidationMessageSeverity.ERROR, filter);
         ValidationExecutorTest.assertViolation(messages, new ValidationMessage(ValidationMessageSeverity.ERROR,
                 String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_CHILD_NODE_MISSING, "my:namedChild1 [my:nodeType1]", "my:nodeType1",
                         "/name2")));
 
         // calling a second time will not lead to anything
-        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR, filter);
+        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, filter);
         MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
         
         // now add mandatory child node
@@ -269,40 +270,40 @@ public class JcrNodeTypeMetaDataImplTest {
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, createSimpleNodeContext("my:namedChild1"),
                 "my:nodeType1");
-        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR,
+        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR,
                 new DefaultWorkspaceFilter());
         MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
 
         // add arbitrary property to root
-        root.addProperty(createSimpleNodeContext("/"), ntManagerProvider.getNamePathResolver(),
+        MatcherAssert.assertThat(root.addProperty(createSimpleNodeContext("/"), ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, "property", false,
-                ValueFactoryImpl.getInstance().createValue("foo"));
-        assertNoValidationErrors(root);
-
+                ValueFactoryImpl.getInstance().createValue("foo")), AnyValidationMessageMatcher.noValidationInCollection());
+        
         NodeContext nodeContext = createSimpleNodeContext("nodeForMandatoryProperties");
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, nodeContext, "my:nodeType2");
-        assertNoValidationErrors(node);
-        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR, filter);
+        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(),ValidationMessageSeverity.ERROR, filter);
         ValidationExecutorTest.assertViolation(messages, new ValidationMessage(ValidationMessageSeverity.ERROR,
                 String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_PROPERTY_MISSING, "my:mandatoryProperty", "my:nodeType2",
-                        "/nodeForMandatoryProperties")));
+                        "/nodeForMandatoryProperties"), nodeContext));
 
         nodeContext = createSimpleNodeContext("nodeForMandatoryProperties2");
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, nodeContext, "my:nodeType2");
-        assertNoValidationErrors(node);
         node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR,
                 "my:mandatoryProperty", false, ValueFactoryImpl.getInstance().createValue("foo"));
-        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR, filter);
+        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, filter);
         ValidationExecutorTest.assertViolation(messages, new ValidationMessage(ValidationMessageSeverity.ERROR,
                 String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_PROPERTY_WITH_WRONG_TYPE, "my:mandatoryProperty", "String", "Date",
-                        "my:nodeType2", "/nodeForMandatoryProperties2")));
+                        "my:nodeType2"), nodeContext));
     }
 
     @Test
@@ -318,7 +319,6 @@ public class JcrNodeTypeMetaDataImplTest {
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, createSimpleNodeContext("name"),
                 "my:nodeType1");
-        assertNoValidationErrors(node);
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
 
@@ -329,7 +329,8 @@ public class JcrNodeTypeMetaDataImplTest {
         
         // mandatory child node missing but not reported due to incremental validation
         filter.add(new PathFilterSet("/"));
-        Collection<ValidationMessage> messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR, filter);
+        Collection<ValidationMessage> messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(),  ValidationMessageSeverity.ERROR, filter);
         MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
 
         // mandatory property missing but not reported due to incremental validation
@@ -337,8 +338,8 @@ public class JcrNodeTypeMetaDataImplTest {
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, nodeContext, "my:nodeType2");
-        assertNoValidationErrors(node);
-        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ValidationMessageSeverity.ERROR, filter);
+        messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, filter);
         MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
     }
     
@@ -361,89 +362,70 @@ public class JcrNodeTypeMetaDataImplTest {
 
         NodeContext nodeContext = createSimpleNodeContext("/");
         // add arbitrary property to root
-        root.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
+        MatcherAssert.assertThat(root.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, "property", false,
-                ValueFactoryImpl.getInstance().createValue("foo"));
-        assertNoValidationErrors(root);
+                ValueFactoryImpl.getInstance().createValue("foo")), AnyValidationMessageMatcher.noValidationInCollection());
 
         JcrNodeTypeMetaData node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, createSimpleNodeContext("child"),
                 "my:nodeType3");
-        assertNoValidationErrors(node);
 
         // not allowed (wrong type)
-        node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
+        ValidationExecutorTest.assertViolation( node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, "property", false,
-                ValueFactoryImpl.getInstance().createValue("foo"));
-        assertValidationMessage(node,
+                ValueFactoryImpl.getInstance().createValue("foo")),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(JcrNodeTypeMetaDataImpl.MESSAGE_PROPERTY_NOT_ALLOWED, "property",
                                 "String", "my:nodeType3", JcrNodeTypeMetaDataImpl.CONSTRAINT_PROPERTY_NOT_ALLOWED),
                         nodeContext));
 
         // protected but nevertheless allowed
-        node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
+        MatcherAssert.assertThat(node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, "jcr:primaryType", false,
-                ValueFactoryImpl.getInstance().createValue("foo"));
-        assertNoValidationErrors(node);
+                ValueFactoryImpl.getInstance().createValue("foo")), AnyValidationMessageMatcher.noValidationInCollection());
 
         // protected
-        node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
+        ValidationExecutorTest.assertViolation(node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR,
-                "my:protected", false, ValueFactoryImpl.getInstance().createValue("foo"));
-        assertValidationMessage(node,
+                "my:protected", false, ValueFactoryImpl.getInstance().createValue("foo")),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(JcrNodeTypeMetaDataImpl.MESSAGE_PROPERTY_NOT_ALLOWED,
                         "my:protected", "String", "my:nodeType3", JcrNodeTypeMetaDataImpl.CONSTRAINT_PROPERTY_PROTECTED), nodeContext));
 
         // multi value where single value is required
-        node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
+        ValidationExecutorTest.assertViolation(node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, "my:property1", true,
-                ValueFactoryImpl.getInstance().createValue("foo"), ValueFactoryImpl.getInstance().createValue("bar"));
-        assertValidationMessage(node,
+                ValueFactoryImpl.getInstance().createValue("foo"), ValueFactoryImpl.getInstance().createValue("bar")),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(JcrNodeTypeMetaDataImpl.MESSAGE_PROPERTY_NOT_ALLOWED,
                         "my:property1", "String", "my:nodeType3", JcrNodeTypeMetaDataImpl.CONSTRAINT_PROPERTY_NOT_ALLOWED), nodeContext));
 
         // constrained property
-        node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
+        MatcherAssert.assertThat(node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR,
-                "my:constrainedStringProperty", false, ValueFactoryImpl.getInstance().createValue("prefix1foo"));
-        assertNoValidationErrors(root);
+                "my:constrainedStringProperty", false, ValueFactoryImpl.getInstance().createValue("prefix1foo")),
+                AnyValidationMessageMatcher.noValidationInCollection());
 
-        node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
+        MatcherAssert.assertThat(node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR,
-                "my:constrainedStringProperty", false, ValueFactoryImpl.getInstance().createValue("foosuffix1"));
-        assertNoValidationErrors(root);
+                "my:constrainedStringProperty", false, ValueFactoryImpl.getInstance().createValue("foosuffix1")),
+                AnyValidationMessageMatcher.noValidationInCollection());
 
-        node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
+        ValidationExecutorTest.assertViolation( node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR,
-                "my:constrainedStringProperty", false, ValueFactoryImpl.getInstance().createValue("foo"));
-        assertValidationMessage(node,
+                "my:constrainedStringProperty", false, ValueFactoryImpl.getInstance().createValue("foo")),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(JcrNodeTypeMetaDataImpl.MESSAGE_PROPERTY_NOT_ALLOWED,
                         "my:constrainedStringProperty", "String", "my:nodeType3",
                         String.format(JcrNodeTypeMetaDataImpl.CONSTRAINT_PROPERTY_VALUE,
                                 "'foo' does not satisfy the constraint '.*suffix1'")),
                         nodeContext));
-    }
-
-    private static void assertNoValidationErrors(JcrNodeTypeMetaData node) {
-        Collection<ValidationMessage> messages = new ArrayList<>();
-        node.fetchAndClearValidationMessages(messages);
-        MatcherAssert.assertThat(messages, Matchers.empty());
-    }
-
-    private static void assertValidationMessage(JcrNodeTypeMetaData node, ValidationMessage... expectedMessages) {
-        Collection<ValidationMessage> actualMessages = new ArrayList<>();
-        node.fetchAndClearValidationMessages(actualMessages);
-        MatcherAssert.assertThat(actualMessages, Matchers.contains(expectedMessages));
     }
 
 }

@@ -121,7 +121,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
             }
         }
         Collection<ValidationMessage> messages = new LinkedList<>();
-        messages.addAll(getOrCreateNewNode(nodeContext, isImplicit(nodeContext.getNodePath()), node.primary, node.mixins));
+        messages.addAll(getOrCreateNewNode(nodeContext, false, isImplicit(nodeContext.getNodePath()), node.primary, node.mixins));
 
         for (DocViewProperty property : node.props.values()) {
             try {
@@ -131,8 +131,6 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
                         String.format(MESSAGE_INVALID_PROPERTY_VALUE, property.name, e.getLocalizedMessage())));
             }
         }
-        // emit messages
-        currentNodeTypeMetaData.fetchAndClearValidationMessages(messages);
 
         // defer checking for missing mandatory properties (as those might be added by some other files)
         return messages;
@@ -145,9 +143,9 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
     private Collection<ValidationMessage> addProperty(NodeContext nodeContext, String propertyName, boolean isMultiValue, Value... values) {
         Collection<ValidationMessage> messages = new ArrayList<>();
         try {
-            currentNodeTypeMetaData.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
+            messages.addAll(currentNodeTypeMetaData.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
                     ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
-                    ntManagerProvider.getItemDefinitionProvider(), defaultSeverity, propertyName, isMultiValue, values);
+                    ntManagerProvider.getItemDefinitionProvider(), defaultSeverity, propertyName, isMultiValue, values));
         } catch (NoSuchNodeTypeException | NamespaceException e) {
             // log each unknown node type/namespace only once!
             if (!loggedUnknownNodeTypeMessages.contains(e.getMessage())) {
@@ -171,7 +169,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
         }
     }
 
-    private @NotNull Collection<ValidationMessage> getOrCreateNewNode(NodeContext nodeContext, boolean isImplicit, String primaryType,
+    private @NotNull Collection<ValidationMessage> getOrCreateNewNode(NodeContext nodeContext, boolean isFolder, boolean isImplicit, String primaryType,
             String... mixinTypes) {
         Optional<JcrNodeTypeMetaData> node = getNode(nodeContext.getNodePath());
         if (node.isPresent()) {
@@ -193,11 +191,11 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
             }
             return Collections.emptyList();
         } else {
-            return createNewNode(nodeContext, isImplicit, primaryType, mixinTypes);
+            return createNewNode(nodeContext, isFolder, isImplicit, primaryType, mixinTypes);
         }
     }
 
-    private @NotNull Collection<ValidationMessage> createNewNode(NodeContext nodeContext, boolean isImplicit, String primaryType,
+    private @NotNull Collection<ValidationMessage> createNewNode(NodeContext nodeContext, boolean isFolder, boolean isImplicit, String primaryType,
             String... mixinTypes) {
         Collection<ValidationMessage> messages = new ArrayList<>();
         String nodePath = nodeContext.getNodePath();
@@ -209,7 +207,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
         try {
             //
             JcrNodeTypeMetaData parentNode = currentNodeTypeMetaData.getOrCreateNode(ntManagerProvider.getNamePathResolver(),
-                    parentNodePath);
+                    nodeContext, parentNodePath);
             try {
                 if (isImplicit) {
                     if (!nodePath.equals("/")) {
@@ -224,6 +222,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
                     currentNodeTypeMetaData = parentNode.addChildNode(ntManagerProvider.getNameResolver(),
                             ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                             ntManagerProvider.getItemDefinitionProvider(), defaultSeverity, nodeContext, primaryType, mixinTypes);
+                    
                 }
             } catch (NoSuchNodeTypeException | NamespaceException e) {
                 // TODO: NoSuchNodeTypeException might be thrown due to previous registration of the namespace for a node name
@@ -238,9 +237,9 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
                     // now register namespace with an arbitrary namespace url
                     NameParser.parse(nodeName, new OnDemandRegisterNamespaceResolverWrapper(ntManagerProvider),
                             NameFactoryImpl.getInstance());
-                    messages.addAll(createNewNode(nodeContext, isImplicit, primaryType, mixinTypes));
+                    messages.addAll(createNewNode(nodeContext, isFolder, isImplicit, primaryType, mixinTypes));
                 } else {
-                    currentNodeTypeMetaData = parentNode.addUnknownChildNode(ntManagerProvider.getNameResolver(), nodeName);
+                    currentNodeTypeMetaData = parentNode.addUnknownChildNode(ntManagerProvider.getNameResolver(),nodeContext, nodeName);
                 }
             }
         } catch (RepositoryException e) {
@@ -285,9 +284,11 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
 
     private @Nullable Collection<ValidationMessage> finalizeValidationForSubtree(JcrNodeTypeMetaData node, NodeContext nodeContext) throws NamespaceException {
         Collection<ValidationMessage> messages = new ArrayList<>();
+        messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, "Finalize validation for subtree at " + nodeContext));
         for (JcrNodeTypeMetaData child : node.getChildren()) {
             messages.addAll(finalizeValidationForSubtree(child, nodeContext));
-            messages.addAll(child.finalizeValidation(ntManagerProvider.getNamePathResolver(), defaultSeverity, filter));
+            messages.addAll(child.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                    ntManagerProvider.getItemDefinitionProvider(), defaultSeverity, filter));
         }
         return messages;
     }
@@ -299,7 +300,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
         List<ValidationMessage> messages = new ArrayList<>();
         boolean isImplicit = isImplicit(nodeContext.getNodePath());
         if (isFolder) {
-            messages.addAll(getOrCreateNewNode(nodeContext, isImplicit, JcrConstants.NT_FOLDER));
+            messages.addAll(getOrCreateNewNode(nodeContext, isFolder, isImplicit, JcrConstants.NT_FOLDER));
             //
             if (!nodeContext.getNodePath().equals("/")) {
                 messages.addAll(finalizeValidationForSiblings(nodeContext));
@@ -311,19 +312,19 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
                 // https://jackrabbit.apache.org/filevault/vaultfs.html#Binary_Properties
                 if (fileName.endsWith(ValidationExecutor.EXTENSION_BINARY)) {
                     // create parent if it does not exist yet
-                    messages.addAll(getOrCreateNewNode(nodeContext, isImplicit, JcrConstants.NT_FOLDER));
+                    messages.addAll(getOrCreateNewNode(nodeContext, isFolder, isImplicit, JcrConstants.NT_FOLDER));
                     String propertyName = fileName.substring(0, fileName.length() - ValidationExecutor.EXTENSION_BINARY.length());
                     messages.addAll(addProperty(nodeContext, propertyName, false, DUMMY_BINARY_VALUE));
                 } else {
                     // if binary node is not yet there
-                    messages.addAll(getOrCreateNewNode(nodeContext, isImplicit, JcrConstants.NT_FILE));
+                    messages.addAll(getOrCreateNewNode(nodeContext, isFolder, isImplicit, JcrConstants.NT_FILE));
                     // if a NT_FILE create a jcr:content sub node of type NT_RESOURCE
                     if (currentNodeTypeMetaData.getPrimaryNodeType().equals(NameConstants.NT_FILE)) {
                         // create new node context
                         nodeContext = new NodeContextImpl(nodeContext.getNodePath() + "/" + JcrConstants.JCR_CONTENT,
                                 nodeContext.getFilePath(), nodeContext.getBasePath());
                         messages.addAll(
-                                getOrCreateNewNode(nodeContext, isImplicit(nodeContext.getNodePath()), JcrConstants.NT_RESOURCE));
+                                getOrCreateNewNode(nodeContext, isFolder, isImplicit(nodeContext.getNodePath()), JcrConstants.NT_RESOURCE));
                     }
                     messages.addAll(addProperty(nodeContext, JcrConstants.JCR_DATA, false, DUMMY_BINARY_VALUE));
                     messages.addAll(addProperty(nodeContext, JcrConstants.JCR_MIMETYPE, false, DUMMY_STRING_VALUE));

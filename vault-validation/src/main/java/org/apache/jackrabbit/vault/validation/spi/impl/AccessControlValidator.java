@@ -40,19 +40,23 @@ public class AccessControlValidator implements DocumentViewXmlValidator {
     private final ValidationMessageSeverity severity;
     private final AccessControlHandling accessControlHandling;
     private boolean hasFoundACLNode;
+    private final boolean isIncremental;
     
-    public AccessControlValidator(ValidationMessageSeverity severity, AccessControlHandling accessControlHandling) {
+    public AccessControlValidator(boolean isIncremental, ValidationMessageSeverity severity, AccessControlHandling accessControlHandling) {
         super();
         this.severity = severity;
         this.accessControlHandling = accessControlHandling;
         this.hasFoundACLNode = false;
+        this.isIncremental = isIncremental;
     }
 
     @Override
     public Collection<ValidationMessage> done() {
-        // make sure that at least one rep:Policy node is contained
-        if (!hasFoundACLNode && accessControlHandling != AccessControlHandling.IGNORE && accessControlHandling != AccessControlHandling.CLEAR) {
-            return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST, accessControlHandling)));
+        if (!isIncremental) {
+            // make sure that at least one rep:Policy node is contained
+            if (!hasFoundACLNode && accessControlHandling != AccessControlHandling.IGNORE && accessControlHandling != AccessControlHandling.CLEAR) {
+                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST, accessControlHandling)));
+            }
         }
         return null;
     }

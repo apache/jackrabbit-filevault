@@ -30,7 +30,7 @@ public final class AccessControlValidatorFactory implements ValidatorFactory {
     @Override
     public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         AccessControlHandling accessControlHandling = context.getProperties().getACHandling();
-        return new AccessControlValidator(settings.getDefaultSeverity(), accessControlHandling);
+        return new AccessControlValidator(context.isIncremental(), settings.getDefaultSeverity(), accessControlHandling);
     }
 
     @Override

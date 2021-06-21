@@ -52,13 +52,18 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
     public static final String OPTION_CNDS = "cnds";
     /** The default node type to assume if no other node type is given */
     public static final String OPTION_DEFAULT_NODE_TYPES = "defaultNodeType";
+    static final @NotNull String DEFAULT_DEFAULT_NODE_TYPE = JcrConstants.NT_FOLDER;
+
     public static final String OPTION_SEVERITY_FOR_UNKNOWN_NODETYPES = "severityForUnknownNodetypes";
+    static final @NotNull ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNKNOWN_NODETYPE = ValidationMessageSeverity.WARN;
+    
+    public static final String OPTION_SEVERITY_FOR_DEFAULT_NODE_TYPE_VIOLATIONS = "severityForDefaultNodeTypeViolations";
+    static final @NotNull ValidationMessageSeverity DEFAULT_SEVERITY_FOR_DEFAULT_NODE_TYPE_VIOLATIONS = ValidationMessageSeverity.WARN;
+    
     /** Comma-separated list of name spaces that are known as valid (even if not defined in the CND files). Use syntax "prefix1=ns-uri1,prefix2=nsuri2,...". */
     public static final String OPTION_VALID_NAMESPACES = "validNameSpaces";
 
-    static final @NotNull String DEFAULT_DEFAULT_NODE_TYPE = JcrConstants.NT_FOLDER;
 
-    static final @NotNull ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNKNOWN_NODETYPE = ValidationMessageSeverity.WARN;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NodeTypeValidatorFactory.class);
 
@@ -87,6 +92,14 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
             severityForUnknownNodetypes = DEFAULT_SEVERITY_FOR_UNKNOWN_NODETYPE;
         }
 
+        final @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations;
+        if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_DEFAULT_NODE_TYPE_VIOLATIONS)) {
+            String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_DEFAULT_NODE_TYPE_VIOLATIONS);
+            severityForDefaultNodeTypeViolations = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+        } else {
+            severityForDefaultNodeTypeViolations = DEFAULT_SEVERITY_FOR_DEFAULT_NODE_TYPE_VIOLATIONS;
+        }
+
         Map<String,String> validNameSpaces; 
         if (settings.getOptions().containsKey(OPTION_VALID_NAMESPACES)) {
             validNameSpaces = parseNamespaces(settings.getOptions().get(OPTION_VALID_NAMESPACES));
@@ -110,7 +123,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
                 ntManagerProvider.registerNamespace(entry.getKey(), entry.getValue());
             }
             return new NodeTypeValidator(context.isIncremental(), context.getFilter(), ntManagerProvider, ntManagerProvider.getNameResolver().getQName(defaultNodeType), settings.getDefaultSeverity(),
-                    severityForUnknownNodetypes);
+                    severityForUnknownNodetypes, severityForDefaultNodeTypeViolations);
         } catch (IOException | RepositoryException | ParseException e) {
             throw new IllegalArgumentException("Error loading default node type " + defaultNodeType, e);
         }

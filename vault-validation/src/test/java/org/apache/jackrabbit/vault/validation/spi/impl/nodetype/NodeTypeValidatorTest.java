@@ -79,7 +79,7 @@ public class NodeTypeValidatorTest {
             }
         }
         return new NodeTypeValidator(false, filter, ntManagerProvider, defaultNodeType, ValidationMessageSeverity.ERROR,
-                ValidationMessageSeverity.WARN);
+                ValidationMessageSeverity.WARN, ValidationMessageSeverity.WARN);
     }
 
     @Test
@@ -101,7 +101,7 @@ public class NodeTypeValidatorTest {
         node = new DocViewNode("test", "test", null, props, null, "nt:folder");
         ValidationExecutorTest.assertViolation(validator.validate(node, nodeContext, false),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(JcrNodeTypeMetaDataImpl.MESSAGE_PROPERTY_NOT_ALLOWED, "prop1", "String", "nt:folder",
+                        String.format(JcrNodeTypeMetaDataImpl.MESSAGE_PROPERTY_NOT_ALLOWED, "prop1", "String", "types [nt:folder]",
                                 "No applicable property definition found for name and type!"), nodeContext));
     }
 
@@ -137,9 +137,9 @@ public class NodeTypeValidatorTest {
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, JcrConstants.NT_UNSTRUCTURED);
         MatcherAssert.assertThat(validator.validate(node, nodeContext, false), AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(validator.done(),
-                new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(JcrNodeTypeMetaDataImpl.MESSAGE_CHILD_NODE_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED,
-                                "test", "nt:unstructured", JcrConstants.NT_FOLDER,
+                new ValidationMessage(ValidationMessageSeverity.WARN,
+                        String.format(JcrNodeTypeMetaDataImpl.MESSAGE_CHILD_NODE_NOT_ALLOWED,
+                                "test", "nt:unstructured", "potential default types ["+JcrConstants.NT_FOLDER + "]",
                                 "Node type does not allow arbitrary child nodes and does not allow this specific name and node type either!"), nodeContext));
     }
 
@@ -184,7 +184,7 @@ public class NodeTypeValidatorTest {
         ValidationExecutorTest.assertViolation(validator.done(),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_PROPERTY_MISSING,
-                                "rep:principalName", "rep:SystemUser", nodeContext.getNodePath()), nodeContext));
+                                "rep:principalName", "types [rep:SystemUser]", nodeContext.getNodePath()), nodeContext));
     }
 
     @Test
@@ -200,7 +200,7 @@ public class NodeTypeValidatorTest {
         ValidationExecutorTest.assertViolation(validator.done(),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_CHILD_NODE_MISSING,
-                                "jcr:content [nt:base]", "nt:file", "/apps/test/node4")));
+                                "jcr:content [nt:base]", "types [nt:file]", "/apps/test/node4")));
         MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
@@ -217,7 +217,7 @@ public class NodeTypeValidatorTest {
         DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, props, null, JcrConstants.NT_FILE);
         ValidationExecutorTest.assertViolation(validator.validate(node, nodeContext, false),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(JcrNodeTypeMetaDataImpl.MESSAGE_PROPERTY_NOT_ALLOWED, "invalid-prop", "String", JcrConstants.NT_FILE,
+                        String.format(JcrNodeTypeMetaDataImpl.MESSAGE_PROPERTY_NOT_ALLOWED, "invalid-prop", "String", "types [" + JcrConstants.NT_FILE + "]",
                                 "No applicable property definition found for name and type!"), nodeContext));
     }
 

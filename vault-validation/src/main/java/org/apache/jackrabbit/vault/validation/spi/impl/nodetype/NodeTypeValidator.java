@@ -73,6 +73,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
     private final WorkspaceFilter filter;
     private final ValidationMessageSeverity defaultSeverity;
     private final ValidationMessageSeverity severityForUnknownNodeTypes;
+    private final ValidationMessageSeverity severityForDefaultNodeTypeViolations;
     private final DocViewPropertyValueFactory docViewPropertyValueFactory;
     private final NodeTypeManagerProvider ntManagerProvider;
     private final Set<String> loggedUnknownNodeTypeMessages;
@@ -82,13 +83,14 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
 
     public NodeTypeValidator(boolean isIncremental, @NotNull WorkspaceFilter filter, @NotNull NodeTypeManagerProvider ntManagerProvider,
             @NotNull Name defaultPrimaryNodeType, @NotNull ValidationMessageSeverity defaultSeverity,
-            @NotNull ValidationMessageSeverity severityForUnknownNodeTypes)
+            @NotNull ValidationMessageSeverity severityForUnknownNodeTypes, @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations)
             throws IllegalNameException, ConstraintViolationException, NoSuchNodeTypeException {
         this.filter = filter;
         this.ntManagerProvider = ntManagerProvider;
         this.defaultType = defaultPrimaryNodeType;
         this.defaultSeverity = defaultSeverity;
         this.severityForUnknownNodeTypes = severityForUnknownNodeTypes;
+        this.severityForDefaultNodeTypeViolations = severityForDefaultNodeTypeViolations;
         this.docViewPropertyValueFactory = new DocViewPropertyValueFactory();
         this.loggedUnknownNodeTypeMessages = new HashSet<>();
 
@@ -145,7 +147,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
         try {
             messages.addAll(currentNodeTypeMetaData.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
                     ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
-                    ntManagerProvider.getItemDefinitionProvider(), defaultSeverity, propertyName, isMultiValue, values));
+                    ntManagerProvider.getItemDefinitionProvider(), defaultSeverity, severityForDefaultNodeTypeViolations, propertyName, isMultiValue, values));
         } catch (NoSuchNodeTypeException | NamespaceException e) {
             // log each unknown node type/namespace only once!
             if (!loggedUnknownNodeTypeMessages.contains(e.getMessage())) {
@@ -221,7 +223,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
                 } else {
                     currentNodeTypeMetaData = parentNode.addChildNode(ntManagerProvider.getNameResolver(),
                             ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
-                            ntManagerProvider.getItemDefinitionProvider(), defaultSeverity, nodeContext, primaryType, mixinTypes);
+                            ntManagerProvider.getItemDefinitionProvider(), nodeContext, primaryType, mixinTypes);
                     
                 }
             } catch (NoSuchNodeTypeException | NamespaceException e) {
@@ -288,7 +290,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
         for (JcrNodeTypeMetaData child : node.getChildren()) {
             messages.addAll(finalizeValidationForSubtree(child, nodeContext));
             messages.addAll(child.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
-                    ntManagerProvider.getItemDefinitionProvider(), defaultSeverity, filter));
+                    ntManagerProvider.getItemDefinitionProvider(), defaultSeverity, severityForDefaultNodeTypeViolations, filter));
         }
         return messages;
     }

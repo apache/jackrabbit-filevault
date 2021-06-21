@@ -78,14 +78,12 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
     static final String CONSTRAINT_ABSTRACT_TYPE_AS_PRIMARY_TYPE = "Given node type is abstract and cannot be used as primary node type.";
     static final String CONSTRAINT_CHILD_NODE_NOT_ALLOWED = "Node type does not allow arbitrary child nodes and does not allow this specific name and node type either!";
 
-    static final String MESSAGE_CHILD_NODE_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED = "Node '%s [%s]' is not allowed as child of not contained node with potential default types '[%s]': %s";
-    static final String MESSAGE_CHILD_NODE_NOT_ALLOWED = "Node '%s [%s]' is not allowed as child of node with types [%s]: %s";
-    static final String MESSAGE_PROPERTY_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED = "Property '%s' [%s] is not allowed in node with potential default types [%s]: %s";;
-    static final String MESSAGE_PROPERTY_NOT_ALLOWED = "Property '%s' [%s] is not allowed in node with types [%s]: %s";
-    static final String MESSAGE_MANDATORY_CHILD_NODE_MISSING = "Mandatory child node missing: %s inside node with types [%s]";
+    static final String MESSAGE_CHILD_NODE_NOT_ALLOWED = "Node '%s [%s]' is not allowed as child of node with %s: %s";
+    static final String MESSAGE_PROPERTY_NOT_ALLOWED = "Property '%s' [%s] is not allowed in node with %s: %s";
+    static final String MESSAGE_MANDATORY_CHILD_NODE_MISSING = "Mandatory child node missing: %s inside node with %s";
     static final String MESSAGE_MANDATORY_UNCONTAINED_CHILD_NODE_MISSING = "Mandatory child node missing: %s inside node with types [%s] (outside of filter rules)";
-    static final String MESSAGE_MANDATORY_PROPERTY_MISSING = "Mandatory property '%s' missing in node with types [%s]";
-    static final String MESSAGE_MANDATORY_PROPERTY_WITH_WRONG_TYPE = "Mandatory property '%s' has type '%s' while it should have '%s' in node with types [%s]";
+    static final String MESSAGE_MANDATORY_PROPERTY_MISSING = "Mandatory property '%s' missing in node with %s";
+    static final String MESSAGE_MANDATORY_PROPERTY_WITH_WRONG_TYPE = "Mandatory property '%s' has type '%s' while it should have '%s' in node with %s";
 
     // do not validate protected JCR system properties that are handled by FileVault specially in https://github.com/apache/jackrabbit-filevault/blob/f785fcb24d4cbd01c734e9273310a925c29ae15b/vault-core/src/main/java/org/apache/jackrabbit/vault/fs/impl/io/DocViewSAXImporter.java#L123 and 
     // https://github.com/apache/jackrabbit-filevault/blob/f785fcb24d4cbd01c734e9273310a925c29ae15b/vault-core/src/main/java/org/apache/jackrabbit/vault/fs/impl/io/DocViewSAXImporter.java#L140
@@ -213,12 +211,6 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
             @NotNull NodeContext nodeContext, @Nullable Name implicitNodeType) throws RepositoryException {
         JcrNodeTypeMetaDataImpl childNode = addChildNode(nameResolver, effectiveNodeTypeProvider, nodeTypeDefinitionProvider,
                 itemDefinitionProvider, true, nodeContext, Text.getName(nodeContext.getNodePath()), implicitNodeType);
-        // now validate for validity
-        Optional<String> constraintViolation = childNode.validateAgainstParentNodeType(effectiveNodeType, nodeTypeDefinitionProvider,
-                itemDefinitionProvider);
-        if (constraintViolation.isPresent()) {
-            throw new IllegalArgumentException("The implicit node type is invalid here: " + constraintViolation.get());
-        }
         return childNode;
     }
 
@@ -238,8 +230,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
     public @NotNull JcrNodeTypeMetaData addChildNode(@NotNull NameResolver nameResolver,
             @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,
             @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider,
-            @NotNull ValidationMessageSeverity severity, @NotNull NodeContext nodeContext, @NotNull String primaryType,
-            String... mixinTypes)
+            @NotNull NodeContext nodeContext, @NotNull String primaryType, String... mixinTypes)
             throws IllegalNameException, RepositoryException, NamespaceExceptionInNodeName {
 
         List<Name> types = getTypes(nameResolver, primaryType, mixinTypes);
@@ -299,7 +290,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
      * @param parentEffectiveNodeType
      * @return constraints violation message
      * @throws RepositoryException */
-    private Optional<String> validateAgainstParentNodeType(@Nullable EffectiveNodeType parentEffectiveNodeType,
+    private Optional<String> validateAgainstParentNodeType(@NotNull EffectiveNodeType parentEffectiveNodeType,
             @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider,
             @NotNull ItemDefinitionProvider itemDefinitionProvider) throws RepositoryException {
         if (effectiveNodeType == null || primaryNodeType == null) {
@@ -311,9 +302,6 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
             return Optional.empty();
         }
 
-        if (parentEffectiveNodeType == null) {
-            return Optional.empty();
-        }
         QNodeTypeDefinition primaryNodeTypeDefinition = nodeTypeDefinitionProvider.getNodeTypeDefinition(primaryNodeType);
         if (primaryNodeTypeDefinition.isAbstract()) {
             return Optional.of(CONSTRAINT_ABSTRACT_TYPE_AS_PRIMARY_TYPE);
@@ -338,15 +326,15 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
 
     @Override
     public @NotNull Collection<ValidationMessage> finalizeValidation(@NotNull NamePathResolver namePathResolver,  @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider,
-            @NotNull ValidationMessageSeverity severity, @NotNull WorkspaceFilter filter) throws NamespaceException {
+            @NotNull ValidationMessageSeverity severity, @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations, @NotNull WorkspaceFilter filter) throws NamespaceException {
         if (!isValidationDone) {
             Collection<ValidationMessage> messages = new LinkedList<>();
             // in incremental validations ignore missing mandatory properties and child nodes (as they might not be visible to the validator)
             if (!isIncremental) {
                 messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG,
                         "Validate children and mandatory properties of " + getQualifiedPath(namePathResolver)));
-                messages.addAll(validateChildNodes(namePathResolver, nodeTypeDefinitionProvider, itemDefinitionProvider, severity, filter));
-                messages.addAll(validateMandatoryProperties(namePathResolver, severity));
+                messages.addAll(validateChildNodes(namePathResolver, nodeTypeDefinitionProvider, itemDefinitionProvider, severity, severityForDefaultNodeTypeViolations, filter));
+                messages.addAll(validateMandatoryProperties(namePathResolver, severity, severityForDefaultNodeTypeViolations));
             }
             // only remove child nodes on 2nd level to be able to validate mandatory properties of parent
             childNodesByName.clear();
@@ -361,7 +349,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
     }
 
     private Collection<ValidationMessage> validateChildNodes(@NotNull NamePathResolver namePathResolver,  @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider,
-            @NotNull ValidationMessageSeverity severity, @NotNull WorkspaceFilter filter) {
+            @NotNull ValidationMessageSeverity severity, @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations, @NotNull WorkspaceFilter filter) {
         if (effectiveNodeType == null) {
             return Collections.emptyList();
         }
@@ -374,10 +362,9 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                 constraintViolation = childNode.validateAgainstParentNodeType(effectiveNodeType, nodeTypeDefinitionProvider,
                         itemDefinitionProvider);
                 if (constraintViolation.isPresent()) {
-                    messages.add(new ValidationMessage(severity,
+                    messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
                             String.format(
-                                    isImplicit ? MESSAGE_CHILD_NODE_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED
-                                            : MESSAGE_CHILD_NODE_NOT_ALLOWED,
+                                    MESSAGE_CHILD_NODE_NOT_ALLOWED,
                                     namePathResolver.getJCRName(childNode.name), namePathResolver.getJCRName(childNode.primaryNodeType),
                                     getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType),
                                     constraintViolation.get()), childNode.context));
@@ -405,7 +392,8 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                 pathBuilder.addLast(mandatoryNodeType.getName());
                 try {
                     if (filter.contains(namePathResolver.getJCRPath(pathBuilder.getPath()))) {
-                        messages.add(new ValidationMessage(severity, String.format(MESSAGE_MANDATORY_CHILD_NODE_MISSING,
+                        messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
+                                String.format(MESSAGE_MANDATORY_CHILD_NODE_MISSING,
                                 getNodeDefinitionLabel(namePathResolver, mandatoryNodeType),
                                 getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType))));
                     } else {
@@ -423,8 +411,15 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
         return messages;
     }
 
-    private static String getEffectiveNodeTypeLabel(NameResolver nameResolver, EffectiveNodeType nodeType) throws NamespaceException {
-        return joinAsQualifiedJcrName(nameResolver, nodeType.getMergedNodeTypes());
+    private String getEffectiveNodeTypeLabel(NameResolver nameResolver, EffectiveNodeType nodeType) throws NamespaceException {
+        String label;
+        String types = joinAsQualifiedJcrName(nameResolver, nodeType.getMergedNodeTypes());
+        if (isImplicit) 
+            label = String.format("potential default types [%s]", types);
+        else {
+            label =  String.format("types [%s]", types);
+        }
+        return label;
     }
 
     private static String getNodeDefinitionLabel(NameResolver nameResolver, QNodeDefinition nodeDefinition) throws NamespaceException {
@@ -499,7 +494,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
     }
 
     private Collection<ValidationMessage> validateMandatoryProperties(@NotNull NamePathResolver nameResolver,
-            @NotNull ValidationMessageSeverity severity) {
+            @NotNull ValidationMessageSeverity severity, @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations) {
 
         if (effectiveNodeType == null) {
             return Collections.emptyList();
@@ -517,7 +512,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
             }
             try {
                 if (!propertyTypesByName.containsKey(mandatoryPropertyDefinition.getName())) {
-                    messages.add(new ValidationMessage(severity,
+                    messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
                             String.format(MESSAGE_MANDATORY_PROPERTY_MISSING,
                                     nameResolver.getJCRName(mandatoryPropertyDefinition.getName()),
                                     getEffectiveNodeTypeLabel(nameResolver, effectiveNodeType)), context));
@@ -526,7 +521,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                     int actualPropertyType = propertyTypesByName.get(mandatoryPropertyDefinition.getName());
                     if (mandatoryPropertyDefinition.getRequiredType() != actualPropertyType) {
                         // check type
-                        messages.add(new ValidationMessage(severity,
+                        messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
                                 String.format(MESSAGE_MANDATORY_PROPERTY_WITH_WRONG_TYPE,
                                         nameResolver.getJCRName(mandatoryPropertyDefinition.getName()),
                                         PropertyType.nameFromValue(actualPropertyType),
@@ -546,7 +541,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
     public Collection<ValidationMessage> addProperty(@NotNull NodeContext nodeContext, @NotNull NamePathResolver namePathResolver,
             @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,
             @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider,
-            @NotNull ValidationMessageSeverity severity, String name, boolean isMultiValue, Value... values) throws RepositoryException {
+            @NotNull ValidationMessageSeverity severity, @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations, String name, boolean isMultiValue, Value... values) throws RepositoryException {
         Collection<ValidationMessage> messages = new ArrayList<>();
         // some sanity checks on multivalue
         if (!isMultiValue && values.length > 1) {
@@ -572,10 +567,9 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                 nodeTypeDefinitionProvider, itemDefinitionProvider, qName, values, isAuthenticationOrAuthorizationContext,
                 isMultiValue);
         if (constraintViolation.isPresent()) {
-            messages.add(new ValidationMessage(severity,
+            messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
                     String.format(
-                            isImplicit ? MESSAGE_PROPERTY_OF_NOT_CONTAINED_PARENT_POTENTIALLY_NOT_ALLOWED
-                                    : MESSAGE_PROPERTY_NOT_ALLOWED,
+                            MESSAGE_PROPERTY_NOT_ALLOWED,
                             namePathResolver.getJCRName(qName), PropertyType.nameFromValue(values[0].getType()),
                             getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType),
                             constraintViolation.get()),

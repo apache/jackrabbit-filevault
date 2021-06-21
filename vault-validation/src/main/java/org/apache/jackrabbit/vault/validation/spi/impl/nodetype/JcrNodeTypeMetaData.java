@@ -44,14 +44,14 @@ public interface JcrNodeTypeMetaData {
 
     Collection<ValidationMessage> addProperty(@NotNull NodeContext nodeContext, @NotNull NamePathResolver namePathResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,
             @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider,
-            @NotNull ValidationMessageSeverity severity, String name, boolean isMultiValue, Value... values) throws RepositoryException;
+            @NotNull ValidationMessageSeverity severity, @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations, String name, boolean isMultiValue, Value... values) throws RepositoryException;
     @NotNull JcrNodeTypeMetaData addImplicitChildNode(@NotNull NameResolver nameResolver,
             @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider, @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider,
             @NotNull ItemDefinitionProvider itemDefinitionProvider, @NotNull NodeContext nodeContext, @NotNull Name implicitNodeType)
             throws RepositoryException;
     @NotNull JcrNodeTypeMetaData addChildNode(@NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,
             @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider,
-            @NotNull ValidationMessageSeverity severity, @NotNull NodeContext nodeContext, @NotNull String primaryType, String... mixinTypes)
+            @NotNull NodeContext nodeContext, @NotNull String primaryType, String... mixinTypes)
                     throws RepositoryException, NamespaceExceptionInNodeName;
     @NotNull JcrNodeTypeMetaData addUnknownChildNode(@NotNull NameResolver nameResolver, @NotNull NodeContext nodeContext, @NotNull String name) throws IllegalNameException, NamespaceException;
     
@@ -62,7 +62,8 @@ public interface JcrNodeTypeMetaData {
     @NotNull JcrNodeTypeMetaData getOrCreateNode(NamePathResolver nameResolver, @NotNull NodeContext nodeContext, String path) throws RepositoryException;
     
     @NotNull Collection<ValidationMessage> finalizeValidation(@NotNull NamePathResolver nameResolver,
-            @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider, @NotNull ValidationMessageSeverity severity, @NotNull WorkspaceFilter filter) throws NamespaceException;
+            @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider, @NotNull ValidationMessageSeverity severity, 
+            @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations, @NotNull WorkspaceFilter filter) throws NamespaceException;
     @NotNull Name getPrimaryNodeType();
     String getQualifiedPath(NamePathResolver resolver) throws NamespaceException;
     void setNodeTypes(@NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,

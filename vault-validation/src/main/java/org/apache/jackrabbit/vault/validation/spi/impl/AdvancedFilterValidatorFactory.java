@@ -120,11 +120,16 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         }
         
         final ValidationMessageSeverity severityForOrphanedFilterRules;
-        if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_ORPHANED_FILTER_RULES)) {
-            String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_ORPHANED_FILTER_RULES);
-            severityForOrphanedFilterRules = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+        if (context.isIncremental()) {
+            log.debug("Disregard check for orphan filter rules due to incremental build");
+            severityForOrphanedFilterRules = ValidationMessageSeverity.DEBUG;
         } else {
-            severityForOrphanedFilterRules = DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES;
+            if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_ORPHANED_FILTER_RULES)) {
+                String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_ORPHANED_FILTER_RULES);
+                severityForOrphanedFilterRules = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            } else {
+                severityForOrphanedFilterRules = DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES;
+            }
         }
         Set<String> validRoots = new HashSet<>();
         validRoots.add("");

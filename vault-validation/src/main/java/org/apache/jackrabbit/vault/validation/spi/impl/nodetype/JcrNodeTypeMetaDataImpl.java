@@ -302,6 +302,9 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
     private Optional<String> validateAgainstParentNodeType(@Nullable EffectiveNodeType parentEffectiveNodeType,
             @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider,
             @NotNull ItemDefinitionProvider itemDefinitionProvider) throws RepositoryException {
+        if (effectiveNodeType == null || primaryNodeType == null) {
+            return Optional.empty();
+        }
         // except for ACL node types (for which the mixin rep:AccessControllable is transparently added) everything must comply with the
         // parent node rules
         if (effectiveNodeType.includesNodeType(NT_REP_POLICY)) {

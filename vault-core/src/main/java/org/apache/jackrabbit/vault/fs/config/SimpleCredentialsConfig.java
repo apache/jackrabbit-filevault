@@ -114,8 +114,9 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
      * {@link #decrypt(String) decrypted} again.
      *
      * @param s string to encrypt
-     * @return the encrypted string with a "{AES}" prefix.
+     * @return the encrypted string with a "{DES}" prefix.
      */
+    @SuppressWarnings({"java:S5547", "java:S5542"}) // DES is not secure but we are storing the keys anyways with the encrypted password, so it doesn't really matter
     private static String encrypt(String s) {
         try {
             SecretKey key = KeyGenerator.getInstance("DES").generateKey();
@@ -144,6 +145,7 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
      * @param s the data to decrypt
      * @return the string or {@code null} if an internal error occurred
      */
+    @SuppressWarnings({"java:S5547", "java:S5542"}) // DES is not secure but we are storing the keys anyways with the encrypted password, so it doesn't really matter
     private static String decrypt(String s) {
         if (s == null || !s.startsWith(PREFIX)) {
             return s;

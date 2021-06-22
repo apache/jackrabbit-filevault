@@ -407,12 +407,12 @@ public class ZipStreamArchive extends AbstractArchive {
         }
 
         @Override
-        public void mark(int readlimit) {
+        public synchronized void mark(int readlimit) {
             mark = pos;
         }
 
         @Override
-        public void reset() throws IOException {
+        public synchronized void reset() throws IOException {
             pos = mark;
         }
 

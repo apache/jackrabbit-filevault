@@ -255,6 +255,12 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
+    @Nullable
+    public JcrPackage openJcrPackage(@NotNull PackageId id) throws RepositoryException {
+        Node node = getPackageNode(id);
+        return node == null ? null : open(node, false);
+    }
+
     @Override
     public boolean contains(@NotNull PackageId id) throws IOException {
         try {
@@ -288,15 +294,20 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      */
     public JcrPackage open(Node node, boolean allowInvalid) throws RepositoryException {
         JcrPackage pack = new JcrPackageImpl(this, node);
-        if (pack.isValid()) {
-            return pack;
-        } else if (allowInvalid
-                && node.isNodeType(JcrConstants.NT_HIERARCHYNODE)
-                && node.hasProperty(JcrConstants.JCR_CONTENT + "/" + JcrConstants.JCR_DATA)) {
-            return pack;
-        } else {
+        try {
+            if (pack.isValid()) {
+                return pack;
+            } else if (allowInvalid
+                    && node.isNodeType(JcrConstants.NT_HIERARCHYNODE)
+                    && node.hasProperty(JcrConstants.JCR_CONTENT + "/" + JcrConstants.JCR_DATA)) {
+                return pack;
+            } else {
+                pack.close();
+                return null;
+            }
+        } catch (RepositoryException e) {
             pack.close();
-            return null;
+            throw e;
         }
     }
 

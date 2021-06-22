@@ -202,11 +202,15 @@ public class JarExporter extends AbstractExporter {
 
     public void writeFile(InputStream in, String relPath) throws IOException {
         // The file input stream to be written is assumed to be compressible
-        ZipEntry e = new ZipEntry(relPath);
-        exportInfo.update(ExportInfo.Type.ADD, e.getName());
-        jOut.putNextEntry(e);
-        IOUtils.copy(in, jOut);
-        jOut.closeEntry();
+        try {
+            ZipEntry e = new ZipEntry(relPath);
+            exportInfo.update(ExportInfo.Type.ADD, e.getName());
+            jOut.putNextEntry(e);
+            IOUtils.copy(in, jOut);
+            jOut.closeEntry();
+        } finally {
+            in.close();
+        }
     }
 
     public void write(ZipFile zip, ZipEntry entry) throws IOException {

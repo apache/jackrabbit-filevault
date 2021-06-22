@@ -156,6 +156,7 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
                 fsCheckThread.join();
             } catch (InterruptedException e) {
                 log.warn("error while waiting for thread to terminate", e);
+                fsCheckThread.interrupt();
             }
             fsCheckThread = null;
         }
@@ -187,6 +188,7 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
                     waitCondition.await(checkDelay, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
                     log.warn("interrupted while waiting.");
+                    Thread.currentThread().interrupt();
                 }
             }
         } finally {

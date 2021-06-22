@@ -62,7 +62,6 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 
 import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
-import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -124,13 +123,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      */
     @Override
     public JcrPackage open(PackageId id) throws RepositoryException {
-        try {
-            //noinspection resource
-            JcrRegisteredPackage pkg = (JcrRegisteredPackage) registry.open(id);
-            return pkg == null ? null : pkg.getJcrPackage();
-        } catch (IOException e) {
-            throw unwrapRepositoryException(e);
-        }
+        return registry.openJcrPackage(id);
     }
 
     /**
@@ -590,10 +583,11 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
                             }
                         }
                         pack.close();
-                    } else if (child.hasNodes() && !shallow){
-                        listPackages(child, packages, filter, built, false);
                     } else {
                         pack.close();
+                        if (child.hasNodes() && !shallow) {
+                            listPackages(child, packages, filter, built, false);
+                        }
                     }
                 } catch (RepositoryException e) {
                     pack.close();

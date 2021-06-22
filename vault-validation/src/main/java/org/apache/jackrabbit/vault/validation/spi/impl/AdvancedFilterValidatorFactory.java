@@ -27,7 +27,6 @@ import java.util.Set;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -83,15 +82,14 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
             if (xsdInput == null) {
                 throw new IllegalStateException("Can not load filter.xsd");
             }
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             // optionally adjust locale, https://stackoverflow.com/a/18745978
             if (locale != null) {
                 factory.setAttribute("http://apache.org/xml/properties/locale", locale);
             }
         } catch (SAXException e) {
             throw new IOException("Could not parse input as xml", e);
-        } catch (ParserConfigurationException e) {
-            throw new IllegalStateException("Could not instantiate DOM parser", e);
         }
         return factory;
     }

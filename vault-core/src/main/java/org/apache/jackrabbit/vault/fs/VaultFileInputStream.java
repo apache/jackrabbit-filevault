@@ -17,11 +17,11 @@
 
 package org.apache.jackrabbit.vault.fs;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.jcr.RepositoryException;
 
@@ -48,7 +48,7 @@ public class VaultFileInputStream extends InputStream {
     /**
      * Temp file for spooling
      */
-    private File tmpFile;
+    private Path tmpFile;
 
     /**
      * Creates a new input stream on the given file. If the file is a
@@ -66,81 +66,62 @@ public class VaultFileInputStream extends InputStream {
             if (a.getPreferredAccess() == AccessType.STREAM) {
                 base = a.getInputStream();
             } else {
-                tmpFile = File.createTempFile("vltfs", ".spool");
-                try (FileOutputStream out = new FileOutputStream(tmpFile)) {
+                tmpFile = Files.createTempFile("vltfs", ".spool");
+                try (OutputStream out = Files.newOutputStream(tmpFile)) {
                     a.spool(out);
                 }
-                base = new FileInputStream(tmpFile);
+                base = Files.newInputStream(tmpFile);
             }
         } catch (RepositoryException e) {
             throw new IOException(e.toString());
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public int read() throws IOException {
         return base.read();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public int read(byte[] b) throws IOException {
         return base.read(b);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         return base.read(b, off, len);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public long skip(long n) throws IOException {
         return base.skip(n);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public int available() throws IOException {
         return base.available();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void close() throws IOException {
         base.close();
         if (tmpFile != null) {
-            tmpFile.delete();
-            tmpFile.deleteOnExit();
+            Files.delete(tmpFile);;
             tmpFile = null;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void mark(int readlimit) {
+    @Override
+    public synchronized void mark(int readlimit) {
         base.mark(readlimit);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void reset() throws IOException {
+    @Override
+    public synchronized void reset() throws IOException {
         base.reset();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public boolean markSupported() {
         return base.markSupported();
     }

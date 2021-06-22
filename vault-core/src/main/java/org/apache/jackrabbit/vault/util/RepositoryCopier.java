@@ -489,7 +489,8 @@ public class RepositoryCopier {
                     try {
                         Thread.sleep(throttle * 1000);
                     } catch (InterruptedException e) {
-                        // ignore
+                        log.warn("Interrupted while waiting", e);
+                        Thread.currentThread().interrupt();
                     }
                 }
             } catch (RepositoryException e) {

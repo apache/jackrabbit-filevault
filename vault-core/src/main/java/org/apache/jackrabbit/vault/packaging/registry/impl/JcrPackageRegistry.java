@@ -259,7 +259,6 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     public JcrPackage openJcrPackage(@NotNull PackageId id) throws RepositoryException {
         Node node = getPackageNode(id);
         return node == null ? null : open(node, false);
-        
     }
 
     @Override

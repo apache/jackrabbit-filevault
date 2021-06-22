@@ -141,6 +141,7 @@ public class InputStreamPump extends InputStream {
             pumpThread.join();
             in.close();
         } catch (InterruptedException e) {
+            pumpThread.interrupt();
             throw new IOException(e);
         }
         if (error != null) {
@@ -149,11 +150,11 @@ public class InputStreamPump extends InputStream {
     }
 
     @Override
-    public void mark(int readlimit) {
+    public synchronized void mark(int readlimit) {
     }
 
     @Override
-    public void reset() throws IOException {
+    public synchronized void reset() throws IOException {
     }
 
     @Override

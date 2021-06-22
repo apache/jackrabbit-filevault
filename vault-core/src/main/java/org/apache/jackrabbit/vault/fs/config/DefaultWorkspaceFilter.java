@@ -655,15 +655,9 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             return false;
         if (importMode != other.importMode)
             return false;
-        if (nodesFilterSets == null) {
-            if (other.nodesFilterSets != null)
-                return false;
-        } else if (!nodesFilterSets.equals(other.nodesFilterSets))
+        if (!nodesFilterSets.equals(other.nodesFilterSets))
             return false;
-        if (propsFilterSets == null) {
-            if (other.propsFilterSets != null)
-                return false;
-        } else if (!propsFilterSets.equals(other.propsFilterSets))
+        if (!propsFilterSets.equals(other.propsFilterSets))
             return false;
         if (referenceFilterSets == null) {
             if (other.referenceFilterSets != null)

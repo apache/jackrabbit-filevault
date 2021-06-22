@@ -82,7 +82,7 @@ public class LineInputStream extends InputStream {
         if (read(one) == -1) {
             return -1;
         }
-        return one[0];
+        return one[0] & 0xFF;
     }
 
     public int read(byte b[], int off, int len) throws IOException {

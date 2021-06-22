@@ -227,8 +227,8 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
     @Override
     public void onChildren(Node node, int level) throws RepositoryException {
         String label = Text.getName(node.getPath());
-        String elemName;
-        if (level == 0 || node.getDepth() == 0) {
+        final String elemName;
+        if (level == 0) {
             // root node needs a name
             elemName = jcrRoot;
         } else {
@@ -248,7 +248,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
             } else {
                 writer.writeStartElement(qName.getLocalName());
             }
-            if (elemName == jcrRoot) {
+            if (level == 0) {
                 startNamespaceDeclarations();
             }
             for (Property prop: props) {

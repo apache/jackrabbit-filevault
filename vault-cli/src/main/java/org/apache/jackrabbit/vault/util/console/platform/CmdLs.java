@@ -18,8 +18,8 @@ package org.apache.jackrabbit.vault.util.console.platform;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.Option;
@@ -40,7 +40,7 @@ import org.apache.jackrabbit.vault.util.console.util.Table;
  */
 public class CmdLs extends AbstractConsoleCommand {
 
-    private static final SimpleDateFormat dateFmt = new SimpleDateFormat("yyyy MMM dd HH:mm");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy MMM dd HH:mm");
 
     // format flags
     private static int F_FLAG_TIME = 0x01;
@@ -160,7 +160,7 @@ public class CmdLs extends AbstractConsoleCommand {
             }
             Table.Row r = t.createRow();
             if ((flags & F_FLAG_TIME) > 0) {
-                r.addCol(dateFmt.format(new Date(f.lastModified())));
+                r.addCol(DATE_FMT.format(Instant.ofEpochMilli(f.lastModified())));
             }
             if ((flags & F_FLAG_SIZE) > 0) {
                 r.addCol(String.valueOf(f.length()), true);

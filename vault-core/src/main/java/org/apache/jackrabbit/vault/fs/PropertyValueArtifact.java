@@ -167,7 +167,7 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
             tmpFile.setLastModified(getLastModified());
             tmpFile.deleteOnExit();
             try (FileOutputStream out = new FileOutputStream(tmpFile);
-                 InputStream in = getValue().getStream()) {
+                 InputStream in = getValue().getBinary().getStream()) {
                 IOUtils.copy(in, out);
             }
         }
@@ -296,37 +296,44 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
                     throw new IOException("Stream already closed.");
                 }
                 try {
-                    stream = getValue().getStream();
+                    stream = getValue().getBinary().getStream();
                 } catch (RepositoryException e) {
                     throw new IOException("Error while opening stream: " + e.toString());
                 }
             }
         }
+
+        @Override
         public int read() throws IOException {
             assertOpen();
             return stream.read();
         }
 
+        @Override
         public int read(byte[] b) throws IOException {
             assertOpen();
             return stream.read(b);
         }
 
+        @Override
         public int read(byte[] b, int off, int len) throws IOException {
             assertOpen();
             return stream.read(b, off, len);
         }
 
+        @Override
         public long skip(long n) throws IOException {
             assertOpen();
             return stream.skip(n);
         }
 
+        @Override
         public int available() throws IOException {
             assertOpen();
             return stream.available();
         }
 
+        @Override
         public void close() throws IOException {
             try {
                 if (stream != null) {
@@ -338,7 +345,8 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
             }
         }
 
-        public void mark(int readlimit) {
+        @Override
+        public synchronized void mark(int readlimit) {
             try {
                 assertOpen();
             } catch (IOException e) {
@@ -347,11 +355,13 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
             stream.mark(readlimit);
         }
 
-        public void reset() throws IOException {
+        @Override
+        public synchronized void reset() throws IOException {
             assertOpen();
             stream.reset();
         }
 
+        @Override
         public boolean markSupported() {
             try {
                 assertOpen();

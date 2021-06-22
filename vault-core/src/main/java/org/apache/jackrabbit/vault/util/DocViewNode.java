@@ -103,7 +103,7 @@ public class DocViewNode {
         result = prime * result + Arrays.hashCode(mixins);
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((primary == null) ? 0 : primary.hashCode());
-        result = prime * result + ((props == null) ? 0 : props.hashCode());
+        result = prime * result + props.hashCode();
         result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
         return result;
     }
@@ -134,10 +134,7 @@ public class DocViewNode {
                 return false;
         } else if (!primary.equals(other.primary))
             return false;
-        if (props == null) {
-            if (other.props != null)
-                return false;
-        } else if (!props.equals(other.props))
+        if (!props.equals(other.props))
             return false;
         if (uuid == null) {
             if (other.uuid != null)

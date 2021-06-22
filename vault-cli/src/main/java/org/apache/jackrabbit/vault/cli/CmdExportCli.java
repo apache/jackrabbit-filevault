@@ -18,8 +18,8 @@
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.cli2.Argument;
 import org.apache.commons.cli2.CommandLine;
@@ -29,13 +29,13 @@ import org.apache.commons.cli2.builder.CommandBuilder;
 import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.option.Command;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.io.AbstractExporter;
 import org.apache.jackrabbit.vault.fs.io.JarExporter;
 import org.apache.jackrabbit.vault.fs.io.PlatformExporter;
 import org.apache.jackrabbit.vault.util.DefaultProgressListener;
-import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 
 /**
@@ -44,7 +44,7 @@ import org.apache.jackrabbit.vault.vlt.VltContext;
  */
 public class CmdExportCli extends AbstractVaultCommand {
 
-    static final SimpleDateFormat FMT = new SimpleDateFormat("yyyyMMddHHmmss");
+    static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     private Option optType;
     private Option optPrune;
@@ -76,7 +76,7 @@ public class CmdExportCli extends AbstractVaultCommand {
                 localPath = Text.getName(jcrPath);
             }
             if (type.equals("jar")) {
-                localPath += "-" + FMT.format(new Date()) + ".jar";
+                localPath += "-" + FMT.format(Instant.now()) + ".jar";
             } else {
 
             }

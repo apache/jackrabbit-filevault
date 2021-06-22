@@ -66,7 +66,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
     /**
      *  option to disable exclude/include filter check
      */
-    static final Pattern DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX = Pattern.compile("/([^/]*/){0,4}?(install|config)(\\.[^/]*)*/(\\d{1,3}/)?.+?");
+    static final Pattern DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX = Pattern.compile("/([^/]*/){0,4}?(install|config)[\\./].*+");
 
     static final Pattern DEFAULT_ADDITIONAL_JCR_INSTALLER_FILE_NODE_PATH_REGEX = Pattern.compile(".+?\\.(jar|config|cfg|cfg\\.json)");
 

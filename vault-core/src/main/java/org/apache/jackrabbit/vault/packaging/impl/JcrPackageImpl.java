@@ -307,19 +307,19 @@ public class JcrPackageImpl implements JcrPackage {
                 MemoryArchive archive = new MemoryArchive(false);
                 try (InputStream in = getData().getBinary().getStream()) {
                     archive.run(in);
+                    // workaround for shallow packages that don't have a meta-inf anymore (JCRVLT-188)
+                    Properties props = archive.getMetaInf().getProperties();
+                    if (props == null || props.isEmpty()) {
+                        JcrPackageDefinition def = getDefinition();
+                        if (def != null) {
+                            ((DefaultMetaInf) archive.getMetaInf()).setProperties(def.getMetaInf().getProperties());
+                        }
+                    }
+                    pack = new ZipVaultPackage(archive, true);
                 } catch (Exception e) {
                     archive.close();
                     throw new IOException("Error while reading stream", e);
                 }
-                // workaround for shallow packages that don't have a meta-inf anymore (JCRVLT-188)
-                Properties props = archive.getMetaInf().getProperties();
-                if (props == null || props.isEmpty()) {
-                    JcrPackageDefinition def = getDefinition();
-                    if (def != null) {
-                        ((DefaultMetaInf) archive.getMetaInf()).setProperties(def.getMetaInf().getProperties());
-                    }
-                }
-                pack = new ZipVaultPackage(archive, true);
             } else {
                 File tmpFile = File.createTempFile("vaultpack", ".zip");
                 Binary bin = getData().getBinary();
@@ -752,53 +752,59 @@ public class JcrPackageImpl implements JcrPackage {
         if (def == null) {
             return;
         }
-        List<Dependency> unresolved = new LinkedList<Dependency>();
-        List<RegisteredPackage> uninstalled = new LinkedList<RegisteredPackage>();
-        for (Dependency dep: def.getDependencies()) {
-            // resolve to installed and uninstalled packages
-            PackageId id = mgr.resolve(dep, false);
-            if (id == null) {
-                unresolved.add(dep);
-            } else {
-                RegisteredPackage pack = (RegisteredPackage) mgr.open(id);
-                if (pack != null && !pack.isInstalled()) {
+        List<Dependency> unresolved = new LinkedList<>();
+        List<RegisteredPackage> uninstalled = new LinkedList<>();
+        try {
+            for (Dependency dep: def.getDependencies()) {
+                // resolve to installed and uninstalled packages
+                PackageId id = mgr.resolve(dep, false);
+                if (id == null) {
                     unresolved.add(dep);
-                    uninstalled.add(pack);
+                } else {
+                    RegisteredPackage pack = mgr.open(id);
+                    if (pack != null && !pack.isInstalled()) {
+                        unresolved.add(dep);
+                        uninstalled.add(pack);
+                    }
                 }
             }
-        }
-        // if non unresolved, then we're good
-        if (unresolved.size() == 0) {
-            return;
-        }
-        // if the package is not installed at all, abort for required and strict handling
-        if ((opts.getDependencyHandling() == DependencyHandling.STRICT && unresolved.size() > 0)
-                || (opts.getDependencyHandling() == DependencyHandling.REQUIRED && unresolved.size() > uninstalled.size())) {
-            String msg = String.format("Refusing to install package %s. required dependencies missing: %s", def.getId(), unresolved);
-            log.error(msg);
-            throw new DependencyException(msg);
-        }
-
-        for (RegisteredPackage pack: uninstalled) {
-            if (pack.isInstalled()) {
-                continue;
+            // if non unresolved, then we're good
+            if (unresolved.isEmpty()) {
+                return;
             }
-            PackageId packageId = pack.getId();
-            if (processed.contains(packageId)) {
-                if (opts.getDependencyHandling() == DependencyHandling.BEST_EFFORT) {
-                    continue;
-                }
-                String msg = String.format("Unable to install package %s. dependency has as cycling reference to %s", def.getId(), packageId);
-                log.error(msg);
-                throw new CyclicDependencyException(msg);
-            }
-            if (pack instanceof JcrRegisteredPackage) {
-                JcrPackage jcrPackage = ((JcrRegisteredPackage)pack).getJcrPackage();
-                ((JcrPackageImpl)jcrPackage).extract(processed, opts, createSnapshot, replaceSnapshot);
-            } else {
-                String msg = String.format("Unable to install package %s. dependency not found in JcrPackageRegistry %s", def.getId(), packageId);
+            // if the package is not installed at all, abort for required and strict handling
+            if ((opts.getDependencyHandling() == DependencyHandling.STRICT && unresolved.size() > 0)
+                    || (opts.getDependencyHandling() == DependencyHandling.REQUIRED && unresolved.size() > uninstalled.size())) {
+                String msg = String.format("Refusing to install package %s. required dependencies missing: %s", def.getId(), unresolved);
                 log.error(msg);
                 throw new DependencyException(msg);
+            }
+    
+            for (RegisteredPackage pack: uninstalled) {
+                if (pack.isInstalled()) {
+                    continue;
+                }
+                PackageId packageId = pack.getId();
+                if (processed.contains(packageId)) {
+                    if (opts.getDependencyHandling() == DependencyHandling.BEST_EFFORT) {
+                        continue;
+                    }
+                    String msg = String.format("Unable to install package %s. dependency has as cycling reference to %s", def.getId(), packageId);
+                    log.error(msg);
+                    throw new CyclicDependencyException(msg);
+                }
+                if (pack instanceof JcrRegisteredPackage) {
+                    JcrPackage jcrPackage = ((JcrRegisteredPackage)pack).getJcrPackage();
+                    ((JcrPackageImpl)jcrPackage).extract(processed, opts, createSnapshot, replaceSnapshot);
+                } else {
+                    String msg = String.format("Unable to install package %s. dependency not found in JcrPackageRegistry %s", def.getId(), packageId);
+                    log.error(msg);
+                    throw new DependencyException(msg);
+                }
+            }
+        } finally {
+            for (RegisteredPackage pack: uninstalled) {
+                pack.close();
             }
         }
     }
@@ -890,22 +896,27 @@ public class JcrPackageImpl implements JcrPackage {
         String parentPath = Text.getRelativeParent(path, 1);
         Node folder = packMgr.mkdir(parentPath, true);
         JcrPackage snap = mgr.createNew(folder, id, null, true);
-        JcrPackageDefinitionImpl snapDef = (JcrPackageDefinitionImpl) snap.getDefinition();
-        snapDef.setId(id, false);
-        snapDef.setFilter(filter, false);
-        snapDef.set(JcrPackageDefinition.PN_DESCRIPTION, "Snapshot of package " + myDef.getId().toString(), false);
-        if (acHandling == null) {
-            snapDef.set(JcrPackageDefinition.PN_AC_HANDLING, myDef.get(JcrPackageDefinition.PN_AC_HANDLING), false);
-        } else {
-            snapDef.set(JcrPackageDefinition.PN_AC_HANDLING, acHandling.name(), false);
+        try {
+            JcrPackageDefinitionImpl snapDef = (JcrPackageDefinitionImpl) snap.getDefinition();
+            snapDef.setId(id, false);
+            snapDef.setFilter(filter, false);
+            snapDef.set(JcrPackageDefinition.PN_DESCRIPTION, "Snapshot of package " + myDef.getId().toString(), false);
+            if (acHandling == null) {
+                snapDef.set(JcrPackageDefinition.PN_AC_HANDLING, myDef.get(JcrPackageDefinition.PN_AC_HANDLING), false);
+            } else {
+                snapDef.set(JcrPackageDefinition.PN_AC_HANDLING, acHandling.name(), false);
+            }
+            if (opts.getListener() != null) {
+                opts.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, "Creating snapshot for package " + myDef.getId(), "");
+            }
+            packMgr.assemble(snap.getNode(), snapDef, opts.getListener());
+            log.debug("Creating snapshot for {} completed.", id);
+            mgr.dispatch(PackageEvent.Type.SNAPSHOT, id, null);
+            return snap;
+        } catch (RepositoryException|PackageException|IOException e) {
+            snap.close();
+            throw e;
         }
-        if (opts.getListener() != null) {
-            opts.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, "Creating snapshot for package " + myDef.getId(), "");
-        }
-        packMgr.assemble(snap.getNode(), snapDef, opts.getListener());
-        log.debug("Creating snapshot for {} completed.", id);
-        mgr.dispatch(PackageEvent.Type.SNAPSHOT, id, null);
-        return snap;
     }
 
     /**
@@ -936,6 +947,8 @@ public class JcrPackageImpl implements JcrPackage {
             JcrPackageImpl snap = new JcrPackageImpl(mgr, packNode);
             if (snap.isValid()) {
                 return snap;
+            } else {
+                snap.close();
             }
         }
         return null;

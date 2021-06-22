@@ -22,6 +22,10 @@ import java.io.IOException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.ArtifactHandler;
@@ -34,6 +38,9 @@ import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * {@code AbstractArtifactHandler}...
@@ -150,4 +157,13 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
         ctx.println(isLast, getClass().getSimpleName());
     }
 
+    protected void parseXmlWithSaxHandler(InputSource source, DefaultHandler handler) throws ParserConfigurationException, SAXException, IOException {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
+        SAXParser parser = factory.newSAXParser();
+        parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        parser.parse(source, handler);
+    }
 }

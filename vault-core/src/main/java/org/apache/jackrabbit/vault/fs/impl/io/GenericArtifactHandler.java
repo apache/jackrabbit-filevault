@@ -21,10 +21,7 @@ import java.io.IOException;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
@@ -94,13 +91,7 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
                 DocViewSAXImporter handler = new DocViewSAXImporter(parent, name, artifacts, wspFilter);
                 handler.setAclHandling(getAcHandling());
                 handler.setCugHandling(getCugHandling());
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                factory.setNamespaceAware(true);
-                factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
-                SAXParser parser = factory.newSAXParser();
-                parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-                parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-                parser.parse(source, handler);
+                parseXmlWithSaxHandler(source, handler);
                 info.merge(handler.getInfo());
             } catch (ParserConfigurationException e) {
                 throw new RepositoryException(e);

@@ -28,10 +28,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
-import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -232,17 +229,9 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                             DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter);
                             handler.setAclHandling(getAcHandling());
                             handler.setCugHandling(getCugHandling());
-                            SAXParserFactory factory = SAXParserFactory.newInstance();
-                            factory.setNamespaceAware(true);
-                            factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
-                            SAXParser parser = factory.newSAXParser();
-                            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-                            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-                            parser.parse(file.getInputSource(), handler);
+                            parseXmlWithSaxHandler(file.getInputSource(), handler);
                             info.merge(handler.getInfo());
-                        } catch (ParserConfigurationException e) {
-                            throw new RepositoryException(e);
-                        } catch (SAXException e) {
+                        } catch (ParserConfigurationException|SAXException e) {
                             throw new RepositoryException(e);
                         }
                     } else {
@@ -335,17 +324,11 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
         handler.setAclHandling(getAcHandling());
         handler.setCugHandling(getCugHandling());
         try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
-            SAXParser parser = factory.newSAXParser();
-            parser.parse(source, handler);
+            parseXmlWithSaxHandler(source, handler);
             return handler.getInfo();
-        } catch (ParserConfigurationException e) {
+        } catch (ParserConfigurationException|SAXException e) {
             throw new RepositoryException(e);
-        } catch (SAXException e) {
-            throw new RepositoryException(e);
-        }
+        } 
     }
 
     private boolean importNtResource(ImportInfo info, Node content, Artifact artifact)

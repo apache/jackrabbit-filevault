@@ -314,6 +314,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     }
 
     @Override
+    @SuppressWarnings("java:S2755") // false-positive as XXE attacks are prevented on the given DocumentBuilderFactory
     public Collection<ValidationMessage> validateMetaInfData(@NotNull InputStream input, @NotNull Path filePath, @NotNull Path basePath) throws IOException {
         Collection<ValidationMessage> messages = new LinkedList<>();
         try {    

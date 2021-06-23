@@ -16,6 +16,7 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl.nodetype;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -646,18 +647,18 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
 
             @Override
             public @NotNull String getNodePath() {
-                return null;
+                return "";
             }
 
             @Override
             @NotNull
             public java.nio.file.@NotNull Path getFilePath() {
-                return null;
+                return Paths.get("");
             }
 
             @Override
             public java.nio.file.@NotNull Path getBasePath() {
-                return null;
+                return Paths.get("");
             }
             
         }, NameConstants.ROOT, NameConstants.REP_ROOT, effectiveNodeTypeProvider.getEffectiveNodeType(

@@ -70,6 +70,7 @@ public class PackagingImpl implements Packaging {
     @Reference (cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC,
             policyOption = ReferencePolicyOption.GREEDY)
+    @SuppressWarnings("java:S3077") // volatile mandated by OSGi spec
     volatile List<PackageRegistry> registries;
 
     /**

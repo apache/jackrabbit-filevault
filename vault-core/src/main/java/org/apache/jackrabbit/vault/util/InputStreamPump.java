@@ -51,7 +51,7 @@ public class InputStreamPump extends InputStream {
 
     private Thread pumpThread;
 
-    private volatile Exception error;
+    private Exception error;
 
     public InputStreamPump(InputStream source, final Pump pump) throws IOException {
         this.source = source;
@@ -67,7 +67,9 @@ public class InputStreamPump extends InputStream {
                     byte[] buffer = new byte[8192];
                     while (in.read(buffer) >= 0);
                 } catch (Exception e) {
-                    error = e;
+                    synchronized (error) {
+                        error = e;
+                    }
                     log.error("Error while processing input stream", e);
                 }
             }
@@ -92,7 +94,9 @@ public class InputStreamPump extends InputStream {
      */
     @Deprecated
     public Exception getError() {
-        return error;
+        synchronized(error) {
+            return error;
+        }
     }
 
     @Override
@@ -151,10 +155,12 @@ public class InputStreamPump extends InputStream {
 
     @Override
     public synchronized void mark(int readlimit) {
+        throw new UnsupportedOperationException("Mark not supported");
     }
 
     @Override
     public synchronized void reset() throws IOException {
+        throw new UnsupportedOperationException("Reset not supported");
     }
 
     @Override

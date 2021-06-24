@@ -38,7 +38,6 @@ import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public interface JcrNodeTypeMetaData {
 
@@ -66,8 +65,8 @@ public interface JcrNodeTypeMetaData {
             @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations, @NotNull WorkspaceFilter filter) throws NamespaceException;
     @NotNull Name getPrimaryNodeType();
     String getQualifiedPath(NamePathResolver resolver) throws NamespaceException;
-    void setNodeTypes(@NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,
-           @Nullable String primaryType, String... mixinTypes)
+    void setNodeTypes(@NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,  boolean isFallbackPrimaryType,
+           @NotNull String primaryType, String... mixinTypes)
             throws IllegalNameException, ConstraintViolationException, NoSuchNodeTypeException, NamespaceException;
     void setUnknownNodeTypes();
     

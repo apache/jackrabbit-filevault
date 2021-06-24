@@ -145,10 +145,11 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
 
     @Override
     public void setNodeTypes(@NotNull NameResolver nameResolver,
-            @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider, @NotNull String primaryType, String... mixinTypes)
+            @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider, boolean isFallbackPrimaryType, @NotNull String primaryType, String... mixinTypes)
             throws IllegalNameException, ConstraintViolationException, NoSuchNodeTypeException, NamespaceException {
         List<Name> types = getTypes(nameResolver, primaryType, mixinTypes);
-        if (effectiveNodeType == null || !effectiveNodeType.includesNodeTypes(types.toArray(new Name[0]))) {
+        if (effectiveNodeType == null || (!isFallbackPrimaryType && !effectiveNodeType.includesNodeTypes(types.toArray(new Name[0])))) {
+            // only override if not a default node type
             this.primaryNodeType = types.get(0);
             this.effectiveNodeType = effectiveNodeTypeProvider.getEffectiveNodeType(types.toArray(new Name[0]));
             if (!isAuthenticationOrAuthorizationContext) {
@@ -242,7 +243,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
         return childNode;
     }
 
-    private static List<Name> getTypes(NameResolver nameResolver, String primaryType, String... mixinTypes)
+    private static List<Name> getTypes(@NotNull NameResolver nameResolver, @NotNull String primaryType, String... mixinTypes)
             throws IllegalNameException, NamespaceException {
         List<Name> types = new ArrayList<>();
         types.add(getQName(nameResolver, primaryType, NameType.PRIMARY_TYPE));

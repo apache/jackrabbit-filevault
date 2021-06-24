@@ -245,6 +245,10 @@ public class ValidationExecutorTest {
         Assert.assertEquals("/some/other/path", ValidationExecutor.filePathToNodePath(Paths.get("some", "other", "path")));
         Assert.assertEquals("/apps/test", ValidationExecutor.filePathToNodePath(Paths.get("apps", "test", "property.binary")));
         Assert.assertEquals("/", ValidationExecutor.filePathToNodePath(Paths.get("")));
+        // don't strip xml extension
+        Assert.assertEquals("/apps/test/child.xml", ValidationExecutor.filePathToNodePath(Paths.get("apps", "test", "child.xml")));
+        // filename escaping must be unescaped
+        Assert.assertEquals("/apps/test:node/cq:content", ValidationExecutor.filePathToNodePath(Paths.get("apps", "test%3anode", "_cq_content")));
     }
 
     public static void assertViolation(Collection<? extends ValidationMessage> messages, ValidationMessageSeverity thresholdSeverity, ValidationMessage... violations) {

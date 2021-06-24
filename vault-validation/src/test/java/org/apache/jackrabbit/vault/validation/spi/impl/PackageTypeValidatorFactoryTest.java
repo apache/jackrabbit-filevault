@@ -23,10 +23,10 @@ public class PackageTypeValidatorFactoryTest {
 
     @Test
     public void testDefaultJcrInstallerNodePathRegex() {
-        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX.matcher("/apps/test/install/mypackage.jar").matches());
-        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX.matcher("/apps/child/grandchild/grandgrandchild/install.runmode1.runmode2/30/mypackage.zip").matches());
-        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX.matcher("/apps/test/install/15/mypackage.jar").matches());
-        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX.matcher("/apps/test/install/bla").matches());
-        Assert.assertFalse(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX.matcher("/apps/test/installother").matches());
+        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_PATH_REGEX.matcher("/apps/test/install/mypackage.jar").matches());
+        Assert.assertFalse(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_PATH_REGEX.matcher("/apps/child/grandchild/grandgrandchild/install.runmode1.runmode2/30/mypackage.zip").matches()); // subpackages are detected separately
+        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_PATH_REGEX.matcher("/apps/test/install/15/mypackage.jar").matches());
+        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_PATH_REGEX.matcher("/apps/test/install/bla.xml").matches()); // assume sling:OsgiConfig  property
+        Assert.assertFalse(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_PATH_REGEX.matcher("/apps/test/installother").matches());
     }
 }

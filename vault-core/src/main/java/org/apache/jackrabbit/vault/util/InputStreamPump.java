@@ -51,7 +51,8 @@ public class InputStreamPump extends InputStream {
 
     private Thread pumpThread;
 
-    private Exception error;
+    @SuppressWarnings("java:S3077") // error is only written from one thread and used as immutable class
+    private volatile Exception error;
 
     public InputStreamPump(InputStream source, final Pump pump) throws IOException {
         this.source = source;
@@ -67,9 +68,7 @@ public class InputStreamPump extends InputStream {
                     byte[] buffer = new byte[8192];
                     while (in.read(buffer) >= 0);
                 } catch (Exception e) {
-                    synchronized (error) {
-                        error = e;
-                    }
+                    error = e;
                     log.error("Error while processing input stream", e);
                 }
             }
@@ -94,9 +93,7 @@ public class InputStreamPump extends InputStream {
      */
     @Deprecated
     public Exception getError() {
-        synchronized(error) {
-            return error;
-        }
+        return error;
     }
 
     @Override

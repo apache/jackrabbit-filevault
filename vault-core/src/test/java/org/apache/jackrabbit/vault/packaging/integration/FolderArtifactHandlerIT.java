@@ -99,4 +99,20 @@ public class FolderArtifactHandlerIT extends IntegrationTestBase {
             assertNodeHasPrimaryType("/var/foo", "nt:folder");
         }
     }
+    
+
+    @Test
+    public void testRootTypeOnMerge() throws RepositoryException, IOException, PackageException {
+        Node rootNode = admin.getRootNode();
+        Node homeNode = rootNode.getNode("home");
+        Node testNode = homeNode.addNode("groups", "rep:AuthorizableFolder");
+        admin.save();
+        assertNodeHasPrimaryType("/home", "rep:AuthorizableFolder");
+        assertNodeHasPrimaryType("/home/groups", "rep:AuthorizableFolder");
+        // /home/groups is being installed w/o any nodetype but filter is on mode=merge so no change expected
+        try (VaultPackage vltPackage = extractVaultPackage("/test-packages/test_nodetype_on_merge.zip")) {
+            assertNodeHasPrimaryType("/home", "rep:AuthorizableFolder");
+            assertNodeHasPrimaryType("/home/groups", "rep:AuthorizableFolder");
+        }
+    }
 }

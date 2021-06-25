@@ -29,6 +29,7 @@ import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
+import org.apache.jackrabbit.vault.fs.api.FilterSet;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
@@ -105,7 +106,11 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             }
 
             Node node = parent.getNode(dir.getRelativePath());
-            if (wspFilter.contains(node.getPath()) && !nodeType.equals(node.getPrimaryNodeType().getName())) {
+            FilterSet<?> fs = wspFilter.getCoveringFilterSet(node.getPath());
+            if (fs != null && 
+                    fs.getImportMode() != ImportMode.MERGE && 
+                    fs.getImportMode() != ImportMode.MERGE_PROPERTIES && 
+                    !nodeType.equals(node.getPrimaryNodeType().getName())) {
                 modifyPrimaryType(node, info);
             }
             NodeIterator iter = node.getNodes();

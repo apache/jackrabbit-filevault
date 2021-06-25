@@ -220,28 +220,28 @@ public class AdvancedFilterValidatorTest {
         try (InputStream input = this.getClass().getResourceAsStream("/filter.xml")) {
             filter.load(input);
         }
+
+        // default severity WARN
         validator = new AdvancedFilterValidator(
                 factory,
                 ValidationMessageSeverity.ERROR,
-                AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
+                AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNDEFINED_FILTER_ROOT_ANCESTORS,
                 ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.ERROR,
                 false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
-
-        // default severity INFO
         ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps"), false, false),
                 ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.INFO,
+                new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT, "/apps")));
         ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test4"), false, false),
                 ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.INFO,
+                new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps/test4")));
 
-        // default severity ERROR
+        // severity ERROR
         validator = new AdvancedFilterValidator(
                 factory,
                 ValidationMessageSeverity.ERROR,
@@ -304,12 +304,12 @@ public class AdvancedFilterValidatorTest {
         Collection<ValidationMessage> messages = validator.validate(filter);
         ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNCOVERED, "/apps/uncovered")),
+                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, "/apps/uncovered")),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED, "/apps/covered2/excluded",
                                 "group:dependency1")),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNCOVERED, "/invalidroot")));
+                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, "/invalidroot")));
     }
 
     @Test
@@ -320,25 +320,33 @@ public class AdvancedFilterValidatorTest {
         }
         validator = new AdvancedFilterValidator(
                 factory,
+                ValidationMessageSeverity.ERROR,
+                ValidationMessageSeverity.ERROR,
                 ValidationMessageSeverity.INFO,
-                AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
-                ValidationMessageSeverity.ERROR,
-                ValidationMessageSeverity.ERROR,
+                AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES,
                 false,
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
+
         Collection<ValidationMessage> messages = validator.validate(filter);
+        ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
+                new ValidationMessage(ValidationMessageSeverity.INFO,
+                String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, "/apps/test4")));
 
         messages = validator.validateJcrPath(getStandardNodeContext("/apps/test3"), false, false);
         ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.INFO,
+                new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_BELOW_CLEANUP_FILTER, "/apps/test3")));
-        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test2/something/anothervalid"), false, false),
-                AnyValidationMessageMatcher.noValidationInCollection());
-        messages = validator.done();
+
+        messages = validator.validateJcrPath(getStandardNodeContext("/apps/test2/something/anothervalid"), false, false);
         ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
+                        String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps/test2/something")));
+
+        messages = validator.done();
+        ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
+                new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_ORPHANED_FILTER_ENTRIES,
                                 "entry with root '/apps/test', includes [regex: .*/valid] below root '/apps/test2', entry with root '/apps/test4/test'")));
     }
@@ -362,7 +370,7 @@ public class AdvancedFilterValidatorTest {
         Collection<ValidationMessage> messages = validator.validate(filter);
         ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
                 new ValidationMessage(ValidationMessageSeverity.INFO,
-                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNCOVERED, "/apps/test4")));
+                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, "/apps/test4")));
     }
 
     @Test

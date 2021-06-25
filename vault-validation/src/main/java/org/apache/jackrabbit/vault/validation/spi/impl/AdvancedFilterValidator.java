@@ -70,11 +70,11 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     protected static final String MESSAGE_INVALID_PATTERN = "Invalid pattern given ('%s') which will never match for any descendants of the root path '%s'.";
     protected static final String MESSAGE_ROOT_PATH_NOT_ABSOLUTE = "Root path must be absolute, but does not start with a '/': '%s'.";
     protected static final String MESSAGE_INVALID_FILTER_XML = "Invalid filter.xml";
-    protected static final String MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED = "Filter root's ancestor '%s' is covered by dependency '%s' but excluded by its patterns.";
-    protected static final String MESSAGE_FILTER_ROOT_ANCESTOR_UNCOVERED = "Filter root's ancestor '%s' is not covered by any of the specified dependencies nor a valid root.";
+    protected static final String MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED = "Filter root's ancestor '%s' is defined by dependency '%s' but excluded by its patterns.";
+    protected static final String MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED = "Filter root's ancestor '%s' is not covered by any of the specified dependencies nor a valid root.";
     protected static final String MESSAGE_NODE_NOT_CONTAINED = "Node '%s' is not contained in any of the filter rules";
     protected static final String MESSAGE_ANCESTOR_NODE_NOT_COVERED = "Ancestor node '%s' is not covered by any of the filter rules. Preferably depend on a package that provides this node or include it in the filter rules!";
-    protected static final String MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT = "Ancestor node '%s' is not covered by any of the filter rules but that node is a given root (either by a dependency or by the known roots). Remove that node!";
+    protected static final String MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT = "Ancestor node '%s' is not covered by any of the filter rules but that node is a given root (either by a dependency or by the known roots). Remove the file(s) representing that node!";
     protected static final String MESSAGE_NODE_BELOW_CLEANUP_FILTER = "Node '%s' is covered by a 'cleanup' filter rule. That filter type is only supposed to be used for removing nodes during import!";
     
     static final Path FILTER_XML_PATH = Paths.get(Constants.VAULT_DIR, Constants.FILTER_XML);
@@ -84,7 +84,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     private final Collection<String> validRoots;
     private final @NotNull ValidationMessageSeverity defaultSeverity;
     private final @NotNull ValidationMessageSeverity severityForUncoveredAncestorNode;
-    private final @NotNull ValidationMessageSeverity severityForUncoveredFilterRootAncestors;
+    private final @NotNull ValidationMessageSeverity severityForUndefinedFilterRootAncestors;
     private final @NotNull ValidationMessageSeverity severityForOrphanedFilterEntries;
     private final Collection<PackageInfo> dependenciesMetaInfo;
     private final WorkspaceFilter filter;
@@ -92,13 +92,13 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     private final Collection<String> danglingNodePaths;
     private final Map<PathFilterSet, List<Entry<PathFilter>>> orphanedFilterSets;
 
-    public AdvancedFilterValidator(@NotNull DocumentBuilderFactory factory, @NotNull ValidationMessageSeverity defaultSeverity, @NotNull ValidationMessageSeverity severityForUncoveredAncestorNodes, @NotNull ValidationMessageSeverity severityForUncoveredFilterRootAncestors, @NotNull ValidationMessageSeverity severityForOrphanedFilterEntries, boolean isSubPackage, @NotNull Collection<PackageInfo> dependenciesMetaInfo, @NotNull WorkspaceFilter filter, @NotNull Collection<String> validRoots) {
+    public AdvancedFilterValidator(@NotNull DocumentBuilderFactory factory, @NotNull ValidationMessageSeverity defaultSeverity, @NotNull ValidationMessageSeverity severityForUncoveredAncestorNodes, @NotNull ValidationMessageSeverity severityForUndefinedFilterRootAncestors, @NotNull ValidationMessageSeverity severityForOrphanedFilterEntries, boolean isSubPackage, @NotNull Collection<PackageInfo> dependenciesMetaInfo, @NotNull WorkspaceFilter filter, @NotNull Collection<String> validRoots) {
         this.factory = factory;
         this.isSubPackage = isSubPackage;
         this.filterValidators = new HashMap<>();
         this.defaultSeverity = defaultSeverity;
         this.severityForUncoveredAncestorNode = severityForUncoveredAncestorNodes;
-        this.severityForUncoveredFilterRootAncestors = severityForUncoveredFilterRootAncestors;
+        this.severityForUndefinedFilterRootAncestors = severityForUndefinedFilterRootAncestors;
         this.severityForOrphanedFilterEntries = severityForOrphanedFilterEntries;
         this.dependenciesMetaInfo = dependenciesMetaInfo;
         this.filter = filter;
@@ -200,11 +200,11 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
             if (!isContained) {
                 String msg;
                 if (coveringPackageId == null) {
-                    msg = String.format(MESSAGE_FILTER_ROOT_ANCESTOR_UNCOVERED, root);
+                    msg = String.format(MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, root);
                 } else {
                     msg = String.format(MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED, root, coveringPackageId);
                 }
-                messages.add(new ValidationMessage(severityForUncoveredFilterRootAncestors, msg));
+                messages.add(new ValidationMessage(severityForUndefinedFilterRootAncestors, msg));
             }
         }
         return messages;
@@ -234,7 +234,12 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
         return messages;
     }
 
-    private Collection<ValidationMessage> validateFileNodePath(@NotNull String nodePath) {
+    /**
+     * Only called for node's which are not only defined by folders
+     * @param nodePath
+     * @return
+     */
+    private Collection<ValidationMessage> validateNodePath(@NotNull String nodePath) {
         if (isSubPackage) {
             return null; // not relevant for sub packages
         }
@@ -273,7 +278,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
         String danglingNodePath = getDanglingAncestorNodePath(nodePath, filter);
         if (danglingNodePath != null) {
             return Collections.singleton(
-                    new ValidationMessage(defaultSeverity, "Ancestor node (" + danglingNodePath + ") of Node '" + nodePath +"' which is contained in a filter include element is not included!"));
+                    new ValidationMessage(severityForUncoveredAncestorNode,  String.format(MESSAGE_ANCESTOR_NODE_NOT_COVERED, danglingNodePath)));
         }
         return null;
     }
@@ -282,7 +287,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     public @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull NodeContext nodeContext,
             boolean isFolder, boolean isDocViewXml) {
         if (!isFolder) {
-            return validateFileNodePath(nodeContext.getNodePath());
+            return validateNodePath(nodeContext.getNodePath());
         } else {
             return null;
         }
@@ -294,7 +299,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
         // skip root node, as it has been processed with validateJcrPath(...) and empty nodes only used for ordering
         if (!isRoot && node.props.size() > 0) {
             // root has been validated already with validateJcrPath(...)
-            return validateFileNodePath(nodeContext.getNodePath());
+            return validateNodePath(nodeContext.getNodePath());
         }
         return null;
     }

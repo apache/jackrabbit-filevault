@@ -98,7 +98,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <url>https://travis-ci.org/apache/jackrabbit-filevault</url>
     </ciManagement>
 
-    <url>http://jackrabbit.apache.org/filevault/</url>
+    <url>https://jackrabbit.apache.org/filevault/</url>
 
     <!-- ====================================================================== -->
     <!-- B U I L D D E F I N I T I O N -->

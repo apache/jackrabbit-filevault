@@ -750,9 +750,6 @@ public class Importer {
                     }
                     ext = "";
                     type = ArtifactType.FILE;
-                } else if (".xcnd".equals(ext)) {
-                    serType = SerializationType.CND;
-                    repoName = repoBase;
                 } else if (".binary".equals(ext)) {
                     serType = SerializationType.GENERIC;
                     type = ArtifactType.BINARY;

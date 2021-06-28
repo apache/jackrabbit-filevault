@@ -26,11 +26,9 @@ import org.apache.jackrabbit.vault.fs.impl.aggregator.FileAggregator;
 import org.apache.jackrabbit.vault.fs.impl.aggregator.FileFolderAggregator;
 import org.apache.jackrabbit.vault.fs.impl.aggregator.FullCoverageAggregator;
 import org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator;
-import org.apache.jackrabbit.vault.fs.impl.aggregator.NodeTypeAggregator;
 import org.apache.jackrabbit.vault.fs.impl.io.FileArtifactHandler;
 import org.apache.jackrabbit.vault.fs.impl.io.FolderArtifactHandler;
 import org.apache.jackrabbit.vault.fs.impl.io.GenericArtifactHandler;
-import org.apache.jackrabbit.vault.fs.impl.io.NodeTypeArtifactHandler;
 
 /**
  * {@code Registry}...
@@ -55,13 +53,15 @@ public class Registry {
         aggregators.put("file", FileAggregator.class);
         aggregators.put("full", FullCoverageAggregator.class);
         aggregators.put("generic", GenericAggregator.class);
-        aggregators.put("nodetype", NodeTypeAggregator.class);
+        // no longer supported, just use GenericAggregator
+        aggregators.put("nodetype", GenericAggregator.class);
         aggregators.put("filefolder", FileFolderAggregator.class);
 
         handlers = new HashMap<String, Class<? extends ArtifactHandler>>();
         handlers.put("file", FileArtifactHandler.class);
         handlers.put("folder", FolderArtifactHandler.class);
-        handlers.put("nodetype", NodeTypeArtifactHandler.class);
+        // no longer supported, just use GenericArtifactHandler
+        handlers.put("nodetype", GenericArtifactHandler.class);
         handlers.put("generic", GenericArtifactHandler.class);
     }
 

@@ -1,0 +1,7 @@
+<'sling'='http://sling.apache.org/jcr/sling/1.0'>
+<'nt'='http://www.jcp.org/jcr/nt/1.0'>
+<'vlt'='http://www.day.com/jcr/vault/1.0'>
+<'my'='http://jackrabbit.apache.org/filevault/testing'>
+
+[my:Folder2] > nt:hierarchyNode
+  - * (name)

@@ -17,6 +17,9 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.io.IOException;
 import java.security.Principal;
 
@@ -25,12 +28,12 @@ import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.nodetype.ConstraintViolationException;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
-import org.apache.jackrabbit.core.security.principal.EveryonePrincipal;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
@@ -41,12 +44,10 @@ import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.fs.io.JcrArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * {@code ImportTests}...
@@ -361,6 +362,20 @@ public class ImportIT extends IntegrationTestBase {
             importer.run(archive, rootNode);
         }
         admin.save();
-        assertProperty("/testroot/jcr:createdBy", "admin");
+        assertProperty("/testroot/jcr:createdBy", "admin"); // must have a different value than in the .content.xml as it is protected and set automatically
+        assertPropertyMissing("/testroot/someProtectedBooleanProperty"); // is protected and skipped in the import
+        assertProperty("/testroot/someUnprotectedStringProperty", "foo"); // is not protected and must be there
+    }
+
+    @Test
+    public void testImportWithPropertyConstraintViolation() throws IOException, RepositoryException, ConfigurationException {
+        try (Archive archive = getFileArchive("/test-packages/property_constraint_violation.zip")) {
+            Node rootNode = admin.getRootNode();
+            ImportOptions opts = getDefaultOptions();
+            Importer importer = new Importer(opts);
+            archive.open(true);
+            RepositoryException e = Assert.assertThrows(RepositoryException.class, () -> { importer.run(archive, rootNode); admin.save(); });
+            assertEquals(ConstraintViolationException.class, e.getCause().getClass());
+        }
     }
 }

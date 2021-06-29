@@ -49,6 +49,7 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
+import javax.jcr.PropertyType;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -505,6 +506,12 @@ public class IntegrationTestBase  {
         assertEquals(path + " should contain " + value, value, admin.getProperty(path).getString());
     }
 
+    public void assertProperty(String path,  boolean value) throws RepositoryException {
+        Property property = admin.getProperty(path);
+        assertEquals(path + " is no boolean property", PropertyType.BOOLEAN, property.getType());
+        assertEquals(path + " should contain boolean value " + value, property.getBoolean(), value);
+    }
+ 
     public void assertPropertyExists(String path) throws RepositoryException {
         assertTrue(path + " should exist", admin.propertyExists(path));
     }

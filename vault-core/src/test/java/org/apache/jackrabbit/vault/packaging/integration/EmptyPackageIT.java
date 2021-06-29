@@ -26,6 +26,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 
 import org.apache.jackrabbit.commons.JcrUtils;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Test;
@@ -208,10 +209,12 @@ public class EmptyPackageIT extends IntegrationTestBase {
     public void installInstallNoFilter() throws RepositoryException, IOException, PackageException {
         JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo_bar_test_nofilter.zip"), false);
         assertNotNull(pack);
-        pack.install(getDefaultOptions());
+        ImportOptions opts = getDefaultOptions();
+        opts.setStrict(false);
+        pack.install(opts);
         assertNodeExists("/tmp/foo/bar/test.txt");
 
-        pack.uninstall(getDefaultOptions());
+        pack.uninstall(opts);
         assertNodeExists("/tmp/foo/bar/test.txt");
     }
 
@@ -223,10 +226,13 @@ public class EmptyPackageIT extends IntegrationTestBase {
     public void installInstallMinimal() throws RepositoryException, IOException, PackageException {
         JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp_foo_bar_test_minimal.zip"), false);
         assertNotNull(pack);
-        pack.install(getDefaultOptions());
+        ImportOptions opts = getDefaultOptions();
+        opts.setStrict(false);
+        pack.install(opts);
+        
         assertNodeExists("/tmp/foo/bar/test.txt");
 
-        pack.uninstall(getDefaultOptions());
+        pack.uninstall(opts);
         assertNodeExists("/tmp/foo/bar/test.txt");
     }
 

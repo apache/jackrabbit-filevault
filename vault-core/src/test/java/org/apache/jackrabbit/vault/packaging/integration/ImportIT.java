@@ -65,88 +65,93 @@ public class ImportIT extends IntegrationTestBase {
 
     @Test
     public void testImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/tmp.zip"));
-        archive.open(true);
-        Node rootNode = admin.getRootNode();
-        ImportOptions opts = getDefaultOptions();
-        Importer importer = new Importer(opts);
-        importer.run(archive, rootNode);
+        try (Archive archive = getFileArchive("/test-packages/tmp.zip")) {
+            archive.open(true);
+            Node rootNode = admin.getRootNode();
+            ImportOptions opts = getDefaultOptions();
+            Importer importer = new Importer(opts);
+            importer.run(archive, rootNode);
 
-        assertNodeExists("/tmp/foo/bar/tobi");
+            assertNodeExists("/tmp/foo/bar/tobi");
+        }
     }
 
     @Test
     public void testReimportLess() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/tmp.zip"));
-        archive.open(true);
         Node rootNode = admin.getRootNode();
         ImportOptions opts = getDefaultOptions();
         Importer importer = new Importer(opts);
-        importer.run(archive, rootNode);
+        try (Archive archive = getFileArchive("/test-packages/tmp.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
 
-        assertNodeExists("/tmp/foo/bar/tobi");
+            assertNodeExists("/tmp/foo/bar/tobi");
+        }
+        
+        try (Archive archive = getFileArchive("/test-packages/tmp_less.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
 
-        ZipArchive archive2 = new ZipArchive(getFile("/test-packages/tmp_less.zip"));
-        archive2.open(true);
-        importer.run(archive2, rootNode);
-
-        assertNodeMissing("/tmp/foo/bar/tobi");
+            assertNodeMissing("/tmp/foo/bar/tobi");
+        }
     }
 
     @Test
     public void testFilteredImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/filtered_package.zip"));
-        archive.open(true);
-        Node rootNode = admin.getRootNode();
-        ImportOptions opts = getDefaultOptions();
+        try (Archive archive = getFileArchive("/test-packages/filtered_package.zip")) {
+            archive.open(true);
+            Node rootNode = admin.getRootNode();
+            ImportOptions opts = getDefaultOptions();
 
-        Importer importer = new Importer(opts);
-        importer.run(archive, rootNode);
+            Importer importer = new Importer(opts);
+            importer.run(archive, rootNode);
 
-        assertNodeExists("/tmp");
-        assertNodeExists("/tmp/foo");
-        assertNodeExists("/tmp/foo/bar");
-        assertNodeExists("/tmp/foo/bar/tobi");
-        assertNodeMissing("/tmp/foo/bar/tom");
+            assertNodeExists("/tmp");
+            assertNodeExists("/tmp/foo");
+            assertNodeExists("/tmp/foo/bar");
+            assertNodeExists("/tmp/foo/bar/tobi");
+            assertNodeMissing("/tmp/foo/bar/tom");
+        }
     }
 
     @Test
     public void testUnFilteredImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/unfiltered_package.zip"));
-        archive.open(true);
-        Node rootNode = admin.getRootNode();
-        ImportOptions opts = getDefaultOptions();
+        try (Archive archive = getFileArchive("/test-packages/unfiltered_package.zip")) {
+            archive.open(true);
+            Node rootNode = admin.getRootNode();
+            ImportOptions opts = getDefaultOptions();
 
-        Importer importer = new Importer(opts);
-        importer.run(archive, rootNode);
+            Importer importer = new Importer(opts);
+            importer.run(archive, rootNode);
 
-        assertNodeExists("/tmp");
-        assertNodeExists("/tmp/foo");
-        assertNodeExists("/tmp/foo/bar");
-        assertNodeExists("/tmp/foo/bar/tobi");
-        assertNodeExists("/tmp/foo/bar/tom");
+            assertNodeExists("/tmp");
+            assertNodeExists("/tmp/foo");
+            assertNodeExists("/tmp/foo/bar");
+            assertNodeExists("/tmp/foo/bar/tobi");
+            assertNodeExists("/tmp/foo/bar/tom");
+        }
     }
 
     @Test
     public void testRelativeImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/tmp.zip"));
+        try (Archive archive = getFileArchive("/test-packages/tmp.zip")) {
+            admin.getRootNode().addNode(TEST_ROOT.substring(1, TEST_ROOT.length()));
+            admin.save();
 
-        admin.getRootNode().addNode(TEST_ROOT.substring(1, TEST_ROOT.length()));
-        admin.save();
+            archive.open(true);
+            Node rootNode = admin.getNode(TEST_ROOT);
+            ImportOptions opts = getDefaultOptions();
+            // manually creating filterPaths with correct coverage
+            WorkspaceFilter filter = archive.getMetaInf().getFilter();
+            for (PathFilterSet pathFilterSet : filter.getFilterSets()) {
+                pathFilterSet.setRoot(TEST_ROOT + pathFilterSet.getRoot());
+            }
+            opts.setFilter(filter);
+            Importer importer = new Importer(opts);
+            importer.run(archive, rootNode);
 
-        archive.open(true);
-        Node rootNode = admin.getNode(TEST_ROOT);
-        ImportOptions opts = getDefaultOptions();
-        // manually creating filterPaths with correct coverage
-        WorkspaceFilter filter = archive.getMetaInf().getFilter();
-        for (PathFilterSet pathFilterSet : filter.getFilterSets()) {
-            pathFilterSet.setRoot(TEST_ROOT + pathFilterSet.getRoot());
+            assertNodeExists(TEST_ROOT + "/tmp/foo/bar/tobi");
         }
-        opts.setFilter(filter);
-        Importer importer = new Importer(opts);
-        importer.run(archive, rootNode);
-
-        assertNodeExists(TEST_ROOT + "/tmp/foo/bar/tobi");
     }
 
     /**
@@ -155,18 +160,18 @@ public class ImportIT extends IntegrationTestBase {
      */
     @Test
     public void testRelativeEmptyImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/empty_testnode.zip"));
+        try (Archive archive = getFileArchive("/test-packages/empty_testnode.zip")) {
+            admin.getRootNode().addNode(TEST_ROOT.substring(1, TEST_ROOT.length()));
+            admin.save();
 
-        admin.getRootNode().addNode(TEST_ROOT.substring(1, TEST_ROOT.length()));
-        admin.save();
+            archive.open(true);
+            Node rootNode = admin.getNode(TEST_ROOT);
+            ImportOptions opts = getDefaultOptions();
+            Importer importer = new Importer(opts);
+            importer.run(archive, rootNode);
 
-        archive.open(true);
-        Node rootNode = admin.getNode(TEST_ROOT);
-        ImportOptions opts = getDefaultOptions();
-        Importer importer = new Importer(opts);
-        importer.run(archive, rootNode);
-
-        assertNodeExists(TEST_ROOT);
+            assertNodeExists(TEST_ROOT);
+        }
     }
 
     /**
@@ -180,99 +185,100 @@ public class ImportIT extends IntegrationTestBase {
         createNodes(archiveNode, 2, 4);
         admin.save();
         assertNodeExists(ARCHIVE_ROOT + "/n3/n3/n3");
-        JcrArchive archive = new JcrArchive(archiveNode, TEST_ROOT);
+        try (JcrArchive archive = new JcrArchive(archiveNode, TEST_ROOT)) {
+            Node testRoot = admin.getRootNode().addNode(TEST_ROOT.substring(1, TEST_ROOT.length()));
+            testRoot.addNode("dummy", "nt:folder");
+            admin.save();
 
-        Node testRoot = admin.getRootNode().addNode(TEST_ROOT.substring(1, TEST_ROOT.length()));
-        testRoot.addNode("dummy", "nt:folder");
-        admin.save();
+            archive.open(true);
+            Node rootNode = admin.getNode(TEST_ROOT);
+            ImportOptions opts = getDefaultOptions();
+            //opts.setListener(new DefaultProgressListener());
+            Importer importer = new Importer(opts);
+            importer.run(archive, rootNode);
+            admin.save();
 
-        archive.open(true);
-        Node rootNode = admin.getNode(TEST_ROOT);
-        ImportOptions opts = getDefaultOptions();
-        //opts.setListener(new DefaultProgressListener());
-        Importer importer = new Importer(opts);
-        importer.run(archive, rootNode);
-        admin.save();
-
-        assertNodeExists(TEST_ROOT + "/n3/n3/n3");
-        assertNodeMissing(TEST_ROOT + "dummy");
+            assertNodeExists(TEST_ROOT + "/n3/n3/n3");
+            assertNodeMissing(TEST_ROOT + "dummy");
+        }
     }
 
     @Test
     public void testConcurrentModificationHandling() throws IOException, RepositoryException, PackageException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/tags.zip"));
-        archive.open(true);
-        Node rootNode = admin.getRootNode();
-        ImportOptions opts = getDefaultOptions();
-        opts.setAutoSaveThreshold(7);
-        Importer importer = new Importer(opts);
-        importer.setDebugFailAfterSave(2);
-        importer.run(archive, rootNode);
-        admin.save();
+        try (Archive archive = getFileArchive("/test-packages/tags.zip")) {
+            archive.open(true);
+            Node rootNode = admin.getRootNode();
+            ImportOptions opts = getDefaultOptions();
+            opts.setAutoSaveThreshold(7);
+            Importer importer = new Importer(opts);
+            importer.setDebugFailAfterSave(2);
+            importer.run(archive, rootNode);
+            admin.save();
 
-        // count nodes
-        assertNodeExists("/etc/tags");
-        Node tags = admin.getNode("/etc/tags");
-        int numNodes = countNodes(tags);
-        assertEquals("Number of tags installed", 487, numNodes);
-
+            // count nodes
+            assertNodeExists("/etc/tags");
+            Node tags = admin.getNode("/etc/tags");
+            int numNodes = countNodes(tags);
+            assertEquals("Number of tags installed", 487, numNodes);
+        }
     }
 
     @Test
     public void testSNSImport() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/test_sns.zip"));
-        archive.open(true);
-        Node rootNode = admin.getRootNode();
-        ImportOptions opts = getDefaultOptions();
-        Importer importer = new Importer(opts);
-        importer.run(archive, rootNode);
+        try (Archive archive = getFileArchive("/test-packages/test_sns.zip")) {
+            archive.open(true);
+            Node rootNode = admin.getRootNode();
+            ImportOptions opts = getDefaultOptions();
+            Importer importer = new Importer(opts);
+            importer.run(archive, rootNode);
 
-        assertNodeExists("/tmp/testroot");
-        assertNodeExists("/tmp/testroot/foo");
-        assertProperty("/tmp/testroot/foo/name", "foo1");
+            assertNodeExists("/tmp/testroot");
+            assertNodeExists("/tmp/testroot/foo");
+            assertProperty("/tmp/testroot/foo/name", "foo1");
 
-        // only check for SNS nodes if SNS supported
-        if (admin.getRepository().getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED).getBoolean()) {
-            assertNodeExists("/tmp/testroot/foo[2]");
-            assertNodeExists("/tmp/testroot/foo[3]");
-            assertProperty("/tmp/testroot/foo[2]/name", "foo2");
-            assertProperty("/tmp/testroot/foo[3]/name", "foo3");
-        } else {
-            // otherwise nodes must not exist
-            assertNodeMissing("/tmp/testroot/foo[2]");
-            assertNodeMissing("/tmp/testroot/foo[3]");
+            // only check for SNS nodes if SNS supported
+            if (admin.getRepository().getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED).getBoolean()) {
+                assertNodeExists("/tmp/testroot/foo[2]");
+                assertNodeExists("/tmp/testroot/foo[3]");
+                assertProperty("/tmp/testroot/foo[2]/name", "foo2");
+                assertProperty("/tmp/testroot/foo[3]/name", "foo3");
+            } else {
+                // otherwise nodes must not exist
+                assertNodeMissing("/tmp/testroot/foo[2]");
+                assertNodeMissing("/tmp/testroot/foo[3]");
+            }
         }
-
     }
 
 
     @Test
     public void testSubArchiveExtract() throws IOException, RepositoryException, ConfigurationException {
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/tmp_with_thumbnail.zip"));
-        archive.open(true);
-        Node rootNode = admin.getRootNode();
-        Node tmpNode = rootNode.addNode("tmp");
-        Node fileNode = tmpNode.addNode("package.zip", "nt:file");
-        Node contentNode = fileNode.addNode("jcr:content", "nt:resource");
-        contentNode.setProperty("jcr:data", "");
-        contentNode.setProperty("jcr:lastModified", 0);
-        contentNode.addMixin("vlt:Package");
-        Node defNode = contentNode.addNode("vlt:definition", "vlt:PackageDefinition");
+        try (Archive archive = getFileArchive("/test-packages/tmp_with_thumbnail.zip")) {
+            archive.open(true);
+            Node rootNode = admin.getRootNode();
+            Node tmpNode = rootNode.addNode("tmp");
+            Node fileNode = tmpNode.addNode("package.zip", "nt:file");
+            Node contentNode = fileNode.addNode("jcr:content", "nt:resource");
+            contentNode.setProperty("jcr:data", "");
+            contentNode.setProperty("jcr:lastModified", 0);
+            contentNode.addMixin("vlt:Package");
+            Node defNode = contentNode.addNode("vlt:definition", "vlt:PackageDefinition");
 
-        ImportOptions opts = getDefaultOptions();
-        Archive subArchive =  archive.getSubArchive("META-INF/vault/definition", true);
+            ImportOptions opts = getDefaultOptions();
+            Archive subArchive =  archive.getSubArchive("META-INF/vault/definition", true);
 
-        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
-        filter.add(new PathFilterSet(defNode.getPath()));
+            DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+            filter.add(new PathFilterSet(defNode.getPath()));
 
-        Importer importer = new Importer(opts);
-        importer.getOptions().setAutoSaveThreshold(Integer.MAX_VALUE);
-        importer.getOptions().setFilter(filter);
-        importer.run(subArchive, defNode);
-        admin.save();
-
-        assertFalse("Importer must not have any errors", importer.hasErrors());
-        assertNodeExists("/tmp/package.zip/jcr:content/vlt:definition/thumbnail.png");
+            Importer importer = new Importer(opts);
+            importer.getOptions().setAutoSaveThreshold(Integer.MAX_VALUE);
+            importer.getOptions().setFilter(filter);
+            importer.run(subArchive, defNode);
+            admin.save();
+            
+            assertFalse("Importer must not have any errors", importer.hasErrors());
+            assertNodeExists("/tmp/package.zip/jcr:content/vlt:definition/thumbnail.png");
+        }
     }
 
     @Test
@@ -302,6 +308,7 @@ public class ImportIT extends IntegrationTestBase {
         ZipArchive archive = new ZipArchive(getFile("/test-packages/tmp.zip"));
         archive.open(true);
         ImportOptions opts = getDefaultOptions();
+        opts.setStrict(false);
         Importer importer = new Importer(opts);
         importer.run(archive, session, "/");
         session.logout();
@@ -336,6 +343,7 @@ public class ImportIT extends IntegrationTestBase {
         ZipArchive archive = new ZipArchive(getFile("/test-packages/tmp_foo.zip"));
         archive.open(true);
         ImportOptions opts = getDefaultOptions();
+        opts.setStrict(false);
         Importer importer = new Importer(opts);
         importer.run(archive, session, "/");
         session.logout();
@@ -343,4 +351,16 @@ public class ImportIT extends IntegrationTestBase {
         assertNodeExists("/tmp/foo/bar/tobi");
     }
 
+    @Test
+    public void testImportProtectedProperties() throws IOException, RepositoryException, ConfigurationException {
+        try (Archive archive = getFileArchive("/test-packages/protected_properties.zip")) {
+            Node rootNode = admin.getRootNode();
+            ImportOptions opts = getDefaultOptions();
+            Importer importer = new Importer(opts);
+            archive.open(true);
+            importer.run(archive, rootNode);
+        }
+        admin.save();
+        assertProperty("/testroot/jcr:createdBy", "admin");
+    }
 }

@@ -459,6 +459,7 @@ public class IntegrationTestBase  {
     public ImportOptions getDefaultOptions() {
         ImportOptions opts = new ImportOptions();
         opts.setListener(getLoggingProgressTrackerListener());
+        opts.setStrict(true);
         return opts;
     }
 

@@ -500,11 +500,14 @@ public class PackageInstallIT extends IntegrationTestBase {
         assertNotNull(pack);
 
         // extract should not generate snapshots
-        pack.extract(getDefaultOptions());
+        ImportOptions opts = getDefaultOptions();
+        opts.setStrict(false);
+        
+        pack.extract(opts);
         assertNodeExists("/tmp/foo/bar/tobi");
         assertPackageNodeMissing(TMP_SNAPSHOT_PACKAGE_ID);
 
-        pack.uninstall(getDefaultOptions());
+        pack.uninstall(opts);
         assertNodeExists("/tmp/foo/bar/tobi");
     }
 
@@ -813,6 +816,7 @@ public class PackageInstallIT extends IntegrationTestBase {
         JcrPackageManagerImpl userPackMgr = new JcrPackageManagerImpl(session, new String[0]);
         pack = userPackMgr.open(id);
         ImportOptions opts = getDefaultOptions();
+        opts.setStrict(false);
         pack.extract(opts);
         pack.close();
         session.logout();

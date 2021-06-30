@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.fs.impl.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Item;
@@ -43,13 +46,9 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
-import javax.jcr.ValueFormatException;
-import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
-import javax.jcr.version.VersionException;
-
+import javax.jcr.nodetype.PropertyDefinition;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
@@ -124,12 +123,13 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
      */
     static final Attributes EMPTY_ATTRIBUTES = new AttributesImpl();
 
+    /**
+     * these properties are protected but can be set nevertheless via system view xml import
+     */
     static final Set<String> PROTECTED_PROPERTIES;
 
-    static final Set<String> IGNORED_PROPERTIES;
-
     static {
-        Set<String> props = new HashSet<String>();
+        Set<String> props = new HashSet<>();
         props.add(JcrConstants.JCR_PRIMARYTYPE);
         props.add(JcrConstants.JCR_MIXINTYPES);
         props.add(JcrConstants.JCR_UUID);
@@ -138,14 +138,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         props.add(JcrConstants.JCR_PREDECESSORS);
         props.add(JcrConstants.JCR_SUCCESSORS);
         props.add(JcrConstants.JCR_VERSIONHISTORY);
-        props.add(PROP_OAK_COUNTER);
         PROTECTED_PROPERTIES = Collections.unmodifiableSet(props);
-    }
-
-    static {
-        Set<String> props = new HashSet<String>();
-        props.add(PROP_OAK_COUNTER);
-        IGNORED_PROPERTIES = Collections.unmodifiableSet(props);
     }
 
     /**
@@ -193,7 +186,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
      * a map of binaries (attachments)
      */
     private Map<String, Map<String, DocViewSAXImporter.BlobInfo>> binaries
-            = new HashMap<String, Map<String, DocViewSAXImporter.BlobInfo>>();
+            = new HashMap<>();
 
     /**
      * map of hint nodes in the same artifact set
@@ -991,23 +984,19 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             modified = true;
         }
 
-        // remove properties not in package
+        // remove properties not in package (which are not protected)
         if (importMode == ImportMode.REPLACE) {
             PropertyIterator pIter = node.getProperties();
             while (pIter.hasNext()) {
                 Property p = pIter.nextProperty();
                 String propName = p.getName();
-                if (!PROTECTED_PROPERTIES.contains(propName)
+                if (!p.getDefinition().isProtected()
                         && !ni.props.containsKey(propName)
                         && !preserveProperties.contains(p.getPath())
                         && wspFilter.includesProperty(p.getPath())) {
-                    try {
-                        vs.ensureCheckedOut();
-                        p.remove();
-                        modified = true;
-                    } catch (RepositoryException e) {
-                        // ignore
-                    }
+                    vs.ensureCheckedOut();
+                    p.remove();
+                    modified = true;
                 }
             }
         }
@@ -1016,7 +1005,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         return modified;
     }
     /**
-     * Creates a new node via system view XML and {@link Session#importXML(String, InputStream, int)} to be able to set protected properties as well
+     * Creates a new node via system view XML and {@link Session#importXML(String, InputStream, int)} to be able to set protected properties. 
+     * Afterwards uses regular JCR API to set unprotected properties.
      * @param currentNode
      * @param ni
      * @return
@@ -1071,7 +1061,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             for (DocViewProperty p : ni.props.values()) {
                 if (p != null && p.values != null) {
                     // only pass 'protected' properties to the import
-                    if (PROTECTED_PROPERTIES.contains(p.name) && !IGNORED_PROPERTIES.contains(p.name)) {
+                    if (PROTECTED_PROPERTIES.contains(p.name)) {
                         attrs = new AttributesImpl();
                         attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", p.name);
                         attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", "CDATA", PropertyType.nameFromValue(p.type));
@@ -1118,6 +1108,81 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         }
     }
 
+    /**
+     * Determines if a given property is protected according to the node type.
+     * <br>
+     * Using the EffectiveNodeType would be faster and require less code, but this is not exposed via JCR API (but only via SPI and differs between Jackrabbit 2 and Oak).
+     * Also {@link NodeType#canSetProperty(String, Value)} cannot be used as this would return false not only for protected property but also for other constraint violations.
+     * This is functionally equivalent to <a href="https://github.com/apache/jackrabbit/blob/ed3124e5fe223dada33ce6ddf53bc666063c3f2f/jackrabbit-core/src/main/java/org/apache/jackrabbit/core/nodetype/EffectiveNodeType.java#L764">EffectiveNodeType.getApplicablePropertyDef(...)</a>.
+     * 
+     * @param node the node
+     * @param docViewProperty the property
+     * @return{@code true} in case the property is protected, {@code false} otherwise
+     * @throws RepositoryException 
+     */
+    private static boolean isPropertyProtected(@NotNull Node node, @NotNull DocViewProperty docViewProperty) throws RepositoryException {
+        // first named property definitions
+        PropertyDefinition propDef = getApplicablePropertyDefinition(node, docViewProperty, true);
+        if (propDef == null) {
+            // then residual property definitions
+            propDef = getApplicablePropertyDefinition(node, docViewProperty, false);
+        }
+        if (propDef != null) {
+            return propDef.isProtected();
+        }
+        return false;
+    }
+
+    private static @Nullable PropertyDefinition getApplicablePropertyDefinition(@NotNull Node node, @NotNull DocViewProperty docViewProperty, boolean onlyNamedDefinitions) throws RepositoryException {
+        PropertyDefinition propDef = getMatchingPropertyDefinition(node.getPrimaryNodeType(), docViewProperty, onlyNamedDefinitions);
+        if (propDef != null) {
+            return propDef;
+        }
+        for (NodeType mixinNodeType : node.getMixinNodeTypes()) {
+            propDef = getMatchingPropertyDefinition(mixinNodeType, docViewProperty, onlyNamedDefinitions);
+            if (propDef != null) {
+                return propDef;
+            }
+        }
+        return null;
+    }
+
+    // functionally almost equivalent to https://github.com/apache/jackrabbit/blob/ed3124e5fe223dada33ce6ddf53bc666063c3f2f/jackrabbit-core/src/main/java/org/apache/jackrabbit/core/nodetype/EffectiveNodeType.java#L825
+    private static PropertyDefinition getMatchingPropertyDefinition(@NotNull NodeType nodeType, @NotNull DocViewProperty docViewProperty, boolean onlyNamedDefinitions) {
+        
+        Predicate<PropertyDefinition> predicate;
+        if (onlyNamedDefinitions) {
+            predicate = (pd) -> docViewProperty.name.equals(pd.getName());
+        } else {
+            predicate = (pd) -> "*".equals(pd.getName());
+        }
+        // either named or residual property definitions
+        Set<PropertyDefinition> relevantPropertyDefinitions = Arrays.stream(nodeType.getPropertyDefinitions()).filter(predicate).collect(Collectors.toSet());
+        
+        PropertyDefinition match = null;
+        for (PropertyDefinition pd : relevantPropertyDefinitions) {
+            int reqType = pd.getRequiredType();
+            // match type
+            if (reqType == PropertyType.UNDEFINED
+                    || docViewProperty.type == PropertyType.UNDEFINED
+                    || reqType == docViewProperty.type) {
+                // match multiValued flag
+                if (docViewProperty.isMulti == pd.isMultiple()) {
+                    // found match
+                    if (pd.getRequiredType() != PropertyType.UNDEFINED) {
+                        // found best possible match, get outta here
+                        return pd;
+                    } else {
+                        if (match == null) {
+                            match = pd;
+                        }
+                    }
+                }
+            }
+        }
+        return match;
+    }
+
     private Node getNodeByUUIDLabelOrName(@NotNull Node currentNode, @NotNull DocViewNode ni) throws RepositoryException {
         Node node = null;
         if (ni.uuid != null) {
@@ -1157,21 +1222,25 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         boolean modified = false;
         // add properties
         for (DocViewProperty prop : ni.props.values()) {
-            if (prop != null && !PROTECTED_PROPERTIES.contains(prop.name) && (overwriteExistingProperties || !node.hasProperty(prop.name)) && wspFilter.includesProperty(node.getPath() + "/" + prop.name)) {
+            if (prop != null && !isPropertyProtected(node, prop) && (overwriteExistingProperties || !node.hasProperty(prop.name)) && wspFilter.includesProperty(node.getPath() + "/" + prop.name)) {
                 // check if property is allowed
                 try {
                     modified |= prop.apply(node);
                 } catch (RepositoryException e) {
-                    if (vs == null) {
-                        throw e;
-                    }
                     try {
+                        if (vs == null) {
+                            throw e;
+                        }
                         // try again with checked out node
                         vs.ensureCheckedOut();
                         modified |= prop.apply(node);
                     } catch (RepositoryException e1) {
-                        log.warn("Error while setting property (ignore): " + e1);
-                        continue;
+                        // be lenient in case of mode != replace
+                        if (wspFilter.getImportMode(node.getPath()) != ImportMode.REPLACE) {
+                            log.warn("Error while setting property {} (ignore due to mode {}): {}", prop.name, wspFilter.getImportMode(node.getPath()), e1);
+                        } else {
+                            throw e;
+                        }
                     }
                 }
             }

@@ -368,12 +368,14 @@ public class ImportIT extends IntegrationTestBase {
     }
 
     @Test
+    @SuppressWarnings("java:S5783")
     public void testImportWithPropertyConstraintViolation() throws IOException, RepositoryException, ConfigurationException {
         try (Archive archive = getFileArchive("/test-packages/property_constraint_violation.zip")) {
             Node rootNode = admin.getRootNode();
             ImportOptions opts = getDefaultOptions();
             Importer importer = new Importer(opts);
             archive.open(true);
+            // we don't care whether constraint is immediately enforced or only on save() as both is valid according to JCR spec
             RepositoryException e = Assert.assertThrows(RepositoryException.class, () -> { importer.run(archive, rootNode); admin.save(); });
             assertEquals(ConstraintViolationException.class, e.getCause().getClass());
         }

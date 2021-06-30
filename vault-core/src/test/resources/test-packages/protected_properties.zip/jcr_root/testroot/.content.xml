@@ -3,6 +3,5 @@
     jcr:primaryType="my:Folder"
     jcr:createdBy="myself"
     someProtectedBooleanProperty="{Boolean}true"
-    someUnprotectedStringProperty="{String}foo"
-    >
+    someUnprotectedStringProperty="{String}foo">
 </jcr:root>

@@ -17,10 +17,10 @@
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
@@ -145,7 +145,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
         final Set<String> immutableRootNodeNames;
         if (settings.getOptions().containsKey(OPTION_IMMUTABLE_ROOT_NODE_NAMES)) {
             String immutableRootNodeNamesValue = settings.getOptions().get(OPTION_IMMUTABLE_ROOT_NODE_NAMES);
-            immutableRootNodeNames = new HashSet<>(Arrays.asList(immutableRootNodeNamesValue.split("\\s*,\\s*")));
+            immutableRootNodeNames = Arrays.stream(immutableRootNodeNamesValue.split(",")).map(String::trim).collect(Collectors.toSet());
         } else {
             immutableRootNodeNames = DEFAULT_IMMUTABLE_ROOT_NODE_NAMES;
         }

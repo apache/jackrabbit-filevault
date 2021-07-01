@@ -111,7 +111,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
         try {
             NodeTypeManagerProvider ntManagerProvider = null;
             ntManagerProvider = new NodeTypeManagerProvider();
-            for (String cndUrl : resolveJarUrls(cndUrls.split("\\s*,\\s*"))) {
+            for (String cndUrl : resolveJarUrls(cndUrls.split(","))) {
                 try (Reader reader = new InputStreamReader(URLFactory.createURL(cndUrl).openStream(), StandardCharsets.US_ASCII)) {
                     LOGGER.info("Register node types from {}", cndUrl);
                     ntManagerProvider.registerNodeTypes(reader);
@@ -137,6 +137,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
     static List<String> resolveJarUrls(String... urls) {
         List<String> resolvedUrls = new LinkedList<>();
         for (String url : urls) {
+            url = url.trim();
             if (url.endsWith(".jar")) {
                 // https://docs.oracle.com/javase/7/docs/api/java/net/JarURLConnection.html
                 URL jarUrl;
@@ -165,11 +166,11 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
 
     static Map<String,String> parseNamespaces(String optionValue) {
         Map<String,String> result = new HashMap<>();
-        String[] namespaces = optionValue.split("\\s*,\\s*");
+        String[] namespaces = optionValue.split(",");
         for (String namespace : namespaces) {
-            String[] namespaceParts = namespace.split("\\s*=\\s*");
+            String[] namespaceParts = namespace.split("=");
             if (namespaceParts.length == 2 && StringUtils.isNoneBlank(namespaceParts[0], namespaceParts[1])) {
-                result.put(namespaceParts[0], namespaceParts[1]);
+                result.put(namespaceParts[0].trim(), namespaceParts[1].trim());
             }
         }
         return result;

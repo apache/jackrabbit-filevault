@@ -29,7 +29,6 @@ import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeDefinition;
-import javax.jcr.nodetype.NodeType;
 
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
@@ -48,10 +47,10 @@ import org.jetbrains.annotations.Nullable;
 public class FolderArtifactHandler extends AbstractArtifactHandler {
 
     /**
-     * names of those default node type which should not be used for intermediate nodes (as they come with too many restrictions)
+     * qualified names of those default node type which should not be used for intermediate nodes (as they come with too many restrictions)
      */
-    private static final List<String> DISALLOWED_PRIMARY_NODE_TYPE_NAMES = Arrays.asList(NodeType.NT_BASE, NodeType.NT_HIERARCHY_NODE);
-    
+    private static final List<String> DISALLOWED_PRIMARY_NODE_TYPE_NAMES = Arrays.asList(JcrConstants.NT_BASE, JcrConstants.NT_HIERARCHYNODE);
+
     /**
      * node type to use for the folders
      */
@@ -85,11 +84,18 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
         return node;
     }
 
+    /**
+     * 
+     * @param parent the node the parent node for which to figure out the default primary type
+     * @param intermediateNodeName the name of the to be created node
+     * @return the qualified name of the default primary type for the given intermediate node below parent
+     * @throws RepositoryException
+     */
     private @Nullable String getDefaultPrimaryChildNodeType(Node parent, String intermediateNodeName) throws RepositoryException {
         EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(parent);
         NodeDefinition nodeDefinition = effectiveNodeType.getApplicableChildNodeDefinition(nd -> nd.getDefaultPrimaryType() != null, intermediateNodeName);
         if (nodeDefinition != null) {
-            return nodeDefinition.getDefaultPrimaryTypeName();
+            return nodeDefinition.getDefaultPrimaryType().getName();
         }
         return null;
     }

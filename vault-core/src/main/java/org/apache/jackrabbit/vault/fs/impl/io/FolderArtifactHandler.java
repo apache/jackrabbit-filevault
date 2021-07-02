@@ -47,7 +47,7 @@ import org.jetbrains.annotations.Nullable;
 public class FolderArtifactHandler extends AbstractArtifactHandler {
 
     /**
-     * qualified names of those default node type which should not be used for intermediate nodes (as they come with too many restrictions)
+     * qualified names of those default node types which should not be used for intermediate nodes (as they come with too many restrictions)
      */
     private static final List<String> DISALLOWED_PRIMARY_NODE_TYPE_NAMES = Arrays.asList(JcrConstants.NT_BASE, JcrConstants.NT_HIERARCHYNODE);
 

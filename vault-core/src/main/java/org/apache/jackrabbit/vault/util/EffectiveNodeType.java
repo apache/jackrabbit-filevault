@@ -26,6 +26,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.jcr.Node;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ItemDefinition;
 import javax.jcr.nodetype.NodeDefinition;
@@ -42,8 +43,8 @@ import org.jetbrains.annotations.Nullable;
  * <ul>
  * <li>local before inherited types</li>
  * <li>named primary types (even inherited ones) before named mixin types</li>
- * <li>residual primary types (even inherited ones) before named mixin types</li>
- * <li>all named item definitions should be considered first (of both primary and mixins) and only afterwards the unnamed ones.</li>
+ * <li>residual primary types (even inherited ones) before residual mixin types</li>
+ * <li>all named item definitions should be considered first (of both primary and mixins) and only afterwards the unnamed ones</li>
  * <li>the first potential match wins (even if it is only for the undefined type and more type-specific definitions follow later)</li>
  * </ul>
  */
@@ -67,15 +68,15 @@ public final class EffectiveNodeType {
     }
 
     /**
-     * The applicable property definition for the given name and type
+     * Returns the applicable property definition for the given name and type.
      * @param name the property name
-     * @param isMultiple if this is a multi-value type
-     * @param type the property value type
+     * @param isMultiple {@code true} if this is a multi-value type otherwise {@code false}
+     * @param type the property value type (one of the constants from {@link PropertyType})
      * @return the applicable property definition
      * 
-     * This replicates the logic from https://github.com/apache/jackrabbit-oak/blob/274f92402a12978040939965e92ee4519f2ce1c3/oak-core/src/main/java/org/apache/jackrabbit/oak/plugins/nodetype/EffectiveNodeTypeImpl.java#L365
      */
     public @Nullable PropertyDefinition getApplicablePropertyDefinition(@NotNull String name, boolean isMultiple, int type) {
+        // This replicates the logic from https://github.com/apache/jackrabbit-oak/blob/274f92402a12978040939965e92ee4519f2ce1c3/oak-core/src/main/java/org/apache/jackrabbit/oak/plugins/nodetype/EffectiveNodeTypeImpl.java#L365
         return getApplicablePropertyDefinition(pd -> isMultiple == pd.isMultiple() && (type == pd.getRequiredType() || UNDEFINED == type || UNDEFINED == pd.getRequiredType()), name);
     }
 
@@ -92,14 +93,13 @@ public final class EffectiveNodeType {
     }
 
     /**
-     * The applicable node definition for the given name and types
+     * Returns the applicable node definition for the given name and types.
      * @param name the child node name
      * @param types the node types
      * @return the applicable child node definition
-     * 
-     * This replicates the logic from https://github.com/apache/jackrabbit-oak/blob/274f92402a12978040939965e92ee4519f2ce1c3/oak-core/src/main/java/org/apache/jackrabbit/oak/plugins/nodetype/EffectiveNodeTypeImpl.java#L440
      */
     public @Nullable NodeDefinition getApplicableChildNodeDefinition(@NotNull String name, @NotNull NodeType... types) {
+        // This replicates the logic from https://github.com/apache/jackrabbit-oak/blob/274f92402a12978040939965e92ee4519f2ce1c3/oak-core/src/main/java/org/apache/jackrabbit/oak/plugins/nodetype/EffectiveNodeTypeImpl.java#L440
         return getApplicableChildNodeDefinition(nd -> Arrays.stream(nd.getRequiredPrimaryTypeNames()).allMatch(requiredPrimaryType -> Arrays.stream(types).anyMatch(providedType -> providedType.isNodeType(requiredPrimaryType))), name);
     }
 

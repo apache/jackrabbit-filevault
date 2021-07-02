@@ -4,12 +4,11 @@
 
 // nt:hierarchyNode is a primary type defining  "jcr:created (date) autocreated protected" and "jcr:createdBy (string) autocreated protected"
 [my:Folder] > nt:hierarchyNode 
-  - * (boolean) protected
+  - * (boolean)
   - * (string)
   + * (my:Folder) mandatory
 
 [my:Mixin]
   mixin
   - my:protectedProperty (*) protected
-  - * (string) mandatory
   + my:protectedChildNode protected

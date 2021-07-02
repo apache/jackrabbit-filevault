@@ -100,7 +100,7 @@ public class FolderArtifactHandlerIT extends IntegrationTestBase {
         }
     }
 
-    // JCRVLT-542
+    // https://issues.apache.org/jira/browse/JCRVLT-542
     @Test
     public void testRootTypeOnMerge() throws RepositoryException, IOException, PackageException {
         Node rootNode = admin.getRootNode();
@@ -114,5 +114,11 @@ public class FolderArtifactHandlerIT extends IntegrationTestBase {
             assertNodeHasPrimaryType("/home", "rep:AuthorizableFolder");
             assertNodeHasPrimaryType("/home/groups", "rep:AuthorizableFolder");
         }
+    }
+
+    // https://issues.apache.org/jira/browse/JCRVLT-544
+    @Test
+    public void testFallbackToNtFolderForRestrictedDefaultNodeType() {
+        // TODO
     }
 }

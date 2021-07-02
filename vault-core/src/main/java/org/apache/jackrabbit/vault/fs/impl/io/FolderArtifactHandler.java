@@ -87,7 +87,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
 
     private @Nullable String getDefaultPrimaryChildNodeType(Node parent, String intermediateNodeName) throws RepositoryException {
         EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(parent);
-        NodeDefinition nodeDefinition = effectiveNodeType.getChildNodeDef(nd -> nd.getDefaultPrimaryType() != null, intermediateNodeName);
+        NodeDefinition nodeDefinition = effectiveNodeType.getApplicableChildNodeDefinition(nd -> nd.getDefaultPrimaryType() != null, intermediateNodeName);
         if (nodeDefinition != null) {
             return nodeDefinition.getDefaultPrimaryTypeName();
         }

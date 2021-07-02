@@ -37,9 +37,15 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Effective node type as defined by <a href="https://docs.adobe.com/content/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.7.6.5%20Effective%20Node%20Type">JCR 2.0, Chapter 3.7.6.5</a>.
- * What is not explicitly mentioned in the spec but visible from Jackrabbit 2 and Oak, that first all named item definitions should be considered first (of both primary and mixins) and only afterwards the unnamed ones.
- * https://docs.adobe.com/content/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.7.7%20Applicable%20Item%20Definition.
- * It replicates the logic from Oak.
+ * The order is an implementation detail (compare with <a href="https://docs.adobe.com/content/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.7.7%20Applicable%20Item%20Definition">JCR 2.0, Chapter 3.7.7</a>)
+ * but this implementation replicates the logic from Oak:
+ * <ul>
+ * <li>local before inherited types</li>
+ * <li>named primary types (even inherited ones) before named mixin types</li>
+ * <li>residual primary types (even inherited ones) before named mixin types</li>
+ * <li>all named item definitions should be considered first (of both primary and mixins) and only afterwards the unnamed ones.</li>
+ * <li>the first potential match wins (even if it is only for the undefined type and more type-specific definitions follow later)</li>
+ * </ul>
  */
 public final class EffectiveNodeType {
 
@@ -65,39 +71,51 @@ public final class EffectiveNodeType {
      * @param name the property name
      * @param isMultiple if this is a multi-value type
      * @param type the property value type
-     * @return the applicatble property definition
+     * @return the applicable property definition
      * 
      * This replicates the logic from https://github.com/apache/jackrabbit-oak/blob/274f92402a12978040939965e92ee4519f2ce1c3/oak-core/src/main/java/org/apache/jackrabbit/oak/plugins/nodetype/EffectiveNodeTypeImpl.java#L365
      */
-    public @Nullable PropertyDefinition getPropertyDef(@NotNull String name, boolean isMultiple, int type) {
-        return getPropertyDef(pd -> isMultiple == pd.isMultiple() && (type == pd.getRequiredType() || UNDEFINED == type || UNDEFINED == pd.getRequiredType()), name);
+    public @Nullable PropertyDefinition getApplicablePropertyDefinition(@NotNull String name, boolean isMultiple, int type) {
+        return getApplicablePropertyDefinition(pd -> isMultiple == pd.isMultiple() && (type == pd.getRequiredType() || UNDEFINED == type || UNDEFINED == pd.getRequiredType()), name);
     }
 
-    public @Nullable PropertyDefinition getPropertyDef(Predicate<PropertyDefinition> predicate, @NotNull String name) {
+    public @Nullable PropertyDefinition getApplicablePropertyDefinition(Predicate<PropertyDefinition> predicate, @NotNull String name) {
         List<PropertyDefinition> propertyDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getPropertyDefinitions())).collect(Collectors.toList());
         // first named then unnamed
-        PropertyDefinition namedPropertyDef = EffectiveNodeType.<PropertyDefinition>getItemDefinition(propertyDefinitions, predicate, name);
+        PropertyDefinition namedPropertyDef = EffectiveNodeType.<PropertyDefinition>getApplicableItemDefinition(propertyDefinitions, predicate, name);
         if (namedPropertyDef == null) {
             // then unnamed
-            return EffectiveNodeType.<PropertyDefinition>getItemDefinition(propertyDefinitions, predicate, null);
+            return EffectiveNodeType.<PropertyDefinition>getApplicableItemDefinition(propertyDefinitions, predicate, null);
         } else {
             return namedPropertyDef;
         }
     }
 
-    public @Nullable NodeDefinition getChildNodeDef(Predicate<NodeDefinition> predicate, @NotNull String name) {
+    /**
+     * The applicable node definition for the given name and types
+     * @param name the child node name
+     * @param types the node types
+     * @return the applicable child node definition
+     * 
+     * This replicates the logic from https://github.com/apache/jackrabbit-oak/blob/274f92402a12978040939965e92ee4519f2ce1c3/oak-core/src/main/java/org/apache/jackrabbit/oak/plugins/nodetype/EffectiveNodeTypeImpl.java#L440
+     */
+    public @Nullable NodeDefinition getApplicableChildNodeDefinition(@NotNull String name, @NotNull NodeType... types) {
+        return getApplicableChildNodeDefinition(nd -> Arrays.stream(nd.getRequiredPrimaryTypeNames()).allMatch(requiredPrimaryType -> Arrays.stream(types).anyMatch(providedType -> providedType.isNodeType(requiredPrimaryType))), name);
+    }
+
+    public @Nullable NodeDefinition getApplicableChildNodeDefinition(Predicate<NodeDefinition> predicate, @NotNull String name) {
         List<NodeDefinition> nodeDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getChildNodeDefinitions())).collect(Collectors.toList());
         // first named then unnamed
-        NodeDefinition namedNodeDef = EffectiveNodeType.<NodeDefinition>getItemDefinition(nodeDefinitions, predicate, name);
+        NodeDefinition namedNodeDef = EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions, predicate, name);
         if (namedNodeDef == null) {
             // then unnamed
-            return EffectiveNodeType.<NodeDefinition>getItemDefinition(nodeDefinitions, predicate, null);
+            return EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions, predicate, null);
         } else {
             return namedNodeDef;
         }
     }
 
-    private static @Nullable <T extends ItemDefinition> T getItemDefinition(List<T> itemDefinitions, Predicate<T> predicate, @Nullable String name) {
+    private static @Nullable <T extends ItemDefinition> T getApplicableItemDefinition(List<T> itemDefinitions, Predicate<T> predicate, @Nullable String name) {
         final Predicate<ItemDefinition> namePredicate;
         if (name != null) {
             namePredicate = pd -> name.equals(pd.getName());
@@ -111,5 +129,4 @@ public final class EffectiveNodeType {
         }
         return null;
     }
-
 }

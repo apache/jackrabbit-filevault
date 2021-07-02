@@ -1,0 +1,15 @@
+<'nt'='http://www.jcp.org/jcr/nt/1.0'>
+<'vlt'='http://www.day.com/jcr/vault/1.0'>
+<'my'='http://jackrabbit.apache.org/filevault/testing'>
+
+// nt:hierarchyNode is a primary type defining  "jcr:created (date) autocreated protected" and "jcr:createdBy (string) autocreated protected"
+[my:Folder] > nt:hierarchyNode 
+  - * (boolean) protected
+  - * (string)
+  + * (my:Folder) mandatory
+
+[my:Mixin]
+  mixin
+  - my:protectedProperty (*) protected
+  - * (string) mandatory
+  + my:protectedChildNode protected

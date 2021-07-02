@@ -150,8 +150,8 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
                     if (slingNodetypes == null) {
                         LOGGER.warn("No 'Sling-Nodetypes' header found in manifest of '{}'", jarUrl);
                     } else {
-                        for (String nodetype : slingNodetypes.split("\\s*,\\s*")) {
-                            resolvedUrls.add(jarUrl.toString() + nodetype);
+                        for (String nodetype : slingNodetypes.split(",")) {
+                            resolvedUrls.add(jarUrl.toString() + nodetype.trim());
                         }
                     }
                 } catch (IOException e) {

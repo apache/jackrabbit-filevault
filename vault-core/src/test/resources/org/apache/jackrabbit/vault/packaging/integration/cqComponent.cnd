@@ -19,6 +19,17 @@
   - active (boolean)
   + config (nt:unstructured) = nt:unstructured
 
+[cq:EditListenersConfig]
+  - afteredit (string)
+  - aftermove (string)
+  - afterremove (string)
+  - afterinsert (string)
+  - * (undefined)
+  - afterdelete (string)
+  - * (undefined) multiple
+  - aftercreate (string)
+  + * (nt:base) = nt:base multiple version
+
 [cq:EditConfig] > nt:hierarchyNode, nt:unstructured
   orderable
   - cq:dialogMode (string) < 'auto', 'floating', 'inline'

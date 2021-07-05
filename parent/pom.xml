@@ -319,6 +319,17 @@ Bundle-Category: jackrabbit
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <consoleOutput>true</consoleOutput>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <!-- compiler stuff -->
             <plugin>
@@ -546,34 +557,6 @@ Bundle-Category: jackrabbit
     <!-- P R O F I L E S -->
     <!-- ====================================================================== -->
     <profiles>
-        <profile>
-            <!-- ====================================================================== -->
-            <!-- R A T P L U G I N -->
-            <!-- ====================================================================== -->
-            <id>rat-check</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.rat</groupId>
-                        <artifactId>apache-rat-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>check</goal>
-                                </goals>
-                                <configuration>
-                                    <consoleOutput>true</consoleOutput>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>java9-or-above</id>
             <activation>

@@ -70,6 +70,7 @@ import org.apache.jackrabbit.vault.fs.spi.UserManagement;
 import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.JcrNamespaceHelper;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
+import org.apache.jackrabbit.vault.util.EffectiveNodeType;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.RejectingEntityDefaultHandler;
@@ -1110,77 +1111,14 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
 
     /**
      * Determines if a given property is protected according to the node type.
-     * <br>
-     * Using the EffectiveNodeType would be faster and require less code, but this is not exposed via JCR API (but only via SPI and differs between Jackrabbit 2 and Oak).
-     * Also {@link NodeType#canSetProperty(String, Value)} cannot be used as this would return false not only for protected property but also for other constraint violations.
-     * This is functionally equivalent to <a href="https://github.com/apache/jackrabbit/blob/ed3124e5fe223dada33ce6ddf53bc666063c3f2f/jackrabbit-core/src/main/java/org/apache/jackrabbit/core/nodetype/EffectiveNodeType.java#L764">EffectiveNodeType.getApplicablePropertyDef(...)</a>.
-     * 
-     * @param node the node
+    * 
+     * @param effectiveNodeType the effective node type
      * @param docViewProperty the property
      * @return{@code true} in case the property is protected, {@code false} otherwise
      * @throws RepositoryException 
      */
-    private static boolean isPropertyProtected(@NotNull Node node, @NotNull DocViewProperty docViewProperty) throws RepositoryException {
-        // first named property definitions
-        PropertyDefinition propDef = getApplicablePropertyDefinition(node, docViewProperty, true);
-        if (propDef == null) {
-            // then residual property definitions
-            propDef = getApplicablePropertyDefinition(node, docViewProperty, false);
-        }
-        if (propDef != null) {
-            return propDef.isProtected();
-        }
-        return false;
-    }
-
-    private static @Nullable PropertyDefinition getApplicablePropertyDefinition(@NotNull Node node, @NotNull DocViewProperty docViewProperty, boolean onlyNamedDefinitions) throws RepositoryException {
-        PropertyDefinition propDef = getMatchingPropertyDefinition(node.getPrimaryNodeType(), docViewProperty, onlyNamedDefinitions);
-        if (propDef != null) {
-            return propDef;
-        }
-        for (NodeType mixinNodeType : node.getMixinNodeTypes()) {
-            propDef = getMatchingPropertyDefinition(mixinNodeType, docViewProperty, onlyNamedDefinitions);
-            if (propDef != null) {
-                return propDef;
-            }
-        }
-        return null;
-    }
-
-    // functionally almost equivalent to https://github.com/apache/jackrabbit/blob/ed3124e5fe223dada33ce6ddf53bc666063c3f2f/jackrabbit-core/src/main/java/org/apache/jackrabbit/core/nodetype/EffectiveNodeType.java#L825
-    private static PropertyDefinition getMatchingPropertyDefinition(@NotNull NodeType nodeType, @NotNull DocViewProperty docViewProperty, boolean onlyNamedDefinitions) {
-        
-        Predicate<PropertyDefinition> predicate;
-        if (onlyNamedDefinitions) {
-            predicate = (pd) -> docViewProperty.name.equals(pd.getName());
-        } else {
-            predicate = (pd) -> "*".equals(pd.getName());
-        }
-        // either named or residual property definitions
-        Set<PropertyDefinition> relevantPropertyDefinitions = Arrays.stream(nodeType.getPropertyDefinitions()).filter(predicate).collect(Collectors.toSet());
-        
-        PropertyDefinition match = null;
-        for (PropertyDefinition pd : relevantPropertyDefinitions) {
-            int reqType = pd.getRequiredType();
-            // match type
-            if (reqType == PropertyType.UNDEFINED
-                    || docViewProperty.type == PropertyType.UNDEFINED
-                    || reqType == docViewProperty.type) {
-                // match multiValued flag
-                if (docViewProperty.isMulti == pd.isMultiple()) {
-                    // found match
-                    if (pd.getRequiredType() != PropertyType.UNDEFINED) {
-                        // found best possible match, get outta here
-                        return pd;
-                    } else {
-                        if (match == null) {
-                            match = pd;
-                        }
-                    }
-                }
-            }
-        }
-        return match;
+    private static boolean isPropertyProtected(@NotNull EffectiveNodeType effectiveNodeType, @NotNull DocViewProperty docViewProperty) throws RepositoryException {
+        return effectiveNodeType.getApplicablePropertyDefinition(docViewProperty.name, docViewProperty.isMulti, docViewProperty.type).map(PropertyDefinition::isProtected).orElse(false);
     }
 
     private Node getNodeByUUIDLabelOrName(@NotNull Node currentNode, @NotNull DocViewNode ni) throws RepositoryException {
@@ -1219,10 +1157,11 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 }
             }
         }
+        EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
         boolean modified = false;
         // add properties
         for (DocViewProperty prop : ni.props.values()) {
-            if (prop != null && !isPropertyProtected(node, prop) && (overwriteExistingProperties || !node.hasProperty(prop.name)) && wspFilter.includesProperty(node.getPath() + "/" + prop.name)) {
+            if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(prop.name)) && wspFilter.includesProperty(node.getPath() + "/" + prop.name)) {
                 // check if property is allowed
                 try {
                     modified |= prop.apply(node);

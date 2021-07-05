@@ -20,10 +20,15 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.commons.cnd.CndImporter;
+import org.apache.jackrabbit.commons.cnd.ParseException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.Test;
@@ -100,7 +105,7 @@ public class FolderArtifactHandlerIT extends IntegrationTestBase {
         }
     }
 
-    // JCRVLT-542
+    // https://issues.apache.org/jira/browse/JCRVLT-542
     @Test
     public void testRootTypeOnMerge() throws RepositoryException, IOException, PackageException {
         Node rootNode = admin.getRootNode();
@@ -113,6 +118,18 @@ public class FolderArtifactHandlerIT extends IntegrationTestBase {
         try (VaultPackage vltPackage = extractVaultPackage("/test-packages/test_nodetype_on_merge.zip")) {
             assertNodeHasPrimaryType("/home", "rep:AuthorizableFolder");
             assertNodeHasPrimaryType("/home/groups", "rep:AuthorizableFolder");
+        }
+    }
+
+    // https://issues.apache.org/jira/browse/JCRVLT-544
+    @Test
+    public void testFallbackToNtFolderForRestrictedDefaultNodeType() throws IOException, PackageException, RepositoryException, ParseException {
+        try (Reader reader = new InputStreamReader(getStream("cqComponent.cnd"), StandardCharsets.US_ASCII)) {
+            CndImporter.registerNodeTypes(reader, admin);
+        }
+        admin.getRootNode().addNode("testroot", "cq:Component"); // this has nt:base as default child node type
+        try (VaultPackage vltPackage = extractVaultPackage("/test-packages/intermediate_folders.zip")) {
+            assertNodeHasPrimaryType("/testroot/myfolder", "nt:folder");
         }
     }
 }

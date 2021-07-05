@@ -23,7 +23,15 @@ Jackrabbit vault offers a simple method to copy nodes between repositories.
 
 <!-- MACRO{toc} -->
 
-Commandline Mode
+Prerequisites
+---------
+RCP relies on the [DAVEx protocol](https://jackrabbit.apache.org/jcr/JCR_Webdav_Protocol.doc) provided by the client modules [jackrabbit-jcr2spi](https://jackrabbit.apache.org/jcr/components/jackrabbit-jcr-to-spi.html) and [jackrabbit-spi2dav](https://jackrabbit.apache.org/jcr/components/jackrabbit-spi-to-dav.html) to connect to remote repositories.
+The remote repository must provide DAVEx access which is not blocked through intermediate proxies or firewalls.
+
+Usually the DavEx endpoint is provided either by the [Jackrabbit Standalone Server](https://jackrabbit.apache.org/jcr/standalone-server.html) or through the [Sling JCR DavEx bundle](https://sling.apache.org/documentation/development/repository-based-development.html#davex-support).
+
+
+CLI
 ----------------
 ````
 $ vlt rcp --help
@@ -73,7 +81,7 @@ $ vlt rcp -e ".*\.txt" -r http://admin:admin@localtest.me:4502/crx/-/jcr:root/co
 
 Vault RCP Server Bundle
 -----------------------
-The vault rcp server bundle provides a very simple vault remote copy task management that can be controlled via a json/http interface. This special vault rcp version can only be used to **import** content from remote repositories.
+The Vault RCP server bundle provides a very simple vault remote copy task management that can be controlled via a json/http interface. This special vault rcp version can only be used to **import** content from remote repositories.
 
 ### Usage
 The vault rcp server maintains a list of _remote copy tasks_ that can be controlled via the http interface at `/system/jackrabbit/filevault/rcp`. The request and responses are JSON formatted.

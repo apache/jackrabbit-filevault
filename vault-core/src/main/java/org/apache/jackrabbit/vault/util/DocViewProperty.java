@@ -322,9 +322,9 @@ public class DocViewProperty {
         return new DocViewProperty(name, values, isMulti, type, isBinaryRef);
     }
     /**
-     * Formats the given jcr property to the enhanced docview syntax.
+     * Formats the given jcr property value to the enhanced docview syntax.
      * @param prop the jcr property
-     * @return the formatted string
+     * @return the formatted string of the property value
      * @throws RepositoryException if a repository error occurs
      */
     public static String format(Property prop) throws RepositoryException {
@@ -332,23 +332,23 @@ public class DocViewProperty {
     }
     
     /**
-     * Formats the given jcr property to the enhanced docview syntax.
+     * Formats the given jcr property value to the enhanced docview syntax.
      * @param prop the jcr property
      * @param sort if {@code true} multivalue properties are sorted
      * @param useBinaryReferences {@code true} to use binary references
-     * @return the formatted string
+     * @return the formatted string of the property value
      * @throws RepositoryException if a repository error occurs
      */
     public static String format(Property prop, boolean sort, boolean useBinaryReferences)
             throws RepositoryException {
-        return fromProperty(prop, sort, useBinaryReferences).format();
+        return fromProperty(prop, sort, useBinaryReferences).formatValue();
     }
 
     /** 
-     * Generates string representation of this DocView property.
-     * @return the string representation
+     * Generates string representation of this DocView property value.
+     * @return the string representation of the value
      */
-    String format() {
+    public String formatValue() {
         StringBuilder attrValue = new StringBuilder();
         
         if (isAmbiguous(type, name)) {
@@ -572,6 +572,10 @@ public class DocViewProperty {
         return true;
     }
 
+    /**
+     * This does not return the string representation of the enhanced docview property value but rather a descriptive string including the property name for debugging purposes.
+     * Use {@link #formatValue()}, {@link #format(Property)} or {@link #format(Property, boolean, boolean)} to get the enhanced docview string representation of the value.
+     */
     @Override
     public String toString() {
         return "DocViewProperty [name=" + name + ", values=" + Arrays.toString(values) + ", isMulti=" + isMulti + ", type=" + type

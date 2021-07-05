@@ -19,16 +19,16 @@
 Vault Remote Copy (rcp)
 =======================
 
-Jackrabbit vault offers a simple method to copy nodes between repositories.
+Jackrabbit Vault offers a simple method to copy nodes between repositories with Vault Remote Copy (RCP). It uses standard JCR API to create/update nodes at the destination repository and falls back to JCR SysView import for protected nodes. Protected properties in standard JCR API import mode are silently skipped. It internally relies on the class [`RepositoryCopier`](https://github.com/apache/jackrabbit-filevault/blob/master/vault-core/src/main/java/org/apache/jackrabbit/vault/util/RepositoryCopier.java).
 
 <!-- MACRO{toc} -->
 
 Prerequisites
 ---------
-RCP relies on the [DAVEx protocol](https://jackrabbit.apache.org/jcr/JCR_Webdav_Protocol.doc) provided by the client modules [jackrabbit-jcr2spi](https://jackrabbit.apache.org/jcr/components/jackrabbit-jcr-to-spi.html) and [jackrabbit-spi2dav](https://jackrabbit.apache.org/jcr/components/jackrabbit-spi-to-dav.html) to connect to remote repositories.
+RCP relies on the [JCR WebDAV protocol](https://jackrabbit.apache.org/jcr/JCR_Webdav_Protocol.doc) provided by the client modules [jackrabbit-jcr2spi](https://jackrabbit.apache.org/jcr/components/jackrabbit-jcr-to-spi.html) and [jackrabbit-spi2dav](https://jackrabbit.apache.org/jcr/components/jackrabbit-spi-to-dav.html) to connect to remote repositories.
 The remote repository must provide DAVEx access which is not blocked through intermediate proxies or firewalls.
 
-Usually the DavEx endpoint is provided either by the [Jackrabbit Standalone Server](https://jackrabbit.apache.org/jcr/standalone-server.html) or through the [Sling JCR DavEx bundle](https://sling.apache.org/documentation/development/repository-based-development.html#davex-support).
+Usually the JRC WebDAV endpoint is provided either directly by the [Jackrabbit JCR Server](https://jackrabbit.apache.org/jcr/components/jackrabbit-jcr-server.html) or in OSGi containers through the [Sling JCR DavEx bundle](https://sling.apache.org/documentation/development/repository-based-development.html#davex-support).
 
 
 CLI

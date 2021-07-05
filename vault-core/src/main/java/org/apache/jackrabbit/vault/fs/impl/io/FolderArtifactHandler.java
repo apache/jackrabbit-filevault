@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.jcr.Node;
@@ -28,7 +29,6 @@ import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeDefinition;
 
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
@@ -38,7 +38,6 @@ import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.util.EffectiveNodeType;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Handles artifact sets with just a directory.
@@ -74,30 +73,14 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
 
     private Node createIntermediateNode(Node parent, String intermediateNodeName) throws RepositoryException {
         // preferably use default (=primary) node type for intermediate nodes
-        String defaultPrimaryChildNodeType = getDefaultPrimaryChildNodeType(parent, intermediateNodeName);
+        Optional<String> defaultPrimaryChildNodeType = EffectiveNodeType.ofNode(parent).getDefaultPrimaryChildNodeTypeName(parent, intermediateNodeName);
         final Node node;
-        if (defaultPrimaryChildNodeType != null && !DISALLOWED_PRIMARY_NODE_TYPE_NAMES.contains(defaultPrimaryChildNodeType)) {
+        if (defaultPrimaryChildNodeType.isPresent() && !DISALLOWED_PRIMARY_NODE_TYPE_NAMES.contains(defaultPrimaryChildNodeType.get())) {
             node = parent.addNode(intermediateNodeName);
         } else {
             node = parent.addNode(intermediateNodeName, nodeType);
         }
         return node;
-    }
-
-    /**
-     * 
-     * @param parent the node the parent node for which to figure out the default primary type
-     * @param intermediateNodeName the name of the to be created node
-     * @return the qualified name of the default primary type for the given intermediate node below parent
-     * @throws RepositoryException
-     */
-    private @Nullable String getDefaultPrimaryChildNodeType(Node parent, String intermediateNodeName) throws RepositoryException {
-        EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(parent);
-        NodeDefinition nodeDefinition = effectiveNodeType.getApplicableChildNodeDefinition(nd -> nd.getDefaultPrimaryType() != null, intermediateNodeName);
-        if (nodeDefinition != null) {
-            return nodeDefinition.getDefaultPrimaryType().getName();
-        }
-        return null;
     }
 
     /**

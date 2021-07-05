@@ -1118,12 +1118,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
      * @throws RepositoryException 
      */
     private static boolean isPropertyProtected(@NotNull EffectiveNodeType effectiveNodeType, @NotNull DocViewProperty docViewProperty) throws RepositoryException {
-        PropertyDefinition propDef = effectiveNodeType.getApplicablePropertyDefinition(docViewProperty.name, docViewProperty.isMulti, docViewProperty.type);
-        if (propDef == null) {
-            return false;
-        } else {
-            return propDef.isProtected();
-        }
+        return effectiveNodeType.getApplicablePropertyDefinition(docViewProperty.name, docViewProperty.isMulti, docViewProperty.type).map(PropertyDefinition::isProtected).orElse(false);
     }
 
     private Node getNodeByUUIDLabelOrName(@NotNull Node currentNode, @NotNull DocViewNode ni) throws RepositoryException {

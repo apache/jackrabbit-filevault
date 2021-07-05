@@ -17,13 +17,13 @@
 package org.apache.jackrabbit.vault.util;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
@@ -69,20 +69,20 @@ public class EffectiveNodeTypeIT extends IntegrationTestBase {
         EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
 
         // this should be the named property definition from mixin type
-        PropertyDefinition pd = effectiveNodeType.getApplicablePropertyDefinition("my:protectedProperty", false, PropertyType.BOOLEAN);
-        assertNotNull(pd);
-        assertTrue(pd.isProtected());
+        Optional<PropertyDefinition> pd = effectiveNodeType.getApplicablePropertyDefinition("my:protectedProperty", false, PropertyType.BOOLEAN);
+        assertTrue(pd.isPresent());
+        assertTrue(pd.get().isProtected());
 
         // this should be the residual property definition from primary type
         pd = effectiveNodeType.getApplicablePropertyDefinition("my:stringProperty", false, PropertyType.STRING);
-        assertNotNull(pd);
-        assertFalse(pd.isMandatory());
+        assertTrue(pd.isPresent());
+        assertFalse(pd.get().isMandatory());
 
         // this should be inherited property definition from primary type
         pd = effectiveNodeType.getApplicablePropertyDefinition("jcr:createdBy", false, PropertyType.STRING);
-        assertNotNull(pd);
-        assertTrue(pd.isProtected());
-        assertTrue(pd.isAutoCreated());
+        assertTrue(pd.isPresent());
+        assertTrue(pd.get().isProtected());
+        assertTrue(pd.get().isAutoCreated());
     }
 
     @Test
@@ -93,13 +93,13 @@ public class EffectiveNodeTypeIT extends IntegrationTestBase {
         NodeType myMixinType = admin.getWorkspace().getNodeTypeManager().getNodeType(MY_MIXIN);
 
         // this should be the named child node definition from mixin type
-        NodeDefinition nd = effectiveNodeType.getApplicableChildNodeDefinition("my:protectedChildNode", myPrimaryType, myMixinType);
-        assertNotNull(nd);
-        assertTrue(nd.isProtected());
+        Optional<NodeDefinition> nd = effectiveNodeType.getApplicableChildNodeDefinition("my:protectedChildNode", myPrimaryType, myMixinType);
+        assertTrue(nd.isPresent());
+        assertTrue(nd.get().isProtected());
 
         // this should be the residual child node definition from primary type
         nd = effectiveNodeType.getApplicableChildNodeDefinition("my:otherNode", myPrimaryType);
-        assertNotNull(nd);
-        assertTrue(nd.isMandatory());
+        assertTrue(nd.isPresent());
+        assertTrue(nd.get().isMandatory());
     }
 }

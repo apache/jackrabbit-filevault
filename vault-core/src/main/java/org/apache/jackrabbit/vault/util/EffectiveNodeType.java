@@ -75,16 +75,16 @@ public final class EffectiveNodeType {
      * @return the applicable property definition
      * 
      */
-    public @Nullable PropertyDefinition getApplicablePropertyDefinition(@NotNull String name, boolean isMultiple, int type) {
+    public Optional<PropertyDefinition> getApplicablePropertyDefinition(@NotNull String name, boolean isMultiple, int type) {
         // This replicates the logic from https://github.com/apache/jackrabbit-oak/blob/274f92402a12978040939965e92ee4519f2ce1c3/oak-core/src/main/java/org/apache/jackrabbit/oak/plugins/nodetype/EffectiveNodeTypeImpl.java#L365
         return getApplicablePropertyDefinition(pd -> isMultiple == pd.isMultiple() && (type == pd.getRequiredType() || UNDEFINED == type || UNDEFINED == pd.getRequiredType()), name);
     }
 
-    public @Nullable PropertyDefinition getApplicablePropertyDefinition(Predicate<PropertyDefinition> predicate, @NotNull String name) {
+    public Optional<PropertyDefinition> getApplicablePropertyDefinition(Predicate<PropertyDefinition> predicate, @NotNull String name) {
         List<PropertyDefinition> propertyDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getPropertyDefinitions())).collect(Collectors.toList());
         // first named then unnamed
-        PropertyDefinition namedPropertyDef = EffectiveNodeType.<PropertyDefinition>getApplicableItemDefinition(propertyDefinitions, predicate, name);
-        if (namedPropertyDef == null) {
+        Optional<PropertyDefinition> namedPropertyDef = EffectiveNodeType.<PropertyDefinition>getApplicableItemDefinition(propertyDefinitions, predicate, name);
+        if (!namedPropertyDef.isPresent()) {
             // then unnamed
             return EffectiveNodeType.<PropertyDefinition>getApplicableItemDefinition(propertyDefinitions, predicate, null);
         } else {
@@ -98,16 +98,16 @@ public final class EffectiveNodeType {
      * @param types the node types
      * @return the applicable child node definition
      */
-    public @Nullable NodeDefinition getApplicableChildNodeDefinition(@NotNull String name, @NotNull NodeType... types) {
+    public Optional<NodeDefinition> getApplicableChildNodeDefinition(@NotNull String name, @NotNull NodeType... types) {
         // This replicates the logic from https://github.com/apache/jackrabbit-oak/blob/274f92402a12978040939965e92ee4519f2ce1c3/oak-core/src/main/java/org/apache/jackrabbit/oak/plugins/nodetype/EffectiveNodeTypeImpl.java#L440
         return getApplicableChildNodeDefinition(nd -> Arrays.stream(nd.getRequiredPrimaryTypeNames()).allMatch(requiredPrimaryType -> Arrays.stream(types).anyMatch(providedType -> providedType.isNodeType(requiredPrimaryType))), name);
     }
 
-    public @Nullable NodeDefinition getApplicableChildNodeDefinition(Predicate<NodeDefinition> predicate, @NotNull String name) {
+    public Optional<NodeDefinition> getApplicableChildNodeDefinition(Predicate<NodeDefinition> predicate, @NotNull String name) {
         List<NodeDefinition> nodeDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getChildNodeDefinitions())).collect(Collectors.toList());
         // first named then unnamed
-        NodeDefinition namedNodeDef = EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions, predicate, name);
-        if (namedNodeDef == null) {
+        Optional<NodeDefinition> namedNodeDef = EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions, predicate, name);
+        if (!namedNodeDef.isPresent()) {
             // then unnamed
             return EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions, predicate, null);
         } else {
@@ -115,7 +115,7 @@ public final class EffectiveNodeType {
         }
     }
 
-    private static @Nullable <T extends ItemDefinition> T getApplicableItemDefinition(List<T> itemDefinitions, Predicate<T> predicate, @Nullable String name) {
+    private static <T extends ItemDefinition> Optional<T> getApplicableItemDefinition(List<T> itemDefinitions, Predicate<T> predicate, @Nullable String name) {
         final Predicate<ItemDefinition> namePredicate;
         if (name != null) {
             namePredicate = pd -> name.equals(pd.getName());
@@ -123,10 +123,18 @@ public final class EffectiveNodeType {
             namePredicate = pd -> "*".equals(pd.getName());
         }
         // either named or residual child node definitions
-        Optional<T> childNodeDef = itemDefinitions.stream().filter(predicate).filter(namePredicate).findFirst();
-        if (childNodeDef.isPresent()) {
-            return childNodeDef.get();
-        }
-        return null;
+        return itemDefinitions.stream().filter(predicate).filter(namePredicate).findFirst();
+    }
+
+    /**
+     * 
+     * @param parent the node the parent node for which to figure out the default primary type
+     * @param nodeName the name of the to be created node
+     * @return the qualified name of the default primary type for the given intermediate node below parent
+     * @throws RepositoryException
+     */
+    public Optional<String> getDefaultPrimaryChildNodeTypeName(Node parent, String nodeName) throws RepositoryException {
+        Optional<NodeDefinition> nodeDefinition = getApplicableChildNodeDefinition(nd -> nd.getDefaultPrimaryType() != null,  nodeName);
+        return nodeDefinition.map(NodeDefinition::getDefaultPrimaryTypeName);
     }
 }

@@ -23,7 +23,6 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 
-import org.apache.jackrabbit.vault.fs.DirectoryArtifact;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -34,6 +33,7 @@ import org.apache.jackrabbit.vault.fs.api.Dumpable;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
+import org.apache.jackrabbit.vault.fs.impl.DirectoryArtifact;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewSerializer;
 import org.apache.jackrabbit.vault.fs.impl.io.ImportInfoImpl;
 import org.apache.jackrabbit.vault.fs.io.Serializer;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.jackrabbit.vault.fs;
+package org.apache.jackrabbit.vault.fs.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -32,7 +32,6 @@ import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.ExportArtifact;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
-import org.apache.jackrabbit.vault.fs.impl.AbstractArtifact;
 import org.apache.jackrabbit.vault.fs.io.Serializer;
 import org.apache.jackrabbit.vault.util.TempFileInputStream;
 

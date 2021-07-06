@@ -13,12 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-Import-Package: org.apache.jackrabbit.*;version=!,\
+# JR2 packages not semantically versioned
+Import-Package: org.apache.jackrabbit.spi2dav;resolution:=optional,\
                             org.apache.sling.jcr.api;resolution:=optional,\
+                            org.apache.jackrabbit.*;version=!,\
                             *
 DynamicImport-Package: *
 -includeresource: @txw2-[0-9.]*.jar!/com/sun/xml/txw2/output/(IndentingXMLStreamWriter|DelegatingXMLStreamWriter).*,\
                   @woodstox-core-[0-9.]*.jar!/!module-info.class,\
                   @stax2-api-[0-9.]*.jar!/!module-info.class,\
-                  @jackrabbit-spi2dav-*.jar!/org/apache/jackrabbit/spi2dav/ConnectionOptions*.class,\
                   @maven-artifact-*.jar!/org/apache/maven/artifact/versioning/ComparableVersion*.class
+# whitelist the private reference usage in Packaging.getJcrPackageRegistry(Session)
+-fixupmessages:"Export org.apache.jackrabbit.vault.packaging,  has 1,  private references [org.apache.jackrabbit.vault.packaging.registry.impl]"; \
+    restrict:=warning; \
+    is:=warn

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.jackrabbit.vault.fs;
+package org.apache.jackrabbit.vault.fs.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,7 +37,6 @@ import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.ExportArtifact;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
-import org.apache.jackrabbit.vault.fs.impl.AbstractArtifact;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 
 /**

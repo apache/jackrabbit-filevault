@@ -147,6 +147,10 @@ Bundle-Category: jackrabbit
 -exportcontents: ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
 # support only DS 1.4 (https://github.com/bndtools/bnd/pull/3121/files)
 -dsannotations-options: version;maximum=1.4.0
+# generate error (instead of warning) when exported package uses private (non-exported) reference
+-fixupmessages:"Export *,  has \\d+,  private references"; \
+    restrict:=warning; \
+    is:=error
                                 ]]></bnd>
                             </configuration>
                         </execution>

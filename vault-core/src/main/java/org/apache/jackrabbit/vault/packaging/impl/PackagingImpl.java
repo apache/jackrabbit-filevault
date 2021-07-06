@@ -170,6 +170,12 @@ public class PackagingImpl implements Packaging {
         return getJcrPackageRegistry(session, true);
     }
 
+    
+    @Override
+    public PackageRegistry getJcrBasedPackageRegistry(Session session) {
+        return getJcrPackageRegistry(session);
+    }
+
     private JcrPackageRegistry getJcrPackageRegistry(Session session, boolean useBaseRegistry) {
         JcrPackageRegistry registry = new JcrPackageRegistry(session, new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()), config.isStrict(), config.packageRoots());
         registry.setDispatcher(eventDispatcher);

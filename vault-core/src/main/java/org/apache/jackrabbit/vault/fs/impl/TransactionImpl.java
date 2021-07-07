@@ -28,7 +28,6 @@ import java.util.TreeMap;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.jackrabbit.vault.fs.DirectoryArtifact;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
@@ -311,8 +310,8 @@ public class TransactionImpl implements VaultFsTransaction {
                         if (ret != null) {
                             allInfos.merge(ret);
                             if (verbose) {
-                                for (Map.Entry e: ret.getModifications().entrySet()) {
-                                    log.info("...comitting  {} {}", e.getValue(), e.getKey());
+                                for (Map.Entry<String,ImportInfo.Type> e: ret.getModifications().entrySet()) {
+                                    log.info("...committing  {} {}", e.getValue(), e.getKey());
                                 }
                             }
                         }
@@ -332,8 +331,8 @@ public class TransactionImpl implements VaultFsTransaction {
                             }
                         }
                         if (verbose && ret != null) {
-                            for (Map.Entry e: ret.getModifications().entrySet()) {
-                                log.info("...comitting  {} {}", e.getValue(), e.getKey());
+                            for (Map.Entry<String,ImportInfo.Type> e: ret.getModifications().entrySet()) {
+                                log.info("...committing  {} {}", e.getValue(), e.getKey());
                             }
                         }
                     }
@@ -743,7 +742,7 @@ public class TransactionImpl implements VaultFsTransaction {
 
         private final AggregateBuilder out;
 
-        private final Map<String, VaultFile> original = new HashMap<String, VaultFile>();
+        private final Map<String, VaultFile> original = new HashMap<>();
 
         private VaultFile parentFile;
 

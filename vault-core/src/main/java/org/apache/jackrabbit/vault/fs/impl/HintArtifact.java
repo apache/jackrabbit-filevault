@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.jackrabbit.vault.fs;
+package org.apache.jackrabbit.vault.fs.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +29,6 @@ import org.apache.jackrabbit.vault.fs.api.ExportArtifact;
 import org.apache.jackrabbit.vault.fs.api.ImportArtifact;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
-import org.apache.jackrabbit.vault.fs.impl.AbstractArtifact;
 
 /**
  * Implements a generic hint artifact.

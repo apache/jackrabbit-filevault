@@ -22,3 +22,10 @@
 -conditionalpackage: org.apache.jackrabbit.util,org.apache.jackrabbit.api.security
 # make sure to only export the relevant packages (https://github.com/bndtools/bnd/issues/4219)
 -exportcontents: org.apache.jackrabbit.vault.rcp
+# due to Jackrabbit2 JARs poorly designed for OSGi, only export the class used in the API from package "org.apache.jackrabbit.spi2dav", as the other classes in that package have lots of private references
+# http://docs.osgi.org/specification/osgi.core/7.0.0/framework.module.html#i3106983
+Export-Package: org.apache.jackrabbit.spi2dav;include:=ConnectionOptions;-split-package:=merge-first
+# prevent false positive due to https://github.com/bndtools/bnd/issues/1943
+-fixupmessages:"Export org.apache.jackrabbit.spi2dav,  has 8,  private references [org.apache.jackrabbit.spi, org.apache.jackrabbit.spi.commons, org.apache.jackrabbit.spi.commons.conversion, org.apache.jackrabbit.webdav, org.apache.jackrabbit.webdav.lock, org.apache.jackrabbit.webdav.observation, org.apache.jackrabbit.webdav.property, org.apache.jackrabbit.webdav.xml]";\
+    restrict:=warning; \
+    is:=ignore

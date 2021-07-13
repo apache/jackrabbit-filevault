@@ -71,6 +71,13 @@
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-baseline-maven-plugin</artifactId>
+                <configuration>
+                    <diffpackages>
+                        <!-- temporarily ignore baseline violation for o.a.j.v.fs due to https://issues.apache.org/jira/browse/JCRVLT-546?focusedCommentId=17379780&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-17379780 -->
+                        <diffpackage>!org.apache.jackrabbit.vault.fs</diffpackage>
+                        <diffpackage>*</diffpackage>
+                    </diffpackages>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

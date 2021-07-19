@@ -295,16 +295,17 @@ The release candidate is a zip archive of the sources in:
 
 https://github.com/apache/jackrabbit-filevault/tree/jackrabbit-filevault-${project.version}/
 
-The SHA1 checksum of the archive is ${checksum}.
+The release notes can be found in JIRA at https://issues.apache.org/jira/projects/JCRVLT/versions/...
 
 The command for running automated checks against this release candidate is:
 $ sh check-release.sh filevault ${project.version} ${checksum}
+(leveraging the script from https://dist.apache.org/repos/dist/dev/jackrabbit/check-release.sh)
 
 A staged Maven repository is available for review at:
 
-https://repository.apache.org/
+https://repository.apache.org/content/repositories/orgapachejackrabbit-...
 
-Please vote on releasing this package as Apache Jackrabbit Filevault ${project.version}.
+Please vote on releasing this package as Apache Jackrabbit FileVault ${project.version}.
 The vote is open for a minimum of 72 hours during business days and passes
 if a majority of at least three +1 Jackrabbit PMC votes are cast.
 The vote fails if not enough votes are cast after 1 week (5 business days).

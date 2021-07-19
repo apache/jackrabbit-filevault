@@ -287,7 +287,7 @@ From: ${username}@apache.org
 To: dev@jackrabbit.apache.org
 Subject: [VOTE] Release Apache Jackrabbit FileVault ${project.version}
 
-A candidate for the Jackrabbit Filevault ${project.version} release is available at:
+A candidate for the Jackrabbit FileVault ${project.version} release is available at:
 
 https://dist.apache.org/repos/dist/dev/jackrabbit/filevault/${project.version}/
 

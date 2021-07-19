@@ -460,7 +460,7 @@ public class Importer {
         while (recoveryRetryCounter++ < 10) {
             try {
                 commit(session, root, skipList);
-                autoSave.save(session);
+                autoSave.save(session, false);
                 break;
             } catch (RepositoryException e) {
                 if (recoveryRetryCounter == 10) {
@@ -834,7 +834,7 @@ public class Importer {
             }
 
             if (autoSave.needsSave()) {
-                autoSave.save(session);
+                autoSave.save(session, false);
                 // save checkpoint
                 cpTxInfo = info;
                 cpAutosave = autoSave.copy();
@@ -988,27 +988,21 @@ public class Importer {
                 switch (type) {
                     case CRE:
                         track("A", path);
-                        autoSave.markResolved(path);
                         break;
                     case DEL:
                         track("D", path);
-                        autoSave.markResolved(path);
                         break;
                     case MOD:
                         track("U", path);
-                        autoSave.markResolved(path);
                         break;
                     case NOP:
                         track("-", path);
-                        autoSave.markResolved(path);
                         break;
                     case REP:
                         track("R", path);
-                        autoSave.markResolved(path);
                         break;
                     case MIS:
                         track("!", path);
-                        autoSave.markMissing(path);
                         break;
                     case ERR:
                         Exception error = entry.getValue().getError();

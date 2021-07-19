@@ -17,11 +17,10 @@
 
 package org.apache.jackrabbit.vault.fs.io;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.nodetype.ConstraintViolationException;
 
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.jetbrains.annotations.NotNull;
@@ -55,9 +54,9 @@ public class AutoSave {
     private int threshold = 1024;
 
     /**
-     * set that records the missing mandatory items. save has to be delay until they are resolved
+     * number of modified nodes to wait for a save retry (only set to a value != 0 after failed save).
      */
-    private final Set<String> missingMandatory = new HashSet<String>();
+    private int failedSaveThreshold = 0;
 
     /**
      * tracker to use to report progress messages
@@ -93,7 +92,6 @@ public class AutoSave {
         ret.lastSave = lastSave;
         ret.tracker = tracker;
         ret.dryRun = dryRun;
-        ret.missingMandatory.addAll(missingMandatory);
         ret.debugFailEach = debugFailEach;
         // don't copy save count, otherwise it will fail for ever.
         // ret.debugSaveCount = debugSaveCount;
@@ -126,12 +124,16 @@ public class AutoSave {
      * @return {@code true} if threshold reached.
      */
     public boolean needsSave() {
-        boolean res = (numModified - lastSave) >= threshold;
-        if (res && !missingMandatory.isEmpty()) {
-            log.debug("Threshold of {} reached but still unresolved mandatory items.", threshold);
-            res = false;
-        }
-        return res;
+        return (numModified - lastSave) >= threshold + failedSaveThreshold;
+    }
+
+    /**
+     * Same as {@link #save(Session, boolean)} with the second argument being {@code true}.
+     * @param session
+     * @throws RepositoryException
+     */
+    public void save(@Nullable Session session) throws RepositoryException {
+        save(session, true);
     }
 
     /**
@@ -139,18 +141,19 @@ public class AutoSave {
      * @param session the session to save. can be {@code null}
      * @throws RepositoryException if an error occurs.
      */
-    public void save(@Nullable Session session) throws RepositoryException {
-        if (threshold == Integer.MAX_VALUE) {
-            log.trace("Save disabled.");
-            return;
-        }
+    public void save(@Nullable Session session, boolean isIntermediate) throws RepositoryException {
         int diff = numModified - lastSave;
-        log.debug("Threshold of {} reached. {} approx {} transient changes. {} unresolved", new Object[]{
-                threshold,
-                dryRun ? "dry run, reverting" : "saving",
-                diff,
-                missingMandatory.size()
-        });
+        if (isIntermediate) {
+            if (threshold == Integer.MAX_VALUE) {
+                log.trace("Intermediate save disabled.");
+                return;
+            }
+            log.debug("Threshold of {} reached. {} approx {} transient changes.", 
+                    threshold,
+                    dryRun ? "dry run, reverting" : "saving",
+                    diff
+            );
+        }
         if (tracker != null) {
             if (dryRun) {
                 tracker.track("reverting approx " + diff + " nodes... (dry run)", "");
@@ -158,6 +161,7 @@ public class AutoSave {
                 tracker.track("saving approx " + diff + " nodes...", "");
             }
         }
+        // TODO: how can session be null here?
         if (session != null) {
             if (debugFailEach > 0 && debugSaveCount > 0 && debugSaveCount%debugFailEach == 0) {
                 String msg = String.format("Debugging provoked failure after %s saves.", debugSaveCount);
@@ -165,21 +169,54 @@ public class AutoSave {
                 throw new RepositoryException(msg);
             }
 
+            if (!saveWithBackoff(session)) {
+                // either retry after some more nodes have been modified or after throttle 
+                // retry with next save() after another 10 nodes have been modified
+                failedSaveThreshold = 10;
+                log.warn("Retry auto-save after {} modified nodes", failedSaveThreshold);
+            }
+        }
+        lastSave = numModified;
+        failedSaveThreshold = 0;
+    }
+
+    /**
+     * 
+     * @param session
+     * @return {@code true} in case was successful or {@code false} in case it failed with a potentially recoverable {@link RepositoryException}
+     * @throws RepositoryException in case of unrecoverable exceptions
+     */
+    private boolean saveWithBackoff(@NotNull Session session) throws RepositoryException {
+        try {
             if (dryRun) {
                 session.refresh(false);
             } else {
                 try {
                     session.save();
-                    debugSaveCount++;
                 } catch (RepositoryException e) {
                     log.error("error during auto save - retrying after refresh...");
                     session.refresh(true);
                     session.save();
-                    debugSaveCount++;
                 }
+                debugSaveCount++;
+            }
+        } catch (RepositoryException e) {
+            if (isPotentiallyTransientException(e)) {
+                log.warn("could not auto-save due to potentially transient exception {}", e.getCause());
+                log.debug("auto save exception", e);
+                return false;
+            } else {
+                throw e;
             }
         }
-        lastSave = numModified;
+        return true;
+    }
+
+    boolean isPotentiallyTransientException(RepositoryException e) {
+        if (e instanceof InvalidItemStateException || e instanceof ConstraintViolationException) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -208,16 +245,25 @@ public class AutoSave {
         return needsSave();
     }
 
+    /**
+     * As not working reliably it is simply ignored.
+     * @param path
+     */
+    @Deprecated
     public void markMissing(@NotNull String path) {
-        missingMandatory.add(path);
     }
 
+    /**
+     * As not working reliably it is simply ignored.
+     * @param path
+     */
+    @Deprecated
     public void markResolved(@NotNull String path) {
-        missingMandatory.remove(path);
     }
 
     @Override
     public String toString() {
         return String.valueOf(threshold);
     }
+
 }

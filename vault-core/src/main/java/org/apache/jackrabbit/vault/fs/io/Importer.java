@@ -78,6 +78,7 @@ import org.apache.jackrabbit.vault.fs.spi.PrivilegeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
+import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.Constants;
@@ -915,7 +916,7 @@ public class Importer {
                 imp = new ImportInfoImpl();
                 imp.onError(info.path, new IllegalStateException("Parent node not found."));
             } else {
-                imp = genericHandler.accept(filter, node, info.artifacts.getPrimaryData().getRelativePath(), info.artifacts);
+                imp = genericHandler.accept(opts, filter, node, info.artifacts.getPrimaryData().getRelativePath(), info.artifacts);
                 if (imp == null) {
                     throw new IllegalStateException("generic handler did not accept " + info.path);
                 }
@@ -946,12 +947,12 @@ public class Importer {
                     log.trace("skipping intermediate node at {}", info.path);
                 } else if (info.artifacts.getPrimaryData() == null) {
                     // create nt:folder node if not exists
-                    imp = folderHandler.accept(filter, node, info.name,  info.artifacts);
+                    imp = folderHandler.accept(opts, filter, node, info.name,  info.artifacts);
                     if (imp == null) {
                         throw new IllegalStateException("folder handler did not accept " + info.path);
                     }
                 } else {
-                    imp = genericHandler.accept(filter, node, info.artifacts.getDirectory().getRelativePath(), info.artifacts);
+                    imp = genericHandler.accept(opts, filter, node, info.artifacts.getDirectory().getRelativePath(), info.artifacts);
                     if (imp == null) {
                         throw new IllegalStateException("generic handler did not accept " + info.path);
                     }
@@ -963,7 +964,7 @@ public class Importer {
                 imp = new ImportInfoImpl();
                 imp.onError(info.path, new IllegalStateException("Parent node not found."));
             } else {
-                imp = fileHandler.accept(filter, node, info.name,  info.artifacts);
+                imp = fileHandler.accept(opts, filter, node, info.name,  info.artifacts);
                 if (imp == null) {
                     throw new IllegalStateException("file handler did not accept " + info.path);
                 }
@@ -1013,7 +1014,7 @@ public class Importer {
                         }
                         hasErrors = true;
                         if (firstException == null) {
-                            firstException = error;
+                            firstException = new PackageException("Error creating/updating node " + path, error);
                         }
                         break;
                 }

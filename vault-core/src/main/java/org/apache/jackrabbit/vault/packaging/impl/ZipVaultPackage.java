@@ -279,7 +279,11 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 log.error("Error during install.", e);
                 ctx.setPhase(InstallContext.Phase.INSTALL_FAILED);
                 hooks.execute(ctx);
-                throw new PackageException(e);
+                if (e instanceof RepositoryException) {
+                    throw (RepositoryException)e;
+                } else {
+                    throw new PackageException(e);
+                }
             }
             ctx.setPhase(InstallContext.Phase.INSTALLED);
             if (!hooks.execute(ctx)) {

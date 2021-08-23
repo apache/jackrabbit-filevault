@@ -36,8 +36,10 @@ import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.util.EffectiveNodeType;
 import org.apache.jackrabbit.vault.util.JcrConstants;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Handles artifact sets with just a directory.
@@ -88,7 +90,8 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
      *
      * Handles generic artifact sets
      */
-    public ImportInfoImpl accept(WorkspaceFilter wspFilter, Node parent, String name,
+    @Override
+    public ImportInfoImpl accept(@NotNull ImportOptions options, WorkspaceFilter wspFilter, Node parent, String name,
                              ArtifactSetImpl artifacts)
             throws RepositoryException, IOException {
         Artifact dir = artifacts.getDirectory();

@@ -194,7 +194,7 @@ public class AutoSave {
                 try {
                     session.save();
                 } catch (RepositoryException e) {
-                    log.error("error during auto save - retrying after refresh...");
+                    log.error("error during auto save: {} - retrying after refresh...", e.getMessage());
                     session.refresh(true);
                     session.save();
                 }

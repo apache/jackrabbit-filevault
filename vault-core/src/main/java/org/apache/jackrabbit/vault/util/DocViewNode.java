@@ -38,6 +38,7 @@ import org.xml.sax.Attributes;
 public class DocViewNode {
 
     public final @NotNull String name;
+    /** usually equal to {@link #name} except when this node has a same name sibling, in that case label has format {@code <name>[index]}, https://docs.adobe.com/content/docs/en/spec/jcr/2.0/22_Same-Name_Siblings.html#22.2%20Addressing%20Same-Name%20Siblings%20by%20Path */
     public final @NotNull String label;
     public final @NotNull Map<String, DocViewProperty> props = new HashMap<>();
     public @Nullable String uuid;

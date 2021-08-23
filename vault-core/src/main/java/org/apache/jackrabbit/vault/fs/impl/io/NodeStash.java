@@ -16,7 +16,9 @@
  */
 package org.apache.jackrabbit.vault.fs.impl.io;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.jcr.Node;
@@ -25,10 +27,12 @@ import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.Value;
 
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.util.JcrConstants;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +51,6 @@ public class NodeStash {
 
     private final String path;
 
-    private final ImportMode importMode;
-
     private Node tmpNode;
 
     private final Set<String> excludedNodeName = new HashSet<>();
@@ -60,14 +62,18 @@ public class NodeStash {
     private static final String[] ROOTS = {"/", "/tmp", "/var", "/etc", "/content"};
 
 
+    /** The property names of those protected properties which should be stashed (and later restored) */
+    private static final List<String> PROTECTED_PROPERTIES_TO_STASH = Arrays.asList(JcrConstants.JCR_MIXINTYPES);
+
+    private static final String PROTECTED_PROPERTIES_SUFFIX = "-stashed";
+
     /**
      * Creates a new stash utility class which takes care of child nodes and properties in {@code path}
      * @param session session to operate on
      */
-    public NodeStash(Session session, String path, ImportMode importMode) {
+    public NodeStash(Session session, String path) {
         this.session = session;
         this.path = path;
-        this.importMode  = importMode;
     }
 
     /**
@@ -91,7 +97,7 @@ public class NodeStash {
     }
 
     /**
-     * Adds the given name to the set of excluded child node names. the nodes that are excluded are not saved
+     * Adds the given name to the set of excluded child node names. The nodes that are excluded are not saved
      * in the stash.
      * @param name The name of the node to exclude
      * @return "this" suitable for chaining.
@@ -103,11 +109,9 @@ public class NodeStash {
 
     /**
      * Moves the child nodes and optionally properties of the path to a temporary location.
+     * @return the stashed node's primary type (if it needs to be kept)
      */
-    public void stash() {
-        if (importMode == ImportMode.REPLACE) {
-            return;
-        }
+    public @Nullable String stash() {
         try {
             Node parent = session.getNode(path);
             Node tmp = getOrCreateTemporaryNode();
@@ -129,26 +133,38 @@ public class NodeStash {
             PropertyIterator propIterator = parent.getProperties();
             while (propIterator.hasNext()) {
                 Property property = propIterator.nextProperty();
+                // all unprotected and some protected properties are relevant
+                String stashPropertyName;
                 if (!property.getDefinition().isProtected()) {
-                    if (property.isMultiple()) {
-                        tmp.setProperty(property.getName(), property.getValues(), property.getType());
-                    } else {
-                        tmp.setProperty(property.getName(), property.getValue(), property.getType());
-                    }
+                    stashPropertyName = property.getName();
+                } else if (PROTECTED_PROPERTIES_TO_STASH.contains(property.getName())) {
+                    stashPropertyName = property.getName() + PROTECTED_PROPERTIES_SUFFIX;
+                } else {
+                    stashPropertyName = null;
                 }
+                if (stashPropertyName != null) {
+                    if (property.isMultiple()) {
+                        tmp.setProperty(stashPropertyName, property.getValues(), property.getType());
+                    } else {
+                        tmp.setProperty(stashPropertyName, property.getValue(), property.getType());
+                    }
+                } 
             }
+            return parent.getPrimaryNodeType().getName();
         } catch (RepositoryException e) {
             log.warn("error while moving child nodes (ignored)", e);
+            return null;
         }
     }
 
     /**
      * Moves the stashed nodes/properties back below the original path.
+     * @param importMode the import mode for the node this stash refers to
      * @param importInfo the import info to record the changes
      * @throws RepositoryException if an error occurs
      */
-    public void recover(@Nullable ImportInfo importInfo) throws RepositoryException {
-        // move the old child nodes back
+    public void recover(@NotNull ImportMode importMode, @Nullable ImportInfo importInfo) throws RepositoryException {
+        // move the old child nodes back (independent of importMode)
         if (tmpNode != null) {
             Node parent = session.getNode(path);
             NodeIterator iter = tmpNode.getNodes();
@@ -171,14 +187,16 @@ public class NodeStash {
                     }
                 }
             }
-            try {
-                recoverProperties(importMode==ImportMode.MERGE || importMode == ImportMode.MERGE_PROPERTIES);
-            } catch (RepositoryException e) {
-                log.warn("Unable to restore properties at {} due to: {}. Properties will remain in temporary location: {}",
-                        path, e.getMessage(), tmpNode.getPath());
-                if (importInfo != null) {
-                    importInfo.onError(path, e);
-                    hasErrors = true;
+            if (importMode != ImportMode.REPLACE) {
+                try {
+                    recoverProperties(importMode==ImportMode.MERGE || importMode == ImportMode.MERGE_PROPERTIES);
+                } catch (RepositoryException e) {
+                    log.warn("Unable to restore properties at {} due to: {}. Properties will remain in temporary location: {}",
+                            path, e.getMessage(), tmpNode.getPath());
+                    if (importInfo != null) {
+                        importInfo.onError(path, e);
+                        hasErrors = true;
+                    }
                 }
             }
             if (!hasErrors) {
@@ -188,11 +206,19 @@ public class NodeStash {
     }
     
     private void recoverProperties(boolean overwriteNewOnes) throws RepositoryException {
-        PropertyIterator propIterator = tmpNode.getProperties();
         Node destNode = session.getNode(path);
+
+        // restore mixins
+        Property mixinProperty = tmpNode.hasProperty(JcrConstants.JCR_MIXINTYPES + PROTECTED_PROPERTIES_SUFFIX) ? tmpNode.getProperty(JcrConstants.JCR_MIXINTYPES + PROTECTED_PROPERTIES_SUFFIX) : null;
+        if (mixinProperty != null) {
+            for (Value value : mixinProperty.getValues()) {
+                tmpNode.addMixin(value.getString());
+            }
+        }
+        PropertyIterator propIterator = tmpNode.getProperties();
         while (propIterator.hasNext()) {
             Property property = propIterator.nextProperty();
-            if (!property.getDefinition().isProtected()) {
+            if (!property.getDefinition().isProtected() && !property.getName().endsWith(PROTECTED_PROPERTIES_SUFFIX)) {
                 if (!overwriteNewOnes && destNode.hasProperty(property.getName())) {
                     log.debug("Skipping restore property {} as it has been updated", property.getPath());
                     continue;
@@ -202,7 +228,7 @@ public class NodeStash {
                 } else {
                     destNode.setProperty(property.getName(), property.getValue(), property.getType());
                 }
-            }
+            } 
         }
     }
 }

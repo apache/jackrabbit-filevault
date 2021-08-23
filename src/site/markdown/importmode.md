@@ -17,7 +17,9 @@
 
 Import Mode
 ===========
-The import mode defines how imported content affects existing content in the repository. It is controlled by the [ImportMode][api.ImportMode] set in the [Workspace Filter](filter.html) and defaults to `REPLACE`.
+The import mode defines how imported content affects existing content in the repository. It is controlled by the [ImportMode][api.ImportMode] set in the [Workspace Filter](filter.html) and defaults to `REPLACE`. 
+
+Details on how node ids are treated during import are outlined at [Referenceable Nodes](referenceablenodes.html)
 
 <!-- MACRO{toc} -->
 

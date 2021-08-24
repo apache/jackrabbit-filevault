@@ -822,29 +822,27 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             if (stack.checkForNode() && currentNode.hasNode(ni.label)) {
                 existingNode = currentNode.getNode(ni.label);
             }
-            if (ni.uuid != null) {
-                if (idConflictPolicy == IdConflictPolicy.FAIL) {
-                    try {
-                        // does uuid already exist in the repo?
-                        Node sameIdNode = session.getNodeByIdentifier(ni.uuid);
-                        // edge-case: same node path -> uuid is kept
-                        if (existingNode != null && existingNode.getPath().equals(sameIdNode.getPath())) {
-                            log.debug("Node with existing identifier is being updated without modifying its uuid");
+            if (ni.uuid != null && idConflictPolicy == IdConflictPolicy.FAIL) {
+                try {
+                    // does uuid already exist in the repo?
+                    Node sameIdNode = session.getNodeByIdentifier(ni.uuid);
+                    // edge-case: same node path -> uuid is kept
+                    if (existingNode != null && existingNode.getPath().equals(sameIdNode.getPath())) {
+                        log.debug("Node with existing identifier {} at {} is being updated without modifying its uuid", ni.uuid, existingNode.getPath());
+                    } else {
+                        // uuid found in path covered by filter
+                        if (isIncluded(sameIdNode, 0)) {
+                            log.warn("Node identifier {} for to-be imported node {}/{} already taken by {}, trying to release it.", ni.uuid, currentNode.getPath(), ni.label, sameIdNode.getPath());
+                            removeReferences(sameIdNode);
+                            session.removeItem(sameIdNode.getPath());
+                            existingNode = null;
                         } else {
-                            // uuid found in path covered by filter
-                            if (isIncluded(sameIdNode, 0)) {
-                                log.warn("Node identifier {} for to-be imported node {} already taken by {}, trying to release it.", ni.uuid, currentNode.getPath() + '/' + ni.label, sameIdNode.getPath());
-                                removeReferences(sameIdNode);
-                                session.removeItem(sameIdNode.getPath());
-                                existingNode = null;
-                            } else {
-                                // uuid found in path not-covered by filter
-                                throw new ReferentialIntegrityException("UUID already taken by node " + sameIdNode.getPath());
-                            }
+                            // uuid found in path not-covered by filter
+                            throw new ReferentialIntegrityException("UUID " + ni.uuid + " already taken by node " + sameIdNode.getPath());
                         }
-                    } catch (ItemNotFoundException e) {
-                        // ignore
                     }
+                } catch (ItemNotFoundException e) {
+                    // ignore
                 }
             }
         }
@@ -885,10 +883,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             ImportMode importMode = wspFilter.getImportMode(existingNode.getPath());
             Node updatedNode = updateExistingNode(existingNode, ni, importMode);
             if (updatedNode != null) {
-                if (updatedNode.isNodeType(JcrConstants.NT_RESOURCE)) {
-                    if (!updatedNode.hasProperty(JcrConstants.JCR_DATA)) {
-                        importInfo.onMissing(existingNode.getPath() + "/" + JcrConstants.JCR_DATA);
-                    }
+                if (updatedNode.isNodeType(JcrConstants.NT_RESOURCE) && !updatedNode.hasProperty(JcrConstants.JCR_DATA)) {
+                    importInfo.onMissing(existingNode.getPath() + "/" + JcrConstants.JCR_DATA);
                 }
                 importInfo.onModified(updatedNode.getPath());
                 existingNode = updatedNode;

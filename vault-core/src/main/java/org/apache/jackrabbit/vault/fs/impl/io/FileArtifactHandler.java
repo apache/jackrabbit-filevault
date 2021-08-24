@@ -40,9 +40,11 @@ import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.PathUtil;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -111,7 +113,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
      * <p>
      * Handles generic artifact sets
      */
-    public ImportInfoImpl accept(WorkspaceFilter wspFilter, Node parent,
+    public ImportInfoImpl accept(@NotNull ImportOptions options, WorkspaceFilter wspFilter, Node parent,
                                 String name, ArtifactSetImpl artifacts)
             throws RepositoryException, IOException {
         // check if any file artifacts was removed
@@ -155,7 +157,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                 if (mode != ImportMode.MERGE) {
                     InputSource source = primary.getInputSource();
                     if (source != null) {
-                        info.merge(importDocView(parent, source, artifacts, wspFilter));
+                        info.merge(importDocView(parent, source, artifacts, wspFilter, options));
                     }
                 } else {
                     info.onNop(path);
@@ -226,7 +228,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     }
                     if (mode != ImportMode.MERGE) {
                         try {
-                            DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter);
+                            DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter, options.getIdConflictPolicy());
                             handler.setAclHandling(getAcHandling());
                             handler.setCugHandling(getCugHandling());
                             parseXmlWithSaxHandler(file.getInputSource(), handler);
@@ -313,14 +315,14 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
     }
 
     private ImportInfoImpl importDocView(Node parent, InputSource source,
-                                     ArtifactSetImpl artifacts, WorkspaceFilter wspFilter)
+                                     ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, ImportOptions options)
             throws RepositoryException, IOException {
         String rootName = artifacts.getPrimaryData().getRelativePath();
         int idx = rootName.indexOf('/');
         if (idx > 0) {
             rootName = rootName.substring(0, idx);
         }
-        DocViewSAXImporter handler = new DocViewSAXImporter(parent, rootName, artifacts, wspFilter);
+        DocViewSAXImporter handler = new DocViewSAXImporter(parent, rootName, artifacts, wspFilter, options.getIdConflictPolicy());
         handler.setAclHandling(getAcHandling());
         handler.setCugHandling(getCugHandling());
         try {

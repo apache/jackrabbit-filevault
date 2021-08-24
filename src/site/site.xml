@@ -44,6 +44,7 @@
         <item href="privileges.html" name="Privileges"/>
         <item href="installhooks.html" name="Install Hooks"/>
       </item>
+      <item href="referenceablenodes.html" name="Referenceable Nodes"/>
       <item href="rcp.html" name="Vault Remote Copy" />
     </menu>
     <menu name="Developing">

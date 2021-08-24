@@ -22,12 +22,13 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Option that control the package import.
@@ -66,6 +67,8 @@ public class ImportOptions {
 
     private DependencyHandling dependencyHandling = null;
 
+    private @NotNull IdConflictPolicy idConflictPolicy = IdConflictPolicy.FAIL;
+
     /**
      * Default constructor.
      */
@@ -96,6 +99,7 @@ public class ImportOptions {
             hookClassLoader = base.hookClassLoader;
             pathMapping = base.pathMapping;
             dependencyHandling = base.dependencyHandling;
+            idConflictPolicy = base.idConflictPolicy;
         }
     }
 
@@ -121,6 +125,7 @@ public class ImportOptions {
         ret.hookClassLoader = hookClassLoader;
         ret.pathMapping = pathMapping;
         ret.dependencyHandling = dependencyHandling;
+        ret.idConflictPolicy = idConflictPolicy;
         return ret;
     }
 
@@ -421,6 +426,24 @@ public class ImportOptions {
         this.dependencyHandling = dependencyHandling;
     }
 
+    /**
+     * 
+     * @return the id conflict policy
+     * @since 3.5.1
+     */
+    public @NotNull IdConflictPolicy getIdConflictPolicy() {
+        return idConflictPolicy;
+    }
+
+    /**
+     * Sets the id conflict policy (in case of unresolveable conflicts).
+     * @param idConflictPolicy the conflict policy
+     * @since 3.5.2
+     */
+    public void setIdConflictPolicy(@NotNull IdConflictPolicy idConflictPolicy) {
+        this.idConflictPolicy = idConflictPolicy;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -440,6 +463,7 @@ public class ImportOptions {
         result = prime * result + (patchKeepInRepo ? 1231 : 1237);
         result = prime * result + ((patchParentPath == null) ? 0 : patchParentPath.hashCode());
         result = prime * result + ((pathMapping == null) ? 0 : pathMapping.hashCode());
+        result = prime * result + ((idConflictPolicy == null) ? 0 : idConflictPolicy.hashCode());
         result = prime * result + (strict ? 1231 : 1237);
         return result;
     }
@@ -506,6 +530,8 @@ public class ImportOptions {
             return false;
         if (strict != other.strict)
             return false;
+        if (!idConflictPolicy.equals(other.idConflictPolicy))
+            return false;
         return true;
     }
 
@@ -521,7 +547,8 @@ public class ImportOptions {
                 + (cndPattern != null ? "cndPattern=" + cndPattern + ", " : "") + (filter != null ? "filter=" + filter + ", " : "")
                 + (hookClassLoader != null ? "hookClassLoader=" + hookClassLoader + ", " : "")
                 + (pathMapping != null ? "pathMapping=" + pathMapping + ", " : "")
-                + (dependencyHandling != null ? "dependencyHandling=" + dependencyHandling : "") + "]";
+                + (dependencyHandling != null ? "dependencyHandling=" + dependencyHandling + ", " : "")
+                + "idConflictPolicy=" + idConflictPolicy + "]";
     }
     
     

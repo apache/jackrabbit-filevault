@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>23</version>
+        <version>24</version>
         <relativePath />
     </parent>
 
@@ -52,12 +52,14 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <oak.version>1.40.0</oak.version>
         <slf4j.version>1.7.25</slf4j.version>
         <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
-        <java.target.version>1.8</java.target.version>
         <bnd.version>5.3.0</bnd.version>
-        <maven.version>3.6.1</maven.version><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
+        <minimalMavenBuildVersion>3.6.1</minimalMavenBuildVersion><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
+        <minimalJavaBuildVersion>1.8</minimalJavaBuildVersion>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <surefire.version>3.0.0-M4</surefire.version>
         <sling.url>http://localhost:4502</sling.url>
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
+        <project.build.outputTimestamp>2021-05-20T11:29:22Z</project.build.outputTimestamp>
     </properties>
 
     <!-- ====================================================================== -->
@@ -203,7 +205,6 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
@@ -211,7 +212,6 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.0.0-M5</version>
                     <configuration>
                         <systemPropertyVariables>
                             <!-- put derby.log (created for Jackrabbit based ITs below target instead of the current directory) -->
@@ -266,56 +266,21 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.9.1</version>
                     <configuration>
                         <skip>true</skip><!-- skip for all modules where not explicitly enabled -->
                         <skipDeploy>true</skipDeploy><!-- always deploy via maven-scm-publish-plugin -->
                     </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.maven.doxia</groupId>
-                            <artifactId>doxia-module-markdown</artifactId>
-                            <version>1.10</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.1.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.3.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0-M3</version>
-                    <executions>
-                        <execution>
-                            <id>enforce-java-and-maven</id>
-                            <goals>
-                                <goal>enforce</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <requireJavaVersion>
-                                        <version>${java.target.version}</version>
-                                    </requireJavaVersion>
-                                    <requireMavenVersion>
-                                        <version>${maven.version}</version>
-                                    </requireMavenVersion>
-                                </rules>
-                            </configuration>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>0.8.7</version>
+                </plugin>
+                <!-- update from 1.4.1 in ASF parent -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.0.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -340,8 +305,6 @@ Bundle-Category: jackrabbit
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>${java.target.version}</source>
-                    <target>${java.target.version}</target>
                     <debug>true</debug>
                     <showDeprecation>false</showDeprecation>
                     <showWarnings>true</showWarnings>

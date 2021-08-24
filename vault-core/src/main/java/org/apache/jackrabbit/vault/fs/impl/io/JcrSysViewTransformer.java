@@ -70,6 +70,8 @@ public class JcrSysViewTransformer implements DocViewAdapter {
     private final String existingPath;
 
     private final Set<String> excludedNodeNames = new HashSet<String>();
+    
+    private final @NotNull ImportMode importMode;
 
     private long ignoreLevel = 0;
 
@@ -96,10 +98,11 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         this.existingPath = existingPath;
         if (existingPath != null) {
             // check if there is an existing node with the name
-            recovery = new NodeStash(session, existingPath, importMode).excludeName("rep:cache");
+            recovery = new NodeStash(session, existingPath).excludeName("rep:cache");
             recovery.stash();
         }
         excludeNode("rep:cache");
+        this.importMode = importMode;
     }
 
     public List<String> close() throws SAXException {
@@ -120,7 +123,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         // check for rescued child nodes
         if (recovery != null) {
             try {
-                recovery.recover(null);
+                recovery.recover(importMode, null);
             } catch (RepositoryException e) {
                 log.error("Error while processing rescued child nodes");
             } finally {

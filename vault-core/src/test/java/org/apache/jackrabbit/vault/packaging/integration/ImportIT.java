@@ -44,6 +44,7 @@ import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.fs.io.JcrArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.codehaus.plexus.util.ExceptionUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -377,7 +378,7 @@ public class ImportIT extends IntegrationTestBase {
             archive.open(true);
             // we don't care whether constraint is immediately enforced or only on save() as both is valid according to JCR spec
             RepositoryException e = Assert.assertThrows(RepositoryException.class, () -> { importer.run(archive, rootNode); admin.save(); });
-            assertEquals(ConstraintViolationException.class, e.getCause().getClass());
+            assertEquals(ConstraintViolationException.class, ExceptionUtils.getRootCause(e).getClass());
         }
     }
 }

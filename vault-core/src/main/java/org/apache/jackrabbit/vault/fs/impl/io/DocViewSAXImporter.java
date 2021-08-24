@@ -88,6 +88,7 @@ import org.xml.sax.helpers.AttributesImpl;
 /**
  * Implements an importer that processes SAX events from a (modified) document
  * view. The behaviour for existing nodes works as follows:
+ * TODO: better description
  * <pre>
  *
  * - extended docview always includes SNS indexes
@@ -928,7 +929,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         VersioningState vs = new VersioningState(stack, node);
         Node updatedNode = null;
         // try to set uuid via sysview import if it differs from existing one
-        if (ni.uuid != null && !node.getIdentifier().equals(ni.uuid)) {
+        if (ni.uuid != null && !node.getIdentifier().equals(ni.uuid) && !"rep:root".equals(ni.primary)) {
             NodeStash stash = new NodeStash(session, node.getPath());
             stash.stash();
             Node parent = node.getParent();

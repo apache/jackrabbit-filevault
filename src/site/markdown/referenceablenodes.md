@@ -30,7 +30,7 @@ The ids of referenceable nodes are only kept during import when a node with the 
 
 ## Behavior since FileVault 3.5.2
 
-Since version 3.5.2 ([JCRVLT-551](https://issues.apache.org/jira/browse/JCRVLT-551)) FileVault tries to use the `jcr:uuid` of the node in the package even if a same named node does already exist. In case this cannot be achieved while keeping referential integrity of old and new nodes an exception is thrown. Existing nodes with conflicting identifiers or reference properties towards conflicting identifiers are removed in advanced if they are contained in the [filter rules][4] to reduce the conflict potential.
+Since version 3.5.2 ([JCRVLT-551](https://issues.apache.org/jira/browse/JCRVLT-551)) FileVault tries to use the `jcr:uuid` of the node in the package even if a same named node does already exist. In case this cannot be achieved while keeping referential integrity of old and new nodes an exception is thrown. Existing nodes with conflicting identifiers or reference properties towards conflicting identifiers are removed in advance if they are contained in the [filter rules][4] to reduce the conflict potential.
 
 ### Id Conflict Policies
 

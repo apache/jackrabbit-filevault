@@ -183,14 +183,14 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         admin.save();
         assertProperty("/tmp/reference/" + PROPERTY_NAME, UUID_REFERENCEABLE_CHILD);
 
-        PropertyIterator propIter = referenceableNode.getReferences();
-        assertTrue(propIter.hasNext());
-
         // install package again (with default policy IdConflictPolicy.FAIL)
         Exception e = assertThrows(Exception.class, () -> { extractVaultPackageStrict("/test-packages/referenceable.zip"); } );
         assertEquals(ReferentialIntegrityException.class, e.getClass());
         admin.refresh(false);
-        
+        assertProperty("/tmp/reference/" + PROPERTY_NAME, UUID_REFERENCEABLE_CHILD);
+        referenceableNode = admin.getNode("/tmp/reference").getProperty(PROPERTY_NAME).getNode();
+        assertEquals("/tmp/referenceable/collision", referenceableNode.getPath());
+
         // now try to remove the referenced node (with policy IdConflictPolicy.CREATE_NEW_ID)
         ImportOptions options = getDefaultOptions();
         options.setStrict(true);
@@ -198,10 +198,17 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         e = assertThrows(Exception.class, () -> { extractVaultPackage("/test-packages/referenceable.zip", options);});
         assertEquals(ReferentialIntegrityException.class, e.getClass());
         admin.refresh(false);
-        
+        assertProperty("/tmp/reference/" + PROPERTY_NAME, UUID_REFERENCEABLE_CHILD);
+        referenceableNode = admin.getNode("/tmp/reference").getProperty(PROPERTY_NAME).getNode();
+        assertEquals("/tmp/referenceable/collision", referenceableNode.getPath());
+
         // now try to remove the referenced node (with default policy IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID)
         options.setIdConflictPolicy(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID);
         extractVaultPackage("/test-packages/referenceable.zip", options);
+        // make sure that reference does still exist but now again points to the original path
+        assertProperty("/tmp/reference/" + PROPERTY_NAME, UUID_REFERENCEABLE_CHILD);
+        referenceableNode = admin.getNode("/tmp/reference").getProperty(PROPERTY_NAME).getNode();
+        assertEquals("/tmp/referenceable/child", referenceableNode.getPath());
     }
 
     @Test

@@ -26,5 +26,5 @@
 
 [my:Mixin]
   mixin
-  - my:protectedProperty (*) protected
+  - my:protectedProperty (*) multiple protected
   + my:protectedChildNode protected

@@ -77,7 +77,8 @@ public final class EffectiveNodeType {
      */
     public Optional<PropertyDefinition> getApplicablePropertyDefinition(@NotNull String name, boolean isMultiple, int type) {
         // This replicates the logic from https://github.com/apache/jackrabbit-oak/blob/274f92402a12978040939965e92ee4519f2ce1c3/oak-core/src/main/java/org/apache/jackrabbit/oak/plugins/nodetype/EffectiveNodeTypeImpl.java#L365
-        return getApplicablePropertyDefinition(pd -> isMultiple == pd.isMultiple() && (type == pd.getRequiredType() || UNDEFINED == type || UNDEFINED == pd.getRequiredType()), name);
+        // single values are covered by multivalue property definitions as well (but not vice-versa)
+        return getApplicablePropertyDefinition(pd -> ((!isMultiple) || isMultiple == pd.isMultiple()) && (type == pd.getRequiredType() || UNDEFINED == type || UNDEFINED == pd.getRequiredType()), name);
     }
 
     public Optional<PropertyDefinition> getApplicablePropertyDefinition(Predicate<PropertyDefinition> predicate, @NotNull String name) {

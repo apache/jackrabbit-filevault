@@ -475,13 +475,13 @@ public class ACLAndMergeIT extends IntegrationTestBase {
     /** Check effect of filter definitions */
     @Test
     public void testACLsOutsideFilter() throws IOException, PackageException, RepositoryException {
-        //JcrUtils.getOrCreateByPath("/testroot/secured", JcrConstants.NT_FOLDER, admin);
         extractVaultPackageStrict("/test-packages/ac_outside_filter.zip");
-        
-        // test if nodes and ACLs of package exist
         assertNodeExists("/testroot/node_a");
-        // which ACLs should exist now?
-        assertPermission("/testroot", false, new String[]{"jcr:all"}, "everyone", null);
+
+        // this ACL is not contained in the filter and not installed because ancestor is no filter root
+        assertPermissionMissing("/testroot", false, new String[]{"jcr:all"}, "everyone", null);
+
+        // this is not contained in the filter root but installed nevertheless (due to ancestor being a filter root)
         assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
     }
 }

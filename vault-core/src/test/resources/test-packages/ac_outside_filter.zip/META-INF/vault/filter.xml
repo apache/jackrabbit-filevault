@@ -16,8 +16,9 @@
   ~ limitations under the License.
   -->
 <workspaceFilter version="1.0">
-    <filter root="/testroot/node_a"/>
-    <filter root="/testroot/secured">
-        <include pattern="/testroot/secured/jcr:content"/>
+    <filter root="/testroot">
+       <include pattern="/testroot/secured"/>
+       <include pattern="/testroot/secured/jcr:content"/>
+       <include pattern="/testroot/node_a(/.*)?"/>
     </filter>
 </workspaceFilter>

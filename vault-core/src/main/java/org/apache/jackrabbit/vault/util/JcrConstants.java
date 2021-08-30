@@ -231,7 +231,12 @@ public interface JcrConstants {
      * Pseudo property jcr:score used with query results
      */
     public static final String JCR_SCORE = "jcr:score";
-
+    /**
+     * One child node is mandatory.
+     * A mandatory item is one that, if
+     * its parent node exists, must also exist.
+     */
+    public static final int NUM_MANDATORY_CHILDREN = 1;
     /**
      * mix:lockable
      */

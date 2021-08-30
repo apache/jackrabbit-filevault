@@ -522,6 +522,11 @@ public class Importer {
         }
     }
 
+    /**
+     * This discards artifacts from the tree which are not contained in the filter
+     * @param root the (sub)tree
+     * @return the modified (sub)tree
+     */
     private TxInfo postFilter(TxInfo root) {
         TxInfo modifierRoot = root;
         if (filter.contains(modifierRoot.path)){

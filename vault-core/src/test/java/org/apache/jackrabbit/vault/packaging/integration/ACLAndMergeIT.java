@@ -24,9 +24,11 @@ import java.util.Map;
 
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.UserManager;
+import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
@@ -416,7 +418,7 @@ public class ACLAndMergeIT extends IntegrationTestBase {
     }
 
     /**
-     * Installs a package with repository level acl and then installs another that removes them again.
+     * Installs a package with repository level acl with AccessControlHandling.MERGE.
      */
     @Test
     public void testRepoACLMerge() throws RepositoryException, IOException, PackageException {
@@ -437,7 +439,7 @@ public class ACLAndMergeIT extends IntegrationTestBase {
     }
 
     /**
-     * Installs a package with repository level acl and then installs another that removes them again.
+     * Installs a package with repository level acl with AccessControlHandling.MERGE_PRESERVE.
      */
     @Test
     public void testRepoACLMergePreserve() throws RepositoryException, IOException, PackageException {
@@ -458,7 +460,7 @@ public class ACLAndMergeIT extends IntegrationTestBase {
     }
 
     /**
-     * Installs a package a the root level (JCRVLT-75)
+     * Installs a package at the root level (JCRVLT-75)
      */
     @Test
     public void testRootACL() throws RepositoryException, IOException, PackageException {
@@ -468,5 +470,18 @@ public class ACLAndMergeIT extends IntegrationTestBase {
 
         // test if nodes and ACLs of first package exist
         assertPermission("/", true, new String[]{"jcr:all"}, "everyone", null);
+    }
+    
+    /** Check effect of filter definitions */
+    @Test
+    public void testACLsOutsideFilter() throws IOException, PackageException, RepositoryException {
+        //JcrUtils.getOrCreateByPath("/testroot/secured", JcrConstants.NT_FOLDER, admin);
+        extractVaultPackageStrict("/test-packages/ac_outside_filter.zip");
+        
+        // test if nodes and ACLs of package exist
+        assertNodeExists("/testroot/node_a");
+        // which ACLs should exist now?
+        assertPermission("/testroot", false, new String[]{"jcr:all"}, "everyone", null);
+        assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
     }
 }

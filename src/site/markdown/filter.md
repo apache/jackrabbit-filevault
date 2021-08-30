@@ -121,14 +121,16 @@ The exact rules are outlined below
 
 Item covered by filter rule | Item contained in the Content Package | Item contained in the Repository (prior to Import/Installation) | State of Item in Repository after Import/Installation
 --- | --- | --- | ---
-no | yes | yes | not touched
-no | no | yes | not touched
-no | yes | no | *nodes which are ancestors of covered rules*: deserialized from content package (for backwards compatibility reasons), *nodes which are not ancestors of covered rules*: not touched. One should not rely on this behaviour, i.e. all items in the content package should always be covered by some filter rule to make the behaviour more explicit.
+no | yes | yes | not touched(*)
+no | no | yes | not touched(*)
+no | yes | no | *nodes which are ancestors of covered rules*: deserialized from content package (for backwards compatibility reasons), *nodes which are not ancestors of covered rules*: not touched. One should not rely on this behaviour, i.e. all items in the content package should always be covered by some filter rule to make the behaviour more explicit.(*)
 no | no | no | not existing (not touched)
 yes | yes | yes | overwritten
 yes | no | yes | removed
 yes | yes | no | deserialized from content package
 yes | no | no | not existing
+
+Mostly for historical reason both authorizable nodes and access control lists behave differently.
 
 ### Uncovered ancestor nodes
 

@@ -68,7 +68,7 @@ public class EffectiveNodeTypeIT extends IntegrationTestBase {
         node.addMixin(MY_MIXIN);
         EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
 
-        // this should be the named property definition from mixin type
+        // this should be the named property definition from mixin type (although its definition is for multi-value)
         Optional<PropertyDefinition> pd = effectiveNodeType.getApplicablePropertyDefinition("my:protectedProperty", false, PropertyType.BOOLEAN);
         assertTrue(pd.isPresent());
         assertTrue(pd.get().isProtected());
@@ -77,6 +77,10 @@ public class EffectiveNodeTypeIT extends IntegrationTestBase {
         pd = effectiveNodeType.getApplicablePropertyDefinition("my:stringProperty", false, PropertyType.STRING);
         assertTrue(pd.isPresent());
         assertFalse(pd.get().isMandatory());
+
+        // no matching property definition for multi value
+        pd = effectiveNodeType.getApplicablePropertyDefinition("my:stringProperty", true, PropertyType.STRING);
+        assertFalse(pd.isPresent());
 
         // this should be inherited property definition from primary type
         pd = effectiveNodeType.getApplicablePropertyDefinition("jcr:createdBy", false, PropertyType.STRING);

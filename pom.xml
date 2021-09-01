@@ -258,7 +258,7 @@
                                 </goals>
                                 <phase>deploy</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <mkdir dir="${basedir}/target/${project.version}" />
                                         <copy todir="${basedir}/target/${project.version}" flatten="true">
                                             <fileset dir="${basedir}">
@@ -331,17 +331,10 @@ A release vote template has been generated for you:
 file://${basedir}/target/vote.txt
                                         </echo>
                                         <echo />
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.apache.ant</groupId>
-                                <artifactId>ant-nodeps</artifactId>
-                                <version>1.8.1</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
                 </plugins>
             </build>

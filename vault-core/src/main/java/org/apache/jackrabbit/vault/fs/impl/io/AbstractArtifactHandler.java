@@ -140,7 +140,7 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
     /**
      * Imports an artifact set below the node.
      *
-     * @param option the import options
+     * @param options the import options
      * @param wspFilter the workspace filter
      * @param parent the parent node
      * @param name the name of the (new) import

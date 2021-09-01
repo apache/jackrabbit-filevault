@@ -482,6 +482,6 @@ public class ACLAndMergeIT extends IntegrationTestBase {
         assertPermissionMissing("/testroot", false, new String[]{"jcr:all"}, "everyone", null);
 
         // this is not contained in the filter root but installed nevertheless (due to ancestor being a filter root)
-        assertPermission("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
+        assertPermissionMissing("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
     }
 }

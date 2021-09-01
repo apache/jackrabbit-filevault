@@ -529,10 +529,7 @@ public class Importer {
      */
     private TxInfo postFilter(TxInfo root) {
         TxInfo modifierRoot = root;
-        if (filter.contains(modifierRoot.path)){
-            return modifierRoot;
-        }
-        if (filter.isAncestor(modifierRoot.path)) {
+        if (filter.isAncestor(modifierRoot.path) || filter.contains(modifierRoot.path)) {
             for (String k : modifierRoot.children().keySet()) {
                 TxInfo child = modifierRoot.children().get(k);
                 modifierRoot.children().put(k, postFilter(child));

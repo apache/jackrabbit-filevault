@@ -26,6 +26,7 @@ import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 
 /**
  * {@code JcrACLManagement}...
+ * This is Jackrabbit/Oak specific as it is not defined by JCR 2.0 how access control policies are persisted.
  */
 public class JcrACLManagement implements ACLManagement {
 

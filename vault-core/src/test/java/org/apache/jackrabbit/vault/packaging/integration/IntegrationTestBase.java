@@ -571,7 +571,7 @@ public class IntegrationTestBase  {
             restrictions.put("rep:glob", new String[]{globRest});
         }
         if (hasPermission(path, allow, privs, name, restrictions) >= 0) {
-            fail("Expected permission should not exist on path " + path + ". permissions: " + dumpPermissions(path));
+            fail("Expected permission should not exist on path " + path + ". Actual permissions: " + dumpPermissions(path));
         }
     }
 
@@ -582,7 +582,7 @@ public class IntegrationTestBase  {
             restrictions.put("rep:glob", new String[]{globRest});
         }
         if (hasPermission(path, allow, privs, name, restrictions) < 0) {
-            fail("Expected permission missing on path " + path + ". permissions: " + dumpPermissions(path));
+            fail("Expected permission missing on path " + path + ". Actual permissions: " + dumpPermissions(path));
         }
     }
 

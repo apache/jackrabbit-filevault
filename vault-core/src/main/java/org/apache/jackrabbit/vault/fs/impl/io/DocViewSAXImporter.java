@@ -1267,7 +1267,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 // check if child is not protected
                                 if (child.getDefinition().isProtected()) {
                                     log.debug("Refuse to delete protected child node: {}", path);
-                                } else if (child.getDefinition().isMandatory() &&  getSiblWithReqPrimType(child) < 0) {
+                                } else if (child.getDefinition().isMandatory() &&  getSiblWithReqPrimType(child) <= 0) {
                                     log.debug("Refuse to delete mandatory child node: {}", path);
                                 } else {
                                     importInfo.onDeleted(path);

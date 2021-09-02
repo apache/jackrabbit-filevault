@@ -1263,10 +1263,11 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                             }
                         } else {
                             if (wspFilter.getImportMode(path) == ImportMode.REPLACE) {
+
                                 // check if child is not protected
                                 if (child.getDefinition().isProtected()) {
                                     log.debug("Refuse to delete protected child node: {}", path);
-                                } else if (child.getDefinition().isMandatory() && numChildren <= JcrConstants.NUM_MANDATORY_CHILDREN) {
+                                } else if (child.getDefinition().isMandatory() &&  getSiblWithReqPrimType(child) < 0) {
                                     log.debug("Refuse to delete mandatory child node: {}", path);
                                 } else {
                                     importInfo.onDeleted(path);
@@ -1293,6 +1294,21 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         } catch (RepositoryException e) {
             throw new SAXException(e);
         }
+    }
+
+    private int getSiblWithReqPrimType(Node child) throws RepositoryException {
+
+        int count=0;
+        Node parent = child.getParent();
+        NodeIterator iter = parent.getNodes();
+        while (iter.hasNext()) {
+            Node sibling = iter.nextNode();
+            if(child.getPrimaryNodeType().toString()
+                    .equals(sibling.getPrimaryNodeType().toString())) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**

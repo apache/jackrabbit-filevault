@@ -300,4 +300,12 @@ public class PackageTypeValidatorTest {
         ValidationExecutorTest.assertViolation(validator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, PackageType.CONTAINER)));
     }
 
+    @Test
+    public void testContentPackageWithInstallFolderWithoutOsgiBundleConfigs() {
+        validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_IMMUTABLE_ROOT_NODE_NAMES, null);
+        MatcherAssert.assertThat(validator.validate(new NodeContextImpl("/content/en/tools", Paths.get("content", "en", "tools"), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.validate(new NodeContextImpl("/content/en/tools/config", Paths.get("content", "en", "tools", "config"), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.validate(new NodeContextImpl("/content/en/tools/config/.content.xml", Paths.get("content", "en", "tools", "config", ".content.xml"), Paths.get(""))), AnyValidationMessageMatcher.noValidationInCollection());
+    }
+
 }

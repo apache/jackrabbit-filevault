@@ -139,7 +139,7 @@ public final class ValidationExecutor {
     }
 
     /** 
-     * Validates a package META-INF input stream  with all relevant validators.
+     * Validates a package's META-INF input stream  with all relevant validators.
      * 
      * @param input the input stream if it is a file or {@code null} in case it is called for a folder. It is not closed during processing, this is obligation of the caller. Should not be buffered as buffering is done internally! 
      * @param filePath should be relative to the META-INF directory (i.e. should not start with {@code META-INF})
@@ -160,7 +160,9 @@ public final class ValidationExecutor {
     }
 
     /** 
-     * Validates a package jcr_root input stream  with all relevant validators.
+     * Validates a package's input stream (below jcr_root, no metadata) with all relevant validators.
+     * <p>
+     * As some validators rely on the order of validated files, make sure to first call for streams representing the parent nodes (i.e. folders and .content.xml streams), before calling it for streams representing the children.
      * 
      * @param input the input stream if it is a file or {@code null} in case it is called for a folder. It is not closed during processing, this is obligation of the caller. Should not be buffered as buffering is done internally! 
      * @param filePath file path relative to the content package jcr root (i.e. the folder named "jcr_root")

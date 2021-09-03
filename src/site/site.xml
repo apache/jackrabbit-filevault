@@ -40,7 +40,7 @@
         </item>
         <item href="config.html" name="Vault FS Configuration"/>
         <item href="settings.html" name="Settings"/>
-        <item href="nodetypes.html" name="Node Types"/>
+        <item href="nodetypes.html" name="Node Types and Namespaces"/>
         <item href="privileges.html" name="Privileges"/>
         <item href="installhooks.html" name="Install Hooks"/>
       </item>

@@ -39,6 +39,8 @@ import javax.jcr.nodetype.NodeType;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.io.AutoSave;
+import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -264,17 +266,21 @@ public class RepositoryCopier {
         currentSize = 0;
         totalSize = 0;
         start = System.currentTimeMillis();
-        copy(srcRoot, dstRoot, dstName, recursive);
+        
+        AutoSave autoSave = new AutoSave();
+        autoSave.setThreshold(getBatchSize());
+        autoSave.setTracker(new ProgressTracker(tracker));
+        copy(autoSave, srcRoot, dstRoot, dstName, recursive);
         if (numNodes > 0) {
             track("", "Saving %d nodes...", numNodes);
-            dstSession.save();
+            autoSave.save(dstSession, false);
             track("", "Done.");
         }
         long end = System.currentTimeMillis();
         track("", "Copy completed. %d nodes in %dms. %d bytes", totalNodes, end-start, totalSize);
     }
 
-    private void copy(Node src, Node dstParent, String dstName, boolean recursive)
+    private void copy(AutoSave autoSave, Node src, Node dstParent, String dstName, boolean recursive)
             throws RepositoryException {
         if (abort) {
             return;
@@ -440,7 +446,7 @@ public class RepositoryCopier {
                     Node child = niter.nextNode();
                     String cName = checkNameSpace(child.getName(), src.getSession(), dst.getSession());
                     names.remove(cName);
-                    copy(child, dst, cName, true);
+                    copy(autoSave, child, dst, cName, true);
                 }
                 if (resumeFrom == null) {
                     // check if we need to order
@@ -471,29 +477,27 @@ public class RepositoryCopier {
 
         if (!skip) {
             numNodes++;
+            autoSave.modified(1);
         }
 
         // check for save
-        if (numNodes >= batchSize) {
-            try {
-                track("", "Intermediate saving %d nodes (%d kB)...", numNodes, currentSize/1000);
-                long now = System.currentTimeMillis();
-                dst.getSession().save();
-                long end = System.currentTimeMillis();
-                track("", "Done in %d ms. Total time: %d, total nodes %d, %d kB", end-now, end-start, totalNodes, totalSize/1000);
-                lastKnownGood = currentPath;
-                numNodes = 0;
-                currentSize = 0;
-                if (throttle > 0) {
-                    track("", "Throttling enabled. Waiting %d second%s...", throttle, throttle == 1 ? "" : "s");
-                    try {
-                        Thread.sleep(throttle * 1000);
-                    } catch (InterruptedException e) {
-                        // ignore
-                    }
+        if (autoSave.needsSave()) {
+            track("", "Intermediate saving %d nodes (%d kB)...", numNodes, currentSize/1000);
+            long now = System.currentTimeMillis();
+            autoSave.save(dst.getSession(), true);
+            long end = System.currentTimeMillis();
+            track("", "Done in %d ms. Total time: %d, total nodes %d, %d kB", end-now, end-start, totalNodes, totalSize/1000);
+            lastKnownGood = currentPath;
+            numNodes = 0;
+            currentSize = 0;
+            if (throttle > 0) {
+                track("", "Throttling enabled. Waiting %d second%s...", throttle, throttle == 1 ? "" : "s");
+                try {
+                    Thread.sleep(throttle * 1000);
+                } catch (InterruptedException e) {
+                    log.warn("Interrupted while waiting", e);
+                    Thread.currentThread().interrupt();
                 }
-            } catch (RepositoryException e) {
-                log.error("Error during intermediate save ({}); try again later: {}", numNodes, e.toString());
             }
         }
     }

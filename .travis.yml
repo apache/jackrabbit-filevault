@@ -44,7 +44,7 @@ env:
     # available build differs among platforms.
     - JDK="adopt@1.8"
     - JDK="adopt@1.11"
-    - JDK="adopt@1.15"
+    - JDK="adopt@1.16"
 jobs:
   include:
   - os: linux
@@ -70,9 +70,9 @@ addons:
 script:
   - | 
     if [ "$SONARQUBE_EXECUTION" == "true" ]; then 
-      mvn clean verify sonar:sonar -B -Pjacoco-report -Dsonar.projectKey=apache_jackrabbit-filevault -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml
+      mvn clean verify site sonar:sonar -B -Pjacoco-report -Dsonar.projectKey=apache_jackrabbit-filevault -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml
     else
-      mvn clean verify -B
+      mvn clean verify site -B
     fi
 # If you use Gradle, cleanup the build cache from lock/temporary files
 before_cache:

@@ -14,7 +14,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd " child.project.url.inherit.append.path="false">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-4_0_0.xsd " child.project.url.inherit.append.path="false">
     <modelVersion>4.0.0</modelVersion>
     <!-- ====================================================================== -->
     <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>23</version>
+        <version>24</version>
         <relativePath />
     </parent>
 
@@ -31,7 +31,7 @@
     <!-- ====================================================================== -->
     <groupId>org.apache.jackrabbit.vault</groupId>
     <artifactId>parent</artifactId>
-    <version>3.4.11-SNAPSHOT</version>
+    <version>3.5.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Apache Jackrabbit FileVault (Parent Project)</name>
@@ -48,16 +48,18 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jackrabbit.version>2.20.2</jackrabbit.version>
-        <oak.version>1.38.0</oak.version>
-        <slf4j.version>1.7.6</slf4j.version>
+        <jackrabbit.version>2.20.3</jackrabbit.version>
+        <oak.version>1.40.0</oak.version>
+        <slf4j.version>1.7.25</slf4j.version>
         <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
-        <java.target.version>1.8</java.target.version>
         <bnd.version>5.3.0</bnd.version>
-        <maven.version>3.6.1</maven.version><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
+        <minimalMavenBuildVersion>3.6.1</minimalMavenBuildVersion><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
+        <minimalJavaBuildVersion>1.8</minimalJavaBuildVersion>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <surefire.version>3.0.0-M4</surefire.version>
         <sling.url>http://localhost:4502</sling.url>
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
+        <project.build.outputTimestamp>2021-09-01T12:49:37Z</project.build.outputTimestamp>
     </properties>
 
     <!-- ====================================================================== -->
@@ -104,7 +106,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <url>https://travis-ci.org/apache/jackrabbit-filevault</url>
     </ciManagement>
 
-    <url>http://jackrabbit.apache.org/filevault/</url>
+    <url>https://jackrabbit.apache.org/filevault/</url>
 
     <!-- ====================================================================== -->
     <!-- B U I L D D E F I N I T I O N -->
@@ -145,8 +147,12 @@ Bundle-Category: jackrabbit
 -snapshot: SNAPSHOT
 # export all versioned packages except for conditional ones (https://github.com/bndtools/bnd/issues/3721#issuecomment-579026778)
 -exportcontents: ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
-# support only DS 1.3 (https://github.com/bndtools/bnd/pull/3121/files)
--dsannotations-options: version;maximum=1.3.0
+# support only DS 1.4 (https://github.com/bndtools/bnd/pull/3121/files)
+-dsannotations-options: version;maximum=1.4.0
+# generate error (instead of warning) when exported package uses private (non-exported) reference
+-fixupmessages:"Export *,  has \\d+,  private references"; \
+    restrict:=warning; \
+    is:=error
                                 ]]></bnd>
                             </configuration>
                         </execution>
@@ -199,7 +205,6 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
@@ -207,7 +212,6 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.0.0-M5</version>
                     <configuration>
                         <systemPropertyVariables>
                             <!-- put derby.log (created for Jackrabbit based ITs below target instead of the current directory) -->
@@ -232,7 +236,7 @@ Bundle-Category: jackrabbit
                         <dependency>
                             <groupId>org.apache.maven.release</groupId>
                             <artifactId>maven-release-oddeven-policy</artifactId>
-                            <version>3.0.0-M1</version>
+                            <version>3.0.0-M4</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -262,55 +266,21 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.9.1</version>
                     <configuration>
+                        <skip>true</skip><!-- skip for all modules where not explicitly enabled -->
                         <skipDeploy>true</skipDeploy><!-- always deploy via maven-scm-publish-plugin -->
                     </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.maven.doxia</groupId>
-                            <artifactId>doxia-module-markdown</artifactId>
-                            <version>1.9.1</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.1.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.2.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0-M3</version>
-                    <executions>
-                        <execution>
-                            <id>enforce-java-and-maven</id>
-                            <goals>
-                                <goal>enforce</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <requireJavaVersion>
-                                        <version>${java.target.version}</version>
-                                    </requireJavaVersion>
-                                    <requireMavenVersion>
-                                        <version>${maven.version}</version>
-                                    </requireMavenVersion>
-                                </rules>
-                            </configuration>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.6</version>
+                    <version>0.8.7</version>
+                </plugin>
+                <!-- update from 1.4.1 in ASF parent -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.0.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -318,14 +288,23 @@ Bundle-Category: jackrabbit
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <consoleOutput>true</consoleOutput>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <!-- compiler stuff -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>${java.target.version}</source>
-                    <target>${java.target.version}</target>
                     <debug>true</debug>
                     <showDeprecation>false</showDeprecation>
                     <showWarnings>true</showWarnings>
@@ -359,18 +338,6 @@ Bundle-Category: jackrabbit
     <!-- ====================================================================== -->
     <dependencyManagement>
         <dependencies>
-            <!-- CLI Stuff -->
-            <dependency>
-                <groupId>org.apache.mahout.commons</groupId>
-                <artifactId>commons-cli</artifactId>
-                <version>2.0-mahout</version>
-            </dependency>
-            <dependency>
-                <groupId>jline</groupId>
-                <artifactId>jline</artifactId>
-                <version>0.9.94</version>
-            </dependency>
-
             <!-- jackrabbit -->
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
@@ -451,9 +418,14 @@ Bundle-Category: jackrabbit
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
                 <version>18.0.0</version>
-                <scope>provided</scope>
+                <scope>compile</scope>
             </dependency>
-
+            <dependency>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>biz.aQute.bnd.annotation</artifactId>
+                <version>${bnd.version}</version>
+                <scope>compile</scope>
+            </dependency>
             <!-- other -->
 
             <!-- OSGi -->
@@ -517,12 +489,12 @@ Bundle-Category: jackrabbit
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.9</version>
+                <version>3.6</version>
             </dependency>
             <dependency>
-                <groupId>commons-collections</groupId>
-                <artifactId>commons-collections</artifactId>
-                <version>3.2.2</version>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>4.1</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
@@ -532,12 +504,12 @@ Bundle-Category: jackrabbit
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpmime</artifactId>
-                <version>4.5.3</version>
+                <version>4.5.8</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>4.5.3</version>
+                <version>4.5.8</version>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>
@@ -557,34 +529,6 @@ Bundle-Category: jackrabbit
     <!-- P R O F I L E S -->
     <!-- ====================================================================== -->
     <profiles>
-        <profile>
-            <!-- ====================================================================== -->
-            <!-- R A T P L U G I N -->
-            <!-- ====================================================================== -->
-            <id>rat-check</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.rat</groupId>
-                        <artifactId>apache-rat-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>check</goal>
-                                </goals>
-                                <configuration>
-                                    <consoleOutput>true</consoleOutput>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>java9-or-above</id>
             <activation>

@@ -535,7 +535,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
                 if (set.getType() != null) {
                     writer.writeAttribute("type", set.getType());
                 }
-                for (PathFilterSet.Entry<PathFilter> entry: set.getEntries()) {
+                for (FilterSet.Entry<PathFilter> entry: set.getEntries()) {
                     // only handle path filters
                     PathFilter filter = entry.getFilter();
                     if (filter instanceof DefaultPathFilter) {
@@ -558,9 +558,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             writer.writeEndElement();
             writer.writeEndDocument();
             source = out.toByteArray();
-        } catch (XMLStreamException e) {
-            throw new IllegalStateException(e);
-        } catch (IOException e) {
+        } catch (XMLStreamException|IOException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -586,7 +584,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             throws RepositoryException {
         ProgressTracker tracker = new ProgressTracker(listener);
         // get common ancestor
-        Tree<PathFilterSet> tree = new Tree<PathFilterSet>();
+        Tree<PathFilterSet> tree = new Tree<>();
         for (PathFilterSet set: nodesFilterSets) {
             tree.put(set.getRoot(), set);
         }
@@ -630,8 +628,8 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         int result = 1;
         result = prime * result + ((globalIgnored == null) ? 0 : globalIgnored.hashCode());
         result = prime * result + ((importMode == null) ? 0 : importMode.hashCode());
-        result = prime * result + ((nodesFilterSets == null) ? 0 : nodesFilterSets.hashCode());
-        result = prime * result + ((propsFilterSets == null) ? 0 : propsFilterSets.hashCode());
+        result = prime * result + (nodesFilterSets.hashCode());
+        result = prime * result + (propsFilterSets.hashCode());
         result = prime * result + ((referenceFilterSets == null) ? 0 : referenceFilterSets.hashCode());
         long temp;
         temp = Double.doubleToLongBits(version);
@@ -655,15 +653,9 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             return false;
         if (importMode != other.importMode)
             return false;
-        if (nodesFilterSets == null) {
-            if (other.nodesFilterSets != null)
-                return false;
-        } else if (!nodesFilterSets.equals(other.nodesFilterSets))
+        if (!nodesFilterSets.equals(other.nodesFilterSets))
             return false;
-        if (propsFilterSets == null) {
-            if (other.propsFilterSets != null)
-                return false;
-        } else if (!propsFilterSets.equals(other.propsFilterSets))
+        if (!propsFilterSets.equals(other.propsFilterSets))
             return false;
         if (referenceFilterSets == null) {
             if (other.referenceFilterSets != null)

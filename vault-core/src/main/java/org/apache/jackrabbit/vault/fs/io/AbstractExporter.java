@@ -419,7 +419,7 @@ public abstract class AbstractExporter implements AutoCloseable {
             throws RepositoryException, IOException;
 
     /**
-     * <p>The specified stream remains open after this method returns.
+     * <p>The specified stream is automatically closed after this method returns or throws an exception.
      * @param in
      * @param relPath
      * @throws IOException

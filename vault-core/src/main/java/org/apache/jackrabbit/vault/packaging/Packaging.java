@@ -92,6 +92,15 @@ public interface Packaging {
      * Returns a JCR-based package registry using the given session.
      * @param session the JCR session to use for reading/writing nodes in the repository
      * @return the JCR-based package registry
+     * @deprecated Rather use {@link #getJcrBasedPackageRegistry(Session)} which doesn't return a private class
      */
+    @Deprecated
     JcrPackageRegistry getJcrPackageRegistry(Session session);
+
+    /**
+     * Returns a JCR-based package registry using the given session.
+     * @param session the JCR session to use for reading/writing nodes in the repository
+     * @return the JCR-based package registry
+     */
+    PackageRegistry getJcrBasedPackageRegistry(Session session);
 }

@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.impl;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.PatternSyntaxException;
@@ -33,6 +34,7 @@ import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
+import org.apache.jackrabbit.vault.fs.io.ZipNioArchive;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
@@ -41,7 +43,6 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
     private static final Logger log = LoggerFactory.getLogger(ZipVaultPackage.class);
 
+    private static final String PROP_USE_NIO_ARCHIVE = "vault.useNioArchive"; // system or framework property, indicating that ZipNioArchive should be used instead of ZipArchive
     private Archive archive;
 
     public ZipVaultPackage(File file, boolean isTmpFile) throws IOException {
@@ -61,9 +63,14 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
     public ZipVaultPackage(File file, boolean isTmpFile, boolean strict)
             throws IOException {
-        this(new ZipArchive(file, isTmpFile), strict);
+        this(file.toPath(), isTmpFile, strict);
     }
 
+    public ZipVaultPackage(Path file, boolean isTmpFile, boolean strict) throws IOException {
+        this(OsgiAwarePropertiesUtil.getBooleanProperty(PROP_USE_NIO_ARCHIVE) ? new ZipNioArchive(file, isTmpFile) : new ZipArchive(file.toFile(), isTmpFile), strict);
+    }
+
+    
     public ZipVaultPackage(Archive archive, boolean strict)
             throws IOException {
         this.archive = archive;
@@ -193,27 +200,41 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         InstallHookProcessor hooks = opts instanceof InstallHookProcessorFactory ?
                 ((InstallHookProcessorFactory) opts).createInstallHookProcessor()
                 : new InstallHookProcessorImpl();
-        if (!opts.isDryRun()) {
-            hooks.registerHooks(archive, opts.getHookClassLoader());
-        }
-
-        checkAllowanceToInstallPackage(session, hooks, securityConfig);
-
-        Importer importer = new Importer(opts, isStrictByDefault);
-        AccessControlHandling ac = getACHandling();
-        if (opts.getAccessControlHandling() == null) {
-            opts.setAccessControlHandling(ac);
-        }
-        String cndPattern = getProperty(NAME_CND_PATTERN);
-        if (cndPattern != null) {
-            try {
-                opts.setCndPattern(cndPattern);
-            } catch (PatternSyntaxException e) {
-                throw new PackageException("Specified CND pattern not valid.", e);
+        try {
+            if (!opts.isDryRun()) {
+                hooks.registerHooks(archive, opts.getHookClassLoader());
             }
+            checkAllowanceToInstallPackage(session, hooks, securityConfig);
+    
+            // check for disable intermediate saves (JCRVLT-520)
+            if (Boolean.parseBoolean(getProperty(PackageProperties.NAME_DISABLE_INTERMEDIATE_SAVE))) {
+                // MAX_VALUE disables saving completely, therefore we have to use a lower value!
+                opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
+            }
+    
+            Importer importer = new Importer(opts, isStrictByDefault);
+            AccessControlHandling ac = getACHandling();
+            if (opts.getAccessControlHandling() == null) {
+                opts.setAccessControlHandling(ac);
+            }
+            String cndPattern = getProperty(NAME_CND_PATTERN);
+            if (cndPattern != null) {
+                try {
+                    opts.setCndPattern(cndPattern);
+                } catch (PatternSyntaxException e) {
+                    throw new PackageException("Specified CND pattern not valid.", e);
+                }
+            }
+    
+            return new InstallContextImpl(session, "/", this, importer, hooks);
+        } catch (RepositoryException|PackageException e) {
+            try {
+                hooks.close();
+            } catch (IOException exceptionDuringClose) {
+                e.addSuppressed(exceptionDuringClose);
+            }
+            throw e;
         }
-
-        return new InstallContextImpl(session, "/", this, importer, hooks);
     }
 
     protected void checkAllowanceToInstallPackage(@NotNull Session session, @NotNull InstallHookProcessor hookProcessor, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig) throws PackageException, RepositoryException {
@@ -258,7 +279,11 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 log.error("Error during install.", e);
                 ctx.setPhase(InstallContext.Phase.INSTALL_FAILED);
                 hooks.execute(ctx);
-                throw new PackageException(e);
+                if (e instanceof RepositoryException) {
+                    throw (RepositoryException)e;
+                } else {
+                    throw new PackageException(e);
+                }
             }
             ctx.setPhase(InstallContext.Phase.INSTALLED);
             if (!hooks.execute(ctx)) {
@@ -274,6 +299,11 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         } finally {
             ctx.setPhase(InstallContext.Phase.END);
             hooks.execute(ctx);
+            try {
+                hooks.close();
+            } catch (IOException e) {
+                log.warn("Error closing hook processor", e);
+            }
         }
         if (subPackages != null) {
             subPackages.addAll(importer.getSubPackages());

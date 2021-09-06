@@ -168,11 +168,10 @@ public class JcrExporter extends AbstractExporter {
                 content.setProperty(JcrConstants.JCR_MIMETYPE, "application/octet-stream");
             }
             b.dispose();
-            in.close();
         } catch (RepositoryException e) {
-            IOException io = new IOException("Error while writing file " + relPath);
-            io.initCause(e);
-            throw io;
+            throw new IOException("Error while writing file " + relPath, e);
+        } finally {
+            in.close();
         }
     }
 

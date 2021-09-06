@@ -22,14 +22,13 @@ import java.io.IOException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
@@ -59,7 +58,7 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
      *
      * Handles generic artifact sets
      */
-    public ImportInfoImpl accept(WorkspaceFilter wspFilter, Node parent,
+    public ImportInfoImpl accept(ImportOptions options, WorkspaceFilter wspFilter, Node parent,
                                  String name, ArtifactSetImpl artifacts)
             throws RepositoryException, IOException {
         Artifact primary = artifacts.getPrimaryData();
@@ -90,14 +89,10 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
                 }
             }
             try {
-                DocViewSAXImporter handler = new DocViewSAXImporter(parent, name, artifacts, wspFilter);
+                DocViewSAXImporter handler = new DocViewSAXImporter(parent, name, artifacts, wspFilter, options.getIdConflictPolicy());
                 handler.setAclHandling(getAcHandling());
                 handler.setCugHandling(getCugHandling());
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                factory.setNamespaceAware(true);
-                factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
-                SAXParser parser = factory.newSAXParser();
-                parser.parse(source, handler);
+                parseXmlWithSaxHandler(source, handler);
                 info.merge(handler.getInfo());
             } catch (ParserConfigurationException e) {
                 throw new RepositoryException(e);

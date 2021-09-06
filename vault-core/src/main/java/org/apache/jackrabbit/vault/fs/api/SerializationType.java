@@ -44,8 +44,10 @@ public enum SerializationType {
     XML_DOCVIEW("xml/docview", "text/xml"),
 
     /**
-     * specifies that the source is a compact node type definition
+     * specifies that the source is a compact node type definition (xcnd file, only relevant for JCR 1.0), regular CND files should be placed in meta data
+     * @deprecated Don't rely on this serialization type at all and rather place CND files in metadata.
      */
+    @Deprecated
     CND("text/cnd", "text/cnd"),
 
     /**

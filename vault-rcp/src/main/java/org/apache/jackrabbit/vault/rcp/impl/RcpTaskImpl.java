@@ -203,6 +203,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
                     thread.join(10000);
                 } catch (InterruptedException e) {
                     log.error("Error while waiting for thread: " + thread.getName(), e);
+                    thread.interrupt();
                 }
                 if (thread.isAlive()) {
                     // try to interrupt the thread

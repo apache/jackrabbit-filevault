@@ -19,14 +19,17 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
@@ -45,6 +48,11 @@ import org.slf4j.LoggerFactory;
 public abstract class PackagePropertiesImpl implements PackageProperties {
 
     private static final Logger log = LoggerFactory.getLogger(PackagePropertiesImpl.class);
+
+    /** supports parsing dates given out via {@code SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")} */
+    private static final DateTimeFormatter DATE_TIME_FORMATTER_LEGACY = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    /** supports parsing dates given out via {@code SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")}" */
+    private static final DateTimeFormatter DATE_TIME_FORMATTER_ISO_8601 = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     private PackageId id;
 
@@ -211,22 +219,29 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
             return dependenciesLocations;
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public Calendar getDateProperty(String name) {
+        Calendar result = null;
         try {
-            // TODO: add timezone if not there?
             String p = getProperty(name);
-            return p == null
-                    ? null
-                    : ISO8601.parse(p);
+            if (p != null) {
+                ZonedDateTime zonedDateTime;
+                try {
+                    zonedDateTime = ZonedDateTime.parse(p, DATE_TIME_FORMATTER_ISO_8601);
+                } catch (DateTimeParseException e) {
+                    // support dates in legacy format (used in package-maven-plugin till version 1.0.3, compare with https://issues.apache.org/jira/browse/JCRVLT-276)
+                    zonedDateTime = ZonedDateTime.parse(p, DATE_TIME_FORMATTER_LEGACY);
+                }
+                result = GregorianCalendar.from(zonedDateTime);
+            }
         } catch (Exception e) {
             log.error("Error while converting date property", e);
-            return null;
         }
+        return result;
     }
 
     /**

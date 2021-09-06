@@ -70,6 +70,7 @@ public class PackagingImpl implements Packaging {
     @Reference (cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC,
             policyOption = ReferencePolicyOption.GREEDY)
+    @SuppressWarnings("java:S3077") // volatile mandated by OSGi spec
     volatile List<PackageRegistry> registries;
 
     /**
@@ -94,10 +95,10 @@ public class PackagingImpl implements Packaging {
         @AttributeDefinition(description = "The locations in the repository which are used by the package manager")
         String[] packageRoots() default {"/etc/packages"};
         
-        @AttributeDefinition(description = "The authorizable ids which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
+        @AttributeDefinition(description = "The authorizable ids or principal names which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForHookExecution();
         
-        @AttributeDefinition(description = "The authorizable ids which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
+        @AttributeDefinition(description = "The authorizable ids or principal names which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForRootInstallation();
         
         @AttributeDefinition(description = "The default value for strict imports (i.e. whether it just logs certain errors or always throws exceptions")
@@ -167,6 +168,12 @@ public class PackagingImpl implements Packaging {
     @Override
     public JcrPackageRegistry getJcrPackageRegistry(Session session) {
         return getJcrPackageRegistry(session, true);
+    }
+
+    
+    @Override
+    public PackageRegistry getJcrBasedPackageRegistry(Session session) {
+        return getJcrPackageRegistry(session);
     }
 
     private JcrPackageRegistry getJcrPackageRegistry(Session session, boolean useBaseRegistry) {

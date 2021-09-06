@@ -51,6 +51,7 @@ public class InputStreamPump extends InputStream {
 
     private Thread pumpThread;
 
+    @SuppressWarnings("java:S3077") // error is only written from one thread and used as immutable class
     private volatile Exception error;
 
     public InputStreamPump(InputStream source, final Pump pump) throws IOException {
@@ -141,6 +142,7 @@ public class InputStreamPump extends InputStream {
             pumpThread.join();
             in.close();
         } catch (InterruptedException e) {
+            pumpThread.interrupt();
             throw new IOException(e);
         }
         if (error != null) {
@@ -149,11 +151,13 @@ public class InputStreamPump extends InputStream {
     }
 
     @Override
-    public void mark(int readlimit) {
+    public synchronized void mark(int readlimit) {
+        throw new UnsupportedOperationException("Mark not supported");
     }
 
     @Override
-    public void reset() throws IOException {
+    public synchronized void reset() throws IOException {
+        throw new UnsupportedOperationException("Reset not supported");
     }
 
     @Override

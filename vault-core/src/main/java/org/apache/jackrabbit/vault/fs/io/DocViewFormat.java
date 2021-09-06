@@ -41,7 +41,9 @@ import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.Checksum;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
@@ -144,13 +146,16 @@ public class DocViewFormat {
                 // cannot use XMlStreamReader due to comment handling:
                 // https://stackoverflow.com/questions/15792007/why-does-xmlstreamreader-staxsource-strip-comments-from-xml
                 TransformerFactory tf = TransformerFactory.newInstance();
-                tf.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+                tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
                 SAXSource saxSource = new SAXSource(new InputSource(in));
                 SAXParserFactory sf = SAXParserFactory.newInstance();
                 sf.setNamespaceAware(true);
                 sf.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-                sf.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
-                saxSource.setXMLReader(new NormalizingSaxFilter(sf.newSAXParser().getXMLReader()));
+                SAXParser parser = sf.newSAXParser();
+                parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+                parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+                saxSource.setXMLReader(new NormalizingSaxFilter(parser.getXMLReader()));
                 Transformer t = tf.newTransformer();
                 StAXResult result = new StAXResult(writer);
                 t.transform(saxSource, result);

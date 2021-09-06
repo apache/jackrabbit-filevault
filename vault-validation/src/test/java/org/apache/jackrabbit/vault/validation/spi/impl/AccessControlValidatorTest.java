@@ -40,7 +40,7 @@ public class AccessControlValidatorTest {
 
     @Test
     public void testWithACLsAndMerge() {
-        validator = new AccessControlValidator(ValidationMessageSeverity.ERROR, AccessControlHandling.MERGE);
+        validator = new AccessControlValidator(false, ValidationMessageSeverity.ERROR, AccessControlHandling.MERGE);
         
         Map<String, DocViewProperty> props = new HashMap<>();
         props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
@@ -53,7 +53,7 @@ public class AccessControlValidatorTest {
 
     @Test
     public void testWithoutACLsAndClear() {
-        validator = new AccessControlValidator(ValidationMessageSeverity.ERROR, AccessControlHandling.CLEAR);
+        validator = new AccessControlValidator(false, ValidationMessageSeverity.ERROR, AccessControlHandling.CLEAR);
         
         Map<String, DocViewProperty> props = new HashMap<>();
         props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
@@ -66,7 +66,7 @@ public class AccessControlValidatorTest {
 
     @Test
     public void testWithoutACLsAndMerge() {
-        validator = new AccessControlValidator(ValidationMessageSeverity.ERROR, AccessControlHandling.MERGE);
+        validator = new AccessControlValidator(false, ValidationMessageSeverity.ERROR, AccessControlHandling.MERGE);
         
         Map<String, DocViewProperty> props = new HashMap<>();
         props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
@@ -75,11 +75,15 @@ public class AccessControlValidatorTest {
         Collection<ValidationMessage> messages = validator.validate(node,  new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("base")), false);
         MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(validator.done(), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AccessControlValidator.MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST, AccessControlHandling.MERGE)));
+        
+        // the same test in incremental runs
+        validator = new AccessControlValidator(true, ValidationMessageSeverity.ERROR, AccessControlHandling.MERGE);
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
     public void testWithACLsAndClear() {
-        validator = new AccessControlValidator(ValidationMessageSeverity.ERROR, AccessControlHandling.CLEAR);
+        validator = new AccessControlValidator(false, ValidationMessageSeverity.ERROR, AccessControlHandling.CLEAR);
         
         Map<String, DocViewProperty> props = new HashMap<>();
         props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
@@ -94,7 +98,7 @@ public class AccessControlValidatorTest {
 
     @Test
     public void testWithACLsAndIgnore() {
-        validator = new AccessControlValidator(ValidationMessageSeverity.ERROR, AccessControlHandling.IGNORE);
+        validator = new AccessControlValidator(false, ValidationMessageSeverity.ERROR, AccessControlHandling.IGNORE);
         
         Map<String, DocViewProperty> props = new HashMap<>();
         props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));

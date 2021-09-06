@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -162,7 +163,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
      */
     @Test
     public void testRegisterFileTwiceFails() throws IOException, PackageException {
-        File file = getTempFile("/test-packages/tmp.zip");
+        File file = getFile("/test-packages/tmp.zip");
         PackageId id = registry.register(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
         assertTrue("file should still exist", file.exists());
@@ -178,8 +179,6 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         } catch (PackageExistsException e) {
             // expected
             assertEquals("colliding pid must be correct", id, e.getId());
-        } finally {
-            file.delete();
         }
     }
 
@@ -188,7 +187,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
      */
     @Test
     public void testRegisterTempFileTwiceFails() throws IOException, PackageException {
-        File file = getTempFile("/test-packages/tmp.zip");
+        File file = getFile("/test-packages/tmp.zip");
         PackageId id = registry.register(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
 
@@ -197,7 +196,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             assertFalse("Package is not installed", pkg.isInstalled());
         }
 
-        file = getTempFile("/test-packages/tmp.zip");
+        file = getFile("/test-packages/tmp.zip");
         try {
             registry.register(file, false);
             fail("registering the package twice should fail");
@@ -212,12 +211,11 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
      */
     @Test
     public void testRegisterFileTwiceSucceeds() throws IOException, PackageException {
-        File file = getTempFile("/test-packages/tmp.zip");
+        File file = getFile("/test-packages/tmp.zip");
         PackageId id = registry.register(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
         assertTrue("file should still exist", file.exists());
         registry.register(file, true);
-        file.delete();
         // make sure package is still accessible after original has been deleted
         try (RegisteredPackage registeredPackage = registry.open(id)) {
             try (VaultPackage pack = registeredPackage.getPackage()) {
@@ -231,7 +229,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
      */
     @Test
     public void testRegisterExternalFileTwiceFails() throws IOException, PackageException {
-        File file = getTempFile("/test-packages/tmp.zip");
+        File file = getFile("/test-packages/tmp.zip");
         PackageId id = registry.registerExternal(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
 
@@ -240,7 +238,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             assertFalse("Package is not installed", pkg.isInstalled());
         }
 
-        file = getTempFile("/test-packages/tmp.zip");
+        file = getFile("/test-packages/tmp.zip");
         try {
             registry.registerExternal(file, false);
             fail("registering the package twice should fail");
@@ -256,7 +254,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
     @SuppressWarnings("deprecation")
     @Test
     public void testRegisterExternalFileTwiceFailsLoadedRegistry() throws IOException, PackageException {
-        File file = getTempFile("/test-packages/tmp.zip");
+        File file = getFile("/test-packages/tmp.zip");
         PackageId id = registry.registerExternal(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
 
@@ -283,12 +281,11 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
      */
     @Test
     public void testRegisterExternalFileTwiceSucceeds() throws IOException, PackageException {
-        File file = getTempFile("/test-packages/tmp.zip");
+        File file = getFile("/test-packages/tmp.zip");
         PackageId id = registry.registerExternal(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
         assertTrue("file should still exist", file.exists());
         registry.registerExternal(file, true);
-        file.delete();
     }
     
     /**
@@ -296,7 +293,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
      */
     @Test
     public void testRegisterExternalWithSubPackages() throws IOException, PackageException {
-        File file = getTempFile("/test-packages/subtest.zip");
+        File file = getFile("/test-packages/subtest.zip");
         registry.registerExternal(file, false);
 
         assertTrue(registry.contains(PACKAGE_ID_SUB_A));
@@ -309,7 +306,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
      */
     @Test
     public void testInstallExternalWithSubPackages() throws IOException, PackageException {
-        File file = getTempFile("/test-packages/subtest.zip");
+        File file = getFile("/test-packages/subtest.zip");
         PackageId parentPkg = registry.registerExternal(file, false);
         
         ExecutionPlanBuilder builder = registry.createExecutionPlan();
@@ -332,7 +329,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
 
     @Test
     public void testInstallExternalUnScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
-        File file = getTempFile("/test-packages/mixed_package.zip");
+        File file = getFile("/test-packages/mixed_package.zip");
         
         cleanPaths(APPLICATION_PATHS);
         cleanPaths(CONTENT_PATHS);
@@ -352,7 +349,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
 
     @Test
     public void testInstallExternalContentScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
-        File file = getTempFile("/test-packages/mixed_package.zip");
+        File file = getFile("/test-packages/mixed_package.zip");
 
         cleanPaths(APPLICATION_PATHS);
         cleanPaths(CONTENT_PATHS);
@@ -377,7 +374,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
 
     @Test
     public void testInstallExternalApplicationScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
-        File file = getTempFile("/test-packages/mixed_package.zip");
+        File file = getFile("/test-packages/mixed_package.zip");
         
         cleanPaths(APPLICATION_PATHS);
         cleanPaths(CONTENT_PATHS);
@@ -681,6 +678,25 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         getFreshRegistryWithDefaultConstructor("test-package.zip", "test-package.xml");
         assertTrue(registry.contains(TEST_PACKAGE_ID));
         assertEquals(Collections.singleton(TEST_PACKAGE_ID), registry.packages());
+    }
+
+    @Test
+    public void testMetadataPersistance() throws IOException, PackageException {
+        File file = getFile("/test-packages/package_1.0.zip");
+        PackageId pkg = registry.register(file, false);
+        // check metadata
+        assertEquals(FSPackageStatus.REGISTERED, registry.getInstallState(pkg).getStatus());
+        RegisteredPackage registeredPackage = registry.open(pkg);
+        assertNotNull(registeredPackage);
+        registry.installPackage(admin, registeredPackage, getDefaultOptions(), true);
+        // check metadata
+        assertEquals(FSPackageStatus.EXTRACTED, registry.getInstallState(pkg).getStatus());
+        // reload FSRegistry
+        this.registry = new FSPackageRegistry(registryHome);
+        FSInstallState installState = registry.getInstallState(pkg);
+        assertNotNull(installState);
+        // check metadata
+        assertEquals(FSPackageStatus.EXTRACTED, installState.getStatus());
     }
 
     private void getFreshRegistryWithDefaultConstructor(String packageName, String packageMetadataName) throws IOException {

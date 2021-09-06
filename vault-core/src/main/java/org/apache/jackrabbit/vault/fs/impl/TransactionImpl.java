@@ -28,7 +28,6 @@ import java.util.TreeMap;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.jackrabbit.vault.fs.DirectoryArtifact;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
@@ -46,6 +45,7 @@ import org.apache.jackrabbit.vault.fs.impl.io.InputSourceArtifact;
 import org.apache.jackrabbit.vault.fs.impl.io.XmlAnalyzer;
 import org.apache.jackrabbit.vault.fs.io.AutoSave;
 import org.apache.jackrabbit.vault.fs.io.DocViewAnalyzerListener;
+import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PathComparator;
 import org.apache.jackrabbit.vault.util.PathUtil;
@@ -56,9 +56,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Provides transactional brackets around a write back transaction to
- * the Vault filesystem. a transaction is always needed due to the fact that
+ * the Vault filesystem. A transaction is always needed due to the fact that
  * several jcr files could belong to the same artifact.
- *
+ * This is only used from Vault CLI but not during package import which uses the {@link Importer} instead.
+ * 
  * TODO: check all vault operations!
  *
  */
@@ -180,11 +181,6 @@ public class TransactionImpl implements VaultFsTransaction {
                         // force generic
                         serType = SerializationType.GENERIC;
                     }
-                } else if (ext.equals(".xcnd")) {
-                    aType = ArtifactType.PRIMARY;
-                    serType = SerializationType.CND;
-                    repoName = base;
-                    extension = ext;
                 } else if (ext.equals(".binary")) {
                     aType = ArtifactType.BINARY;
                     repoName = base;
@@ -314,8 +310,8 @@ public class TransactionImpl implements VaultFsTransaction {
                         if (ret != null) {
                             allInfos.merge(ret);
                             if (verbose) {
-                                for (Map.Entry e: ret.getModifications().entrySet()) {
-                                    log.info("...comitting  {} {}", e.getValue(), e.getKey());
+                                for (Map.Entry<String,ImportInfo.Type> e: ret.getModifications().entrySet()) {
+                                    log.info("...committing  {} {}", e.getValue(), e.getKey());
                                 }
                             }
                         }
@@ -335,8 +331,8 @@ public class TransactionImpl implements VaultFsTransaction {
                             }
                         }
                         if (verbose && ret != null) {
-                            for (Map.Entry e: ret.getModifications().entrySet()) {
-                                log.info("...comitting  {} {}", e.getValue(), e.getKey());
+                            for (Map.Entry<String,ImportInfo.Type> e: ret.getModifications().entrySet()) {
+                                log.info("...committing  {} {}", e.getValue(), e.getKey());
                             }
                         }
                     }
@@ -746,7 +742,7 @@ public class TransactionImpl implements VaultFsTransaction {
 
         private final AggregateBuilder out;
 
-        private final Map<String, VaultFile> original = new HashMap<String, VaultFile>();
+        private final Map<String, VaultFile> original = new HashMap<>();
 
         private VaultFile parentFile;
 

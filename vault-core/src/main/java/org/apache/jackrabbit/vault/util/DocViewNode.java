@@ -27,6 +27,8 @@ import org.apache.jackrabbit.spi.commons.conversion.NamePathResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.util.ISO9075;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.xml.sax.Attributes;
 
 /**
@@ -35,14 +37,15 @@ import org.xml.sax.Attributes;
  */
 public class DocViewNode {
 
-    public final String name;
-    public final String label;
-    public final Map<String, DocViewProperty> props = new HashMap<String, DocViewProperty>();
-    public String uuid;
-    public final String[] mixins;
-    public final String primary;
+    public final @NotNull String name;
+    /** usually equal to {@link #name} except when this node has a same name sibling, in that case label has format {@code <name>[index]}, https://docs.adobe.com/content/docs/en/spec/jcr/2.0/22_Same-Name_Siblings.html#22.2%20Addressing%20Same-Name%20Siblings%20by%20Path */
+    public final @NotNull String label;
+    public final @NotNull Map<String, DocViewProperty> props = new HashMap<>();
+    public @Nullable String uuid;
+    public final @Nullable String[] mixins;
+    public final @Nullable String primary; // may be null for ordering items
 
-    public DocViewNode(String name, String label, String uuid, Map<String, DocViewProperty> props, String[] mixins, String primary) {
+    public DocViewNode(@NotNull String name, @NotNull String label, String uuid, Map<String, DocViewProperty> props, String[] mixins, String primary) {
         this.name = name;
         this.label = label;
         this.uuid = uuid;
@@ -51,7 +54,7 @@ public class DocViewNode {
         this.props.putAll(props);
     }
 
-    public DocViewNode(String name, String label, Attributes attributes, NamePathResolver npResolver)
+    public DocViewNode(@NotNull String name, @NotNull String label, Attributes attributes, NamePathResolver npResolver)
             throws NamespaceException {
         this.name = name;
         this.label = label;
@@ -101,7 +104,7 @@ public class DocViewNode {
         result = prime * result + Arrays.hashCode(mixins);
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((primary == null) ? 0 : primary.hashCode());
-        result = prime * result + ((props == null) ? 0 : props.hashCode());
+        result = prime * result + props.hashCode();
         result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
         return result;
     }
@@ -132,10 +135,7 @@ public class DocViewNode {
                 return false;
         } else if (!primary.equals(other.primary))
             return false;
-        if (props == null) {
-            if (other.props != null)
-                return false;
-        } else if (!props.equals(other.props))
+        if (!props.equals(other.props))
             return false;
         if (uuid == null) {
             if (other.uuid != null)

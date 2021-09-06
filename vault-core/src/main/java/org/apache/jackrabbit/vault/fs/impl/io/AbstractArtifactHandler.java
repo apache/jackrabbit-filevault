@@ -22,6 +22,10 @@ import java.io.IOException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.ArtifactHandler;
@@ -32,8 +36,13 @@ import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
+import org.jetbrains.annotations.NotNull;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * {@code AbstractArtifactHandler}...
@@ -112,7 +121,7 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
             throws RepositoryException, IOException {
         Node node = file.getNode();
         String name = node.getName();
-        return accept(file.getManager().getWorkspaceFilter(),
+        return accept(new ImportOptions(), file.getManager().getWorkspaceFilter(),
                 name.length() == 0 ? node : node.getParent(),
                 name, (ArtifactSetImpl) artifacts);
     }
@@ -124,13 +133,14 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
                              ArtifactSet artifacts)
             throws RepositoryException, IOException {
         Node node = parent.getNode();
-        return accept(parent.getManager().getWorkspaceFilter(),
+        return accept(new ImportOptions(), parent.getManager().getWorkspaceFilter(),
                 node, name, (ArtifactSetImpl) artifacts);
     }
 
     /**
      * Imports an artifact set below the node.
      *
+     * @param options the import options
      * @param wspFilter the workspace filter
      * @param parent the parent node
      * @param name the name of the (new) import
@@ -139,7 +149,7 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
      * @throws RepositoryException if an error occurs.
      * @throws IOException if an I/O error occurs.
      */
-    protected abstract ImportInfoImpl accept(WorkspaceFilter wspFilter, Node parent,
+    protected abstract ImportInfoImpl accept(@NotNull ImportOptions options, WorkspaceFilter wspFilter, Node parent,
                                          String name, ArtifactSetImpl artifacts)
             throws RepositoryException, IOException;
 
@@ -150,4 +160,13 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
         ctx.println(isLast, getClass().getSimpleName());
     }
 
+    protected void parseXmlWithSaxHandler(InputSource source, DefaultHandler handler) throws ParserConfigurationException, SAXException, IOException {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
+        SAXParser parser = factory.newSAXParser();
+        parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        parser.parse(source, handler);
+    }
 }

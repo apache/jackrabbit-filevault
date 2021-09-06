@@ -33,12 +33,6 @@
         <aggregate type="filefolder" title="File/Folder Aggregate"/>
 
         <!--
-            Defines an aggregate that handles nt:nodeType nodes and serializes
-            them into .cnd notation.
-        -->
-        <aggregate type="nodetype" title="Node Type Aggregate" />
-
-        <!--
             Defines an aggregate that defines full coverage for certain node
             types that cannot be covered by the default aggregator.
         -->
@@ -87,7 +81,6 @@
     <handlers>
         <handler type="folder"/>
         <handler type="file"/>
-        <handler type="nodetype"/>
         <handler type="generic"/>
     </handlers>
 </vaultfs>

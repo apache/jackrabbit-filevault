@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -234,8 +235,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     FSInstallState getInstallState(@NotNull PackageId id) throws IOException {
         try {
             return stateCache.get(id);
-        } catch (FSInstallStateCache.UncheckedIOException e) {
-            throw e.getIOException();
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
         }
     }
 
@@ -453,52 +454,56 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             throws IOException, PackageExistsException {
 
         Path tempFile = Files.createTempFile("upload", ".zip");
-        MemoryArchive archive = new MemoryArchive(false);
-
-        try (InputStreamPump pump = new InputStreamPump(in, archive)) {
-            // this will cause the input stream to be consumed and the memory
-            // archive being initialized.
-            try {
-                Files.copy(pump, tempFile, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                String msg = "Stream could not be read successfully.";
-                throw new IOException(msg, e);
+        try {
+            MemoryArchive archive = new MemoryArchive(false);
+    
+            try (InputStreamPump pump = new InputStreamPump(in, archive)) {
+                // this will cause the input stream to be consumed and the memory
+                // archive being initialized.
+                try {
+                    Files.copy(pump, tempFile, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    String msg = "Stream could not be read successfully.";
+                    throw new IOException(msg, e);
+                }
             }
-        }
-        if (archive.getJcrRoot() == null) {
-            String msg = "Stream is not a content package. Missing 'jcr_root'.";
-            throw new IOException(msg);
-        }
-
-        final MetaInf inf = archive.getMetaInf();
-        PackageId pid = inf.getPackageProperties().getId();
-
-        // invalidate pid if path is unknown
-        if (pid == null) {
-            throw new IllegalArgumentException("Unable to create package. No package pid set.");
-        }
-        if (!pid.isValid()) {
-            throw new IllegalArgumentException("Unable to create package. Illegal package name.");
-        }
-
-        Path pkgFile = getPackageFile(pid);
-        FSInstallState state = getInstallState(pid);
-
-        if (Files.exists(pkgFile)) {
-            if (replace && !state.isExternal()) {
-                Files.delete(pkgFile);
+            if (archive.getJcrRoot() == null) {
+                String msg = "Stream is not a content package. Missing 'jcr_root'.";
+                throw new IOException(msg);
+            }
+    
+            final MetaInf inf = archive.getMetaInf();
+            PackageId pid = inf.getPackageProperties().getId();
+    
+            // invalidate pid if path is unknown
+            if (pid == null) {
+                throw new IllegalArgumentException("Unable to create package. No package pid set.");
+            }
+            if (!pid.isValid()) {
+                throw new IllegalArgumentException("Unable to create package. Illegal package name.");
+            }
+    
+            Path pkgFile = getPackageFile(pid);
+            FSInstallState state = getInstallState(pid);
+    
+            if (Files.exists(pkgFile)) {
+                if (replace && !state.isExternal()) {
+                    Files.delete(pkgFile);
+                } else {
+                    throw new PackageExistsException("Package already exists: " + pid).setId(pid);
+                }
             } else {
-                throw new PackageExistsException("Package already exists: " + pid).setId(pid);
+                Files.createDirectories(pkgFile.getParent());
             }
-        } else {
-            Files.createDirectories(pkgFile.getParent());
+    
+            ZipVaultPackage pkg = new ZipVaultPackage(archive, true);
+            registerSubPackages(pkg, replace);
+            Files.move(tempFile, pkgFile);
+            dispatch(Type.UPLOAD, pid, null);
+            return pkg;
+        } finally {
+            Files.deleteIfExists(tempFile);
         }
-
-        ZipVaultPackage pkg = new ZipVaultPackage(archive, true);
-        registerSubPackages(pkg, replace);
-        Files.move(tempFile, pkgFile);
-        dispatch(Type.UPLOAD, pid, null);
-        return pkg;
 
     }
 
@@ -622,9 +627,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     // no need to set filter in other cases
                 
             }
-            ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault());
-            dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
-            stateCache.updatePackageStatus(vltPkg.getId(), FSPackageStatus.EXTRACTED);
+            if (vltPkg instanceof ZipVaultPackage) {
+                ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault());
+                dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
+                stateCache.updatePackageStatus(vltPkg.getId(), FSPackageStatus.EXTRACTED);
+            } else {
+                throw new IllegalArgumentException("Only ZipVaultPackages can be installed but given package is " + vltPkg.getClass());
+            }
 
         } catch (RepositoryException e) {
             throw new IOException(e);

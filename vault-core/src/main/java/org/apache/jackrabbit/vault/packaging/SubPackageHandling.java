@@ -39,7 +39,8 @@ import org.apache.jackrabbit.util.Text;
  * </pre>
  *
  *  Note that 'ignore' is currently not really supported as sub packages are part of the normal package content and
- *  behaves the same as 'add'. Future implementations will transport the sub packages outside of the normal package
+ *  behaves the same as 'add'. The default option if not explicitly specified is "install".
+ *  Future implementations will transport the sub packages outside of the normal package
  *  content, e.g. in a META-INF/vault/subpackages/ folder (see <a href="https://issues.apache.org/jira/browse/JCRVLT-33">JCRVLT-33</a>).
  *  
  *  <p>

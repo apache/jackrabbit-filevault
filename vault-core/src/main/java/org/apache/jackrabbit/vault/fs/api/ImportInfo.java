@@ -66,7 +66,9 @@ public interface ImportInfo {
     /**
      * Marks that the node at {@code path} is missing.
      * @param path the path
+     * @deprecated Is no longer issued, as this depends on the registered node type definitions
      */
+    @Deprecated
     void onMissing(String path);
 
     /**

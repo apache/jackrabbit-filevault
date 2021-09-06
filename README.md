@@ -1,7 +1,7 @@
 [![ASF Jira](https://img.shields.io/badge/ASF%20JIRA-JCRVLT-orange)](https://issues.apache.org/jira/projects/JCRVLT/summary)
 ![GitHub](https://img.shields.io/github/license/apache/jackrabbit-filevault)
 [![Maven Central](https://img.shields.io/maven-central/v/org.apache.jackrabbit.vault/vault-cli.svg?label=Maven%20Central)](https://search.maven.org/artifact//org.apache.jackrabbit.vault/vault-cli)
-[![Build Status](https://img.shields.io/travis/apache/jackrabbit-filevault/master)](https://travis-ci.org/apache/jackrabbit-filevault)
+[![Build Status](https://img.shields.io/travis/com/apache/jackrabbit-filevault/master)](https://travis-ci.com/apache/jackrabbit-filevault)
 [![SonarCloud Status](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=alert_status)](https://sonarcloud.io/dashboard?id=apache_jackrabbit-filevault)
 [![SonarCloud Coverage](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=coverage)](https://sonarcloud.io/component_measures/metric/coverage/list?id=apache_jackrabbit-filevault)
 [![SonarCloud Bugs](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=bugs)](https://sonarcloud.io/component_measures/metric/reliability_rating/list?id=apache_jackrabbit-filevault)
@@ -36,6 +36,33 @@ You need Maven 3.6.2 (or higher) with Java 8 (or higher) for the build.
 For more instructions, please see the documentation at:
 
    <https://jackrabbit.apache.org/building-jackrabbit.html>
+
+Building FileVault Site
+============================================
+
+The FileVault documentation lives as Markdown files in `src/site/markdown` such
+that it easy to view e.g. from GitHub. The Maven site plugin
+can be used to build and deploy a web site from those sources as follows:
+
+1. From the reactor build the site with javadoc:
+
+        $ mvn site
+
+2. Review the site at `target/site`
+3. Deploy the site to <https://jackrabbit.apache.org/filevault/> using:
+
+        $ mvn site-deploy
+
+4. Finally review the site at <https://jackrabbit.apache.org/filevault/index.html>.
+
+
+Note: To skip the final commit use `-Dscmpublish.skipCheckin=true`. You can then
+review all pending changes in `vault-doc/target/scmpublish-checkout` and follow
+up with `svn commit` manually.
+
+Note: Every committer should be able to deploy the site. No fiddling with
+credentials needed since deployment is done via svn commit to
+`https://svn.apache.org/repos/asf/jackrabbit/site/live/filevault`.
 
 License (see also LICENSE)
 ==============================

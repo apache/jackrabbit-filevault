@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>parent/pom.xml</relativePath>
-        <version>3.4.11-SNAPSHOT</version>
+        <version>3.5.3-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -44,7 +44,6 @@
         <module>vault-diff</module>
         <module>vault-rcp</module>
         <module>vault-davex</module>
-        <module>vault-doc</module>
         <module>vault-vlt</module>
         <module>vault-cli</module>
         <module>vault-hook-example</module>
@@ -54,55 +53,106 @@
     </modules>
 
     <properties>
-        <project.build.outputTimestamp>2021-02-26T08:34:48Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2021-09-01T12:49:37Z</project.build.outputTimestamp>
     </properties>
 
+    <distributionManagement>
+        <site>
+            <id>jackrabbit.filevault.site-deploy</id>
+            <url>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/site/live/filevault</url>
+        </site>
+    </distributionManagement>
+    
     <!-- ====================================================================== -->
     <!-- B U I L D                                                              -->
     <!-- ====================================================================== -->
     <build>
+        <pluginManagement>
+            <plugins>
+                <!-- ====================================================================== -->
+                <!-- J A V A D O C   P L U G I N                                            -->
+                <!-- ====================================================================== -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <!-- Default configuration for all reports -->
+                        <windowtitle>Apache Jackrabbit FileVault ${project.version} API</windowtitle>
+                        <doctitle>Apache Jackrabbit FileVault ${project.version} API</doctitle>
+                        <excludePackageNames>
+                            org.apache.jackrabbit.vault.cli*,org.apache.jackrabbit.vault.davex,*.impl*,org.apache.jackrabbit.vault.util.xml,org.apache.jackrabbit.vault.vlt.actions,org.apache.jackrabbit.vault.vlt.meta.*,org.apache.jackrabbit.vault.packaging.hotfix,org.apache.jackrabbit.vault.validation.impl*,org.apache.jackrabbit.vault.validation.spi.impl
+                        </excludePackageNames>
+                        <reportOutputDirectory>${basedir}/vault-doc/target/site</reportOutputDirectory>
+                        <detectLinks>true</detectLinks>
+                        <detectJavaApiLink>true</detectJavaApiLink>
+                        <links>
+                            <link>https://docs.adobe.com/content/docs/en/spec/javax.jcr/javadocs/jcr-2.0/</link>
+                            <link>https://jackrabbit.apache.org/api/2.20/</link>
+                            <link>https://www.javadoc.io/doc/org.apache.jackrabbit/oak-jackrabbit-api/1.32.0/</link>
+                        </links>
+                    </configuration>
+                </plugin>
+           </plugins>
+        </pluginManagement>
         <plugins>
-            <!-- ====================================================================== -->
-            <!-- J A V A D O C   P L U G I N                                            -->
-            <!-- ====================================================================== -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
+                <artifactId>maven-site-plugin</artifactId>
                 <configuration>
-                    <!-- Default configuration for all reports -->
-                    <windowtitle>Apache Jackrabbit FileVault ${project.version} API</windowtitle>
-                    <doctitle>Apache Jackrabbit FileVault ${project.version} API</doctitle>
-                    <excludePackageNames>
-                        org.apache.jackrabbit.vault.cli*,org.apache.jackrabbit.vault.davex,*.impl*,org.apache.jackrabbit.vault.util.xml,org.apache.jackrabbit.vault.vlt.actions,org.apache.jackrabbit.vault.vlt.meta.*,org.apache.jackrabbit.vault.packaging.hotfix,org.apache.jackrabbit.vault.validation.impl*,org.apache.jackrabbit.vault.validation.spi.impl
-                    </excludePackageNames>
-                    <reportOutputDirectory>${basedir}/vault-doc/target/site</reportOutputDirectory>
-                    <additionalparam>-notimestamp</additionalparam>
-                    <detectLinks>true</detectLinks>
-                    <detectJavaApiLink>true</detectJavaApiLink>
-                    <links>
-                        <link>https://docs.adobe.com/content/docs/en/spec/javax.jcr/javadocs/jcr-2.0/</link>
-                        <link>https://jackrabbit.apache.org/api/2.20/</link>
-                        <link>https://www.javadoc.io/doc/org.apache.jackrabbit/oak-jackrabbit-api/1.32.0/</link>
-                    </links>
+                    <generateReports>true</generateReports>
+                    <skip>false</skip>
+                    <relativizeDecorationLinks>false</relativizeDecorationLinks>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-publish-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>aggregate</id>
+                        <id>scm-publish</id>
+                        <phase>site-deploy</phase>
                         <goals>
-                            <goal>aggregate</goal>
+                            <goal>publish-scm</goal>
                         </goals>
-                        <phase>site</phase>
-                    </execution>
-                    <execution>
-                        <id>aggregate-jar</id>
-                        <goals>
-                            <goal>aggregate-jar</goal>
-                        </goals>
-                        <phase>package</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <content>target/site</content>
+                    <checkinComment>@trivial: Site checkin for project ${project.name}-${project.version}
+                    </checkinComment>
+                    <ignorePathsToDelete>
+                        <ignorePathToDelete>apidocs</ignorePathToDelete>
+                    </ignorePathsToDelete>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/site</outputDirectory>
+                </configuration>
             </plugin>
         </plugins>
+        
+        <resources>
+            <resource>
+                <directory>src/site/markdown</directory>
+                <includes>
+                    <include>*.png</include>
+                    <include>*.jpg</include>
+                    <include>*.jpeg</include>
+                    <include>*.gif</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 
     <!-- ====================================================================== -->
@@ -117,8 +167,33 @@
                     <reportSet>
                         <!-- only generate aggregate report (not main and test, https://maven.apache.org/plugins/maven-javadoc-plugin/examples/selective-javadocs-report.html) -->
                         <id>aggregate</id>
+                        <inherited>false</inherited>
                         <reports>
                             <report>aggregate</report>
+                        </reports>
+                    </reportSet>
+                    <reportSet>
+                        <id>default</id>
+                        <reports>
+                            <report>javadoc</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <!-- don't generate index, due to the links to modules not having sites -->
+                            <report>team</report>
+                            <report>mailing-lists</report>
+                            <report>ci-management</report>
+                            <report>issue-management</report>
+                            <report>licenses</report>
+                            <report>scm</report>
+                            <report>distribution-management</report>
                         </reports>
                     </reportSet>
                 </reportSets>
@@ -139,6 +214,18 @@
             </properties>
             <build>
                 <plugins>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>aggregate-jar</id>
+                                <goals>
+                                    <goal>aggregate-jar</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <executions>
@@ -171,7 +258,7 @@
                                 </goals>
                                 <phase>deploy</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <mkdir dir="${basedir}/target/${project.version}" />
                                         <copy todir="${basedir}/target/${project.version}" flatten="true">
                                             <fileset dir="${basedir}">
@@ -198,9 +285,9 @@
                                         <echo file="${basedir}/target/vote.txt">
 From: ${username}@apache.org
 To: dev@jackrabbit.apache.org
-Subject: [VOTE] Release Apache Jackrabbit Filevault ${project.version}
+Subject: [VOTE] Release Apache Jackrabbit FileVault ${project.version}
 
-A candidate for the Jackrabbit Filevault ${project.version} release is available at:
+A candidate for the Jackrabbit FileVault ${project.version} release is available at:
 
 https://dist.apache.org/repos/dist/dev/jackrabbit/filevault/${project.version}/
 
@@ -208,21 +295,22 @@ The release candidate is a zip archive of the sources in:
 
 https://github.com/apache/jackrabbit-filevault/tree/jackrabbit-filevault-${project.version}/
 
-The SHA1 checksum of the archive is ${checksum}.
+The release notes can be found in JIRA at https://issues.apache.org/jira/projects/JCRVLT/versions/...
 
 The command for running automated checks against this release candidate is:
 $ sh check-release.sh filevault ${project.version} ${checksum}
+(leveraging the script from https://dist.apache.org/repos/dist/dev/jackrabbit/check-release.sh)
 
 A staged Maven repository is available for review at:
 
-https://repository.apache.org/
+https://repository.apache.org/content/repositories/orgapachejackrabbit-...
 
-Please vote on releasing this package as Apache Jackrabbit Filevault ${project.version}.
+Please vote on releasing this package as Apache Jackrabbit FileVault ${project.version}.
 The vote is open for a minimum of 72 hours during business days and passes
 if a majority of at least three +1 Jackrabbit PMC votes are cast.
 The vote fails if not enough votes are cast after 1 week (5 business days).
 
-[ ] +1 Release this package as Apache Jackrabbit Filevault ${project.version}
+[ ] +1 Release this package as Apache Jackrabbit FileVault ${project.version}
 [ ] -1 Do not release this package because...${line.separator}
                                         </echo>
                                         <echo />
@@ -236,24 +324,17 @@ Please deploy it to https://dist.apache.org/repos/dist/dev/jackrabbit/filevault:
 cd /path/to/jackrabbit-dev/filevault
 mv ${basedir}/target/${project.version} ${project.version}
 svn add ${project.version}
-svn commit -m 'Apache Jackrabbit Filevault ${project.version} release candidate' ${project.version}
+svn commit -m 'Apache Jackrabbit FileVault ${project.version} release candidate' ${project.version}
 
 A release vote template has been generated for you:
 
 file://${basedir}/target/vote.txt
                                         </echo>
                                         <echo />
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.apache.ant</groupId>
-                                <artifactId>ant-nodeps</artifactId>
-                                <version>1.8.1</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
                 </plugins>
             </build>

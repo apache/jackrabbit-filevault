@@ -30,8 +30,6 @@ import java.util.Set;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 
-import org.apache.jackrabbit.vault.fs.PropertyValueArtifact;
-import org.apache.jackrabbit.vault.fs.SerializerArtifact;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactIterator;
 import org.apache.jackrabbit.vault.fs.api.ArtifactSet;

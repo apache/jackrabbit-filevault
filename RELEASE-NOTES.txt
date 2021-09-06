@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.4.10
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.5.2
 
 Introduction
 ------------
@@ -8,6 +8,61 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.5.2
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.5.2
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
+
+Bug
+    * [JCRVLT-85] - Import behaviour not always correct in case of conflicting node IDs
+    * [JCRVLT-525] - FSPackageRegistry: XML registry files can become corrupt
+    * [JCRVLT-526] - PackagePropertiesImpl doesn't support date format with timezone format +-hhmm
+    * [JCRVLT-527] - NodeTypeValidator: child node validation performed too early for folders
+    * [JCRVLT-539] - NodeTypeValidator: more specific jcr:primaryType might be overwritten by generic nt:folder
+    * [JCRVLT-540] - Update to Oak 1.40.0 and Jackrabbit 2.20.3
+    * [JCRVLT-542] - FolderArtifactHandler not respecting ImportMode on adjusting primaryTypes
+    * [JCRVLT-543] - DocViewSAXImporter failing on protected properties for new Nodes
+    * [JCRVLT-544] - Creation of folders based on parent's default nodetype instead of nt:folder causing regression
+    * [JCRVLT-552] - Importer fails to detect jcr:mixinTypes being protected if package uses singlevalue property
+Improvement
+    * [JCRVLT-397] - Update vote template to include SHA512 checksum and JIRA changelog
+    * [JCRVLT-476] - Fix blocker bugs in Sonarcloud.io
+    * [JCRVLT-506] - Remove o.a.j.v.fs.impl.io.CNDImporter and CNDSerializer (JCR 1.0 nt:nodeType and *.xcnd)
+    * [JCRVLT-529] - Lots of dangling ZIP files in tmp folder after executing ITs
+    * [JCRVLT-531] - InstallHookProcessorImpl leaves orphan tmp files
+    * [JCRVLT-532] - NodeTypeValidator should not be that strict if running in incremental validation
+    * [JCRVLT-533] - Provide archive implementation based on ZipFileSystemProvider
+    * [JCRVLT-535] - Skip some checks in incremental mode
+    * [JCRVLT-536] - NodeTypeValidator: By default do not fail build for violations against default node type definition
+    * [JCRVLT-545] - Expose method to format DocViewProperty value
+    * [JCRVLT-546] - Remove private references from exported classes
+    * [JCRVLT-547] - Distinguish between recoverable and unrecoverable exceptions in intermediate saves
+    * [JCRVLT-551] - Set jcr:uuid to value from package when updating node
+
+Changes in Jackrabbit FileVault 3.5.0
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.5.0
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
+
+Bug
+    * [JCRVLT-255] - ImportModes act on file serialization level not on node level
+    * [JCRVLT-513] - Don't check for property 'allowIndexDefinitions' in package type validator
+    * [JCRVLT-514] - JcrWorkspaceFilter does not support property filters
+    * [JCRVLT-517] - FSPackageRegistry.contains does not initialize packages
+    * [JCRVLT-520] - ZipVaultPackage does not respect the noIntermediateSaves property.
+Improvement
+    * [JCRVLT-396] - Import mode "MERGE" and "UPDATE" still may remove properties during import
+    * [JCRVLT-509] - Make DocView import failures fail the whole installation
+    * [JCRVLT-511] - Allow to parameterize PackageTasks
+    * [JCRVLT-512] - Add flag to allow install hooks for "application" packages
+    * [JCRVLT-515] - AdminPermissionChecker should evaluate all principals bound to the Session
+    * [JCRVLT-516] - Ease usage of DocViewProperty outside a repository context
+    * [JCRVLT-521] - Drop support of Jackrabbit API 2.14 and Declarative Services 1.3
 
 Changes in Jackrabbit FileVault 3.4.10
 --------------------------------------

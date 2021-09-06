@@ -64,4 +64,12 @@ public interface ValidationContext {
      * @return the package info of all resolved package dependencies (i.e. the ones for which an artifact was found).
      */
     @NotNull Collection<PackageInfo> getDependenciesPackageInfo();
+    
+    /**
+     * 
+     * @return {@code true} in case the validation is incremental (i.e. does not cover all files in a package). This should relax some validations.
+     */
+    default boolean isIncremental() {
+        return false;
+    }
 }

@@ -20,10 +20,15 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.commons.cnd.CndImporter;
+import org.apache.jackrabbit.commons.cnd.ParseException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.Test;
@@ -80,7 +85,7 @@ public class FolderArtifactHandlerIT extends IntegrationTestBase {
     public void testCreatingIntermediateNodesWithDefaultType() throws RepositoryException, IOException, PackageException {
         // create node "/var/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
-        Node testNode = rootNode.addNode("var", "nt:unstructured");
+        rootNode.addNode("var", "nt:unstructured");
         admin.save();
         try (VaultPackage vltPackage = extractVaultPackageStrict("/test-packages/folder-without-docview-element.zip")) {
             assertNodeHasPrimaryType("/var/foo", "nt:unstructured");
@@ -91,12 +96,40 @@ public class FolderArtifactHandlerIT extends IntegrationTestBase {
     public void testCreatingIntermediateNodesWithFallbackType() throws RepositoryException, IOException, PackageException {
         // create node "/var/foo" with node type "nt:unstructured"
         Node rootNode = admin.getRootNode();
-        Node testNode = rootNode.addNode("var", "nt:folder");
+        rootNode.addNode("var", "nt:folder");
         admin.save();
         assertNodeHasPrimaryType("/var", "nt:folder");
         try (VaultPackage vltPackage = extractVaultPackage("/test-packages/folder-without-docview-element.zip")) {
             assertNodeHasPrimaryType("/var", "nt:folder");
             assertNodeHasPrimaryType("/var/foo", "nt:folder");
+        }
+    }
+
+    // https://issues.apache.org/jira/browse/JCRVLT-542
+    @Test
+    public void testRootTypeOnMerge() throws RepositoryException, IOException, PackageException {
+        Node rootNode = admin.getRootNode();
+        Node homeNode = rootNode.getNode("home");
+        homeNode.addNode("groups", "rep:AuthorizableFolder");
+        admin.save();
+        assertNodeHasPrimaryType("/home", "rep:AuthorizableFolder");
+        assertNodeHasPrimaryType("/home/groups", "rep:AuthorizableFolder");
+        // /home/groups is being installed w/o any nodetype but filter is on mode=merge so no change expected
+        try (VaultPackage vltPackage = extractVaultPackage("/test-packages/test_nodetype_on_merge.zip")) {
+            assertNodeHasPrimaryType("/home", "rep:AuthorizableFolder");
+            assertNodeHasPrimaryType("/home/groups", "rep:AuthorizableFolder");
+        }
+    }
+
+    // https://issues.apache.org/jira/browse/JCRVLT-544
+    @Test
+    public void testFallbackToNtFolderForRestrictedDefaultNodeType() throws IOException, PackageException, RepositoryException, ParseException {
+        try (Reader reader = new InputStreamReader(getStream("cqComponent.cnd"), StandardCharsets.US_ASCII)) {
+            CndImporter.registerNodeTypes(reader, admin);
+        }
+        admin.getRootNode().addNode("testroot", "cq:Component"); // this has nt:base as default child node type
+        try (VaultPackage vltPackage = extractVaultPackage("/test-packages/intermediate_folders.zip")) {
+            assertNodeHasPrimaryType("/testroot/myfolder", "nt:folder");
         }
     }
 }

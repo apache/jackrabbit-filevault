@@ -45,8 +45,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
-import org.apache.jackrabbit.vault.fs.DirectoryArtifact;
-import org.apache.jackrabbit.vault.fs.HintArtifact;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
@@ -62,6 +60,8 @@ import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
+import org.apache.jackrabbit.vault.fs.impl.DirectoryArtifact;
+import org.apache.jackrabbit.vault.fs.impl.HintArtifact;
 import org.apache.jackrabbit.vault.fs.impl.io.FileArtifactHandler;
 import org.apache.jackrabbit.vault.fs.impl.io.FolderArtifactHandler;
 import org.apache.jackrabbit.vault.fs.impl.io.GenericArtifactHandler;
@@ -78,6 +78,7 @@ import org.apache.jackrabbit.vault.fs.spi.PrivilegeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
+import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.Constants;
@@ -88,35 +89,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@code AbstractImporter}
+ * Imports an {@link Archive} into a repository.
  *
  * file/directory combinations
- *
- * 1. plain files
+ * <ol>
+ * <li>plain file
+ * <pre>
  *    + foo
- *      - test.gif
- *
- * 2. plain files + special folder
+ *      - test.gif</pre>
+ * </li>
+ * <li>plain files + special folder
+ * <pre>
  *    + foo
  *      - .content.xml
  *      + bar
- *        - test.gif
- *
- * 3. special file
+ *        - test.gif</pre>
+ * </li>
+ * <li>special file
+ * <pre>
  *    + foo
  *      - test.gif
  *      - test.gif.dir
- *        - .content.xml
- *
- * 4. special file + sub files
+ *        - .content.xml</pre>
+ * </li>
+ * <li>special file + sub files
+ * <pre>
  *    + foo
  *      - test.gif
  *      - test.gif.dir
  *        - .content.xml
  *        + _jcr_content
- *          - thumbnail.gif
- *
- * 4. special file + sub special files
+ *          - thumbnail.gif</pre>
+ * </li>
+ * <li>special file + sub special files
+ * <pre>
  *    + foo
  *      - test.gif
  *      - test.gif.dir
@@ -124,16 +130,19 @@ import org.slf4j.LoggerFactory;
  *        + _jcr_content
  *          - thumbnail.gif
  *          + thumbnail.gif.dir
- *            - .content.xml
- *
- * 5. file/folder structure
+ *            - .content.xml</pre>
+ * </li>
+ * <li>file/folder structure
+ * <pre>
  *    + foo
  *      + en
  *        - .content.xml
  *        + _cq_content
  *          - thumbnail.gif
  *        + company
- *          - .content.xml
+ *          - .content.xml</pre>
+ * </li>
+ * </ol>
  */
 public class Importer {
 
@@ -186,6 +195,9 @@ public class Importer {
      * general flag that indicates if the import had (recoverable) errors
      */
     private boolean hasErrors = false;
+
+    /** If {@link #hasErrors} = {@code true} this one contains the first exception during package import */
+    private Exception firstException = null;
 
     /**
      * overall handler for importing folder artifacts
@@ -449,7 +461,7 @@ public class Importer {
         while (recoveryRetryCounter++ < 10) {
             try {
                 commit(session, root, skipList);
-                autoSave.save(session);
+                autoSave.save(session, false);
                 break;
             } catch (RepositoryException e) {
                 if (recoveryRetryCounter == 10) {
@@ -493,6 +505,9 @@ public class Importer {
         } else {
             if (hasErrors) {
                 track("Package imported (with errors, check logs!)", "");
+                if (opts.isStrict(isStrictByDefault)) {
+                    throw new RepositoryException("Some errors occurred while installing packages. Please check the logs for details. First exception is logged as cause.", firstException);
+                }
                 log.error("There were errors during package install. Please check the logs for details.");
             } else {
                 track("Package imported.", "");
@@ -736,9 +751,6 @@ public class Importer {
                     }
                     ext = "";
                     type = ArtifactType.FILE;
-                } else if (".xcnd".equals(ext)) {
-                    serType = SerializationType.CND;
-                    repoName = repoBase;
                 } else if (".binary".equals(ext)) {
                     serType = SerializationType.GENERIC;
                     type = ArtifactType.BINARY;
@@ -823,7 +835,7 @@ public class Importer {
             }
 
             if (autoSave.needsSave()) {
-                autoSave.save(session);
+                autoSave.save(session, false);
                 // save checkpoint
                 cpTxInfo = info;
                 cpAutosave = autoSave.copy();
@@ -904,7 +916,7 @@ public class Importer {
                 imp = new ImportInfoImpl();
                 imp.onError(info.path, new IllegalStateException("Parent node not found."));
             } else {
-                imp = genericHandler.accept(filter, node, info.artifacts.getPrimaryData().getRelativePath(), info.artifacts);
+                imp = genericHandler.accept(opts, filter, node, info.artifacts.getPrimaryData().getRelativePath(), info.artifacts);
                 if (imp == null) {
                     throw new IllegalStateException("generic handler did not accept " + info.path);
                 }
@@ -935,12 +947,12 @@ public class Importer {
                     log.trace("skipping intermediate node at {}", info.path);
                 } else if (info.artifacts.getPrimaryData() == null) {
                     // create nt:folder node if not exists
-                    imp = folderHandler.accept(filter, node, info.name,  info.artifacts);
+                    imp = folderHandler.accept(opts, filter, node, info.name,  info.artifacts);
                     if (imp == null) {
                         throw new IllegalStateException("folder handler did not accept " + info.path);
                     }
                 } else {
-                    imp = genericHandler.accept(filter, node, info.artifacts.getDirectory().getRelativePath(), info.artifacts);
+                    imp = genericHandler.accept(opts, filter, node, info.artifacts.getDirectory().getRelativePath(), info.artifacts);
                     if (imp == null) {
                         throw new IllegalStateException("generic handler did not accept " + info.path);
                     }
@@ -952,7 +964,7 @@ public class Importer {
                 imp = new ImportInfoImpl();
                 imp.onError(info.path, new IllegalStateException("Parent node not found."));
             } else {
-                imp = fileHandler.accept(filter, node, info.name,  info.artifacts);
+                imp = fileHandler.accept(opts, filter, node, info.name,  info.artifacts);
                 if (imp == null) {
                     throw new IllegalStateException("file handler did not accept " + info.path);
                 }
@@ -977,27 +989,21 @@ public class Importer {
                 switch (type) {
                     case CRE:
                         track("A", path);
-                        autoSave.markResolved(path);
                         break;
                     case DEL:
                         track("D", path);
-                        autoSave.markResolved(path);
                         break;
                     case MOD:
                         track("U", path);
-                        autoSave.markResolved(path);
                         break;
                     case NOP:
                         track("-", path);
-                        autoSave.markResolved(path);
                         break;
                     case REP:
                         track("R", path);
-                        autoSave.markResolved(path);
                         break;
                     case MIS:
                         track("!", path);
-                        autoSave.markMissing(path);
                         break;
                     case ERR:
                         Exception error = entry.getValue().getError();
@@ -1007,6 +1013,9 @@ public class Importer {
                             track(error, path);
                         }
                         hasErrors = true;
+                        if (firstException == null) {
+                            firstException = new PackageException("Error creating/updating node " + path, error);
+                        }
                         break;
                 }
 

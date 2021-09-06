@@ -38,36 +38,35 @@ import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public interface JcrNodeTypeMetaData {
 
-    void addProperty(@NotNull NodeContext nodeContext, @NotNull NamePathResolver namePathResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,
+    Collection<ValidationMessage> addProperty(@NotNull NodeContext nodeContext, @NotNull NamePathResolver namePathResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,
             @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider,
-            @NotNull ValidationMessageSeverity severity, String name, boolean isMultiValue, Value... values) throws RepositoryException;
+            @NotNull ValidationMessageSeverity severity, @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations, String name, boolean isMultiValue, Value... values) throws RepositoryException;
     @NotNull JcrNodeTypeMetaData addImplicitChildNode(@NotNull NameResolver nameResolver,
             @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider, @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider,
             @NotNull ItemDefinitionProvider itemDefinitionProvider, @NotNull NodeContext nodeContext, @NotNull Name implicitNodeType)
             throws RepositoryException;
     @NotNull JcrNodeTypeMetaData addChildNode(@NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,
             @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider,
-            @NotNull ValidationMessageSeverity severity, @NotNull NodeContext nodeContext, @NotNull String primaryType, String... mixinTypes)
+            @NotNull NodeContext nodeContext, @NotNull String primaryType, String... mixinTypes)
                     throws RepositoryException, NamespaceExceptionInNodeName;
-    @NotNull JcrNodeTypeMetaData addUnknownChildNode(@NotNull NameResolver nameResolver, @NotNull String name) throws IllegalNameException, NamespaceException;
+    @NotNull JcrNodeTypeMetaData addUnknownChildNode(@NotNull NameResolver nameResolver, @NotNull NodeContext nodeContext, @NotNull String name) throws IllegalNameException, NamespaceException;
     
     // navigate
     @NotNull Collection<@NotNull ? extends JcrNodeTypeMetaData> getChildren();
     Optional<JcrNodeTypeMetaData> getNode(NamePathResolver nameResolver, String path)
             throws ItemNotFoundException, RepositoryException;
-    @NotNull JcrNodeTypeMetaData getOrCreateNode(NamePathResolver nameResolver, String path) throws RepositoryException;
+    @NotNull JcrNodeTypeMetaData getOrCreateNode(NamePathResolver nameResolver, @NotNull NodeContext nodeContext, String path) throws RepositoryException;
     
     @NotNull Collection<ValidationMessage> finalizeValidation(@NotNull NamePathResolver nameResolver,
-            @NotNull ValidationMessageSeverity severity, @NotNull WorkspaceFilter filter) throws NamespaceException;
-    void fetchAndClearValidationMessages(Collection<ValidationMessage> messages);
+            @NotNull NodeTypeDefinitionProvider nodeTypeDefinitionProvider, @NotNull ItemDefinitionProvider itemDefinitionProvider, @NotNull ValidationMessageSeverity severity, 
+            @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations, @NotNull WorkspaceFilter filter) throws NamespaceException;
     @NotNull Name getPrimaryNodeType();
     String getQualifiedPath(NamePathResolver resolver) throws NamespaceException;
-    void setNodeTypes(@NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,
-           @Nullable String primaryType, String... mixinTypes)
+    void setNodeTypes(@NotNull NameResolver nameResolver, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider,  boolean isFallbackPrimaryType,
+           @NotNull String primaryType, String... mixinTypes)
             throws IllegalNameException, ConstraintViolationException, NoSuchNodeTypeException, NamespaceException;
     void setUnknownNodeTypes();
     

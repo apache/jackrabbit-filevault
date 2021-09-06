@@ -18,11 +18,16 @@
 package org.apache.jackrabbit.vault.fs.impl.io;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -31,13 +36,21 @@ import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.util.EffectiveNodeType;
 import org.apache.jackrabbit.vault.util.JcrConstants;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Handles artifact sets with just a directory.
  *
  */
 public class FolderArtifactHandler extends AbstractArtifactHandler {
+
+    /**
+     * qualified names of those default node types which should not be used for intermediate nodes (as they come with too many restrictions)
+     */
+    private static final List<String> DISALLOWED_PRIMARY_NODE_TYPE_NAMES = Arrays.asList(JcrConstants.NT_BASE, JcrConstants.NT_HIERARCHYNODE);
 
     /**
      * node type to use for the folders
@@ -60,12 +73,25 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
         this.nodeType = nodeType;
     }
 
+    private Node createIntermediateNode(Node parent, String intermediateNodeName) throws RepositoryException {
+        // preferably use default (=primary) node type for intermediate nodes
+        Optional<String> defaultPrimaryChildNodeType = EffectiveNodeType.ofNode(parent).getDefaultPrimaryChildNodeTypeName(parent, intermediateNodeName);
+        final Node node;
+        if (defaultPrimaryChildNodeType.isPresent() && !DISALLOWED_PRIMARY_NODE_TYPE_NAMES.contains(defaultPrimaryChildNodeType.get())) {
+            node = parent.addNode(intermediateNodeName);
+        } else {
+            node = parent.addNode(intermediateNodeName, nodeType);
+        }
+        return node;
+    }
+
     /**
      * {@inheritDoc}
      *
      * Handles generic artifact sets
      */
-    public ImportInfoImpl accept(WorkspaceFilter wspFilter, Node parent, String name,
+    @Override
+    public ImportInfoImpl accept(@NotNull ImportOptions options, WorkspaceFilter wspFilter, Node parent, String name,
                              ArtifactSetImpl artifacts)
             throws RepositoryException, IOException {
         Artifact dir = artifacts.getDirectory();
@@ -82,18 +108,12 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             if (wspFilter.contains(parent.getPath() + "/" + dir.getRelativePath())) {
                 node = parent.addNode(dir.getRelativePath(), nodeType);
             } else {
-                // preferably use default node type for intermediate nodes
-                if (parent.getPrimaryNodeType().canAddChildNode(dir.getRelativePath())) {
-                    node = parent.addNode(dir.getRelativePath());
-                } else {
-                    node = parent.addNode(dir.getRelativePath(), nodeType);
-                }
-                
+                node = createIntermediateNode(parent, dir.getRelativePath());
             }
             info.onCreated(node.getPath());
         } else {
             // sync nodes
-            Set<String> hints = new HashSet<String>();
+            Set<String> hints = new HashSet<>();
             String rootPath = parent.getPath();
             if (!rootPath.equals("/")) {
                 rootPath += "/";
@@ -103,33 +123,31 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             }
 
             Node node = parent.getNode(dir.getRelativePath());
-            if (wspFilter.contains(node.getPath()) && !nodeType.equals(node.getPrimaryNodeType().getName())) {
-                node = modifyPrimaryType(node, info);
+            if (wspFilter.contains(node.getPath()) && wspFilter.getImportMode(node.getPath())==ImportMode.REPLACE && !nodeType.equals(node.getPrimaryNodeType().getName())) {
+                modifyPrimaryType(node, info);
             }
             NodeIterator iter = node.getNodes();
             while (iter.hasNext()) {
                 Node child = iter.nextNode();
                 String path = child.getPath();
-                if (wspFilter.contains(path)) {
-                    if (wspFilter.getImportMode(path) == ImportMode.REPLACE) {
-                        if (!hints.contains(path)) {
-                            // if the child is in the filter, it belongs to
-                            // this aggregate and needs to be removed
-                            if (getAclManagement().isACLNode(child)) {
-                                if (acHandling == AccessControlHandling.OVERWRITE
-                                        || acHandling == AccessControlHandling.CLEAR) {
-                                    info.onDeleted(path);
-                                    getAclManagement().clearACL(node);
-                                }
-                            } else {
+                if (wspFilter.contains(path) && wspFilter.getImportMode(path) == ImportMode.REPLACE) {
+                    if (!hints.contains(path)) {
+                        // if the child is in the filter, it belongs to
+                        // this aggregate and needs to be removed
+                        if (getAclManagement().isACLNode(child)) {
+                            if (acHandling == AccessControlHandling.OVERWRITE
+                                    || acHandling == AccessControlHandling.CLEAR) {
                                 info.onDeleted(path);
-                                child.remove();
+                                getAclManagement().clearACL(node);
                             }
-                        } else if (acHandling == AccessControlHandling.CLEAR
-                                && getAclManagement().isACLNode(child)) {
+                        } else {
                             info.onDeleted(path);
-                            getAclManagement().clearACL(node);
+                            child.remove();
                         }
+                    } else if (acHandling == AccessControlHandling.CLEAR
+                            && getAclManagement().isACLNode(child)) {
+                        info.onDeleted(path);
+                        getAclManagement().clearACL(node);
                     }
                 }
             }
@@ -138,23 +156,26 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
         return info;
     }
 
-    private Node modifyPrimaryType(Node node, ImportInfoImpl info) throws RepositoryException {
-        String name = node.getName();
-        Node parent = node.getParent();
-
+    /**
+     * This is potentially a destructive operation as it will remove all (non-protected) properties before doing the conversion
+     * @param node
+     * @param info
+     * @throws RepositoryException
+     */
+    private void modifyPrimaryType(Node node, ImportInfoImpl info) throws RepositoryException {
         // check versionable
         ensureCheckedOut(node, info);
 
-        ChildNodeStash recovery = new ChildNodeStash(node.getSession());
-        recovery.stashChildren(node);
-        node.remove();
-        
-        // now create the new node
-        Node newNode = parent.addNode(name, nodeType);
-        info.onReplaced(newNode.getPath());
-        // move the children back
-        recovery.recoverChildren(newNode, info);
-        return newNode;
+        // remove all non-allowed properties
+        PropertyIterator propertyIterator = node.getProperties();
+        while (propertyIterator.hasNext()) {
+            Property property = propertyIterator.nextProperty();
+            if (!property.getDefinition().isProtected()) {
+                property.remove();
+            }
+        }
+        node.setPrimaryType(nodeType);
+        info.onModified(node.getPath());
     }
 
     private void ensureCheckedOut(Node node, ImportInfoImpl info) throws RepositoryException {
@@ -164,7 +185,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             try {
                 node.checkout();
             } catch (RepositoryException e) {
-                info.log.warn("error while checkout node (ignored)", e);
+                ImportInfoImpl.log.warn("error while checkout node (ignored)", e);
             }
         }
     }

@@ -7,7 +7,6 @@
     jcr:lastModifiedBy="admin"
     jcr:primaryType="vlt:PackageDefinition"
     buildCount="1"
-    builtWith="Adobe Experience Manager-6.5.8.0"
     group="my_packages"
     lastUnwrapped="{Date}2021-07-21T17:12:34.610+12:00"
     lastUnwrappedBy="admin"

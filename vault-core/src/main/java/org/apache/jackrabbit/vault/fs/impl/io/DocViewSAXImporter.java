@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.fs.impl.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Optional;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Item;
@@ -46,6 +48,7 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
@@ -1267,7 +1270,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 // check if child is not protected
                                 if (child.getDefinition().isProtected()) {
                                     log.debug("Refuse to delete protected child node: {}", path);
-                                } else if (child.getDefinition().isMandatory() &&  getSiblWithReqPrimType(child) <= 0) {
+                                } else if (child.getDefinition().isMandatory() 
+                                        && getNumChildrenWithType(child.getParent(), child) <= 1) {
                                     log.debug("Refuse to delete mandatory child node: {}", path);
                                 } else {
                                     importInfo.onDeleted(path);
@@ -1296,16 +1300,26 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         }
     }
 
-    private int getSiblWithReqPrimType(Node child) throws RepositoryException {
+    private int getNumChildrenWithType(Node parent, Node child) throws RepositoryException {
 
         int count=0;
-        Node parent = child.getParent();
+       
         NodeIterator iter = parent.getNodes();
+
+        EffectiveNodeType ent = EffectiveNodeType.ofNode(parent); 
+        Optional<NodeDefinition> def = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
+        
         while (iter.hasNext()) {
             Node sibling = iter.nextNode();
-            if(child.getPrimaryNodeType().toString()
-                    .equals(sibling.getPrimaryNodeType().toString())) {
-                count++;
+            Optional<NodeDefinition>  childDef = ent.getApplicableChildNodeDefinition(sibling.getName(), sibling.getPrimaryNodeType());
+            Boolean test = (def == childDef) || (def != null && def.equals(childDef));
+
+            /*This is not working
+            if(def.equals(childDef)) { 
+                count++; 
+            }*/
+            if(Arrays.equals(def.get().getRequiredPrimaryTypes(),childDef.get().getRequiredPrimaryTypes())) {
+                count++; 
             }
         }
         return count;

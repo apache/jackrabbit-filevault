@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Content-Package-Roots: /libs/msm/wcm
+Content-Package-Type: application
+Content-Package-Id: my_packages:wcm-rollout-config:1
+

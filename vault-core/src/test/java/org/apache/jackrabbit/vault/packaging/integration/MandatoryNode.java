@@ -20,11 +20,6 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import java.io.IOException;
 
 import javax.jcr.RepositoryException;
-
-import org.apache.jackrabbit.api.JackrabbitSession;
-import org.apache.jackrabbit.api.security.user.Authorizable;
-import org.apache.jackrabbit.api.security.user.UserManager;
-import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Test;
 
@@ -32,7 +27,7 @@ import org.junit.Test;
 public class MandatoryNode extends IntegrationTestBase {
  
     @Test
-    public void testSimpleFileAggregateOverwritesChildNodes()
+    public void testMultipleMandatoryChildNodesReplace()
             throws RepositoryException, IOException, PackageException {
 
         extractVaultPackage("/test-packages/wcm-rollout-config-1.zip");
@@ -41,19 +36,46 @@ public class MandatoryNode extends IntegrationTestBase {
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/contentUpdate");
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/contentCopy");
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/contentDelete");
-        assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/referencesUpdate");
-        assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/productUpdate");
-        assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/orderChildren");
+
+        extractVaultPackage("/test-packages/wcm-rollout-config-2.zip");
+
+        /*check if older nodes are replaced*/
+        assertNodeMissing("/libs/msm/wcm/rolloutconfigs/default/contentUpdate");
+        assertNodeMissing("/libs/msm/wcm/rolloutconfigs/default/contentDelete");
+        
+        /*check if newly added node exist*/
+        assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/activate");
+        assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/contentCopy");
+    }
+
+    @Test
+    public void testSingleMandatoryChildNodeReplace()
+            throws RepositoryException, IOException, PackageException {
+
+        extractVaultPackage("/test-packages/wcm-rollout-config-1.zip");
+
+        // test if only node exist
+        assertNodeExists("/libs/msm/wcm/rolloutconfigs/activate/targetActivate");
         
         extractVaultPackage("/test-packages/wcm-rollout-config-2.zip");
 
-        assertNodeMissing("/libs/msm/wcm/rolloutconfigs/default/contentUpdate");
-        assertNodeMissing("/libs/msm/wcm/rolloutconfigs/default/contentDelete");
-        assertNodeMissing("/libs/msm/wcm/rolloutconfigs/default/referencesUpdate");
-        assertNodeMissing("/libs/msm/wcm/rolloutconfigs/default/productUpdate");
-        assertNodeMissing("/libs/msm/wcm/rolloutconfigs/default/orderChildren");
+        /* check if the only node is replaced */
+        assertNodeMissing("/libs/msm/wcm/rolloutconfigs/activate/targetActivate");
+        assertNodeExists("/libs/msm/wcm/rolloutconfigs/activate/targetNewActivate");
+    }
+
+    @Test
+    public void testSameMandatoryChildNodeNotReplaced()
+            throws RepositoryException, IOException, PackageException {
+
+        extractVaultPackage("/test-packages/wcm-rollout-config-1.zip");
+
+        // test if only node exist
+        assertNodeExists("/libs/msm/wcm/rolloutconfigs/deactivate/targetDeactivate");
         
-        assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/activate");
-        assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/contentCopy");
+        extractVaultPackage("/test-packages/wcm-rollout-config-2.zip");
+
+        /* check if the only node is replaced */
+        assertNodeExists("/libs/msm/wcm/rolloutconfigs/deactivate/targetDeactivate");
     }
 }

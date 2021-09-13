@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>FileVault Package Properties</comment>
+<entry key="createdBy">admin</entry>
+<entry key="name">wcm-rollout-config</entry>
+<entry key="lastModified">2021-07-21T17:12:34.610+12:00</entry>
+<entry key="lastModifiedBy">admin</entry>
+<entry key="created">2021-07-21T17:12:34.623+12:00</entry>
+<entry key="buildCount">1</entry>
+<entry key="version">2</entry>
+<entry key="packageType">application</entry>
+<entry key="dependencies"/>
+<entry key="packageFormatVersion">2</entry>
+<entry key="description"/>
+<entry key="lastWrapped">2021-07-21T17:12:34.610+12:00</entry>
+<entry key="group">my_packages</entry>
+<entry key="lastWrappedBy">admin</entry>
+</properties>

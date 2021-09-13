@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
+    cq:trigger="rollout"
+    jcr:description="Standard rollout configuration which allows to start rollout process on rollout trigger and runs actions: create, update, delete content and order children nodes."
+    jcr:primaryType="cq:RolloutConfig"
+    jcr:title="Standard rollout config">
+    <activate jcr:primaryType="cq:LiveSyncAction"/>
+    <contentCopy jcr:primaryType="cq:LiveSyncAction"/>
+</jcr:root>

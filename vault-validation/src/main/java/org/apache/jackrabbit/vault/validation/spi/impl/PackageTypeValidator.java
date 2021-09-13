@@ -32,7 +32,8 @@ import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.vault.validation.ValidationExecutor;
+import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.FilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
@@ -47,7 +48,7 @@ import org.jetbrains.annotations.Nullable;
 /** Checks if the package type is correctly set for this package
  * 
  * @see <a href="https://issues.apache.org/jira/browse/JCRVLT-170">JCRVLT-170</a> */
-public final class PackageTypeValidator implements NodePathValidator, FilterValidator, PropertiesValidator, MetaInfPathValidator {
+public final class PackageTypeValidator implements NodePathValidator, DocumentViewXmlValidator, FilterValidator, PropertiesValidator, MetaInfPathValidator {
 
     protected static final String MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES = "Package of type '%s' is not supposed to contain includes/excludes below any of its filters!";
     protected static final String MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE = "Package of type '%s' must only contain sub packages of type '%s' but found subpackage of type '%s'!";
@@ -67,7 +68,8 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     private final @NotNull PackageType type;
     private final @NotNull ValidationMessageSeverity severity;
     private final @NotNull ValidationMessageSeverity severityForLegacyType;
-    private final @NotNull Pattern jcrInstallerPathRegex;
+    private final @NotNull Pattern jcrInstallerNodePathRegex;
+    private final @NotNull Pattern jcrInstallerAdditionalFileNodePathRegex;
     private final @Nullable ValidationContext containerValidationContext;
     private final ValidationMessageSeverity severityForNoPackageType;
     private final boolean prohibitMutableContent;
@@ -82,8 +84,8 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
     public PackageTypeValidator(@NotNull WorkspaceFilter workspaceFilter, @NotNull ValidationMessageSeverity severity,
             @NotNull ValidationMessageSeverity severityForNoPackageType, @NotNull ValidationMessageSeverity severityForLegacyType,
             boolean prohibitMutableContent, boolean prohibitImmutableContent, boolean allowComplexFilterRulesInApplicationPackages,
-            boolean allowInstallHooksInApplicationPackages, @NotNull PackageType type, @NotNull Pattern jcrInstallerPathRegex, 
-            @NotNull Set<String> immutableRootNodeNames, @Nullable ValidationContext containerValidationContext) {
+            boolean allowInstallHooksInApplicationPackages, @NotNull PackageType type, @NotNull Pattern jcrInstallerNodePathRegex, 
+            Pattern jcrInstallerAdditionalFileNodePathRegex, @NotNull Set<String> immutableRootNodeNames, @Nullable ValidationContext containerValidationContext) {
         this.type = type;
         this.severity = severity;
         this.severityForNoPackageType = severityForNoPackageType;
@@ -92,7 +94,8 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         this.prohibitImmutableContent = prohibitImmutableContent;
         this.allowComplexFilterRulesInApplicationPackages = allowComplexFilterRulesInApplicationPackages;
         this.allowInstallHooksInApplicationPackages = allowInstallHooksInApplicationPackages;
-        this.jcrInstallerPathRegex = jcrInstallerPathRegex;
+        this.jcrInstallerNodePathRegex = jcrInstallerNodePathRegex;
+        this.jcrInstallerAdditionalFileNodePathRegex = jcrInstallerAdditionalFileNodePathRegex;
         this.immutableRootNodeNames = immutableRootNodeNames;
         this.containerValidationContext = containerValidationContext;
         this.filter = workspaceFilter;
@@ -100,15 +103,14 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
         this.potentiallyDisallowedContainerNodes = new LinkedList<>();
     }
 
-    /**
-     * 
-     * @param filePath
-     * @return {@code true} in case the given file path is specifying 
-     */
-    boolean isOsgiBundleOrConfiguration(Path filePath) {
-        // to properly detect sling:OsgiConfig we need the extension from the file path (.xml)
-        String nodePath = ValidationExecutor.filePathToNodePath(filePath);
-        return jcrInstallerPathRegex.matcher(nodePath).matches();
+    private boolean isOsgiBundleOrConfigurationNode(String nodePath, boolean isFileNode) {
+        if (!jcrInstallerNodePathRegex.matcher(nodePath).matches()) {
+            return false;
+        }
+        if (isFileNode) {
+            return jcrInstallerAdditionalFileNodePathRegex.matcher(nodePath).matches();
+        }
+        return true;
     }
 
     static boolean isSubPackage(String nodePath) {
@@ -147,7 +149,7 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
             if (isImmutableContent(nodeContext.getNodePath())) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_APP_CONTENT, type, immutableRootNodeNames.stream().collect(Collectors.joining("' or '", "'", "'")))));
             }
-            if (isOsgiBundleOrConfiguration(nodeContext.getFilePath())) {
+            if (isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), true)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
             }
             break;
@@ -155,14 +157,14 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
             if (!isImmutableContent(nodeContext.getNodePath())) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_APP_CONTENT_FOUND, type, immutableRootNodeNames.stream().collect(Collectors.joining("' or '", "'", "'")))));
             }
-            if (isOsgiBundleOrConfiguration(nodeContext.getFilePath())) {
+            if (isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), true)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
             }
             // sub packages are detected via validate(Properties) on the sub package
             break;
         case CONTAINER:
             // sling:OsgiConfig
-            if (isOsgiBundleOrConfiguration(nodeContext.getFilePath())) {
+            if (isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), true)) {
                 validContainerNodePaths.add(nodeContext.getNodePath());
             }
             else if (isSubPackage(nodeContext.getNodePath())) {
@@ -253,6 +255,31 @@ public final class PackageTypeValidator implements NodePathValidator, FilterVali
                 messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
             }
+            break;
+        }
+        return messages;
+    }
+
+    
+    @Override
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext,
+            boolean isRoot) {
+        Collection<ValidationMessage> messages = new LinkedList<>();
+        switch (type) {
+        case CONTENT:
+        case APPLICATION:
+            // is it sling:OsgiConfig node?
+            if ("sling:OsgiConfig".equals(node.primary) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
+                messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
+            }
+            break;
+        case CONTAINER:
+            if ("sling:OsgiConfig".equals(node.primary) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
+                validContainerNodePaths.add(nodeContext.getNodePath());
+            }
+            break;
+        case MIXED:
+            // no validations currently as most relaxed type
             break;
         }
         return messages;

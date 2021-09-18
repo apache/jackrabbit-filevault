@@ -29,10 +29,10 @@ serialized into DocView XML files. If the node can only be partially mapped to a
 it will be accompanied with a `.content.xml` containing the residual content. 
 
 For example, a _full coverage_ content tree, starting at the node `example` will be serialized into
-a `example.xml` file, using the (filevault) DocView format.
+an `example.xml` file, using the (FileVault) DocView format.
 
 For example, a _sling:Folder_ node, named `libs` will be serialized into a directory `libs` and a
-`libs/.content.xml` file, using the (filevault) DocView format.
+`libs/.content.xml` file, using the (FileVault) DocView format.
 
 Also see the [vault-fs](vaultfs.html) article about this.
 
@@ -41,8 +41,8 @@ Deviations to the JCR DocView
 
 ### Root Element
 
-The root element of the filevault DocView is always `jcr:root` no matter of the node name it serializes.
-Because the the node name is implicitly given by either the filename or the directory name, it would be
+The root element of the FileVault DocView is always `jcr:root` no matter of the node name it serializes.
+Because the node name is implicitly given by either the file name or the directory name, it would be
 redundant to repeat the node name in the document.
 
 Example:

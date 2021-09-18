@@ -36,7 +36,7 @@ For example, a _sling:Folder_ node, named `libs` will be serialized into a direc
 
 Also see the [vault-fs](vaultfs.html) article about this.
 
-Deviations to the JCR DocView
+Deviations from the Standard JCR DocView
 -----------------------------
 
 ### Root Element

@@ -552,9 +552,14 @@ public class AggregateImpl implements Aggregate {
             if (prop.getType() == PropertyType.BINARY) {
                 boolean includeBinary = true;
                 if (useBinaryReferences) {
-                    Binary bin = prop.getBinary();
-                    if (bin != null && bin instanceof ReferenceBinary) {
-                        String binaryReference = ((ReferenceBinary) bin).getReference();
+                    final Value firstValue;
+                    if (prop.isMultiple()) {
+                        firstValue = prop.getValues().length > 0 ? prop.getValues()[0] : null;
+                    } else {
+                        firstValue = prop.getValue();
+                    }
+                    if (firstValue != null && firstValue.getBinary() instanceof ReferenceBinary) {
+                        String binaryReference = ((ReferenceBinary) firstValue.getBinary()).getReference();
 
                         // do not create a separate binary file if there is a reference
                         if (binaryReference != null) {
@@ -727,7 +732,7 @@ public class AggregateImpl implements Aggregate {
                             // in some weird cases, the jcr2spi layer reports
                             // wrong nodes. in this case, just remove it again
                             // as leave
-                            log.warn("Alleged node is gone: {}", path);
+                            log.warn("Alleged node is gone: {}", path, e);
                             sub.invalidate();
                             sub = null;
                         }

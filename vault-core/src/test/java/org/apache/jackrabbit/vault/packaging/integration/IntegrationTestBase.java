@@ -128,10 +128,12 @@ public class IntegrationTestBase  {
      */
     private static final Logger log = LoggerFactory.getLogger(IntegrationTestBase.class);
 
-    private static final String REPO_HOME = "target/repository";
-    private static final File DIR_REPO_HOME = new File(REPO_HOME + System.getProperty("repoIndex", "0"));
-    private static final File DIR_DATA_STORE = new File(DIR_REPO_HOME, "datastore");
-    private static final File DIR_BLOB_STORE = new File(DIR_REPO_HOME, "blobstore");
+    
+    private static final File DIR_JR2_REPO_HOME = new File("target", "repository-jr2-" + System.getProperty("repoSuffix", "fork1"));
+    private static final File DIR_OAK_REPO_HOME = new File("target", "repository-oak-" + System.getProperty("repoSuffix", "fork1"));
+
+    private static final File DIR_OAK_FILE_STORE = new File(DIR_OAK_REPO_HOME, "filestore");
+    private static final File DIR_OAK_BLOB_STORE = new File(DIR_OAK_FILE_STORE, "blobstore");
 
     public static final PackageId TMP_PACKAGE_ID = new PackageId("my_packages", "tmp", "");
 
@@ -178,17 +180,30 @@ public class IntegrationTestBase  {
 
     @BeforeClass
     public static void initRepository() throws RepositoryException, IOException, InvalidFileStoreVersionException {
-        if (isOak()) {
+        initRepository(isOak(), useFileStore());
+    }
+
+    /**
+     * 
+     * @param isOak {@code true} in case IT should run against Oak, otherwise runs again JR2
+     * @param useFileStore only evaluated for Oak. Optionally uses a dedicated BlobStore with Oak
+     * @throws RepositoryException
+     * @throws IOException
+     * @throws InvalidFileStoreVersionException
+     */
+    public static void initRepository(boolean isOak, boolean useFileStore) throws RepositoryException, IOException, InvalidFileStoreVersionException {
+        if (isOak) {
             Jcr jcr;
-            if (useFileStore()) {
+            if (useFileStore) {
                 BlobStore blobStore = createBlobStore();
-                DIR_DATA_STORE.mkdirs();
-                fileStore = FileStoreBuilder.fileStoreBuilder(DIR_DATA_STORE)
+                DIR_OAK_FILE_STORE.mkdirs();
+                fileStore = FileStoreBuilder.fileStoreBuilder(DIR_OAK_FILE_STORE)
                         .withBlobStore(blobStore)
                         .build();
                 SegmentNodeStore nodeStore = SegmentNodeStoreBuilders.builder(fileStore).build();
                 jcr = new Jcr(nodeStore);
             } else {
+                // in-memory repo
                 jcr = new Jcr();
             }
 
@@ -204,7 +219,7 @@ public class IntegrationTestBase  {
             admin.logout();
         } else {
             try (InputStream in = IntegrationTestBase.class.getResourceAsStream("repository.xml")) {
-                RepositoryConfig cfg = RepositoryConfig.create(in, DIR_REPO_HOME.getPath());
+                RepositoryConfig cfg = RepositoryConfig.create(in, DIR_JR2_REPO_HOME.getPath());
                 repository = RepositoryImpl.create(cfg);
             }
         }
@@ -240,14 +255,16 @@ public class IntegrationTestBase  {
     }
 
     public static boolean useFileStore() {
-        return Boolean.getBoolean("fds");
+        // don't use by default because it is slower and pollutes the log
+        return Boolean.parseBoolean(System.getProperty("fds", "false"));
     }
 
     private static BlobStore createBlobStore() throws IOException {
-        DIR_BLOB_STORE.mkdirs();
+        DIR_OAK_BLOB_STORE.mkdirs();
         FileDataStore fds = new FileDataStore();
         fds.setMinRecordLength(4092);
-        fds.init(DIR_BLOB_STORE.getAbsolutePath());
+        fds.setPath(DIR_OAK_BLOB_STORE.getAbsolutePath());
+        fds.init(DIR_OAK_REPO_HOME.getAbsolutePath());
         return new DataStoreBlobStore(fds);
     }
 
@@ -255,17 +272,16 @@ public class IntegrationTestBase  {
     public static void shutdownRepository() throws IOException {
         if (repository instanceof RepositoryImpl) {
             ((RepositoryImpl) repository).shutdown();
+            FileUtils.deleteDirectory(DIR_JR2_REPO_HOME);
         } else if (repository instanceof org.apache.jackrabbit.oak.jcr.repository.RepositoryImpl) {
             ((org.apache.jackrabbit.oak.jcr.repository.RepositoryImpl) repository).shutdown();
+            if (fileStore != null) {
+                fileStore.close();
+                fileStore = null;
+            }
+            FileUtils.deleteDirectory(DIR_OAK_REPO_HOME);
         }
         repository = null;
-
-        if (fileStore != null) {
-            fileStore.close();
-            fileStore = null;
-        }
-
-        FileUtils.deleteDirectory(DIR_REPO_HOME);
     }
 
     @Before

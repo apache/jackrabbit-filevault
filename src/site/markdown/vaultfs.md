@@ -244,6 +244,8 @@ is mapped to:
              `- data2.binary
 ```
 
+Multi-value binary properties are mapped to multiple files named `<property name>[<0-based index>].binary`
+
 #### Resource Nodes
 There are some cases where `nt:resource` like structures are used that are not held below a `nt:file` node.
 

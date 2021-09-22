@@ -295,6 +295,13 @@
             <version>${oak.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- transitive dependency of oak-segment-tar, necessary for filedatastore (https://issues.apache.org/jira/browse/OAK-6542) -->
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>3.2.3</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-authorization-principalbased</artifactId>
@@ -411,11 +418,13 @@
                                 <configuration>
                                     <systemPropertyVariables>
                                         <oak>true</oak>
-                                        <repoIndex>${surefire.forkNumber}</repoIndex>
+                                        <repoSuffix>fork${surefire.forkNumber}</repoSuffix>
+                                        <!-- https://issues.apache.org/jira/browse/OAK-8903 -->
+                                        <oak.datastore.sharedTransient>true</oak.datastore.sharedTransient>
                                     </systemPropertyVariables>
                                     <argLine>@{jacoco.command} -Xmx1024m</argLine>
                                     <reportNameSuffix>OAK</reportNameSuffix>
-                                    <forkCount>4</forkCount>
+                                    <forkCount>0.5C</forkCount>
                                     <reuseForks>true</reuseForks>
                                 </configuration>
                             </execution>
@@ -427,12 +436,12 @@
                                 <configuration>
                                     <systemPropertyVariables>
                                         <oak>false</oak>
-                                        <repoIndex>${surefire.forkNumber}</repoIndex>
+                                        <repoSuffix>fork${surefire.forkNumber}</repoSuffix>
                                     </systemPropertyVariables>
                                     <reportNameSuffix>JR</reportNameSuffix>
                                     <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-jr.xml</summaryFile>
-                                    <!-- <forkCount>4</forkCount>
-                                    <reuseForks>true</reuseForks> -->
+                                    <forkCount>0.5C</forkCount>
+                                    <reuseForks>true</reuseForks>
                                 </configuration>
                             </execution>
                             <execution>
@@ -442,11 +451,15 @@
                                 </goals>
                                 <configuration>
                                     <summaryFiles>
+                                        <!-- in addition to default summary file used by Oak -->
                                         <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-jr.xml</summaryFile>
                                     </summaryFiles>
                                 </configuration>
                             </execution>
                         </executions>
+                        <configuration>
+                          <reportsDirectory>target/failsafe-reports-${surefire.forkNumber}</reportsDirectory>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

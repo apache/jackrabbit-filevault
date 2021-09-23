@@ -20,13 +20,15 @@ import java.util.List;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.xml.sax.SAXException;
 
 /**
- * {@code DocViewAdapter} is used by the {@link org.apache.jackrabbit.vault.fs.impl.io.DocViewSAXImporter} to handle
+ * {@code DocViewAdapter} is used by the {@link org.apache.jackrabbit.vault.fs.impl.io.DocViewSAXHandler} to handle
  * special content that is not importable using "normal" JCR calls. For example users and other protected content
  * needs to be imported using the {@link javax.jcr.Session#importXML(String, java.io.InputStream, int)} or similar.
+ * 
+ * TODO: check overlap with DocViewParserHandler
  */
 public interface DocViewAdapter {
 
@@ -36,14 +38,14 @@ public interface DocViewAdapter {
      * @throws SAXException if a parsing error occurs.
      * @throws RepositoryException if a import exception occurs.
      */
-    void startNode(DocViewNode node) throws SAXException, RepositoryException;
+    void startNode(DocViewNode2 node) throws RepositoryException;
 
     /**
      * Ends node is invoked when the importer ascends from an element.
      * @throws SAXException if a parsing error occurs.
      * @throws RepositoryException if a import exception occurs.
      */
-    void endNode() throws SAXException, RepositoryException;
+    void endNode() throws RepositoryException;
 
     /**
      * Is called by the importer if the adapter is no longer used and must finalize the import.
@@ -51,6 +53,6 @@ public interface DocViewAdapter {
      * @throws RepositoryException if a import exception occurs.
      * @return The paths that were created.
      */
-    List<String> close() throws SAXException, RepositoryException;
+    List<String> close() throws RepositoryException;
 
 }

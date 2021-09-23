@@ -49,7 +49,7 @@ import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.impl.util.ValidationMessageErrorHandler;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
@@ -294,10 +294,10 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     }
 
     @Override
-    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext,
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext,
             boolean isRoot) {
         // skip root node, as it has been processed with validateJcrPath(...) and empty nodes only used for ordering
-        if (!isRoot && node.props.size() > 0) {
+        if (!isRoot && !node.getProperties().isEmpty()) {
             // root has been validated already with validateJcrPath(...)
             return validateNodePath(nodeContext.getNodePath());
         }

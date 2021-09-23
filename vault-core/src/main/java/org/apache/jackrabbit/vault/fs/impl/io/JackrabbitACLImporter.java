@@ -18,12 +18,15 @@ package org.apache.jackrabbit.vault.fs.impl.io;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -45,11 +48,16 @@ import org.apache.jackrabbit.api.security.authorization.PrincipalSetPolicy;
 import org.apache.jackrabbit.api.security.principal.PrincipalManager;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
+import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
+import org.apache.jackrabbit.spi.commons.conversion.NamePathResolver;
+import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
+import org.apache.jackrabbit.spi.commons.name.NameConstants;
+import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
-import org.apache.jackrabbit.vault.util.DocViewNode;
-import org.apache.jackrabbit.vault.util.DocViewProperty;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.slf4j.Logger;
-import org.xml.sax.SAXException;
 
 /**
  * Implements a doc view adapter that reads the ACL information of the docview hierarchy and applies it to the
@@ -57,10 +65,13 @@ import org.xml.sax.SAXException;
  */
 public class JackrabbitACLImporter implements DocViewAdapter {
 
+    private static final Name NAME_REP_EFFECTIVE_PATH = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "effectivePath");
+    private static final Name NAME_REP_PRINCIPAL_NAMES = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "principalNames");
+
     /**
      * default logger
      */
-    private static final Logger log = DocViewSAXImporter.log;
+    private static final Logger log = DocViewSAXHandler.log;
 
     private final JackrabbitSession session;
 
@@ -71,6 +82,8 @@ public class JackrabbitACLImporter implements DocViewAdapter {
     private final PrincipalManager pMgr;
 
     private final String accessControlledPath;
+
+    private final  NamePathResolver resolver;
 
     private ImportedPolicy<? extends AccessControlPolicy> importPolicy;
 
@@ -106,23 +119,25 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         this.pMgr = this.session.getPrincipalManager();
         this.aclHandling = aclHandling;
         this.states.push(State.INITIAL);
+        this.resolver = new DefaultNamePathResolver(session);
     }
 
-    public void startNode(DocViewNode node) {
+    public void startNode(DocViewNode2 node) {
         State state = states.peek();
         switch (state) {
             case INITIAL:
-                if ("rep:ACL".equals(node.primary)) {
+                String primaryType = node.getPrimaryType().orElseThrow(() -> new IllegalStateException("Error while reading access control content: Missing 'jcr:primaryType'"));
+                if ("rep:ACL".equals(primaryType)) {
                     importPolicy = new ImportedAcList();
                     state = State.ACL;
-                } else if ("rep:CugPolicy".equals(node.primary)) {
+                } else if ("rep:CugPolicy".equals(primaryType)) {
                     importPolicy = new ImportedPrincipalSet(node);
                     state = State.PRINCIPAL_SET_POLICY;
-                } else if ("rep:PrincipalPolicy".equals(node.primary)) {
+                } else if ("rep:PrincipalPolicy".equals(primaryType)) {
                     importPolicy = new ImportedPrincipalAcList(node);
                     state = State.ACL;
                 } else {
-                    log.error("Error while reading access control content: Expected rep:ACL or rep:CugPolicy but was: {}", node.primary);
+                    log.error("Error while reading access control content: Expected rep:ACL or rep:CugPolicy but was: {}", node.getPrimaryType());
                     state = State.ERROR;
                 }
                 break;
@@ -141,17 +156,17 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         states.push(state);
     }
 
-    public void endNode() throws SAXException {
+    public void endNode() {
         State state = states.pop();
         importPolicy.endNode(state);
     }
 
-    public List<String> close() throws SAXException, RepositoryException {
+    public List<String> close() throws RepositoryException {
         if (states.peek() != State.INITIAL) {
             log.error("Unexpected end state: {}", states.peek());
         }
         List<String> paths = new ArrayList<>();
-        importPolicy.apply(paths);
+        importPolicy.apply(paths, resolver);
         return paths;
     }
 
@@ -163,11 +178,11 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
     private abstract class ImportedPolicy<T extends AccessControlPolicy> {
 
-        abstract State append(State state, DocViewNode childNode);
+        abstract State append(State state, DocViewNode2 node);
 
         abstract void endNode(State state);
 
-        abstract void apply(List<String> paths) throws RepositoryException;
+        abstract void apply(List<String> paths, NameResolver resolver) throws RepositoryException;
 
         Principal getPrincipal(final String principalName) {
             Principal principal = new Principal() {
@@ -181,7 +196,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         T getPolicy(Class<T> clz) throws RepositoryException {
             for (AccessControlPolicy p : acMgr.getPolicies(accessControlledPath)) {
                 if (clz.isAssignableFrom(p.getClass())) {
-                    return (T) p;
+                    return clz.cast(p);
                 }
             }
             return null;
@@ -191,7 +206,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             if (acMgr instanceof JackrabbitAccessControlManager) {
                 for (AccessControlPolicy p : ((JackrabbitAccessControlManager) acMgr).getPolicies(principal)) {
                     if (clz.isAssignableFrom(p.getClass())) {
-                        return (T) p;
+                        return clz.cast(p);
                     }
                 }
             }
@@ -203,7 +218,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             while (iter.hasNext()) {
                 AccessControlPolicy p = iter.nextAccessControlPolicy();
                 if (clz.isAssignableFrom(p.getClass())) {
-                    return (T) p;
+                    return clz.cast(p);
                 }
             }
 
@@ -216,7 +231,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             if (acMgr instanceof JackrabbitAccessControlManager) {
                 for (AccessControlPolicy p : ((JackrabbitAccessControlManager) acMgr).getApplicablePolicies(principal)) {
                     if (clz.isAssignableFrom(p.getClass())) {
-                        return (T) p;
+                        return clz.cast(p);
                     }
                 }
             }
@@ -235,7 +250,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         }
 
         @Override
-        State append(State state, DocViewNode childNode) {
+        State append(State state, DocViewNode2 childNode) {
             if (state == State.ACL) {
                 try {
                     currentACE = new ACE(childNode);
@@ -249,7 +264,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
                 currentACE.addRestrictions(childNode);
                 return State.RESTRICTION;
             } else {
-                log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.primary, state);
+                log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.getPrimaryType(), state);
                 return State.ERROR;
             }
         }
@@ -262,7 +277,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         }
 
         @Override
-        void apply(List<String> paths) throws RepositoryException {
+        void apply(List<String> paths, NameResolver resolver) throws RepositoryException {
             // find principals of existing ACL
             JackrabbitAccessControlList acl = getPolicy(JackrabbitAccessControlList.class);
             Set<String> existingPrincipals = new HashSet<String>();
@@ -305,7 +320,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
                 Map<String, Value> svRestrictions = new HashMap<String, Value>();
                 Map<String, Value[]> mvRestrictions = new HashMap<String, Value[]>();
-                ace.convertRestrictions(acl, session.getValueFactory(), svRestrictions, mvRestrictions);
+                ace.convertRestrictions(acl, session.getValueFactory(), resolver, svRestrictions, mvRestrictions);
                 acl.addEntry(principal, ace.getPrivileges(acMgr), ace.allow, svRestrictions, mvRestrictions);
             }
             acMgr.setPolicy(accessControlledPath, acl);
@@ -322,18 +337,18 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
     private final class ImportedPrincipalSet extends ImportedPolicy<PrincipalSetPolicy> {
 
-        private final String[] principalNames;
+        private final Collection<String> principalNames;
 
-        private ImportedPrincipalSet(DocViewNode node) {
+        private ImportedPrincipalSet(DocViewNode2 node) {
             // don't change the status as a cug policy may not have child nodes.
             // just collect the rep:principalNames property
             // any subsequent state would indicate an error
-            principalNames = node.getValues("rep:principalNames");
+            principalNames = node.getPropertyValues(NAME_REP_PRINCIPAL_NAMES);
         }
 
         @Override
-        State append(State state, DocViewNode childNode) {
-            log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.primary, state);
+        State append(State state, DocViewNode2 childNode) {
+            log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.getPrimaryType(), state);
             return State.ERROR;
         }
 
@@ -343,7 +358,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         }
 
         @Override
-        void apply(List<String> paths) throws RepositoryException {
+        void apply(List<String> paths, NameResolver resolver) throws RepositoryException {
             PrincipalSetPolicy psPolicy = getPolicy(PrincipalSetPolicy.class);
             if (psPolicy != null) {
                 Set<Principal> existingPrincipals = psPolicy.getPrincipals();
@@ -356,10 +371,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             }
 
             // TODO: correct behavior for MERGE and MERGE_PRESERVE?
-            Principal[] principals = new Principal[principalNames.length];
-            for (int i = 0; i < principals.length; i++) {
-                principals[i] = getPrincipal(principalNames[i]);
-            }
+            Principal[] principals = principalNames.stream().map(name -> getPrincipal(name)).toArray(Principal[]::new);
 
             psPolicy.addPrincipals(principals);
             acMgr.setPolicy(accessControlledPath, psPolicy);
@@ -378,8 +390,8 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         private final List<PrincipalEntry> entries = new ArrayList<>();
         private PrincipalEntry currentEntry;
 
-        private ImportedPrincipalAcList(DocViewNode node) {
-            String principalName = node.getValue("rep:principalName");
+        private ImportedPrincipalAcList(DocViewNode2 node) {
+             String principalName = node.getPropertyValue(NameConstants.REP_PRINCIPAL_NAME).orElseThrow(() -> new IllegalStateException("mandatory property 'rep:principalName' missing on principal policy node"));
              Principal p = pMgr.getPrincipal(principalName);
              if (p == null) {
                  try {
@@ -398,10 +410,10 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         }
 
         @Override
-        State append(State state, DocViewNode childNode) {
+        State append(State state, DocViewNode2 childNode) {
             if (state == State.ACL) {
-                if (!"rep:PrincipalEntry".equals(childNode.primary)) {
-                    log.error("Unexpected node type of access control entry: {}", childNode.primary);
+                if (!"rep:PrincipalEntry".equals(childNode.getPrimaryType().orElseThrow(() -> new IllegalStateException("mandatory property 'jcr:primaryType' missing on principal policy node")))) {
+                    log.error("Unexpected node type of access control entry: {}", childNode.getPrimaryType());
                     return State.ERROR;
                 }
                 currentEntry = new PrincipalEntry(childNode);
@@ -411,7 +423,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
                 currentEntry.addRestrictions(childNode);
                 return State.RESTRICTION;
             } else {
-                log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.primary, state);
+                log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.getPrimaryType(), state);
                 return State.ERROR;
             }
         }
@@ -424,7 +436,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         }
 
         @Override
-        void apply(List<String> paths) throws RepositoryException {
+        void apply(List<String> paths, NameResolver resolver) throws RepositoryException {
             if (aclHandling == AccessControlHandling.MERGE_PRESERVE) {
                 log.debug("MERGE_PRESERVE for principal-based access control list is equivalent to IGNORE.");
                 return;
@@ -445,7 +457,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             for (PrincipalEntry entry : entries) {
                 Map<String, Value> svRestrictions = new HashMap<>();
                 Map<String, Value[]> mvRestrictions = new HashMap<String, Value[]>();
-                entry.convertRestrictions(acl, session.getValueFactory(), svRestrictions, mvRestrictions);
+                entry.convertRestrictions(acl, session.getValueFactory(), resolver, svRestrictions, mvRestrictions);
                 acl.addEntry(entry.effectivePath, entry.getPrivileges(acMgr), svRestrictions, mvRestrictions);
             }
             acMgr.setPolicy(acl.getPath(), acl);
@@ -462,28 +474,29 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
     private static class AbstractEntry {
 
-        private final String[] privileges;
-        private final Map<String, DocViewProperty> restrictions = new HashMap<String, DocViewProperty>();
+        private final Collection<String> privileges;
+        private final Map<Name, DocViewProperty2> restrictions;
 
-        private AbstractEntry(DocViewNode node) {
-            privileges = node.getValues("rep:privileges");
+        private AbstractEntry(DocViewNode2 node) {
+            privileges = node.getPropertyValues(NameConstants.REP_PRIVILEGES);
+            restrictions = new HashMap<>();
             addRestrictions(node);
         }
 
-        void addRestrictions(DocViewNode node) {
-            restrictions.putAll(node.props);
+        void addRestrictions(DocViewNode2 node) {
+            restrictions.putAll(node.getProperties().stream().collect(Collectors.toMap(DocViewProperty2::getName, Function.identity())));
         }
 
-        void convertRestrictions(JackrabbitAccessControlList acl, ValueFactory vf, Map<String, Value> svRestrictions, Map<String, Value[]> mvRestrictions) throws RepositoryException {
+        void convertRestrictions(JackrabbitAccessControlList acl, ValueFactory vf, NameResolver resolver, Map<String, Value> svRestrictions, Map<String, Value[]> mvRestrictions) throws RepositoryException {
             for (String restName : acl.getRestrictionNames()) {
-                DocViewProperty restriction = restrictions.get(restName);
+                DocViewProperty2 restriction = restrictions.get(resolver.getQName(restName));
                 if (restriction != null) {
-                    Value[] values = new Value[restriction.values.length];
+                    Value[] values = new Value[restriction.getStringValues().size()];
                     int type = acl.getRestrictionType(restName);
                     for (int i=0; i<values.length; i++) {
-                        values[i] = vf.createValue(restriction.values[i], type);
+                        values[i] = vf.createValue(restriction.getStringValues().get(i), type);
                     }
-                    if (restriction.isMulti) {
+                    if (restriction.isMultiValue()) {
                         mvRestrictions.put(restName, values);
                     } else {
                         svRestrictions.put(restName, values[0]);
@@ -493,7 +506,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         }
 
         Privilege[] getPrivileges(AccessControlManager acMgr) throws RepositoryException {
-            return AccessControlUtils.privilegesFromNames(acMgr, privileges);
+            return AccessControlUtils.privilegesFromNames(acMgr, privileges.toArray(new String[0]));
         }
     }
 
@@ -502,16 +515,17 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         private final boolean allow;
         private final String principalName;
 
-        private ACE(DocViewNode node) {
-            super(node);
-            if ("rep:GrantACE".equals(node.primary)) {
+        private ACE(DocViewNode2 childNode) {
+            super(childNode);
+            String primaryType = childNode.getPrimaryType().orElseThrow(() -> new IllegalStateException("mandatory property 'jcr:primaryType' missing on ace node"));
+            if ("rep:GrantACE".equals(primaryType)) {
                 allow = true;
-            } else if ("rep:DenyACE".equals(node.primary)) {
+            } else if ("rep:DenyACE".equals(primaryType)) {
                 allow = false;
             } else {
-                throw new IllegalArgumentException("Unexpected node ACE type: " + node.primary);
+                throw new IllegalArgumentException("Unexpected node ACE type: " + childNode.getPrimaryType());
             }
-            principalName = node.getValue("rep:principalName");
+            principalName = childNode.getPropertyValue(NameConstants.REP_PRINCIPAL_NAME).orElseThrow(() -> new IllegalStateException("mandatory property 'rep:principalName' missing"));
         }
     }
 
@@ -519,9 +533,9 @@ public class JackrabbitACLImporter implements DocViewAdapter {
 
         private final String effectivePath;
 
-        private PrincipalEntry(DocViewNode node) {
+        private PrincipalEntry(DocViewNode2 node) {
             super(node);
-            String v = node.getValue("rep:effectivePath");
+            String v = node.getPropertyValue(NAME_REP_EFFECTIVE_PATH).orElseThrow(() -> new IllegalStateException("mandatory property 'rep:effectivePath ' missing on principal entry node"));
             if (v.isEmpty()) {
                 effectivePath = null;
             } else {

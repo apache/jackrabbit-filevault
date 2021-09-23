@@ -16,35 +16,21 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
 import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
-import org.xml.sax.SAXException;
 
 @MetaInfServices
 public class DocumentViewParserValidatorFactory implements ValidatorFactory {
 
-    private SAXParser saxParser;
-
     public static final String ID = ValidatorFactory.ID_PREFIX_JACKRABBIT + "docviewparser";
-    public DocumentViewParserValidatorFactory() throws ParserConfigurationException, SAXException {
 
-        SAXParserFactory spf = SAXParserFactory.newInstance();
-        spf.setNamespaceAware(true);
-        spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        saxParser = spf.newSAXParser();
-    }
     @Override
     public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
-        return new DocumentViewParserValidator(saxParser, settings.getDefaultSeverity());
+        return new DocumentViewParserValidator(settings.getDefaultSeverity());
     }
 
     @Override
@@ -62,5 +48,4 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
         return Integer.MAX_VALUE;
     }
 
-    
 }

@@ -17,5 +17,5 @@
 -conditionalpackage: org.apache.jackrabbit.jcr2spi.*,org.apache.jackrabbit.vault.fs.spi.impl.jcr20
 
 # only include individual classes from other impl packages
--includeresource: @org.apache.jackrabbit.vault-*.jar!/org/apache/jackrabbit/vault/packaging/impl/(DefaultPackageProperties|PackagePropertiesImpl).*,\
-@org.apache.jackrabbit.vault-*.jar!/org/apache/jackrabbit/vault/fs/impl/io/XmlAnalyzer.*
+-includeresource: @org.apache.jackrabbit.vault-[0-9.]*(-SNAPSHOT)?.jar!/org/apache/jackrabbit/vault/packaging/impl/(DefaultPackageProperties|PackagePropertiesImpl).*,\
+@org.apache.jackrabbit.vault-[0-9.]*(-SNAPSHOT)?.jar!/org/apache/jackrabbit/vault/fs/impl/io/XmlAnalyzer.*

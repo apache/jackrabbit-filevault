@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.util;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.jcr.NamespaceException;
 
@@ -32,18 +33,28 @@ import org.jetbrains.annotations.Nullable;
 import org.xml.sax.Attributes;
 
 /**
- * Helper class that represents a (jcr) node abstraction based on
+ * Helper class that represents a JCR node abstraction encapsulating multiple
  * {@link org.apache.jackrabbit.vault.util.DocViewProperty properties}.
+ * @deprecated Use {@link DocViewNode2} instead.
  */
+@Deprecated
 public class DocViewNode {
 
-    public final @NotNull String name;
+    public final @NotNull String name; // always use expanded names here
     /** usually equal to {@link #name} except when this node has a same name sibling, in that case label has format {@code <name>[index]}, https://docs.adobe.com/content/docs/en/spec/jcr/2.0/22_Same-Name_Siblings.html#22.2%20Addressing%20Same-Name%20Siblings%20by%20Path */
     public final @NotNull String label;
     public final @NotNull Map<String, DocViewProperty> props = new HashMap<>();
     public @Nullable String uuid;
     public final @Nullable String[] mixins;
     public final @Nullable String primary; // may be null for ordering items
+
+    public static DocViewNode fromDocViewNode2(DocViewNode2 node) {
+        String label = node.getName().toString();
+        if (node.getIndex() > 0) {
+            label += "[" + node.getIndex() + "]";
+        }
+        return new DocViewNode(node.getName().toString(), label, node.getIdentifier().orElse(null), node.getProperties().stream().collect(Collectors.toMap(p -> p.getName().toString(),  DocViewProperty::fromDocViewProperty2)), node.getMixinTypes().toArray(new String[0]), node.getPrimaryType().orElse(null));
+    }
 
     public DocViewNode(@NotNull String name, @NotNull String label, String uuid, Map<String, DocViewProperty> props, String[] mixins, String primary) {
         this.name = name;
@@ -54,7 +65,13 @@ public class DocViewNode {
         this.props.putAll(props);
     }
 
+    @Deprecated
     public DocViewNode(@NotNull String name, @NotNull String label, Attributes attributes, NamePathResolver npResolver)
+            throws NamespaceException {
+        this(name, label, attributes);
+    }
+
+    public DocViewNode(@NotNull String name, @NotNull String label, Attributes attributes)
             throws NamespaceException {
         this.name = name;
         this.label = label;
@@ -70,7 +87,7 @@ public class DocViewNode {
                     attributes.getURI(i),
                     ISO9075.decode(attributes.getLocalName(i)));
             DocViewProperty info = DocViewProperty.parse(
-                    npResolver.getJCRName(pName),
+                    pName.toString(),
                     attributes.getValue(i));
             props.put(info.name, info);
             if (pName.equals(NameConstants.JCR_UUID)) {

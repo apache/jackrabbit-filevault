@@ -42,8 +42,44 @@ import org.xml.sax.SAXException;
 
 /**
  * Implements a docview analyzer that scans the XML for nodes.
+ * TODO: not really necessary, replace with implementation of DocViewParserHandler....
  */
 public class DocViewAnalyzer extends RejectingEntityDefaultHandler implements NamespaceResolver {
+
+    /**
+     * A representation of a namespace.  One of these will
+     * be pushed on the namespace stack for each
+     * element.
+     */
+    public static final class NameSpace {
+
+        /**
+         * Next NameSpace element on the stack.
+         */
+        public NameSpace next = null;
+
+        /**
+         * Prefix of this NameSpace element.
+         */
+        public String prefix;
+
+        /**
+         * Namespace URI of this NameSpace element.
+         */
+        public String uri;  // if null, then Element namespace is empty.
+
+        /**
+         * Construct a namespace for placement on the
+         * result tree namespace stack.
+         *
+         * @param prefix Prefix of this element
+         * @param uri    URI of  this element
+         */
+        public NameSpace(String prefix, String uri) {
+            this.prefix = prefix;
+            this.uri = uri;
+        }
+    }
 
     /**
      * the default logger

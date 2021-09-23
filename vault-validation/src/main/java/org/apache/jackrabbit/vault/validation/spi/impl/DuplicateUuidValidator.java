@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
-import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
@@ -49,11 +49,11 @@ public class DuplicateUuidValidator implements DocumentViewXmlValidator {
     }
 
     @Override
-    public Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
-        if (node.uuid != null && filter.contains(nodeContext.getNodePath())) {
-            String duplicateUuidPath = uuidsAndPaths.put(node.uuid, nodeContext.getNodePath());
+    public Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
+        if (node.getIdentifier().isPresent() && filter.contains(nodeContext.getNodePath())) {
+            String duplicateUuidPath = uuidsAndPaths.put(node.getIdentifier().get(), nodeContext.getNodePath());
             if (duplicateUuidPath != null) {
-                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_DUPLICATE_UUID, node.uuid, duplicateUuidPath, nodeContext.getNodePath())));
+                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_DUPLICATE_UUID, node.getIdentifier().get(), duplicateUuidPath, nodeContext.getNodePath())));
             }
         }
         return null;

@@ -21,10 +21,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
-import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
@@ -72,12 +73,12 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, NodePat
     }
 
     @Override
-    public Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
+    public Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
         if (isBelowAffectedFilterRoots(nodeContext.getNodePath())) {
-            if (node.primary == null && node.mixins == null && node.props.isEmpty() && filter.contains(nodeContext.getNodePath()) && filter.getImportMode(nodeContext.getNodePath()) == ImportMode.REPLACE) {
+            if (node.getProperties().isEmpty() && filter.contains(nodeContext.getNodePath()) && filter.getImportMode(nodeContext.getNodePath()) == ImportMode.REPLACE) {
                 // only relevant if no other merge mode
                 // ignore rep:policy nodes
-                if (!node.name.equals("rep:policy")) {
+                if (!node.getName().equals(NameConstants.REP_POLICY)) {
                     emptyNodes.add(nodeContext);
                 }
             } else {

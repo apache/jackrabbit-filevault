@@ -19,16 +19,14 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.jcr.PropertyType;
-
+import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.jackrabbit.vault.util.DocViewNode;
-import org.apache.jackrabbit.vault.util.DocViewProperty;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
@@ -53,23 +51,23 @@ public class MergeLimitationsValidatorTest {
 
     @Test
     public void testWithAggregateAtWrongLevel() {
-        Map<String, DocViewProperty> props = new HashMap<>();
-        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
-
-        DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "nt:unstructured");
+    	DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, Arrays.asList(
+         		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
+         		new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), false);
         ValidationExecutorTest.assertViolation(messages,
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MergeLimitationsValidator.PACKAGE_NON_ROOT_NODE_MERGED, "/apps/test/deep")));
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
     @Test
     public void testWithAggregateAtCorrectLevel() {
-        Map<String, DocViewProperty> props = new HashMap<>();
-        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
-
-        DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "nt:unstructured");
+    	DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, Arrays.asList(
+         		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
+         		new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), true);
         MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
     }
 
 }

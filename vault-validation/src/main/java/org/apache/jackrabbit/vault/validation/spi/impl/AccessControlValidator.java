@@ -21,7 +21,7 @@ import java.util.Collections;
 
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.JcrACLManagement;
-import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
@@ -62,9 +62,9 @@ public class AccessControlValidator implements DocumentViewXmlValidator {
     }
 
     @Override
-    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext,
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext,
             boolean isRoot) {
-        if (node.primary != null && ACL_MANAGEMENT.isACLNodeType(node.primary)) {
+        if (node.getPrimaryType().isPresent() && ACL_MANAGEMENT.isACLNodeType(node.getPrimaryType().get())) {
             hasFoundACLNode = true;
             if (accessControlHandling == AccessControlHandling.IGNORE || accessControlHandling == AccessControlHandling.CLEAR) {
                 return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_IGNORED_ACCESS_CONTROL_LIST, accessControlHandling)));

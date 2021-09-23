@@ -20,15 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.jcr.PropertyType;
-
+import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.jackrabbit.vault.util.DocViewNode;
-import org.apache.jackrabbit.vault.util.DocViewProperty;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
@@ -53,19 +50,16 @@ public class DuplicateUuidValidatorTest {
 
     @Test
     public void testWithDuplicates() {
-        Map<String, DocViewProperty> props = new HashMap<>();
-        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
-
-        // order node only (no other property)
-        DocViewNode node = new DocViewNode("jcr:root", "jcr:root", "1", Collections.emptyMap(), null, null);
+        // node with id "1"
+        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_UUID, "1")));
         MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node1", Paths.get("node1"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
         
-        // another order node (to be covered by another file)
-        node = new DocViewNode("jcr:root", "jcr:root", "2", Collections.emptyMap(), null, null);
+        // node with id "2"
+        node = new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_UUID, "2")));
         MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node2", Paths.get("node2"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
         
-        // another order node only
-        node = new DocViewNode("jcr:root", "jcr:root", "1", Collections.emptyMap(), null, null);
+        // another node with id "1"
+        node = new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_UUID, "1")));
         ValidationExecutorTest.assertViolation(validator.validate(node, new NodeContextImpl("/apps/test/node3", Paths.get("node3"), Paths.get("")), false),
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(DuplicateUuidValidator.MESSAGE_DUPLICATE_UUID, "1", "/apps/test/node1", "/apps/test/node3")));
 

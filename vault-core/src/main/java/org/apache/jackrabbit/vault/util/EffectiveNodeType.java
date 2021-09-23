@@ -51,14 +51,16 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class EffectiveNodeType {
 
-    public static EffectiveNodeType ofNode(@NotNull Node node) throws RepositoryException {
+    public static @NotNull EffectiveNodeType ofNode(@NotNull Node node) throws RepositoryException {
         return ofPrimaryTypeAndMixins(node.getPrimaryNodeType(), node.getMixinNodeTypes());
     }
 
-    public static EffectiveNodeType ofPrimaryTypeAndMixins(@NotNull NodeType primaryType, NodeType... mixinTypes) {
+    public static @NotNull EffectiveNodeType ofPrimaryTypeAndMixins(@NotNull NodeType primaryType, NodeType... mixinTypes) {
         List<NodeType> types = new ArrayList<>();
         types.add(primaryType);
-        Arrays.stream(mixinTypes).forEach(types::add);
+        if (mixinTypes != null) {
+            Arrays.stream(mixinTypes).forEach(types::add);
+        }
         return new EffectiveNodeType(types);
     }
 
@@ -93,7 +95,7 @@ public final class EffectiveNodeType {
 
     /**
      * Returns the applicable property definition for the given name and type.
-     * @param name the property name
+     * @param name the property name (must be the qualified name, not the expanded name)
      * @param isMultiple {@code true} if this is a multi-value type otherwise {@code false}
      * @param type the property value type (one of the constants from {@link PropertyType})
      * @return the applicable property definition

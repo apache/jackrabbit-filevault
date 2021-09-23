@@ -26,13 +26,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
-import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
@@ -125,13 +127,13 @@ public class PackageTypeValidatorTest {
         NodeContext context = new NodeContextImpl("/content/config/someconfigpid", Paths.get("content", "config", "someconfigpid.xml"), Paths.get(""));
         MatcherAssert.assertThat(validator.validate(context), AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(validator.validate(
-            new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "sling:OsgiConfig"),
-            context,
+        		new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "sling:OsgiConfig"))),
+                context,
             true),
             new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, PackageType.CONTENT)));
         // validate other type docview node below config folder
         MatcherAssert.assertThat(validator.validate(
-                new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "nt:unstructured"),
+        		new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"))),
                 context,
                 true),
                 AnyValidationMessageMatcher.noValidationInCollection());
@@ -198,13 +200,13 @@ public class PackageTypeValidatorTest {
         NodeContext context = new NodeContextImpl("/apps/config/someconfigpid", Paths.get("apps", "config", "someconfigpid.xml"), Paths.get(""));
         MatcherAssert.assertThat(validator.validate(context), AnyValidationMessageMatcher.noValidationInCollection());
         MatcherAssert.assertThat(validator.validate(
-            new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "sling:OsgiConfig"),
-            context,
+        		new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "sling:OsgiConfig"))),
+                context,
             true),
             AnyValidationMessageMatcher.noValidationInCollection());
        // validate other type docview node below config folder
         MatcherAssert.assertThat(validator.validate(
-                new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "nt:unstructured"),
+        		new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"))),
                 context,
                 true),
                 AnyValidationMessageMatcher.noValidationInCollection());
@@ -262,13 +264,13 @@ public class PackageTypeValidatorTest {
         NodeContext context = new NodeContextImpl("/apps/config/someconfigpid", Paths.get("apps", "config", "someconfigpid.xml"), Paths.get(""));
         MatcherAssert.assertThat(validator.validate(context), AnyValidationMessageMatcher.noValidationInCollection());
         ValidationExecutorTest.assertViolation(validator.validate(
-            new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "sling:OsgiConfig"),
+            new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "sling:OsgiConfig"))),
             context,
             true),
             new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, PackageType.APPLICATION)));
         // validate other type docview node below config folder
         MatcherAssert.assertThat(validator.validate(
-                new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "nt:unstructured"),
+        		new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"))),
                 context,
                 true),
                 AnyValidationMessageMatcher.noValidationInCollection());

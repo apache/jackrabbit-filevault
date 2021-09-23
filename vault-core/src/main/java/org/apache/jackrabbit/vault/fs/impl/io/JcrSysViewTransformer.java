@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.jcr.ImportUUIDBehavior;
+import javax.jcr.InvalidSerializedDataException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PropertyType;
@@ -29,9 +30,12 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
+import org.apache.jackrabbit.spi.commons.conversion.NamePathResolver;
+import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
-import org.apache.jackrabbit.vault.util.DocViewNode;
-import org.apache.jackrabbit.vault.util.DocViewProperty;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -53,6 +57,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
      */
     private static final Logger log = LoggerFactory.getLogger(JcrSysViewTransformer.class);
 
+    private static final Name NAME_REP_CACHE = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "cache");
     /**
      * sysview handler for special content
      */
@@ -63,23 +68,25 @@ public class JcrSysViewTransformer implements DocViewAdapter {
      */
     private NodeStash recovery;
 
-    private String rootName;
+    private Name rootName;
 
     private Node parent;
 
     private final String existingPath;
 
-    private final Set<String> excludedNodeNames = new HashSet<String>();
+    private final Set<Name> excludedNodeNames = new HashSet<>();
     
     private final @NotNull ImportMode importMode;
 
+    private final NamePathResolver resolver;
+
     private long ignoreLevel = 0;
 
-    public JcrSysViewTransformer(@NotNull Node node, @NotNull ImportMode importMode) throws SAXException, RepositoryException {
+    public JcrSysViewTransformer(@NotNull Node node, @NotNull ImportMode importMode) throws RepositoryException {
         this(node, null, importMode);
     }
 
-    JcrSysViewTransformer(@NotNull Node node, @Nullable String existingPath, @NotNull ImportMode importMode) throws RepositoryException, SAXException {
+    JcrSysViewTransformer(@NotNull Node node, @Nullable String existingPath, @NotNull ImportMode importMode) throws RepositoryException {
         Session session = node.getSession();
         parent = node;
         handler = session.getImportContentHandler(
@@ -90,9 +97,13 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         );
         // first define the current namespaces
         String[] prefixes = session.getNamespacePrefixes();
-        handler.startDocument();
-        for (String prefix: prefixes) {
-            handler.startPrefixMapping(prefix, session.getNamespaceURI(prefix));
+        try {
+            handler.startDocument();
+            for (String prefix: prefixes) {
+                handler.startPrefixMapping(prefix, session.getNamespaceURI(prefix));
+            }
+        } catch (SAXException e) {
+            throw new RepositoryException("Can not use sysview handler", e);
         }
 
         this.existingPath = existingPath;
@@ -101,20 +112,26 @@ public class JcrSysViewTransformer implements DocViewAdapter {
             recovery = new NodeStash(session, existingPath).excludeName("rep:cache");
             recovery.stash();
         }
-        excludeNode("rep:cache");
+        excludeNode(NAME_REP_CACHE);
         this.importMode = importMode;
+        resolver = new DefaultNamePathResolver(session);
     }
 
-    public List<String> close() throws SAXException {
-        handler.endDocument();
+    @Override
+    public List<String> close() throws InvalidSerializedDataException {
+        try {
+            handler.endDocument();
+        } catch (SAXException e) {
+            throw new InvalidSerializedDataException("Invalid sysview", e);
+        }
 
         // get list of created paths
         List<String> paths = new ArrayList<String>();
         try {
             if (existingPath != null && parent.getSession().nodeExists(existingPath)) {
                 addPaths(paths, parent.getSession().getNode(existingPath));
-            } else if (rootName != null && parent.hasNode(rootName)) {
-                addPaths(paths, parent.getNode(rootName));
+            } else if (rootName != null && parent.hasNode(rootName.toString())) {
+                addPaths(paths, parent.getNode(rootName.toString()));
             }
         } catch (RepositoryException e) {
             log.error("error while retrieving list of created nodes.");
@@ -142,59 +159,71 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         }
     }
 
-    public void startNode(DocViewNode ni) throws SAXException {
+    @Override
+    public void startNode(DocViewNode2 ni) throws RepositoryException {
         if (ignoreLevel > 0) {
-            DocViewSAXImporter.log.trace("ignoring child node of excluded node: {}", ni.name);
+            DocViewSAXHandler.log.trace("ignoring child node of excluded node: {}", ni.getName());
             ignoreLevel++;
             return;
         }
-        if (excludedNodeNames.contains(ni.name)) {
-            DocViewSAXImporter.log.trace("Ignoring excluded node {}", ni.name);
+        if (excludedNodeNames.contains(ni.getName())) {
+            DocViewSAXHandler.log.trace("Ignoring excluded node {}", ni.getName());
             ignoreLevel = 1;
             return;
         }
 
-        DocViewSAXImporter.log.trace("Transforming element to sysview {}", ni.name);
+        DocViewSAXHandler.log.trace("Transforming element to sysview {}", ni.getName());
 
-        AttributesImpl attrs = new AttributesImpl();
+        try {
+            AttributesImpl attrs = new AttributesImpl();
 
-        attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", ni.name);
-        handler.startElement(Name.NS_SV_URI, "node", "sv:node", attrs);
+            // use qualified name due to https://issues.apache.org/jira/browse/OAK-9586
+            attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", resolver.getJCRName(ni.getName()));
+            handler.startElement(Name.NS_SV_URI, "node", "sv:node", attrs);
 
-        // add the properties
-        for (DocViewProperty p: ni.props.values()) {
-            if (p != null && p.values != null) {
-                attrs = new AttributesImpl();
-                attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", p.name);
-                attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", "CDATA", PropertyType.nameFromValue(p.type));
-                if (p.isMulti) {
-                    attrs.addAttribute(Name.NS_SV_URI, "multiple", "sv:multiple", "CDATA", "true");
+            // add the properties
+            for (DocViewProperty2 p: ni.getProperties()) {
+                if (p.getStringValue() != null) {
+                    attrs = new AttributesImpl();
+                    // use qualified name due to https://issues.apache.org/jira/browse/OAK-9586
+                    attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", resolver.getJCRName(p.getName()));
+                    attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", "CDATA", PropertyType.nameFromValue(p.getType()));
+                    if (p.isMultiValue()) {
+                        attrs.addAttribute(Name.NS_SV_URI, "multiple", "sv:multiple", "CDATA", "true");
+                    }
+
+                    handler.startElement(Name.NS_SV_URI, "property", "sv:property", attrs);
+                    for (String v: p.getStringValues()) {
+                        handler.startElement(Name.NS_SV_URI, "value", "sv:value", DocViewSAXHandler.EMPTY_ATTRIBUTES);
+                        handler.characters(v.toCharArray(), 0, v.length());
+                        handler.endElement(Name.NS_SV_URI, "value", "sv:value");
+                    }
+                    handler.endElement(Name.NS_SV_URI, "property", "sv:property");
                 }
-
-                handler.startElement(Name.NS_SV_URI, "property", "sv:property", attrs);
-                for (String v: p.values) {
-                    handler.startElement(Name.NS_SV_URI, "value", "sv:value", DocViewSAXImporter.EMPTY_ATTRIBUTES);
-                    handler.characters(v.toCharArray(), 0, v.length());
-                    handler.endElement(Name.NS_SV_URI, "value", "sv:value");
-                }
-                handler.endElement(Name.NS_SV_URI, "property", "sv:property");
             }
+        } catch (SAXException e) {
+            throw new InvalidSerializedDataException("Invalid sysview", e);
         }
 
         if (rootName == null) {
-            rootName = ni.name;
+            rootName = ni.getName();
         }
     }
 
-    public void endNode() throws SAXException {
+    @Override
+    public void endNode() throws RepositoryException {
         if (ignoreLevel > 0) {
             ignoreLevel--;
             return;
         }
-        handler.endElement(Name.NS_SV_URI, "node", "sv:node");
+        try {
+            handler.endElement(Name.NS_SV_URI, "node", "sv:node");
+        } catch (SAXException e) {
+            throw new InvalidSerializedDataException("Invalid sysview", e);
+        }
     }
 
-    public JcrSysViewTransformer excludeNode(String name) {
+    public JcrSysViewTransformer excludeNode(Name name) {
         excludedNodeNames.add(name);
         return this;
     }

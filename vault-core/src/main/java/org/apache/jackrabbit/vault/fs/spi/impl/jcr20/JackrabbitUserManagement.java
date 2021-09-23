@@ -28,9 +28,13 @@ import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.UserManager;
+import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
 import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +43,8 @@ import org.slf4j.LoggerFactory;
  */
 public class JackrabbitUserManagement implements UserManagement {
 
+    // https://issues.apache.org/jira/browse/OAK-9584
+    public static final Name NAME_REP_AUTHORIZABLE_ID = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "authorizableId");
     /**
      * default logger
      */
@@ -81,6 +87,20 @@ public class JackrabbitUserManagement implements UserManagement {
         }
     }
 
+    @Override
+    public String getAuthorizableId(DocViewNode2 node) {
+        // try Oak way of storing the id first:
+        DocViewProperty2 idProp = node.getProperty(NAME_REP_AUTHORIZABLE_ID).orElse(null);
+        if (idProp == null || idProp.isMultiValue()) {
+            // jackrabbit 2.x or Oak with migrated Jackrabbit 2.x content
+            return org.apache.jackrabbit.util.Text.unescapeIllegalJcrChars(node.getName().getLocalName());
+        } else {
+            // oak 1.x
+            return idProp.getStringValue().orElseThrow(() -> new IllegalStateException("No single value available for property 'rep:authorizableId'"));
+        }
+    }
+
+    
     /**
      * {@inheritDoc}
      */

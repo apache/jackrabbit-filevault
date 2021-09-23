@@ -23,6 +23,11 @@ import java.nio.file.Path;
  */
 public class ValidatorException extends RuntimeException {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1855331007669339921L;
+
     private ValidatorException(String id, String messageSuffix, Throwable cause) {
         super("Exception in validator '" + id + "'" + messageSuffix + ": " + cause.getMessage(), cause);
     }

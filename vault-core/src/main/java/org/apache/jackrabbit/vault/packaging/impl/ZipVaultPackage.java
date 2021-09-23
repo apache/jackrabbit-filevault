@@ -99,7 +99,8 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
     public Archive getArchive() {
         if (archive == null) {
             PackageId packageId = getCachedId();
-            throw new IllegalStateException("Package already closed" + packageId  != null ? " (" + packageId + ")": "");
+            String pidSuffix = (packageId != null) ? (" (" + packageId + ")") : "";
+            throw new IllegalStateException("Package already closed" + pidSuffix);
         }
         try {
             archive.open(false);

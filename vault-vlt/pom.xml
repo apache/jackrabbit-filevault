@@ -23,14 +23,14 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.5.4</version>
+        <version>3.5.5-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>vault-vlt</artifactId>
-    <version>3.5.4</version>
+    <version>3.5.5-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Apache Jackrabbit FileVault Platform Interaction</name>
@@ -42,12 +42,12 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.5.4</version>
+            <version>3.5.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-sync</artifactId>
-            <version>3.5.4</version>
+            <version>3.5.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
@@ -56,7 +56,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-diff</artifactId>
-            <version>3.5.4</version>
+            <version>3.5.5-SNAPSHOT</version>
         </dependency>
 
         <!-- JCR Stuff -->
@@ -84,8 +84,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-  <scm>
-    <tag>jackrabbit-filevault-3.5.4</tag>
-  </scm>
 </project>

@@ -39,6 +39,7 @@ import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
@@ -70,7 +71,6 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         this(OsgiAwarePropertiesUtil.getBooleanProperty(PROP_USE_NIO_ARCHIVE) ? new ZipNioArchive(file, isTmpFile) : new ZipArchive(file.toFile(), isTmpFile), strict);
     }
 
-    
     public ZipVaultPackage(Archive archive, boolean strict)
             throws IOException {
         this.archive = archive;
@@ -78,8 +78,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
             try {
                 archive.open(true);
             } catch (IOException e) {
-                log.error("Error while loading package {}.", archive);
-                throw e;
+                throw new IOException("Error while loading package " + archive, e);
             }
         }
     }
@@ -99,14 +98,14 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      */
     public Archive getArchive() {
         if (archive == null) {
-            log.error("Package already closed: {}", getId());
-            throw new IllegalStateException("Package already closed: " + getId());
+            PackageId packageId = getCachedId();
+            String pidSuffix = (packageId != null) ? (" (" + packageId + ")") : "";
+            throw new IllegalStateException("Package already closed" + pidSuffix);
         }
         try {
             archive.open(false);
         } catch (IOException e) {
-            log.error("Archive not valid.", e);
-            throw new IllegalStateException("Archive not valid.", e);
+            throw new IllegalStateException("Archive " + archive + " not valid.", e);
         }
         return archive;
     }

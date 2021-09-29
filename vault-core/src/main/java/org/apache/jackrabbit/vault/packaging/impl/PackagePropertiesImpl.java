@@ -75,6 +75,10 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
         return id;
     }
 
+    protected @Nullable PackageId getCachedId() {
+        return id;
+    }
+
     /**
      * {@inheritDoc}
      */

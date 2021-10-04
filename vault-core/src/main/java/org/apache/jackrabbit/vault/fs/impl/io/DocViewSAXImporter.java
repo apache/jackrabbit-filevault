@@ -1318,6 +1318,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 if (count == 2) {
                     break;
                 }
+            if(def.get().equals(childDef.get())) {
+                count++; 
             }
         }
         return count;

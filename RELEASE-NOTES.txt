@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.5.2
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.5.4
 
 Introduction
 ------------
@@ -9,10 +9,10 @@ create portable packages of repository content.
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
 
-Changes in Jackrabbit FileVault 3.5.2
+Changes in Jackrabbit FileVault 3.5.4
 --------------------------------------
 
-Release Notes - Jackrabbit FileVault - Version 3.5.2
+Release Notes - Jackrabbit FileVault - Version 3.5.4
 This version requires Java 8
 The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
 
@@ -26,7 +26,10 @@ Bug
     * [JCRVLT-542] - FolderArtifactHandler not respecting ImportMode on adjusting primaryTypes
     * [JCRVLT-543] - DocViewSAXImporter failing on protected properties for new Nodes
     * [JCRVLT-544] - Creation of folders based on parent's default nodetype instead of nt:folder causing regression
-    * [JCRVLT-552] - Importer fails to detect jcr:mixinTypes being protected if package uses singlevalue property
+    * [JCRVLT-552] - Importer fails to detect jcr:mixinTypes being protected if package uses single-value property
+    * [JCRVLT-556] - jackrabbit-packagetype validator wrongly complains about OSGI configurations in tools/config path
+    * [JCRVLT-560] - Support multi-value binary properties in FileVault DocView and via .binary files
+    * [JCRVLT-561] - StackOverflowError in ZipVaultPackage.getArchive()
 Improvement
     * [JCRVLT-397] - Update vote template to include SHA512 checksum and JIRA changelog
     * [JCRVLT-476] - Fix blocker bugs in Sonarcloud.io

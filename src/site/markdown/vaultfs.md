@@ -24,7 +24,7 @@ Introduction
 ------------
 We see in various applications the need for a simple JCR repository to filesystem mapping to be used in source management tools, fileserver bindings, import/export stuff etc. If a JCR repository would only consist of `nt:file` and `nt:folder`, this would be easy but if other nodetypes are used (even a simple as extending from `nt:file`) the mapping to the filesystem is not so trivial anymore. The idea is to provide a general all-purpose mechanism to export to and import from a standard (java.io based) filesystem.
 
-The VaultFs is designed to provide a general filesystem abstraction of a JCR repository. It provides the following features:
+The *VaultFs* is designed to provide a general filesystem abstraction of a JCR repository. It provides the following features:
 
 - **intuitive mapping**: A `nt:file` should just map to a simple file, a `nt:folder` to a directory. More complex node types should map to a `nodename.xml` and a possible `nodename` folder that contains the child nodes or be aggregated to a complete or partial serialization.
 - **universal API**: the API should be suitable for all filesystem based applications like WebDAV, CIFS, SCM Integration, FileVault, etc.
@@ -70,7 +70,7 @@ An aggregate is a tree of repository items that belong together and are mapped t
 There are mainly 4 types of aggregates:
 
 #### Full coverage aggregates
-they aggregate an entire subtree. for example the complete serialization of a `nt:nodeType` node or a _dialog definition_. they are very simple to deal with, since the root node of the aggregate is usually serialized into 1 filesystem file.
+Full coverage aggregates aggregate an entire subtree. For example the complete serialization of a `nt:nodeType` node or a _dialog definition_. They are very simple to deal with, since the root node of the aggregate is usually serialized into 1 filesystem file.
 
 The following repository structure:
 
@@ -93,7 +93,7 @@ could be mapped to:
 ```
 
 #### Generic aggregates
-generic aggregates cover a part of a content subtree, hence they have not a full coverage. they always consist at least of a primary artifact and a directory artifact. examples of those are the aggregation of a `cq:Page` structure or of `nt:unstructured` nodes. 
+Generic aggregates cover a part of a content subtree, hence they have not a full coverage. They always consist at least of a primary artifact and a directory artifact. Examples of those are the aggregation of a `cq:Page` structure or of `nt:unstructured` nodes. 
 
 the following repository structure:
 
@@ -151,7 +151,7 @@ is be mapped to:
                 `- default.jsp
 ```
 
-this example has 6 aggregates:
+This example has 6 aggregates:
 
  1. the generic aggregate for `apps`
  2. the generic aggregate for `example`
@@ -161,15 +161,15 @@ this example has 6 aggregates:
  6. the `dialog.xml` full coverage aggregate
 
 #### Simple File aggregates
-since files (`nt:file` nodes and extents) are common they are treated differently in aggregation. the simplest mapping is to create a filesystem file for each `nt:file`. unfortunately there is some information in a default `nt:file` that cannot be preserved in the filesystem. namely:
+Since files (`nt:file` nodes and extents) are common they are treated differently in aggregation. The simplest mapping is to create a filesystem file for each `nt:file`. Unfortunately there is some information in a default `nt:file` that cannot be preserved in the filesystem, namely:
 
 * `jcr:created` property
 * `jcr:content/jcr:uuid` property
 * `jcr:content/jcr:encoding` property
 * `jcr:content/jcr:mimeType` property
 
-so in order to achieve a complete serialization there is an extra artifact needed to store this info.
-but to keep the mapping lean, those properties are not part of the file aggregate but 'delegated' to its parent aggregate.
+So in order to achieve a complete serialization there is an extra artifact needed to store this info.
+To still keep the mapping lean, those properties are not part of the file aggregate but 'delegated' to its parent aggregate.
 
 example:
 
@@ -192,9 +192,9 @@ is mapped to:
 the `.content.xml` will include the properties that are not handled by the `example.jsp`
 
 #### Extended File aggregates
-when `nt:file` nodes are extended, either by primary or mixin type, the primary artifact remains the generic serialization of the resource. additional information needs to be serialized to an extra artifact.
+When `nt:file` nodes are extended, either by primary or mixin type, the primary artifact remains the generic serialization of the resource. Additional information needs to be serialized to an extra artifact.
 
-example:
+Example:
 
     + sample.jpg [dam:file]
       - jcr:created
@@ -219,7 +219,7 @@ pure `nt:folder` aggregates will result in one directory and mostly in an additi
 
 #### Binary Properties
 There is some special handling for binary properties other than `jcr:data` in a `jcr:content` node. 
-example (although this is probably very rare):
+Example (although this is probably very rare):
 
     + foo [nt:unstructured]
       + bar [nt:unstructured]
@@ -244,8 +244,10 @@ is mapped to:
              `- data2.binary
 ```
 
+Multi-value binary properties are mapped to multiple files named `<property name>[<0-based index>].binary`
+
 #### Resource Nodes
-there are some cases where `nt:resource` like structures are used that are not held below a `nt:file` node.
+There are some cases where `nt:resource` like structures are used that are not held below a `nt:file` node.
 
 ```
     + foo [nt:unstructured]
@@ -255,7 +257,7 @@ there are some cases where `nt:resource` like structures are used that are not h
         - jcr:lastModified
 ```
 
-this is mapped to:
+This is mapped to:
 
 ```
     `- foo
@@ -263,40 +265,44 @@ this is mapped to:
        `- _cq_content.jpg
 ```
 
-where as the mimetype and modification date can be recorded in the primary artifact. possible other properties like `jcr:uuid` etc would go to the parent aggregate.
+where the mime type and modification date can be recorded in the primary artifact. Possible other properties like `jcr:uuid` etc would go to the parent aggregate.
 
 #### Filename escaping
-not all of the character in a jcr name are allowed filesystem characters and need escaping. the normal case is to use the _url encoding_, i.e. using a `%` followed by the hexnumber of the character. but this look ugly, especially for the colon `:`, eg a `cq:content` would become `cq%3acontent`. so for the namespace prefix there is a special escaping by replacing it by a underscores. eg: `cq:content` will be `_cq_content`. nodes already having this patter will be escaped using a double underscore. eg: `_test_image.jpg` would be `__test_image.jpg`.
+
+Not all of the allowed characters in a jcr name are allowed filesystem characters and need escaping. The normal case is to use the _url encoding_, i.e. using a `%` followed by the hexnumber of the character. But this look ugly, especially for the colon `:`, eg a `cq:content` would become `cq%3acontent`. So for the namespace prefix there is a special escaping by replacing it by a underscores, eg: `cq:content` will be `_cq_content`. Node names already containing two underscores need to be escaped using a double underscore. eg: `_test_image.jpg` would become `__test_image.jpg`.
 
 more examples:
 
 | node name | file name |
-|---------------------|-------------------------------|
-| `test.jpg`          | `test.jpg`                    |
-| `cq:content`        | `_cq_content`                 |
-| `test_image.jpg`    | `test_image.jpg`              |
-| `_testimage.jpg`    | `_testimage.jpg`              |
-| `_test_image.jpg`   | `__test_image.jpg`            |
+| --- | --- |
+| `test.jpg` | `test.jpg` |
+| `cq:content` | `_cq_content` |
+| `test_image.jpg` | `test_image.jpg` 
+| `_testimage.jpg` | `_testimage.jpg` |
+| `_test_image.jpg` | `__test_image.jpg` |
 | `cq:test:image.jpg` | `_cq_test%3aimage.jpg` <sup>1</sup> |
 
 <sup>1</sup> this is a very rare case and justifies the ugly `%3a` escaping.
 
 Serialization
 -------------
-The serialization of the artifacts is defined by the =serializer= that is provided by the aggregator. Currently there are only 3 kind of serializations used: a direct data serialization for the contents of file or binary artifacts, a _CND_ serialized for `nt:nodeType` nodes and an enhanced _docview_ serialization for the rest. The _docview_ serialization that is used allows multi value properties (and might be enhanced by a better property type support).
+The serialization of the artifacts is defined by the **serializer** that is provided by the aggregator. Currently there are only 2 kind of serializations used: 
+
+1. a direct data serialization for the contents of file or binary artifacts and 
+2. an enhanced _docview_ serialization for the rest. The [_enhanced docview_ serialization][enhanceddocview] that is used allows multi-value properties and explicit types in contrast to regular [document view XML defined by JCR 2.0][docview].
 
 Deserialization
 ---------------
-Although for exporting only 3 serialization types are used this is a bit different for importing. The importer analyzes the provided input sources and determines the following serialization types:
+Although for exporting only 2 serialization types are used this is a bit different for importing. The importer analyzes the provided input sources and determines the following serialization types:
 
 * generic XML
-* docview XML
-* sysview XML
+* (enhanced) docview XML
+* sysview XML, as defined in JCR 2.0][sysview]
 * generic data
 
-Depending on the configuration those input sources can be handled differently. currently they are imported as follows:
+Depending on the configuration those input sources can be handled differently. Currently they are imported as follows:
 
-**generic XML** produces a `nt:file` having a `jcr:content` of the deserialization of the xml document (if importing into CRX then the `crx:XmlDocument` nodetypes and friends are used).
+**generic XML** produces a `nt:file` having a `jcr:content` of the deserialization of the xml document.
 
 **docview XML** is more or less imported directly below the respective import root.
 
@@ -308,26 +314,22 @@ Depending on the configuration those input sources can be handled differently. c
 Terminology
 -----------
 
-VaultFs
-: The File Vault Filesystem. Provides file-like abstraction of a JCR repository.
+*VaultFs*: The File Vault Filesystem. Provides file-like abstraction of a JCR repository.
 
-VaultFile
-: A VaultFs entity that represents a file-like abstraction of a (partial) repository node tree.
+*VaultFile*: A VaultFs entity that represents a file-like abstraction of a (partial) repository node tree.
 
-Aggregate
-: Represents an addressable collection of artifacts.
+*Aggregate*: Represents an addressable collection of artifacts.
 
-Aggregator
-: Interface that defines the methods for building content aggregates.
+*Aggregator*: Interface that defines the methods for building content aggregates.
 
-Serializer
-: Interface that defines the methods for serializing an artifact. 
+*Serializer*: Interface that defines the methods for serializing an artifact. 
  
-Artifact handler
-: Interface that defines methods for deserializing artifacts.
+*Artifact handler*: Interface that defines methods for deserializing artifacts.
 
-Artifact
-: Representation of a content aggregate. An aggregator can provide several artifacts. 
+*Artifact*: Representation of a content aggregate. An aggregator can provide several artifacts. 
   An artifact is either mapped to a file or a directory and can be of the 
   type: **primary**, **file**, **binary** or **directory**
 
+[enhanceddocview]: docview.html
+[docview]: https://docs.adobe.com/content/docs/en/spec/jcr/2.0/7_Export.html#7.3%20Document%20View
+[sysview]: https://docs.adobe.com/content/docs/en/spec/jcr/2.0/7_Export.html#7.2%20System%20View

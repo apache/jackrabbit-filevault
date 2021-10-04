@@ -22,13 +22,13 @@ Config
 
 The FileVault Filesystem Configuration can be adjusted with a `META-INF/vault/config.xml` file in content packages or in the [Vault CLI](usage.html).
 
-It allows to tweak aggregation settings of the [Vault FS](vaultfs.html). The default config is at <https://github.com/apache/jackrabbit-filevault/blob/trunk/vault-core/src/main/resources/org/apache/jackrabbit/vault/fs/config/defaultConfig-1.1.xml>.
+It allows to tweak aggregation settings of the [Vault FS](vaultfs.html). The default config is at <https://github.com/apache/jackrabbit-filevault/blob/trunk/vault-core/src/main/resources/org/apache/jackrabbit/vault/fs/config/defaultConfig-1.1.xml>. The alternative default config at <https://github.com/apache/jackrabbit-filevault/blob/trunk/vault-core/src/main/resources/org/apache/jackrabbit/vault/fs/config/defaultConfig-1.1-binaryless.xml> is automatically used once the package property `useBinaryReferences` is set to `true`.
 
 The following XML elements below the root element `vaultfs` are considered. 
 
 ## Properties
 
-To exclude binaries from exports/imports you can use the property
+To exclude binaries from exports you can use the property
 
 ```xml
     <properties>
@@ -36,6 +36,8 @@ To exclude binaries from exports/imports you can use the property
         <useBinaryReferences>true</useBinaryReferences>
     </properties>
 ```
+
+Using this flag leads to binary references being included in the [FileVault DocView XMLs](docview.html).
 
 ## Aggregates
 
@@ -47,7 +49,6 @@ Type | Used Class | Description
 --- | --- | ---
 `file` | `FileAggregator` | Serializes `nt:file` or `nt:resource` nodes into simple files, potentially accompanied by a `.dir` folder containing a `.content.xml` with the metadata.
 `filefolder` | `FileFolderAggregator` | Serializes all `nt:hierarchyNode` nodes that have or define a `jcr:content` child node and excludes child nodes that are nt:hierarchyNodes into directories.
-`nodetype`| `NodeTypeAggregator`| Serializes `nt:nodeType` nodes into `*.xcnd` files
 `full` | `FullCoverageAggregator` | Serializes full node structures (including all children) into a DocView file named `<nodename>.xml`
 `generic` | `GenericAggregator` | the default if no `type` is set, serializes the node and its properties into a `.content.xml` DocView file and the binaries in separate files with extension `.binary`.
 
@@ -73,6 +74,5 @@ Type | Used Class | Description
 --- | --- | ---
 `file` | `FileArtifactHandler` | Deserializes `nt:file`s from generic or XML generic serializations
 `folder` | `FolderArtifactHandler` | Deserializes folders
-`nodetype` | `NodeTypeArtifactHandler` | Deserializes `nt:nodeType` nodes from `*.xcnd` files
 `generic` | `GenericArtifactHandler` | Deserializes DocView artifacts, the default if no `type` is set
 

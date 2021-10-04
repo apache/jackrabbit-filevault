@@ -14,8 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.validation.it;
 
-@Version("2.8.1")
-package org.apache.jackrabbit.vault.util;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
-import org.osgi.annotation.versioning.Version;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+import org.apache.jackrabbit.vault.validation.ValidationViolation;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.collection.IsEmptyCollection;
+import org.junit.Test;
+
+public class ValidationIT extends AbstractValidationIT {
+
+    @Test
+    public void testPackageWithNoValidationIssues() throws URISyntaxException, IOException, ConfigurationException {
+        MatcherAssert.assertThat(validatePackageFolder("/no-validation-issue-package"), new IsEmptyCollection<ValidationViolation>());
+    }
+}

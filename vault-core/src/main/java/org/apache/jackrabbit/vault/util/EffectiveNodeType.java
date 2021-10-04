@@ -21,6 +21,7 @@ import static javax.jcr.PropertyType.UNDEFINED;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -40,31 +41,54 @@ import org.jetbrains.annotations.Nullable;
  * Effective node type as defined by <a href="https://docs.adobe.com/content/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.7.6.5%20Effective%20Node%20Type">JCR 2.0, Chapter 3.7.6.5</a>.
  * The order is an implementation detail (compare with <a href="https://docs.adobe.com/content/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.7.7%20Applicable%20Item%20Definition">JCR 2.0, Chapter 3.7.7</a>)
  * but this implementation replicates the logic from Oak:
- * <ul>
+ * <ol>
  * <li>local before inherited types</li>
  * <li>named primary types (even inherited ones) before named mixin types</li>
  * <li>residual primary types (even inherited ones) before residual mixin types</li>
  * <li>all named item definitions should be considered first (of both primary and mixins) and only afterwards the unnamed ones</li>
  * <li>the first potential match wins (even if it is only for the undefined type and more type-specific definitions follow later)</li>
- * </ul>
+ * </ol>
  */
 public final class EffectiveNodeType {
 
-    public static EffectiveNodeType ofNode(Node node) throws RepositoryException {
+    public static EffectiveNodeType ofNode(@NotNull Node node) throws RepositoryException {
         return ofPrimaryTypeAndMixins(node.getPrimaryNodeType(), node.getMixinNodeTypes());
     }
 
-    public static EffectiveNodeType ofPrimaryTypeAndMixins(NodeType primaryType, NodeType... mixinTypes) {
+    public static EffectiveNodeType ofPrimaryTypeAndMixins(@NotNull NodeType primaryType, NodeType... mixinTypes) {
         List<NodeType> types = new ArrayList<>();
         types.add(primaryType);
         Arrays.stream(mixinTypes).forEach(types::add);
         return new EffectiveNodeType(types);
     }
 
-    private final List<NodeType> nodeTypes;
+    private final @NotNull List<NodeType> nodeTypes;
 
-    private EffectiveNodeType(List<NodeType> nodeTypes) {
+    private EffectiveNodeType(@NotNull List<NodeType> nodeTypes) {
         this.nodeTypes = nodeTypes;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nodeTypes);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        EffectiveNodeType other = (EffectiveNodeType) obj;
+        return Objects.equals(nodeTypes, other.nodeTypes);
+    }
+
+    
+    @Override
+    public String toString() {
+        return "EffectiveNodeType [" + nodeTypes + "]";
     }
 
     /**
@@ -104,7 +128,7 @@ public final class EffectiveNodeType {
         return getApplicableChildNodeDefinition(nd -> Arrays.stream(nd.getRequiredPrimaryTypeNames()).allMatch(requiredPrimaryType -> Arrays.stream(types).anyMatch(providedType -> providedType.isNodeType(requiredPrimaryType))), name);
     }
 
-    public Optional<NodeDefinition> getApplicableChildNodeDefinition(Predicate<NodeDefinition> predicate, @NotNull String name) {
+    public Optional<NodeDefinition> getApplicableChildNodeDefinition(@NotNull Predicate<NodeDefinition> predicate, @NotNull String name) {
         List<NodeDefinition> nodeDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getChildNodeDefinitions())).collect(Collectors.toList());
         // first named then unnamed
         Optional<NodeDefinition> namedNodeDef = EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions, predicate, name);
@@ -134,7 +158,7 @@ public final class EffectiveNodeType {
      * @return the qualified name of the default primary type for the given intermediate node below parent
      * @throws RepositoryException
      */
-    public Optional<String> getDefaultPrimaryChildNodeTypeName(Node parent, String nodeName) throws RepositoryException {
+    public Optional<String> getDefaultPrimaryChildNodeTypeName(@NotNull Node parent, @NotNull String nodeName) throws RepositoryException {
         Optional<NodeDefinition> nodeDefinition = getApplicableChildNodeDefinition(nd -> nd.getDefaultPrimaryType() != null,  nodeName);
         return nodeDefinition.map(NodeDefinition::getDefaultPrimaryTypeName);
     }

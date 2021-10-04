@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>parent/pom.xml</relativePath>
-        <version>3.5.3-SNAPSHOT</version>
+        <version>3.5.5-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -53,7 +53,7 @@
     </modules>
 
     <properties>
-        <project.build.outputTimestamp>2021-09-01T12:49:37Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2021-09-29T14:12:05Z</project.build.outputTimestamp>
     </properties>
 
     <distributionManagement>
@@ -88,7 +88,7 @@
                         <links>
                             <link>https://docs.adobe.com/content/docs/en/spec/javax.jcr/javadocs/jcr-2.0/</link>
                             <link>https://jackrabbit.apache.org/api/2.20/</link>
-                            <link>https://www.javadoc.io/doc/org.apache.jackrabbit/oak-jackrabbit-api/1.32.0/</link>
+                            <link>https://www.javadoc.io/doc/org.apache.jackrabbit/oak-jackrabbit-api/1.40.0/</link>
                         </links>
                     </configuration>
                 </plugin>

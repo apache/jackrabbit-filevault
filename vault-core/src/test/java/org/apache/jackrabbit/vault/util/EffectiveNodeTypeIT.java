@@ -16,7 +16,9 @@
  */
 package org.apache.jackrabbit.vault.util;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -105,5 +107,15 @@ public class EffectiveNodeTypeIT extends IntegrationTestBase {
         nd = effectiveNodeType.getApplicableChildNodeDefinition("my:otherNode", myPrimaryType);
         assertTrue(nd.isPresent());
         assertTrue(nd.get().isMandatory());
+    }
+
+    @Test
+    public void testEquals() throws RepositoryException {
+        EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
+        EffectiveNodeType otherEffectiveNodeType = EffectiveNodeType.ofNode(node);
+        assertEquals(effectiveNodeType, otherEffectiveNodeType);
+        node.addMixin(MY_MIXIN);
+        otherEffectiveNodeType = EffectiveNodeType.ofNode(node);
+        assertNotEquals(effectiveNodeType, otherEffectiveNodeType);
     }
 }

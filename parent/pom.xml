@@ -31,7 +31,7 @@
     <!-- ====================================================================== -->
     <groupId>org.apache.jackrabbit.vault</groupId>
     <artifactId>parent</artifactId>
-    <version>3.5.3-SNAPSHOT</version>
+    <version>3.5.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Apache Jackrabbit FileVault (Parent Project)</name>
@@ -56,10 +56,10 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <minimalMavenBuildVersion>3.6.1</minimalMavenBuildVersion><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
         <minimalJavaBuildVersion>1.8</minimalJavaBuildVersion>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <surefire.version>3.0.0-M4</surefire.version>
+        <surefire.version>3.0.0-M5</surefire.version>
         <sling.url>http://localhost:4502</sling.url>
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
-        <project.build.outputTimestamp>2021-09-01T12:49:37Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2021-09-29T14:12:05Z</project.build.outputTimestamp>
     </properties>
 
     <!-- ====================================================================== -->
@@ -68,12 +68,6 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     <!-- using adjusted inheritance rules: https://issues.apache.org/jira/browse/MNG-6059 
     TODO: this block gets removed with each release https://issues.apache.org/jira/browse/MRELEASE-1053
     -->
-    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="true">
-        <connection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</connection>
-        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</developerConnection>
-        <url>https://github.com/apache/jackrabbit-filevault/tree/${project.scm.tag}</url>
-        <tag>master</tag>
-    </scm>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  I N F O                                                 -->
@@ -281,6 +275,12 @@ Bundle-Category: jackrabbit
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>3.0.0</version>
+                </plugin>
+                <!-- update from 3.3.0 in ASF parent -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.3.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -519,7 +519,7 @@ Bundle-Category: jackrabbit
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.1</version>
+                <version>4.13.2</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

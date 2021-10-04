@@ -14,8 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.packaging.impl;
 
-@Version("2.8.1")
-package org.apache.jackrabbit.vault.util;
+import java.io.IOException;
 
-import org.osgi.annotation.versioning.Version;
+import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
+import org.junit.Assert;
+import org.junit.Test;
+
+public class ZipVaultPackageIT extends IntegrationTestBase {
+
+    @Test
+    public void testGetClosedArchive() throws IOException {
+        ZipVaultPackage pkg = new ZipVaultPackage(getFile("/test-packages/tmp.zip"), false);
+        pkg.close();
+        Assert.assertThrows(IllegalStateException.class, () -> pkg.getArchive());
+    }
+}

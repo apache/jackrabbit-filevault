@@ -1312,13 +1312,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         while (iter.hasNext()) {
             Node sibling = iter.nextNode();
             Optional<NodeDefinition>  childDef = ent.getApplicableChildNodeDefinition(sibling.getName(), sibling.getPrimaryNodeType());
-            Boolean test = (def == childDef) || (def != null && def.equals(childDef));
 
-            /*This is not working
-            if(def.equals(childDef)) { 
-                count++; 
-            }*/
-            if(Arrays.equals(def.get().getRequiredPrimaryTypes(),childDef.get().getRequiredPrimaryTypes())) {
+            if(def.get().equals(childDef.get())) {
                 count++; 
             }
         }

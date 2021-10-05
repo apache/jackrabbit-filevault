@@ -68,6 +68,12 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     <!-- using adjusted inheritance rules: https://issues.apache.org/jira/browse/MNG-6059 
     TODO: this block gets removed with each release https://issues.apache.org/jira/browse/MRELEASE-1053
     -->
+    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="true">
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</developerConnection>
+        <url>https://github.com/apache/jackrabbit-filevault/tree/${project.scm.tag}</url>
+        <tag>master</tag>
+    </scm>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  I N F O                                                 -->

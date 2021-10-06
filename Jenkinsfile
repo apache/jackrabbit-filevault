@@ -75,7 +75,7 @@ def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMai
                     }
                 }
             }
-            if (isMainBuild && isOnMainBranch()) {
+            if (isMainBuild) {
                 stage("SonarCloud Analysis") {
                     timeout(60) {
                         withCredentials([string(credentialsId: 'sonarcloud-filevault-token', variable: 'SONAR_TOKEN')]) {

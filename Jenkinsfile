@@ -22,28 +22,69 @@ properties([
     buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10'))
 ])
 
+def isOnMainBranch() {
+    return BRANCH_NAME == 'master'
+}
+
+
 def buildStage(final String jdkLabel, final String nodeLabel, final boolean isMainBuild) {
     return {
-	    stage("Maven Build (${jdkLabel}, ${nodeLabel}") {
-	        node(label: nodeLabel) {
-	            timeout(60) {
-	                checkout scm
-	                // TODO: sonarqube
-	                // always build with Java 11 (that is the minimum version supported: https://sonarcloud.io/documentation/appendices/end-of-support/)
-	                withMaven(maven: 'maven_3_latest', 
-	                          jdk: jdkLabel,
-	                          publisherStrategy: 'IMPLICIT') {
-	                          if (isUnix()) {
-	                                 sh  "mvn -U clean verify"
-	                          } else {
-	                                bat "mvn -U clean verify"
-	                          }
-	                }
-	            }
-	        }
-	    }
-    }
+        stage("${isMainBuild ? 'Main ' : ''}Maven Build (${jdkLabel}, ${nodeLabel})") {
+            node(label: nodeLabel) {
+                timeout(60) {
+                    checkout scm
+                    String mavenArguments
+                    if (isMainBuild) {
+                        mavenArguments = '-U -B clean deploy site sonar:sonar -B -Pjacoco-report -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_jackrabbit-filevault -DaltDeploymentRepository=snapshot-repo::default::file:./local-snapshots-dir -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml'
+                    } else {
+                        mavenArguments = '-U -B clean verify site'
+                    }
 
+                    withCredentials([string(credentialsId: 'sonarcloud-filevault-token', variable: 'SONAR_TOKEN')]) {
+                        withMaven(
+                            maven: 'maven_3_latest', 
+                            jdk: jdkLabel,
+                            mavenLocalRepo: '.repository',
+                            publisherStrategy: 'IMPLICIT') {
+                            if (isUnix()) {
+                                sh  "mvn ${mavenArguments}"
+                            } else {
+                                bat "mvn ${mavenArguments}"
+                            }
+                        }
+                    }
+                    if (isMainBuild && isOnMainBranch()) {
+                        // Stash the build results so we can deploy them on another node
+                        stash name: 'filevault-build-snapshots', includes: 'local-snapshots-dir/**'
+                    }
+                }
+            }
+        }
+        if (isMainBuild && isOnMainBranch()) {
+            stage("Deployment") {
+                node('nexus-deploy') {
+                    timeout(60) {
+                        // Unstash the previously stashed build results.
+                        unstash name: 'filevault-build-snapshots'
+                        
+                        withMaven(
+                            maven: 'maven_3_latest', 
+                            jdk: jdkLabel,
+                            mavenLocalRepo: '.repository',
+                            publisherStrategy: 'IMPLICIT') {
+                            // https://github.com/sonatype/nexus-maven-plugins/tree/master/staging/maven-plugin#deploy-staged-repository
+                            String mavenArguments = 'org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:deploy-staged-repository -DrepositoryDirectory=./local-snapshots-dir -DnexusUrl=https://repository.apache.org/content/repositories/snapshots -DserverId=apache.snapshots.https'
+                            if (isUnix()) {
+                                sh  "mvn ${mavenArguments}"
+                            } else {
+                                bat "mvn ${mavenArguments}"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 def stagesFor(List<Integer> jdkVersions, int mainJdkVersion, List<String> nodeLabels, String mainNodeLabel) {
@@ -53,7 +94,7 @@ def stagesFor(List<Integer> jdkVersions, int mainJdkVersion, List<String> nodeLa
     for (nodeLabel in nodeLabels) {
         for (jdkVersion in jdkVersions) {
             boolean isMainBuild = (jdkVersion == mainJdkVersion && nodeLabel == mainNodeLabel)
-            stageMap["JDK ${jdkVersion}, Node label ${nodeLabel}"] = buildStage(availableJDKs[jdkVersion], nodeLabel, isMainBuild)
+            stageMap["JDK ${jdkVersion}, ${nodeLabel}${isMainBuild ? ' (Main)' : ''}"] = buildStage(availableJDKs[jdkVersion], nodeLabel, isMainBuild)
         }
     }
     return stageMap

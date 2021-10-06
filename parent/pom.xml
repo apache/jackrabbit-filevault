@@ -257,6 +257,8 @@ Bundle-Category: jackrabbit
                             <exclude>**/*.zip/**</exclude>
                             <exclude>.mvn/**</exclude>
                             <exclude>.no-defender.sh</exclude>
+                            <exclude>.repository/**</exclude>
+                            <exclude>local-snapshots-dir/**</exclude>
                         </excludes>
                     </configuration>
                 </plugin>

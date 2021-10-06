@@ -19,12 +19,11 @@
  */
 
 properties([
-    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')),
-    preserveStashes(buildCount: 1)
+    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10'))
 ])
 
 def isOnMainBranch() {
-    return env.BRANCH_NAME == 'feature/asf-jenkinsfile' || env.BRANCH_NAME == 'PR-170'
+    return env.BRANCH_NAME == 'master'
 }
 
 def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMainBuild) {
@@ -41,7 +40,7 @@ def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMai
                     checkout scm
                     String mavenArguments
                     if (isMainBuild) {
-                        // clean must be executed separately as otherwise local staging directory (below target/nexus-staging) is overwritten
+                        // clean must be executed separately as otherwise local staging directory (below target/nexus-staging) is overwritten (https://issues.sonatype.org/browse/NEXUS-29206)
                         withMaven(
                             maven: 'maven_3_latest', 
                             jdk: jdkLabel,
@@ -53,9 +52,9 @@ def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMai
                                 bat "mvn -B clean"
                             }
                         }
-                        mavenArguments = "-U -B install site ${stagingPluginGav}:deploy -DskipTests -DskipRemoteStaging=true -Pjacoco-report -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml"
+                        mavenArguments = "-U -B install site ${stagingPluginGav}:deploy -DskipRemoteStaging=true -Pjacoco-report -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml"
                     } else {
-                        mavenArguments = '-U -B clean verify site -DskipTests'
+                        mavenArguments = '-U -B clean verify site'
                     }
                     withMaven(
                         maven: 'maven_3_latest', 
@@ -72,7 +71,7 @@ def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMai
                     
                     if (isMainBuild && isOnMainBranch()) {
                         // Stash the build results so we can deploy them on another node
-                        stash name: 'filevault-build-snapshots', includes: 'target/nexus-staging/**'
+                        stash name: 'filevault-build-snapshots', includes: '**/nexus-staging/**'
                     }
                 }
             }
@@ -111,7 +110,7 @@ def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMai
                             mavenLocalRepo: '.repository',
                             publisherStrategy: 'EXPLICIT') {
                             // https://github.com/sonatype/nexus-maven-plugins/tree/master/staging/maven-plugin#deploy-staged
-                            String mavenArguments = "${stagingPluginGav}:deploy-staged -DskipStaging=true"
+                            String mavenArguments = "-B ${stagingPluginGav}:deploy-staged -DskipStaging=true"
                             if (isUnix()) {
                                 sh  "mvn ${mavenArguments}"
                             } else {
@@ -137,4 +136,4 @@ def stagesFor(List<Integer> jdkVersions, int mainJdkVersion, List<String> nodeLa
 }
 
 // https://cwiki.apache.org/confluence/display/INFRA/ci-builds.apache.org
-parallel stagesFor([11/*, 8, 17*/], 11, [ "ubuntu"/*, "Windows"*/], "ubuntu")
+parallel stagesFor([11, 8, 17], 11, [ "ubuntu", "Windows"], "ubuntu")

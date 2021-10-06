@@ -41,7 +41,19 @@ def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMai
                     checkout scm
                     String mavenArguments
                     if (isMainBuild) {
-                        mavenArguments = "-U -B clean install site ${stagingPluginGav}:deploy -DskipTests -DskipRemoteStaging=true -Pjacoco-report -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml"
+                        // clean must be executed separately as otherwise local staging directory (below target/nexus-staging) is overwritten
+                        withMaven(
+                            maven: 'maven_3_latest', 
+                            jdk: jdkLabel,
+                            mavenLocalRepo: '.repository',
+                            publisherStrategy: 'IMPLICIT') {
+                            if (isUnix()) {
+                                sh  "mvn -B clean"
+                            } else {
+                                bat "mvn -B clean"
+                            }
+                        }
+                        mavenArguments = "-U -B install site ${stagingPluginGav}:deploy -DskipTests -DskipRemoteStaging=true -Pjacoco-report -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml"
                     } else {
                         mavenArguments = '-U -B clean verify site -DskipTests'
                     }

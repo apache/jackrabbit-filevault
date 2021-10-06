@@ -19,29 +19,32 @@
  */
 
 properties([
-    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10'))
+    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')),
+    preserveStashes(buildCount: 1)
 ])
 
 def isOnMainBranch() {
     return env.BRANCH_NAME == 'feature/asf-jenkinsfile' || env.BRANCH_NAME == 'PR-170'
 }
 
-
-def buildStage(final String jdkLabel, final String nodeLabel, final boolean isMainBuild) {
+def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMainBuild) {
     return {
+        // https://cwiki.apache.org/confluence/display/INFRA/JDK+Installation+Matrix
+        def availableJDKs = [ 8: 'jdk_1.8_latest', 9: 'jdk_1.9_latest', 10: 'jdk_10_latest', 11: 'jdk_11_latest', 12: 'jdk_12_latest', 13: 'jdk_13_latest', 14: 'jdk_14_latest', 15: 'jdk_15_latest', 16: 'jdk_16_latest', 17: 'jdk_17_latest', 18: 'jdk_18_latest']
+        final String jdkLabel = availableJDKs[jdkVersion]
         final String stagingPluginGav = "org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8"
         final String sonarPluginGav = "org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155"
         node(label: nodeLabel) {
-            stage("${isMainBuild ? 'Main ' : ''}Maven Build (${jdkLabel}, ${nodeLabel})") {
+            stage("${isMainBuild ? 'Main ' : ''}Maven Build (JDK ${jdkVersion}, ${nodeLabel})") {
                 timeout(60) {
+                    echo "Running on node ${env.NODE_NAME}"
                     checkout scm
                     String mavenArguments
                     if (isMainBuild) {
-                        mavenArguments = "-U -B clean install site ${stagingPluginGav}:deploy -DskipRemoteStaging=true -Pjacoco-report -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml"
+                        mavenArguments = "-U -B clean install site ${stagingPluginGav}:deploy -DskipTests -DskipRemoteStaging=true -Pjacoco-report -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml"
                     } else {
                         mavenArguments = '-U -B clean verify site -DskipTests'
                     }
-
                     withMaven(
                         maven: 'maven_3_latest', 
                         jdk: jdkLabel,
@@ -57,7 +60,7 @@ def buildStage(final String jdkLabel, final String nodeLabel, final boolean isMa
                     
                     if (isMainBuild && isOnMainBranch()) {
                         // Stash the build results so we can deploy them on another node
-                        stash name: 'filevault-build-snapshots', includes: '**/nexus-staging/**'
+                        stash name: 'filevault-build-snapshots', includes: 'target/nexus-staging/**'
                     }
                 }
             }
@@ -111,17 +114,15 @@ def buildStage(final String jdkLabel, final String nodeLabel, final boolean isMa
 }
 
 def stagesFor(List<Integer> jdkVersions, int mainJdkVersion, List<String> nodeLabels, String mainNodeLabel) {
-    // https://cwiki.apache.org/confluence/display/INFRA/JDK+Installation+Matrix
-    def availableJDKs = [ 8: 'jdk_1.8_latest', 9: 'jdk_1.9_latest', 10: 'jdk_10_latest', 11: 'jdk_11_latest', 12: 'jdk_12_latest', 13: 'jdk_13_latest', 14: 'jdk_14_latest', 15: 'jdk_15_latest', 16: 'jdk_16_latest', 17: 'jdk_17_latest', 18: 'jdk_18_latest']
     def stageMap = [:]
     for (nodeLabel in nodeLabels) {
         for (jdkVersion in jdkVersions) {
             boolean isMainBuild = (jdkVersion == mainJdkVersion && nodeLabel == mainNodeLabel)
-            stageMap["JDK ${jdkVersion}, ${nodeLabel}${isMainBuild ? ' (Main)' : ''}"] = buildStage(availableJDKs[jdkVersion], nodeLabel, isMainBuild)
+            stageMap["JDK ${jdkVersion}, ${nodeLabel}${isMainBuild ? ' (Main)' : ''}"] = buildStage(jdkVersion, nodeLabel, isMainBuild)
         }
     }
     return stageMap
 }
 
 // https://cwiki.apache.org/confluence/display/INFRA/ci-builds.apache.org
-parallel stagesFor([8, 11, 17], 11, [ "ubuntu", "Windows"], "ubuntu")
+parallel stagesFor([11/*, 8, 17*/], 11, [ "ubuntu"/*, "Windows"*/], "ubuntu")

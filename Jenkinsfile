@@ -26,6 +26,20 @@ def isOnMainBranch() {
     return env.BRANCH_NAME == 'master'
 }
 
+def executeMaven(String jdkLabel, String mavenArguments, String publisherStrategy) {
+    withMaven(
+        maven: 'maven_3_latest', 
+        jdk: jdkLabel,
+        mavenLocalRepo: '.repository',
+        publisherStrategy: 'IMPLICIT') {
+        if (isUnix()) {
+            sh "mvn -B ${mavenArguments}"
+        } else {
+            bat "mvn -B ${mavenArguments}"
+        }
+    }
+}
+
 def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMainBuild) {
     return {
         // https://cwiki.apache.org/confluence/display/INFRA/JDK+Installation+Matrix
@@ -41,34 +55,12 @@ def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMai
                     String mavenArguments
                     if (isMainBuild) {
                         // clean must be executed separately as otherwise local staging directory (below target/nexus-staging) is overwritten (https://issues.sonatype.org/browse/NEXUS-29206)
-                        withMaven(
-                            maven: 'maven_3_latest', 
-                            jdk: jdkLabel,
-                            mavenLocalRepo: '.repository',
-                            publisherStrategy: 'IMPLICIT') {
-                            if (isUnix()) {
-                                sh  "mvn -B clean"
-                            } else {
-                                bat "mvn -B clean"
-                            }
-                        }
-                        mavenArguments = "-U -B install site ${stagingPluginGav}:deploy -DskipRemoteStaging=true -Pjacoco-report -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml"
+                        executeMaven(jdkLabel, 'clean', 'EXPLICIT')
+                        mavenArguments = "-U install site ${stagingPluginGav}:deploy -DskipRemoteStaging=true -Pjacoco-report -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml"
                     } else {
-                        mavenArguments = '-U -B clean verify site'
+                        mavenArguments = '-U clean verify site'
                     }
-                    withMaven(
-                        maven: 'maven_3_latest', 
-                        jdk: jdkLabel,
-                        mavenLocalRepo: '.repository',
-                        publisherStrategy: 'IMPLICIT') {
-                        if (isUnix()) {
-                            sh  "mvn ${mavenArguments}"
-                        } else {
-                            bat "mvn ${mavenArguments}"
-                        }
-                    }
-                    
-                    
+                    executeMaven(jdkLabel, mavenArguments, 'IMPLICIT')
                     if (isMainBuild && isOnMainBranch()) {
                         // Stash the build results so we can deploy them on another node
                         stash name: 'filevault-build-snapshots', includes: '**/nexus-staging/**'
@@ -79,18 +71,8 @@ def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMai
                 stage("SonarCloud Analysis") {
                     timeout(60) {
                         withCredentials([string(credentialsId: 'sonarcloud-filevault-token', variable: 'SONAR_TOKEN')]) {
-                            withMaven(
-                                maven: 'maven_3_latest', 
-                                jdk: jdkLabel,
-                                mavenLocalRepo: '.repository', // reuse repo from previous stage (i.e. must be the same node)
-                                publisherStrategy: 'EXPLICIT') {
-                                String mavenArguments = "-B ${sonarPluginGav}:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_jackrabbit-filevault"
-                                if (isUnix()) {
-                                    sh  "mvn ${mavenArguments}"
-                                } else {
-                                    bat "mvn ${mavenArguments}"
-                                }
-                            }
+                            String mavenArguments = "${sonarPluginGav}:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_jackrabbit-filevault"
+                            executeMaven(jdkLabel, mavenArguments, 'IMPLICIT')
                         }
                     }
                 }
@@ -104,19 +86,9 @@ def buildStage(final int jdkVersion, final String nodeLabel, final boolean isMai
                         checkout scm
                         // Unstash the previously stashed build results.
                         unstash name: 'filevault-build-snapshots'
-                        withMaven(
-                            maven: 'maven_3_latest', 
-                            jdk: jdkLabel,
-                            mavenLocalRepo: '.repository',
-                            publisherStrategy: 'EXPLICIT') {
-                            // https://github.com/sonatype/nexus-maven-plugins/tree/master/staging/maven-plugin#deploy-staged
-                            String mavenArguments = "-B ${stagingPluginGav}:deploy-staged -DskipStaging=true"
-                            if (isUnix()) {
-                                sh  "mvn ${mavenArguments}"
-                            } else {
-                                bat "mvn ${mavenArguments}"
-                            }
-                        }
+                        // https://github.com/sonatype/nexus-maven-plugins/tree/master/staging/maven-plugin#deploy-staged
+                        String mavenArguments = "${stagingPluginGav}:deploy-staged -DskipStaging=true"
+                        executeMaven(jdkLabel, mavenArguments, 'EXPLICIT')
                     }
                 }
             }

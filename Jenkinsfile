@@ -20,4 +20,4 @@
 // use the shared library from https://github.com/apache/jackrabbit-filevault-jenkins-lib
 library "filevault@master"
 
-fileVaultMavenStdBuild([11, 8, 17], 11, [ "ubuntu", "Windows"], "ubuntu")
+fileVaultMavenStdBuild([11, 8, 17], 11, [ "ubuntu", "Windows"], "ubuntu", "apache_jackrabbit-filevault")

@@ -102,8 +102,8 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     </issueManagement>
 
     <ciManagement>
-        <system>Travis</system>
-        <url>https://travis-ci.org/apache/jackrabbit-filevault</url>
+        <system>Jenkins</system>
+        <url>https://ci-builds.apache.org/blue/organizations/jenkins/Jackrabbit%2Ffilevault/activity</url>
     </ciManagement>
 
     <url>https://jackrabbit.apache.org/filevault/</url>
@@ -257,6 +257,8 @@ Bundle-Category: jackrabbit
                             <exclude>**/*.zip/**</exclude>
                             <exclude>.mvn/**</exclude>
                             <exclude>.no-defender.sh</exclude>
+                            <exclude>.repository/**</exclude>
+                            <exclude>local-snapshots-dir/**</exclude>
                         </excludes>
                     </configuration>
                 </plugin>

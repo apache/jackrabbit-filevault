@@ -69,7 +69,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
 
     static final Pattern DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX = Pattern.compile("/([^/]*/){0,4}?(install|config)[\\./].*");
 
-    static final Pattern DEFAULT_JCR_INSTALLER_ADITIONAL_FILE_NODE_PATH_REGEX = Pattern.compile(".*\\.(config|cfg|cfg\\\\.json|jar)");
+    static final Pattern DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX = Pattern.compile(".*\\.(config|cfg|cfg\\.json|jar)");
 
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_LEGACY_TYPE = ValidationMessageSeverity.WARN;
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_NO_TYPE = ValidationMessageSeverity.WARN;
@@ -89,7 +89,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
             String optionValue = settings.getOptions().get(OPTION_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX);
             jcrInstallerAdditionalFileNodePathRegex = Pattern.compile(optionValue);
         } else {
-            jcrInstallerAdditionalFileNodePathRegex = DEFAULT_JCR_INSTALLER_ADITIONAL_FILE_NODE_PATH_REGEX;
+            jcrInstallerAdditionalFileNodePathRegex = DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX;
         }
         final Pattern jcrInstallerNodePathRegex;
         if (settings.getOptions().containsKey(OPTION_JCR_INSTALLER_NODE_PATH_REGEX)) {

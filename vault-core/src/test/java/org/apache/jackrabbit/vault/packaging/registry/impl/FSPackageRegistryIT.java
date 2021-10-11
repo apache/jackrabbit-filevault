@@ -73,7 +73,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FSPackageRegistryIT extends IntegrationTestBase {
 
-    private static final File DIR_REGISTRY_HOME = new File("target/registry");
+    private static final File DIR_REGISTRY_HOME = new File("target/fspackageregistry-" + System.getProperty("repoSuffix", "fork1"));
 
     private static final Logger log = LoggerFactory.getLogger(FSPackageRegistryIT.class);
 

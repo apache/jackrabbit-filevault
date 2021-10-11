@@ -32,7 +32,7 @@ import org.junit.Test;
  */
 public class CrossRegistryDependenciesIT extends IntegrationTestBase {
 
-    private static final File DIR_REGISTRY_HOME = new File("target/registry");
+    private static final File DIR_REGISTRY_HOME = new File("target/fspackageregistry-" + System.getProperty("repoSuffix", "fork1"));
 
     private FSPackageRegistry fsregistry;
 

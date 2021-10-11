@@ -32,8 +32,11 @@ public class PackageTypeValidatorFactoryTest {
 
     @Test
     public void testDefaultJcrInstallerAdditionalNodePathRegex() {
-        Assert.assertFalse(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADITIONAL_FILE_NODE_PATH_REGEX.matcher("/apps/test/install/myconfig.xml").matches());
-        Assert.assertFalse(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADITIONAL_FILE_NODE_PATH_REGEX.matcher("/apps/test/install/.content.xml").matches());
-        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADITIONAL_FILE_NODE_PATH_REGEX.matcher("/apps/test/install/15/mypackage.jar").matches());
+        Assert.assertFalse(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX.matcher("/apps/test/install/myconfig.xml").matches());
+        Assert.assertFalse(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX.matcher("/apps/test/install/.content.xml").matches());
+        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX.matcher("/apps/test/install/15/mypackage.jar").matches());
+        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX.matcher("/apps/test/install/15/mypackage.cfg.json").matches());
+        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX.matcher("/apps/test/install/15/mypackage.cfg").matches());
+        Assert.assertTrue(PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX.matcher("/apps/test/install/15/mypackage.config").matches());
     }
 }

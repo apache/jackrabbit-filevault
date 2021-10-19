@@ -181,6 +181,8 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
 
         private ClassLoader parentClassLoader;
 
+        private URLClassLoader urlClassLoader;
+
         private InstallHook hook;
 
         private String mainClassName;
@@ -201,6 +203,9 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
         private void destroy() throws IOException {
             parentClassLoader = null;
             hook = null;
+            if (urlClassLoader != null) {
+                urlClassLoader.close();
+            }
             if (jarFile != null) {
                 Files.deleteIfExists(jarFile);
             }
@@ -224,19 +229,23 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                     if (parentClassLoader == null) {
                         try {
                             // 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
-                            loadMainClass(URLClassLoader.newInstance(
+                            urlClassLoader = URLClassLoader.newInstance(
                                     new URL[] { jarFile.toUri().toURL() },
-                                    this.getClass().getClassLoader()));
+                                    this.getClass().getClassLoader());
+                            loadMainClass(urlClassLoader);
                         } catch (ClassNotFoundException cnfe) {
+                            urlClassLoader.close();
                             // 2nd fallback is the thread context classloader
-                            loadMainClass(URLClassLoader.newInstance(
+                            urlClassLoader = URLClassLoader.newInstance(
                                     new URL[] { jarFile.toUri().toURL() },
-                                    Thread.currentThread().getContextClassLoader()));
+                                    Thread.currentThread().getContextClassLoader());
+                            loadMainClass(urlClassLoader);
                         }
                     } else {
-                        loadMainClass(URLClassLoader.newInstance(
+                        urlClassLoader = URLClassLoader.newInstance(
                                 new URL[] { jarFile.toUri().toURL() },
-                                parentClassLoader));
+                                parentClassLoader);
+                        loadMainClass(urlClassLoader);
                     }
                 } else {
                     // create classloader

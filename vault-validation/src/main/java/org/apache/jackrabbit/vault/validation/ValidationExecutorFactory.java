@@ -99,20 +99,24 @@ public final class ValidationExecutorFactory {
                     settings = new ValidatorSettingsImpl();
                 }
                 if (!settings.isDisabled()) {
-                    Validator validator = validatorFactory.createValidator(context, settings);
-                    if (validator != null) {
-                        Validator oldValidator = validatorsById.putIfAbsent(validatorId, validator);
-                        if (oldValidator != null) {
-                            log.error("Found validators with duplicate id " + validatorId + ": " + oldValidator.getClass().getName() + " and " + validator.getClass().getName() + "(Duplicate, not considered)");
+                    try {
+                        Validator validator = validatorFactory.createValidator(context, settings);
+                        if (validator != null) {
+                            Validator oldValidator = validatorsById.putIfAbsent(validatorId, validator);
+                            if (oldValidator != null) {
+                                log.error("Found validators with duplicate id {}: {} and {} (Duplicate, not considered)",  validatorId, oldValidator.getClass().getName(), validator.getClass().getName());
+                            }
                         }
+                    } catch (RuntimeException e) {
+                        throw new IllegalStateException("Could not create validator " + validatorId + " : " + e.getMessage(), e);
                     }
                 } else {
-                    log.debug("Skip disabled validator " + validatorId);
+                    log.debug("Skip disabled validator {}", validatorId);
                 }
             }
         }
         if (!validatorSettingsIds.isEmpty() && !isSubPackage) {
-            log.warn("There are validator settings bound to invalid ids " + StringUtils.join(validatorSettingsIds, ", "));
+            log.warn("There are validator settings bound to invalid ids {}", StringUtils.join(validatorSettingsIds, ", "));
         }
         return validatorsById;
     }

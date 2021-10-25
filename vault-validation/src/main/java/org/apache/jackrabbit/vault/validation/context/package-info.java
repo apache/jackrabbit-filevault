@@ -14,8 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@Version("2.14.1")
-package org.apache.jackrabbit.vault.packaging;
+/**
+ * Provides common implementations of {@link org.apache.jackrabbit.vault.validation.spi.ValidationContext}
+ */
+@Version("1.0.0")
+package org.apache.jackrabbit.vault.validation.context;
 
 import org.osgi.annotation.versioning.Version;

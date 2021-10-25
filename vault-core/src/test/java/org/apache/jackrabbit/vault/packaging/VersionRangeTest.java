@@ -100,6 +100,11 @@ public class VersionRangeTest extends TestCase {
         assertFalse("(1.0,2.0) excludes 2.1", vr.isInRange(v21));
     }
 
+    public void testRangeWithEmptyVersionParameter() {
+        VersionRange vr = new VersionRange(v1, true, v2, true);
+        assertFalse("[1.0,2.0] excludes empty version", vr.isInRange(Version.EMPTY));
+    }
+
     public void testRangeSnapshots() {
         VersionRange vr = VersionRange.fromString("[1.0,2.0)");
         assertTrue("[1.0,2.0) includes 1.0-SNAPSHOT", vr.isInRange(v1s));

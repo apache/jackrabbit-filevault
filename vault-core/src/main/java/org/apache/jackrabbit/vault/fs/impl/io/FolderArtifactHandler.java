@@ -40,12 +40,28 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.util.EffectiveNodeType;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles artifact sets with just a directory.
  *
  */
 public class FolderArtifactHandler extends AbstractArtifactHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FolderArtifactHandler.class);
+
+    private static boolean IMPLICIT_NODETYPE_CALCULATION;
+    static {
+        boolean t = true;
+        String key = "org.apache.jackrabbit.filevault.fs.impl.io.FolderArtifactHandler.IMPLICIT_NODETYPE_CALCULATION";
+        String sp = System.getProperty(key);
+        if (sp != null) {
+            LOG.info(key + " set to: '" + sp + "' (default is '" + t + "')");
+            t = Boolean.parseBoolean(sp);
+        }
+        IMPLICIT_NODETYPE_CALCULATION = t;
+    }
 
     /**
      * qualified names of those default node types which should not be used for intermediate nodes (as they come with too many restrictions)
@@ -123,7 +139,8 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             }
 
             Node node = parent.getNode(dir.getRelativePath());
-            if (wspFilter.contains(node.getPath()) && wspFilter.getImportMode(node.getPath())==ImportMode.REPLACE && !nodeType.equals(node.getPrimaryNodeType().getName())) {
+            if (IMPLICIT_NODETYPE_CALCULATION
+                    && wspFilter.contains(node.getPath()) && wspFilter.getImportMode(node.getPath()) == ImportMode.REPLACE && !nodeType.equals(node.getPrimaryNodeType().getName())) {
                 modifyPrimaryType(node, info);
             }
             NodeIterator iter = node.getNodes();

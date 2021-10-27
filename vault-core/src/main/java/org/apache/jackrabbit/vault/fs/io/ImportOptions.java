@@ -29,11 +29,15 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Option that control the package import.
  */
 public class ImportOptions {
+
+    private static final Logger log = LoggerFactory.getLogger(ImportOptions.class);
 
     private Boolean strict;
 
@@ -69,6 +73,20 @@ public class ImportOptions {
 
     private @NotNull IdConflictPolicy idConflictPolicy = IdConflictPolicy.FAIL;
 
+    private static boolean DEFAULT_ENFORCE_CORRECT_PRIMARY_NODETYPE;
+    static {
+        boolean t = true;
+        String key = "org.apache.jackrabbit.vault.fs.io.ImportOptions.DEFAULT_ENFORCE_CORRECT_PRIMARY_NODETYPE";
+        String sp = System.getProperty(key);
+        if (sp != null) {
+            log.info(key + " set to: '" + sp + "' (default is '" + t + "')");
+            t = Boolean.parseBoolean(sp);
+        }
+        DEFAULT_ENFORCE_CORRECT_PRIMARY_NODETYPE = t;
+    }
+
+    private boolean enforceCorrectPrimaryType = DEFAULT_ENFORCE_CORRECT_PRIMARY_NODETYPE;
+
     /**
      * Default constructor.
      */
@@ -100,6 +118,7 @@ public class ImportOptions {
             pathMapping = base.pathMapping;
             dependencyHandling = base.dependencyHandling;
             idConflictPolicy = base.idConflictPolicy;
+            enforceCorrectPrimaryType = base.enforceCorrectPrimaryType;
         }
     }
 
@@ -126,6 +145,7 @@ public class ImportOptions {
         ret.pathMapping = pathMapping;
         ret.dependencyHandling = dependencyHandling;
         ret.idConflictPolicy = idConflictPolicy;
+        ret.enforceCorrectPrimaryType = enforceCorrectPrimaryType;
         return ret;
     }
 
@@ -259,6 +279,10 @@ public class ImportOptions {
      */
     public void setCugHandling(AccessControlHandling cugHandling) {
         this.cugHandling = cugHandling;
+    }
+
+    public boolean getEnforceCorrectPrimaryType() {
+        return enforceCorrectPrimaryType;
     }
 
     /**
@@ -465,6 +489,8 @@ public class ImportOptions {
         result = prime * result + ((pathMapping == null) ? 0 : pathMapping.hashCode());
         result = prime * result + ((idConflictPolicy == null) ? 0 : idConflictPolicy.hashCode());
         result = prime * result + (strict ? 1231 : 1237);
+        result = prime * result + (enforceCorrectPrimaryType ? 1231 : 1237);
+
         return result;
     }
 
@@ -530,6 +556,8 @@ public class ImportOptions {
             return false;
         if (strict != other.strict)
             return false;
+        if (enforceCorrectPrimaryType != other.enforceCorrectPrimaryType)
+            return false;
         if (!idConflictPolicy.equals(other.idConflictPolicy))
             return false;
         return true;
@@ -548,8 +576,7 @@ public class ImportOptions {
                 + (hookClassLoader != null ? "hookClassLoader=" + hookClassLoader + ", " : "")
                 + (pathMapping != null ? "pathMapping=" + pathMapping + ", " : "")
                 + (dependencyHandling != null ? "dependencyHandling=" + dependencyHandling + ", " : "")
+                + "enforceCorrectPrimaryType=" + enforceCorrectPrimaryType + ", "
                 + "idConflictPolicy=" + idConflictPolicy + "]";
     }
-    
-    
 }

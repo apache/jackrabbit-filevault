@@ -400,6 +400,7 @@ public class Importer {
         genericHandler.setCugHandling(opts.getCugHandling());
         folderHandler.setAcHandling(opts.getAccessControlHandling());
         folderHandler.setCugHandling(opts.getCugHandling());
+        folderHandler.setEnforceCorrectPrimaryType(opts.getEnforceCorrectPrimaryType());
 
         filter = opts.getFilter();
         if (filter == null) {

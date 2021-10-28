@@ -48,9 +48,9 @@ import org.jetbrains.annotations.NotNull;
 public class FolderArtifactHandler extends AbstractArtifactHandler {
 
     /**
-     * whether correct primary type should be enforced upon creation 
+     * whether primary type of folders should be overwritten 
      */
-    private boolean enforceCorrectPrimaryType = true;
+    private boolean overwritePrimaryTypesOfFolders = true;
 
     /**
      * qualified names of those default node types which should not be used for intermediate nodes (as they come with too many restrictions)
@@ -79,14 +79,15 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
     }
 
     /**
-     * Sets whether correct primary type should be enforced upon creation
+     * Sets whether primary type of folders should be overwritten
      * 
-     * @param enforceCorrectPrimaryType
-     *            set to "false" to disable the default behavior of enforcing
-     *            the primary node type
+     * @param primary
+     *            type of folders should be overwritten set to "false" to
+     *            disable the default behavior of overwriting the primary node
+     *            type
      */
-    public void setEnforceCorrectPrimaryType(boolean enforceCorrectPrimaryType) {
-        this.enforceCorrectPrimaryType = enforceCorrectPrimaryType;
+    public void setOverwritePrimaryTypesOfFolders(boolean overwritePrimaryTypesOfFolders) {
+        this.overwritePrimaryTypesOfFolders = overwritePrimaryTypesOfFolders;
     }
 
     private Node createIntermediateNode(Node parent, String intermediateNodeName) throws RepositoryException {
@@ -139,7 +140,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             }
 
             Node node = parent.getNode(dir.getRelativePath());
-            if (enforceCorrectPrimaryType
+            if (overwritePrimaryTypesOfFolders
                     && wspFilter.contains(node.getPath()) && wspFilter.getImportMode(node.getPath()) == ImportMode.REPLACE && !nodeType.equals(node.getPrimaryNodeType().getName())) {
                 modifyPrimaryType(node, info);
             }

@@ -73,19 +73,19 @@ public class ImportOptions {
 
     private @NotNull IdConflictPolicy idConflictPolicy = IdConflictPolicy.FAIL;
 
-    private static boolean DEFAULT_ENFORCE_CORRECT_PRIMARY_NODETYPE;
+    private static boolean OVERWRITE_PRIMARY_TYPES_OF_FOLDERS;
     static {
         boolean t = true;
-        String key = "org.apache.jackrabbit.vault.fs.io.ImportOptions.DEFAULT_ENFORCE_CORRECT_PRIMARY_NODETYPE";
+        String key = "org.apache.jackrabbit.vault.fs.io.ImportOptions.OVERWRITE_PRIMARY_TYPES_OF_FOLDERS";
         String sp = System.getProperty(key);
         if (sp != null) {
             log.info(key + " set to: '" + sp + "' (default is '" + t + "')");
             t = Boolean.parseBoolean(sp);
         }
-        DEFAULT_ENFORCE_CORRECT_PRIMARY_NODETYPE = t;
+        OVERWRITE_PRIMARY_TYPES_OF_FOLDERS = t;
     }
 
-    private boolean enforceCorrectPrimaryType = DEFAULT_ENFORCE_CORRECT_PRIMARY_NODETYPE;
+    private boolean overwritePrimaryTypesOfFolders = OVERWRITE_PRIMARY_TYPES_OF_FOLDERS;
 
     /**
      * Default constructor.
@@ -118,7 +118,7 @@ public class ImportOptions {
             pathMapping = base.pathMapping;
             dependencyHandling = base.dependencyHandling;
             idConflictPolicy = base.idConflictPolicy;
-            enforceCorrectPrimaryType = base.enforceCorrectPrimaryType;
+            overwritePrimaryTypesOfFolders = base.overwritePrimaryTypesOfFolders;
         }
     }
 
@@ -145,7 +145,7 @@ public class ImportOptions {
         ret.pathMapping = pathMapping;
         ret.dependencyHandling = dependencyHandling;
         ret.idConflictPolicy = idConflictPolicy;
-        ret.enforceCorrectPrimaryType = enforceCorrectPrimaryType;
+        ret.overwritePrimaryTypesOfFolders = overwritePrimaryTypesOfFolders;
         return ret;
     }
 
@@ -281,8 +281,8 @@ public class ImportOptions {
         this.cugHandling = cugHandling;
     }
 
-    public boolean getEnforceCorrectPrimaryType() {
-        return enforceCorrectPrimaryType;
+    public boolean getOverwritePrimaryTypesOfFolders() {
+        return overwritePrimaryTypesOfFolders;
     }
 
     /**
@@ -489,7 +489,7 @@ public class ImportOptions {
         result = prime * result + ((pathMapping == null) ? 0 : pathMapping.hashCode());
         result = prime * result + ((idConflictPolicy == null) ? 0 : idConflictPolicy.hashCode());
         result = prime * result + (strict ? 1231 : 1237);
-        result = prime * result + (enforceCorrectPrimaryType ? 1231 : 1237);
+        result = prime * result + (overwritePrimaryTypesOfFolders ? 1231 : 1237);
 
         return result;
     }
@@ -556,7 +556,7 @@ public class ImportOptions {
             return false;
         if (strict != other.strict)
             return false;
-        if (enforceCorrectPrimaryType != other.enforceCorrectPrimaryType)
+        if (overwritePrimaryTypesOfFolders != other.overwritePrimaryTypesOfFolders)
             return false;
         if (!idConflictPolicy.equals(other.idConflictPolicy))
             return false;
@@ -576,7 +576,7 @@ public class ImportOptions {
                 + (hookClassLoader != null ? "hookClassLoader=" + hookClassLoader + ", " : "")
                 + (pathMapping != null ? "pathMapping=" + pathMapping + ", " : "")
                 + (dependencyHandling != null ? "dependencyHandling=" + dependencyHandling + ", " : "")
-                + "enforceCorrectPrimaryType=" + enforceCorrectPrimaryType + ", "
+                + "overwritePrimaryTypesOfFolders=" + overwritePrimaryTypesOfFolders + ", "
                 + "idConflictPolicy=" + idConflictPolicy + "]";
     }
 }

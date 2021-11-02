@@ -94,15 +94,18 @@ public class PackagingImpl implements Packaging {
          */
         @AttributeDefinition(description = "The locations in the repository which are used by the package manager")
         String[] packageRoots() default {"/etc/packages"};
-        
+
         @AttributeDefinition(description = "The authorizable ids or principal names which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForHookExecution();
-        
+
         @AttributeDefinition(description = "The authorizable ids or principal names which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForRootInstallation();
-        
+
         @AttributeDefinition(description = "The default value for strict imports (i.e. whether it just logs certain errors or always throws exceptions")
         boolean isStrict() default true;
+
+        @AttributeDefinition(description = "Whether to overwrite the primary type of folders")
+        boolean overwritePrimaryTypesOfFolders() default true;
     }
 
     @Activate
@@ -123,7 +126,7 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackageManager getPackageManager(Session session) {
-        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authIdsForHookExecution(), config.authIdsForRootInstallation(), config.isStrict());
+        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authIdsForHookExecution(), config.authIdsForRootInstallation(), config.isStrict(), config.overwritePrimaryTypesOfFolders());
         mgr.setDispatcher(eventDispatcher);
         setBaseRegistry(mgr.getInternalRegistry(), registries);
         return mgr;
@@ -177,7 +180,7 @@ public class PackagingImpl implements Packaging {
     }
 
     private JcrPackageRegistry getJcrPackageRegistry(Session session, boolean useBaseRegistry) {
-        JcrPackageRegistry registry = new JcrPackageRegistry(session, new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()), config.isStrict(), config.packageRoots());
+        JcrPackageRegistry registry = new JcrPackageRegistry(session, new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()), config.isStrict(), config.overwritePrimaryTypesOfFolders(), config.packageRoots());
         registry.setDispatcher(eventDispatcher);
         if (useBaseRegistry) {
             setBaseRegistry(registry, registries);

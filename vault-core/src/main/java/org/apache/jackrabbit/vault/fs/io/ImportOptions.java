@@ -29,15 +29,11 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Option that control the package import.
  */
 public class ImportOptions {
-
-    private static final Logger log = LoggerFactory.getLogger(ImportOptions.class);
 
     private Boolean strict;
 
@@ -73,19 +69,7 @@ public class ImportOptions {
 
     private @NotNull IdConflictPolicy idConflictPolicy = IdConflictPolicy.FAIL;
 
-    private static boolean OVERWRITE_PRIMARY_TYPES_OF_FOLDERS;
-    static {
-        boolean t = true;
-        String key = "org.apache.jackrabbit.vault.fs.io.ImportOptions.OVERWRITE_PRIMARY_TYPES_OF_FOLDERS";
-        String sp = System.getProperty(key);
-        if (sp != null) {
-            log.info(key + " set to: '" + sp + "' (default is '" + t + "')");
-            t = Boolean.parseBoolean(sp);
-        }
-        OVERWRITE_PRIMARY_TYPES_OF_FOLDERS = t;
-    }
-
-    private boolean overwritePrimaryTypesOfFolders = OVERWRITE_PRIMARY_TYPES_OF_FOLDERS;
+    private Boolean overwritePrimaryTypesOfFolders;
 
     /**
      * Default constructor.
@@ -147,6 +131,14 @@ public class ImportOptions {
         ret.idConflictPolicy = idConflictPolicy;
         ret.overwritePrimaryTypesOfFolders = overwritePrimaryTypesOfFolders;
         return ret;
+    }
+
+    public boolean overwritePrimaryTypesOfFolders(boolean overwritePrimaryTypesOfFoldersByDefault) {
+        if (overwritePrimaryTypesOfFolders == null) {
+            return overwritePrimaryTypesOfFoldersByDefault;
+        } else {
+            return overwritePrimaryTypesOfFolders;
+        }
     }
 
     public boolean isStrict(boolean isStrictByDefault) {
@@ -279,10 +271,6 @@ public class ImportOptions {
      */
     public void setCugHandling(AccessControlHandling cugHandling) {
         this.cugHandling = cugHandling;
-    }
-
-    public boolean getOverwritePrimaryTypesOfFolders() {
-        return overwritePrimaryTypesOfFolders;
     }
 
     /**

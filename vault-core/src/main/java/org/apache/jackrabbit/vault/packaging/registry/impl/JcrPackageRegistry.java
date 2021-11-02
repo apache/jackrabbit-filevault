@@ -117,11 +117,12 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @param roots the root paths to store the packages.
      */
     public JcrPackageRegistry(@NotNull Session session, @Nullable String ... roots) {
-        this(session, null, false, roots);
+        this(session, null, false, true, roots);
     }
 
-    public JcrPackageRegistry(@NotNull Session session, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig,  boolean isStrict, @Nullable String... roots) {
-        super(securityConfig, isStrict);
+    public JcrPackageRegistry(@NotNull Session session, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig,
+            boolean isStrict, boolean overwritePrimaryTypesOfFoldersByDefault, @Nullable String... roots) {
+        super(securityConfig, isStrict, overwritePrimaryTypesOfFoldersByDefault);
         this.session = session;
         if (roots == null || roots.length == 0) {
             packRootPaths = new String[]{DEFAULT_PACKAGE_ROOT_PATH};

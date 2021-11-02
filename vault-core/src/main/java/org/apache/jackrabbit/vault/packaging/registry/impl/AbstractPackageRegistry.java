@@ -83,17 +83,24 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
      */
     private final boolean isStrictByDefault;
 
-    public AbstractPackageRegistry(SecurityConfig securityConfig, boolean isStrictByDefault) {
+    private final boolean overwritePrimaryTypesOfFoldersByDefault;
+
+    public AbstractPackageRegistry(SecurityConfig securityConfig, boolean isStrictByDefault, boolean overwritePrimaryTypesOfFoldersByDefault) {
         if (securityConfig != null) {
             this.securityConfig = securityConfig;
         } else {
             this.securityConfig = new SecurityConfig(null, null);
         }
         this.isStrictByDefault = isStrictByDefault;
+        this.overwritePrimaryTypesOfFoldersByDefault = overwritePrimaryTypesOfFoldersByDefault;
     }
 
     public boolean isStrictByDefault() {
         return isStrictByDefault;
+    }
+
+    public boolean overwritePrimaryTypesOfFoldersByDefault() {
+        return overwritePrimaryTypesOfFoldersByDefault;
     }
 
     /**

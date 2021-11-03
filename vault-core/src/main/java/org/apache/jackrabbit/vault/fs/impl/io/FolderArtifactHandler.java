@@ -48,7 +48,7 @@ import org.jetbrains.annotations.NotNull;
 public class FolderArtifactHandler extends AbstractArtifactHandler {
 
     /**
-     * whether primary type of folders should be overwritten 
+     * whether primary type of folders should be overwritten
      */
     private boolean overwritePrimaryTypesOfFolders = true;
 
@@ -80,7 +80,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
 
     /**
      * Sets whether primary node type of folders should be overwritten
-     * 
+     *
      * @param overwritePrimaryTypesOfFolders
      *            set to "false" to disable the default behavior of overwriting
      *            the primary node type of folders

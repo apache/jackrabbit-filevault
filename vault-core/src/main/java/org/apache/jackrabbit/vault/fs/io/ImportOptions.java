@@ -69,7 +69,7 @@ public class ImportOptions {
 
     private @NotNull IdConflictPolicy idConflictPolicy = IdConflictPolicy.FAIL;
 
-    private Boolean overwritePrimaryTypesOfFolders;
+    private Boolean overwritePrimaryTypesOfFolders = null;
 
     /**
      * Default constructor.
@@ -131,6 +131,18 @@ public class ImportOptions {
         ret.idConflictPolicy = idConflictPolicy;
         ret.overwritePrimaryTypesOfFolders = overwritePrimaryTypesOfFolders;
         return ret;
+    }
+
+    public void setOverwritePrimaryTypesOfFolders(boolean overwritePrimaryTypesOfFolders) {
+        this.overwritePrimaryTypesOfFolders = overwritePrimaryTypesOfFolders;
+    }
+
+    public boolean overwritePrimaryTypesOfFolders() {
+        if (overwritePrimaryTypesOfFolders == null) {
+            return true;
+        } else {
+            return overwritePrimaryTypesOfFolders;
+        }
     }
 
     public boolean overwritePrimaryTypesOfFolders(boolean overwritePrimaryTypesOfFoldersByDefault) {

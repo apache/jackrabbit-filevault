@@ -42,7 +42,8 @@ public class PackageTaskOptionsSerializer {
     private static final String TAG_NON_RECURSIVE = "nonRecursive";
     private static final String TAG_DRY_RUN = "dryRun";
     private static final String TAG_IMPORT_MODE = "importMode";
-    
+    private static final String TAG_OVERWRITE_PRIMARY_TYPES_OF_FOLDERS = "overwritePrimaryTypesOfFolders";
+
     enum Type {
         ImportOptions;
 
@@ -96,6 +97,7 @@ public class PackageTaskOptionsSerializer {
         writeOption(writer, TAG_NON_RECURSIVE, Boolean.class, importOptions.isNonRecursive());
         writeOption(writer, TAG_DRY_RUN, Boolean.class, importOptions.isDryRun());
         writeOption(writer, TAG_IMPORT_MODE, ImportMode.class, importOptions.getImportMode());
+        writeOption(writer, TAG_OVERWRITE_PRIMARY_TYPES_OF_FOLDERS, Boolean.class, importOptions.overwritePrimaryTypesOfFolders());
     }
 
     public ImportOptionsPackageTaskOption loadImportOptions(Element element) {
@@ -108,6 +110,7 @@ public class PackageTaskOptionsSerializer {
         readOption(element, TAG_NON_RECURSIVE, Boolean.class, options::setNonRecursive);
         readOption(element, TAG_DRY_RUN, Boolean.class,  options::setDryRun);
         readOption(element, TAG_IMPORT_MODE, ImportMode.class,  options::setImportMode);
+        readOption(element, TAG_OVERWRITE_PRIMARY_TYPES_OF_FOLDERS, Boolean.class,  options::setOverwritePrimaryTypesOfFolders);
         return new ImportOptionsPackageTaskOption(options);
     }
 

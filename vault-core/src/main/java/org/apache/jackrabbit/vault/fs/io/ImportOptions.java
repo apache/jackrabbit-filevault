@@ -69,6 +69,8 @@ public class ImportOptions {
 
     private @NotNull IdConflictPolicy idConflictPolicy = IdConflictPolicy.FAIL;
 
+    private Boolean overwritePrimaryTypesOfFolders = null;
+
     /**
      * Default constructor.
      */
@@ -100,6 +102,7 @@ public class ImportOptions {
             pathMapping = base.pathMapping;
             dependencyHandling = base.dependencyHandling;
             idConflictPolicy = base.idConflictPolicy;
+            overwritePrimaryTypesOfFolders = base.overwritePrimaryTypesOfFolders;
         }
     }
 
@@ -126,7 +129,28 @@ public class ImportOptions {
         ret.pathMapping = pathMapping;
         ret.dependencyHandling = dependencyHandling;
         ret.idConflictPolicy = idConflictPolicy;
+        ret.overwritePrimaryTypesOfFolders = overwritePrimaryTypesOfFolders;
         return ret;
+    }
+
+    public void setOverwritePrimaryTypesOfFolders(boolean overwritePrimaryTypesOfFolders) {
+        this.overwritePrimaryTypesOfFolders = overwritePrimaryTypesOfFolders;
+    }
+
+    public boolean overwritePrimaryTypesOfFolders() {
+        if (overwritePrimaryTypesOfFolders == null) {
+            return true;
+        } else {
+            return overwritePrimaryTypesOfFolders;
+        }
+    }
+
+    public boolean overwritePrimaryTypesOfFolders(boolean overwritePrimaryTypesOfFoldersByDefault) {
+        if (overwritePrimaryTypesOfFolders == null) {
+            return overwritePrimaryTypesOfFoldersByDefault;
+        } else {
+            return overwritePrimaryTypesOfFolders;
+        }
     }
 
     public boolean isStrict(boolean isStrictByDefault) {
@@ -465,6 +489,8 @@ public class ImportOptions {
         result = prime * result + ((pathMapping == null) ? 0 : pathMapping.hashCode());
         result = prime * result + ((idConflictPolicy == null) ? 0 : idConflictPolicy.hashCode());
         result = prime * result + (strict ? 1231 : 1237);
+        result = prime * result + (overwritePrimaryTypesOfFolders ? 1231 : 1237);
+
         return result;
     }
 
@@ -530,6 +556,8 @@ public class ImportOptions {
             return false;
         if (strict != other.strict)
             return false;
+        if (overwritePrimaryTypesOfFolders != other.overwritePrimaryTypesOfFolders)
+            return false;
         if (!idConflictPolicy.equals(other.idConflictPolicy))
             return false;
         return true;
@@ -548,8 +576,7 @@ public class ImportOptions {
                 + (hookClassLoader != null ? "hookClassLoader=" + hookClassLoader + ", " : "")
                 + (pathMapping != null ? "pathMapping=" + pathMapping + ", " : "")
                 + (dependencyHandling != null ? "dependencyHandling=" + dependencyHandling + ", " : "")
+                + "overwritePrimaryTypesOfFolders=" + overwritePrimaryTypesOfFolders + ", "
                 + "idConflictPolicy=" + idConflictPolicy + "]";
     }
-    
-    
 }

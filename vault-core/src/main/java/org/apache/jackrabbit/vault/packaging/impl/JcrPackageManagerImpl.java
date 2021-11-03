@@ -88,15 +88,18 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      *
      * @param session repository session
      * @param roots the root paths to store the packages.
-     * @deprecated Use {@link #JcrPackageManagerImpl(Session, String[], String[], String[], boolean)} instead.
+     * @deprecated Use {@link #JcrPackageManagerImpl(Session, String[], String[], String[], boolean, boolean)} instead.
      */
     @Deprecated
     public JcrPackageManagerImpl(@NotNull Session session, @Nullable String[] roots) {
         this(new JcrPackageRegistry(session, roots));
     }
 
-    public JcrPackageManagerImpl(@NotNull Session session, @Nullable String[] roots, @Nullable String[] authIdsForHookExecution, @Nullable String[] authIdsForRootInstallation, boolean isStrict) {
-        this(new JcrPackageRegistry(session, new AbstractPackageRegistry.SecurityConfig(authIdsForHookExecution, authIdsForRootInstallation), isStrict, roots));
+    public JcrPackageManagerImpl(@NotNull Session session, @Nullable String[] roots, @Nullable String[] authIdsForHookExecution,
+            @Nullable String[] authIdsForRootInstallation, boolean isStrict, boolean overwritePrimaryTypesOfFoldersByDefault) {
+        this(new JcrPackageRegistry(session,
+                new AbstractPackageRegistry.SecurityConfig(authIdsForHookExecution, authIdsForRootInstallation), isStrict,
+                overwritePrimaryTypesOfFoldersByDefault, roots));
     }
 
     protected JcrPackageManagerImpl(JcrPackageRegistry registry) {

@@ -291,7 +291,7 @@ public class PackageInstallIT extends IntegrationTestBase {
         
         Session userSession = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
         try {
-            packMgr = new JcrPackageManagerImpl(userSession, new String[0], new String[] {"user1"}, null, false);
+            packMgr = new JcrPackageManagerImpl(userSession, new String[0], new String[] {"user1"}, null, false, true);
     
             PackageEventDispatcherImpl dispatcher = new PackageEventDispatcherImpl();
             dispatcher.bindPackageEventListener(new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));

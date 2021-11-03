@@ -62,9 +62,10 @@ public class ExecutionPlanBuilderImplTest {
         importOptions.setImportMode(ImportMode.UPDATE);
         importOptions.setDryRun(true);
         importOptions.setNonRecursive(true);
+        importOptions.setOverwritePrimaryTypesOfFolders(true);
         PackageTaskOptions options = new ImportOptionsPackageTaskOption(importOptions);
         builder.addTask().with(MockPackageRegistry.NEW_PACKAGE_ID).withOptions(options).with(PackageTask.Type.INSTALL);
-        
+
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         builder.save(out);
         builder = new ExecutionPlanBuilderImpl(new MockPackageRegistry(MockPackageRegistry.NEW_PACKAGE_ID));

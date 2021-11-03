@@ -273,11 +273,12 @@ public class Importer {
      * list of intermediate infos that were removed since the last auto save
      */
     private Map<String, TxInfo> removedIntermediates = new LinkedHashMap<String, TxInfo>();
-    
+
     private final boolean isStrictByDefault;
+    private final boolean overwritePrimaryTypesOfFoldersByDefault;
 
     public Importer() {
-         this(new ImportOptions(), false);
+         this(new ImportOptions(), false, true);
     }
 
     public Importer(ImportOptions opts) {
@@ -285,8 +286,13 @@ public class Importer {
     }
 
     public Importer(ImportOptions opts, boolean isStrictByDefault) {
+        this(opts, isStrictByDefault, true);
+    }
+
+    public Importer(ImportOptions opts, boolean isStrictByDefault, boolean overwritePrimaryTypesOfFoldersByDefault) {
         this.opts = opts;
         this.isStrictByDefault = isStrictByDefault;
+        this.overwritePrimaryTypesOfFoldersByDefault = overwritePrimaryTypesOfFoldersByDefault;
     }
 
     public ImportOptions getOptions() {
@@ -400,6 +406,7 @@ public class Importer {
         genericHandler.setCugHandling(opts.getCugHandling());
         folderHandler.setAcHandling(opts.getAccessControlHandling());
         folderHandler.setCugHandling(opts.getCugHandling());
+        folderHandler.setOverwritePrimaryTypesOfFolders(opts.overwritePrimaryTypesOfFolders(overwritePrimaryTypesOfFoldersByDefault));
 
         filter = opts.getFilter();
         if (filter == null) {

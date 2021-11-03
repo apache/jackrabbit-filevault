@@ -48,6 +48,11 @@ import org.jetbrains.annotations.NotNull;
 public class FolderArtifactHandler extends AbstractArtifactHandler {
 
     /**
+     * whether primary type of folders should be overwritten
+     */
+    private boolean overwritePrimaryTypesOfFolders = true;
+
+    /**
      * qualified names of those default node types which should not be used for intermediate nodes (as they come with too many restrictions)
      */
     private static final List<String> DISALLOWED_PRIMARY_NODE_TYPE_NAMES = Arrays.asList(JcrConstants.NT_BASE, JcrConstants.NT_HIERARCHYNODE);
@@ -71,6 +76,17 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
      */
     public void setNodeType(String nodeType) {
         this.nodeType = nodeType;
+    }
+
+    /**
+     * Sets whether primary node type of folders should be overwritten
+     *
+     * @param overwritePrimaryTypesOfFolders
+     *            set to "false" to disable the default behavior of overwriting
+     *            the primary node type of folders
+     */
+    public void setOverwritePrimaryTypesOfFolders(boolean overwritePrimaryTypesOfFolders) {
+        this.overwritePrimaryTypesOfFolders = overwritePrimaryTypesOfFolders;
     }
 
     private Node createIntermediateNode(Node parent, String intermediateNodeName) throws RepositoryException {
@@ -123,7 +139,8 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             }
 
             Node node = parent.getNode(dir.getRelativePath());
-            if (wspFilter.contains(node.getPath()) && wspFilter.getImportMode(node.getPath())==ImportMode.REPLACE && !nodeType.equals(node.getPrimaryNodeType().getName())) {
+            if (overwritePrimaryTypesOfFolders
+                    && wspFilter.contains(node.getPath()) && wspFilter.getImportMode(node.getPath()) == ImportMode.REPLACE && !nodeType.equals(node.getPrimaryNodeType().getName())) {
                 modifyPrimaryType(node, info);
             }
             NodeIterator iter = node.getNodes();

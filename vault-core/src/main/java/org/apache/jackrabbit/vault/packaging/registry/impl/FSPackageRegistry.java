@@ -107,7 +107,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      *
      * @param homeDir the directory in which packages and their metadata is stored
      * @throws IOException If an I/O error occurs.
-     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean)} instead
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean)} instead
      */
     @Deprecated
     public FSPackageRegistry(@NotNull File homeDir) throws IOException {
@@ -120,7 +120,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param homeDir the directory in which packages and their metadata is stored
      * @param scope to set a corresponding workspacefilter
      * @throws IOException If an I/O error occurs.
-     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean)} instead
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean)} instead
      */
     @Deprecated
     public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope) throws IOException {
@@ -133,15 +133,15 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param scope
      * @param securityConfig
      * @throws IOException
-     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean)} instead
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean)} instead
      */
     @Deprecated
     public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig) throws IOException {
-        this(homeDir, scope, securityConfig, false);
+        this(homeDir, scope, securityConfig, false, true);
     }
 
-    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrict) throws IOException {
-        super(securityConfig, isStrict);
+    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrict, boolean overwritePrimaryTypesOfFolders) throws IOException {
+        super(securityConfig, isStrict, overwritePrimaryTypesOfFolders);
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", homeDir.getPath());
         this.scope = scope;
         this.stateCache = new FSInstallStateCache(homeDir.toPath());
@@ -152,7 +152,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException 
      */
     public FSPackageRegistry() throws IOException {
-        super(null, false); // set security config delayed (i.e. only after activate())
+        super(null, false, true); // set security config delayed (i.e. only after activate())
     }
 
     @Activate
@@ -628,7 +628,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 
             }
             if (vltPkg instanceof ZipVaultPackage) {
-                ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault());
+                ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault(), overwritePrimaryTypesOfFoldersByDefault());
                 dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
                 stateCache.updatePackageStatus(vltPkg.getId(), FSPackageStatus.EXTRACTED);
             } else {

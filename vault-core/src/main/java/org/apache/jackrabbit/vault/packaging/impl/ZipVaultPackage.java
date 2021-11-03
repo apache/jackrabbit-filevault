@@ -162,15 +162,16 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws PackageException if an error during packaging occurs
      * @throws RepositoryException if a repository error during installation occurs.
      */
-    public void extract(Session session, ImportOptions opts, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrict) throws PackageException, RepositoryException {
-        extract(prepareExtract(session, opts, securityConfig, isStrict), null);
+    public void extract(Session session, ImportOptions opts, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig,
+            boolean isStrict, boolean isOverwritePrimaryTypesOfFolders) throws PackageException, RepositoryException {
+        extract(prepareExtract(session, opts, securityConfig, isStrict, isOverwritePrimaryTypesOfFolders), null);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public void extract(Session session, ImportOptions opts) throws RepositoryException, PackageException {
-        extract(session, opts, new AbstractPackageRegistry.SecurityConfig(null, null), false);
+        extract(session, opts, new AbstractPackageRegistry.SecurityConfig(null, null), false, true);
     }
 
     /**
@@ -191,7 +192,9 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws IllegalStateException if the package is not valid.
      * @return installation context
      */
-    protected InstallContextImpl prepareExtract(Session session, ImportOptions opts, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrictByDefault) throws PackageException, RepositoryException {
+    protected InstallContextImpl prepareExtract(Session session, ImportOptions opts,
+            @NotNull AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrictByDefault,
+            boolean overwritePrimaryTypesOfFoldersByDefault) throws PackageException, RepositoryException {
         if (!isValid()) {
             throw new IllegalStateException("Package not valid.");
         }
@@ -211,7 +214,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
             }
     
-            Importer importer = new Importer(opts, isStrictByDefault);
+            Importer importer = new Importer(opts, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault);
             AccessControlHandling ac = getACHandling();
             if (opts.getAccessControlHandling() == null) {
                 opts.setAccessControlHandling(ac);

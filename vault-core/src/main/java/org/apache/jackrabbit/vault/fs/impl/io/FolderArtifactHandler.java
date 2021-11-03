@@ -79,12 +79,11 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
     }
 
     /**
-     * Sets whether primary type of folders should be overwritten
+     * Sets whether primary node type of folders should be overwritten
      * 
-     * @param primary
-     *            type of folders should be overwritten set to "false" to
-     *            disable the default behavior of overwriting the primary node
-     *            type
+     * @param overwritePrimaryTypesOfFolders
+     *            set to "false" to disable the default behavior of overwriting
+     *            the primary node type of folders
      */
     public void setOverwritePrimaryTypesOfFolders(boolean overwritePrimaryTypesOfFolders) {
         this.overwritePrimaryTypesOfFolders = overwritePrimaryTypesOfFolders;

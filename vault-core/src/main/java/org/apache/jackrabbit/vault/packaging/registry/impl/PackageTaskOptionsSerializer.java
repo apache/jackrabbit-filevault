@@ -89,7 +89,7 @@ public class PackageTaskOptionsSerializer {
 
     public void saveImportOptions(XMLStreamWriter writer, ImportOptionsPackageTaskOption options) throws XMLStreamException {
         ImportOptions importOptions = options.getImportOptions();
-        writeOption(writer, TAG_IS_STRICT, Boolean.class, importOptions.isStrict());
+        writeOption(writer, TAG_IS_STRICT, Boolean.class, importOptions.isStrict(false));
         writeOption(writer, TAG_AC_HANDLING, AccessControlHandling.class, importOptions.getAccessControlHandling());
         writeOption(writer, TAG_CUG_HANDLING, AccessControlHandling.class, importOptions.getCugHandling());
         writeOption(writer, TAG_AUTO_SAVE_THRESHOLD, Integer.class, importOptions.getAutoSaveThreshold());

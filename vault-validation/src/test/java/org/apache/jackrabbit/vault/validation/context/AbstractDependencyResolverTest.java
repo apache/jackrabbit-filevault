@@ -14,8 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.validation.context;
 
-@Version("2.14.1")
-package org.apache.jackrabbit.vault.packaging;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-import org.osgi.annotation.versioning.Version;
+import org.apache.jackrabbit.vault.validation.context.AbstractDependencyResolver.MavenCoordinates;
+import org.junit.Assert;
+import org.junit.Test;
+
+public class AbstractDependencyResolverTest {
+
+    @Test
+    public void testUriToMavenCoordinates() throws URISyntaxException {
+        Assert.assertEquals(new MavenCoordinates("group1", "name1", null), MavenCoordinates.parse(new URI("maven", "group1:name1", null)));
+        Assert.assertEquals(new MavenCoordinates("group1", "name1", "1.0.0", "test", "myclassifier"), MavenCoordinates.parse(new URI("maven", "group1:name1:1.0.0:test:myclassifier", null)));
+    }
+
+}

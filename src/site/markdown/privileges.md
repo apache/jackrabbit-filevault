@@ -18,7 +18,7 @@
 Privileges
 ===========
 
-Packages can register custom [JCR privileges](https://docs.adobe.com/docs/en/spec/jcr/2.0/16_Access_Control_Management.html#16.2%20Privilege%20Discovery) during import by carrying a `META-INF/vault/privileges.xml` file. 
+Packages can register custom [JCR privileges](https://s.apache.org/jcr-2.0-spec/16_Access_Control_Management.html#16.2%20Privilege%20Discovery) during import by carrying a `META-INF/vault/privileges.xml` file. 
 
 ```xml
 <!DOCTYPE privileges [

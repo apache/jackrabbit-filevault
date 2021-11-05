@@ -45,6 +45,7 @@ import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.fs.io.JcrArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.codehaus.plexus.util.ExceptionUtils;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -385,7 +386,7 @@ public class ImportIT extends IntegrationTestBase {
 
     @Test
     // JCRVLT-557
-    public void testKeepNodeTypeOfFolderAggregate() throws IOException, RepositoryException, ConfigurationException {
+    public void testKeepNodeTypeForFolderAggregate() throws IOException, RepositoryException, ConfigurationException {
         // create nodes which are covered by a folder aggregate with type nt:unstructured
         Node rootNode = admin.getRootNode();
         Node testrootNode = rootNode.addNode("testroot", NodeType.NT_UNSTRUCTURED);
@@ -403,7 +404,7 @@ public class ImportIT extends IntegrationTestBase {
             // expected
         }
         // restore type of /testroot/myfolder
-        testrootNode.getNode("myfolder").setPrimaryType(NodeType.NT_UNSTRUCTURED);
+        testrootNode.getNode("myfolder").setPrimaryType("nt:unstructured"); // TODO: somehow expanded names do not work in Oak
         admin.save();
         // don't overwrite node types for folder aggregates (i.e. keep nt:unstructured instead of converting to nt:folder)
         opts.setOverwritePrimaryTypesOfFolders(false);
@@ -416,7 +417,7 @@ public class ImportIT extends IntegrationTestBase {
         admin.save();
         // Checking for node types
         // Behavior in 3.4.0: myfolder's node type covered by package folder aggregate is not touched
-        assertNodeHasPrimaryType("/testroot/myfolder", NodeType.NT_UNSTRUCTURED);
-        assertNodeHasPrimaryType("/testroot/myfolder/mychild", NodeType.NT_UNSTRUCTURED);
+        assertNodeHasPrimaryType("/testroot/myfolder", JcrConstants.NT_UNSTRUCTURED);
+        assertNodeHasPrimaryType("/testroot/myfolder/mychild", JcrConstants.NT_UNSTRUCTURED);
     }
 }

@@ -29,6 +29,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NodeType;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.User;
@@ -383,21 +384,39 @@ public class ImportIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testImplicitNodeType() throws IOException, RepositoryException, ConfigurationException {
+    // JCRVLT-557
+    public void testKeepNodeTypeOfFolderAggregate() throws IOException, RepositoryException, ConfigurationException {
+        // create nodes which are covered by a folder aggregate with type nt:unstructured
         Node rootNode = admin.getRootNode();
-        rootNode.addNode("testroot", "nt:unstructured");
+        Node testrootNode = rootNode.addNode("testroot", NodeType.NT_UNSTRUCTURED);
+        testrootNode.addNode("myfolder", NodeType.NT_UNSTRUCTURED);
         admin.save();
-        try (Archive archive = getFileArchive("/test-packages/test_implicit_definition.zip")) {
-            ImportOptions opts = getDefaultOptions();
-            opts.setOverwritePrimaryTypesOfFolders(false);
-            Importer importer = new Importer(opts);
+        // first try a regular installation (which should fail)
+        ImportOptions opts = getDefaultOptions();
+        Importer importer = new Importer(opts);
+        try (Archive archive = getFileArchive("/test-packages/test_nt_unstructured_below_folder_aggregate.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
+           // admin.save();
+            Assert.fail("Installing the package should fail as it tries to install an nt:unstructured node below an nt:folder node");
+        } catch (RepositoryException e) {
+            // expected
+        }
+        // restore type of /testroot/myfolder
+        testrootNode.getNode("myfolder").setPrimaryType(NodeType.NT_UNSTRUCTURED);
+        admin.save();
+        // don't overwrite node types for folder aggregates (i.e. keep nt:unstructured instead of converting to nt:folder)
+        opts.setOverwritePrimaryTypesOfFolders(false);
+        importer = new Importer(opts);
+        // now installation should succeed
+        try (Archive archive = getFileArchive("/test-packages/test_nt_unstructured_below_folder_aggregate.zip")) {
             archive.open(true);
             importer.run(archive, rootNode);
         }
         admin.save();
-        // Checking for inheritance/nodetype detection
-        // Behavior in 3.4.0: myfolder coming from package without any definition would be created as nt:unstructured
-        assertNodeHasPrimaryType("/testroot/myfolder", "nt:unstructured");
-        assertNodeHasPrimaryType("/testroot/myfolder/mychild", "nt:unstructured");
+        // Checking for node types
+        // Behavior in 3.4.0: myfolder's node type covered by package folder aggregate is not touched
+        assertNodeHasPrimaryType("/testroot/myfolder", NodeType.NT_UNSTRUCTURED);
+        assertNodeHasPrimaryType("/testroot/myfolder/mychild", NodeType.NT_UNSTRUCTURED);
     }
 }

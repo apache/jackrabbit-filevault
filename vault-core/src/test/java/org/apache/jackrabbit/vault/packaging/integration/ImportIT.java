@@ -403,8 +403,9 @@ public class ImportIT extends IntegrationTestBase {
         } catch (RepositoryException e) {
             // expected
         }
+        admin.refresh(false);
         // restore type of /testroot/myfolder
-        testrootNode.getNode("myfolder").setPrimaryType("nt:unstructured"); // TODO: somehow expanded names do not work in Oak
+        testrootNode.getNode("myfolder").setPrimaryType(JcrConstants.NT_UNSTRUCTURED/*NodeType.NT_UNSTRUCTURED*/); // TODO: somehow expanded names do not work in Oak (see https://issues.apache.org/jira/browse/OAK-9616)
         admin.save();
         // don't overwrite node types for folder aggregates (i.e. keep nt:unstructured instead of converting to nt:folder)
         opts.setOverwritePrimaryTypesOfFolders(false);

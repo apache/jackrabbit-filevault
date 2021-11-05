@@ -382,4 +382,22 @@ public class ImportIT extends IntegrationTestBase {
         }
     }
 
+    @Test
+    public void testImplicitNodeType() throws IOException, RepositoryException, ConfigurationException {
+        Node rootNode = admin.getRootNode();
+        rootNode.addNode("testroot", "nt:unstructured");
+        admin.save();
+        try (Archive archive = getFileArchive("/test-packages/test_implicit_definition.zip")) {
+            ImportOptions opts = getDefaultOptions();
+            opts.setOverwritePrimaryTypesOfFolders(false);
+            Importer importer = new Importer(opts);
+            archive.open(true);
+            importer.run(archive, rootNode);
+        }
+        admin.save();
+        // Checking for inheritance/nodetype detection
+        // Behavior in 3.4.0: myfolder coming from package without any definition would be created as nt:unstructured
+        assertNodeHasPrimaryType("/testroot/myfolder", "nt:unstructured");
+        assertNodeHasPrimaryType("/testroot/myfolder/mychild", "nt:unstructured");
+    }
 }

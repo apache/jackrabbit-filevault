@@ -36,8 +36,8 @@ Since version 3.5.2 ([JCRVLT-551](https://issues.apache.org/jira/browse/JCRVLT-5
 
 The import behavior of packages with conflicting ids can be tweaked with `ImportOptions.setIdConflictPolicy(...)`. For further details refer to its [javadoc][3]. The old behavior can be achieved with `IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID`.
 
-[1]: https://docs.adobe.com/content/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.8%20Referenceable%20Nodes
-[2]: https://docs.adobe.com/content/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.8.2%20Referential%20Integrity
+[1]: https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.8%20Referenceable%20Nodes
+[2]: https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.8.2%20Referential%20Integrity
 [3]: apidocs/org/apache/jackrabbit/vault/fs/api/IdConflictPolicy.html
 [4]: filter.html
-[5]: https://docs.adobe.com/content/docs/en/spec/jcr/2.0/11_Import.html#11.8.2%20Remove%20Existing%20Node
+[5]: https://s.apache.org/jcr-2.0-spec/11_Import.html#11.8.2%20Remove%20Existing%20Node

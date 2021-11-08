@@ -74,8 +74,8 @@ property-value := [ "{" property-type "}" ] ( value | "[" [ value { "," value } 
 ```
 
 If no type is specified, it defaults to [STRING][pt-string].
-As types all arguments accepted by [PropertyType.valueFromName(String)](https://docs.adobe.com/docs/en/spec/jsr170/javadocs/jcr-2.0/javax/jcr/PropertyType.html#valueFromName(java.lang.String)) are valid.
-This is all strings defined by the constants whose names start with `TYPENAME_` in [PropertyType](https://docs.adobe.com/docs/en/spec/jsr170/javadocs/jcr-2.0/javax/jcr/PropertyType.html) and `BinaryRef` for binary reference values (see below).
+As types all arguments accepted by [PropertyType.valueFromName(String)](https://s.apache.org/jcr-2.0-javadoc/javax/jcr/PropertyType.html#valueFromName(java.lang.String)) are valid.
+This is all strings defined by the constants whose names start with `TYPENAME_` in [PropertyType](https://s.apache.org/jcr-2.0-javadoc/javax/jcr/PropertyType.html) and `BinaryRef` for binary reference values (see below).
 
 Multi-value properties contain the values as comma-separated list enclosed by `[` and `]`. The special value `\0` must be used to for a singleton multi-value property containing only the empty string.
 
@@ -113,7 +113,7 @@ Please note, that this escaping only concerns the raw attribute value. If the va
 characters that cannot be used in XML attributes, like quotes `"`, the according [XML entities](https://www.w3.org/TR/xml/#dt-escape) need to be used.
 
 
-[jcr-docview]: https://docs.adobe.com/content/docs/en/spec/jcr/2.0/7_Export.html#7.3%20Document%20View
-[import-docview]: https://docs.adobe.com/content/docs/en/spec/jcr/2.0/11_Import.html#11.1%20Importing%20Document%20View
-[pt-string]: https://docs.adobe.com/docs/en/spec/jsr170/javadocs/jcr-2.0/javax/jcr/PropertyType.html#STRING
+[jcr-docview]: https://s.apache.org/jcr-2.0-spec/7_Export.html#7.3%20Document%20View
+[import-docview]: https://s.apache.org/jcr-2.0-spec/11_Import.html#11.1%20Importing%20Document%20View
+[pt-string]: https://s.apache.org/jcr-2.0-javadoc/javax/jcr/PropertyType.html#STRING
 [ref-binary]: https://jackrabbit.apache.org/oak/docs/apidocs/org/apache/jackrabbit/api/ReferenceBinary.html

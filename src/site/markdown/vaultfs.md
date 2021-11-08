@@ -331,5 +331,5 @@ Terminology
   type: **primary**, **file**, **binary** or **directory**
 
 [enhanceddocview]: docview.html
-[docview]: https://docs.adobe.com/content/docs/en/spec/jcr/2.0/7_Export.html#7.3%20Document%20View
-[sysview]: https://docs.adobe.com/content/docs/en/spec/jcr/2.0/7_Export.html#7.2%20System%20View
+[docview]: https://s.apache.org/jcr-2.0-spec/7_Export.html#7.3%20Document%20View
+[sysview]: https://s.apache.org/jcr-2.0-spec/7_Export.html#7.2%20System%20View

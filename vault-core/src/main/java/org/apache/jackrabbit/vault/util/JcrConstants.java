@@ -231,6 +231,7 @@ public interface JcrConstants {
      * Pseudo property jcr:score used with query results
      */
     public static final String JCR_SCORE = "jcr:score";
+
     /**
      * mix:lockable
      */

@@ -48,6 +48,7 @@ import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
+import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.PathMapping;
@@ -912,8 +913,12 @@ public class Importer {
                         aclManagement.clearACL(node.getParent());
                     }
                 } else {
-                    imp.onDeleted(info.path);
-                    node.remove();
+                    if (filter.getImportMode(info.path) == ImportMode.REPLACE) {
+                        imp.onDeleted(info.path);
+                        node.remove();
+                    } else {
+                        imp.onNop(info.path);
+                    }
                 }
             }
         } else if (info.artifacts.getPrimaryData() !=null && info.artifacts.size() == 1) {

@@ -297,6 +297,25 @@ public class ImportModeIT extends IntegrationTestBase {
         assertNodeExists("/testroot/merge_properties/jcr:content");
     }
 
+    @Test
+    public void testExistingNodesNotCoveredByArtifact() throws RepositoryException, IOException, PackageException {
+        Node parent = admin.getRootNode().addNode("testroot");
+        setUpNode(parent, "replace");
+        setUpNode(parent, "merge");
+        setUpNode(parent, "update");
+        setUpNode(parent, "merge_properties");
+        setUpNode(parent, "update_properties");
+        
+        admin.save();
+        extractVaultPackageStrict("/test-packages/import_modes_test_missing_artifacts.zip");
+        // node in repo removed with replace, not removed for all other import modes
+        assertNodeMissing("/testroot/replace");
+        assertNodeExists("/testroot/merge");
+        assertNodeExists("/testroot/update");
+        assertNodeExists("/testroot/merge_properties");
+        assertNodeExists("/testroot/update_properties");
+    }
+
     private void setUpNode(Node parent, String name) throws RepositoryException {
         Node node = parent.addNode(name);
         node.setProperty("propertyold", "old");

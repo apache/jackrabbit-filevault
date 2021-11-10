@@ -24,7 +24,7 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Test;
 
 
-public class MandatoryNode extends IntegrationTestBase {
+public class MandatoryNodeIT extends IntegrationTestBase {
  
     @Test
     public void testMultipleMandatoryChildNodesReplace()

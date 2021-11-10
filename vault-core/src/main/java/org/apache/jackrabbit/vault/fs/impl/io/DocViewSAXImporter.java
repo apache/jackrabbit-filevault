@@ -1269,8 +1269,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 // check if child is not protected
                                 if (child.getDefinition().isProtected()) {
                                     log.debug("Refuse to delete protected child node: {}", path);
-                                } else if (child.getDefinition().isMandatory() 
-                                        && !hasSiblingWithSameType(child.getParent(), child)) {
+                                } else if (child.getDefinition().isMandatory() && !hasSiblingWithSameType(child)) {
                                     log.debug("Refuse to delete mandatory child node: {}", path);
                                 } else {
                                     importInfo.onDeleted(path);
@@ -1299,7 +1298,9 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         }
     }
 
-    private boolean hasSiblingWithSameType(Node parent, Node child) throws RepositoryException {
+    private boolean hasSiblingWithSameType(Node child) throws RepositoryException {
+
+        Node parent = child.getParent();
 
         try {
             EffectiveNodeType ent = EffectiveNodeType.ofNode(parent);

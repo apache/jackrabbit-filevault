@@ -20,7 +20,6 @@ package org.apache.jackrabbit.vault.fs.impl.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Optional;
@@ -997,7 +997,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     }
                 }
             }
-            
+
             // add/modify properties contained in package
             if (setUnprotectedProperties(node, ni, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
                 updatedNode = node;
@@ -1043,7 +1043,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             AttributesImpl attrs = new AttributesImpl();
             attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", ni.name);
             handler.startElement(Name.NS_SV_URI, "node", "sv:node", attrs);
-    
+
             // check if SNS and a helper uuid if needed
             boolean addMixRef = false;
             if (!ni.label.equals(ni.name) && ni.uuid == null) {
@@ -1101,7 +1101,6 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 node.removeMixin(JcrConstants.MIX_REFERENCEABLE);
             }
             return node;
-    
         } catch (SAXException e) {
             Exception root = e.getException();
             if (root instanceof RepositoryException) {
@@ -1271,7 +1270,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 if (child.getDefinition().isProtected()) {
                                     log.debug("Refuse to delete protected child node: {}", path);
                                 } else if (child.getDefinition().isMandatory() 
-                                        && getNumChildrenWithType(child.getParent(), child) <= 1) {
+                                        && !hasSiblingWithSameType(child.getParent(), child)) {
                                     log.debug("Refuse to delete mandatory child node: {}", path);
                                 } else {
                                     importInfo.onDeleted(path);
@@ -1300,29 +1299,31 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         }
     }
 
-    private int getNumChildrenWithType(Node parent, Node child) throws RepositoryException {
+    private boolean hasSiblingWithSameType(Node parent, Node child) throws RepositoryException {
 
-        int count=0;
-       
-        NodeIterator iter = parent.getNodes();
+        try {
+            EffectiveNodeType ent = EffectiveNodeType.ofNode(parent);
+            String typeName = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType()).get().getName();
 
-        EffectiveNodeType ent = EffectiveNodeType.ofNode(parent); 
-        Optional<NodeDefinition> def = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
-        
-        while (iter.hasNext()) {
-            Node sibling = iter.nextNode();
-            Optional<NodeDefinition>  childDef = ent.getApplicableChildNodeDefinition(sibling.getName(), sibling.getPrimaryNodeType());
-
-            if(def.get().equals(childDef.get())) {
-                count++; 
-                if (count == 2) {
-                    break;
+            NodeIterator iter = parent.getNodes();
+            while (iter.hasNext()) {
+                Node sibling = iter.nextNode();
+                if (!sibling.isSame(child)) {
+                    Optional<NodeDefinition> childDef = ent.getApplicableChildNodeDefinition(sibling.getName(),
+                            sibling.getPrimaryNodeType());
+                    try {
+                        if (typeName.equals(childDef.get().getName())) {
+                            return true;
+                        }
+                    } catch (NoSuchElementException ignored) {
+                    }
                 }
             if(def.get().equals(childDef.get())) {
                 count++; 
             }
+        } catch (NoSuchElementException ignored) {
         }
-        return count;
+        return false;
     }
 
     /**

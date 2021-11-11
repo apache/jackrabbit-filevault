@@ -1328,8 +1328,6 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                         return true;
                     }
                 }
-            if(def.get().equals(childDef.get())) {
-                count++; 
             }
         }
         return false;

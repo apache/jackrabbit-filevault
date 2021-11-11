@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Optional;
@@ -1266,12 +1265,26 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                         } else {
                             if (wspFilter.getImportMode(path) == ImportMode.REPLACE) {
 
+                                boolean shouldRemoveChild = true;
                                 // check if child is not protected
                                 if (child.getDefinition().isProtected()) {
                                     log.debug("Refuse to delete protected child node: {}", path);
-                                } else if (child.getDefinition().isMandatory() && !hasSiblingWithSameType(child)) {
-                                    log.debug("Refuse to delete mandatory child node: {}", path);
-                                } else {
+                                    shouldRemoveChild = false;
+                                } else if (child.getDefinition().isMandatory()) {
+                                    // get relevant child node definition from parent's effective node type
+                                    EffectiveNodeType ent = EffectiveNodeType.ofNode(child.getParent());
+                                    Optional<NodeDefinition> childNodeDefinition = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
+                                    if (!childNodeDefinition.isPresent()) {
+                                        // this should never happen as then child.getDefinition().isMandatory() would have returned false in the first place...
+                                        throw new IllegalStateException("Could not find applicable child node definition for mandatory child node " + child.getPath());
+                                    } else {
+                                        if (!hasSiblingWithPrimaryTypesAndName(child, childNodeDefinition.get().getRequiredPrimaryTypes(), childNodeDefinition.get().getName())) {
+                                            log.debug("Refuse to delete mandatory child node: {}", path);
+                                            shouldRemoveChild = false;
+                                        }
+                                    }
+                                } 
+                                if (shouldRemoveChild) {
                                     importInfo.onDeleted(path);
                                     child.remove();
                                 }
@@ -1298,31 +1311,26 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         }
     }
 
-    private boolean hasSiblingWithSameType(Node child) throws RepositoryException {
-
-        Node parent = child.getParent();
-
-        try {
-            EffectiveNodeType ent = EffectiveNodeType.ofNode(parent);
-            String typeName = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType()).get().getName();
-
-            NodeIterator iter = parent.getNodes();
-            while (iter.hasNext()) {
-                Node sibling = iter.nextNode();
-                if (!sibling.isSame(child)) {
-                    Optional<NodeDefinition> childDef = ent.getApplicableChildNodeDefinition(sibling.getName(),
-                            sibling.getPrimaryNodeType());
-                    try {
-                        if (typeName.equals(childDef.get().getName())) {
-                            return true;
-                        }
-                    } catch (NoSuchElementException ignored) {
+    private boolean hasSiblingWithPrimaryTypesAndName(Node child, NodeType[] requiredPrimaryNodeTypes, String requiredName) throws RepositoryException {
+        NodeIterator iter = child.getParent().getNodes();
+        while (iter.hasNext()) {
+            Node sibling = iter.nextNode();
+            if (!sibling.isSame(child)) {
+                NodeType stype = sibling.getPrimaryNodeType();
+                boolean allmatch = true;
+                // check type: due to inheritance multiple primary node types need to be checked
+                for (NodeType requiredPrimaryNodeType : requiredPrimaryNodeTypes) {
+                    allmatch &= stype.isNodeType(requiredPrimaryNodeType.getName());
+                }
+                // check name
+                if (requiredName.equals("*") || requiredName.equals(child.getName())) {
+                    if (allmatch) {
+                        return true;
                     }
                 }
             if(def.get().equals(childDef.get())) {
                 count++; 
             }
-        } catch (NoSuchElementException ignored) {
         }
         return false;
     }

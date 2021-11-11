@@ -1301,26 +1301,30 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
     private boolean hasSiblingWithSameType(Node child) throws RepositoryException {
 
         Node parent = child.getParent();
+        EffectiveNodeType ent = EffectiveNodeType.ofNode(parent);
+        Optional<NodeDefinition> childDef = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
 
-        try {
-            EffectiveNodeType ent = EffectiveNodeType.ofNode(parent);
-            String typeName = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType()).get().getName();
+        if (!childDef.isPresent()) {
+            log.debug("no NodeDefinition for {}", child.getPath());
+        } else {
+            String typeName = childDef.get().getName();
 
             NodeIterator iter = parent.getNodes();
             while (iter.hasNext()) {
                 Node sibling = iter.nextNode();
                 if (!sibling.isSame(child)) {
-                    Optional<NodeDefinition> childDef = ent.getApplicableChildNodeDefinition(sibling.getName(),
+                    Optional<NodeDefinition> siblingDef = ent.getApplicableChildNodeDefinition(sibling.getName(),
                             sibling.getPrimaryNodeType());
-                    try {
-                        if (typeName.equals(childDef.get().getName())) {
+
+                    if (siblingDef.isPresent()) {
+                        if (typeName.equals(siblingDef.get().getName())) {
                             return true;
                         }
-                    } catch (NoSuchElementException ignored) {
+                    } else {
+                        log.debug("no NodeDefinition for {}", sibling.getPath());
                     }
                 }
             }
-        } catch (NoSuchElementException ignored) {
         }
         return false;
     }

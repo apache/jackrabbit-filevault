@@ -1311,22 +1311,19 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         }
     }
 
-    private boolean hasSiblingWithPrimaryTypesAndName(Node child, NodeType[] requiredPrimaryNodeTypes, String requiredName) throws RepositoryException {
-        NodeIterator iter = child.getParent().getNodes();
+    private boolean hasSiblingWithPrimaryTypesAndName(Node node, NodeType[] requiredPrimaryNodeTypes, String requiredName) throws RepositoryException {
+        NodeIterator iter = node.getParent().getNodes();
         while (iter.hasNext()) {
             Node sibling = iter.nextNode();
-            if (!sibling.isSame(child)) {
-                NodeType stype = sibling.getPrimaryNodeType();
-                boolean allmatch = true;
+            if (!sibling.isSame(node)) {
+                boolean allTypesMatch = true;
                 // check type: due to inheritance multiple primary node types need to be checked
                 for (NodeType requiredPrimaryNodeType : requiredPrimaryNodeTypes) {
-                    allmatch &= stype.isNodeType(requiredPrimaryNodeType.getName());
+                    allTypesMatch &= sibling.isNodeType(requiredPrimaryNodeType.getName());
                 }
                 // check name
-                if (requiredName.equals("*") || requiredName.equals(child.getName())) {
-                    if (allmatch) {
-                        return true;
-                    }
+                if (allTypesMatch && (requiredName.equals("*") || requiredName.equals(node.getName()))) {
+                    return true;
                 }
             }
         }

@@ -27,55 +27,36 @@ import org.junit.Test;
 public class MandatoryNodeIT extends IntegrationTestBase {
  
     @Test
-    public void testMultipleMandatoryChildNodesReplace()
+    public void testMandatoryChildNodesReplace()
             throws RepositoryException, IOException, PackageException {
 
+        // package set ups folder structure with mandatory child nodes
         extractVaultPackage("/test-packages/wcm-rollout-config-1.zip");
 
-        // test if nodes exist
+        assertNodeExists("/libs/msm/wcm/rolloutconfigs/activate/targetActivate");
+
+        assertNodeExists("/libs/msm/wcm/rolloutconfigs/deactivate/targetDeactivate");
+
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/contentUpdate");
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/contentCopy");
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/contentDelete");
 
+        // packages removes/replaces some mandatory child nodes
         extractVaultPackage("/test-packages/wcm-rollout-config-2.zip");
 
-        /*check if older nodes are replaced*/
+        // check if older nodes are replaced
         assertNodeMissing("/libs/msm/wcm/rolloutconfigs/default/contentUpdate");
         assertNodeMissing("/libs/msm/wcm/rolloutconfigs/default/contentDelete");
-        
-        /*check if newly added node exist*/
+        // check if newly added node exist
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/activate");
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/default/contentCopy");
-    }
 
-    @Test
-    public void testSingleMandatoryChildNodeReplace()
-            throws RepositoryException, IOException, PackageException {
-
-        extractVaultPackage("/test-packages/wcm-rollout-config-1.zip");
-
-        // test if only node exist
-        assertNodeExists("/libs/msm/wcm/rolloutconfigs/activate/targetActivate");
-        
-        extractVaultPackage("/test-packages/wcm-rollout-config-2.zip");
-
-        /* check if the only node is replaced */
+        // check if the only node is replaced
         assertNodeMissing("/libs/msm/wcm/rolloutconfigs/activate/targetActivate");
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/activate/targetNewActivate");
-    }
 
-    @Test
-    public void testSameMandatoryChildNodeNotReplaced()
-            throws RepositoryException, IOException, PackageException {
-
-        extractVaultPackage("/test-packages/wcm-rollout-config-1.zip");
-
-        // test if only node exist
-        assertNodeExists("/libs/msm/wcm/rolloutconfigs/deactivate/targetDeactivate");
-        
-        extractVaultPackage("/test-packages/wcm-rollout-config-2.zip");
-
-        /* check if the only node is replaced */
+        // check if the only node is still there (although not part of 2nd package)
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/deactivate/targetDeactivate");
     }
+
 }

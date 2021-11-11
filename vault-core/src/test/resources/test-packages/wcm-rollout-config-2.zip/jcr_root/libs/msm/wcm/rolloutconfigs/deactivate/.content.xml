@@ -3,5 +3,4 @@
     cq:trigger="deactivate"
     jcr:primaryType="cq:RolloutConfig"
     jcr:title="Deactivate on Blueprint deactivation">
-    <targetDeactivate jcr:primaryType="cq:LiveSyncAction"/>
 </jcr:root>

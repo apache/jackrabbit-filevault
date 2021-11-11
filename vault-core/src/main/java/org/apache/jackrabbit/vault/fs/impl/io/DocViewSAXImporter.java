@@ -1268,7 +1268,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 boolean shouldRemoveChild = true;
                                 // check if child is not protected
                                 if (child.getDefinition().isProtected()) {
-                                    log.debug("Refuse to delete protected child node: {}", path);
+                                    log.warn("Refuse to delete protected child node: {}", path);
                                     shouldRemoveChild = false;
                                 } else if (child.getDefinition().isMandatory()) {
                                     // get relevant child node definition from parent's effective node type
@@ -1279,7 +1279,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                         throw new IllegalStateException("Could not find applicable child node definition for mandatory child node " + child.getPath());
                                     } else {
                                         if (!hasSiblingWithPrimaryTypesAndName(child, childNodeDefinition.get().getRequiredPrimaryTypes(), childNodeDefinition.get().getName())) {
-                                            log.debug("Refuse to delete mandatory child node: {}", path);
+                                            log.warn("Refuse to delete mandatory child node: {} with no other matching siblings", path);
                                             shouldRemoveChild = false;
                                         }
                                     }

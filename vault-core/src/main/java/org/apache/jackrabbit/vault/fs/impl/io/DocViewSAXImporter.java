@@ -1270,7 +1270,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                 if (child.getDefinition().isProtected()) {
                                     log.warn("Refuse to delete protected child node: {}", path);
                                     shouldRemoveChild = false;
-                                } else if (child.getDefinition().isMandatory()) {
+                                    // check if child is mandatory (and not residual, https://s.apache.org/jcr-2.0-spec/2.0/3_Repository_Model.html#3.7.2.4%20Mandatory)
+                                } else if (child.getDefinition().isMandatory() && !child.getDefinition().getName().equals("*")) {
                                     // get relevant child node definition from parent's effective node type
                                     EffectiveNodeType ent = EffectiveNodeType.ofNode(child.getParent());
                                     Optional<NodeDefinition> childNodeDefinition = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
@@ -1279,7 +1280,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                                         throw new IllegalStateException("Could not find applicable child node definition for mandatory child node " + child.getPath());
                                     } else {
                                         if (!hasSiblingWithPrimaryTypesAndName(child, childNodeDefinition.get().getRequiredPrimaryTypes(), childNodeDefinition.get().getName())) {
-                                            log.warn("Refuse to delete mandatory child node: {} with no other matching siblings", path);
+                                            log.warn("Refuse to delete mandatory non-residual child node: {} with no other matching siblings", path);
                                             shouldRemoveChild = false;
                                         }
                                     }

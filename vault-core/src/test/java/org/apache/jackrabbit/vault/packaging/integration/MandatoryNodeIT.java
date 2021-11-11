@@ -19,16 +19,30 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.IOException;
 
+import javax.jcr.ItemExistsException;
+import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.version.VersionException;
+
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.junit.Assert;
 import org.junit.Test;
 
 
 public class MandatoryNodeIT extends IntegrationTestBase {
  
     @Test
-    public void testMandatoryChildNodesReplace()
+    public void testMandatoryResidualChildNodesReplace()
             throws RepositoryException, IOException, PackageException {
+
+        // some node types use both residual (name constraint = "*") and mandatory child nodes but according to
+        // JCR 2.0 (https://s.apache.org/jcr-2.0-spec/2.0/3_Repository_Model.html#3.7.2.4%20Mandatory)
+        // this is not allowed and is subsequently not enforced
 
         // package set ups folder structure with mandatory child nodes
         extractVaultPackage("/test-packages/wcm-rollout-config-1.zip");
@@ -55,8 +69,32 @@ public class MandatoryNodeIT extends IntegrationTestBase {
         assertNodeMissing("/libs/msm/wcm/rolloutconfigs/activate/targetActivate");
         assertNodeExists("/libs/msm/wcm/rolloutconfigs/activate/targetNewActivate");
 
-        // check if the only node is still there (although not part of 2nd package)
-        assertNodeExists("/libs/msm/wcm/rolloutconfigs/deactivate/targetDeactivate");
+        // check if the only node is removed
+        assertNodeMissing("/libs/msm/wcm/rolloutconfigs/deactivate/targetDeactivate");
     }
 
+    @Test
+    public void testMandatoryNonResidualChildNodesReplace() throws ItemExistsException, PathNotFoundException, NoSuchNodeTypeException, LockException, VersionException, ConstraintViolationException, RepositoryException, IOException, PackageException {
+        Node testnode = admin.getRootNode().addNode("testroot", NodeType.NT_FILE); // mandatory child node: jcr:content
+        try {
+            admin.save();
+            Assert.fail("Saving a node with a missing mandatory (but non-residual) child node must fail");
+        } catch (ConstraintViolationException e) {
+            // expected
+        }
+        testnode.addNode("jcr:content", "nt:unstructured"); 
+        admin.save();
+        
+        assertNodeExists("/testroot/jcr:content");
+        
+        // package tries to delete mandatory child node
+        try {
+            extractVaultPackage("/test-packages/mandatory-non-residual-childnode.zip");
+            Assert.fail("Deleting mandatory (but non-residual) child node must fail");
+        } catch (ConstraintViolationException e) {
+            // expected
+            admin.refresh(false);
+        }
+        assertNodeExists("/testroot/jcr:content");
+    }
 }

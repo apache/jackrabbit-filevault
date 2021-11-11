@@ -1264,11 +1264,14 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                             }
                         } else {
                             if (wspFilter.getImportMode(path) == ImportMode.REPLACE) {
-
+                                EffectiveNodeType ent = EffectiveNodeType.ofNode(child.getParent());
+                                Optional<NodeDefinition> nd = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
+                                // TODO: consider case of nd not being present
                                 // check if child is not protected
                                 if (child.getDefinition().isProtected()) {
                                     log.debug("Refuse to delete protected child node: {}", path);
-                                } else if (child.getDefinition().isMandatory() && !hasSiblingWithSameType(child)) {
+                                } else if (child.getDefinition().isMandatory()
+                                        && !hasSiblingsWithRequiredTypes(child, nd.get().getRequiredPrimaryTypeNames())) {
                                     log.debug("Refuse to delete mandatory child node: {}", path);
                                 } else {
                                     importInfo.onDeleted(path);
@@ -1297,31 +1300,21 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         }
     }
 
-    private boolean hasSiblingWithSameType(Node child) throws RepositoryException {
+    private boolean hasSiblingsWithRequiredTypes(Node child, String[] requiredPrimaryTypes) throws RepositoryException {
 
         Node parent = child.getParent();
-        EffectiveNodeType ent = EffectiveNodeType.ofNode(parent);
-        Optional<NodeDefinition> childDef = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
+        NodeIterator iter = parent.getNodes();
 
-        if (!childDef.isPresent()) {
-            log.debug("no NodeDefinition for {}", child.getPath());
-        } else {
-            String typeName = childDef.get().getDeclaringNodeType().getName();
-
-            NodeIterator iter = parent.getNodes();
-            while (iter.hasNext()) {
-                Node sibling = iter.nextNode();
-                if (!sibling.isSame(child)) {
-                    Optional<NodeDefinition> siblingDef = ent.getApplicableChildNodeDefinition(sibling.getName(),
-                            sibling.getPrimaryNodeType());
-
-                    if (siblingDef.isPresent()) {
-                        if (typeName.equals(siblingDef.get().getDeclaringNodeType().getName())) {
-                            return true;
-                        }
-                    } else {
-                        log.debug("no NodeDefinition for {}", sibling.getPath());
-                    }
+        while (iter.hasNext()) {
+            Node sibling = iter.nextNode();
+            if (!sibling.isSame(child)) {
+                NodeType stype = sibling.getPrimaryNodeType();
+                boolean allmatch = true;
+                for (String pt : requiredPrimaryTypes) {
+                    allmatch &= stype.isNodeType(pt);
+                }
+                if (allmatch) {
+                    return true;
                 }
             }
         }

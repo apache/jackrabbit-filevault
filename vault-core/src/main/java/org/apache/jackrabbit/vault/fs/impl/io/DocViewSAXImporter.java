@@ -1306,7 +1306,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         if (!childDef.isPresent()) {
             log.debug("no NodeDefinition for {}", child.getPath());
         } else {
-            String typeName = childDef.get().getName();
+            String typeName = childDef.get().getDeclaringNodeType().getName();
 
             NodeIterator iter = parent.getNodes();
             while (iter.hasNext()) {
@@ -1316,7 +1316,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                             sibling.getPrimaryNodeType());
 
                     if (siblingDef.isPresent()) {
-                        if (typeName.equals(siblingDef.get().getName())) {
+                        if (typeName.equals(siblingDef.get().getDeclaringNodeType().getName())) {
                             return true;
                         }
                     } else {

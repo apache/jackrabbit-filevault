@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Optional;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Item;
@@ -46,6 +47,7 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
@@ -994,7 +996,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                     }
                 }
             }
-            
+
             // add/modify properties contained in package
             if (setUnprotectedProperties(node, ni, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
                 updatedNode = node;
@@ -1040,7 +1042,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             AttributesImpl attrs = new AttributesImpl();
             attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", ni.name);
             handler.startElement(Name.NS_SV_URI, "node", "sv:node", attrs);
-    
+
             // check if SNS and a helper uuid if needed
             boolean addMixRef = false;
             if (!ni.label.equals(ni.name) && ni.uuid == null) {
@@ -1098,7 +1100,6 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 node.removeMixin(JcrConstants.MIX_REFERENCEABLE);
             }
             return node;
-    
         } catch (SAXException e) {
             Exception root = e.getException();
             if (root instanceof RepositoryException) {
@@ -1263,13 +1264,29 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                             }
                         } else {
                             if (wspFilter.getImportMode(path) == ImportMode.REPLACE) {
-                                importInfo.onDeleted(path);
+
+                                boolean shouldRemoveChild = true;
                                 // check if child is not protected
                                 if (child.getDefinition().isProtected()) {
-                                    log.debug("Refuse to delete protected child node: {}", path);
-                                } else if (child.getDefinition().isMandatory()) {
-                                    log.debug("Refuse to delete mandatory child node: {}", path);
-                                } else {
+                                    log.warn("Refuse to delete protected child node: {}", path);
+                                    shouldRemoveChild = false;
+                                    // check if child is mandatory (and not residual, https://s.apache.org/jcr-2.0-spec/2.0/3_Repository_Model.html#3.7.2.4%20Mandatory)
+                                } else if (child.getDefinition().isMandatory() && !child.getDefinition().getName().equals("*")) {
+                                    // get relevant child node definition from parent's effective node type
+                                    EffectiveNodeType ent = EffectiveNodeType.ofNode(child.getParent());
+                                    Optional<NodeDefinition> childNodeDefinition = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
+                                    if (!childNodeDefinition.isPresent()) {
+                                        // this should never happen as then child.getDefinition().isMandatory() would have returned false in the first place...
+                                        throw new IllegalStateException("Could not find applicable child node definition for mandatory child node " + child.getPath());
+                                    } else {
+                                        if (!hasSiblingWithPrimaryTypesAndName(child, childNodeDefinition.get().getRequiredPrimaryTypes(), childNodeDefinition.get().getName())) {
+                                            log.warn("Refuse to delete mandatory non-residual child node: {} with no other matching siblings", path);
+                                            shouldRemoveChild = false;
+                                        }
+                                    }
+                                } 
+                                if (shouldRemoveChild) {
+                                    importInfo.onDeleted(path);
                                     child.remove();
                                 }
                             }
@@ -1293,6 +1310,25 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         } catch (RepositoryException e) {
             throw new SAXException(e);
         }
+    }
+
+    private boolean hasSiblingWithPrimaryTypesAndName(Node node, NodeType[] requiredPrimaryNodeTypes, String requiredName) throws RepositoryException {
+        NodeIterator iter = node.getParent().getNodes();
+        while (iter.hasNext()) {
+            Node sibling = iter.nextNode();
+            if (!sibling.isSame(node)) {
+                boolean allTypesMatch = true;
+                // check type: due to inheritance multiple primary node types need to be checked
+                for (NodeType requiredPrimaryNodeType : requiredPrimaryNodeTypes) {
+                    allTypesMatch &= sibling.isNodeType(requiredPrimaryNodeType.getName());
+                }
+                // check name
+                if (allTypesMatch && (requiredName.equals("*") || requiredName.equals(node.getName()))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

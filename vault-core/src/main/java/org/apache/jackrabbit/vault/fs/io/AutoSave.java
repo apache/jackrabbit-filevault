@@ -168,8 +168,7 @@ public class AutoSave {
                 log.error(msg);
                 throw new RepositoryException(msg);
             }
-
-            if (!saveWithBackoff(session)) {
+            if (!saveWithBackoff(session, isIntermediate)) {
                 // either retry after some more nodes have been modified or after throttle 
                 // retry with next save() after another 10 nodes have been modified
                 failedSaveThreshold = 10;
@@ -186,7 +185,7 @@ public class AutoSave {
      * @return {@code true} in case was successful or {@code false} in case it failed with a potentially recoverable {@link RepositoryException}
      * @throws RepositoryException in case of unrecoverable exceptions
      */
-    private boolean saveWithBackoff(@NotNull Session session) throws RepositoryException {
+    private boolean saveWithBackoff(@NotNull Session session, boolean isIntermediate) throws RepositoryException {
         try {
             if (dryRun) {
                 session.refresh(false);
@@ -201,7 +200,7 @@ public class AutoSave {
                 debugSaveCount++;
             }
         } catch (RepositoryException e) {
-            if (isPotentiallyTransientException(e)) {
+            if (isPotentiallyTransientException(e) && isIntermediate) {
                 log.warn("could not auto-save due to potentially transient exception {}", e.getCause());
                 log.debug("auto save exception", e);
                 return false;

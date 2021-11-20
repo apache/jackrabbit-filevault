@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.5.4
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.5.6
 
 Introduction
 ------------
@@ -8,6 +8,26 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.5.6
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.5.6
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
+
+Bug
+    * [JCRVLT-549] - node cannot be deleted if it's a residual mandatory child node
+    * [JCRVLT-557] - Breaking change in behavior for implict nodetype calculation
+    * [JCRVLT-564] - jackrabbit-packagetype validation fails for content package with .cfg.json OSGi configurations
+    * [JCRVLT-565] - CrossPackageDependenciesIT.testCrossDependency() fails intermittently
+    * [JCRVLT-569] - Import mode "MERGE" and "MERGE_PROPERTIES" still remove properties during import
+Improvement
+    * [JCRVLT-530] - Add Jenkins build automatically deploying SNAPSHOTs
+    * [JCRVLT-531] - InstallHookProcessorImpl leaves orphan tmp files
+    * [JCRVLT-562] - Build with Java 17
+    * [JCRVLT-567] - Move ValidationContext implementation to validation module and export them
+    * [JCRVLT-570] - Use s.apache.org redirects for JCR specs/javadocs
 
 Changes in Jackrabbit FileVault 3.5.4
 --------------------------------------

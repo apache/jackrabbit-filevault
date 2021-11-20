@@ -25,7 +25,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.5.5-SNAPSHOT</version>
+        <version>3.5.7-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -35,7 +35,7 @@
     <name>Apache Jackrabbit FileVault Diff (Diff utilities)</name>
     <description>Provides Classes for diff and diff3.
     </description>
-    <version>3.5.5-SNAPSHOT</version>
+    <version>3.5.7-SNAPSHOT</version>
 
     <!-- ====================================================================== -->
     <!-- D E P E N D E N C I E S                                                -->

@@ -31,7 +31,7 @@
     <!-- ====================================================================== -->
     <groupId>org.apache.jackrabbit.vault</groupId>
     <artifactId>parent</artifactId>
-    <version>3.5.6</version>
+    <version>3.5.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Apache Jackrabbit FileVault (Parent Project)</name>
@@ -59,7 +59,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <surefire.version>3.0.0-M5</surefire.version>
         <sling.url>http://localhost:4502</sling.url>
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
-        <project.build.outputTimestamp>2021-11-22T09:07:06Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2021-11-22T09:14:48Z</project.build.outputTimestamp>
     </properties>
 
     <!-- ====================================================================== -->
@@ -68,12 +68,6 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     <!-- using adjusted inheritance rules: https://issues.apache.org/jira/browse/MNG-6059 
     TODO: this block gets removed with each release https://issues.apache.org/jira/browse/MRELEASE-1053
     -->
-    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="true">
-        <connection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</connection>
-        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</developerConnection>
-        <url>https://github.com/apache/jackrabbit-filevault/tree/${project.scm.tag}</url>
-        <tag>jackrabbit-filevault-3.5.6</tag>
-    </scm>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  I N F O                                                 -->

@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>parent/pom.xml</relativePath>
-        <version>3.5.6</version>
+        <version>3.5.5-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -53,7 +53,7 @@
     </modules>
 
     <properties>
-        <project.build.outputTimestamp>2021-11-22T10:41:11Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2021-09-29T14:12:05Z</project.build.outputTimestamp>
     </properties>
 
     <distributionManagement>
@@ -340,8 +340,4 @@ file://${basedir}/target/vote.txt
             </build>
         </profile>
     </profiles>
-
-  <scm>
-    <tag>jackrabbit-filevault-3.5.6</tag>
-  </scm>
 </project>

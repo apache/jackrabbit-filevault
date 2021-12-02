@@ -126,8 +126,9 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
     public @Nullable Collection<ValidationMessage> done() {
         // check if questionable nodes are parents of valid nodes
         List<NodeContext> invalidNodes = potentiallyDisallowedContainerNodes.stream().filter(
-                s -> validContainerNodePaths.stream().noneMatch(
-                        p -> p.startsWith(s.getNodePath() + "/")))
+                s -> validContainerNodePaths.stream().noneMatch(p ->
+                    p.startsWith(s.getNodePath() + "/") ||
+                    p.equals(s.getNodePath())))
                 .collect(Collectors.toList());
         if (!invalidNodes.isEmpty()) {
             return invalidNodes.stream().map(

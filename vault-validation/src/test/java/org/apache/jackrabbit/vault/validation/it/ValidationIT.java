@@ -18,9 +18,12 @@ package org.apache.jackrabbit.vault.validation.it;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
+import org.apache.jackrabbit.vault.validation.impl.util.ValidatorSettingsImpl;
+import org.apache.jackrabbit.vault.validation.spi.impl.nodetype.NodeTypeValidatorFactory;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Test;
@@ -28,7 +31,13 @@ import org.junit.Test;
 public class ValidationIT extends AbstractValidationIT {
 
     @Test
-    public void testPackageWithNoValidationIssues() throws URISyntaxException, IOException, ConfigurationException {
-        MatcherAssert.assertThat(validatePackageFolder("/no-validation-issue-package"), new IsEmptyCollection<ValidationViolation>());
+    public void testApplicationPackageWithNoValidationIssues() throws URISyntaxException, IOException, ConfigurationException {
+        MatcherAssert.assertThat(validatePackageFolder("/valid-packages/application-package"), new IsEmptyCollection<ValidationViolation>());
+    }
+
+    @Test
+    public void testContainerPackageWithNoValidationIssues() throws URISyntaxException, IOException, ConfigurationException {
+        ValidatorSettingsImpl nodetypeValidatorSettings = new ValidatorSettingsImpl(NodeTypeValidatorFactory.OPTION_CNDS, "tccl:valid-packages/container-package/META-INF/vault/nodetypes.cnd");
+        MatcherAssert.assertThat(validatePackageFolder("/valid-packages/container-package", Collections.singletonMap("jackrabbit-nodetypes", nodetypeValidatorSettings)), new IsEmptyCollection<ValidationViolation>());
     }
 }

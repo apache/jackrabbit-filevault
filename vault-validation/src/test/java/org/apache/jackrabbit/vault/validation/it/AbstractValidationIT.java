@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,7 +39,9 @@ import org.apache.jackrabbit.vault.validation.ValidationExecutorFactory;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,21 +51,32 @@ public abstract class AbstractValidationIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractValidationIT.class);
 
     public @NotNull Collection<ValidationViolation> validatePackageFolder(String resourceName) throws URISyntaxException, IOException, ConfigurationException {
+        return validatePackageFolder(resourceName, Collections.emptyMap());
+    }
+
+    public @NotNull Collection<ValidationViolation> validatePackageFolder(String resourceName, Map<String, ? extends ValidatorSettings> validatorsSettings) throws URISyntaxException, IOException, ConfigurationException {
         URL resourceUrl = AbstractValidationIT.class.getResource(resourceName);
         if (resourceUrl == null) {
-            throw new IllegalArgumentException("Could not find resource with name" + resourceName);
+            throw new IllegalArgumentException("Could not find resource with name " + resourceName);
         }
         Path path = Paths.get(resourceUrl.toURI());
-        Collection<ValidationViolation> violations = validatePackageFolder(path);
+        Collection<ValidationViolation> violations = validatePackageFolder(path, validatorsSettings);
         violations = violations.stream().filter(v -> v.getSeverity().ordinal() > ValidationMessageSeverity.INFO.ordinal()).collect(Collectors.toList());
         violations.forEach(v -> LOGGER.info(v.toString()));
         return violations;
     }
 
     public @NotNull Collection<ValidationViolation> validatePackageFolder(Path rootPath) throws IOException, ConfigurationException {
+        return validatePackageFolder(rootPath, Collections.emptyMap());
+    }
+
+    public @NotNull Collection<ValidationViolation> validatePackageFolder(Path rootPath, Map<String, ? extends ValidatorSettings> validatorsSettings) throws IOException, ConfigurationException {
         ValidationExecutorFactory executorFactory = new ValidationExecutorFactory(Thread.currentThread().getContextClassLoader());
         ValidationContext context = new PackageFolderValidationContext(rootPath);
-        ValidationExecutor executor = executorFactory.createValidationExecutor(context, false, false, Collections.emptyMap());
+        ValidationExecutor executor = executorFactory.createValidationExecutor(context, false, false, validatorsSettings);
+        if (executor == null) {
+            Assert.fail("No validator services found in current thread's context class loader");
+        }
         return validatePackageFolder(executor, rootPath);
     }
 
@@ -79,6 +93,7 @@ public abstract class AbstractValidationIT {
         } catch (UncheckedIOException e) {
             throw e.getCause();
         }
+        violations.addAll(executor.done());
         return violations;
     }
 

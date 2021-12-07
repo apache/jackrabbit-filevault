@@ -119,6 +119,7 @@ public class PackageTypeValidatorTest {
         // validate sub packages of type Content
         PackageTypeValidator subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_IMMUTABLE_ROOT_NODE_NAMES, parentContainerContext);
         MatcherAssert.assertThat(subPackageValidator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
 
         // validate sling:OsgiConfig node
         NodeContext context = new NodeContextImpl("/content/config/someconfigpid", Paths.get("content", "config", "someconfigpid.xml"), Paths.get(""));
@@ -134,6 +135,7 @@ public class PackageTypeValidatorTest {
                 context,
                 true),
                 AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
         
         // validate sub packages of type Application
         subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, false, PackageType.APPLICATION, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_IMMUTABLE_ROOT_NODE_NAMES, parentContainerContext);
@@ -206,6 +208,7 @@ public class PackageTypeValidatorTest {
                 context,
                 true),
                 AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
 
         // make sure no dependencies
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTAINER);

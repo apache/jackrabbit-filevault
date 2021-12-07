@@ -19,7 +19,7 @@
 <properties>
 <comment>FileVault Package Properties</comment>
 <entry key="createdBy">admin</entry>
-<entry key="name">mode_ac_test_a</entry>
+<entry key="name">valid-container-package</entry>
 <entry key="lastModified">2011-11-15T09:43:22.972+01:00</entry>
 <entry key="lastModifiedBy">admin</entry>
 <entry key="created">2011-11-15T09:43:22.993+01:00</entry>
@@ -31,6 +31,6 @@
 <entry key="lastWrapped">2011-11-15T09:43:22.972+01:00</entry>
 <entry key="group"/>
 <entry key="lastWrappedBy">admin</entry>
-<entry key="acHandling">overwrite</entry>
-<entry key="packageType">application</entry>
+<entry key="acHandling">ignore</entry>
+<entry key="packageType">container</entry>
 </properties>

@@ -46,7 +46,6 @@ import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.AbstractVaultFsConfig;
-import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ExportRoot;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
@@ -151,10 +150,9 @@ public class VaultFsApp extends AbstractApplication {
                 confCredsProvider.setDefaultCredentials(getProperty(KEY_DEFAULT_CREDS));
             }
             File cwd = getPlatformFile("", true).getCanonicalFile();
-            return new VltContext(cwd, localFile, repProvider, credentialsStore);
+            ConnectionOptions options = ConnectionOptions.fromServiceFactoryParameters(getEnv());
+            return new VltContext(cwd, localFile, repProvider, credentialsStore, System.out, options);
         } catch (IOException e) {
-            throw new ExecutionException(e);
-        } catch (ConfigurationException e) {
             throw new ExecutionException(e);
         }
     }

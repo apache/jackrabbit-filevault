@@ -61,7 +61,8 @@
                     <windowsScriptTemplate>${basedir}/src/main/appassembler/windows-template.bat</windowsScriptTemplate>
                     <repositoryLayout>flat</repositoryLayout>
                     <repositoryName>lib</repositoryName>
-                    <includeConfigurationDirectoryInClasspath>false</includeConfigurationDirectoryInClasspath>
+                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+                    <copyConfigurationDirectory>true</copyConfigurationDirectory>
                     <extraJvmArguments>-Xms500m -Xmx500m</extraJvmArguments>
                     <programs>
                         <program>
@@ -162,21 +163,16 @@
             <scope>compile</scope>
         </dependency>
 
-        <!-- SLF4j / Log4j -->
+        <!-- SLF4j / Logback -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <scope>compile</scope>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.6</version>
         </dependency>
     </dependencies>
 </project>

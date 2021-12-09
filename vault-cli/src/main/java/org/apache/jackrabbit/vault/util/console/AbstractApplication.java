@@ -36,10 +36,13 @@ import org.apache.commons.cli2.commandline.Parser;
 import org.apache.commons.cli2.option.Command;
 import org.apache.commons.cli2.util.HelpFormatter;
 import org.apache.jackrabbit.vault.util.console.util.CliHelpFormatter;
-import org.apache.jackrabbit.vault.util.console.util.Log4JConfig;
 import org.apache.jackrabbit.vault.util.console.util.PomProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.core.util.StatusPrinter;
 
 /**
  * {@code Console}...
@@ -50,8 +53,6 @@ public abstract class AbstractApplication {
      * the default logger
      */
     static final Logger log = LoggerFactory.getLogger(AbstractApplication.class);
-
-    private static final String LOG4J_PROPERTIES = "/org/apache/jackrabbit/vault/util/console/log4j.properties";
 
     public static final String DEFAULT_CONF_FILENAME = "console.properties";
 
@@ -191,7 +192,7 @@ public abstract class AbstractApplication {
         optLogLevel =
                 obuilder
                         .withLongName("log-level")
-                        .withDescription("the log4j log level")
+                        .withDescription("the logback log level")
                         .withArgument(abuilder
                                 .withName("level")
                                 .withMaximum(1)
@@ -221,18 +222,7 @@ public abstract class AbstractApplication {
                 "[${" + KEY_USER + "}@${" + KEY_HOST + "} ${" + KEY_PATH  +"}]$ ");
     }
 
-    protected void initLogging() {
-        Log4JConfig.init(LOG4J_PROPERTIES);
-    }
-
     protected void run(String[] args) {
-        // setup logging
-        try {
-            initLogging();
-        } catch (Throwable e) {
-            System.err.println("Error while initializing logging: " + e);
-        }
-
         // setup and start
         init();
 
@@ -246,7 +236,10 @@ public abstract class AbstractApplication {
                 logLevel = (String) cl.getValue(optLogLevel);
             }
             if (logLevel != null) {
-                Log4JConfig.setLevel(logLevel);
+                LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+                // overwrite level of configuration file
+                ch.qos.logback.classic.Logger rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME);
+                rootLogger.setLevel(Level.toLevel(logLevel));
             }
             prepare(cl);
             execute(cl);
@@ -261,9 +254,13 @@ public abstract class AbstractApplication {
 
     public void setLogLevel(String level) {
         try {
-            Log4JConfig.setLevel(level);
+            LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+            // overwrite level of configuration file
+            ch.qos.logback.classic.Logger rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME);
+            Level logLevel = Level.toLevel(level);
+            rootLogger.setLevel(Level.toLevel(level));
             getEnv().setProperty(KEY_LOGLEVEL, level);
-            System.out.println("Log level set to '" + Log4JConfig.getLevel() + "'");
+            System.out.println("Log level set to '" + logLevel + "'");
         } catch (Throwable e) {
             System.err.println("Error while setting log level: " + e);
         }

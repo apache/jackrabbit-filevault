@@ -66,20 +66,20 @@ goto Win9xApp
 set SAVEDIR=%CD%
 %0\
 cd %0\..\.. 
-set VLT_HOME=%CD%
+set BASEDIR=%CD%
 cd %SAVEDIR%
 set SAVE_DIR=
 goto repoSetup
 
 :WinNTGetScriptDir
-set VLT_HOME=%~dp0\..
+set BASEDIR=%~dp0\..
 
 :repoSetup
 #ENV_SETUP#
 
 if "%JAVACMD%"=="" set JAVACMD=#JAVA_BINARY#
 
-if "%REPO%"=="" set REPO=%VLT_HOME%\#REPO#
+if "%REPO%"=="" set REPO=%BASEDIR%\#REPO#
 
 set CLASSPATH=#CLASSPATH#
 goto endInit
@@ -87,7 +87,7 @@ goto endInit
 @REM Reaching here means variables are defined and arguments have been captured
 :endInit
 
-%JAVACMD% %VLT_OPTS% #EXTRA_JVM_ARGUMENTS# -classpath %CLASSPATH_PREFIX%;%CLASSPATH% -Dapp.name="#APP_NAME#" -Dapp.repo="%REPO%" -Dapp.home="%VLT_HOME%" -Dvlt.home="%VLT_HOME%" #MAINCLASS# #APP_ARGUMENTS#%CMD_LINE_ARGS%
+%JAVACMD% %VLT_OPTS% #EXTRA_JVM_ARGUMENTS# -classpath %CLASSPATH_PREFIX%;%CLASSPATH% -Dapp.name="#APP_NAME#" -Dapp.repo="%REPO%" -Dapp.home="%BASEDIR%" -Dvlt.home="%BASEDIR%" #MAINCLASS# #APP_ARGUMENTS#%CMD_LINE_ARGS%
 if ERRORLEVEL 1 goto error
 goto end
 

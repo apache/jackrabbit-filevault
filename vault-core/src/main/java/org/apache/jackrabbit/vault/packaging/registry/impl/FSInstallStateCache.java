@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap;
@@ -30,6 +31,8 @@ import java.util.stream.Stream;
 
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Persisted cache of all {@link FSInstallState} objects for all packages in a registry.
@@ -38,6 +41,8 @@ import org.jetbrains.annotations.NotNull;
  * Is thread-safe.
  */
 class FSInstallStateCache extends AbstractMap<PackageId, FSInstallState> {
+
+    private static final Logger log = LoggerFactory.getLogger(FSInstallStateCache.class);
 
     /**
      * Extension for metadata files
@@ -55,8 +60,13 @@ class FSInstallStateCache extends AbstractMap<PackageId, FSInstallState> {
     private final Path homeDir;
 
     public FSInstallStateCache(Path homeDir) throws IOException {
-        this.homeDir = homeDir;
-        Files.createDirectories(homeDir.toRealPath());
+        try {
+            this.homeDir = homeDir;
+            Files.createDirectories(homeDir.toRealPath());
+        } catch (FileAlreadyExistsException ex) {
+            log.error("on createDirectories for " + homeDir + " (real path: " + homeDir.toRealPath() + ")", ex);
+            throw ex;
+        }
     }
 
     /**

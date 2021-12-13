@@ -29,12 +29,12 @@ The console tool is called `vlt` and has the following usage:
 
 	$vlt --help
     
-	----------------------------------------------------------------------------------------------------------------------------------
-	Jackrabbit FileVault [version 3.4.5] copyright 2013-2020 by Apache Software Foundation. See LICENSE.txt for more information.
-	----------------------------------------------------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------------------------------------------------------
+	Jackrabbit FileVault [version 3.5.7-SNAPSHOT] copyright 2013-2021 by Apache Software Foundation. See LICENSE.txt for more information.
+	----------------------------------------------------------------------------------------------------------------------------------------
 	Usage:
 	  vlt [options] <command> [arg1 [arg2 [arg3] ..]]
-	----------------------------------------------------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------------------------------------------------------
 	
 	Global options:
 	  -Xjcrlog <arg>                   Extended JcrLog options (omit argument for help)
@@ -50,14 +50,13 @@ The console tool is called `vlt` and has the following usage:
 	  --socketTimeoutMs <arg>          The socket timeout in milliseconds.
 	  --proxyHost <arg>                The host of the proxy to use.
 	  --proxyPort <arg>                The port where the proxy is running (requires proxyHost as well).
-	  --proxyProtocol <arg>            The protocol for which to use the proxy (requires proxyHost as well). If not set proxy is used
-	                                   for both HTTP and HTTPS.
+	  --proxyProtocol <arg>            The protocol for which to use the proxy (requires proxyHost as well). If not set proxy is used for both HTTP and HTTPS.
 	  --proxyUsername <arg>            The username to use for authentication at the proxy (requires proxyHost as well).
 	  --proxyPassword <arg>            The password to use for authentication at the proxy (requires proxyUsername as well)
 	  -v (--verbose)                   verbose output
 	  -q (--quiet)                     print as little as possible
 	  --version                        print the version information and exit
-	  --log-level <level>              the log4j log level
+	  --log-level <level>              the logback log level
 	  -h (--help) <command>            print this help
 	Commands:
 	  export                           Export the Vault filesystem
@@ -79,7 +78,7 @@ The console tool is called `vlt` and has the following usage:
 	  sync                             Control vault sync service
 	  format                           Formats vault docview files.
 	  console                          Run an interactive console
-	----------------------------------------------------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------------------------------------------------------
 
 
 Checkout
@@ -93,6 +92,12 @@ _todo_
 Adding / Removing Files
 -----------------------
 _todo_
+
+Logging
+---------
+`vlt` uses [logback](http://logback.qos.ch/) for logging. To adjust the logging configuration you can either use the
+cli option `--log-level <level>` or edit the [logback xml configuration](http://logback.qos.ch/manual/configuration.html) 
+at `etc/logback.xml` for more granular settings.
 
 Vault Sync
 ----------

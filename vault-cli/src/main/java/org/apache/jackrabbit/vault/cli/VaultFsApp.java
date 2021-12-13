@@ -56,7 +56,6 @@ import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 import org.apache.jackrabbit.vault.util.console.commands.CmdConsole;
 import org.apache.jackrabbit.vault.util.console.util.CliHelpFormatter;
-import org.apache.jackrabbit.vault.util.console.util.Log4JConfig;
 import org.apache.jackrabbit.vault.util.console.util.PomProperties;
 import org.apache.jackrabbit.vault.vlt.ConfigCredentialsStore;
 import org.apache.jackrabbit.vault.vlt.CredentialsStore;
@@ -71,8 +70,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class VaultFsApp extends AbstractApplication {
-
-    private static final String LOG4J_PROPERTIES = "/org/apache/jackrabbit/vault/cli/log4j.properties";
 
     public static final String KEY_URI = "uri";
     public static final String KEY_WORKSPACE = "workspace";
@@ -454,13 +451,6 @@ public class VaultFsApp extends AbstractApplication {
 
     public Console getConsole() {
         return console;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected void initLogging() {
-        Log4JConfig.init(LOG4J_PROPERTIES);
     }
 
     /**

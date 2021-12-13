@@ -53,10 +53,10 @@ class FSInstallStateCache extends AbstractMap<PackageId, FSInstallState> {
     private Map<Path, PackageId> pathIdMapping = new ConcurrentHashMap<>();
 
     private final Path homeDir;
-    
+
     public FSInstallStateCache(Path homeDir) throws IOException {
         this.homeDir = homeDir;
-        Files.createDirectories(homeDir);
+        Files.createDirectories(homeDir.toRealPath());
     }
 
     /**

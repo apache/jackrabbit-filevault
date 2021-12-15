@@ -30,7 +30,7 @@
       <item href="validation.html" name="Validation" />
     </menu>
     <menu name="Using Filevault">
-      <item href="usage.html" name="Getting Started" />
+      <item href="usage.html" name="VLT Usage" />
       <item href="metadata.html" name="Metadata" >
         <item href="filter.html" name="Workspace Filter">
             <item href="importmode.html" name="Import Mode" />

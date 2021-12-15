@@ -15,15 +15,14 @@
    limitations under the License.
 -->
 
-Usage
+Usage Vault Console Tool (VLT)
 =====
 
-**NOTE**: Parts of the following documentation is outdated and needs review
+**NOTE**: Parts of the following documentation are outdated and need review
 - - - 
 
 <!-- MACRO{toc} -->
 
-Vault Console Tool
 ------------------
 The console tool is called `vlt` and has the following usage:
 

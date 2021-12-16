@@ -44,6 +44,7 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
+import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -91,7 +92,7 @@ public class ValidationExecutorTest {
         validators.put("propertiesid", propertiesValidator);
         validators.put("genericmetadataid", genericMetaInfDataValidator);
         validators.put("genericmetadataid2", genericMetaInfDataValidator2);
-        validators.put("genericjcrdataid", genericJcrDataValidator);
+        validators.put(DocumentViewParserValidatorFactory.ID, genericJcrDataValidator);
         validators.put("genericjcrdataid2", genericJcrDataValidator2);
         validators.put("jcrpathid", jcrPathValidator);
         validators.put("metainfpathid", metaInfPathValidator);
@@ -173,7 +174,7 @@ public class ValidationExecutorTest {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/genericfile.xml")) {
             Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "apps/genericfile.xml", false);
             assertViolation(messages, 
-                    new ValidationViolation("genericjcrdataid", ValidationMessageSeverity.WARN, "error1", Paths.get("apps","genericfile.xml"), Paths.get(""), null, 0, 0, null),
+                    new ValidationViolation(DocumentViewParserValidatorFactory.ID, ValidationMessageSeverity.WARN, "error1", Paths.get("apps","genericfile.xml"), Paths.get(""), null, 0, 0, null),
                     new ValidationViolation("jcrpathid", ValidationMessageSeverity.ERROR, "patherror", Paths.get("apps","genericfile.xml"), Paths.get(""), null, 0, 0, null));
             Assert.assertEquals("Test", answer.getValue());
             Assert.assertEquals("Test", answer2.getValue());
@@ -198,6 +199,39 @@ public class ValidationExecutorTest {
     }
 
     @Test
+    public void testGenericJcrDataWithNoGenericJcrDataValidator()
+            throws URISyntaxException, IOException, SAXException, ParserConfigurationException, ConfigurationException {
+        Map<String, Validator> validators = new LinkedHashMap<>();
+        validators.put("docviewid", docViewXmlValidator);
+        validators.put("propertiesid", propertiesValidator);
+        validators.put("genericmetadataid", genericMetaInfDataValidator);
+        validators.put("genericmetadataid2", genericMetaInfDataValidator2);
+        validators.put("jcrpathid", jcrPathValidator);
+        validators.put("metainfpathid", metaInfPathValidator);
+        validators.put("nodepathid", nodePathValidator);
+        validators.put("unusedid", unusedValidator);
+        Assert.assertThrows(IllegalStateException.class, () -> new ValidationExecutor(validators));
+    }
+
+    @Test
+    public void testGenericJcrDataWithNoGenericJcrDataAndNoPathValidator()
+            throws URISyntaxException, IOException, SAXException, ParserConfigurationException, ConfigurationException {
+        Map<String, Validator> validators = new LinkedHashMap<>();
+        validators.put("docviewid", docViewXmlValidator);
+        validators.put("propertiesid", propertiesValidator);
+        validators.put("genericmetadataid", genericMetaInfDataValidator);
+        validators.put("genericmetadataid2", genericMetaInfDataValidator2);
+        validators.put("metainfpathid", metaInfPathValidator);
+        validators.put("unusedid", unusedValidator);
+        executor = new ValidationExecutor(validators);
+        try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/genericfile.xml")) {
+            Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "apps/genericfile.xml", false);
+            MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+            Mockito.verify(genericJcrDataValidator, Mockito.never()).validateJcrData(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        }
+    }
+    
+    @Test
     public void testJcrRootFolder() throws URISyntaxException, IOException, SAXException {
         Collection<ValidationViolation> messages = validateFolder(executor, Paths.get(""), "apps.dir", false);
         MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
@@ -211,7 +245,7 @@ public class ValidationExecutorTest {
         Mockito.when(genericJcrDataValidator.done()).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "test1")));
         Mockito.when(genericJcrDataValidator2.done()).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.WARN, "test2")));
         
-        assertViolation(executor.done(), new ValidationViolation("genericjcrdataid", ValidationMessageSeverity.ERROR, "test1"), new ValidationViolation("genericjcrdataid2", ValidationMessageSeverity.WARN, "test2")); 
+        assertViolation(executor.done(), new ValidationViolation(DocumentViewParserValidatorFactory.ID, ValidationMessageSeverity.ERROR, "test1"), new ValidationViolation("genericjcrdataid2", ValidationMessageSeverity.WARN, "test2")); 
     }
 
     private Collection<ValidationViolation> validate(InputStream input, ValidationExecutor executor, Path basePath, String resourcePath,

@@ -62,9 +62,15 @@ class FSInstallStateCache extends AbstractMap<PackageId, FSInstallState> {
     public FSInstallStateCache(Path homeDir) throws IOException {
         this.homeDir = homeDir;
         log.debug("checking for presence of {} - exists {} - isDirectory {}", homeDir, Files.exists(homeDir), Files.isDirectory(homeDir));
-        if (Files.notExists(homeDir)) {
+        if (!Files.exists(homeDir)) {
             Path created = Files.createDirectories(homeDir);
             log.debug("Created {}", created);
+        } else {
+            if (!Files.isDirectory(homeDir)) {
+                String message = homeDir + " exists, but is not a directory - aborting";
+                log.error(message);
+                throw new IOException(message);
+            }
         }
     }
 

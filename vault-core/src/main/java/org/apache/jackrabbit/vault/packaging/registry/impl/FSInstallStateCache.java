@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap;
@@ -30,6 +31,8 @@ import java.util.stream.Stream;
 
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Persisted cache of all {@link FSInstallState} objects for all packages in a registry.
@@ -38,6 +41,8 @@ import org.jetbrains.annotations.NotNull;
  * Is thread-safe.
  */
 class FSInstallStateCache extends AbstractMap<PackageId, FSInstallState> {
+
+    private static final Logger log = LoggerFactory.getLogger(FSInstallStateCache.class);
 
     /**
      * Extension for metadata files
@@ -53,10 +58,20 @@ class FSInstallStateCache extends AbstractMap<PackageId, FSInstallState> {
     private Map<Path, PackageId> pathIdMapping = new ConcurrentHashMap<>();
 
     private final Path homeDir;
-    
+
     public FSInstallStateCache(Path homeDir) throws IOException {
         this.homeDir = homeDir;
-        Files.createDirectories(homeDir);
+        log.debug("checking for presence of {} - exists {} - isDirectory {}", homeDir, Files.exists(homeDir), Files.isDirectory(homeDir));
+        if (!Files.exists(homeDir)) {
+            Path created = Files.createDirectories(homeDir);
+            log.debug("Created {}", created);
+        } else {
+            if (!Files.isDirectory(homeDir)) {
+                String message = homeDir + " exists, but is not a directory - aborting";
+                log.error(message);
+                throw new IOException(message);
+            }
+        }
     }
 
     /**
@@ -68,12 +83,14 @@ class FSInstallStateCache extends AbstractMap<PackageId, FSInstallState> {
         Map<Path, PackageId> idMapping = new HashMap<>();
 
         // recursively find meta file
-        try (Stream<Path> stream = Files.walk(homeDir, 10)) {
+        log.debug("loading state from home directory {}", homeDir);
+        try (Stream<Path> stream = Files.walk(homeDir, 10, FileVisitOption.FOLLOW_LINKS)) {
             stream.filter(Files::isRegularFile).filter(p -> p.toString().endsWith(META_EXTENSION)).forEach(
                 p -> {
                     FSInstallState state;
                     try {
                         state = FSInstallState.fromFile(p);
+                        log.debug("loaded state from {}", p);
                     } catch (IOException e) {
                         throw new UncheckedIOException(e);
                     }

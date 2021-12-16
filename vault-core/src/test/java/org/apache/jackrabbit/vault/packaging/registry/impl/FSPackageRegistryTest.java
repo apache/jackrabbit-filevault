@@ -19,11 +19,14 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,7 +50,7 @@ public class FSPackageRegistryTest {
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     private static final PackageId TEST_PACKAGE_ID = new PackageId("test", "test-package-with-etc", "1.0");
-    
+
     private void copyResourceStreamToFile(Path targetFile, String name) throws IOException {
         try (InputStream in = getClass().getResourceAsStream(name)) {
             Files.copy(in, targetFile, StandardCopyOption.REPLACE_EXISTING);
@@ -59,6 +62,34 @@ public class FSPackageRegistryTest {
         copyResourceStreamToFile(tmpDir.resolve("package1.zip"), packageName);
         copyResourceStreamToFile(tmpDir.resolve("package1.zip.xml"), packageMetadataName);
         return tmpDir;
+    }
+
+    @Test
+    public void testFailHomeDirIsFile() throws IOException {
+        Path tmpDir = tmpFolder.newFolder().toPath();
+        Path file = Paths.get(tmpDir.toFile().getPath(), "file");
+        Files.write(file, "EMPTY".getBytes());
+        try {
+            createRegistryWithDefaultConstructor(file);
+            fail("registry creation should fail when homeDir is a file, not a directory");
+        } catch(IOException expected) {
+            // ok
+        }
+    }
+
+    @Test
+    public void testHomeDirIsSymlink() throws IOException {
+        Path tmpDir = tmpFolder.newFolder().toPath();
+        Path path = Paths.get(tmpDir.toFile().getPath(), "path");
+        Files.createDirectories(path);
+        Path link = Paths.get(tmpDir.toFile().getPath(), "link");
+        try {
+            Files.createSymbolicLink(link, path);
+            createRegistryWithDefaultConstructor(link);
+        }
+        catch (FileSystemException tolerated) {
+            // symlink creation apparently unsupported
+        }
     }
 
     @Test

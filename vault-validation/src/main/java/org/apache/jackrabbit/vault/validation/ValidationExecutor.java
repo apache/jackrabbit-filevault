@@ -21,16 +21,18 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.validation.impl.util.EnhancedBufferedInputStream;
 import org.apache.jackrabbit.vault.validation.impl.util.ResettableInputStream;
 import org.apache.jackrabbit.vault.validation.impl.util.ValidatorException;
@@ -50,6 +52,7 @@ import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedFilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedPropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidator;
+import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -107,6 +110,13 @@ public final class ValidationExecutor {
             if (validator instanceof DocumentViewParserValidator) {
                 DocumentViewParserValidator.class.cast(validator).setDocumentViewXmlValidators(documentViewXmlValidators);
             }
+        }
+        
+        // jcr path validators requires documentviewparservalidator (as that retrieves the JCR paths in the first place)
+        if (!(jcrPathValidators.isEmpty() || nodePathValidators.isEmpty()) && !genericJcrDataValidators.containsKey(DocumentViewParserValidatorFactory.ID)) {
+            Set<String> pathValidatorIds = new HashSet<>(jcrPathValidators.keySet());
+            pathValidatorIds.addAll(nodePathValidators.keySet());
+            throw new IllegalStateException("For the validators with id(s) '" + String.join(", ", pathValidatorIds) + "' it is mandatory to also enable validator '" + DocumentViewParserValidatorFactory.ID + "'");
         }
     }
 
@@ -325,15 +335,16 @@ public final class ValidationExecutor {
             nodePathsAndLineNumbers.put(filePathToNodePath(filePath), 0);
         }
 
-        // generate node context
-        NodeContext nodeContext = new NodeContextImpl(nodePathsAndLineNumbers.keySet().iterator().next(), filePath, basePath);
-        for (Map.Entry<String, JcrPathValidator> entry : jcrPathValidators.entrySet()) {
-            Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(nodeContext, input == null, isDocViewXml);
-            if (messages != null && !messages.isEmpty()) {
-                enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
+        if (!jcrPathValidators.isEmpty() || !nodePathValidators.isEmpty()) {
+            NodeContext nodeContext = new NodeContextImpl(nodePathsAndLineNumbers.keySet().stream().findFirst().orElseThrow(() -> new IllegalStateException("No node paths have been collected")), filePath, basePath);
+            for (Map.Entry<String, JcrPathValidator> entry : jcrPathValidators.entrySet()) {
+                Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(nodeContext, input == null, isDocViewXml);
+                if (messages != null && !messages.isEmpty()) {
+                    enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
+                }
             }
+            enrichedMessages.addAll(validateNodePaths(filePath, basePath, nodePathsAndLineNumbers));
         }
-        enrichedMessages.addAll(validateNodePaths(filePath, basePath, nodePathsAndLineNumbers));
         return enrichedMessages;
     }
 

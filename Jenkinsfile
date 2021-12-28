@@ -18,6 +18,6 @@
  * under the License.
  */
 // use the shared library from https://github.com/apache/jackrabbit-filevault-jenkins-lib
-library "filevault@master"
+library "filevault@bugfix/npe-during-deploy-staged"
 
 fileVaultMavenStdBuild([11, 8, 17], 11, [ "ubuntu", "Windows"], "ubuntu", "apache_jackrabbit-filevault")

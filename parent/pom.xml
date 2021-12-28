@@ -265,9 +265,11 @@ Bundle-Category: jackrabbit
                 <!-- ====================================================================== -->
                 <!-- S I T E P L U G I N -->
                 <!-- ====================================================================== -->
+                <!-- update from 3.9.1 in ASF parent -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
+                    <version>3.10.0</version>
                     <configuration>
                         <skip>true</skip><!-- skip for all modules where not explicitly enabled -->
                         <skipDeploy>true</skipDeploy><!-- always deploy via maven-scm-publish-plugin -->

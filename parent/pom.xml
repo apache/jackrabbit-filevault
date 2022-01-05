@@ -227,7 +227,7 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>3.0.0-M4</version>
+                    <version>3.0.0-M5</version>
                     <configuration>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <projectVersionPolicyId>OddEvenVersionPolicy</projectVersionPolicyId>
@@ -236,7 +236,7 @@ Bundle-Category: jackrabbit
                         <dependency>
                             <groupId>org.apache.maven.release</groupId>
                             <artifactId>maven-release-oddeven-policy</artifactId>
-                            <version>3.0.0-M4</version>
+                            <version>3.0.0-M5</version>
                         </dependency>
                     </dependencies>
                 </plugin>

@@ -108,7 +108,6 @@ public class JcrRegisteredPackage implements RegisteredPackage {
 
     @Override
     public WorkspaceFilter getWorkspaceFilter() {
-        // TODO Auto-generated method stub
         try {
             return JcrWorkspaceFilter.loadFilter(pkg.getDefNode());
         } catch (RepositoryException e) {

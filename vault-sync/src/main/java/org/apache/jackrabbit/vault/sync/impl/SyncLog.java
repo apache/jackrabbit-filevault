@@ -19,8 +19,8 @@ package org.apache.jackrabbit.vault.sync.impl;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class SyncLog {
      */
     private static final Logger log = LoggerFactory.getLogger(SyncLog.class);
 
-    private static SimpleDateFormat dateFmt = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss ");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss ");
 
     private final File logFile;
 
@@ -48,15 +48,13 @@ public class SyncLog {
         log.info("{}", msg);
 
         StringBuilder line = new StringBuilder();
-        line.append(dateFmt.format(new Date()));
+        line.append(DATE_FMT.format(Instant.now()));
         line.append(msg);
         line.append("\n");
-        try {
-            FileWriter writer = new FileWriter(logFile, true);
+        try (FileWriter writer = new FileWriter(logFile, true)) {
             writer.write(line.toString());
-            writer.close();
         } catch (IOException e) {
-            log.error("Unable to update log file: " + e.toString());
+            log.error("Unable to update log file: {}", logFile, e);
         }
     }
 }

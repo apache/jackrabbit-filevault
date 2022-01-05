@@ -19,8 +19,8 @@ package org.apache.jackrabbit.vault.vlt.actions;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
@@ -63,7 +63,7 @@ public class Info extends BaseAction {
         out.println();
     }
 
-    private static final SimpleDateFormat dateFmt = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss");
 
     private static void print(PrintStream out, String name, VltEntryInfo info) {
         if (info == null) {
@@ -71,7 +71,7 @@ public class Info extends BaseAction {
         }
         out.printf("%s: %s, %s, %d, %s%n",
                 name,
-                dateFmt.format(new Date(info.getDate())),
+                DATE_FMT.format(Instant.ofEpochMilli(info.getDate())),
                 info.getContentType(),
                 info.getSize(),
                 info.getMd5()

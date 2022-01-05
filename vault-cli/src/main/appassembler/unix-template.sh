@@ -41,7 +41,7 @@ while [ -h "$PRG" ]; do
 done
 
 PRGDIR=`dirname "$PRG"`
-VLT_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
+BASEDIR=`cd "$PRGDIR/.." >/dev/null; pwd`
 
 @ENV_SETUP@
 
@@ -97,7 +97,7 @@ fi
 
 if [ -z "$REPO" ]
 then
-  REPO="$VLT_HOME"/@REPO@
+  REPO="$BASEDIR"/@REPO@
 fi
 
 CLASSPATH=$CLASSPATH_PREFIX:@CLASSPATH@
@@ -107,7 +107,7 @@ if $cygwin; then
   [ -n "$CLASSPATH" ] && CLASSPATH=`cygpath --path --windows "$CLASSPATH"`
   [ -n "$JAVA_HOME" ] && JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
   [ -n "$HOME" ] && HOME=`cygpath --path --windows "$HOME"`
-  [ -n "$VLT_HOME" ] && VLT_HOME=`cygpath --path --windows "$VLT_HOME"`
+  [ -n "$BASEDIR" ] && BASEDIR=`cygpath --path --windows "$BASEDIR"`
   [ -n "$REPO" ] && REPO=`cygpath --path --windows "$REPO"`
 fi
 
@@ -131,6 +131,6 @@ exec "$JAVACMD" $VLT_OPTS $EXTRA_JVM_ARGUMENTS \
   -Dapp.name="@APP_NAME@" \
   -Dapp.pid="$$" \
   -Dapp.repo="$REPO" \
-  -Dvlt.home="$VLT_HOME" \
+  -Dvlt.home="$BASEDIR" \
   @MAINCLASS@ \
   @APP_ARGUMENTS@"$@"@UNIX_BACKGROUND@

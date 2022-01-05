@@ -29,6 +29,7 @@ import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.Mounter;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
@@ -66,8 +67,10 @@ public class VltContext {
 
     private final ExportRoot exportRoot;
 
+    private final ConnectionOptions connectionOptions;
+
     private Map<RepositoryAddress, VaultFileSystem> fileSystems
-            = new HashMap<RepositoryAddress, VaultFileSystem>();
+            = new HashMap<>();
 
     private RepositoryAddress mountpoint;
 
@@ -87,18 +90,46 @@ public class VltContext {
 
     private PathFilter globalIgnored;
 
+    /**
+     * 
+     * @param cwd
+     * @param localFile
+     * @param repProvider
+     * @param credsProvider
+     * @throws IOException
+     * @deprecated Rather use {@link #VltContext(File, File, RepositoryProvider, CredentialsStore, PrintStream, ConnectionOptions)}
+     */
+    @Deprecated
     public VltContext(File cwd, File localFile,
             RepositoryProvider repProvider,
             CredentialsStore credsProvider)
-                    throws ConfigurationException, IOException {
-        this(cwd, localFile, repProvider, credsProvider, System.out);
+                    throws IOException {
+        this(cwd, localFile, repProvider, credsProvider, System.out, null);
+    }
+
+    /**
+     * 
+     * @param cwd
+     * @param localFile
+     * @param repProvider
+     * @param credsProvider
+     * @param out
+     * @throws IOException
+     * @deprecated Rather use {@link #VltContext(File, File, RepositoryProvider, CredentialsStore, PrintStream, ConnectionOptions)}
+     */
+    @Deprecated
+    public VltContext(File cwd, File localFile,
+            RepositoryProvider repProvider,
+            CredentialsStore credsProvider,
+            PrintStream out) throws IOException {
+        this(cwd, localFile, repProvider, credsProvider, out, null);
     }
 
     public VltContext(File cwd, File localFile,
                         RepositoryProvider repProvider,
                         CredentialsStore credsProvider,
-                        PrintStream out)
-            throws ConfigurationException, IOException {
+                        PrintStream out, ConnectionOptions connectionOptions)
+            throws IOException {
         if (!cwd.exists()) {
             throw new FileNotFoundException(cwd.getAbsolutePath());
         }
@@ -114,6 +145,7 @@ public class VltContext {
             er = new ExportRoot(localFile);
         }
         this.exportRoot = er;
+        this.connectionOptions = connectionOptions;
     }
 
     public RepositoryAddress getMountpoint() throws VltException {
@@ -197,7 +229,7 @@ public class VltContext {
     }
 
     public Session login(RepositoryAddress mountpoint) throws RepositoryException {
-        Repository rep = repProvider.getRepository(mountpoint);
+        Repository rep = repProvider.getRepository(mountpoint, connectionOptions);
         Credentials creds = credsProvider.getCredentials(mountpoint);
         Session s = rep.login(creds);
         // hack to store credentials

@@ -14,24 +14,24 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-4_0_0.xsd " child.project.url.inherit.append.path="false">
     <modelVersion>4.0.0</modelVersion>
     <!-- ====================================================================== -->
-    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N -->
+    <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>23</version>
+        <version>24</version>
         <relativePath />
     </parent>
 
     <!-- ====================================================================== -->
-    <!-- P R O J E C T  D E S C R I P T I O N -->
+    <!-- P R O J E C T D E S C R I P T I O N -->
     <!-- ====================================================================== -->
     <groupId>org.apache.jackrabbit.vault</groupId>
     <artifactId>parent</artifactId>
-    <version>3.4.5-SNAPSHOT</version>
+    <version>3.5.9-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Apache Jackrabbit FileVault (Parent Project)</name>
@@ -47,33 +47,44 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     </description>
 
     <properties>
-        <jackrabbit.version>2.20.0</jackrabbit.version>
-        <oak.version>1.26.0</oak.version>
-        <slf4j.version>1.7.6</slf4j.version>
-        <test.oak>false</test.oak>
-        <test.vm.options>-Doak=$test.oak}</test.vm.options>
-        <argLine>${test.vm.options}</argLine>
-        <java.target.version>1.8</java.target.version>
-        <bnd.version>5.0.1</bnd.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jackrabbit.version>2.20.4</jackrabbit.version>
+        <oak.version>1.40.0</oak.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
+        <bnd.version>6.1.0</bnd.version>
+        <minimalMavenBuildVersion>3.6.1</minimalMavenBuildVersion><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
+        <minimalJavaBuildVersion>1.8</minimalJavaBuildVersion>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <surefire.version>3.0.0-M5</surefire.version>
+        <sling.url>http://localhost:4502</sling.url>
+        <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
+        <project.build.outputTimestamp>2021-12-17T11:48:18Z</project.build.outputTimestamp>
     </properties>
 
     <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N -->
+    <!-- S C M D E F I N I T I O N -->
     <!-- ====================================================================== -->
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/parent</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/parent</developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/parent</url>
+    <!-- using adjusted inheritance rules: https://issues.apache.org/jira/browse/MNG-6059 
+    TODO: this block gets removed with each release https://issues.apache.org/jira/browse/MRELEASE-1053
+    -->
+    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="true">
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</developerConnection>
+        <url>https://github.com/apache/jackrabbit-filevault/tree/${project.scm.tag}</url>
+        <tag>master</tag>
     </scm>
 
+    <!-- ====================================================================== -->
+    <!-- P R O J E C T  I N F O                                                 -->
+    <!-- ====================================================================== -->
     <mailingLists>
-
         <mailingList>
             <name>Jackrabbit Developer List</name>
             <subscribe>dev-subscribe@jackrabbit.apache.org</subscribe>
             <unsubscribe>dev-unsubscribe@jackrabbit.apache.org</unsubscribe>
             <post>mailto:dev@jackrabbit.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/jackrabbit-dev/</archive>
+            <archive>https://lists.apache.org/list.html?dev@jackrabbit.apache.org</archive>
         </mailingList>
 
         <mailingList>
@@ -81,9 +92,8 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
             <subscribe>users-subscribe@jackrabbit.apache.org</subscribe>
             <unsubscribe>users-unsubscribe@jackrabbit.apache.org</unsubscribe>
             <post>mailto:users@jackrabbit.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/jackrabbit-users/</archive>
+            <archive>https://lists.apache.org/list.html?users@jackrabbit.apache.org</archive>
         </mailingList>
-
     </mailingLists>
 
     <issueManagement>
@@ -92,25 +102,27 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
     </issueManagement>
 
     <ciManagement>
-        <system>Travis</system>
-        <url>https://travis-ci.org/apache/jackrabbit-filevault</url>
+        <system>Jenkins</system>
+        <url>https://ci-builds.apache.org/blue/organizations/jenkins/Jackrabbit%2Ffilevault/activity</url>
     </ciManagement>
 
+    <url>https://jackrabbit.apache.org/filevault/</url>
+
     <!-- ====================================================================== -->
-    <!-- B U I L D  D E F I N I T I O N -->
+    <!-- B U I L D D E F I N I T I O N -->
     <!-- ====================================================================== -->
     <build>
         <pluginManagement>
             <plugins>
                 <!-- ====================================================================== -->
-                <!-- S L I N G  P L U G I N -->
+                <!-- S L I N G P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.sling</groupId>
                     <artifactId>sling-maven-plugin</artifactId>
                     <version>2.4.2</version>
                     <configuration>
-                        <slingUrl>http://localhost:4502</slingUrl>
+                        <!-- slingUrl dynamically set by property -->
                         <slingUrlSuffix>/system/console</slingUrlSuffix>
                         <deploymentMethod>WebConsole</deploymentMethod>
                     </configuration>
@@ -135,6 +147,12 @@ Bundle-Category: jackrabbit
 -snapshot: SNAPSHOT
 # export all versioned packages except for conditional ones (https://github.com/bndtools/bnd/issues/3721#issuecomment-579026778)
 -exportcontents: ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
+# support only DS 1.4 (https://github.com/bndtools/bnd/pull/3121/files)
+-dsannotations-options: version;maximum=1.4.0
+# generate error (instead of warning) when exported package uses private (non-exported) reference
+-fixupmessages:"Export *,  has \\d+,  private references"; \
+    restrict:=warning; \
+    is:=error
                                 ]]></bnd>
                             </configuration>
                         </execution>
@@ -175,33 +193,41 @@ Bundle-Category: jackrabbit
                     </executions>
                     <configuration>
                         <useMavenDependencies>true</useMavenDependencies>
+                        <!-- also include compile scoped dependencies (https://github.com/bndtools/bnd/blob/38ef85e389678370304846d6b09ffd31f9efb87d/biz.aQute.bnd.maven/src/aQute/bnd/maven/lib/resolve/Scope.java#L13), compare with https://github.com/bndtools/bnd/issues/4207 -->
+                        <scopes>compile</scopes>
                         <failOnChanges>false</failOnChanges><!-- reuse for multiple bundles which all require different minimum container -->
                         <writeOnChanges>false</writeOnChanges>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- S U R E F I R E  P L U G I N -->
+                <!-- S U R E F I R E P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M4</version>
                     <configuration>
-                        <systemProperties>
-                            <property>
-                                <name>derby.stream.error.file</name>
-                                <value>target/derby.log</value>
-                            </property>
-                        </systemProperties>
+                        <trimStackTrace>false</trimStackTrace>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <!-- put derby.log (created for Jackrabbit based ITs below target instead of the current directory) -->
+                            <derby.stream.error.file>target/derby.log</derby.stream.error.file>
+                            <oak>${test.oak}</oak>
+                        </systemPropertyVariables>
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- R E L E A S E  P L U G I N -->
+                <!-- R E L E A S E P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
+                    <version>3.0.0-M5</version>
                     <configuration>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <projectVersionPolicyId>OddEvenVersionPolicy</projectVersionPolicyId>
@@ -210,12 +236,12 @@ Bundle-Category: jackrabbit
                         <dependency>
                             <groupId>org.apache.maven.release</groupId>
                             <artifactId>maven-release-oddeven-policy</artifactId>
-                            <version>3.0.0-M1</version>
+                            <version>3.0.0-M5</version>
                         </dependency>
                     </dependencies>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- R A T  P L U G I N -->
+                <!-- R A T P L U G I N -->
                 <!-- ====================================================================== -->
                 <plugin>
                     <groupId>org.apache.rat</groupId>
@@ -231,42 +257,40 @@ Bundle-Category: jackrabbit
                             <exclude>**/*.zip/**</exclude>
                             <exclude>.mvn/**</exclude>
                             <exclude>.no-defender.sh</exclude>
+                            <exclude>.repository/**</exclude>
+                            <exclude>local-snapshots-dir/**</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->
-                <!-- S I T E  P L U G I N -->
+                <!-- S I T E P L U G I N -->
                 <!-- ====================================================================== -->
+                <!-- update from 3.9.1 in ASF parent -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.9.0</version>
+                    <version>3.10.0</version>
                     <configuration>
-                        <skip>true</skip>
-                        <skipDeploy>true</skipDeploy>
+                        <skip>true</skip><!-- skip for all modules where not explicitly enabled -->
+                        <skipDeploy>true</skipDeploy><!-- always deploy via maven-scm-publish-plugin -->
                     </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.maven.doxia</groupId>
-                            <artifactId>doxia-module-markdown</artifactId>
-                            <version>1.9.1</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.7</version>
                 </plugin>
+                <!-- update from 1.4.1 in ASF parent -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-scm-publish-plugin</artifactId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
                     <version>3.0.0</version>
                 </plugin>
+                <!-- update from 3.3.0 in ASF parent -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.3.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -274,14 +298,23 @@ Bundle-Category: jackrabbit
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <consoleOutput>true</consoleOutput>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <!-- compiler stuff -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>${java.target.version}</source>
-                    <target>${java.target.version}</target>
                     <debug>true</debug>
                     <showDeprecation>false</showDeprecation>
                     <showWarnings>true</showWarnings>
@@ -291,25 +324,9 @@ Bundle-Category: jackrabbit
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M2</version>
-                <executions>
-                    <execution>
-                        <id>enforce-java</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireJavaVersion>
-                                    <version>${java.target.version}</version>
-                                </requireJavaVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
-        
+
     </build>
 
     <!-- ====================================================================== -->
@@ -327,22 +344,10 @@ Bundle-Category: jackrabbit
     </reporting>
 
     <!-- ====================================================================== -->
-    <!-- D E P E N D E N C Y  M A N A G E M E N T -->
+    <!-- D E P E N D E N C Y M A N A G E M E N T -->
     <!-- ====================================================================== -->
     <dependencyManagement>
         <dependencies>
-            <!-- CLI Stuff -->
-            <dependency>
-                <groupId>org.apache.mahout.commons</groupId>
-                <artifactId>commons-cli</artifactId>
-                <version>2.0-mahout</version>
-            </dependency>
-            <dependency>
-                <groupId>jline</groupId>
-                <artifactId>jline</artifactId>
-                <version>0.9.94</version>
-            </dependency>
-
             <!-- jackrabbit -->
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
@@ -408,6 +413,12 @@ Bundle-Category: jackrabbit
                 <scope>provided</scope>
             </dependency>
             <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>1.2.12</version>
@@ -417,9 +428,14 @@ Bundle-Category: jackrabbit
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
                 <version>18.0.0</version>
-                <scope>provided</scope>
+                <scope>compile</scope>
             </dependency>
-
+            <dependency>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>biz.aQute.bnd.annotation</artifactId>
+                <version>${bnd.version}</version>
+                <scope>compile</scope>
+            </dependency>
             <!-- other -->
 
             <!-- OSGi -->
@@ -464,7 +480,7 @@ Bundle-Category: jackrabbit
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.service.component.annotations</artifactId>
-                <version>1.3.0</version>
+                <version>1.4.0</version>
                 <scope>provided</scope>
             </dependency>
             <!-- Metatype Annotations -->
@@ -483,12 +499,12 @@ Bundle-Category: jackrabbit
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.9</version>
+                <version>3.6</version>
             </dependency>
             <dependency>
-                <groupId>commons-collections</groupId>
-                <artifactId>commons-collections</artifactId>
-                <version>3.2.2</version>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>4.1</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
@@ -498,12 +514,12 @@ Bundle-Category: jackrabbit
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpmime</artifactId>
-                <version>4.5.3</version>
+                <version>4.5.8</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>4.5.3</version>
+                <version>4.5.8</version>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>
@@ -513,7 +529,7 @@ Bundle-Category: jackrabbit
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>4.13.2</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -523,34 +539,6 @@ Bundle-Category: jackrabbit
     <!-- P R O F I L E S -->
     <!-- ====================================================================== -->
     <profiles>
-        <profile>
-            <!-- ====================================================================== -->
-            <!-- R A T  P L U G I N -->
-            <!-- ====================================================================== -->
-            <id>rat-check</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.rat</groupId>
-                        <artifactId>apache-rat-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>check</goal>
-                                </goals>
-                                <configuration>
-                                    <consoleOutput>true</consoleOutput>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>java9-or-above</id>
             <activation>
@@ -568,6 +556,85 @@ Bundle-Category: jackrabbit
                         </plugin>
                     </plugins>
                 </pluginManagement>
+            </build>
+        </profile>
+        <profile>
+            <id>jacoco-report</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <configuration>
+                            <propertyName>jacoco.command</propertyName>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>${project.build.directory}/jacoco-unit.exec</destFile>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>prepare-agent-integration</id>
+                                <goals>
+                                    <goal>prepare-agent-integration</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                                     <!-- potentially ITs fork Java again (e.g. for testing Maven plugins), therefore always append to destFile as multiple VMs would then write to the same file -->
+                                    <append>true</append>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>merge-unit-and-it</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>merge</goal>
+                                </goals>
+                                <configuration>
+                                    <fileSets>
+                                        <fileSet>
+                                            <directory>${project.build.directory}</directory>
+                                            <includes>
+                                                <include>jacoco-unit.exec</include>
+                                                <include>jacoco-it.exec</include>
+                                            </includes>
+                                        </fileSet>
+                                    </fileSets>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>report-merged</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>@{jacoco.command}</argLine>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <!-- 
+                            for IT where you need a forked JVM to run the tests you can use this system property to make sure that
+                            the JaCoCo agent correctly instruments your code
+                            set system property also via argLine as only that allows late evaluation -->
+                            <argLine>@{jacoco.command} -Djacoco.command=@{jacoco.command}</argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
             </build>
         </profile>
     </profiles>

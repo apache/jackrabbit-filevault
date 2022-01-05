@@ -23,22 +23,18 @@
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
-  <xs:attribute name="type">
-    <xs:simpleType>
+    <xs:simpleType name="type">
         <xs:restriction base="xs:string">
             <xs:pattern value="(|cleanup)"/>
         </xs:restriction>
     </xs:simpleType>
-  </xs:attribute>
-  <xs:attribute name="mode">
-    <xs:simpleType>
+    <xs:simpleType name="mode">
         <xs:restriction base="xs:string">
           <xs:enumeration value="replace"/>
           <xs:enumeration value="merge"/>
           <xs:enumeration value="update"/>
         </xs:restriction>
     </xs:simpleType>
-  </xs:attribute>
   <xs:element name="workspaceFilter">
     <xs:complexType>
       <xs:sequence minOccurs="0" maxOccurs="unbounded">
@@ -49,8 +45,8 @@
               <xs:element type="includeExcludeType" name="include"/>
             </xs:choice>
             <xs:attribute type="xs:string" name="root" use="required"/>
-            <xs:attribute ref="type"/>
-            <xs:attribute type="xs:string" name="mode"/>
+            <xs:attribute name="type" type="type"/>
+            <xs:attribute name="mode" type="mode"/>
           </xs:complexType>
         </xs:element>
       </xs:sequence>

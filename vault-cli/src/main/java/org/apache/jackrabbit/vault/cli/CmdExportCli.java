@@ -18,8 +18,8 @@
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.cli2.Argument;
 import org.apache.commons.cli2.CommandLine;
@@ -29,13 +29,13 @@ import org.apache.commons.cli2.builder.CommandBuilder;
 import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.option.Command;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.io.AbstractExporter;
 import org.apache.jackrabbit.vault.fs.io.JarExporter;
 import org.apache.jackrabbit.vault.fs.io.PlatformExporter;
 import org.apache.jackrabbit.vault.util.DefaultProgressListener;
-import org.apache.jackrabbit.vault.util.Text;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 
 /**
@@ -44,7 +44,7 @@ import org.apache.jackrabbit.vault.vlt.VltContext;
  */
 public class CmdExportCli extends AbstractVaultCommand {
 
-    static final SimpleDateFormat FMT = new SimpleDateFormat("yyyyMMddHHmmss");
+    static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     private Option optType;
     private Option optPrune;
@@ -76,42 +76,48 @@ public class CmdExportCli extends AbstractVaultCommand {
                 localPath = Text.getName(jcrPath);
             }
             if (type.equals("jar")) {
-                localPath += "-" + FMT.format(new Date()) + ".jar";
+                localPath += "-" + FMT.format(Instant.now()) + ".jar";
             } else {
 
             }
         }
         File localFile = app.getPlatformFile(localPath, false);
 
-        AbstractExporter exporter;
-        VltContext vCtx;
-        if (type.equals("platform")) {
-            if (!localFile.exists()) {
-                localFile.mkdirs();
+        AbstractExporter exporter = null;
+        try {
+            VltContext vCtx;
+            if (type.equals("platform")) {
+                if (!localFile.exists()) {
+                    localFile.mkdirs();
+                }
+                exporter = new PlatformExporter(localFile);
+                ((PlatformExporter) exporter).setPruneMissing(cl.hasOption(optPrune));
+                vCtx = app.createVaultContext(localFile);
+            } else if (type.equals("jar")) {
+                exporter = new JarExporter(localFile);
+                vCtx = app.createVaultContext(localFile.getParentFile());
+            } else {
+                throw new Exception("Type " + type + " not supported");
             }
-            exporter = new PlatformExporter(localFile);
-            ((PlatformExporter) exporter).setPruneMissing(cl.hasOption(optPrune));
-            vCtx = app.createVaultContext(localFile);
-        } else if (type.equals("jar")) {
-            exporter = new JarExporter(localFile);
-            vCtx = app.createVaultContext(localFile.getParentFile());
-        } else {
-            throw new Exception("Type " + type + " not supported");
+    
+            vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
+            VaultFile vaultFile = vCtx.getFileSystem(addr).getFile(jcrPath);
+            if (vaultFile == null) {
+                VaultFsApp.log.error("Not such remote file: {}", jcrPath);
+                return;
+            }
+    
+            VaultFsApp.log.info("Exporting {} to {}", vaultFile.getPath(), localFile.getCanonicalPath());
+            if (verbose) {
+                exporter.setVerbose(new DefaultProgressListener());
+            }
+            exporter.export(vaultFile);
+            VaultFsApp.log.info("Exporting done.");
+        } finally {
+            if (exporter != null) {
+                exporter.close();
+            }
         }
-
-        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
-        VaultFile vaultFile = vCtx.getFileSystem(addr).getFile(jcrPath);
-        if (vaultFile == null) {
-            VaultFsApp.log.error("Not such remote file: {}", jcrPath);
-            return;
-        }
-
-        VaultFsApp.log.info("Exporting {} to {}", vaultFile.getPath(), localFile.getCanonicalPath());
-        if (verbose) {
-            exporter.setVerbose(new DefaultProgressListener());
-        }
-        exporter.export(vaultFile);
-        VaultFsApp.log.info("Exporting done.");
     }
 
     /**

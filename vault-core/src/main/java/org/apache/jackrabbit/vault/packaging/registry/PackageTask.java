@@ -90,6 +90,13 @@ public interface PackageTask {
     Type getType();
 
     /**
+     * Returns the task optional options.
+     * @return the task options (may be null).
+     */
+    @Nullable
+    PackageTaskOptions getOptions();
+
+    /**
      * Returns the task state
      * @return the task state
      */

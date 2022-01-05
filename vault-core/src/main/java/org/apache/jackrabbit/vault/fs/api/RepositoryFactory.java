@@ -22,13 +22,20 @@ import java.util.Set;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.spi2dav.ConnectionOptions;
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * {@code RepositoryProvider}...
  */
+@ProviderType
 public interface RepositoryFactory {
 
     public Set<String> getSupportedSchemes();
 
     public Repository createRepository(RepositoryAddress address)
+            throws RepositoryException;
+    
+    public Repository createRepository(RepositoryAddress address, ConnectionOptions options)
             throws RepositoryException;
 }

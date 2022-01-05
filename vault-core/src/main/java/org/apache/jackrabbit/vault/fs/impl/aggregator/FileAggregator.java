@@ -23,7 +23,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 
-import org.apache.jackrabbit.vault.fs.DirectoryArtifact;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -34,6 +33,7 @@ import org.apache.jackrabbit.vault.fs.api.Dumpable;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
+import org.apache.jackrabbit.vault.fs.impl.DirectoryArtifact;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewSerializer;
 import org.apache.jackrabbit.vault.fs.impl.io.ImportInfoImpl;
 import org.apache.jackrabbit.vault.fs.io.Serializer;
@@ -41,7 +41,7 @@ import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.PathUtil;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * A file aggregate contains nt:file or nt:resource nodes.

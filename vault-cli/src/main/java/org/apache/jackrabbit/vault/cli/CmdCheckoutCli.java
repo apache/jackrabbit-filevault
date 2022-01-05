@@ -28,7 +28,7 @@ import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.option.Command;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.actions.Checkout;
@@ -50,6 +50,7 @@ public class CmdCheckoutCli extends AbstractVaultCommand {
     private Argument argJcrPath;
     private Argument argMountpoint;
 
+    @Override
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl)
             throws Exception {
         throw new ExecutionException("internal error. command not supported in console");
@@ -65,19 +66,15 @@ public class CmdCheckoutCli extends AbstractVaultCommand {
         if (localPath == null) {
             localPath = jcrPath;
             jcrPath = null;
-        }
+        } 
         if (jcrPath == null) {
             jcrPath = addr.getPath();
             addr = addr.resolve("/");
         }
         if (localPath == null) {
-            if (jcrPath == null) {
-                localPath = Text.getName(addr.toString());
-            } else {
-                localPath = Text.getName(jcrPath);
-            }
+            localPath = Text.getName(jcrPath);
         }
-        if (jcrPath == null || jcrPath.length() == 0 || !jcrPath.startsWith("/")) {
+        if (jcrPath.length() == 0 || !jcrPath.startsWith("/")) {
             throw new ExecutionException("JCR path needs to be absolute: " + jcrPath);
         }
         File localFile = app.getPlatformFile(localPath, false);

@@ -18,7 +18,9 @@
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 
 import org.apache.commons.cli2.Argument;
 import org.apache.commons.cli2.CommandLine;
@@ -28,8 +30,6 @@ import org.apache.commons.cli2.builder.CommandBuilder;
 import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.option.Command;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.Dumpable;
 import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
@@ -59,16 +59,14 @@ public class CmdDump extends AbstractJcrFsCommand {
                     file = ctx.getVaultFsApp().getPlatformFile(path, false);
                 }
                 if (cl.hasOption(optConfig)) {
-                    IOUtils.copy(
-                        fs.getConfig().getSource(),
-                        FileUtils.openOutputStream(file)
-                    );
+                    try (InputStream input = fs.getConfig().getSource()) {
+                        Files.copy(input, file.toPath());
+                    }
                     VaultFsApp.log.info("VaultFs config written to {}", file.getPath());
                 } else {
-                    IOUtils.copy(
-                        fs.getWorkspaceFilter().getSource(),
-                        FileUtils.openOutputStream(file)
-                    );
+                    try (InputStream input = fs.getWorkspaceFilter().getSource()) {
+                        Files.copy(input, file.toPath());
+                    }
                     VaultFsApp.log.info("VaultFs workspace filter written to {}", file.getPath());
                 }
             } else {

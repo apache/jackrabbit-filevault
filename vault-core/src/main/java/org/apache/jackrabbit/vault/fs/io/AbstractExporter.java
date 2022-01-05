@@ -51,7 +51,7 @@ import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -419,7 +419,7 @@ public abstract class AbstractExporter implements AutoCloseable {
             throws RepositoryException, IOException;
 
     /**
-     * <p>The specified stream remains open after this method returns.
+     * <p>The specified stream is automatically closed after this method returns or throws an exception.
      * @param in
      * @param relPath
      * @throws IOException

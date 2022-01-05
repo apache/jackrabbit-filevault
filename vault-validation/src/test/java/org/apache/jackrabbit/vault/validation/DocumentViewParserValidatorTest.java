@@ -37,7 +37,6 @@ import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.impl.util.DocumentViewXmlContentHandler;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
@@ -46,6 +45,7 @@ import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidat
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.apache.sling.api.SlingConstants;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -165,7 +165,7 @@ public class DocumentViewParserValidatorTest {
     public void testDocViewWithEmptyElements() throws IOException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/emptyelements/.content.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "emptyelements", ".content.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
 
             // verify node names
             Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();
@@ -181,7 +181,7 @@ public class DocumentViewParserValidatorTest {
 
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child1.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "child1.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            Assert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
 
             Map<String, DocViewProperty> properties = new HashMap<>();
             properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
@@ -225,7 +225,7 @@ public class DocumentViewParserValidatorTest {
             throws ParserConfigurationException, SAXException, URISyntaxException, IOException, NamespaceException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child2/.content.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "child2", ".content.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            Assert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
 
             Map<String, DocViewProperty> properties = new HashMap<>();
             properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
@@ -255,7 +255,7 @@ public class DocumentViewParserValidatorTest {
         // https://issues.apache.org/jira/browse/JCRVLT-358"
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child2/child1.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "child2", "child1.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
 
             Mockito.verifyNoMoreInteractions(docViewXmlValidator);
 

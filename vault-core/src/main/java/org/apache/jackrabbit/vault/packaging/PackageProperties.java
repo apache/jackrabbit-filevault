@@ -120,7 +120,7 @@ public interface PackageProperties {
     String NAME_DESCRIPTION = "description";
 
     /**
-     * Name of the flag that indicates in only admin sessions
+     * Name of the flag that indicates that only admin sessions
      * can extract this package.
      */
     String NAME_REQUIRES_ROOT = "requiresRoot";
@@ -267,6 +267,12 @@ public interface PackageProperties {
     boolean requiresRoot();
 
     /**
+     * Returns {@code true} if this package requires a restart after installation.
+     * @return {@code true} if this package requires a restart after installation.
+     */
+    boolean requiresRestart();
+
+    /**
      * Returns an unmodifiable list of dependencies
      * @return list of dependencies
      */
@@ -317,4 +323,10 @@ public interface PackageProperties {
      * @return dependencies locations as map
      */
     @NotNull Map<PackageId, URI> getDependenciesLocations();
+
+    /**
+     * Returns the build count of this package
+     * @return the build count.
+     */
+    long getBuildCount();
 }

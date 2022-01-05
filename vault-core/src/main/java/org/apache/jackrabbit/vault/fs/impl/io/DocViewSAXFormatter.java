@@ -45,7 +45,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.util.ItemNameComparator2;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * The docview sax formatter generates SAX events to a given ContentHandler based on the aggregate tree.
@@ -227,8 +227,8 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
     @Override
     public void onChildren(Node node, int level) throws RepositoryException {
         String label = Text.getName(node.getPath());
-        String elemName;
-        if (level == 0 || node.getDepth() == 0) {
+        final String elemName;
+        if (level == 0) {
             // root node needs a name
             elemName = jcrRoot;
         } else {
@@ -248,7 +248,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
             } else {
                 writer.writeStartElement(qName.getLocalName());
             }
-            if (elemName == jcrRoot) {
+            if (level == 0) {
                 startNamespaceDeclarations();
             }
             for (Property prop: props) {

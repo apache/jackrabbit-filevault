@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
@@ -30,8 +29,11 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewProperty;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
@@ -59,7 +61,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
     /**
      * temporary recovery helper when 'rescuing' the child nodes
      */
-    private ChildNodeStash recovery;
+    private NodeStash recovery;
 
     private String rootName;
 
@@ -68,14 +70,16 @@ public class JcrSysViewTransformer implements DocViewAdapter {
     private final String existingPath;
 
     private final Set<String> excludedNodeNames = new HashSet<String>();
+    
+    private final @NotNull ImportMode importMode;
 
     private long ignoreLevel = 0;
 
-    public JcrSysViewTransformer(Node node) throws SAXException, RepositoryException {
-        this(node, null);
+    public JcrSysViewTransformer(@NotNull Node node, @NotNull ImportMode importMode) throws SAXException, RepositoryException {
+        this(node, null, importMode);
     }
 
-    JcrSysViewTransformer(Node node, String existingPath) throws RepositoryException, SAXException {
+    JcrSysViewTransformer(@NotNull Node node, @Nullable String existingPath, @NotNull ImportMode importMode) throws RepositoryException, SAXException {
         Session session = node.getSession();
         parent = node;
         handler = session.getImportContentHandler(
@@ -94,10 +98,11 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         this.existingPath = existingPath;
         if (existingPath != null) {
             // check if there is an existing node with the name
-            recovery = new ChildNodeStash(session).excludeName("rep:cache");
-            recovery.stashChildren(existingPath);
+            recovery = new NodeStash(session, existingPath).excludeName("rep:cache");
+            recovery.stash();
         }
         excludeNode("rep:cache");
+        this.importMode = importMode;
     }
 
     public List<String> close() throws SAXException {
@@ -118,7 +123,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         // check for rescued child nodes
         if (recovery != null) {
             try {
-                recovery.recoverChildren(existingPath);
+                recovery.recover(importMode, null);
             } catch (RepositoryException e) {
                 log.error("Error while processing rescued child nodes");
             } finally {

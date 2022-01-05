@@ -17,6 +17,7 @@
 
 package org.apache.jackrabbit.vault.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -24,28 +25,41 @@ import java.util.List;
 import java.util.Set;
 
 import javax.jcr.Binary;
+import javax.jcr.InvalidSerializedDataException;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.version.VersionException;
 
 import org.apache.jackrabbit.api.ReferenceBinary;
 import org.apache.jackrabbit.commons.jackrabbit.SimpleReferenceBinary;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.util.XMLChar;
 import org.apache.jackrabbit.value.ValueHelper;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * Helper class that represents a (jcr) property in the document view format.
+ * Helper class that represents a JCR property in the FileVault (enhanced) document view format.
  * It contains formatting and parsing methods for writing/reading enhanced
  * docview properties.
- *
- * {@code prop:= [ "{" type "}" ] ( value | "[" [ value { "," value } ] "]" )}
+ * <br>
+ * The string representation adheres to the following grammar:
+ * <pre>
+ * <code>prop:= [ "{" type "}" ] ( value | "[" [ value { "," value } ] "]" )
+ * type := {@link PropertyType#nameFromValue(int)} | {@link #BINARY_REF}
+ * value := is a string representation of the value where the following characters are escaped: ',\[{' with a leading '\'
+ * </code>
+ * </pre>
+ * 
  */
 public class DocViewProperty {
 
-    private static final String BINARY_REF = "BinaryRef";
+    public static final String BINARY_REF = "BinaryRef";
 
     /**
      * name of the property
@@ -59,7 +73,7 @@ public class DocViewProperty {
     public final String[] values;
 
     /**
-     * indicates a MV property
+     * indicates a multi-value property
      */
     public final boolean isMulti;
 
@@ -74,12 +88,94 @@ public class DocViewProperty {
     public final boolean isReferenceProperty;
 
     /**
-     * set of unambigous property names
+     * set of unambigous property names (which never need an explicit type descriptor as the types are defined by the spec)
      */
-    private static final Set<String> UNAMBIGOUS = new HashSet<String>();
+    private static final Set<String> UNAMBIGOUS = new HashSet<>();
     static {
         UNAMBIGOUS.add("jcr:primaryType");
         UNAMBIGOUS.add("jcr:mixinTypes");
+    }
+
+    /**
+     * Creates a new property based on an array of {@link Value}s
+     * @param name the name of the property
+     * @param values the values (always an array, may be empty), must not contain {@code null} items
+     * @param type the type of the property
+     * @param isMulti {@code true} in case this is a multivalue property
+     * @param sort {@code true} in case the value array should be sorted first
+     * @param useBinaryReferences to use the binary reference as value (if available)
+     * @return the new property
+     * @throws RepositoryException
+     */
+    public static DocViewProperty fromValues(@NotNull String name, @NotNull Value[] values, int type, boolean isMulti, boolean sort, boolean useBinaryReferences) throws RepositoryException {
+        List<String> strValues = new ArrayList<>();
+        if (isMulti) {
+            if (sort) {
+                Arrays.sort(values, ValueComparator.getInstance());
+            }
+        }
+        for (Value value : values) {
+            strValues.add(serializeValue(value, useBinaryReferences));
+        }
+        
+        Boolean isBinaryRef = null;
+        if (type == PropertyType.BINARY) {
+            // either only binary references or regular binaries
+            for (String strValue : strValues) {
+                boolean isCurrentValueBinaryRef = !strValue.isEmpty();
+                if (isBinaryRef == null) {
+                    isBinaryRef = isCurrentValueBinaryRef;
+                } else {
+                    if (isBinaryRef != isCurrentValueBinaryRef) {
+                        throw new ValueFormatException("Mixed binary references and regular binary values in the same multi-value property is not supported");
+                    }
+                }
+            }
+        }
+        if (isBinaryRef == null) {
+            isBinaryRef = false;
+        }
+        return new DocViewProperty(name, strValues.toArray(new String[0]), isMulti, type, isBinaryRef);
+    }
+
+    /**
+     * Creates a new property based on a JCR {@link Property} object
+     * @param prop the JCR property
+     * @param sort if {@code true} multi-value properties should be sorted
+     * @param useBinaryReferences {@code true} to use binary references
+     * @return the new property
+     * @throws IllegalArgumentException if single value property and not exactly 1 value is given.
+     * @throws RepositoryException if another error occurs
+     */
+    public static DocViewProperty fromProperty(@NotNull Property prop, boolean sort, boolean useBinaryReferences) throws RepositoryException {
+        boolean isMultiValue = prop.getDefinition().isMultiple();
+        final Value[] values;
+        if (isMultiValue) {
+            values = prop.getValues();
+        } else {
+            values = new Value[] { prop.getValue() };
+        }
+        return fromValues(prop.getName(), values, prop.getType(), isMultiValue, sort, useBinaryReferences);
+    }
+
+    static String serializeValue(Value value, boolean useBinaryReferences) throws RepositoryException {
+        // special handling for binaries
+        String strValue = null;
+        if (value.getType() == PropertyType.BINARY) {
+            if (useBinaryReferences) {
+                Binary bin = value.getBinary();
+                if (bin instanceof ReferenceBinary) {
+                    strValue = ((ReferenceBinary) bin).getReference();
+                }
+            }
+            if (strValue == null) {
+                // leave value empty for non reference binaries or where reference is null
+                strValue = "";
+            }
+        } else {
+            strValue = ValueHelper.serialize(value, false);
+        }
+        return strValue;
     }
 
     /**
@@ -97,10 +193,10 @@ public class DocViewProperty {
     /**
      * Creates a new property.
      * @param name name of the property
-     * @param values values.
-     * @param multi multiple flag
+     * @param values string representation of values.
+     * @param multi indicates if this is a multi-value property
      * @param type type of the property
-     * @param isRef {@code true} to indicated that this is a binary reference property
+     * @param isRef {@code true} to indicate that this is a binary reference property
      * @throws IllegalArgumentException if single value property and not exactly 1 value is given.
      */
     public DocViewProperty(String name, String[] values, boolean multi, int type, boolean isRef) {
@@ -133,7 +229,7 @@ public class DocViewProperty {
         int pos = 0;
         char state = 'b';
         List<String> vals = null;
-        StringBuffer tmp = new StringBuffer();
+        StringBuilder tmp = new StringBuilder();
         int unicode = 0;
         int unicodePos = 0;
         while (pos < value.length()) {
@@ -244,9 +340,9 @@ public class DocViewProperty {
         return new DocViewProperty(name, values, isMulti, type, isBinaryRef);
     }
     /**
-     * Formats the given jcr property to the enhanced docview syntax.
-     * @param prop the jcr property
-     * @return the formatted string
+     * Formats (serializes) the given JCR property value according to the enhanced docview syntax.
+     * @param prop the JCR property
+     * @return the formatted string of the property value
      * @throws RepositoryException if a repository error occurs
      */
     public static String format(Property prop) throws RepositoryException {
@@ -254,70 +350,59 @@ public class DocViewProperty {
     }
     
     /**
-     * Formats the given jcr property to the enhanced docview syntax.
-     * @param prop the jcr property
-     * @param sort if {@code true} multivalue properties are sorted
+     * Formats (serializes) the given JCR property value to the enhanced docview syntax.
+     * @param prop the JCR property
+     * @param sort if {@code true} multi-value properties are sorted
      * @param useBinaryReferences {@code true} to use binary references
-     * @return the formatted string
+     * @return the formatted string of the property value
      * @throws RepositoryException if a repository error occurs
      */
     public static String format(Property prop, boolean sort, boolean useBinaryReferences)
             throws RepositoryException {
-        StringBuffer attrValue = new StringBuffer();
-        int type = prop.getType();
-        if (type == PropertyType.BINARY || isAmbiguous(prop)) {
-            String referenceBinary = null;
-            if (useBinaryReferences && type == PropertyType.BINARY) {
-                Binary bin = prop.getBinary();
-                if (bin != null && bin instanceof ReferenceBinary) {
-                    referenceBinary = ((ReferenceBinary) bin).getReference();
-                }
-            }
+        return fromProperty(prop, sort, useBinaryReferences).formatValue();
+    }
 
-            if (referenceBinary == null) {
-                attrValue.append("{");
-                attrValue.append(PropertyType.nameFromValue(prop.getType()));
-                attrValue.append("}");
+    /** 
+     * Generates string representation of this DocView property value.
+     * @return the string representation of the value
+     */
+    public String formatValue() {
+        StringBuilder attrValue = new StringBuilder();
+        
+        if (isAmbiguous(type, name)) {
+            final String strType;
+            if (isReferenceProperty) {
+                strType = BINARY_REF;
             } else {
-                attrValue.append("{");
-                attrValue.append(BINARY_REF);
-                attrValue.append("}");
-                attrValue.append(referenceBinary);
+                strType = PropertyType.nameFromValue(type);
+            }
+            attrValue.append('{').append(strType).append('}');
+        }
+        if (isMulti) {
+            attrValue.append('[');
+        }
+        for (int i=0;i<values.length;i++) {
+            String value = values[i];
+            if (values.length == 1 && value.length() == 0) {
+                // special case for empty string MV value (JCR-3661)
+                attrValue.append("\\0");
+            } else {
+                if (i > 0) {
+                    attrValue.append(',');
+                }
+                switch (type) {
+                    case PropertyType.STRING:
+                    case PropertyType.NAME:
+                    case PropertyType.PATH:
+                        attrValue.append(escape(value, isMulti));
+                        break;
+                    default:
+                        attrValue.append(value);
+                }
             }
         }
-        // only write values for non binaries
-        if (prop.getType() != PropertyType.BINARY) {
-            if (prop.getDefinition().isMultiple()) {
-                attrValue.append('[');
-                Value[] values = prop.getValues();
-                if (sort) {
-                    Arrays.sort(values, ValueComparator.getInstance());
-                }
-                for (int i = 0; i < values.length; i++) {
-                    if (i > 0) {
-                        attrValue.append(',');
-                    }
-                    String strValue = ValueHelper.serialize(values[i], false);
-                    if (values.length == 1 && strValue.length() == 0) {
-                        // special case for empty string MV value (JCR-3661)
-                        attrValue.append("\\0");
-                    } else {
-                        switch (prop.getType()) {
-                            case PropertyType.STRING:
-                            case PropertyType.NAME:
-                            case PropertyType.PATH:
-                                escape(attrValue, strValue, true);
-                                break;
-                            default:
-                                attrValue.append(strValue);
-                        }
-                    }
-                }
-                attrValue.append(']');
-            } else {
-                String strValue = ValueHelper.serialize(prop.getValue(), false);
-                escape(attrValue, strValue, false);
-            }
+        if (isMulti) {
+            attrValue.append(']');
         }
         return attrValue.toString();
     }
@@ -327,8 +412,21 @@ public class DocViewProperty {
      * @param buf buffer to append to
      * @param value value to escape
      * @param isMulti indicates multi value property
+     * @deprecated Rather use {@link #escape(String, boolean)}
      */
+    @Deprecated
     protected static void escape(StringBuffer buf, String value, boolean isMulti) {
+        buf.append(escape(value, isMulti));
+    }
+
+    /**
+     * Escapes the value
+     * @param value value to escape
+     * @param isMulti indicates multi value property
+     * @return the escaped value
+     */
+    protected static String escape(String value, boolean isMulti) {
+        StringBuilder buf = new StringBuilder();
         for (int i=0; i<value.length(); i++) {
             char c = value.charAt(i);
             if (c == '\\') {
@@ -347,6 +445,7 @@ public class DocViewProperty {
                 buf.append(c);
             }
         }
+        return buf.toString();
     }
     
     /**
@@ -357,9 +456,24 @@ public class DocViewProperty {
      * @param prop the property
      * @return type
      * @throws RepositoryException if a repository error occurs
+     * @deprecated was not supposed to be public but rather is an implementation detail, should not be called at all
      */
+    @Deprecated
     public static boolean isAmbiguous(Property prop) throws RepositoryException {
-        return prop.getType() != PropertyType.STRING && !UNAMBIGOUS.contains(prop.getName());
+        return isAmbiguous(prop.getType(), prop.getName());
+    }
+
+    /**
+     * Checks if the type of the given property is ambiguous in respect to it's
+     * property definition. the current implementation just checks some well
+     * known properties.
+     *
+     * @param type the type
+     * @param name the name
+     * @return {@code true} if type information should be emitted, otherwise {@code false}
+     */
+    private static boolean isAmbiguous(int type, String name) {
+        return type != PropertyType.STRING && !UNAMBIGOUS.contains(name);
     }
 
     /**
@@ -384,8 +498,10 @@ public class DocViewProperty {
             }
         }
         if (isMulti) {
-            // todo: handle multivalue binaries and reference binaries
             Value[] vs = prop == null ? null : prop.getValues();
+            if (type == PropertyType.BINARY) {
+                return applyBinary(node, vs);
+            }
             if (vs != null && vs.length == values.length) {
                 // quick check all values
                 boolean modified = false;
@@ -408,19 +524,7 @@ public class DocViewProperty {
         } else {
             Value v = prop == null ? null : prop.getValue();
             if (type == PropertyType.BINARY) {
-                if (isReferenceProperty) {
-                    ReferenceBinary ref = new SimpleReferenceBinary(values[0]);
-                    Binary binary = node.getSession().getValueFactory().createValue(ref).getBinary();
-                    if (v != null) {
-                        Binary bin = v.getBinary();
-                        if (bin.equals(binary)) {
-                            return false;
-                        }
-                    }
-                    node.setProperty(name, binary);
-                }
-                // the binary property is always modified (TODO: check if still correct with JCRVLT-110)
-                return true;
+                return applyBinary(node, v);
             }
             if (v == null || !v.getString().equals(values[0])) {
                 try {
@@ -437,6 +541,52 @@ public class DocViewProperty {
             }
         }
         return false;
+    }
+
+    private boolean applyBinary(Node node, Value... existingValues) throws ValueFormatException, VersionException, LockException, ConstraintViolationException, RepositoryException {
+        List<Value> binaryValues = new ArrayList<>(values.length);
+        if (!isReferenceProperty) {
+            for (String value : values) {
+                // empty string is used for binary properties which should not be touched!
+                if (!value.isEmpty()) { 
+                    throw new InvalidSerializedDataException("Inline binaries are only supported as binary references, but is " + value);
+                }
+            }
+            // just silently ignore binaries with only empty string values
+            return false;
+        }
+        try {
+            boolean modified = false;
+            for (int n=0; n < values.length; n++) {
+                String value = values[n];
+                ReferenceBinary ref = new SimpleReferenceBinary(value);
+                Value binaryValue = node.getSession().getValueFactory().createValue(ref);
+                binaryValues.add(binaryValue);
+                // compare with existing value
+                if (modified == false && existingValues != null && n < existingValues.length && existingValues[n] != null) {
+                    Binary existingBinary = existingValues[0].getBinary();
+                    if (!existingBinary.equals(binaryValue.getBinary())) {
+                        modified = true;
+                    }
+                } else {
+                    modified = true;
+                }
+            }
+            if (!modified) {
+                return false;
+            }
+            if (isMulti) {
+                node.setProperty(name, binaryValues.toArray(new Value[0]));
+            } else {
+                node.setProperty(name, binaryValues.get(0));
+            }
+            // the binary property is always modified (TODO: check if still correct with JCRVLT-110)
+            return true;
+        } finally {
+            for (Value value : binaryValues) {
+                value.getBinary().dispose();
+            }
+        }
     }
 
     @Override
@@ -476,9 +626,13 @@ public class DocViewProperty {
         return true;
     }
 
+    /**
+     * This does not return the string representation of the enhanced docview property value but rather a descriptive string including the property name for debugging purposes.
+     * Use {@link #formatValue()}, {@link #format(Property)} or {@link #format(Property, boolean, boolean)} to get the enhanced docview string representation of the value.
+     */
     @Override
     public String toString() {
-        return "DocViewProperty [name=" + name + ", values=" + Arrays.toString(values) + ", isMulti=" + isMulti + ", type=" + type
+        return "DocViewProperty [name=" + name + ", values=" + Arrays.toString(values) + ", isMulti=" + isMulti + ", type=" + PropertyType.nameFromValue(type)
                 + ", isReferenceProperty=" + isReferenceProperty + "]";
     }
 

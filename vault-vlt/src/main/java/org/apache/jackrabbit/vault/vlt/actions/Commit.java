@@ -26,7 +26,7 @@ import java.util.List;
 import org.apache.jackrabbit.vault.fs.api.VaultFsTransaction;
 import org.apache.jackrabbit.vault.fs.impl.TransactionImpl;
 import org.apache.jackrabbit.vault.util.PathComparator;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.vlt.FileAction;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.VltDirectory;

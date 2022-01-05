@@ -25,9 +25,9 @@ import org.osgi.annotation.versioning.ProviderType;
 
 
 /**
- * Validator interface for validating file paths for files and folders
- * below jcr_root.
- * Called after {@link GenericJcrDataValidator}.
+ * Validator interface for validating file paths for files and folders below {@code jcr_root}.
+ * Called after {@link GenericJcrDataValidator} and after {@link DocumentViewXmlValidator}.
+ * In contrast to {@link NodePathValidator} only called once per file and folder (even if those are covering multiple node paths).
  */
 @ProviderType
 public interface JcrPathValidator extends Validator {
@@ -36,7 +36,7 @@ public interface JcrPathValidator extends Validator {
      * 
      * @param filePath the relative file/folder path to the jcr_root directory
      * @return validation messages or {@code null}
-     * @deprecated Use {@link #validateJcrPath(NodeContext, boolean)} instead.
+     * @deprecated Use {@link #validateJcrPath(NodeContext, boolean, boolean)} instead.
      */
     @Deprecated 
     default @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull Path filePath) { 
@@ -49,9 +49,22 @@ public interface JcrPathValidator extends Validator {
      * @param nodeContext the meta information about the node given through this file/folder
      * @param isFolder {@code true} in case it is a folder, otherwise {@code false}
      * @return validation messages or {@code null}
+     * @deprecated Use {@link #validateJcrPath(NodeContext, boolean, boolean)} instead.
      */
+    @Deprecated
     default @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull NodeContext nodeContext, boolean isFolder) { 
         return validateJcrPath(nodeContext.getFilePath()); 
     }
    
+    /**
+     * Called for each file/folder below jcr_root.
+     * 
+     * @param nodeContext the meta information about the node given through this file/folder
+     * @param isFolder {@code true} in case it is a folder, otherwise {@code false}
+     * @param isDocViewXml {@code true} in case {@code isFolder} is {@code false} and the file is a Document View XML file, otherwise {@code false}
+     * @return validation messages or {@code null}
+     */
+    default @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull NodeContext nodeContext, boolean isFolder, boolean isDocViewXml) { 
+        return validateJcrPath(nodeContext, isFolder); 
+    }
 }

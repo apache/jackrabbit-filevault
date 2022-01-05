@@ -33,8 +33,8 @@ import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
-import org.apache.jackrabbit.vault.validation.spi.impl.MergeLimitationsValidator;
-import org.junit.Assert;
+import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,7 +57,7 @@ public class MergeLimitationsValidatorTest {
         props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
 
         DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "nt:unstructured");
-        Collection<ValidationMessage> messages = validator.validate(node, "/apps/test/deep", Paths.get(".content.xml"), false);
+        Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), false);
         ValidationExecutorTest.assertViolation(messages,
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MergeLimitationsValidator.PACKAGE_NON_ROOT_NODE_MERGED, "/apps/test/deep")));
     }
@@ -68,8 +68,8 @@ public class MergeLimitationsValidatorTest {
         props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
 
         DocViewNode node = new DocViewNode("somename", "somename", null, props, null, "nt:unstructured");
-        Collection<ValidationMessage> messages = validator.validate(node, "/apps/test/deep", Paths.get(".content.xml"), true);
-        Assert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), true);
+        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
     }
 
 }

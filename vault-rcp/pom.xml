@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.4.5-SNAPSHOT</version>
+        <version>3.5.9-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -32,23 +32,12 @@
     <artifactId>org.apache.jackrabbit.vault.rcp</artifactId>
 
     <name>Apache Jackrabbit FileVault RCP Server Bundle</name>
-    <description>
-        Builds an OSGi bundle that provides the vlt rcp manager
-    </description>
-    
-    <properties>
-        <!-- downgrade dependencies to make compatible with the minimum supported version -->
-        <jackrabbit.version>2.14.0</jackrabbit.version>
-    </properties>
+    <description>OSGi bundle containing the Jackrabbit FileVault RCP Manager used for copying (parts of) a remote repository to the local one</description>
 
-    <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N                                             -->
-    <!-- ====================================================================== -->
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-rcp</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-rcp</developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-rcp</url>
-    </scm>
+    <properties>
+        <!-- http://maven.apache.org/ref/3.6.3/maven-model-builder/index.html#Inheritance_Assembly -->
+        <project.directory>vault-rcp</project.directory>
+    </properties>
 
     <!-- ====================================================================== -->
     <!-- B U I L D                                                             -->
@@ -58,13 +47,14 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>sling-maven-plugin</artifactId>
-                <configuration>
-                    <slingUrlSuffix>/libs/system/install/</slingUrlSuffix>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-baseline-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -97,10 +87,19 @@
     <!-- D E P E N D E N C I E S                                                -->
     <!-- ====================================================================== -->
     <dependencies>
+        <!-- for resolving against a target OSGi container the target OSGi container must be built first -->
+        <dependency>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <artifactId>org.apache.jackrabbit.vault.target-osgi-environment</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+        <!-- depend on older version to be still compatible with older distributions -->
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.4.5-SNAPSHOT</version>
+            <version>3.1.38</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -141,8 +140,52 @@
             <version>2.2.0</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.6.0</version><!-- to support PROPAGATE_TRANSIENT_MARKER -->
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.framework</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.cm</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- OSGi Annotations: @Version -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.annotation.versioning</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Declarative Service Annotations -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Metatype Annotations -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.metatype.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-        <!-- the following three dependencies are no bundles and therefore must be embedded -->
+        <!-- include all relevant parts to be installable also on older distributions (having older Jackrabbit bundles) -->
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-jcr2spi</artifactId>
@@ -155,32 +198,64 @@
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-spi</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-spi-commons</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-spi2dav</artifactId>
             <scope>compile</scope>
         </dependency>
-        
-        <!-- OSGi Annotations: @Version -->
         <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.annotation.versioning</artifactId>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-webdav</artifactId>
+            <scope>compile</scope>
         </dependency>
-        <!-- Declarative Service Annotations -->
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.service.component.annotations</artifactId>
-        </dependency>
-        <!-- Metatype Annotations -->
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.service.metatype.annotations</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-davex</artifactId>
             <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
 
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.3.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>java-hamcrest</artifactId>
+            <version>2.0.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.10</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
+  <scm>
+    <tag>jackrabbit-filevault-3.5.8</tag>
+  </scm>
 </project>

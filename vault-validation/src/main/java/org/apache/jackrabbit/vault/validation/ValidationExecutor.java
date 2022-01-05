@@ -21,13 +21,16 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.apache.jackrabbit.vault.validation.impl.util.EnhancedBufferedInputStream;
@@ -49,6 +52,7 @@ import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedFilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedPropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidator;
+import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -63,6 +67,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class ValidationExecutor {
 
+    public static final String EXTENSION_BINARY = ".binary";
     private final Map<String, DocumentViewXmlValidator> documentViewXmlValidators;
     private final Map<String, NodePathValidator> nodePathValidators;
     private final Map<String, GenericJcrDataValidator> genericJcrDataValidators;
@@ -106,6 +111,13 @@ public final class ValidationExecutor {
                 DocumentViewParserValidator.class.cast(validator).setDocumentViewXmlValidators(documentViewXmlValidators);
             }
         }
+        
+        // jcr path validators requires documentviewparservalidator (as that retrieves the JCR paths in the first place)
+        if (!(jcrPathValidators.isEmpty() || nodePathValidators.isEmpty()) && !genericJcrDataValidators.containsKey(DocumentViewParserValidatorFactory.ID)) {
+            Set<String> pathValidatorIds = new HashSet<>(jcrPathValidators.keySet());
+            pathValidatorIds.addAll(nodePathValidators.keySet());
+            throw new IllegalStateException("For the validators with id(s) '" + String.join(", ", pathValidatorIds) + "' it is mandatory to also enable validator '" + DocumentViewParserValidatorFactory.ID + "'");
+        }
     }
 
     /**
@@ -137,7 +149,7 @@ public final class ValidationExecutor {
     }
 
     /** 
-     * Validates a package META-INF input stream  with all relevant validators.
+     * Validates a package's META-INF input stream  with all relevant validators.
      * 
      * @param input the input stream if it is a file or {@code null} in case it is called for a folder. It is not closed during processing, this is obligation of the caller. Should not be buffered as buffering is done internally! 
      * @param filePath should be relative to the META-INF directory (i.e. should not start with {@code META-INF})
@@ -158,7 +170,9 @@ public final class ValidationExecutor {
     }
 
     /** 
-     * Validates a package jcr_root input stream  with all relevant validators.
+     * Validates a package's input stream (below jcr_root, no metadata) with all relevant validators.
+     * <p>
+     * As some validators rely on the order of validated files, make sure to first call for streams representing the parent nodes (i.e. folders and .content.xml streams), before calling it for streams representing the children.
      * 
      * @param input the input stream if it is a file or {@code null} in case it is called for a folder. It is not closed during processing, this is obligation of the caller. Should not be buffered as buffering is done internally! 
      * @param filePath file path relative to the content package jcr root (i.e. the folder named "jcr_root")
@@ -270,6 +284,7 @@ public final class ValidationExecutor {
         Map<String, Integer> nodePathsAndLineNumbers = new LinkedHashMap<>();
         Collection<ValidationViolation> enrichedMessages = new LinkedList<>();
         
+        boolean isDocViewXml = true;
         if (input != null) {
             InputStream currentInput = input;
             ResettableInputStream resettableInputStream = null;
@@ -299,6 +314,7 @@ public final class ValidationExecutor {
                             // convert file name to node path
                             String nodePath = filePathToNodePath(filePath);
                             log.debug("Found non-docview node '{}'", nodePath);
+                            isDocViewXml = false;
                             nodePathsAndLineNumbers.put(nodePath, 0);
                         }
                     } catch (RuntimeException e) {
@@ -319,15 +335,16 @@ public final class ValidationExecutor {
             nodePathsAndLineNumbers.put(filePathToNodePath(filePath), 0);
         }
 
-        // generate node context
-        NodeContext nodeContext = new NodeContextImpl(nodePathsAndLineNumbers.keySet().iterator().next(), filePath, basePath);
-        for (Map.Entry<String, JcrPathValidator> entry : jcrPathValidators.entrySet()) {
-            Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(nodeContext, input == null);
-            if (messages != null && !messages.isEmpty()) {
-                enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
+        if (!jcrPathValidators.isEmpty() || !nodePathValidators.isEmpty()) {
+            NodeContext nodeContext = new NodeContextImpl(nodePathsAndLineNumbers.keySet().stream().findFirst().orElseThrow(() -> new IllegalStateException("No node paths have been collected")), filePath, basePath);
+            for (Map.Entry<String, JcrPathValidator> entry : jcrPathValidators.entrySet()) {
+                Collection<ValidationMessage> messages = entry.getValue().validateJcrPath(nodeContext, input == null, isDocViewXml);
+                if (messages != null && !messages.isEmpty()) {
+                    enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
+                }
             }
+            enrichedMessages.addAll(validateNodePaths(filePath, basePath, nodePathsAndLineNumbers));
         }
-        enrichedMessages.addAll(validateNodePaths(filePath, basePath, nodePathsAndLineNumbers));
         return enrichedMessages;
     }
 
@@ -337,9 +354,19 @@ public final class ValidationExecutor {
      * @return the node path
      */
     public static @NotNull String filePathToNodePath(@NotNull Path filePath) {
-        // convert to forward slashes and make absolute by prefixing it with "/"
-        String platformPath = "/" + FilenameUtils.separatorsToUnix(filePath.toString());
-        return PlatformNameFormat.getRepositoryPath(platformPath, true);
+        String platformPath = FilenameUtils.separatorsToUnix(filePath.toString());
+        // treat https://jackrabbit.apache.org/filevault/vaultfs.html#Binary_Properties specially
+        if (platformPath.endsWith(EXTENSION_BINARY)) {
+            platformPath = Text.getRelativeParent(platformPath, 1);
+        }
+        String repositoryPath = PlatformNameFormat.getRepositoryPath(platformPath, true);
+        if (!repositoryPath.isEmpty()) {
+            // make repository path absolute by prefixing it with "/" in case it is not the root node path itself
+            repositoryPath = "/" + repositoryPath;
+        } else {
+            repositoryPath = "/";
+        }
+        return repositoryPath;
     }
 
     static <T> Map<String, T> filterValidatorsByClass(Map<String, Validator> allValidators, Class<T> type) {

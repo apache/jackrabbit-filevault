@@ -25,7 +25,10 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Implements a package dependency reference.
+ * 
+ * The string representation is {@code <group>:<name>[:<versionrange>]}
  * @since 2.0
+ * @see VersionRange
  */
 public class Dependency {
 

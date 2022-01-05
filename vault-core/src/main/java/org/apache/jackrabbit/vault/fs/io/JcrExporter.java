@@ -31,7 +31,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * Implements a Vault filesystem exporter that exports Vault files to a JCR
@@ -168,11 +168,10 @@ public class JcrExporter extends AbstractExporter {
                 content.setProperty(JcrConstants.JCR_MIMETYPE, "application/octet-stream");
             }
             b.dispose();
-            in.close();
         } catch (RepositoryException e) {
-            IOException io = new IOException("Error while writing file " + relPath);
-            io.initCause(e);
-            throw io;
+            throw new IOException("Error while writing file " + relPath, e);
+        } finally {
+            in.close();
         }
     }
 

@@ -48,11 +48,13 @@ import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTaskBuilder;
+import org.apache.jackrabbit.vault.packaging.registry.PackageTaskOptions;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -71,7 +73,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
      */
     private static final Logger log = LoggerFactory.getLogger(ExecutionPlanBuilderImpl.class);
 
-    private final static String ATTR_VERSION = "version";
+    private static final String ATTR_VERSION = "version";
     private static final String TAG_EXECUTION_PLAN = "executionPlan";
     private static final String TAG_TASK = "task";
     private static final String ATTR_CMD = "cmd";
@@ -81,9 +83,11 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
 
     protected double version = SUPPORTED_VERSION;
 
-    private final List<TaskBuilder> tasks = new LinkedList<TaskBuilder>();
+    private final List<TaskBuilder> tasks = new LinkedList<>();
 
     private final PackageRegistry registry;
+
+    private final PackageTaskOptionsSerializer optionsSerializer;
 
     private Session session;
 
@@ -95,6 +99,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
 
     ExecutionPlanBuilderImpl(PackageRegistry registry) {
         this.registry = registry;
+        optionsSerializer = new PackageTaskOptionsSerializer();
     }
 
     @NotNull
@@ -109,6 +114,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
                 writer.writeStartElement(TAG_TASK);
                 writer.writeAttribute(ATTR_CMD, task.getType().name().toLowerCase());
                 writer.writeAttribute(ATTR_PACKAGE_ID, task.getPackageId().toString());
+                optionsSerializer.save(writer, task.getOptions());
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -168,7 +174,13 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     private void readTask(Element elem) throws IOException {
         PackageTask.Type type = PackageTask.Type.valueOf(elem.getAttribute(ATTR_CMD).toUpperCase());
         PackageId id = PackageId.fromString(elem.getAttribute(ATTR_PACKAGE_ID));
-        addTask().with(id).with(type);
+        
+        PackageTaskBuilder packageTaskBuilder = addTask().with(id);
+        PackageTaskOptions options = optionsSerializer.load(elem);
+        if (options != null) {
+            packageTaskBuilder.withOptions(options);
+        }
+        packageTaskBuilder.with(type);
     }
 
     @NotNull
@@ -197,10 +209,10 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     @NotNull
     @Override
     public ExecutionPlanBuilder validate() throws IOException, PackageException {
-        Map<PackageId, PackageTask> installTasks = new HashMap<PackageId, PackageTask>();
-        Map<PackageId, PackageTask> uninstallTasks = new HashMap<PackageId, PackageTask>();
-        Map<PackageId, PackageTask> removeTasks = new HashMap<PackageId, PackageTask>();
-        List<PackageTask> packageTasks = new ArrayList<PackageTask>(tasks.size());
+        Map<PackageId, PackageTask> installTasks = new HashMap<>();
+        Map<PackageId, PackageTask> uninstallTasks = new HashMap<>();
+        Map<PackageId, PackageTask> removeTasks = new HashMap<>();
+        List<PackageTask> packageTasks = new ArrayList<>(tasks.size());
         for (TaskBuilder task: tasks) {
             if (task.id == null || task.type == null) {
                 throw new PackageException("task builder must have package id and type defined.");
@@ -208,7 +220,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
             if (!registry.contains(task.id)) {
                 throw new NoSuchPackageException("No such package: " + task.id);
             }
-            PackageTaskImpl pTask = new PackageTaskImpl(task.id, task.type);
+            PackageTaskImpl pTask = new PackageTaskImpl(task.id, task.type, task.option);
             // very simple task resolution: uninstall -> remove -> install/extract
             switch (task.type) {
                 case INSTALL:
@@ -225,14 +237,15 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         }
 
         for (PackageId id: uninstallTasks.keySet().toArray(new PackageId[uninstallTasks.size()])) {
-            resolveUninstall(id, packageTasks, uninstallTasks, new HashSet<PackageId>());
+            resolveUninstall(id, packageTasks, uninstallTasks, new HashSet<>(), uninstallTasks.get(id).getOptions());
         }
 
         // todo: validate remove
         packageTasks.addAll(removeTasks.values());
 
         for (PackageId id: installTasks.keySet().toArray(new PackageId[installTasks.size()])) {
-            resolveInstall(id, packageTasks, installTasks, new HashSet<PackageId>(), installTasks.get(id).getType());
+            PackageTask task = installTasks.get(id);
+            resolveInstall(id, packageTasks, installTasks, new HashSet<>(), task.getType(), task.getOptions());
         }
 
         for (PackageTask task: packageTasks) {
@@ -243,7 +256,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         return this;
     }
 
-    private void resolveInstall(PackageId id, List<PackageTask> packageTasks, Map<PackageId, PackageTask> installTasks, Set<PackageId> resolved, PackageTask.Type type) throws IOException, PackageException {
+    private void resolveInstall(PackageId id, List<PackageTask> packageTasks, Map<PackageId, PackageTask> installTasks, Set<PackageId> resolved, PackageTask.Type type, @Nullable PackageTaskOptions option) throws IOException, PackageException {
         if (resolved.contains(id)) {
             throw new CyclicDependencyException("Package has cyclic dependencies: " + id);
         }
@@ -263,7 +276,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
                     continue;
                 }
             }
-            resolveInstall(depId, packageTasks, installTasks, resolved, type);
+            resolveInstall(depId, packageTasks, installTasks, resolved, type, option);
         }
         PackageTask task = installTasks.get(id);
         if (task == PackageTaskImpl.MARKER) {
@@ -274,7 +287,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
             if (task == null) {
                 // package is not registered in plan, but need to be installed
                 // due to dependency
-                task = new PackageTaskImpl(id, type);
+                task = new PackageTaskImpl(id, type, option);
             }
             packageTasks.add(task);
         }
@@ -282,7 +295,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         installTasks.put(id, PackageTaskImpl.MARKER);
     }
 
-    private void resolveUninstall(PackageId id, List<PackageTask> packageTasks, Map<PackageId, PackageTask> uninstallTasks, Set<PackageId> resolved) throws IOException, PackageException {
+    private void resolveUninstall(PackageId id, List<PackageTask> packageTasks, Map<PackageId, PackageTask> uninstallTasks, Set<PackageId> resolved, @Nullable PackageTaskOptions option) throws IOException, PackageException {
         if (resolved.contains(id)) {
             throw new CyclicDependencyException("Package has cyclic dependencies: " + id);
         }
@@ -298,7 +311,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
                     continue;
                 }
             }
-            resolveUninstall(depId, packageTasks, uninstallTasks, resolved);
+            resolveUninstall(depId, packageTasks, uninstallTasks, resolved, option);
         }
         PackageTask task = uninstallTasks.get(id);
         if (task == PackageTaskImpl.MARKER) {
@@ -307,7 +320,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         }
         if (task == null) {
             // package is not registered in plan, but need to be installed due to dependency
-            task = new PackageTaskImpl(id, PackageTask.Type.UNINSTALL);
+            task = new PackageTaskImpl(id, PackageTask.Type.UNINSTALL, option);
         }
         packageTasks.add(task);
         // mark as processed
@@ -334,6 +347,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     private class TaskBuilder implements PackageTaskBuilder {
         private PackageId id;
         private PackageTask.Type type;
+        private PackageTaskOptions option;
 
         public PackageTaskBuilder with(@NotNull PackageId id) {
             this.id = id;
@@ -346,6 +360,13 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
             this.type = type;
             return ExecutionPlanBuilderImpl.this;
         }
+
+        @Override
+        @NotNull
+        public PackageTaskBuilder withOptions(@NotNull PackageTaskOptions option) {
+            this.option = option;
+            return this;
+        }
     }
 
     @Override
@@ -357,7 +378,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     @Override
     public Set<PackageId> preview() throws IOException, PackageException {
         validate();
-        if (plan.getTasks().size() == 0) {
+        if (plan.getTasks().isEmpty()) {
             return Collections.emptySet();
         } else {
             Set<PackageId> packages = new HashSet<>();

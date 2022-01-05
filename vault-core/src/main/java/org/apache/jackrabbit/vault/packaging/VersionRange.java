@@ -19,6 +19,14 @@ package org.apache.jackrabbit.vault.packaging;
 
 /**
  * Implements a version range
+ * 
+ * The string representation is either 
+ * <ul>
+ * <li>the empty string, which means all versions match</li>
+ * <li>or a simple version string consisting of arbitrarily many alphanumeric segments separated by {@code .}. Those segments must not include a {@code ,}. This means
+ * everything from the given version will match (i.e. upper bound unlimited).
+ * <li>or a real range in the form {@code '['|'('<lowerBound>,(<upperBound>']'|')')}, where {@code []} means inclusive and {@code ()} means exclusive bounds. Both the lowerBound and upperBound must follow the grammar from the simple version string.
+ * </ul>
  * @since 2.0
  */
 public class VersionRange {

@@ -18,6 +18,8 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZoneOffset;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +27,8 @@ import java.util.Properties;
 
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class PackagePropertiesImplTest {
@@ -38,7 +40,7 @@ public class PackagePropertiesImplTest {
             this.properties = new Properties();
             this.properties.putAll(properties);
         }
-        
+
         @Override
         protected Properties getPropertiesMap() {
             return properties;
@@ -48,32 +50,64 @@ public class PackagePropertiesImplTest {
     @Test
     public void testGetDependenciesLocations() throws URISyntaxException {
         PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0=maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.singletonMap(PackageId.fromString("group1:name1:1.0"), new URI("maven:com.example.mygroupid:myartifactId:1.0.0:zip"))));
-        
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.singletonMap(PackageId.fromString("group1:name1:1.0"), new URI("maven:com.example.mygroupid:myartifactId:1.0.0:zip"))));
+
         packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0=maven:com.example.mygroupid:myartifactId:1.0.0:zip,group2:name2:2.0=maven:com.example.mygroupid2:myartifactId2:2.0.0:zip,"));
         Map<PackageId, URI> expectedDependenciesLocations = new HashMap<>();
         expectedDependenciesLocations.put(PackageId.fromString("group1:name1:1.0"), new URI("maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
         expectedDependenciesLocations.put(PackageId.fromString("group2:name2:2.0"), new URI("maven:com.example.mygroupid2:myartifactId2:2.0.0:zip"));
-        
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(expectedDependenciesLocations));
+
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(expectedDependenciesLocations));
     }
 
     @Test
     public void testGetInvalidDependenciesLocations() throws URISyntaxException {
         PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
         // no key=value format
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
         // invalid key (pid)
         packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "=maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
         // invalid value (uri)
         packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0=maven:invalid uri"));
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
     }
 
     @Test
     public void testGetNotSetDependenciesLocations() throws URISyntaxException {
         PackageProperties packageProperties = new SimplePackageProperties(Collections.emptyMap());
-        Assert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+    }
+
+    /**
+     * Tests the correct parsing of several a bit unusual date formats, see https://issues.apache.org/jira/browse/JCRVLT-526 .
+     * These date formats are e.g. used by the com.day.jcr.vault:content-package-maven-plugin, and thus should be supported.
+     */
+    @Test
+    public void testDateFormat() {
+        checkDateParsing("2021-05-26T15:12:21.673+02:00","2021-05-26T13:12:21.673Z");
+
+        // these are not parsed by org.apache.jackrabbit.util.ISO8601.parse but generated by the maven plugin(s)
+        checkDateParsing("2021-05-26T15:12:21.673+02","2021-05-26T13:12:21.673Z");
+        checkDateParsing("2021-05-26T15:12:21.673-02","2021-05-26T17:12:21.673Z");
+
+        checkDateParsing("2021-05-26T15:12:21.673+0200","2021-05-26T13:12:21.673Z");
+        checkDateParsing("2021-05-26T15:12:21.673-0230","2021-05-26T17:42:21.673Z");
+
+        // check that some edge cases don't break
+        checkDateParsing("nonsense",null);
+        checkDateParsing("",null);
+        MatcherAssert.assertThat(new SimplePackageProperties(Collections.emptyMap()).getCreated(), Matchers.nullValue());
+    }
+
+    protected void checkDateParsing(String original, String expected){
+        PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_CREATED, original));
+        Calendar created = packageProperties.getCreated();
+        if (expected != null) {
+            MatcherAssert.assertThat("Date could not be parsed: " + original, created, Matchers.notNullValue());
+            MatcherAssert.assertThat(created.toInstant().atOffset(ZoneOffset.UTC).toString(), Matchers.equalTo(expected));
+        } else {
+            MatcherAssert.assertThat("Invalid date must return null when parsing: " + original, created, Matchers.nullValue());
+        }
     }
 }

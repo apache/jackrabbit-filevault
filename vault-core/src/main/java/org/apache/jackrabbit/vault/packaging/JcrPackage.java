@@ -192,7 +192,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * @throws PackageException if an error during packaging occurs or if no
      *         snapshot is available.
      * @throws IllegalStateException if the package is not valid.
-     * @throws PackageException if no snapshot is present and {@link ImportOptions#isStrict()} is {@code true}.
+     * @throws PackageException if no snapshot is present and {@link ImportOptions#isStrict(boolean)} returns {@code true}.
      * @throws IOException if an I/O error occurs
      *
      * @since 2.3.14

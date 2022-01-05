@@ -37,9 +37,17 @@ public interface PackageTaskBuilder {
     /**
      * Sets the type of this task
      * @param type the type
-     * @return this.
+     * @return the parent execution plan builder.
      */
     @NotNull
     ExecutionPlanBuilder with(@NotNull PackageTask.Type type);
+    
+    /**
+     * Set the optional options for the package task
+     * @param options the options
+     * @return this.
+     */
+    @NotNull
+    PackageTaskBuilder withOptions(@NotNull PackageTaskOptions options);
 
 }

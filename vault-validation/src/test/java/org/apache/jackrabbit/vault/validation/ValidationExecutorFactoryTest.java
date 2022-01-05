@@ -25,14 +25,13 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.jackrabbit.vault.validation.ValidationExecutor;
-import org.apache.jackrabbit.vault.validation.ValidationExecutorFactory;
 import org.apache.jackrabbit.vault.validation.impl.util.ValidatorSettingsImpl;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -99,7 +98,7 @@ public class ValidationExecutorFactoryTest {
         expectedValidators.put("id2", validator2);
         expectedValidators.put("id3", validator3);
         Assert.assertEquals(expectedValidators.toString(), actualValidators.toString());
-        Assert.assertThat(actualValidators.keySet(), Matchers.contains("id1", "id2", "id3"));
+        MatcherAssert.assertThat(actualValidators.keySet(), Matchers.contains("id1", "id2", "id3"));
         // the reinstantiate with a different order
         Collections.shuffle(validatorFactories);
         executorFactory = new ValidationExecutorFactory(validatorFactories);
@@ -110,15 +109,15 @@ public class ValidationExecutorFactoryTest {
         actualValidators = executor.getAllValidatorsById();
         // the returned validators should still have the same order
         Assert.assertEquals(expectedValidators.toString(), actualValidators.toString());
-        Assert.assertThat(actualValidators.keySet(), Matchers.contains("id1", "id2", "id3"));
+        MatcherAssert.assertThat(actualValidators.keySet(), Matchers.contains("id1", "id2", "id3"));
     }
 
     @Test
     public void testOrderOfValidatorFactories()  {
-        Assert.assertThat(executorFactory.validatorFactories, Matchers.contains(validatorFactory1, validatorFactory2, validatorFactory3));
+        MatcherAssert.assertThat(executorFactory.validatorFactories, Matchers.contains(validatorFactory1, validatorFactory2, validatorFactory3));
         Collections.shuffle(validatorFactories);
         executorFactory = new ValidationExecutorFactory(validatorFactories);
-        Assert.assertThat(executorFactory.validatorFactories, Matchers.contains(validatorFactory1, validatorFactory2, validatorFactory3));
+        MatcherAssert.assertThat(executorFactory.validatorFactories, Matchers.contains(validatorFactory1, validatorFactory2, validatorFactory3));
     }
 
     @Test
@@ -126,7 +125,7 @@ public class ValidationExecutorFactoryTest {
         Mockito.when(validatorFactory2.getServiceRanking()).thenReturn(3);
         Mockito.when(validatorFactory3.getServiceRanking()).thenReturn(3);
         executorFactory = new ValidationExecutorFactory(validatorFactories);
-        Assert.assertThat(executorFactory.validatorFactories, Matchers.containsInAnyOrder(validatorFactory1, validatorFactory2, validatorFactory3));
+        MatcherAssert.assertThat(executorFactory.validatorFactories, Matchers.containsInAnyOrder(validatorFactory1, validatorFactory2, validatorFactory3));
     }
 
     @Test

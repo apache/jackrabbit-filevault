@@ -35,7 +35,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * Specifies the interface of a package definition stored in the repository.
  */
 @ProviderType
-public interface JcrPackageDefinition {
+public interface JcrPackageDefinition extends PackageProperties {
 
     /**
      * Property name of the last unpacked date
@@ -162,9 +162,14 @@ public interface JcrPackageDefinition {
     String PN_MODE = "mode";
 
     /**
-     * Property name of the filter rules
+     * Property name of the path filter rules
      */
     String PN_RULES = "rules";
+
+    /**
+     * Property name of the property filter rules
+     */
+    String PN_PROPERTY_RULES = "propertyRules";
 
     /**
      * Property name of the rule type
@@ -187,13 +192,6 @@ public interface JcrPackageDefinition {
      */
     @NotNull
     Node getNode();
-
-    /**
-     * Returns the package id
-     * @return the package id
-     */
-    @NotNull
-    PackageId getId();
 
     /**
      * Writes the properties derived from the package id to the content
@@ -234,13 +232,6 @@ public interface JcrPackageDefinition {
      * @throws RepositoryException if an error occurrs
      */
     void dumpCoverage(@NotNull ProgressTrackerListener listener) throws RepositoryException;
-
-    /**
-     * Returns the dependencies stored in this definition
-     * @return the dependencies
-     */
-    @NotNull
-    Dependency[] getDependencies();
 
     /**
      * Sets the dependencies to this definition and stores it in a node representation.
@@ -313,50 +304,6 @@ public interface JcrPackageDefinition {
     void setFilter(@Nullable WorkspaceFilter filter, boolean autoSave);
 
     /**
-     * Returns the last modified date
-     * @return the last modified date
-     */
-    @Nullable
-    Calendar getLastModified();
-
-    /**
-     * Returns the last modified user id
-     * @return the last modified user id
-     */
-    @Nullable
-    String getLastModifiedBy();
-
-    /**
-     * Returns the created date
-     * @return the created date
-     */
-    @Nullable
-    Calendar getCreated();
-
-    /**
-     * Returns the creator user id
-     * @return the creator
-     */
-    @Nullable
-    String getCreatedBy();
-
-    /**
-     * Returns the last wrapped date
-     * @return the last wrapped date
-     * @since 2.2.22
-     */
-    @Nullable
-    Calendar getLastWrapped();
-
-    /**
-     * Returns the wrapper user id
-     * @return the wrapper
-     * @since 2.2.22
-     */
-    @Nullable
-    String getLastWrappedBy();
-
-    /**
      * Returns the last unwrapped date
      * @return the last unwrapped date
      */
@@ -385,40 +332,15 @@ public interface JcrPackageDefinition {
     String getLastUnpackedBy();
 
     /**
-     * Returns {@code true} if this package needs a admin user to install it.
-     * @return the "requires root" flag
-     * @deprecated
-     */
-    @Deprecated
-    boolean requiresRoot();
-
-    /**
-     * Returns {@code true} if this package needs restart after installation.
-     * @return the "requires restart" flag.
-     */
-    boolean requiresRestart();
-
-    /**
      * Returns the access control handling defined in the definition, or {@code null}
      * if not defined.
      * @return the access control handling or {@code null}
      * @since 2.3.2
+     * @deprecated Use {@link PackageProperties#getACHandling} retrieved via {@link #getMetaInf()} and {@link MetaInf#getPackageProperties()}.
      */
     @Nullable
+    @Deprecated
     AccessControlHandling getAccessControlHandling();
-
-    /**
-     * Returns the description of this package
-     * @return the description
-     */
-    @Nullable
-    String getDescription();
-
-    /**
-     * Returns the build count of this package
-     * @return the build count.
-     */
-    long getBuildCount();
 
     /**
      * Returns the meta inf of this package

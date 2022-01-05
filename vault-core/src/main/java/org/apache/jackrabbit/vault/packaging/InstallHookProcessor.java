@@ -16,6 +16,7 @@
  */
 package org.apache.jackrabbit.vault.packaging;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
@@ -24,7 +25,7 @@ import org.apache.jackrabbit.vault.fs.io.Archive;
 /**
  * The install hook processor is used for handle the install hooks, from registration to execution.
  */
-public interface InstallHookProcessor {
+public interface InstallHookProcessor extends Closeable {
 
     /**
      * Register all hooks found in the given archive.
@@ -55,4 +56,11 @@ public interface InstallHookProcessor {
      * @return {@code true} if successful.
      */
     boolean execute(InstallContext context);
+
+    /**
+     * Cleans up any registered hooks
+     */
+    @Override
+    default void close() throws IOException {
+    }
 }

@@ -16,7 +16,9 @@
  */
 package org.apache.jackrabbit.vault.packaging.impl;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -29,11 +31,15 @@ import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.Packaging;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
+import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
+import org.apache.jackrabbit.vault.packaging.registry.impl.CompositePackageRegistry;
+import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -59,40 +65,54 @@ public class PackagingImpl implements Packaging {
     @Reference
     private PackageEventDispatcher eventDispatcher;
     
-    // In case a PackageRegistry is exposed as OSGi Service this will be considered
+    // In case a PackageRegistry is exposed as OSGi Service the first one will be considered
     // as base registry to fall back for dependency checks - currently only FSPackageRegistry is exposed as such
-    // currently no support for multiple registered PackageRegistries (OSGi Framework will will pick first found)
-    @Reference (cardinality = ReferenceCardinality.OPTIONAL,
-            policy = ReferencePolicy.DYNAMIC)
-    private volatile PackageRegistry baseRegistry;
+    @Reference (cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            policyOption = ReferencePolicyOption.GREEDY)
+    @SuppressWarnings("java:S3077") // volatile mandated by OSGi spec
+    volatile List<PackageRegistry> registries;
 
     /**
      * package manager is a singleton
      */
     private final PackageManagerImpl pkgManager = new PackageManagerImpl();
 
-    private String[] packageRoots = new String[0];
+    Config config;
 
     public PackagingImpl() {
-        pkgManager.setDispatcher(eventDispatcher);
+        
     }
 
     @ObjectClassDefinition(
-            name = "Apache Jackrabbit Packaging Service"
+            name = "Apache Jackrabbit FileVault Packaging Service (Package Manager Configuration)"
     )
     @interface Config {
 
         /**
          * Defines the package roots of the package manager
          */
-        @AttributeDefinition
+        @AttributeDefinition(description = "The locations in the repository which are used by the package manager")
         String[] packageRoots() default {"/etc/packages"};
+
+        @AttributeDefinition(description = "The authorizable ids or principal names which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
+        String[] authIdsForHookExecution();
+
+        @AttributeDefinition(description = "The authorizable ids or principal names which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
+        String[] authIdsForRootInstallation();
+
+        @AttributeDefinition(description = "The default value for strict imports (i.e. whether it just logs certain errors or always throws exceptions")
+        boolean isStrict() default true;
+
+        @AttributeDefinition(description = "Whether to overwrite the primary type of folders")
+        boolean overwritePrimaryTypesOfFolders() default true;
     }
 
     @Activate
     private void activate(Config config) {
-        this.packageRoots = config.packageRoots();
-        log.info("Jackrabbit Filevault Packaging initialized with roots {}", Arrays.toString(packageRoots));
+        this.config = config;
+        pkgManager.setDispatcher(eventDispatcher);
+        log.info("Jackrabbit Filevault Packaging initialized with config {}", config);
     }
 
     /**
@@ -106,12 +126,21 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackageManager getPackageManager(Session session) {
-        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, packageRoots);
+        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authIdsForHookExecution(), config.authIdsForRootInstallation(), config.isStrict(), config.overwritePrimaryTypesOfFolders());
         mgr.setDispatcher(eventDispatcher);
-        mgr.getInternalRegistry().setBaseRegistry(baseRegistry);
+        setBaseRegistry(mgr.getInternalRegistry(), registries);
         return mgr;
     }
 
+    private static boolean setBaseRegistry(JcrPackageRegistry jcrPackageRegistry, List<PackageRegistry> otherRegistries) {
+        if (!otherRegistries.isEmpty()) {
+            jcrPackageRegistry.setBaseRegistry(otherRegistries.get(0));
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -125,5 +154,37 @@ public class PackagingImpl implements Packaging {
     public JcrPackage open(Node node, boolean allowInvalid) throws RepositoryException {
         JcrPackageManager pMgr = getPackageManager(node.getSession());
         return pMgr.open(node, allowInvalid);
+    }
+
+    @Override
+    public PackageRegistry getCompositePackageRegistry(Session session, boolean useJcrRegistryAsPrimaryRegistry) throws IOException {
+        List<PackageRegistry> allRegistries = new ArrayList<>(registries);
+        JcrPackageRegistry jcrPackageRegistry = getJcrPackageRegistry(session, false);
+        if (useJcrRegistryAsPrimaryRegistry) {
+            allRegistries.add(0, jcrPackageRegistry);
+        } else {
+            allRegistries.add(jcrPackageRegistry);
+        }
+        return new CompositePackageRegistry(allRegistries);
+    }
+
+    @Override
+    public JcrPackageRegistry getJcrPackageRegistry(Session session) {
+        return getJcrPackageRegistry(session, true);
+    }
+
+    
+    @Override
+    public PackageRegistry getJcrBasedPackageRegistry(Session session) {
+        return getJcrPackageRegistry(session);
+    }
+
+    private JcrPackageRegistry getJcrPackageRegistry(Session session, boolean useBaseRegistry) {
+        JcrPackageRegistry registry = new JcrPackageRegistry(session, new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()), config.isStrict(), config.overwritePrimaryTypesOfFolders(), config.packageRoots());
+        registry.setDispatcher(eventDispatcher);
+        if (useBaseRegistry) {
+            setBaseRegistry(registry, registries);
+        }
+        return registry;
     }
 }

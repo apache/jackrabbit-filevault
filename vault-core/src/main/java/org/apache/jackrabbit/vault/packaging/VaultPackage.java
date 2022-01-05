@@ -29,7 +29,7 @@ import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Defines a vault package. A vault package is a binary assembled representation
- * of a vault export.
+ * of a vault export. This is just a thin wrapper of an {@link Archive}.
  * <p>
  * Note that VaultPackage currently extends from PackageProperties to keep the interface backwards compatible.
  */

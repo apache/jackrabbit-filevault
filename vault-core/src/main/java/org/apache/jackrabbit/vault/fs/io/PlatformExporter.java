@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 
 import javax.jcr.RepositoryException;
 
@@ -159,19 +160,20 @@ public class PlatformExporter extends AbstractExporter {
     }
 
     public void writeFile(InputStream in, String relPath) throws IOException {
-        File local = new File(localParent, relPath);
-        if (!local.getParentFile().exists()) {
-            mkdirs(local.getParentFile());
+        try {
+            File local = new File(localParent, relPath);
+            if (!local.getParentFile().exists()) {
+                mkdirs(local.getParentFile());
+            }
+            if (local.exists()) {
+                exportInfo.update(ExportInfo.Type.UPDATE, local.getPath());
+            } else {
+                exportInfo.update(ExportInfo.Type.ADD, local.getPath());
+            }
+            Files.copy(in, local.toPath());
+        } finally {
+            in.close();
         }
-        if (local.exists()) {
-            exportInfo.update(ExportInfo.Type.UPDATE, local.getPath());
-        } else {
-            exportInfo.update(ExportInfo.Type.ADD, local.getPath());
-        }
-        OutputStream out = new FileOutputStream(local);
-        IOUtils.copy(in, out);
-        in.close();
-        out.close();
     }
 
     private void mkdirs(File dir) throws IOException {

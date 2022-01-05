@@ -62,7 +62,7 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -107,15 +107,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     private final String[] packRootPaths;
 
     /**
-     * the package root prefix of the primary root path.
-     */
-    private final String primaryPackRootPathPrefix;
-    
-    /**
      * Fallback Registry can be registered if present in the system to be able to look up presatisfied dependencies
      */
     private PackageRegistry baseRegistry = null;
-
 
     /**
      * Creates a new JcrPackageRegistry based on the given session.
@@ -123,6 +117,12 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @param roots the root paths to store the packages.
      */
     public JcrPackageRegistry(@NotNull Session session, @Nullable String ... roots) {
+        this(session, null, false, true, roots);
+    }
+
+    public JcrPackageRegistry(@NotNull Session session, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig,
+            boolean isStrict, boolean overwritePrimaryTypesOfFoldersByDefault, @Nullable String... roots) {
+        super(securityConfig, isStrict, overwritePrimaryTypesOfFoldersByDefault);
         this.session = session;
         if (roots == null || roots.length == 0) {
             packRootPaths = new String[]{DEFAULT_PACKAGE_ROOT_PATH};
@@ -130,10 +130,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             packRootPaths = roots;
         }
         packRoots = new Node[packRootPaths.length];
-        primaryPackRootPathPrefix = packRootPaths[0] + "/";
         initNodeTypes();
     }
-
+    
     /**
      * Sets fallback PackageRegistry for dependency lookup
      * @param baseRegisry
@@ -257,6 +256,12 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
+    @Nullable
+    public JcrPackage openJcrPackage(@NotNull PackageId id) throws RepositoryException {
+        Node node = getPackageNode(id);
+        return node == null ? null : open(node, false);
+    }
+
     @Override
     public boolean contains(@NotNull PackageId id) throws IOException {
         try {
@@ -274,7 +279,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     private Node getPackageNode(@NotNull PackageId id) throws RepositoryException {
         String relPath = getRelativeInstallationPath(id);
         for (String pfx: packRootPaths) {
-            String path = pfx + relPath;
+            String path = pfx + "/" + relPath;
             String[] exts = new String[]{"", ".zip", ".jar"};
             for (String ext: exts) {
                 if (session.nodeExists(path + ext)) {
@@ -290,14 +295,20 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      */
     public JcrPackage open(Node node, boolean allowInvalid) throws RepositoryException {
         JcrPackage pack = new JcrPackageImpl(this, node);
-        if (pack.isValid()) {
-            return pack;
-        } else if (allowInvalid
-                && node.isNodeType(JcrConstants.NT_HIERARCHYNODE)
-                && node.hasProperty(JcrConstants.JCR_CONTENT + "/" + JcrConstants.JCR_DATA)) {
-            return pack;
-        } else {
-            return null;
+        try {
+            if (pack.isValid()) {
+                return pack;
+            } else if (allowInvalid
+                    && node.isNodeType(JcrConstants.NT_HIERARCHYNODE)
+                    && node.hasProperty(JcrConstants.JCR_CONTENT + "/" + JcrConstants.JCR_DATA)) {
+                return pack;
+            } else {
+                pack.close();
+                return null;
+            }
+        } catch (RepositoryException e) {
+            pack.close();
+            throw e;
         }
     }
 
@@ -358,21 +369,16 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             throws RepositoryException, IOException, PackageExistsException {
 
         MemoryArchive archive = new MemoryArchive(true);
-        InputStreamPump pump = new InputStreamPump(in , archive);
-
-        // this will cause the input stream to be consumed and the memory archive being initialized.
-        Binary bin = session.getValueFactory().createBinary(pump);
-        if (pump.getError() != null) {
-            Exception error = pump.getError();
-            log.error("Error while reading from input stream.", error);
-            bin.dispose();
-            throw new IOException("Error while reading from input stream", error);
+        Binary bin;
+        try (InputStreamPump pump = new InputStreamPump(in , archive)) {
+            // this will cause the input stream to be consumed and the memory archive being initialized.
+            bin = session.getValueFactory().createBinary(pump);
         }
 
         if (archive.getJcrRoot() == null) {
             String msg = "Stream is not a content package. Missing 'jcr_root'.";
-            log.error(msg);
             bin.dispose();
+            archive.close();
             throw new IOException(msg);
         }
 
@@ -385,6 +391,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
         if (!pid.isValid()) {
             bin.dispose();
+            archive.close();
             throw new RepositoryException("Unable to create package. Illegal package name.");
         }
 
@@ -410,6 +417,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             if (replace) {
                 parent.getNode(name).remove();
             } else {
+                archive.close();
                 throw new PackageExistsException("Package already exists: " + pid).setId(pid);
             }
         }
@@ -525,7 +533,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
         String parentPath = Text.getRelativeParent(path, 1);
         if (path == null || ("/".equals(path) && parentPath.equals(path))) {
-            throw new RepositoryException("could not crete intermediate nodes");
+            throw new RepositoryException("could not create intermediate nodes");
         }
         Node parent = mkdir(parentPath, autoSave);
         Node node = null;
@@ -768,13 +776,14 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @since 2.2
      */
     public String getInstallationPath(PackageId id) {
-        return packRootPaths[0] + getRelativeInstallationPath(id);
+        return packRootPaths[0] + "/" + getRelativeInstallationPath(id);
     }
 
     @Override
     public void installPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts,
             boolean extract) throws IOException, PackageException {
-        try (JcrPackage jcrPkg = ((JcrRegisteredPackage) pkg).getJcrPackage()) {
+        JcrRegisteredPackage registeredPackage = (JcrRegisteredPackage) pkg;
+        try (JcrPackage jcrPkg = registeredPackage.getJcrPackage()) {
             if (extract) {
                 jcrPkg.extract(opts);
             } else {

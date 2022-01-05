@@ -1,0 +1,109 @@
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+Overview
+========
+
+**NOTE**: Parts of the following documentation are outdated and need review
+- - - 
+
+Jackrabbit FileVault introduces a JCR repository to filesystem mapping. The mapping is exposed by an API and used by several tools:
+
+* JackrabbitVaultPackaging that defines a package including the files, configuration and filter information that allows export/import packages of content.
+* Vault Command Line Interface aka `vlt` that provides a Subversion like utility to work and develop with repository content.
+
+The base of the Jackrabbit FileVault is the [VaultFs](vaultfs.html) which provides the API for accessing a repository through a filesystem like mapping.
+
+![Vault API](vault_api.png?raw=true)
+
+<!-- MACRO{toc} -->
+
+How it works
+------------
+Jackrabbit FileVault works similar to subversion. Usually you checkout a local copy of the (partial) content of the repository and make modifications to it. Once you're finished you upload the modified stuff again. The content is mapped to a local filesystem structure using the VaultFs API. The mechanism works like Subversion where you have a copy of the unmodified file and some information about the entries.
+
+SCM & FileVault living together
+----------------------------------
+One of the goals of Jackrabbit FileVault is to provide the ability to store repository content in an SCM for example in Subversion. One problem occurs that the _control files_ of FileVault are not to be added to an SCM since this could cause problem in concurrent development. Those files are kept in the `.vlt` directory which must be excluded from being committed. 
+
+### Subversion
+
+Using the `svn:ignore` property is not advisable because one can forget to define it. A better option is to use the `global-ignores` option in the subversion user configuration:
+
+    ...
+    ### Section for configuring miscellaneous Subversion options.
+    [miscellany]
+    ### Set global-ignores to a set of whitespace-delimited globs
+    ### which Subversion will ignore in its 'status' output, and
+    ### while importing or adding files and directories.
+    global-ignores = .vlt
+    
+    ...
+### Use Cases
+The following workflows illustrate that the FileVault/Subversion coupling works and could easily be automated. Plans are to propagate additions and removals automatically using javahl or a similar java-svn binding.
+
+Imagine the following scenario:
+
+* The application XYZ has some repository content that is exported and stored in subversion
+* User A and B both have a local checkout
+* User A and B work with local test repositories
+
+
+**Workflow 1 - Modification:**
+
+1. User A does a fix in a jsp, checks it into his local repository and tests if the fix works
+2. User A commits the jsp into subversion
+3. User B update this copy via subversion and gets the modifications of the jsp
+4. User B can now checkin the modifications to his local repository
+
+**Workflow 2 - Addition:**
+
+1. User A creates a new file on his local filesystem
+2. User A uses `vlt` to add and commit it to his local repository
+3. User A also adds the file to his subversion working copy and commits it
+4. User B updates subversion and gets the new file
+5. User B updates vault and notifies that this new file is not added to the vault yet
+6. User B adds the file as well to his vault and commits it to the repository.
+
+**Workflow 3 - Deletion:**
+
+1. User A deletes a file using `vlt`. This marks the file as deleted and removes it from disk
+2. User A commits the changes to his local repository
+3. User A marks the file as deleted using =svn= and commits the changes
+4. User B updates subversion which deletes his local copy
+5. User B marks the file as deleted using `vlt` and commits the changes to his local repository
+
+Export/Checkout directory structure
+-----------------------------------
+The root directory of a FileVault checkout contains a `META-INF/vault` directory which holds the serialization configuration (`config.xml`) the filter information (`filter.xml`) and other settings. The repository content is placed in a directory named `jcr_root`. eg:
+
+    + mycheckeout
+      + META-INF
+      + jcr_root
+
+All metadata below META-INF is described in [Metadata](metadata.html).
+
+### User specific config files 
+Some configuration files are stored in the user's home directory. usually under `~/.vault`.
+
+1. `~/.vault/settings.xml` - Holds some per user configuration like globally ignored files, etc.
+1. `~/.vault/auth.xml` - Holds authorization information for known repositories.
+
+Usage
+-----
+
+Further hints on how to use the Vault Console Tool vlt are described at [VLT Usage](usage.html).

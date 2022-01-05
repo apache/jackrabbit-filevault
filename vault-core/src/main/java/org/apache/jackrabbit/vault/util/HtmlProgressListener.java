@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * {@code HtmlProgressTrackerListener} implements a progress tracker listener that writes the progress in HTML.

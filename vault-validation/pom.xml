@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.4.5-SNAPSHOT</version>
+        <version>3.5.9-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -34,14 +34,10 @@
     <name>Apache Jackrabbit FileVault Validation</name>
     <description>Provides a validation framework with SPI and API for performing validations on FileVault packages</description>
 
-    <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N -->
-    <!-- ====================================================================== -->
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-validation</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-validation</developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-validation</url>
-    </scm>
+    <properties>
+        <!-- http://maven.apache.org/ref/3.6.3/maven-model-builder/index.html#Inheritance_Assembly -->
+        <project.directory>vault-validation</project.directory>
+    </properties>
 
     <build>
         <plugins>
@@ -81,6 +77,22 @@
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-resolver-maven-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 
@@ -95,13 +107,13 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-spi-commons</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
-            <artifactId>jackrabbit-spi-commons</artifactId>
+            <artifactId>jackrabbit-jcr2spi</artifactId>
         </dependency>
 
         <dependency>
@@ -178,4 +190,7 @@
         </dependency>
     </dependencies>
 
+  <scm>
+    <tag>jackrabbit-filevault-3.5.8</tag>
+  </scm>
 </project>

@@ -23,31 +23,46 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.4.5-SNAPSHOT</version>
+        <version>3.5.9-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>org.apache.jackrabbit.vault</artifactId>
-    <version>3.4.5-SNAPSHOT</version>
+    <version>3.5.9-SNAPSHOT</version>
 
     <name>Apache Jackrabbit FileVault Core Bundle</name>
     <description>The core classes of Apache Jackrabbit FileVault</description>
-
-    <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N                                             -->
-    <!-- ====================================================================== -->
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-core</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-core</developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-core</url>
-    </scm>
+    
+    <properties>
+        <!-- http://maven.apache.org/ref/3.6.3/maven-model-builder/index.html#Inheritance_Assembly -->
+        <project.directory>vault-core</project.directory>
+    </properties>
 
     <!-- ====================================================================== -->
     <!-- B U I L D                                                             -->
     <!-- ====================================================================== -->
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>report-merged</id>
+                            <configuration>
+                                <!-- https://github.com/jacoco/jacoco/issues/34 -->
+                                <includes>
+                                    <include>org/apache/jackrabbit/vault/**</include>
+                                </includes>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
@@ -56,6 +71,13 @@
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-baseline-maven-plugin</artifactId>
+                <configuration>
+                    <diffpackages>
+                        <!-- temporarily ignore baseline violation for o.a.j.v.fs due to https://issues.apache.org/jira/browse/JCRVLT-546?focusedCommentId=17379780&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-17379780 -->
+                        <diffpackage>!org.apache.jackrabbit.vault.fs</diffpackage>
+                        <diffpackage>*</diffpackage>
+                    </diffpackages>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -98,6 +120,14 @@
     <!-- D E P E N D E N C I E S                                                -->
     <!-- ====================================================================== -->
     <dependencies>
+        <!-- for resolving against a target OSGi container the target OSGi container must be built first -->
+        <dependency>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <artifactId>org.apache.jackrabbit.vault.target-osgi-environment</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
         <!-- jackrabbit -->
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
@@ -119,7 +149,11 @@
             <artifactId>jackrabbit-spi</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-spi2dav</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- JCR Stuff -->
         <dependency>
             <groupId>javax.jcr</groupId>
@@ -151,12 +185,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.0.13</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -194,6 +222,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- for parsing Maven versions -->
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-artifact</artifactId>
+            <version>3.8.1</version>
+        </dependency>
         <!-- test deps -->
         <dependency>
             <groupId>junit</groupId>
@@ -203,19 +237,19 @@
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
-            <version>2.1</version>
+            <version>2.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>${slf4j.version}</version>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.8</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>1.9.0</version>
+            <version>3.9.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -228,6 +262,12 @@
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-core</artifactId>
             <version>${jackrabbit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>10.14.2.0</version><!-- version used in jackrabbit-core -->
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -255,6 +295,13 @@
             <version>${oak.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- transitive dependency of oak-segment-tar, necessary for filedatastore (https://issues.apache.org/jira/browse/OAK-6542) -->
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>3.2.3</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-authorization-principalbased</artifactId>
@@ -279,7 +326,12 @@
             <version>2.6.0</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.converter</artifactId>
+            <version>1.0.14</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <!-- ====================================================================== -->
@@ -291,10 +343,28 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Doak=true -Xmx1024m</argLine>
+                            <systemPropertyVariables>
+                                <oak>true</oak>
+                            </systemPropertyVariables>
+                            <argLine>@{jacoco.command} -Xmx1024m</argLine>
+                            <reportNameSuffix>OAK</reportNameSuffix>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>oak</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>verify-its</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -304,10 +374,28 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Doak=true -Xmx1024m</argLine>
+                            <systemPropertyVariables>
+                                <oak>false</oak>
+                            </systemPropertyVariables>
+                            <argLine>@{jacoco.command} -Xmx1024m</argLine>
+                            <reportNameSuffix>JR</reportNameSuffix>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>jr</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>verify-its</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -320,37 +408,65 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>oak</id>
+                                <id>it-with-oak</id>
                                 <goals>
-                                    <goal>test</goal>
+                                    <goal>integration-test</goal>
                                 </goals>
                                 <configuration>
-                                    <argLine>-Doak=true -Xmx1024m</argLine>
+                                    <systemPropertyVariables>
+                                        <oak>true</oak>
+                                        <repoSuffix>fork${surefire.forkNumber}</repoSuffix>
+                                        <!-- https://issues.apache.org/jira/browse/OAK-8903 -->
+                                        <oak.datastore.sharedTransient>true</oak.datastore.sharedTransient>
+                                    </systemPropertyVariables>
+                                    <argLine>@{jacoco.command} -Xmx1024m</argLine>
                                     <reportNameSuffix>OAK</reportNameSuffix>
-                                    <skip>false</skip>
+                                    <forkCount>0.5C</forkCount>
+                                    <reuseForks>true</reuseForks>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>jr</id>
+                                <id>it-with-jr</id>
                                 <goals>
-                                    <goal>test</goal>
+                                    <goal>integration-test</goal>
                                 </goals>
                                 <configuration>
+                                    <systemPropertyVariables>
+                                        <oak>false</oak>
+                                        <repoSuffix>fork${surefire.forkNumber}</repoSuffix>
+                                    </systemPropertyVariables>
                                     <reportNameSuffix>JR</reportNameSuffix>
-                                    <skip>false</skip>
+                                    <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-jr.xml</summaryFile>
+                                    <forkCount>0.5C</forkCount>
+                                    <reuseForks>true</reuseForks>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>verify-its</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <summaryFiles>
+                                        <!-- in addition to default summary file used by Oak -->
+                                        <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-jr.xml</summaryFile>
+                                    </summaryFiles>
                                 </configuration>
                             </execution>
                         </executions>
+                        <configuration>
+                          <reportsDirectory>target/failsafe-reports-${surefire.forkNumber}</reportsDirectory>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
 
+  <scm>
+    <tag>jackrabbit-filevault-3.5.8</tag>
+  </scm>
 </project>

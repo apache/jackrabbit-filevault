@@ -38,7 +38,8 @@ import org.apache.jackrabbit.vault.fs.io.AbstractExporter;
 import org.apache.jackrabbit.vault.packaging.ExportPostProcessor;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageId;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
+import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +74,8 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
                 if (Text.isDescendantOrEqual(DEFAULT_PACKAGE_ROOT_PATH, nodePath)) {
                     continue;
                 }
-                String etcPath = DEFAULT_PACKAGE_ROOT_PATH + mgr.getInternalRegistry().getRelativeInstallationPath(pkg.getKey()) + ".zip";
+                mgr.getInternalRegistry();
+                String etcPath = DEFAULT_PACKAGE_ROOT_PATH + "/" + AbstractPackageRegistry.getRelativeInstallationPath(pkg.getKey()) + ".zip";
                 etcPath = Text.getRelativeParent(etcPath, 1);
 
                 // define a workspace filter for the package at the real location
@@ -148,7 +150,8 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
 
             // re-add all the packages in /etc/packages
             for (Map.Entry<PackageId, String> pkg : subPackages.entrySet()) {
-                String path = DEFAULT_PACKAGE_ROOT_PATH + mgr.getInternalRegistry().getRelativeInstallationPath(pkg.getKey()) + ".zip";
+                mgr.getInternalRegistry();
+                String path = DEFAULT_PACKAGE_ROOT_PATH + "/" + AbstractPackageRegistry.getRelativeInstallationPath(pkg.getKey()) + ".zip";
                 newFilter.add(new PathFilterSet(path));
             }
 

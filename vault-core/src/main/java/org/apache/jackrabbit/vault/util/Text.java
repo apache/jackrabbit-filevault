@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -27,7 +28,9 @@ import java.util.Properties;
 
 /**
  * This Class provides some text related utilities
+ * @deprecated Use {@link org.apache.jackrabbit.util.Text} instead
  */
+@Deprecated
 public class Text {
 
     /**
@@ -400,31 +403,27 @@ public class Text {
      *                                        escape character
      */
     public static String unescape(String string, char escape)  {
-        try {
-            byte[] utf8 = string.getBytes("utf-8");
+        byte[] utf8 = string.getBytes(StandardCharsets.UTF_8);
 
-            // Check whether escape occurs at invalid position
-            if ((utf8.length >= 1 && utf8[utf8.length - 1] == escape) ||
-                (utf8.length >= 2 && utf8[utf8.length - 2] == escape)) {
-                throw new IllegalArgumentException("Premature end of escape sequence at end of input");
-            }
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream(utf8.length);
-            for (int k = 0; k < utf8.length; k++) {
-                byte b = utf8[k];
-                if (b == escape) {
-                    out.write((decodeDigit(utf8[++k]) << 4) + decodeDigit(utf8[++k]));
-                }
-                else {
-                    out.write(b);
-                }
-            }
-
-            return new String(out.toByteArray(), "utf-8");
+        // Check whether escape occurs at invalid position
+        if ((utf8.length >= 1 && utf8[utf8.length - 1] == escape) ||
+            (utf8.length >= 2 && utf8[utf8.length - 2] == escape)) {
+            throw new IllegalArgumentException("Premature end of escape sequence at end of input");
         }
-        catch (UnsupportedEncodingException e) {
-            throw new InternalError(e.toString());
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream(utf8.length);
+        for (int k = 0; k < utf8.length; k++) {
+            byte b = utf8[k];
+            if (b == escape) {
+                out.write((decodeDigit(utf8[++k]) << 4) & 0xff + decodeDigit(utf8[++k]) & 0xff);
+            }
+            else {
+                out.write(b);
+            }
         }
+
+        return new String(out.toByteArray(), StandardCharsets.UTF_8);
+        
     }
 
     /**

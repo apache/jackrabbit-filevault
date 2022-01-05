@@ -24,8 +24,8 @@ import javax.jcr.NamespaceRegistry;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class QNameComparatorTest {
@@ -45,6 +45,6 @@ public class QNameComparatorTest {
         names.add(name5);
         Collections.sort(names, new QNameComparator());
         
-        Assert.assertThat(names, Matchers.contains(name2, name5, name4, name3, name1));
+        MatcherAssert.assertThat(names, Matchers.contains(name2, name5, name4, name3, name1));
     }
 }

@@ -18,13 +18,16 @@
 package org.apache.jackrabbit.vault.packaging;
 
 import org.apache.jackrabbit.util.XMLChar;
-import org.apache.jackrabbit.vault.util.Text;
+import org.jetbrains.annotations.NotNull;
+import org.apache.jackrabbit.util.Text;
 
 /**
  * {@code PackageId} provides the basic metrics for identifying a package.
- * A package id consists of a group id, a name and a version.
- * the group is a relative path, eg: "company/project/subgroup", the name and the version
+ * A package id consists of a group, a name and an optional version.
+ * The group is a relative path, eg: "company/project/subgroup", the name and the version
  * can be of any format.
+ * <p>
+ * The string representation is {@code <group>:<name>[:<version>]}.
  */
 public class PackageId implements Comparable<PackageId> {
 
@@ -223,7 +226,7 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns a package id from a id string. if the given id is null or an
+     * Returns a package id from an id string in the format {@code <group>:<name>[:<version>]}. If the given id is null or an
      * empty string, {@code null} is returned.
      * @param str the string
      * @return the package id
@@ -243,9 +246,10 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns an array of package id from strings
+     * Returns an array of package id from strings.
      * @param str the strings
      * @return the array of package ids
+     * @see #fromString(String)
      */
     public static PackageId[] fromString(String ... str) {
         PackageId[] ret = new PackageId[str.length];
@@ -256,7 +260,7 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Creates a comma separated list of id strings.
+     * Creates a comma separated list of id strings in the format {@code <group>:<name>[:<version>]}.
      * @param packs the ids
      * @return the string
      */
@@ -306,8 +310,8 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns the group id of this package
-     * @return the group id;
+     * Returns the group of this package
+     * @return the group.
      * @since 2.2
      */
     public String getGroup() {
@@ -315,10 +319,10 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns the name of this package which is the last segment of the path.
+     * Returns the name of this package (usually this is the last segment of the path).
      * @return the name of this package.
      */
-    public String getName() {
+    public @NotNull String getName() {
         return name;
     }
 
@@ -327,7 +331,7 @@ public class PackageId implements Comparable<PackageId> {
      * @return the version of this package
      * @since 2.0
      */
-    public String getVersionString() {
+    public @NotNull String getVersionString() {
         return version.toString();
     }
 
@@ -347,15 +351,15 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns the version of this package or {@code null} if n/a.
+     * Returns the version of this package or {@code Version.EMPTY} if not set.
      * @return the version of this package
      */
-    public Version getVersion() {
+    public @NotNull Version getVersion() {
         return version;
     }
 
     /**
-     * Returns a string representation of this id
+     * Returns a string representation of this id in the format {@code <group>:<name>[:<version>]}.
      */
     @Override
     public String toString() {

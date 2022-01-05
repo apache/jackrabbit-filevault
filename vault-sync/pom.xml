@@ -24,7 +24,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.4.5-SNAPSHOT</version>
+        <version>3.5.9-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -34,18 +34,11 @@
     <name>Apache Jackrabbit FileVault Sync Service</name>
     <description>Apache Jackrabbit FileVault supplemental bundle which allows to sync the repository with some folder on the filesystem</description>
 
-    <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N                                             -->
-    <!-- ====================================================================== -->
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-sync</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-sync</developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-sync</url>
-    </scm>
-
     <properties>
         <!-- downgrade dependencies to make compatible with the minimum supported version -->
         <jackrabbit.version>2.14.0</jackrabbit.version>
+        <!-- http://maven.apache.org/ref/3.6.3/maven-model-builder/index.html#Inheritance_Assembly -->
+        <project.directory>vault-sync</project.directory>
     </properties>
 
     <!-- ====================================================================== -->
@@ -85,10 +78,18 @@
     <!-- D E P E N D E N C I E S                                                -->
     <!-- ====================================================================== -->
     <dependencies>
+        <!-- for resolving against a target OSGi container the target OSGi container must be built first -->
+        <dependency>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <artifactId>org.apache.jackrabbit.vault.target-osgi-environment</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.4.5-SNAPSHOT</version>
+            <version>3.1.38</version><!-- minimum version this bundle is compatible with -->
         </dependency>
 
         <!-- JCR Stuff -->
@@ -159,4 +160,7 @@
 
     </dependencies>
 
+  <scm>
+    <tag>jackrabbit-filevault-3.5.8</tag>
+  </scm>
 </project>

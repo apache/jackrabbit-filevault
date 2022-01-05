@@ -34,6 +34,7 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
 
     private SAXParser saxParser;
 
+    public static final String ID = ValidatorFactory.ID_PREFIX_JACKRABBIT + "docviewparser";
     public DocumentViewParserValidatorFactory() throws ParserConfigurationException, SAXException {
 
         SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -53,7 +54,7 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
 
     @Override
     public @NotNull String getId() {
-        return ValidatorFactory.ID_PREFIX_JACKRABBIT + "docviewparser";
+        return ID;
     }
 
     @Override

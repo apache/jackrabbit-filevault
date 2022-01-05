@@ -1,0 +1,446 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+// all node types defined by https://docs.adobe.com/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.7.11%20Standard%20Application%20Node%20Types
+// as well as some Jackrabbit/Oak specific ones
+<'nt'='http://www.jcp.org/jcr/nt/1.0'>
+<'oak'='http://jackrabbit.apache.org/oak/ns/1.0'>
+<'jcr'='http://www.jcp.org/jcr/1.0'>
+<'mix'='http://www.jcp.org/jcr/mix/1.0'>
+<'rep'='internal'>
+<'vlt'='http://www.day.com/jcr/vault/1.0'>
+
+[oak:Unstructured]
+  - * (undefined) multiple
+  - * (undefined)
+  + * (nt:base) = oak:Unstructured version
+
+[nt:linkedFile] > nt:hierarchyNode
+  primaryitem jcr:content
+  - jcr:content (reference) mandatory
+
+[rep:Group] > rep:Authorizable, rep:MemberReferences
+  + rep:members (rep:Members) = rep:Members protected multiple version
+  + rep:membersList (rep:MemberReferencesList) = rep:MemberReferencesList protected
+
+[mix:lifecycle]
+  mixin
+  - jcr:lifecyclePolicy (reference) protected initialize
+  - jcr:currentLifecycleState (string) protected initialize
+
+[rep:User] > rep:Authorizable, rep:Impersonatable
+  - rep:password (string) protected
+  - rep:disabled (string) protected
+  + rep:pwd (rep:Password) = rep:Password protected
+
+[rep:Privileges]
+  - rep:next (long) mandatory protected multiple
+  + * (rep:Privilege) = rep:Privilege protected abort
+
+[nt:activity] > mix:referenceable
+  - jcr:activityTitle (string) mandatory autocreated protected
+
+[nt:childNodeDefinition]
+  - jcr:name (name) protected
+  - jcr:autoCreated (boolean) mandatory protected
+  - jcr:mandatory (boolean) mandatory protected
+  - jcr:onParentVersion (string) mandatory protected < 'COPY', 'VERSION', 'INITIALIZE', 'COMPUTE', 'IGNORE', 'ABORT'
+  - jcr:protected (boolean) mandatory protected
+  - jcr:requiredPrimaryTypes (name) = 'nt:base' mandatory protected multiple
+  - jcr:defaultPrimaryType (name) protected
+  - jcr:sameNameSiblings (boolean) mandatory protected
+
+[rep:PropertyDefinition] > nt:propertyDefinition
+  - rep:declaringNodeType (name) mandatory protected
+
+[rep:CugPolicy] > rep:Policy
+  - rep:principalNames (string) mandatory protected multiple ignore
+
+[nt:configuration] > mix:versionable
+  - jcr:root (reference) mandatory autocreated protected
+
+[mix:simpleVersionable]
+  mixin
+  - jcr:isCheckedOut (boolean) = 'true' mandatory autocreated protected ignore
+
+[mix:mimeType]
+  mixin
+  - jcr:mimeType (string)
+  - jcr:encoding (string)
+
+[nt:query]
+  - jcr:statement (string)
+  - jcr:language (string)
+
+[nt:nodeType]
+  - jcr:nodeTypeName (name) mandatory protected
+  - jcr:supertypes (name) protected multiple
+  - jcr:isAbstract (boolean) mandatory protected
+  - jcr:isQueryable (boolean) mandatory protected
+  - jcr:isMixin (boolean) mandatory protected
+  - jcr:hasOrderableChildNodes (boolean) mandatory protected
+  - jcr:primaryItemName (name) protected
+  + jcr:propertyDefinition (nt:propertyDefinition) = nt:propertyDefinition protected multiple
+  + jcr:childNodeDefinition (nt:childNodeDefinition) = nt:childNodeDefinition protected multiple
+
+[rep:system]
+  orderable
+  + jcr:versionStorage (rep:versionStorage) = rep:versionStorage mandatory protected abort
+  + jcr:nodeTypes (rep:nodeTypes) = rep:nodeTypes mandatory protected abort
+  + jcr:activities (rep:Activities) = rep:Activities mandatory protected abort
+  + jcr:configurations (rep:Configurations) = rep:Configurations protected abort
+  + * (nt:base) = nt:base ignore
+  + rep:privileges (rep:Privileges) = rep:Privileges protected abort
+
+[rep:Password]
+  - * (undefined) protected
+  - * (undefined) protected multiple
+
+[nt:unstructured]
+  orderable
+  - * (undefined) multiple
+  - * (undefined)
+  + * (nt:base) = nt:unstructured multiple version
+
+[mix:atomicCounter]
+  mixin
+  - oak:counter (long) = '0' autocreated protected
+
+[rep:ACE]
+  - rep:principalName (string) mandatory protected
+  - rep:privileges (name) mandatory protected multiple
+  - rep:nodePath (path) protected
+  - rep:glob (string) protected
+  - * (undefined) protected
+  + rep:restrictions (rep:Restrictions) = rep:Restrictions protected
+
+[rep:versionStorage]
+  - * (undefined) protected abort
+  - * (undefined) protected multiple abort
+  + * (nt:versionHistory) = nt:versionHistory protected abort
+  + * (rep:versionStorage) = rep:versionStorage protected abort
+
+[mix:indexable]
+  mixin
+  + oak:index (nt:base) = nt:unstructured
+
+[rep:Authorizable] > mix:referenceable, nt:hierarchyNode
+  abstract
+  - rep:principalName (string) mandatory protected
+  - rep:authorizableId (string) protected
+  - * (undefined)
+  - * (undefined) multiple
+  + * (nt:base) = nt:unstructured version
+
+[nt:frozenNode] > mix:referenceable
+  orderable
+  - jcr:frozenPrimaryType (name) mandatory autocreated protected abort
+  - jcr:frozenMixinTypes (name) protected multiple abort
+  - jcr:frozenUuid (string) mandatory autocreated protected abort
+  - * (undefined) protected abort
+  - * (undefined) protected multiple abort
+  + * (nt:base) protected multiple abort
+
+[mix:etag]
+  mixin
+  - jcr:etag (string) autocreated protected
+
+[rep:ChildNodeDefinition] > nt:childNodeDefinition
+  - rep:declaringNodeType (name) mandatory protected
+
+[nt:version] > mix:referenceable
+  - jcr:created (date) mandatory autocreated protected abort
+  - jcr:predecessors (reference) protected multiple abort < 'nt:version'
+  - jcr:successors (reference) protected multiple abort < 'nt:version'
+  - jcr:activity (reference) protected abort < 'nt:activity'
+  + jcr:frozenNode (nt:frozenNode) protected abort
+
+[rep:MemberReferencesList]
+  + * (rep:MemberReferences) = rep:MemberReferences protected
+
+[nt:versionLabels]
+  - * (reference) protected abort < 'nt:version'
+
+[mix:versionable] > mix:referenceable, mix:simpleVersionable
+  mixin
+  - jcr:versionHistory (reference) mandatory protected ignore < 'nt:versionHistory'
+  - jcr:baseVersion (reference) mandatory protected ignore < 'nt:version'
+  - jcr:predecessors (reference) mandatory protected multiple ignore < 'nt:version'
+  - jcr:mergeFailed (reference) protected multiple abort < 'nt:version'
+  - jcr:activity (reference) protected < 'nt:activity'
+  - jcr:configuration (reference) protected ignore < 'nt:configuration'
+
+[rep:PrincipalAccessControl] > rep:AccessControl
+  + rep:policy (rep:Policy) protected ignore
+
+[rep:Policy]
+  abstract
+
+[rep:Configurations]
+  + * (nt:configuration) = nt:configuration abort
+  + * (rep:Configurations) = rep:Configurations abort
+
+[rep:Activities]
+  + * (nt:activity) = nt:activity protected abort
+  + * (rep:Activities) = rep:Activities protected abort
+
+[rep:Token] > mix:referenceable
+  - rep:token.key (string) mandatory protected
+  - rep:token.exp (date) mandatory protected
+  - * (undefined) protected
+  - * (undefined) protected multiple
+
+[rep:Impersonatable]
+  mixin
+  - rep:impersonators (string) protected multiple
+
+[nt:hierarchyNode] > mix:created
+  abstract
+
+[vlt:PackageDefinition] > nt:unstructured
+  orderable
+  - artifactId (string)
+  - jcr:created (date)
+  - jcr:createdBy (string)
+  - jcr:lastModified (date)
+  - lastUnpackedBy (string)
+  - jcr:description (string)
+  - groupId (string)
+  - lastUnpacked (date)
+  - version (string)
+  - jcr:lastModifiedBy (string)
+  - dependencies (string) multiple
+  + thumbnail (nt:base) = nt:unstructured
+  + filter (nt:base) = nt:unstructured
+
+[nt:resource] > mix:lastModified, mix:mimeType, mix:referenceable
+  primaryitem jcr:data
+  - jcr:data (binary) mandatory
+
+[nt:file] > nt:hierarchyNode
+  primaryitem jcr:content
+  + jcr:content (nt:base) mandatory
+
+[rep:VersionablePaths]
+  mixin
+  - * (path) protected abort
+
+[mix:lockable]
+  mixin
+  - jcr:lockOwner (string) protected ignore
+  - jcr:lockIsDeep (boolean) protected ignore
+
+[rep:MergeConflict]
+  mixin primaryitem rep:ours
+  + rep:ours (rep:Unstructured) protected ignore
+
+[oak:QueryIndexDefinition] > oak:Unstructured
+  - type (string) mandatory
+  - async (string)
+  - reindex (boolean) ignore
+
+[nt:base]
+  abstract
+  - jcr:primaryType (name) mandatory autocreated protected compute
+  - jcr:mixinTypes (name) protected multiple compute
+
+[rep:Cache] > rep:UnstructuredProtected
+  - rep:expiration (long) protected ignore
+
+[mix:title]
+  mixin
+  - jcr:title (string)
+  - jcr:description (string)
+
+[rep:root] > nt:unstructured
+  + jcr:system (rep:system) = rep:system mandatory ignore
+
+[nt:address]
+  - jcr:protocol (string)
+  - jcr:host (string)
+  - jcr:port (string)
+  - jcr:repository (string)
+  - jcr:workspace (string)
+  - jcr:path (path)
+  - jcr:id (weakreference)
+
+[rep:Unstructured]
+  - * (undefined) multiple ignore
+  - * (undefined) ignore
+  + * (nt:base) = rep:Unstructured ignore
+
+[rep:ACL] > rep:Policy
+  orderable
+  + * (rep:ACE) = rep:GrantACE protected ignore
+
+[rep:Privilege]
+  - rep:isAbstract (boolean) protected
+  - rep:aggregates (name) protected multiple
+  - rep:bits (long) mandatory protected multiple
+
+[rep:MemberReferences]
+  - rep:members (weakreference) protected multiple < 'rep:Authorizable'
+
+[rep:PropertyDefinitions]
+  + * (rep:PropertyDefinition) = rep:PropertyDefinition protected
+
+[mix:referenceable]
+  mixin
+  - jcr:uuid (string) mandatory autocreated protected initialize
+
+[mix:lastModified]
+  mixin
+  - jcr:lastModified (date) autocreated
+  - jcr:lastModifiedBy (string) autocreated
+
+[rep:Members]
+  orderable
+  - * (weakreference) protected < 'rep:Authorizable'
+  + * (rep:Members) = rep:Members protected multiple
+
+[vlt:FullCoverage]
+  mixin
+
+[rep:Permissions]
+  - * (undefined) protected ignore
+  - * (undefined) protected multiple ignore
+  + * (rep:Permissions) = rep:Permissions protected ignore
+
+[mix:created]
+  mixin
+  - jcr:created (date) autocreated protected
+  - jcr:createdBy (string) autocreated protected
+
+[nt:folder] > nt:hierarchyNode
+  + * (nt:hierarchyNode) version
+
+[nt:propertyDefinition]
+  - jcr:name (name) protected
+  - jcr:autoCreated (boolean) mandatory protected
+  - jcr:mandatory (boolean) mandatory protected
+  - jcr:onParentVersion (string) mandatory protected < 'COPY', 'VERSION', 'INITIALIZE', 'COMPUTE', 'IGNORE', 'ABORT'
+  - jcr:protected (boolean) mandatory protected
+  - jcr:requiredType (string) mandatory protected < 'STRING', 'URI', 'BINARY', 'LONG', 'DOUBLE', 'DECIMAL', 'BOOLEAN', 'DATE', 'NAME', 'PATH', 'REFERENCE', 'WEAKREFERENCE', 'UNDEFINED'
+  - jcr:valueConstraints (string) protected multiple
+  - jcr:defaultValues (undefined) protected multiple
+  - jcr:multiple (boolean) mandatory protected
+  - jcr:availableQueryOperators (name) mandatory protected multiple
+  - jcr:isFullTextSearchable (boolean) mandatory protected
+  - jcr:isQueryOrderable (boolean) mandatory protected
+
+[rep:NodeType] > nt:nodeType
+  - rep:supertypes (name) autocreated protected multiple
+  - rep:primarySubtypes (name) autocreated protected multiple
+  - rep:mixinSubtypes (name) autocreated protected multiple
+  - rep:mandatoryProperties (name) autocreated protected multiple
+  - rep:mandatoryChildNodes (name) autocreated protected multiple
+  - rep:protectedProperties (name) autocreated protected multiple
+  - rep:protectedChildNodes (name) autocreated protected multiple
+  - rep:hasProtectedResidualProperties (boolean) autocreated protected
+  - rep:hasProtectedResidualChildNodes (boolean) autocreated protected
+  - rep:namedSingleValuedProperties (name) autocreated protected multiple
+  + rep:namedPropertyDefinitions (rep:NamedPropertyDefinitions) = rep:NamedPropertyDefinitions protected
+  + rep:residualPropertyDefinitions (rep:PropertyDefinitions) = rep:PropertyDefinitions protected
+  + rep:namedChildNodeDefinitions (rep:NamedChildNodeDefinitions) = rep:NamedChildNodeDefinitions protected
+  + rep:residualChildNodeDefinitions (rep:ChildNodeDefinitions) = rep:ChildNodeDefinitions protected
+
+[mix:shareable] > mix:referenceable
+  mixin
+
+[rep:AccessControl]
+  + * (rep:AccessControl) protected ignore
+  + * (rep:PrincipalAccessControl) protected ignore
+
+[rep:SystemUser] > rep:User
+
+[mix:language]
+  mixin
+  - jcr:language (string)
+
+[rep:VersionReference]
+  mixin
+  - rep:versions (reference) protected multiple
+
+[rep:PermissionStore]
+  - rep:accessControlledPath (string) protected ignore
+  - rep:numPermissions (long) protected ignore
+  - rep:modCount (long) protected ignore
+  + * (rep:PermissionStore) = rep:PermissionStore protected ignore
+  + * (rep:Permissions) = rep:Permissions protected ignore
+
+[rep:UnstructuredProtected]
+  abstract
+  - * (undefined) protected multiple ignore
+  - * (undefined) protected ignore
+  + * (rep:UnstructuredProtected) protected ignore
+
+[oak:Resource] > mix:lastModified, mix:mimeType
+  primaryitem jcr:data
+  - jcr:data (binary) mandatory
+
+[rep:NamedPropertyDefinitions]
+  + * (rep:PropertyDefinitions) = rep:PropertyDefinitions protected
+
+[rep:nodeTypes]
+  + * (nt:nodeType) = nt:nodeType protected abort
+
+[rep:AccessControllable]
+  mixin
+  + rep:policy (rep:Policy) protected ignore
+
+[rep:NamedChildNodeDefinitions]
+  + * (rep:ChildNodeDefinitions) = rep:ChildNodeDefinitions protected
+
+[nt:versionHistory] > mix:referenceable
+  - jcr:versionableUuid (string) mandatory autocreated protected abort
+  - jcr:copiedFrom (weakreference) protected abort < 'nt:version'
+  + jcr:rootVersion (nt:version) = nt:version mandatory autocreated protected abort
+  + jcr:versionLabels (nt:versionLabels) = nt:versionLabels mandatory autocreated protected abort
+  + * (nt:version) = nt:version protected abort
+
+[rep:RetentionManageable]
+  mixin
+  - rep:hold (undefined) protected multiple ignore
+  - rep:retentionPolicy (undefined) protected ignore
+
+[rep:RepoAccessControllable]
+  mixin
+  + rep:repoPolicy (rep:Policy) protected ignore
+
+[rep:GrantACE] > rep:ACE
+
+[rep:ChildNodeDefinitions]
+  + * (rep:ChildNodeDefinition) = rep:ChildNodeDefinition protected
+
+[vlt:HierarchyNode] > nt:hierarchyNode
+  mixin
+
+[nt:versionedChild]
+  - jcr:childVersionHistory (reference) mandatory autocreated protected abort < 'nt:versionHistory'
+
+[vlt:Package]
+  orderable mixin
+  + vlt:definition (nt:base) = vlt:PackageDefinition
+
+[rep:DenyACE] > rep:ACE
+
+[rep:AuthorizableFolder] > nt:hierarchyNode
+  + * (rep:Authorizable) = rep:User version
+  + * (rep:AuthorizableFolder) = rep:AuthorizableFolder version
+
+[rep:Restrictions]
+  - * (undefined) protected
+  - * (undefined) protected multiple

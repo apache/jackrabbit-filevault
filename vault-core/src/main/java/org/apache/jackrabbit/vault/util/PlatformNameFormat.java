@@ -17,14 +17,15 @@
 
 package org.apache.jackrabbit.vault.util;
 
+import org.apache.jackrabbit.util.Text;
 /**
  * Implements a repository to platform name formatter. 
  * 
  * <p>Illegal characters a
  * generally escaped using the url escaping format, i.e. replacing the char
- * by a '%' hex(char) sequence. special treatment is used for the ':' char
- * since it's used quite often as namespace prefix separator. the
- * PREFIX ':' NAME sequence is replaced by '_' PREFIX '_' NAME. item names
+ * by a '%' hex(char) sequence. Special treatment is used for the ':' char
+ * since it's used quite often as namespace prefix separator. The
+ * PREFIX ':' NAME sequence is replaced by '_' PREFIX '_' NAME. Item names
  * that would generate the same pattern are escaped with an extra leading '_'.
  * 
  * <p>Examples:
@@ -47,7 +48,7 @@ package org.apache.jackrabbit.vault.util;
  * +-------------------+----------------------+----+----+
  * </pre>
  * 
- * note for the 2nd set of examples the cases are very rare and justify the
+ * Note for the 2nd set of examples the cases are very rare and justify the
  * ugly '%' escaping.
  *
  */
@@ -64,7 +65,7 @@ public class PlatformNameFormat {
      * @return the (escaped) platform name.
      */
     public static String getPlatformName(String repositoryName) {
-        StringBuffer buf = new StringBuffer("_");
+        StringBuilder buf = new StringBuilder("_");
         boolean escapeColon = false;
         boolean useUnderscore = false;
         int numUnderscore = 0;
@@ -80,6 +81,7 @@ public class PlatformNameFormat {
                          buf.append('_');
                      } else {
                          buf.append("%3a");
+                         escapeColon = true;
                      }
                      break;
                  case '_':
@@ -135,7 +137,7 @@ public class PlatformNameFormat {
      * @return the (unescaped) repository name.
      */
     public static String getRepositoryName(String platformName) {
-        StringBuffer buffer = new StringBuffer("_");
+        StringBuilder buffer = new StringBuilder("_");
         boolean firstUnderscore = false;
         for (int i=0; i<platformName.length(); i++) {
             char c = platformName.charAt(i);

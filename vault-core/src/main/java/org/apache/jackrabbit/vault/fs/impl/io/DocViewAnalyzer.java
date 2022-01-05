@@ -22,6 +22,7 @@ import java.io.IOException;
 import javax.jcr.NamespaceException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -30,9 +31,9 @@ import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.util.ISO9075;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.io.DocViewAnalyzerListener;
 import org.apache.jackrabbit.vault.util.RejectingEntityDefaultHandler;
-import org.apache.jackrabbit.vault.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -98,6 +99,8 @@ public class DocViewAnalyzer extends RejectingEntityDefaultHandler implements Na
             factory.setNamespaceAware(true);
             factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
             SAXParser parser = factory.newSAXParser();
+            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             parser.parse(source, handler);
         } catch (ParserConfigurationException e) {
             throw new IllegalStateException(e);

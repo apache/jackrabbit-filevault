@@ -55,6 +55,14 @@ public class ValidationMessage {
         this(severity, message, nodePath, filePath, basePath, 0, 0, throwable);
     }
 
+    public ValidationMessage(@NotNull ValidationMessageSeverity severity, @NotNull String message, @NotNull NodeContext nodeContext) {
+        this(severity, message, nodeContext.getNodePath(), nodeContext.getFilePath(), nodeContext.getBasePath(), 0, 0, null);
+    }
+
+    public ValidationMessage(@NotNull ValidationMessageSeverity severity, @NotNull String message, @NotNull NodeContext nodeContext, Throwable throwable) {
+        this(severity, message, nodeContext.getNodePath(), nodeContext.getFilePath(), nodeContext.getBasePath(), 0, 0, throwable);
+    }
+
     public ValidationMessage(@NotNull ValidationMessageSeverity severity, @NotNull String message, Path filePath, Path basePath, int line, int column, Throwable throwable) {
         this(severity, message, null, filePath, basePath, line, column, throwable);
     }
@@ -183,6 +191,4 @@ public class ValidationMessage {
                 + (throwable != null ? "throwable=" + throwable + ", " : "") + (nodePath != null ? "nodePath=" + nodePath + ", " : "")
                 + (filePath != null ? "filePath=" + filePath + ", " : "") + (basePath != null ? "basePath=" + basePath : "") + "]";
     }
-
-
 }

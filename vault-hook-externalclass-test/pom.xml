@@ -23,30 +23,20 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.4.5-SNAPSHOT</version>
+        <version>3.5.9-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>vault-hook-externalclass-test</artifactId>
-    <version>3.4.5-SNAPSHOT</version>
+    <version>3.5.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Apache Jackrabbit FileVault Package Hook Sling Example</name>
     <description>
         Provides an example of a package install hook that uses a class not available in bundles classpath
     </description>
-
-    <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N                                             -->
-    <!-- ====================================================================== -->
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-hook-externalclass-test</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jackrabbit/commons/filevault/trunk/vault-hook-externalclass-test</developerConnection>
-        <url>https://svn.apache.org/viewvc/jackrabbit/commons/filevault/trunk/vault-hook-externalclass-test</url>
-    </scm>
-
 
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
@@ -97,7 +87,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.4.5-SNAPSHOT</version>
+            <version>3.5.9-SNAPSHOT</version>
         </dependency>
 
         <!-- JCR Stuff -->
@@ -127,4 +117,7 @@
         </dependency>
     </dependencies>
 
+  <scm>
+    <tag>jackrabbit-filevault-3.5.8</tag>
+  </scm>
 </project>

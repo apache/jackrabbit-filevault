@@ -18,12 +18,15 @@
 package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.jcr.Node;
@@ -40,8 +43,6 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
-import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
-import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.AbstractExporter;
@@ -52,9 +53,12 @@ import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.ExportPostProcessor;
 import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.apache.jackrabbit.vault.packaging.PackageType;
+import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -99,6 +103,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("deprecation")
     public PackageId getId() {
         String group = get(PN_GROUP);
         String name = get(PN_NAME);
@@ -198,9 +203,6 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         return mod.after(uw);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void unwrap(VaultPackage pack, boolean force)
             throws RepositoryException, IOException {
         unwrap(pack, force, true);
@@ -222,9 +224,6 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void unwrap(Archive archive, boolean autoSave)
             throws RepositoryException, IOException {
         if (archive != null) {
@@ -237,7 +236,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
                 JcrWorkspaceFilter.saveFilter(inf.getFilter(), defNode, false);
             }
             if (inf.getProperties() != null) {
-                writeProperties(inf.getProperties());
+                writeProperties(inf.getPackageProperties());
             }
         }
         defNode.setProperty("unwrapped", (Value) null);
@@ -354,69 +353,19 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     }
 
     /**
-     * Load the given properties from the content
-     * @param props the properties to load
-     */
-    private void loadProperties(Properties props) {
-        PackageId id = getId();
-        setProperty(props, VaultPackage.NAME_VERSION, id.getVersionString());
-        setProperty(props, VaultPackage.NAME_NAME, id.getName());
-        setProperty(props, VaultPackage.NAME_GROUP, id.getGroup());
-        setProperty(props, VaultPackage.NAME_BUILD_COUNT, get(PN_BUILD_COUNT));
-        setProperty(props, VaultPackage.NAME_DESCRIPTION, get(PN_DESCRIPTION));
-        setProperty(props, VaultPackage.NAME_REQUIRES_ROOT, get(PN_REQUIRES_ROOT));
-        setProperty(props, VaultPackage.NAME_REQUIRES_RESTART, get(PN_REQUIRES_RESTART));
-        setProperty(props, VaultPackage.NAME_LAST_MODIFIED, getCalendar(PN_LASTMODIFIED));
-        setProperty(props, VaultPackage.NAME_LAST_MODIFIED_BY, get(PN_LASTMODIFIED_BY));
-        setProperty(props, VaultPackage.NAME_LAST_WRAPPED, getCalendar(PN_LAST_WRAPPED));
-        setProperty(props, VaultPackage.NAME_LAST_WRAPPED_BY, get(PN_LAST_WRAPPED_BY));
-        setProperty(props, VaultPackage.NAME_CREATED, getCalendar(PN_CREATED));
-        setProperty(props, VaultPackage.NAME_CREATED_BY, get(PN_CREATED_BY));
-        setProperty(props, VaultPackage.NAME_DEPENDENCIES, Dependency.toString(getDependencies()));
-        setProperty(props, VaultPackage.NAME_AC_HANDLING, get(PN_AC_HANDLING));
-        setProperty(props, VaultPackage.NAME_CND_PATTERN, get(PN_CND_PATTERN));
-    }
-
-    /**
-     * internal method that adds or removes a property
-     * @param props the properties
-     * @param name the name of the properties
-     * @param value the value
-     */
-    private static void setProperty(Properties props, String name, String value) {
-        if (value == null) {
-            props.remove(name);
-        } else {
-            props.put(name, value);
-        }
-    }
-
-    /**
-     * internal method that adds or removes a property
-     * @param props the properties
-     * @param name the name of the properties
-     * @param value the value
-     */
-    private static void setProperty(Properties props, String name, Calendar value) {
-        if (value == null) {
-            props.remove(name);
-        } else {
-            props.put(name, ISO8601.format(value));
-        }
-    }
-
-    /**
      * Writes the given properties to the content.
      * @param props the properties
      */
-    private void writeProperties(Properties props) {
+    private void writeProperties(PackageProperties props) {
         try {
             // sanitize lastModBy property due to former bug that used the
             // lastMod value
+            final String lastModifiedBy;
             if (props.getProperty(VaultPackage.NAME_LAST_MODIFIED) != null
                     && props.getProperty(VaultPackage.NAME_LAST_MODIFIED).equals(props.getProperty(VaultPackage.NAME_LAST_MODIFIED_BY))) {
-                props = new Properties(props);
-                props.setProperty(VaultPackage.NAME_LAST_MODIFIED_BY, "unknown");
+                lastModifiedBy = "unknown";
+            } else {
+                lastModifiedBy = props.getLastModifiedBy();
             }
 
             // Note that the 'path', 'group' and 'name' properties are usually
@@ -424,10 +373,10 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             // however, if a definition is unwrapped at another location, eg
             // in package-share, it is convenient if the original properties
             // are available in the content.
-            defNode.setProperty(PN_VERSION, props.getProperty(VaultPackage.NAME_VERSION));
+            defNode.setProperty(PN_VERSION, props.getId().getVersionString());
             defNode.setProperty(PN_BUILD_COUNT, props.getProperty(VaultPackage.NAME_BUILD_COUNT));
-            defNode.setProperty(PN_NAME, props.getProperty(VaultPackage.NAME_NAME));
-            defNode.setProperty(PN_GROUP, props.getProperty(VaultPackage.NAME_GROUP));
+            defNode.setProperty(PN_NAME, props.getId().getName());
+            defNode.setProperty(PN_GROUP, props.getId().getGroup());
             String deps = props.getProperty(VaultPackage.NAME_DEPENDENCIES);
             if (defNode.hasProperty(PN_DEPENDENCIES)) {
                 defNode.getProperty(PN_DEPENDENCIES).remove();
@@ -441,15 +390,15 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
                 }
                 defNode.setProperty(PN_DEPENDENCIES, ds.toArray(new String[ds.size()]));
             }
-            defNode.setProperty(PN_DESCRIPTION, props.getProperty(VaultPackage.NAME_DESCRIPTION));
-            defNode.setProperty(PN_REQUIRES_ROOT, Boolean.valueOf(props.getProperty(VaultPackage.NAME_REQUIRES_ROOT, "false")));
-            defNode.setProperty(PN_REQUIRES_RESTART, Boolean.valueOf(props.getProperty(VaultPackage.NAME_REQUIRES_RESTART, "false")));
-            defNode.setProperty(PN_LASTMODIFIED, getDate(props.getProperty(VaultPackage.NAME_LAST_MODIFIED)));
-            defNode.setProperty(PN_LASTMODIFIED_BY, props.getProperty(VaultPackage.NAME_LAST_MODIFIED_BY));
-            defNode.setProperty(PN_CREATED, getDate(props.getProperty(VaultPackage.NAME_CREATED)));
-            defNode.setProperty(PN_CREATED_BY, props.getProperty(VaultPackage.NAME_CREATED_BY));
-            defNode.setProperty(PN_LAST_WRAPPED, getDate(props.getProperty(VaultPackage.NAME_LAST_WRAPPED)));
-            defNode.setProperty(PN_LAST_WRAPPED_BY, props.getProperty(VaultPackage.NAME_LAST_WRAPPED_BY));
+            defNode.setProperty(PN_DESCRIPTION, props.getDescription());
+            defNode.setProperty(PN_REQUIRES_ROOT, props.requiresRoot());
+            defNode.setProperty(PN_REQUIRES_RESTART, props.requiresRestart());
+            defNode.setProperty(PN_LASTMODIFIED, props.getLastModified());
+            defNode.setProperty(PN_LASTMODIFIED_BY, lastModifiedBy);
+            defNode.setProperty(PN_CREATED, props.getCreated());
+            defNode.setProperty(PN_CREATED_BY, props.getCreatedBy());
+            defNode.setProperty(PN_LAST_WRAPPED, props.getLastWrapped());
+            defNode.setProperty(PN_LAST_WRAPPED_BY,props.getLastWrappedBy());
             defNode.setProperty(PN_AC_HANDLING, props.getProperty(VaultPackage.NAME_AC_HANDLING));
             defNode.setProperty(PN_CND_PATTERN, props.getProperty(VaultPackage.NAME_CND_PATTERN));
             defNode.setProperty(PN_DISABLE_INTERMEDIATE_SAVE, props.getProperty(VaultPackage.NAME_DISABLE_INTERMEDIATE_SAVE));
@@ -458,25 +407,6 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         }
     }
 
-    /**
-     * Internal method that converts a ISO date to a calendar.
-     * @param iso the iso8601 formatted date
-     * @return the calendar or {@code null}
-     */
-    private static Calendar getDate(String iso) {
-        if (iso == null) {
-            return null;
-        }
-        // check for missing : in timezone part
-        String tzd = iso.substring(iso.length() - 4);
-        if (tzd.indexOf(':') < 0) {
-            iso = iso.substring(0, iso.length() - 4);
-            iso += tzd.substring(0, 2);
-            iso += ":";
-            iso += tzd.substring(2);
-        }
-        return ISO8601.parse(iso);
-    }
 
     /**
      * {@inheritDoc}
@@ -777,15 +707,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      * {@inheritDoc}
      */
     public AccessControlHandling getAccessControlHandling() {
-        String acHandling = get(PN_AC_HANDLING);
-        try {
-            return acHandling == null
-                    ? null
-                    : AccessControlHandling.valueOf(acHandling.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            log.warn("invalid access control handling in definition: {} of {}", acHandling, getId());
-            return null;
-        }
+        return getACHandling();
     }
 
     /**
@@ -808,19 +730,66 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         }
     }
 
+
+    /**
+     * Load the given properties from the content
+     * @param props the properties to load
+     */
+    private Properties loadLegacyProperties() {
+        Properties props = new Properties();
+        PackageId id = getId();
+        setProperty(props, VaultPackage.NAME_VERSION, id.getVersionString());
+        setProperty(props, VaultPackage.NAME_NAME, id.getName());
+        setProperty(props, VaultPackage.NAME_GROUP, id.getGroup());
+        setProperty(props, VaultPackage.NAME_BUILD_COUNT, get(PN_BUILD_COUNT));
+        setProperty(props, VaultPackage.NAME_DESCRIPTION, get(PN_DESCRIPTION));
+        setProperty(props, VaultPackage.NAME_REQUIRES_ROOT, get(PN_REQUIRES_ROOT));
+        setProperty(props, VaultPackage.NAME_REQUIRES_RESTART, get(PN_REQUIRES_RESTART));
+        setProperty(props, VaultPackage.NAME_LAST_MODIFIED, getCalendar(PN_LASTMODIFIED));
+        setProperty(props, VaultPackage.NAME_LAST_MODIFIED_BY, get(PN_LASTMODIFIED_BY));
+        setProperty(props, VaultPackage.NAME_LAST_WRAPPED, getCalendar(PN_LAST_WRAPPED));
+        setProperty(props, VaultPackage.NAME_LAST_WRAPPED_BY, get(PN_LAST_WRAPPED_BY));
+        setProperty(props, VaultPackage.NAME_CREATED, getCalendar(PN_CREATED));
+        setProperty(props, VaultPackage.NAME_CREATED_BY, get(PN_CREATED_BY));
+        setProperty(props, VaultPackage.NAME_DEPENDENCIES, Dependency.toString(getDependencies()));
+        setProperty(props, VaultPackage.NAME_AC_HANDLING, get(PN_AC_HANDLING));
+        setProperty(props, VaultPackage.NAME_CND_PATTERN, get(PN_CND_PATTERN));
+        return props;
+    }
+
+    /**
+     * internal method that adds or removes a property
+     * @param props the properties
+     * @param name the name of the properties
+     * @param value the value
+     */
+    private static void setProperty(Properties props, String name, String value) {
+        if (value == null) {
+            props.remove(name);
+        } else {
+            props.put(name, value);
+        }
+    }
+
+    /**
+     * internal method that adds or removes a property
+     * @param props the properties
+     * @param name the name of the properties
+     * @param value the value
+     */
+    private static void setProperty(Properties props, String name, Calendar value) {
+        if (value == null) {
+            props.remove(name);
+        } else {
+            props.put(name, ISO8601.format(value));
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
     public MetaInf getMetaInf() throws RepositoryException {
-        DefaultMetaInf inf = new DefaultMetaInf();
-        inf.setFilter(JcrWorkspaceFilter.loadFilter(defNode));
-
-        // add properties
-        Properties props = new Properties();
-        loadProperties(props);
-        inf.setProperties(props);
-
-        return inf;
+        return new JcrPackageDefinitionMetaInf(defNode, this, loadLegacyProperties());
     }
 
     /**
@@ -981,4 +950,53 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             }
         }
     }
+
+    @Override
+    public Map<String, String> getExternalHooks() {
+        // not stored
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public AccessControlHandling getACHandling() {
+        String acHandling = get(PN_AC_HANDLING);
+        try {
+            return acHandling == null
+                    ? null
+                    : AccessControlHandling.valueOf(acHandling.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            log.warn("invalid access control handling in definition: {} of {}", acHandling, getId());
+            return null;
+        }
+    }
+
+    @Override
+    public SubPackageHandling getSubPackageHandling() {
+        // not stored
+        return null;
+    }
+
+    
+    @Override
+    public Calendar getDateProperty(String name) {
+        return getCalendar(name);
+    }
+
+    @Override
+    public String getProperty(String name) {
+        return get(name);
+    }
+
+    @Override
+    public @Nullable PackageType getPackageType() {
+        // not stored
+        return null;
+    }
+
+    @Override
+    public @NotNull Map<PackageId, URI> getDependenciesLocations() {
+        // not stored
+        return Collections.emptyMap();
+    }
+
 }

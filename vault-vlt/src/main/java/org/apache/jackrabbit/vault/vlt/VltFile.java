@@ -403,8 +403,7 @@ public class VltFile implements DocumentSource {
         if (!force) {
             // check if the file still contains the diff markers
             boolean mayContainMarker = false;
-            try {
-                BufferedReader in = new BufferedReader(new FileReader(file));
+            try (BufferedReader in = new BufferedReader(new FileReader(file))) {
                 String line;
                 while ((line = in.readLine()) != null) {
                     if (line.startsWith(Hunk3.MARKER_B[0])

@@ -28,21 +28,20 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
-import org.apache.jackrabbit.vault.util.Text;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implements a input stream pump that analyzes the stream copies the stream content into memory.
- * The memory archive is initialized via the {@link #run(InputStream)}.
+ * Implements an {@link org.apache.jackrabbit.vault.util.InputStreamPump.Pump} that extracts the relevant parts from the input stream into memory.
+ * The memory archive is initialized via the {@link #run(InputStream)} being called from {@link InputStreamPump}.
  */
 public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pump {
 

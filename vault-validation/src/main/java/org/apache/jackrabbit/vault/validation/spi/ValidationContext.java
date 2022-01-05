@@ -27,8 +27,8 @@ import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * The validation context encapsulates information about the package for which the validation is  being triggered.
- *
+ * The validation context encapsulates information about the package for which the validation is triggered.
+ * This class is used from both validators (SPI) and validation API but for historical reasons is located in (wrong) package {@code org.apache.jackrabbit.vault.validation.spi}.
  */
 @ProviderType
 public interface ValidationContext {
@@ -50,13 +50,13 @@ public interface ValidationContext {
      * @return the validation context of the container in case this is the context of a sub package otherwise {@code null}.
      */
     @Nullable ValidationContext getContainerValidationContext();
-    
+
     /**
      * Returns the root path of the package.
      * @return either the path to the ZIP file or a directory containing an exploded package.
      */
     @NotNull Path getPackageRootPath();
-    
+
     /**
      * PackageInfo for all resolved package dependencies.
      * In contrast to {@link PackageProperties#getDependencies()} the resolved dependencies also
@@ -64,4 +64,12 @@ public interface ValidationContext {
      * @return the package info of all resolved package dependencies (i.e. the ones for which an artifact was found).
      */
     @NotNull Collection<PackageInfo> getDependenciesPackageInfo();
+
+    /**
+     * 
+     * @return {@code true} in case the validation is incremental (i.e. does not cover all files in a package). This should relax some validations.
+     */
+    default boolean isIncremental() {
+        return false;
+    }
 }

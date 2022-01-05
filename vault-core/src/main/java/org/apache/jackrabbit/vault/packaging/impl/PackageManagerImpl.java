@@ -131,42 +131,40 @@ public class PackageManagerImpl implements PackageManager {
     @Override
     public void assemble(Session s, ExportOptions opts, OutputStream out)
             throws IOException, RepositoryException {
-        RepositoryAddress addr;
-        try {
-            String mountPath = opts.getMountPath();
-            if (mountPath == null || mountPath.length() == 0) {
-                mountPath = "/";
+        try (JarExporter exporter = new JarExporter(out, opts.getCompressionLevel())) {
+            RepositoryAddress addr;
+            try {
+                String mountPath = opts.getMountPath();
+                if (mountPath == null || mountPath.length() == 0) {
+                    mountPath = "/";
+                }
+                addr = new RepositoryAddress("/" + s.getWorkspace().getName() + mountPath);
+            } catch (URISyntaxException e) {
+                throw new IllegalArgumentException(e);
             }
-            addr = new RepositoryAddress("/" + s.getWorkspace().getName() + mountPath);
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e);
-        }
-        MetaInf metaInf = opts.getMetaInf();
-        if (metaInf == null) {
-            metaInf = new DefaultMetaInf();
-        }
-
-        VaultFsConfig config = metaInf.getConfig();
-        if (metaInf.getProperties() != null) {
-            if ("true".equals(metaInf.getProperties().getProperty(PackageProperties.NAME_USE_BINARY_REFERENCES))) {
-                config = AggregateManagerImpl.getDefaultBinaryReferencesConfig();
+            MetaInf metaInf = opts.getMetaInf();
+            if (metaInf == null) {
+                metaInf = new DefaultMetaInf();
             }
-        }
 
-        VaultFileSystem jcrfs = Mounter.mount(config, metaInf.getFilter(), addr, opts.getRootPath(), s);
-        JarExporter exporter = new JarExporter(out, opts.getCompressionLevel());
-        exporter.setProperties(metaInf.getProperties());
-        if (opts.getListener() != null) {
-            exporter.setVerbose(opts.getListener());
-        }
-        if (opts.getPostProcessor() != null) {
+            VaultFsConfig config = metaInf.getConfig();
+            if (metaInf.getProperties() != null) {
+                if ("true".equals(metaInf.getProperties().getProperty(PackageProperties.NAME_USE_BINARY_REFERENCES))) {
+                    config = AggregateManagerImpl.getDefaultBinaryReferencesConfig();
+                }
+            }
+
+            VaultFileSystem jcrfs = Mounter.mount(config, metaInf.getFilter(), addr, opts.getRootPath(), s);
+            exporter.setProperties(metaInf.getProperties());
+            if (opts.getListener() != null) {
+                exporter.setVerbose(opts.getListener());
+            }
             exporter.export(jcrfs.getRoot(), true);
-            opts.getPostProcessor().process(exporter);
-            exporter.close();
-        } else {
-            exporter.export(jcrfs.getRoot());
+            if (opts.getPostProcessor() != null) {
+                opts.getPostProcessor().process(exporter);
+            }
+            jcrfs.unmount();
         }
-        jcrfs.unmount();
     }
 
     /**
@@ -204,11 +202,11 @@ public class PackageManagerImpl implements PackageManager {
     @Override
     public void rewrap(ExportOptions opts, VaultPackage src, OutputStream out)
             throws IOException {
-        MetaInf metaInf = opts.getMetaInf();
-        if (metaInf == null) {
-            metaInf = new DefaultMetaInf();
-        }
         try (JarExporter exporter = new JarExporter(out, opts.getCompressionLevel())) {
+            MetaInf metaInf = opts.getMetaInf();
+            if (metaInf == null) {
+                metaInf = new DefaultMetaInf();
+            }
             exporter.open();
             exporter.setProperties(metaInf.getProperties());
             ProgressTracker tracker = null;

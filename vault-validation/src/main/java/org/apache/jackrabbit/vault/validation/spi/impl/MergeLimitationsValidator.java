@@ -16,7 +16,6 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -26,6 +25,7 @@ import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
+import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.jetbrains.annotations.NotNull;
@@ -59,10 +59,10 @@ public class MergeLimitationsValidator implements DocumentViewXmlValidator {
     }
 
     @Override
-    public Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
+    public Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
         // find out if one of the filter roots is pointing to any of the aggregator's non-root nodes
-        if (!isRoot && !node.props.isEmpty() && rootNodePathsOfMergeRules.contains(nodePath)) {
-            return Collections.singleton(new ValidationMessage(severity, String.format(PACKAGE_NON_ROOT_NODE_MERGED, nodePath)));
+        if (!isRoot && !node.props.isEmpty() && rootNodePathsOfMergeRules.contains(nodeContext.getNodePath())) {
+            return Collections.singleton(new ValidationMessage(severity, String.format(PACKAGE_NON_ROOT_NODE_MERGED, nodeContext.getNodePath())));
         }
         return null;
     }

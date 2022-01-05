@@ -19,9 +19,11 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,12 +31,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
@@ -60,7 +61,6 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.vault.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
@@ -87,45 +87,29 @@ import org.slf4j.LoggerFactory;
 @Designate(ocd = FSPackageRegistry.Config.class)
 public class FSPackageRegistry extends AbstractPackageRegistry {
 
-    private static final String REPOSITORY_HOME = "repository.home";
+    protected static final String REPOSITORY_HOME = "repository.home";
 
     /**
      * default logger
      */
     private static final Logger log = LoggerFactory.getLogger(FSPackageRegistry.class);
 
-    /**
-     * Suffixes for metadata files
-     */
-    private final String[] META_SUFFIXES = {"xml"};
+    private FSInstallStateCache stateCache;
 
-    private Map<PackageId, FSInstallState> stateCache = new ConcurrentHashMap<>();
-
-    /**
-     * Contains a map of all filesystem paths to package IDs
-     */
-    private Map<Path, PackageId> pathIdMapping = new ConcurrentHashMap<>();
-
-
-    private boolean packagesInitializied = false;
 
     @Reference
     private PackageEventDispatcher dispatcher;
 
-    private File homeDir;
-
-    private InstallationScope scope;
-
-    private File getHomeDir() {
-        return homeDir;
-    }
+    private InstallationScope scope = InstallationScope.UNSCOPED;
 
     /**
      * Creates a new FSPackageRegistry based on the given home directory.
      *
      * @param homeDir the directory in which packages and their metadata is stored
      * @throws IOException If an I/O error occurs.
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean)} instead
      */
+    @Deprecated
     public FSPackageRegistry(@NotNull File homeDir) throws IOException {
         this(homeDir, InstallationScope.UNSCOPED);
     }
@@ -136,19 +120,54 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param homeDir the directory in which packages and their metadata is stored
      * @param scope to set a corresponding workspacefilter
      * @throws IOException If an I/O error occurs.
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean)} instead
      */
+    @Deprecated
     public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope) throws IOException {
-        this.homeDir = homeDir;
-        this.scope = scope;
-        loadPackageCache();
+       this(homeDir, scope, null);
     }
 
     /**
-     * Deafult constructor for OSGi initialization (homeDir defined via activator)
+     * 
+     * @param homeDir
+     * @param scope
+     * @param securityConfig
+     * @throws IOException
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean)} instead
      */
-    public FSPackageRegistry() {
+    @Deprecated
+    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig) throws IOException {
+        this(homeDir, scope, securityConfig, false, true);
     }
 
+    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrict, boolean overwritePrimaryTypesOfFolders) throws IOException {
+        super(securityConfig, isStrict, overwritePrimaryTypesOfFolders);
+        log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", homeDir.getPath());
+        this.scope = scope;
+        this.stateCache = new FSInstallStateCache(homeDir.toPath());
+    }
+
+    /**
+     * Default constructor for OSGi initialization (homeDir defined via activator)
+     * @throws IOException 
+     */
+    public FSPackageRegistry() throws IOException {
+        super(null, false, true); // set security config delayed (i.e. only after activate())
+    }
+
+    @Activate
+    public void activate(BundleContext context, Config config) throws IOException {
+        File homeDir = context.getProperty(REPOSITORY_HOME) != null ? ( 
+                new File(config.homePath()).isAbsolute() ? new File(config.homePath()) : new File(context.getProperty(REPOSITORY_HOME) + "/" + config.homePath())) : 
+                context.getDataFile(config.homePath());
+        if (!homeDir.exists()) {
+            homeDir.mkdirs();
+        }
+        log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", homeDir.getPath());
+        this.scope = InstallationScope.valueOf(config.scope());
+        this.securityConfig = new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation());
+        this.stateCache = new FSInstallStateCache(homeDir.toPath());
+    }
 
     @ObjectClassDefinition(
             name = "Apache Jackrabbit FS Package Registry Service"
@@ -162,32 +181,19 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 description = "Allows to limit the installation scope of this Apache Jackrabbit FS Package Registry Service. "
                         + "Packages installed from this registry may be unscoped (unfiltered), "
                         + "application scoped (only content for /apps & /libs) "
-                        + "or content scoped (all content despite of /libs & /apps)",
+                        + "or content scoped (all content except for /libs & /apps)",
                 options = {
                     @Option(label = "Unscoped", value = "UNSCOPED"),
                     @Option(label = "Application Scoped", value = "APPLICATION_SCOPED"),
                     @Option(label = "Content Scoped", value = "CONTENT_SCOPED")
         })
         String scope() default "UNSCOPED";
-    }
-
-    @Activate
-    private void activate(BundleContext context, Config config) throws IOException {
-        String repoHome = context.getProperty(REPOSITORY_HOME);
-        if (repoHome == null) {
-            this.homeDir = context.getDataFile(config.homePath());
-        } else {
-            this.homeDir = new File(config.homePath());
-            if (!this.homeDir.isAbsolute()) {
-                this.homeDir = new File(repoHome + "/" + config.homePath());
-            }
-            if (!homeDir.exists()) {
-                homeDir.mkdirs();
-            }
-        }
-        this.scope = InstallationScope.valueOf(config.scope());
-        loadPackageCache();
-        log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", this.homeDir.getPath());
+        
+        @AttributeDefinition(description = "The authorizable ids which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
+        String[] authIdsForHookExecution();
+        
+        @AttributeDefinition(description = "The authorizable ids which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
+        String[] authIdsForRootInstallation();
     }
 
     /**
@@ -217,68 +223,57 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @Override
     public RegisteredPackage open(@NotNull PackageId id) throws IOException {
         FSInstallState state = getInstallState(id);
-        return FSPackageStatus.NOTREGISTERED != state.getStatus() ? new FSRegisteredPackage(this, state) : null;
+        return state != null ? new FSRegisteredPackage(this, state) : null;
     }
 
     @Override
     public boolean contains(@NotNull PackageId id) throws IOException {
-        return stateCache.containsKey(id);
+        return getInstallState(id) != null; // don't use hasKey as otherwise there is no fallback for lazily loading metadata files
     }
 
-    @Nullable
-    private File getPackageFile(@NotNull PackageId id) {
+    @Nullable 
+    FSInstallState getInstallState(@NotNull PackageId id) throws IOException {
         try {
-            FSInstallState state = getInstallState(id);
-            if (FSPackageStatus.NOTREGISTERED == state.getStatus()) {
-                return buildPackageFile(id);
-            } else {
-                return state.getFilePath().toFile();
-            }
-        } catch (IOException e) {
-            log.error("Couldn't get install state of packageId {}", id, e);
+            return stateCache.get(id);
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
         }
-        return null;
-    }
-
-    private File buildPackageFile(@NotNull PackageId id) {
-        String path = getInstallationPath(id);
-        return new File(getHomeDir(), path + ".zip");
     }
 
     /**
-     * Returns the meta data file of the package with the given Id.
-     *
-     * @param id The package Id.
-     * @return the meta data file.
+     * 
+     * @param id
+     * @return the file pointing to an existing or new package with the given id
+     * @throws IOException
      */
     @NotNull
-    private File getPackageMetaDataFile(@NotNull PackageId id) {
-        final String path = getInstallationPath(id);
-        return new File(getHomeDir(), path + ".xml");
+    private Path getPackageFile(@NotNull PackageId id) throws IOException {
+        FSInstallState state = getInstallState(id);
+        if (state == null) {
+            return stateCache.getPackageFile(id);
+        } else {
+            return state.getFilePath();
+        }
     }
 
     /**
      * Opens the package of a file with the given Id.
      * @param id The Id of package file.
      * @return the package
-     * @throws IOException if an I/O error occurrs.
+     * @throws IOException if an I/O error occurs.
      */
     @NotNull
-    protected VaultPackage openPackageFile(@NotNull PackageId id) throws IOException {
-        File pkg = getPackageFile(id);
-        if (pkg == null) {
-            throw new IOException("Could not find package file for id " + id);
-        }
+    protected VaultPackage openPackageFile(@NotNull PackageId id) throws IOException, NoSuchPackageException {
+        Path pkg = getPackageFile(id);
 
-        if (pkg.exists() && pkg.length() > 0) {
-            try {
-                return new ZipVaultPackage(pkg, false, true);
-            } catch (IOException e) {
-                log.error("Cloud not open file {} as ZipVaultPackage.", pkg.getPath(), e);
-                throw e;
-            }
+        if (Files.exists(pkg) && Files.size(pkg) > 0) {
+            return new ZipVaultPackage(pkg.toFile(), false, true);
         } else {
-            return new HollowVaultPackage(getInstallState(id).getProperties());
+            FSInstallState state = getInstallState(id);
+            if (state == null) {
+                throw new NoSuchPackageException().setId(id);
+            }
+            return new HollowVaultPackage(state.getProperties());
         }
     }
 
@@ -290,8 +285,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     public DependencyReport analyzeDependencies(@NotNull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException {
         List<Dependency> unresolved = new LinkedList<>();
         List<PackageId> resolved = new LinkedList<>();
-        FSInstallState state = getInstallState(id);
-        if (FSPackageStatus.NOTREGISTERED == state.getStatus()) {
+        FSInstallState state = stateCache.get(id);
+        if (state == null) {
             throw new NoSuchPackageException().setId(id);
         }
 
@@ -345,8 +340,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException If an I/O error occurs.
      */
     boolean isInstalled(PackageId id) throws IOException {
-        FSPackageStatus status = getInstallState(id).getStatus();
-        return FSPackageStatus.EXTRACTED == status;
+        FSInstallState state = getInstallState(id);
+        if (state != null) {
+            return FSPackageStatus.EXTRACTED == state.getStatus();
+        }
+        return false;
     }
 
     /**
@@ -357,30 +355,26 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     public PackageId register(@NotNull InputStream in, boolean replace) throws IOException, PackageExistsException {
       return register(in, replace, null);
     }
-    
-    /**
-     * {@inheritDoc}
-     */
+
     @NotNull
     private PackageId register(@NotNull InputStream in, boolean replace, Dependency autoDependency) throws IOException, PackageExistsException {
         ZipVaultPackage pkg = upload(in, replace);
 
         Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pkg, replace);
-        File pkgFile = buildPackageFile(pkg.getId());
+        Path pkgFile = getPackageFile(pkg.getId());
         HashSet<Dependency> dependencies = new HashSet<>();
         dependencies.addAll(Arrays.asList(pkg.getDependencies()));
         if (autoDependency != null) {
             dependencies.add(autoDependency);
         }
-        FSInstallState state = new FSInstallState(pkg.getId(), FSPackageStatus.REGISTERED)
-                .withFilePath(pkgFile.toPath())
+        FSInstallState state = new FSInstallState(pkg.getId(), FSPackageStatus.REGISTERED, pkgFile)
                 .withDependencies(dependencies)
                 .withSubPackages(subpackages)
                 .withFilter(pkg.getArchive().getMetaInf().getFilter())
                 .withSize(pkg.getSize())
                 .withProperties(pkg.getArchive().getMetaInf().getProperties())
                 .withExternal(false);
-        setInstallState(state);
+        stateCache.put(pkg.getId(), state);
         return pkg.getId();
     }
 
@@ -456,36 +450,31 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ZipVaultPackage upload(InputStream in, boolean replace)
+    protected ZipVaultPackage upload(InputStream in, boolean replace)
             throws IOException, PackageExistsException {
 
-        MemoryArchive archive = new MemoryArchive(false);
-        File tempFile = File.createTempFile("upload", ".zip");
-
-        try (InputStreamPump pump = new InputStreamPump(in, archive)) {
-            // this will cause the input stream to be consumed and the memory
-            // archive being initialized.
-            try {
-
-                FileUtils.copyInputStreamToFile(pump, tempFile);
-            } catch (Exception e) {
-                String msg = "Stream could be read successfully.";
-                log.error(msg);
-                throw new IOException(msg, e);
+        Path tempFile = Files.createTempFile("upload", ".zip");
+        try {
+            MemoryArchive archive = new MemoryArchive(false);
+    
+            try (InputStreamPump pump = new InputStreamPump(in, archive)) {
+                // this will cause the input stream to be consumed and the memory
+                // archive being initialized.
+                try {
+                    Files.copy(pump, tempFile, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    String msg = "Stream could not be read successfully.";
+                    throw new IOException(msg, e);
+                }
             }
-
             if (archive.getJcrRoot() == null) {
                 String msg = "Stream is not a content package. Missing 'jcr_root'.";
-                log.error(msg);
                 throw new IOException(msg);
             }
-
+    
             final MetaInf inf = archive.getMetaInf();
             PackageId pid = inf.getPackageProperties().getId();
-
+    
             // invalidate pid if path is unknown
             if (pid == null) {
                 throw new IllegalArgumentException("Unable to create package. No package pid set.");
@@ -493,24 +482,27 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             if (!pid.isValid()) {
                 throw new IllegalArgumentException("Unable to create package. Illegal package name.");
             }
-
-            File oldPkgFile = getPackageFile(pid);
+    
+            Path pkgFile = getPackageFile(pid);
             FSInstallState state = getInstallState(pid);
-
-            if (oldPkgFile != null && oldPkgFile.exists()) {
+    
+            if (Files.exists(pkgFile)) {
                 if (replace && !state.isExternal()) {
-                    oldPkgFile.delete();
+                    Files.delete(pkgFile);
                 } else {
                     throw new PackageExistsException("Package already exists: " + pid).setId(pid);
                 }
+            } else {
+                Files.createDirectories(pkgFile.getParent());
             }
-
+    
             ZipVaultPackage pkg = new ZipVaultPackage(archive, true);
             registerSubPackages(pkg, replace);
-            File pkgFile = buildPackageFile(pid);
-            FileUtils.moveFile(tempFile, pkgFile);
+            Files.move(tempFile, pkgFile);
             dispatch(Type.UPLOAD, pid, null);
             return pkg;
+        } finally {
+            Files.deleteIfExists(tempFile);
         }
 
     }
@@ -521,74 +513,55 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @NotNull
     @Override
     public PackageId register(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
-        ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
-        try {
-            File pkgFile = buildPackageFile(pack.getId());
-            if (pkgFile.exists()) {
-                if (replace) {
-                    pkgFile.delete();
-                } else {
-                    throw new PackageExistsException("Package already exists: " + pack.getId()).setId(pack.getId());
-                }
-            }
-            Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pack, replace);
-            FileUtils.copyFile(file, pkgFile);
-            Set<Dependency> dependencies = new HashSet<>(Arrays.asList(pack.getDependencies()));
-            FSInstallState state = new FSInstallState(pack.getId(), FSPackageStatus.REGISTERED)
-                    .withFilePath(pkgFile.toPath())
-                    .withDependencies(dependencies)
-                    .withSubPackages(subpackages)
-                    .withFilter(pack.getArchive().getMetaInf().getFilter())
-                    .withSize(pack.getSize())
-                    .withProperties(pack.getArchive().getMetaInf().getProperties())
-                    .withExternal(false);
-            setInstallState(state);
-            return pack.getId();
-        } finally {
-            if (!pack.isClosed()) {
-                pack.close();
-            }
-        }
+        return doRegister(file, replace, false);
     }
 
     @NotNull
     @Override
     public PackageId registerExternal(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
-        if (!replace && pathIdMapping.containsKey(file.toPath())) {
-            PackageId pid = pathIdMapping.get(file.toPath());
-            throw new PackageExistsException("Package already exists: " + pid).setId(pid);
-        }
-        ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
-        try {
+        return doRegister(file, replace, true);
+    }
 
+    @NotNull
+    private PackageId doRegister(@NotNull File file, boolean replace, boolean external) throws IOException, PackageExistsException {
+        // detect collisions without parsing the package to speed things up
+        PackageId oldPackageId = stateCache.getIdForFile(file.toPath());
+        if (!replace && oldPackageId != null) {
+            throw new PackageExistsException("Package already exists: " + oldPackageId).setId(oldPackageId);
+        }
+        try (ZipVaultPackage pack = new ZipVaultPackage(file, false, true)) {
             FSInstallState state = getInstallState(pack.getId());
-            if (!(FSPackageStatus.NOTREGISTERED == state.getStatus())) {
+            if (state != null) {
                 if (replace) {
                     try {
                         remove(pack.getId());
                     } catch (NoSuchPackageException e) {
-                        log.error("Status isn't NOTREGISTERD but no metafile exists to remove", e);
+                        log.error("No metafile exists to remove", e);
                     }
                 } else {
                     throw new PackageExistsException("Package already exists: " + pack.getId()).setId(pack.getId());
                 }
             }
+            final Path newPackageFile;
+            if (!external) {
+                // copy to registry path
+                newPackageFile = getPackageFile(pack.getId());
+                Files.createDirectories(newPackageFile.getParent());
+                Files.copy(file.toPath(), newPackageFile);
+            } else {
+                newPackageFile = file.toPath();
+            }
             Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pack, replace);
             Set<Dependency> dependencies = new HashSet<>(Arrays.asList(pack.getDependencies()));
-            FSInstallState targetState = new FSInstallState(pack.getId(), FSPackageStatus.REGISTERED)
-                    .withFilePath(file.toPath())
+            FSInstallState targetState = new FSInstallState(pack.getId(), FSPackageStatus.REGISTERED, newPackageFile)
                     .withDependencies(dependencies)
                     .withSubPackages(subpackages)
                     .withFilter(pack.getArchive().getMetaInf().getFilter())
                     .withSize(pack.getSize())
                     .withProperties(pack.getArchive().getMetaInf().getProperties())
-                    .withExternal(true);
-            setInstallState(targetState);
+                    .withExternal(external);
+            stateCache.put(pack.getId(), targetState);
             return pack.getId();
-        } finally {
-            if (!pack.isClosed()) {
-                pack.close();
-            }
         }
     }
 
@@ -597,18 +570,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      */
     @Override
     public void remove(@NotNull PackageId id) throws IOException, NoSuchPackageException {
-        FSInstallState state = getInstallState(id);
-        File metaData = getPackageMetaDataFile(id);
-
-        if (!metaData.exists()) {
+        FSInstallState state = stateCache.remove(id);
+        if (state == null) {
             throw new NoSuchPackageException().setId(id);
         }
-        metaData.delete();
-
         if (!state.isExternal()) {
-            getPackageFile(id).delete();
+            Files.delete(state.getFilePath());
         }
-        updateInstallState(id, FSPackageStatus.NOTREGISTERED);
         dispatch(PackageEvent.Type.REMOVE, id, null);
     }
 
@@ -618,48 +586,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @NotNull
     @Override
     public Set<PackageId> packages() throws IOException {
-        return packagesInitializied ? stateCache.keySet() : loadPackageCache();
-    }
-
-    /**
-     * Loads all state from files persisted in configured homeDir, adds to cache and returns all cached {@code PackageId}s.
-     *
-     * @return {@code Set} of all cached {@code PackageId}s
-     *
-     * @throws IOException If an I/O error occurs
-     */
-    private Set<PackageId> loadPackageCache() throws IOException {
-        Map<PackageId, FSInstallState> cacheEntries = new HashMap<>();
-        Map<Path, PackageId> idMapping = new HashMap<>();
-
-
-        Collection<File> files = FileUtils.listFiles(getHomeDir(), META_SUFFIXES, true);
-        for (File file : files) {
-            FSInstallState state = FSInstallState.fromFile(file);
-            if (state != null) {
-                PackageId id = state.getPackageId();
-                if (id != null) {
-                    cacheEntries.put(id, state);
-                    idMapping.put(state.getFilePath(), id);
-                    
-                }
-            }
-        }
-        stateCache.putAll(cacheEntries);
-        pathIdMapping.putAll(idMapping);
-        packagesInitializied = true;
-        return cacheEntries.keySet();
-    }
-
-    /**
-     * Returns the path of this package.this also includes the version, but
-     * never the extension (.zip).
-     *
-     * @param id the package id
-     * @return the path of this package
-     */
-    public String getInstallationPath(PackageId id) {
-        return getRelativeInstallationPath(id);
+        return stateCache.keySet();
     }
 
     /**
@@ -700,9 +627,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     // no need to set filter in other cases
                 
             }
-            vltPkg.extract(session, opts);
-            dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
-            updateInstallState(vltPkg.getId(), FSPackageStatus.EXTRACTED);
+            if (vltPkg instanceof ZipVaultPackage) {
+                ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault(), overwritePrimaryTypesOfFoldersByDefault());
+                dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
+                stateCache.updatePackageStatus(vltPkg.getId(), FSPackageStatus.EXTRACTED);
+            } else {
+                throw new IllegalArgumentException("Only ZipVaultPackages can be installed but given package is " + vltPkg.getClass());
+            }
 
         } catch (RepositoryException e) {
             throw new IOException(e);
@@ -718,74 +649,5 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         log.error(msg);
         throw new PackageException(msg);
     }
-
-    /**
-     * Shortcut to just change the status of a package - implicitly sets the installtime when switching to EXTRACTED
-     *
-     * @param pid PackageId of the package to update
-     * @param targetStatus Status to update
-     * @throws IOException If an I/O error occurs.
-     */
-    private void updateInstallState(PackageId pid, FSPackageStatus targetStatus) throws IOException {
-        FSInstallState state = getInstallState(pid);
-        Long installTime = state.getInstallationTime();
-        if (FSPackageStatus.EXTRACTED == targetStatus) {
-            installTime = Calendar.getInstance().getTimeInMillis();
-        }
-        FSInstallState targetState = new FSInstallState(pid, targetStatus)
-              .withFilePath(state.getFilePath())
-              .withDependencies(state.getDependencies())
-              .withSubPackages(state.getSubPackages())
-              .withInstallTime(installTime)
-              .withSize(state.getSize())
-              .withProperties(state.getProperties())
-              .withExternal(state.isExternal());
-        setInstallState(targetState);
-    }
-
-    /**
-     * Persists the installState to a metadatafile and adds current state to cache
-     * @param state
-     * @throws IOException
-     */
-    private void setInstallState(@NotNull FSInstallState state) throws IOException {
-        PackageId pid = state.getPackageId();
-        File metaData = getPackageMetaDataFile(pid);
-
-        if (state.getStatus() == FSPackageStatus.NOTREGISTERED) {
-            pathIdMapping.remove(stateCache.get(pid).getFilePath());
-            metaData.delete();
-            stateCache.remove(pid);
-        } else {
-            state.save(metaData);
-            stateCache.put(pid, state);
-            pathIdMapping.put(state.getFilePath(), pid);
-        }
-    }
-
-    /**
-     * Retrieves {@code InstallState} from cache, falls back to reading from metafile and returns state for {@code FSPackageStatus.NOTREGISTERED} in case not found.
-     *
-     * @param pid the PackageId of the package to retrieve the install state from.
-     * @return {@code InstallState} found for given {@code PackageId} or a fresh one with status {@code FSPackageStatus.NOTREGISTERED}
-     *
-     * @throws IOException if an I/O error occurs.
-     */
-    @NotNull
-    public FSInstallState getInstallState(PackageId pid) throws IOException {
-        if (stateCache.containsKey(pid)) {
-            return stateCache.get(pid);
-        } else {
-            File metaFile = getPackageMetaDataFile(pid);
-            FSInstallState state = FSInstallState.fromFile(metaFile);
-            if (state != null) {
-                //theoretical file - should only be feasible when manipulating on filesystem, writing metafile automatically updates cache
-                stateCache.put(pid, state);
-                pathIdMapping.put(state.getFilePath(), pid);
-            }
-            return state != null ? state : new FSInstallState(pid, FSPackageStatus.NOTREGISTERED);
-        }
-    }
-
 
 }

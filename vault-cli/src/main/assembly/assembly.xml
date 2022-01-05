@@ -47,5 +47,9 @@
       <directory>${project.build.directory}/appassembler/lib/</directory>
       <outputDirectory>/lib</outputDirectory>
     </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/appassembler/etc/</directory>
+      <outputDirectory>/etc</outputDirectory>
+    </fileSet>
   </fileSets>
 </assembly>

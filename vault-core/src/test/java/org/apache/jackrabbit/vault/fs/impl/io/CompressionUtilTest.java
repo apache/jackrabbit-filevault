@@ -16,6 +16,13 @@
  */
 package org.apache.jackrabbit.vault.fs.impl.io;
 
+import static org.apache.jackrabbit.vault.fs.impl.io.CompressionUtil.isCompressible;
+import static org.apache.jackrabbit.vault.fs.impl.io.CompressionUtil.isCompressibleContentType;
+import static org.apache.jackrabbit.vault.fs.impl.io.CompressionUtil.isIncompressibleContentType;
+import static org.apache.jackrabbit.vault.fs.impl.io.CompressionUtil.seemsCompressible;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,12 +33,9 @@ import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertFalse;
-import static org.apache.jackrabbit.vault.fs.impl.io.CompressionUtil.*;
 
 public class CompressionUtilTest {
 
@@ -53,6 +57,7 @@ public class CompressionUtilTest {
     }
 
     @Test
+    @Ignore("Because it does not always succeed due to usage of random bytes")
     public void testCompressibilityEstimation()
             throws IOException, RepositoryException {
         assertTrue(seemsCompressible(newArtifact(incompressibleData(50*1024), null)) < 0);
@@ -60,6 +65,7 @@ public class CompressionUtilTest {
     }
 
     @Test
+    @Ignore("Because it does not always succeed due to usage of random bytes")
     public void testCompressibility()
             throws IOException, RepositoryException {
         byte[] comp256KB = compressibleData(256*1024);

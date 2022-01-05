@@ -17,11 +17,21 @@
 
 package org.apache.jackrabbit.vault.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
+import javax.jcr.Binary;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 import javax.jcr.Value;
+import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.PropertyDefinition;
 
+import org.apache.jackrabbit.commons.jackrabbit.SimpleReferenceBinary;
+import org.apache.jackrabbit.value.ValueFactoryImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -203,14 +213,51 @@ public class DocViewPropertyTest {
         assertEscaped("hello\\world", "hello\\\\world", true);
     }
 
+    @Test
+    public void testFromValues() throws RepositoryException, IOException {
+        ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+        // test empty multi-value
+        assertEquals(DocViewProperty.fromValues("test", new Value[0], PropertyType.BINARY, true, false, false), true, PropertyType.BINARY);
+        // test single value
+        assertEquals(DocViewProperty.fromValues("test", new Value[] {valueFactory.createValue(1.1)}, PropertyType.DOUBLE, false, false, false), false, PropertyType.DOUBLE, "1.1");
+
+        // binary reference (enabled)
+        Binary binary = new SimpleReferenceBinary("myid");
+        Value value = valueFactory.createValue(binary);
+        assertEquals(DocViewProperty.fromValues("test", new Value[]{ value }, PropertyType.BINARY, false, false, true), false, PropertyType.BINARY, true, "myid");
+        // binary reference (disabled)
+        assertEquals(DocViewProperty.fromValues("test", new Value[]{ value }, PropertyType.BINARY, false, false, false), false, PropertyType.BINARY, false, "");
+
+        // binary reference multi-value (enabled)
+        Binary binary2 = new SimpleReferenceBinary("myid2");
+        Value value2 = valueFactory.createValue(binary2);
+        assertEquals(DocViewProperty.fromValues("test", new Value[]{ value, value2 }, PropertyType.BINARY, true, false, true), true, PropertyType.BINARY, true, "myid", "myid2");
+        // binary reference multi-value (disabled)
+        assertEquals(DocViewProperty.fromValues("test", new Value[]{ value, value2 }, PropertyType.BINARY, true, false, false), true, PropertyType.BINARY, false, "", "");
+
+        // regular binary (references enabled)
+        try (InputStream input = new ByteArrayInputStream("testüøö".getBytes(StandardCharsets.UTF_8))) {
+            value = valueFactory.createValue(valueFactory.createBinary(input));
+        }
+        assertEquals(DocViewProperty.fromValues("test", new Value[]{ value }, PropertyType.BINARY, false, false, true), false, PropertyType.BINARY, false, "");
+        // regular binary (references disabled)
+        assertEquals(DocViewProperty.fromValues("test", new Value[]{ value }, PropertyType.BINARY, false, false, false), false, PropertyType.BINARY, false, "");
+
+        // regular binary  multi-value (references enabled)
+        assertEquals(DocViewProperty.fromValues("test", new Value[]{ value, value }, PropertyType.BINARY, true, false, true), true, PropertyType.BINARY, false, "", "");
+        // regular binary  multi-value (references disabled)
+        assertEquals(DocViewProperty.fromValues("test", new Value[]{ value, value }, PropertyType.BINARY, true, false, false), true, PropertyType.BINARY, false, "", "");
+    }
+
     private void assertEscaped(String original, String expected, boolean multi) {
-        StringBuffer buf = new StringBuffer();
-        DocViewProperty.escape(buf, original, multi);
-        Assert.assertEquals(expected, buf.toString());
+        Assert.assertEquals(expected, DocViewProperty.escape(original, multi));
     }
 
     private void assertEquals(DocViewProperty p, boolean multi, int type, String... values) {
-        Assert.assertEquals(new DocViewProperty(p.name, values, multi, type), p);
+        assertEquals(p, multi, type, false, values);
     }
 
+    private void assertEquals(DocViewProperty p, boolean multi, int type, boolean isReferenceProperty, String... values) {
+        Assert.assertEquals(new DocViewProperty(p.name, values, multi, type, isReferenceProperty), p);
+    }
 }

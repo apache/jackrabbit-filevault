@@ -109,6 +109,7 @@ import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
+import org.codehaus.plexus.util.Os;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -268,18 +269,38 @@ public class IntegrationTestBase  {
         return new DataStoreBlobStore(fds);
     }
 
+    private static void deleteDirectory(File directory) throws IOException {
+        try {
+            FileUtils.deleteDirectory(directory);
+        } catch (IOException ioe) {
+            // retry after wait on Windows, as it may release file locks in a deferred manner
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    IOException wrappedIOException = new IOException("Initially failed with IOException and waiting was interrupted", ioe);
+                    wrappedIOException.addSuppressed(ie);
+                }
+                FileUtils.deleteDirectory(directory);
+            } else {
+                throw ioe;
+            }
+        }
+    }
+
     @AfterClass
     public static void shutdownRepository() throws IOException {
         if (repository instanceof RepositoryImpl) {
             ((RepositoryImpl) repository).shutdown();
-            FileUtils.deleteDirectory(DIR_JR2_REPO_HOME);
+            deleteDirectory(DIR_JR2_REPO_HOME);
         } else if (repository instanceof org.apache.jackrabbit.oak.jcr.repository.RepositoryImpl) {
             ((org.apache.jackrabbit.oak.jcr.repository.RepositoryImpl) repository).shutdown();
             if (fileStore != null) {
                 fileStore.close();
                 fileStore = null;
             }
-            FileUtils.deleteDirectory(DIR_OAK_REPO_HOME);
+            deleteDirectory(DIR_OAK_REPO_HOME);
         }
         repository = null;
     }

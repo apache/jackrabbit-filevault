@@ -30,7 +30,6 @@
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>vault-vlt</artifactId>
-    <version>3.5.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Apache Jackrabbit FileVault Platform Interaction</name>
@@ -90,7 +89,4 @@
         </dependency>
     </dependencies>
 
-  <scm>
-    <tag>jackrabbit-filevault-3.5.8</tag>
-  </scm>
 </project>

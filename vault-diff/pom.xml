@@ -35,7 +35,6 @@
     <name>Apache Jackrabbit FileVault Diff (Diff utilities)</name>
     <description>Provides Classes for diff and diff3.
     </description>
-    <version>3.5.9-SNAPSHOT</version>
 
     <!-- ====================================================================== -->
     <!-- D E P E N D E N C I E S                                                -->
@@ -54,14 +53,9 @@
         <dependency>
               <groupId>junit</groupId>
               <artifactId>junit</artifactId>
-              <version>3.8.1</version>
               <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <!-- ====================================================================== -->
-    <!-- S C M  D E F I N I T I O N                                             -->
-    <!-- ====================================================================== -->
 
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
@@ -81,7 +75,4 @@
         </plugins>
     </build>
 
-  <scm>
-    <tag>jackrabbit-filevault-3.5.8</tag>
-  </scm>
 </project>

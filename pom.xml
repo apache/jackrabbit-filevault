@@ -340,8 +340,4 @@ file://${basedir}/target/vote.txt
             </build>
         </profile>
     </profiles>
-
-  <scm>
-    <tag>jackrabbit-filevault-3.5.8</tag>
-  </scm>
 </project>

@@ -260,8 +260,4 @@
         </dependency>
         
     </dependencies>
-
-  <scm>
-    <tag>jackrabbit-filevault-3.5.8</tag>
-  </scm>
 </project>

@@ -30,7 +30,6 @@
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>vault-cli</artifactId>
-    <version>3.5.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Apache Jackrabbit FileVault Command Line Interface</name>
@@ -175,8 +174,4 @@
             <version>1.2.10</version>
         </dependency>
     </dependencies>
-
-  <scm>
-    <tag>jackrabbit-filevault-3.5.8</tag>
-  </scm>
 </project>

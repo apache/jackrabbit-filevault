@@ -62,6 +62,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * {@code PackageInstallIT}...
@@ -70,6 +71,9 @@ public class PackageInstallIT extends IntegrationTestBase {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+
+    @Rule
+    public TemporaryFolder testFolder= new TemporaryFolder();
 
     /**
      * Installs a package that contains and checks if everything is correct.
@@ -377,16 +381,18 @@ public class PackageInstallIT extends IntegrationTestBase {
         assertNodeExists("/testroot");
     }
 
+    /**
+     * Installs a package with no properties
+     */
+    @Test
     public void testNoProperties() throws RepositoryException, IOException, PackageException {
-        File tmpFile = File.createTempFile("avlttest", "zip");
+        File tmpFile = testFolder.newFile();
         try (OutputStream os = FileUtils.openOutputStream(tmpFile)) {
             IOUtils.copy(getStream("/test-packages/tmp_no_properties.zip"), os);
             try (JcrPackage pack = packMgr.upload(tmpFile, true, true, "testpackage", false)) {
                 assertNotNull(pack);
                 pack.install(getDefaultOptions());
             }
-        } finally {
-            tmpFile.delete();
         }
     }
 
@@ -405,7 +411,7 @@ public class PackageInstallIT extends IntegrationTestBase {
      */
     @Test
     public void testNoChildFilter() throws RepositoryException, IOException, PackageException {
-        File tmpFile = File.createTempFile("bvlttest", "zip");
+        File tmpFile = testFolder.newFile();
         try (OutputStream os = FileUtils.openOutputStream(tmpFile)) {
             IOUtils.copy(getStream("/test-packages/test-package-with-etc.zip"), os);
             try (JcrPackage pack = packMgr.upload(tmpFile, true, true, "test-package-with-etc", false)) {
@@ -415,8 +421,6 @@ public class PackageInstallIT extends IntegrationTestBase {
                 pack.install(getDefaultOptions());
                 assertNodeExists("/etc/foo");
             }
-        } finally {
-            tmpFile.delete();
         }
     }
 

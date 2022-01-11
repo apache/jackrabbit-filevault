@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collections;
@@ -38,7 +37,7 @@ import javax.jcr.SimpleCredentials;
 import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
@@ -55,7 +54,6 @@ import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
-import org.apache.tika.io.IOUtils;
 import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -381,12 +379,11 @@ public class PackageInstallIT extends IntegrationTestBase {
      */
     @Test
     public void testNoProperties() throws RepositoryException, IOException, PackageException {
-        File tmpFile = File.createTempFile("vlttest", "zip");
-        IOUtils.copy(getStream("/test-packages/tmp_no_properties.zip"), FileUtils.openOutputStream(tmpFile));
-        JcrPackage pack = packMgr.upload(tmpFile, true, true, "testpackage", false);
-        assertNotNull(pack);
-
-        pack.install(getDefaultOptions());
+        try (JcrPackage pack = packMgr.upload(getFile("/test-packages/tmp_no_properties.zip"), false, true, "tmp_no_properties",
+                false)) {
+            assertNotNull(pack);
+            pack.install(getDefaultOptions());
+        }
     }
 
     /**
@@ -404,14 +401,14 @@ public class PackageInstallIT extends IntegrationTestBase {
      */
     @Test
     public void testNoChildFilter() throws RepositoryException, IOException, PackageException {
-        File tmpFile = File.createTempFile("vlttest", "zip");
-        IOUtils.copy(getStream("/test-packages/test-package-with-etc.zip"), FileUtils.openOutputStream(tmpFile));
-        JcrPackage pack = packMgr.upload(tmpFile, true, true, "test-package-with-etc", false);
-        assertNodeExists("/etc");
-        admin.getNode("/etc").addNode("foo", NodeType.NT_FOLDER);
-        admin.save();
-        pack.install(getDefaultOptions());
-        assertNodeExists("/etc/foo");
+        try (JcrPackage pack = packMgr.upload(getFile("/test-packages/test-package-with-etc.zip"), false, true,
+                "test-package-with-etc", false)) {
+            assertNodeExists("/etc");
+            admin.getNode("/etc").addNode("foo", NodeType.NT_FOLDER);
+            admin.save();
+            pack.install(getDefaultOptions());
+            assertNodeExists("/etc/foo");
+        }
     }
 
     @Test

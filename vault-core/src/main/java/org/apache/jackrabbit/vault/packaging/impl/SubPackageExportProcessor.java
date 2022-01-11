@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.impl;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.jcr.RepositoryException;
@@ -119,9 +120,16 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
         }
         // now also get the packages from the primary root
         WorkspaceFilter filter = originalFilter.translate(new SimplePathMapping(DEFAULT_PACKAGE_ROOT_PATH, mgr.getInternalRegistry().getPackRootPaths()[0]));
-        for (JcrPackage pkg: mgr.listPackages(filter)) {
-            if (pkg.isValid() && pkg.getSize() > 0) {
-                subPackages.put(pkg.getDefinition().getId(), pkg.getNode().getPath());
+        List<JcrPackage> packages = mgr.listPackages(filter);
+        try {
+            for (JcrPackage pkg : packages) {
+                if (pkg.isValid() && pkg.getSize() > 0) {
+                    subPackages.put(pkg.getDefinition().getId(), pkg.getNode().getPath());
+                }
+            }
+        } finally {
+            for (JcrPackage pkg : packages) {
+                pkg.close();
             }
         }
         if (subPackages.size() > 0) {

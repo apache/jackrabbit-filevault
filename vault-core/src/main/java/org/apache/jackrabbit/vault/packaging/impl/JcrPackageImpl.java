@@ -454,24 +454,29 @@ public class JcrPackageImpl implements JcrPackage {
                     // get the list of packages available in the same group
                     JcrPackageManager pkgMgr = new JcrPackageManagerImpl(mgr);
                     List<JcrPackage> listPackages = pkgMgr.listPackages(pId.getGroup(), true);
-
-                    // loop in the list of packages returned previously by package manager
-                    for (JcrPackage listedPackage: listPackages) {
-                        JcrPackageDefinition listedPackageDef = listedPackage.getDefinition();
-                        if (listedPackageDef == null) {
-                            continue;
+                    try {
+                        // loop in the list of packages returned previously by package manager
+                        for (JcrPackage listedPackage: listPackages) {
+                            JcrPackageDefinition listedPackageDef = listedPackage.getDefinition();
+                            if (listedPackageDef == null) {
+                                continue;
+                            }
+                            PackageId listedPackageId = listedPackageDef.getId();
+                            if (listedPackageId.equals(pId)) {
+                                continue;
+                            }
+                            // check that the listed package is actually from same name (so normally only version would differ)
+                            // if that package is valid, installed, and the version is more recent than the one in our sub package
+                            // then we can stop the loop here
+                            if (pName.equals(listedPackageId.getName()) && listedPackage.isValid() && listedPackage.isInstalled()
+                                    && listedPackageId.getVersion().compareTo(pVersion) > 0) {
+                                newerPackageIdPerSubPackage.put(pId, listedPackageId);
+                                break;
+                            }
                         }
-                        PackageId listedPackageId = listedPackageDef.getId();
-                        if (listedPackageId.equals(pId)) {
-                            continue;
-                        }
-                        // check that the listed package is actually from same name (so normally only version would differ)
-                        // if that package is valid, installed, and the version is more recent than the one in our sub package
-                        // then we can stop the loop here
-                        if (pName.equals(listedPackageId.getName()) && listedPackage.isValid() && listedPackage.isInstalled()
-                                && listedPackageId.getVersion().compareTo(pVersion) > 0) {
-                            newerPackageIdPerSubPackage.put(pId, listedPackageId);
-                            break;
+                    } finally {
+                        for (JcrPackage listedPackage: listPackages) {
+                            listedPackage.close();
                         }
                     }
                     subPacks.add(p);

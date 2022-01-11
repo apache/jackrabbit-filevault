@@ -205,30 +205,27 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         } else {
             archive = new ArchiveWrapper(archive);
         }
-        ZipVaultPackage pkg = new ZipVaultPackage(archive, true);
-
-        PackageId pid = pkg.getId();
-        JcrPackage jcrPack = registry.upload(pkg, replace);
-        jcrPack = new JcrPackageImpl(registry, jcrPack.getNode(), pkg);
-        jcrPack.extract(options);
-
         Set<PackageId> ids = new HashSet<>();
-        ids.add(pid);
-
-        if (spfArchive != null) {
-            for (Archive.Entry e: spfArchive.getSubPackageEntries()) {
-                InputStream in = spfArchive.openInputStream(e);
-                if (in != null) {
-                    try (Archive subArchive = new ZipStreamArchive(in)) {
-                        PackageId[] subIds = extract(subArchive, options, replace);
-                        ids.addAll(Arrays.asList(subIds));
+        try (ZipVaultPackage pkg = new ZipVaultPackage(archive, true)) {
+            PackageId pid = pkg.getId();
+            // the returned package is invalid as it does not contain any content
+            try (JcrPackage invalidJcrPack = registry.upload(pkg, replace)) {
+                // create valid package based on invalidJcrPack and the underlying archive
+                try (JcrPackage jcrPack = new JcrPackageImpl(registry, invalidJcrPack.getNode(), pkg)) {
+                    jcrPack.extract(options);
+                    ids.add(pid);
+                    if (spfArchive != null) {
+                        for (Archive.Entry e: spfArchive.getSubPackageEntries()) {
+                            try (InputStream in = spfArchive.openInputStream(e);
+                                    Archive subArchive = new ZipStreamArchive(in)) {
+                                PackageId[] subIds = extract(subArchive, options, replace);
+                                ids.addAll(Arrays.asList(subIds));
+                            }
+                        }
                     }
                 }
             }
         }
-
-        pkg.close();
-        jcrPack.close();
         return ids.toArray(new PackageId[ids.size()]);
     }
 
@@ -248,8 +245,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     @Override
     public JcrPackage upload(File file, boolean isTmpFile, boolean replace, String nameHint, boolean strict)
             throws RepositoryException, IOException {
-        ZipVaultPackage pack = new ZipVaultPackage(file, isTmpFile, strict);
-        try {
+        try (ZipVaultPackage pack = new ZipVaultPackage(file, isTmpFile, strict)) {
             return registry.upload(pack, replace);
         } catch (PackageExistsException e) {
             throw new ItemExistsException(e.getMessage(), e);
@@ -386,13 +382,19 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             throws RepositoryException, PackageException {
         List<JcrPackage> subs = listPackages(def.getMetaInf().getFilter());
         PackageId id = def.getId();
-        for (JcrPackage p: subs) {
-            // check if not include itself
-            if (p.getDefinition().getId().equals(id)) {
-                throw new PackageException("A package cannot include itself. Check filter definition.");
+        try {
+            for (JcrPackage p : subs) {
+                // check if not include itself
+                if (p.getDefinition().getId().equals(id)) {
+                    throw new PackageException("A package cannot include itself. Check filter definition.");
+                }
+                if (!p.isSealed()) {
+                    throw new PackageException("Only sealed (built) sub packages allowed: " + p.getDefinition().getId());
+                }
             }
-            if (!p.isSealed()) {
-                throw new PackageException("Only sealed (built) sub packages allowed: " + p.getDefinition().getId());
+        } finally {
+            for (JcrPackage p : subs) {
+                p.close();
             }
         }
     }
@@ -435,24 +437,21 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         opts.setListener(listener);
         opts.setPostProcessor(def.getInjectProcessor());
 
-        VaultPackage dst = rewrap(opts, src, (File) null);
-
-        // update this content
-        Node packNode = pack.getNode();
-        Node contentNode = packNode.getNode(JcrConstants.JCR_CONTENT);
-        InputStream in;
-        try {
-            in = FileUtils.openInputStream(dst.getFile());
-        } catch (IOException e) {
-            throw new PackageException(e);
+        try (VaultPackage dst = rewrap(opts, src, (File) null)) {
+            // update this content
+            Node packNode = pack.getNode();
+            Node contentNode = packNode.getNode(JcrConstants.JCR_CONTENT);
+            try (InputStream in = FileUtils.openInputStream(dst.getFile())) {
+                // stay jcr 1.0 compatible
+                //noinspection deprecation
+                contentNode.setProperty(JcrConstants.JCR_DATA, in);
+                contentNode.setProperty(JcrConstants.JCR_LASTMODIFIED, now);
+                contentNode.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
+                packNode.getSession().save();
+            } catch (IOException e) {
+                throw new PackageException(e);
+            }
         }
-        // stay jcr 1.0 compatible
-        //noinspection deprecation
-        contentNode.setProperty(JcrConstants.JCR_DATA, in);
-        contentNode.setProperty(JcrConstants.JCR_LASTMODIFIED, now);
-        contentNode.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
-        packNode.getSession().save();
-        dst.close();
     }
 
 

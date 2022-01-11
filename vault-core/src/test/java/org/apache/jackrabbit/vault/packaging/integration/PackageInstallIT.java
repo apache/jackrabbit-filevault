@@ -386,13 +386,10 @@ public class PackageInstallIT extends IntegrationTestBase {
      */
     @Test
     public void testNoProperties() throws RepositoryException, IOException, PackageException {
-        File tmpFile = testFolder.newFile();
-        try (OutputStream os = FileUtils.openOutputStream(tmpFile)) {
-            IOUtils.copy(getStream("/test-packages/tmp_no_properties.zip"), os);
-            try (JcrPackage pack = packMgr.upload(tmpFile, true, true, "testpackage", false)) {
-                assertNotNull(pack);
-                pack.install(getDefaultOptions());
-            }
+        try (JcrPackage pack = packMgr.upload(getFile("/test-packages/tmp_no_properties.zip"), false, true, "tmp_no_properties",
+                false)) {
+            assertNotNull(pack);
+            pack.install(getDefaultOptions());
         }
     }
 
@@ -411,16 +408,13 @@ public class PackageInstallIT extends IntegrationTestBase {
      */
     @Test
     public void testNoChildFilter() throws RepositoryException, IOException, PackageException {
-        File tmpFile = testFolder.newFile();
-        try (OutputStream os = FileUtils.openOutputStream(tmpFile)) {
-            IOUtils.copy(getStream("/test-packages/test-package-with-etc.zip"), os);
-            try (JcrPackage pack = packMgr.upload(tmpFile, true, true, "test-package-with-etc", false)) {
-                assertNodeExists("/etc");
-                admin.getNode("/etc").addNode("foo", NodeType.NT_FOLDER);
-                admin.save();
-                pack.install(getDefaultOptions());
-                assertNodeExists("/etc/foo");
-            }
+        try (JcrPackage pack = packMgr.upload(getFile("/test-packages/test-package-with-etc.zip"), false, true,
+                "test-package-with-etc", false)) {
+            assertNodeExists("/etc");
+            admin.getNode("/etc").addNode("foo", NodeType.NT_FOLDER);
+            admin.save();
+            pack.install(getDefaultOptions());
+            assertNodeExists("/etc/foo");
         }
     }
 

@@ -24,9 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.security.Principal;
 import java.util.Collections;
 
@@ -39,7 +37,6 @@ import javax.jcr.SimpleCredentials;
 import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.User;
@@ -62,7 +59,6 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
 
 /**
  * {@code PackageInstallIT}...
@@ -71,9 +67,6 @@ public class PackageInstallIT extends IntegrationTestBase {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-
-    @Rule
-    public TemporaryFolder testFolder= new TemporaryFolder();
 
     /**
      * Installs a package that contains and checks if everything is correct.

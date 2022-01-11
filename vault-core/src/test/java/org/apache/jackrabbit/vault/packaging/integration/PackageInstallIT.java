@@ -381,9 +381,7 @@ public class PackageInstallIT extends IntegrationTestBase {
      */
     @Test
     public void testNoProperties() throws RepositoryException, IOException, PackageException {
-        File tmpFile = File.createTempFile("vlttest", "zip");
-        IOUtils.copy(getStream("/test-packages/tmp_no_properties.zip"), FileUtils.openOutputStream(tmpFile));
-        JcrPackage pack = packMgr.upload(tmpFile, true, true, "testpackage", false);
+        JcrPackage pack = packMgr.upload(getFile("/test-packages/tmp_no_properties.zip"), true, true, "testpackage", false);
         assertNotNull(pack);
 
         pack.install(getDefaultOptions());
@@ -404,9 +402,7 @@ public class PackageInstallIT extends IntegrationTestBase {
      */
     @Test
     public void testNoChildFilter() throws RepositoryException, IOException, PackageException {
-        File tmpFile = File.createTempFile("vlttest", "zip");
-        IOUtils.copy(getStream("/test-packages/test-package-with-etc.zip"), FileUtils.openOutputStream(tmpFile));
-        JcrPackage pack = packMgr.upload(tmpFile, true, true, "test-package-with-etc", false);
+        JcrPackage pack = packMgr.upload(getFile("/test-packages/test-package-with-etc.zip"), true, true, "test-package-with-etc", false);
         assertNodeExists("/etc");
         admin.getNode("/etc").addNode("foo", NodeType.NT_FOLDER);
         admin.save();

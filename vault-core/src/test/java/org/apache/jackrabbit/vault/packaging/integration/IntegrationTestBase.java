@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -42,6 +43,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.jar.JarFile;
 
 import javax.jcr.Node;
@@ -374,7 +376,11 @@ public class IntegrationTestBase  {
     }
 
     public InputStream getStream(String name) {
-        return Objects.requireNonNull(getClass().getResourceAsStream(name), "Could not find class resource with name '" + name + "'");
+        return getStream(getClass(), name);
+    }
+
+    public static InputStream getStream(Class<?> clazz, String name) {
+        return Objects.requireNonNull(clazz.getResourceAsStream(name), "Could not find class resource with name '" + name + "'");
     }
 
     /**
@@ -384,15 +390,25 @@ public class IntegrationTestBase  {
      * @throws IOException
      */
     public File getFile(String name) throws IOException {
+        return getFile(getClass(), name, () -> {
+            try {
+                return tempFolder.newFile();
+            } catch (IOException e) {
+                throw new UncheckedIOException("cannot create temp file", e);
+            }
+        });
+    }
+
+    public static File getFile(Class<?> clazz, String name, Supplier<File> tmpFileSupplier) throws IOException {
         URI uri;
         try {
-            uri = Objects.requireNonNull(getClass().getResource(name),  "Could not find class resource with name '" + name + "'").toURI();
+            uri = Objects.requireNonNull(clazz.getResource(name),  "Could not find class resource with name '" + name + "'").toURI();
         } catch (URISyntaxException e) {
             throw new IOException("Could not convert class resource URL to URI", e);
         }
         if (uri.isOpaque()) { // non hierarchical URIs (for resources in a JAR)  can not use classical file operations
-            File tmpFile = tempFolder.newFile();
-            try (InputStream in = getStream(name)) {
+            File tmpFile = tmpFileSupplier.get();
+            try (InputStream in = getStream(clazz, name)) {
                 Files.copy(in, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
             return tmpFile;
@@ -400,7 +416,6 @@ public class IntegrationTestBase  {
             return new File(uri);
         }
     }
-
     public Archive getFileArchive(String name) throws IOException {
         final File file = getFile(name);
         if (file.isDirectory()) {

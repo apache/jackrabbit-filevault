@@ -36,6 +36,7 @@ import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.h2.util.CloseWatcher;
 import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -76,6 +77,9 @@ public class ZipArchive extends AbstractArchive {
      * the root entry of this archive
      */
     private EntryImpl root;
+
+    /** The watcher for unclosed archives */
+    private CloseWatcher watcher;
 
     /**
      * Creates a new archive that is based on the given zip file.
@@ -148,6 +152,8 @@ public class ZipArchive extends AbstractArchive {
         if (inf.getNodeTypes().isEmpty()) {
             log.debug("Zip {} does not contain nodetypes.", file.getPath());
         }
+        dumpUnclosedArchives();
+        watcher = CloseWatcher.register(this, jar, SHOULD_CREATE_STACK_TRACE);
     }
 
     @Override
@@ -217,6 +223,7 @@ public class ZipArchive extends AbstractArchive {
             if (jar != null) {
                 jar.close();
                 jar = null;
+                CloseWatcher.unregister(watcher);
             }
             if (file != null && isTempFile) {
                 FileUtils.deleteQuietly(file);

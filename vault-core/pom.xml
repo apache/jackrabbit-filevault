@@ -227,6 +227,13 @@
             <artifactId>maven-artifact</artifactId>
             <version>3.8.1</version>
         </dependency>
+        <!-- for the https://github.com/h2database/h2database/blob/master/h2/src/main/org/h2/util/CloseWatcher.java -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.0.206</version>
+            <scope>provided</scope>
+        </dependency>
         <!-- test deps -->
         <dependency>
             <groupId>junit</groupId>

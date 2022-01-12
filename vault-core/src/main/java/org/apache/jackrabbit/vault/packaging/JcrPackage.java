@@ -29,7 +29,8 @@ import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * Specifies the interface of a vault package stored in the repository.
+ * A Vault package stored in the repository.
+ * Needs to be closed in case {@link #getPackage()}, {@link  #extract(ImportOptions)} or {@link #install(ImportOptions)} has been called.
  */
 @ProviderType
 public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
@@ -85,7 +86,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
 
     /**
      * Returns the vault package stored in the data of this package
-     * @return the package
+     * @return the package, this is closed when {@link #close} is called on this package
      * @throws RepositoryException if an error occurs
      * @throws IOException if an I/O error occurs
      */
@@ -245,6 +246,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
 
     /**
      * Closes this package and destroys all temporary data.
+     * Only necessary to call when {@link #getPackage()}, {@link  #extract(ImportOptions)} or {@link #install(ImportOptions)} has been called.
      */
     void close();
 

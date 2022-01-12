@@ -402,9 +402,9 @@ public class JcrPackageImpl implements JcrPackage {
 
         // process sub packages
         Session s = node.getSession();
-        List<JcrPackageImpl> subPacks = new LinkedList<JcrPackageImpl>();
+        List<JcrPackageImpl> subPacks = new LinkedList<>();
         // contains a value only if a more recent version of the package with the given id (from the key) is already installed
-        Map<PackageId, PackageId> newerPackageIdPerSubPackage = new HashMap<PackageId, PackageId>();
+        Map<PackageId, PackageId> newerPackageIdPerSubPackage = new HashMap<>();
         for (String path: subPackages) {
             if (s.nodeExists(path)) {
                 JcrPackageImpl p = new JcrPackageImpl(mgr, s.getNode(path));
@@ -979,12 +979,9 @@ public class JcrPackageImpl implements JcrPackage {
      * {@inheritDoc}
      */
     public void uninstall(ImportOptions opts) throws RepositoryException, PackageException, IOException {
-        uninstall(new HashSet<PackageId>(), opts);
+        uninstall(new HashSet<>(), opts);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     private void uninstall(Set<PackageId> processed, ImportOptions opts) throws RepositoryException, PackageException, IOException {
         getDefinition();
         if (def != null) {

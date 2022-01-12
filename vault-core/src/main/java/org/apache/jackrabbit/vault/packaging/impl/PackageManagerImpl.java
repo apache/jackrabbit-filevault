@@ -173,23 +173,19 @@ public class PackageManagerImpl implements PackageManager {
     @Override
     public VaultPackage rewrap(ExportOptions opts, VaultPackage src, File file)
             throws IOException, RepositoryException {
-        OutputStream out = null;
         boolean isTmp = false;
         boolean success = false;
-        try {
-            if (file == null) {
-                file = File.createTempFile("filevault", ".zip");
-                isTmp = true;
-            }
-            out = FileUtils.openOutputStream(file);
+        if (file == null) {
+            file = File.createTempFile("filevault", ".zip");
+            isTmp = true;
+        }
+        try (OutputStream out = FileUtils.openOutputStream(file);){
             rewrap(opts, src, out);
-            IOUtils.closeQuietly(out);
             success = true;
             VaultPackage pack =  new ZipVaultPackage(file, isTmp);
             dispatch(PackageEvent.Type.REWRAPP, pack.getId(), null);
             return pack;
         } finally {
-            IOUtils.closeQuietly(out);
             if (isTmp && !success) {
                 FileUtils.deleteQuietly(file);
             }

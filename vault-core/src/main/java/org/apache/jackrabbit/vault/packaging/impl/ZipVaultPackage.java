@@ -318,13 +318,4 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         return getMetaInf().getProperties();
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            close();
-        } catch (Throwable e) {
-            // ignore
-        }
-        super.finalize();
-    }
 }

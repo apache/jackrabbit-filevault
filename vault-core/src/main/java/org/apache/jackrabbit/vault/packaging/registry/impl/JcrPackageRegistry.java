@@ -16,8 +16,8 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,10 +34,11 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.jackrabbit.commons.JcrUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
 import org.apache.jackrabbit.vault.fs.spi.CNDReader;
@@ -62,7 +63,6 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.util.InputStreamPump;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -290,9 +290,6 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public JcrPackage open(Node node, boolean allowInvalid) throws RepositoryException {
         JcrPackage pack = new JcrPackageImpl(this, node);
         try {
@@ -312,9 +309,6 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public PackageId resolve(Dependency dependency, boolean onlyInstalled) throws IOException {
         try {
@@ -447,7 +441,6 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     public PackageId register(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
         ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
         try (JcrPackage pkg = upload(pack, replace)) {
-            //noinspection resource
             return pkg.getPackage().getId();
         } catch (RepositoryException e) {
             throw new IOException(e);
@@ -460,7 +453,16 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         throw new UnsupportedOperationException("linking files to repository persistence is not supported.");
     }
 
-    public JcrPackage upload(ZipVaultPackage pkg, boolean replace) throws RepositoryException, IOException, PackageExistsException {
+    /**
+     * Uploads the given package to the JCR package manager,
+     * @param pkg the package
+     * @param replace
+     * @return the uploaded package
+     * @throws RepositoryException
+     * @throws IOException
+     * @throws PackageExistsException
+     */
+    public JcrPackage upload(@NotNull ZipVaultPackage pkg, boolean replace) throws RepositoryException, IOException, PackageExistsException {
 
         // open zip packages
         if (pkg.getArchive().getJcrRoot() == null) {
@@ -558,9 +560,6 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         return node;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public JcrPackage create(String group, String name, String version)
             throws RepositoryException, IOException {
         // sanitize name
@@ -592,36 +591,26 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     @NotNull
     public JcrPackage createNew(@NotNull Node parent, @NotNull PackageId pid, @Nullable VaultPackage pack, boolean autoSave)
             throws RepositoryException, IOException {
-        Node node = parent.addNode(Text.getName(getInstallationPath(pid) + ".zip"), JcrConstants.NT_FILE);
-        Node content = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
-        content.addMixin(JcrPackage.NT_VLT_PACKAGE);
-        Node defNode = content.addNode(JcrPackage.NN_VLT_DEFINITION);
-        JcrPackageDefinition def = new JcrPackageDefinitionImpl(defNode);
-        def.set(JcrPackageDefinition.PN_NAME, pid.getName(), false);
-        def.set(JcrPackageDefinition.PN_GROUP, pid.getGroup(), false);
-        def.set(JcrPackageDefinition.PN_VERSION, pid.getVersionString(), false);
-        def.touch(null, false);
-        content.setProperty(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance());
-        content.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
-        InputStream in = new ByteArrayInputStream(new byte[0]);
+        final Binary binary;
+        File file = (pack!=null)?pack.getFile():null;
+        if (file != null) {
+            try (InputStream input = new FileInputStream(file)) {
+                binary = parent.getSession().getValueFactory().createBinary(input);
+            }
+        } else {
+            try (InputStream input = new NullInputStream(0)) {
+                binary = parent.getSession().getValueFactory().createBinary(input);
+            }
+        }
         try {
-            if (pack != null && pack.getFile() != null) {
-                in = FileUtils.openInputStream(pack.getFile());
-            }
-            // stay jcr 1.0 compatible
-            //noinspection deprecation
-            content.setProperty(JcrConstants.JCR_DATA, in);
-            if (pack != null) {
-                def.unwrap(pack, true, false);
-            }
+            JcrPackage jcrPack = createNew(parent, pid, binary, pack != null ? pack.getArchive() : null);
             if (autoSave) {
                 parent.getSession().save();
             }
+            return jcrPack;
         } finally {
-            IOUtils.closeQuietly(in);
+            binary.dispose();
         }
-        dispatch(PackageEvent.Type.CREATE, pid, null);
-        return new JcrPackageImpl(this, node, (ZipVaultPackage) pack);
     }
 
     /**
@@ -630,7 +619,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @param parent the parent node
      * @param pid the package id of the new package.
      * @param bin the binary containing the zip
-     * @param archive the archive with the meta data
+     * @param archive the archive with the meta data (may be {@code null})
      * @return the created jcr vault package.
      * @throws RepositoryException if an repository error occurs
      * @throws IOException if an I/O error occurs
@@ -638,7 +627,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @since 3.1
      */
     @NotNull
-    private JcrPackage createNew(@NotNull Node parent, @NotNull PackageId pid, @NotNull Binary bin, @NotNull MemoryArchive archive)
+    private JcrPackage createNew(@NotNull Node parent, @NotNull PackageId pid, @NotNull Binary binary, @Nullable Archive archive)
             throws RepositoryException, IOException {
         Node node = parent.addNode(Text.getName(getInstallationPath(pid) + ".zip"), JcrConstants.NT_FILE);
         Node content = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
@@ -651,7 +640,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         def.touch(null, false);
         content.setProperty(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance());
         content.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
-        content.setProperty(JcrConstants.JCR_DATA, bin);
+        content.setProperty(JcrConstants.JCR_DATA, binary);
         def.unwrap(archive, false);
         dispatch(PackageEvent.Type.CREATE, pid, null);
         return new JcrPackageImpl(this, node);
@@ -678,9 +667,6 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         dispatch(PackageEvent.Type.REMOVE, id, null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public JcrPackage rename(JcrPackage pack, String group, String name, String version)
             throws PackageException, RepositoryException {
         if (!pack.isValid()) {

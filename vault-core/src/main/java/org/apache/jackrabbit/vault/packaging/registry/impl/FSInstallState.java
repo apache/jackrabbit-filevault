@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +50,8 @@ import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -63,6 +64,8 @@ import org.xml.sax.SAXException;
  * Internal (immutable) state object for a package to cache and pass the relevant metadata around.
  */
 public class FSInstallState {
+
+    private static final Logger log = LoggerFactory.getLogger(FSInstallState.class);
 
     private static final String TAG_REGISTRY_METADATA = "registryMetadata";
 
@@ -301,7 +304,19 @@ public class FSInstallState {
      * @throws IOException if an error occurs.
      */
     public void save(Path file) throws IOException {
-        Files.createDirectories(file.getParent());
+        Path parent = file.getParent();
+        log.debug("checking for presence of {} - exists {} - isDirectory {}", parent, Files.exists(parent), Files.isDirectory(parent));
+        if (!Files.exists(parent)) {
+            Path created = Files.createDirectories(parent);
+            log.debug("Created {}", created);
+        } else {
+            if (!Files.isDirectory(parent)) {
+                String message = parent + " exists, but is not a directory - aborting";
+                log.error(message);
+                throw new IOException(message);
+            }
+        }
+
         try (OutputStream out = Files.newOutputStream(file)) {
             save(out);
         }

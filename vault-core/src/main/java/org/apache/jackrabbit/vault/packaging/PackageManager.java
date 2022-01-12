@@ -78,7 +78,7 @@ public interface PackageManager {
     /**
      * Opens the given archive and creates a package
      * @param archive the archive
-     * @return the package (must be closed by caller)
+     * @return the package
      * @throws IOException if an error occurs
      */
     @NotNull VaultPackage open(@NotNull Archive archive) throws IOException;
@@ -87,7 +87,7 @@ public interface PackageManager {
      * Opens the given archive and creates a package
      * @param archive the archive
      * @param strict if {@code true} the import is more strict with regards to errors.
-     * @return the package (must be closed by caller)
+     * @return the package
      * @throws IOException if an error occurs
      */
     @NotNull VaultPackage open(@NotNull Archive archive, boolean strict) throws IOException;
@@ -95,7 +95,7 @@ public interface PackageManager {
     /**
      * Opens the given file and creates a package
      * @param file the file
-     * @return the package (must be closed by caller)
+     * @return the package
      * @throws IOException if an error occurs
      */
     @NotNull VaultPackage open(@NotNull File file) throws IOException;
@@ -104,7 +104,7 @@ public interface PackageManager {
      * Opens the given file and creates a package
      * @param file the file
      * @param strict if {@code true} the import is more strict with regards to errors.
-     * @return the package (must be closed by caller)
+     * @return the package
      * @throws IOException if an error occurs
      */
     @NotNull VaultPackage open(@NotNull File file, boolean strict) throws IOException;
@@ -116,7 +116,7 @@ public interface PackageManager {
      * @param s the repository session
      * @param opts export options
      * @param file the file to write to
-     * @return the newly created vault package (must be closed by caller)
+     * @return the newly created vault package
      *
      * @throws IOException if an I/O error occurs.
      * @throws RepositoryException if a repository error during building occurs.
@@ -141,12 +141,12 @@ public interface PackageManager {
 
     /**
      * Re-wraps a package using the given meta information and file to
-     * store to. If file is {@code null} a temp file is generated.
+     * store to. if file is {@code null} a temp file is generated.
      *
      * @param opts export options
      * @param src source package
      * @param file the file to write to
-     * @return the newly created vault package (must be closed by caller)
+     * @return the newly created vault package
      *
      * @throws IOException if an I/O error occurs.
      * @throws RepositoryException if a repository error during building occurs.

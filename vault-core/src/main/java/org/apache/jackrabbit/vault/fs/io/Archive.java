@@ -41,7 +41,8 @@ public interface Archive extends Closeable {
     void open(boolean strict) throws IOException;
 
     /**
-     * Opens an input stream for the given entry
+     * Opens an input stream for the given entry.
+     * Requires a previous call to {@link #open(boolean)}.
      * @param entry the entry
      * @return the input stream or {@code null} if the entry can't be read
      * @throws IOException if an error occurs
@@ -50,7 +51,8 @@ public interface Archive extends Closeable {
     InputStream openInputStream(@Nullable Entry entry) throws IOException;
 
     /**
-     * Returns an input source for the given entry
+     * Returns an input source for the given entry.
+     * Requires a previous call to {@link #open(boolean)}.
      * @param entry the entry
      * @return the input source or {@code null} if the entry can't be read
      * @throws IOException if an error occurs
@@ -61,6 +63,7 @@ public interface Archive extends Closeable {
     /**
      * Returns the entry that specifies the "jcr_root". if no such
      * entry exists, {@code null} is returned.
+     * Requires a previous call to {@link #open(boolean)}.
      * @return the jcr_root entry or {@code null}
      * @throws IOException if an error occurs
      */
@@ -69,6 +72,7 @@ public interface Archive extends Closeable {
 
     /**
      * Returns the root entry.
+     * Requires a previous call to {@link #open(boolean)}.
      * @return the root entry.
      * @throws IOException if an error occurs
      */
@@ -78,6 +82,7 @@ public interface Archive extends Closeable {
     /**
      * Returns the meta inf. If the archive provides no specific meta data,
      * a default, empty meta inf is returned.
+     * Requires a previous call to {@link #open(boolean)}.
      *
      * @return the meta inf.
      */
@@ -86,6 +91,7 @@ public interface Archive extends Closeable {
 
     /**
      * Returns the entry specified by path.
+     * Requires a previous call to {@link #open(boolean)}.
      * @param path the path
      * @return the entry or {@code null} if not found.
      * @throws IOException if an error occurs
@@ -95,9 +101,9 @@ public interface Archive extends Closeable {
     
     /**
      * Returns a sub archive that is rooted at the given path.
-     * Note that sub archives currently can't have they own meta inf and are
-     * closed automatically if they base is closed.
-     * 
+     * Note that sub archives currently can't have their own meta inf and are
+     * closed automatically if their container archive is closed.
+     * Requires a previous call to {@link #open(boolean)}. 
      * @param root root path
      * @param asJcrRoot if {@code true} the given root is the jcr_root
      * @return the archive or {@code null} if entry specified by root
@@ -108,7 +114,7 @@ public interface Archive extends Closeable {
     Archive getSubArchive(@NotNull String root, boolean asJcrRoot) throws IOException;
 
     /**
-     * closes the archive
+     * Closes the archive. Only necessary to call if the archive has been opened.
      */
     void close();
 

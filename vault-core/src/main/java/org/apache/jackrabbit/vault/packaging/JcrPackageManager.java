@@ -45,7 +45,7 @@ public interface JcrPackageManager extends PackageManager {
      * Opens a package with the given package id.
      *
      * @param id the package id.
-     * @return the new package or {@code null} it the package does not exist or is not valid. Must be closed if not {@code null}.
+     * @return the new package or {@code null} it the package does not exist or is not valid.
      * @throws RepositoryException if an error occurs
      * @since 2.3.22
      */
@@ -57,7 +57,7 @@ public interface JcrPackageManager extends PackageManager {
      *
      * @param node the underlying node
      * @return the new package or {@code null} it the package is not
-     *         valid. Must be closed if not {@code null}.
+     *         valid.
      * @throws RepositoryException if an error occurs
      */
     @Nullable
@@ -72,7 +72,7 @@ public interface JcrPackageManager extends PackageManager {
      * @param node the underlying node
      * @param allowInvalid if {@code true} invalid packages are openend, too.
      * @return the new package or {@code null} it the package is not
-     *         valid unless {@code allowInvalid} is {@code true}. Must be closed if not {@code null}.
+     *         valid unless {@code allowInvalid} is {@code true}.
      * @throws RepositoryException if an error occurs
      */
     @Nullable
@@ -117,7 +117,7 @@ public interface JcrPackageManager extends PackageManager {
      *        deleted when the package is closed
      * @param replace if {@code true} existing packages are replaced.
      * @param nameHint hint for the name if package does not provide one
-     * @return the new jcr package. Must be closed by caller.
+     * @return the new jcr package
      * @throws RepositoryException if an error occurrs
      * @throws IOException if an I/O error occurrs
      */
@@ -139,7 +139,7 @@ public interface JcrPackageManager extends PackageManager {
      * @param replace if {@code true} existing packages are replaced.
      * @param nameHint hint for the name if package does not provide one
      * @param strict if {@code true} import is more strict in regards to errors
-     * @return the new jcr package. Must be closed by caller.
+     * @return the new jcr package
      * @throws RepositoryException if an error occurrs
      * @throws IOException if an I/O error occurrs
      */
@@ -157,7 +157,7 @@ public interface JcrPackageManager extends PackageManager {
      * @param in input stream that provides the content of the package. note that after this method returns,
      *        the input stream is closed in any case.
      * @param replace if {@code true} existing packages are replaced.
-     * @return the new jcr package. Must be closed by caller.
+     * @return the new jcr package
      * @throws RepositoryException if an error occurrs
      * @throws IOException if an I/O error occurrs
      */
@@ -175,7 +175,7 @@ public interface JcrPackageManager extends PackageManager {
      *        the input stream is closed in any case.
      * @param replace if {@code true} existing packages are replaced.
      * @param strict if {@code true} import is more strict in regards to errors
-     * @return the new jcr package. Must be closed by caller.
+     * @return the new jcr package
      * @throws RepositoryException if an error occurrs
      * @throws IOException if an I/O error occurrs
      */
@@ -187,7 +187,7 @@ public interface JcrPackageManager extends PackageManager {
      *
      * @param folder parent folder or {@code null} for the package root
      * @param name name of the new package
-     * @return a new jcr package. Must be closed by caller.
+     * @return a new jcr package
      * @throws RepositoryException if a repository error occurrs
      * @throws IOException if an I/O exception occurs
      */
@@ -200,7 +200,7 @@ public interface JcrPackageManager extends PackageManager {
      *
      * @param group group of the new package
      * @param name name of the new package
-     * @return a new jcr package. Must be closed by caller.
+     * @return a new jcr package
      * @throws RepositoryException if a repository error occurrs
      * @throws IOException if an I/O exception occurs
      * @since 2.2.5
@@ -215,7 +215,7 @@ public interface JcrPackageManager extends PackageManager {
      * @param group group of the new package
      * @param name name of the new package
      * @param version version of the new package; can be {@code null}
-     * @return a new jcr package. Must be closed by caller.
+     * @return a new jcr package
      * @throws RepositoryException if a repository error occurrs
      * @throws IOException if an I/O exception occurs
      * @since 2.3
@@ -268,7 +268,7 @@ public interface JcrPackageManager extends PackageManager {
      * @param pack the package to rename
      * @param groupId the new group id or {@code null}
      * @param name the new name or {@code null}
-     * @return the renamed package. Must be closed by caller.
+     * @return the renamed package
      * @throws RepositoryException if an error occurs
      * @throws PackageException if the package is not unwrapped.
      *
@@ -287,7 +287,7 @@ public interface JcrPackageManager extends PackageManager {
      * @param groupId the new group id or {@code null}
      * @param name the new name or {@code null}
      * @param version the new version or {@code null}
-     * @return the renamed package. Must be closed by caller.
+     * @return the renamed package
      * @throws RepositoryException if an error occurs
      * @throws PackageException if the package is not unwrapped.
      *
@@ -363,7 +363,7 @@ public interface JcrPackageManager extends PackageManager {
     /**
      * Returns the list of all packages installed below the package root.
      *
-     * @return a list of packages. Must all be closed by caller.
+     * @return a list of packages
      * @throws RepositoryException if an error occurs
      */
     @NotNull
@@ -374,7 +374,7 @@ public interface JcrPackageManager extends PackageManager {
      * included in the filter.
      *
      * @param filter filter for packages
-     * @return a list of packages. Must all be closed by caller.
+     * @return a list of packages
      * @throws RepositoryException if an error occurs
      */
     @NotNull
@@ -387,7 +387,7 @@ public interface JcrPackageManager extends PackageManager {
      *
      * @param group the group filter
      * @param built if {@code true} only packages with size &gt; 0 are listed
-     * @return the list of packages. Must all be closed by caller.
+     * @return the list of packages
      * @throws RepositoryException if an error occurs
      */
     @NotNull

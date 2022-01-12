@@ -402,9 +402,9 @@ public class JcrPackageImpl implements JcrPackage {
 
         // process sub packages
         Session s = node.getSession();
-        List<JcrPackageImpl> subPacks = new LinkedList<JcrPackageImpl>();
+        List<JcrPackageImpl> subPacks = new LinkedList<>();
         // contains a value only if a more recent version of the package with the given id (from the key) is already installed
-        Map<PackageId, PackageId> newerPackageIdPerSubPackage = new HashMap<PackageId, PackageId>();
+        Map<PackageId, PackageId> newerPackageIdPerSubPackage = new HashMap<>();
         for (String path: subPackages) {
             if (s.nodeExists(path)) {
                 JcrPackageImpl p = new JcrPackageImpl(mgr, s.getNode(path));
@@ -454,29 +454,24 @@ public class JcrPackageImpl implements JcrPackage {
                     // get the list of packages available in the same group
                     JcrPackageManager pkgMgr = new JcrPackageManagerImpl(mgr);
                     List<JcrPackage> listPackages = pkgMgr.listPackages(pId.getGroup(), true);
-                    try {
-                        // loop in the list of packages returned previously by package manager
-                        for (JcrPackage listedPackage: listPackages) {
-                            JcrPackageDefinition listedPackageDef = listedPackage.getDefinition();
-                            if (listedPackageDef == null) {
-                                continue;
-                            }
-                            PackageId listedPackageId = listedPackageDef.getId();
-                            if (listedPackageId.equals(pId)) {
-                                continue;
-                            }
-                            // check that the listed package is actually from same name (so normally only version would differ)
-                            // if that package is valid, installed, and the version is more recent than the one in our sub package
-                            // then we can stop the loop here
-                            if (pName.equals(listedPackageId.getName()) && listedPackage.isValid() && listedPackage.isInstalled()
-                                    && listedPackageId.getVersion().compareTo(pVersion) > 0) {
-                                newerPackageIdPerSubPackage.put(pId, listedPackageId);
-                                break;
-                            }
+
+                    // loop in the list of packages returned previously by package manager
+                    for (JcrPackage listedPackage: listPackages) {
+                        JcrPackageDefinition listedPackageDef = listedPackage.getDefinition();
+                        if (listedPackageDef == null) {
+                            continue;
                         }
-                    } finally {
-                        for (JcrPackage listedPackage: listPackages) {
-                            listedPackage.close();
+                        PackageId listedPackageId = listedPackageDef.getId();
+                        if (listedPackageId.equals(pId)) {
+                            continue;
+                        }
+                        // check that the listed package is actually from same name (so normally only version would differ)
+                        // if that package is valid, installed, and the version is more recent than the one in our sub package
+                        // then we can stop the loop here
+                        if (pName.equals(listedPackageId.getName()) && listedPackage.isValid() && listedPackage.isInstalled()
+                                && listedPackageId.getVersion().compareTo(pVersion) > 0) {
+                            newerPackageIdPerSubPackage.put(pId, listedPackageId);
+                            break;
                         }
                     }
                     subPacks.add(p);
@@ -984,12 +979,9 @@ public class JcrPackageImpl implements JcrPackage {
      * {@inheritDoc}
      */
     public void uninstall(ImportOptions opts) throws RepositoryException, PackageException, IOException {
-        uninstall(new HashSet<PackageId>(), opts);
+        uninstall(new HashSet<>(), opts);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     private void uninstall(Set<PackageId> processed, ImportOptions opts) throws RepositoryException, PackageException, IOException {
         getDefinition();
         if (def != null) {

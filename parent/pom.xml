@@ -280,6 +280,18 @@ Bundle-Category: jackrabbit
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>0.8.7</version>
                 </plugin>
+                <!-- update from 3.2.0 in ASF parent -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.2.2</version>
+                </plugin>
+                <!-- update from 3.8.1 in ASF parent -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.9.0</version>
+                </plugin>
                 <!-- update from 1.4.1 in ASF parent -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

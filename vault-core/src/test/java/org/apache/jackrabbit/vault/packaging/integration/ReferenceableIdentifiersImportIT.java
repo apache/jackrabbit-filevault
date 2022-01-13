@@ -21,10 +21,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyIterator;
 import javax.jcr.ReferentialIntegrityException;
 import javax.jcr.RepositoryException;
@@ -286,5 +288,84 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
 
         // try to remove referenceable node -> fails with RIE
         Assert.assertThrows(ReferentialIntegrityException.class, () -> { referenceableNode.remove();  admin.save();});
+    }
+
+    // tests that import the variant referenceable-dup, which contains a
+    // duplicate node "duplicate" with the same jcr:uuid as "referenceable"
+
+    @Test
+    public void testImportDupPolicyFail() throws RepositoryException, IOException, PackageException {
+        testImportDup(IdConflictPolicy.FAIL);
+        Node referenceableNode = getNodeOrNull("/tmp/referenceable");
+        Node duplicateNode = getNodeOrNull("/tmp/duplicate");
+        if (duplicateNode == null && referenceableNode != null) {
+            assertTrue(referenceableNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
+            assertEquals(referenceableNode.getIdentifier(), UUID_REFERENCEABLE);
+        } else if (duplicateNode != null && referenceableNode == null) {
+            assertTrue(duplicateNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
+            assertEquals(duplicateNode.getIdentifier(), UUID_REFERENCEABLE);
+        } else {
+            fail("both nodes imported");
+        }
+    }
+
+    @Test
+    public void testImportDupPolicyCreateNewId() throws RepositoryException, IOException, PackageException {
+        testImportDup(IdConflictPolicy.CREATE_NEW_ID);
+        Node referenceableNode = getNodeOrNull("/tmp/referenceable");
+        Node duplicateNode = getNodeOrNull("/tmp/duplicate");
+        if (duplicateNode == null) {
+            fail("'duplicate' not imported");
+        } else if (referenceableNode == null) {
+            fail("'referencable' not imported");
+        } else {
+            assertTrue(referenceableNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
+            String refref = referenceableNode.getIdentifier();
+            assertTrue(duplicateNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
+            String dupref = duplicateNode.getIdentifier();
+            assertNotEquals("identifiers should be different", refref, dupref);
+            assertTrue("identifiers should be new", !UUID_REFERENCEABLE.equals(refref) && !UUID_REFERENCEABLE.equals(dupref));
+        }
+    }
+
+    @Test
+    public void testImportDupPolicyForceRemove() throws RepositoryException, IOException, PackageException {
+        testImportDup(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID);
+        Node referenceableNode = getNodeOrNull("/tmp/referenceable");
+        Node duplicateNode = getNodeOrNull("/tmp/duplicate");
+        if (duplicateNode == null && referenceableNode != null) {
+            assertTrue(referenceableNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
+            assertEquals(referenceableNode.getIdentifier(), UUID_REFERENCEABLE);
+        } else if (duplicateNode != null && referenceableNode == null) {
+            assertTrue(duplicateNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
+            assertEquals(duplicateNode.getIdentifier(), UUID_REFERENCEABLE);
+        } else {
+            fail("both nodes imported");
+        }
+    }
+
+    private Node getNodeOrNull(String path) throws RepositoryException {
+        try {
+            return admin.getNode(path);
+        } catch (PathNotFoundException ex) {
+            return null;
+        }
+    }
+
+    private void testImportDup(IdConflictPolicy policy) throws IOException, PackageException, RepositoryException {
+        try {
+            admin.getNode("/tmp/duplicate").remove();
+            admin.save();
+        } catch (RepositoryException ok) {
+        }
+        try {
+            admin.getNode("/tmp/referenceable").remove();
+            admin.save();
+        } catch (RepositoryException ok) {
+        }
+        ImportOptions options = getDefaultOptions();
+        options.setStrict(true);
+        options.setIdConflictPolicy(policy);
+        extractVaultPackage("/test-packages/referenceable-dup.zip", options);
     }
 }

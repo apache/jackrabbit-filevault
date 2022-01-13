@@ -353,16 +353,6 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
     }
 
     private void testImportDup(IdConflictPolicy policy) throws IOException, PackageException, RepositoryException {
-        try {
-            admin.getNode("/tmp/duplicate").remove();
-            admin.save();
-        } catch (RepositoryException ok) {
-        }
-        try {
-            admin.getNode("/tmp/referenceable").remove();
-            admin.save();
-        } catch (RepositoryException ok) {
-        }
         ImportOptions options = getDefaultOptions();
         options.setStrict(true);
         options.setIdConflictPolicy(policy);

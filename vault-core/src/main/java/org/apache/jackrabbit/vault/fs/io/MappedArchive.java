@@ -68,7 +68,7 @@ public class MappedArchive extends AbstractArchive {
     private void applyMapping(@NotNull Entry src, @NotNull VirtualEntry dst) {
         for (Entry child: src.getChildren()) {
             VirtualEntry dstChild = dst.add(child.getName(), child);
-            if ("/jcr_root".equals(dstChild.getPath())) {
+            if ("/jcr_root".equals(dstChild.getNodePath())) {
                 jcrRoot = dstChild;
                 applyMapping(child, "");
             } else {
@@ -86,10 +86,11 @@ public class MappedArchive extends AbstractArchive {
      */
     private void applyMapping(@NotNull Entry src, @NotNull String jcrPath) {
         for (Entry child: src.getChildren()) {
+            // TODO: convert to node name
             String path = jcrPath + "/" + child.getName();
             String mappedPath = mapping.map(path);
 
-            // add entry to tree
+            // add entry to tree (convert back to file name format)
             String[] segments = Text.explode(mappedPath, '/');
             VirtualEntry entry = jcrRoot;
             for (String seg: segments) {
@@ -183,14 +184,18 @@ public class MappedArchive extends AbstractArchive {
             return name;
         }
 
+        /**
+         * 
+         * @return the JCR node path (only the root node) represented by this entry
+         */
         @NotNull
-        public String getPath() {
-            return getPath(new StringBuilder()).toString();
+        public String getNodePath() {
+            return getNodePath(new StringBuilder()).toString();
         }
 
         @NotNull
-        private StringBuilder getPath(@NotNull StringBuilder sb) {
-            return parent == null ? sb : parent.getPath(sb).append('/').append(name);
+        private StringBuilder getNodePath(@NotNull StringBuilder sb) {
+            return parent == null ? sb : parent.getNodePath(sb).append('/').append(name);
         }
 
         /**
@@ -235,7 +240,7 @@ public class MappedArchive extends AbstractArchive {
             }
             VirtualEntry ve = new VirtualEntry(this, name, baseEntry);
             if (children == null) {
-                children = new LinkedHashMap<String, VirtualEntry>();
+                children = new LinkedHashMap<>();
             }
             children.put(name, ve);
             return ve;

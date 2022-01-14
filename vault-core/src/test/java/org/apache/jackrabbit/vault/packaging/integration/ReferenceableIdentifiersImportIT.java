@@ -319,12 +319,29 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         } else if (referenceableNode == null) {
             fail("'referencable' not imported");
         } else {
+            // For this test, Jackrabbit and Oak behave differently; for now, we
+            // just observe the behavior (and the test ensures, that it doesn't
+            // change without us noticing)
+            String classname = admin.getClass().getName();
+            boolean isJackrabbit = classname.equals("org.apache.jackrabbit.core.XASessionImpl")
+                    || classname.equals("org.apache.jackrabbit.core.SessionImpl");
             assertTrue(referenceableNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
             String refref = referenceableNode.getIdentifier();
             assertTrue(duplicateNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
             String dupref = duplicateNode.getIdentifier();
             assertNotEquals("identifiers should be different", refref, dupref);
-            assertTrue("identifiers should be new", !UUID_REFERENCEABLE.equals(refref) && !UUID_REFERENCEABLE.equals(dupref));
+            if (!isJackrabbit) {
+                assertTrue("identifiers should be new", !UUID_REFERENCEABLE.equals(refref) && !UUID_REFERENCEABLE.equals(dupref));
+            } else {
+                int newUUIDs = 0;
+                if (!UUID_REFERENCEABLE.equals(refref)) {
+                    newUUIDs += 1;
+                }
+                if (!UUID_REFERENCEABLE.equals(dupref)) {
+                    newUUIDs += 1;
+                }
+                assertEquals("for Jackrabbit classic, exactly one changed UUID was expected", 1, newUUIDs);
+            }
         }
     }
 

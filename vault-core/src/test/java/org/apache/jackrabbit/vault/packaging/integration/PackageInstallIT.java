@@ -42,6 +42,7 @@ import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.Dependency;
@@ -289,7 +290,7 @@ public class PackageInstallIT extends IntegrationTestBase {
         
         Session userSession = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
         try {
-            packMgr = new JcrPackageManagerImpl(userSession, new String[0], new String[] {"user1"}, null, false, true);
+            packMgr = new JcrPackageManagerImpl(userSession, new String[0], new String[] {"user1"}, null, false, true, IdConflictPolicy.FAIL);
     
             PackageEventDispatcherImpl dispatcher = new PackageEventDispatcherImpl();
             dispatcher.bindPackageEventListener(new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));

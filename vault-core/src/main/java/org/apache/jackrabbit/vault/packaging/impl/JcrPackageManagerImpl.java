@@ -38,6 +38,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
@@ -96,10 +97,10 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     }
 
     public JcrPackageManagerImpl(@NotNull Session session, @Nullable String[] roots, @Nullable String[] authIdsForHookExecution,
-            @Nullable String[] authIdsForRootInstallation, boolean isStrict, boolean overwritePrimaryTypesOfFoldersByDefault) {
+            @Nullable String[] authIdsForRootInstallation, boolean isStrict, boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy idConflictPolicy) {
         this(new JcrPackageRegistry(session,
                 new AbstractPackageRegistry.SecurityConfig(authIdsForHookExecution, authIdsForRootInstallation), isStrict,
-                overwritePrimaryTypesOfFoldersByDefault, roots));
+                overwritePrimaryTypesOfFoldersByDefault, idConflictPolicy, roots));
     }
 
     protected JcrPackageManagerImpl(JcrPackageRegistry registry) {
@@ -116,7 +117,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     public PackageRegistry getRegistry() {
         return registry;
     }
-    
+
     public JcrPackageRegistry getInternalRegistry() {
         return registry;
     }

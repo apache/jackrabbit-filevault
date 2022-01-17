@@ -271,7 +271,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
                 getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED).getBoolean();
         this.nsHelper = new JcrNamespaceHelper(session, null);
         this.idConflictPolicy = idConflictPolicy;
-
+        log.debug("idConflictPolicy: {}", idConflictPolicy);
         String rootPath = parentNode.getPath();
         if (!rootPath.equals("/")) {
             rootPath += "/";

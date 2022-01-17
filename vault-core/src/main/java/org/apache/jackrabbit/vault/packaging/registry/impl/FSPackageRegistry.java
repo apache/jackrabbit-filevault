@@ -36,6 +36,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.util.Text;
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
@@ -137,11 +138,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      */
     @Deprecated
     public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig) throws IOException {
-        this(homeDir, scope, securityConfig, false, true);
+        this(homeDir, scope, securityConfig, false, true, IdConflictPolicy.FAIL);
     }
 
-    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrict, boolean overwritePrimaryTypesOfFolders) throws IOException {
-        super(securityConfig, isStrict, overwritePrimaryTypesOfFolders);
+    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope,
+            @Nullable AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrict,
+            boolean overwritePrimaryTypesOfFolders, IdConflictPolicy defaultIdConflictPolicy) throws IOException {
+        super(securityConfig, isStrict, overwritePrimaryTypesOfFolders, defaultIdConflictPolicy);
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", homeDir.getPath());
         this.scope = scope;
         this.stateCache = new FSInstallStateCache(homeDir.toPath());
@@ -152,7 +155,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException 
      */
     public FSPackageRegistry() throws IOException {
-        super(null, false, true); // set security config delayed (i.e. only after activate())
+        super(null, false, true, IdConflictPolicy.FAIL); // set security config delayed (i.e. only after activate())
     }
 
     @Activate

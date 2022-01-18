@@ -108,7 +108,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      *
      * @param homeDir the directory in which packages and their metadata is stored
      * @throws IOException If an I/O error occurs.
-     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean)} instead
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean, IdConflictPolicy)} instead
      */
     @Deprecated
     public FSPackageRegistry(@NotNull File homeDir) throws IOException {
@@ -121,7 +121,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param homeDir the directory in which packages and their metadata is stored
      * @param scope to set a corresponding workspacefilter
      * @throws IOException If an I/O error occurs.
-     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean)} instead
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean, IdConflictPolicy)} instead
      */
     @Deprecated
     public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope) throws IOException {
@@ -134,7 +134,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @param scope
      * @param securityConfig
      * @throws IOException
-     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean)} instead
+     * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean, IdConflictPolicy)} instead
      */
     @Deprecated
     public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig) throws IOException {

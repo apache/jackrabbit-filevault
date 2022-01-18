@@ -89,7 +89,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      *
      * @param session repository session
      * @param roots the root paths to store the packages.
-     * @deprecated Use {@link #JcrPackageManagerImpl(Session, String[], String[], String[], boolean, boolean)} instead.
+     * @deprecated Use {@link #JcrPackageManagerImpl(Session, String[], String[], String[], boolean, boolean, IdConflictPolicy)} instead.
      */
     @Deprecated
     public JcrPackageManagerImpl(@NotNull Session session, @Nullable String[] roots) {

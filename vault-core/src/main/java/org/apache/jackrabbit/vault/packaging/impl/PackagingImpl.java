@@ -108,7 +108,7 @@ public class PackagingImpl implements Packaging {
         boolean overwritePrimaryTypesOfFolders() default true;
 
         @AttributeDefinition(description = "Default IdConflictPolicy")
-        String defaultIdConflictPolicy() default "FAIL";
+        IdConflictPolicy defaultIdConflictPolicy() default IdConflictPolicy.FAIL;
     }
 
     @Activate
@@ -131,7 +131,7 @@ public class PackagingImpl implements Packaging {
     public JcrPackageManager getPackageManager(Session session) {
         JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authIdsForHookExecution(),
                 config.authIdsForRootInstallation(), config.isStrict(), config.overwritePrimaryTypesOfFolders(),
-                IdConflictPolicy.valueOf(config.defaultIdConflictPolicy()));
+                config.defaultIdConflictPolicy());
         mgr.setDispatcher(eventDispatcher);
         setBaseRegistry(mgr.getInternalRegistry(), registries);
         return mgr;
@@ -186,8 +186,8 @@ public class PackagingImpl implements Packaging {
     private JcrPackageRegistry getJcrPackageRegistry(Session session, boolean useBaseRegistry) {
         JcrPackageRegistry registry = new JcrPackageRegistry(session,
                 new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()),
-                config.isStrict(), config.overwritePrimaryTypesOfFolders(),
-                IdConflictPolicy.valueOf(config.defaultIdConflictPolicy()), config.packageRoots());
+                config.isStrict(), config.overwritePrimaryTypesOfFolders(), config.defaultIdConflictPolicy(),
+                config.packageRoots());
         registry.setDispatcher(eventDispatcher);
         if (useBaseRegistry) {
             setBaseRegistry(registry, registries);

@@ -100,7 +100,10 @@ public class PackageTaskOptionsSerializer {
         writeOption(writer, TAG_DRY_RUN, Boolean.class, importOptions.isDryRun());
         writeOption(writer, TAG_IMPORT_MODE, ImportMode.class, importOptions.getImportMode());
         writeOption(writer, TAG_OVERWRITE_PRIMARY_TYPES_OF_FOLDERS, Boolean.class, importOptions.overwritePrimaryTypesOfFolders());
-        writeOption(writer, TAG_ID_CONFLICT_POLICY, IdConflictPolicy.class, importOptions.getIdConflictPolicy());
+        // don't persist default conflict policy
+        if (importOptions.hasIdConflictPolicyBeenSet()) {
+            writeOption(writer, TAG_ID_CONFLICT_POLICY, IdConflictPolicy.class, importOptions.getIdConflictPolicy());
+        }
     }
 
     public ImportOptionsPackageTaskOption loadImportOptions(Element element) {

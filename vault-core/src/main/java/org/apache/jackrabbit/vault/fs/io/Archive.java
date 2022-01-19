@@ -28,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Specifies a filevault archive.
+ * Specifies a FileVault archive.
  */
 public interface Archive extends Closeable {
 

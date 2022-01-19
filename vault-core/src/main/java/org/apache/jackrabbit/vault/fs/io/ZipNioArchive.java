@@ -37,6 +37,7 @@ import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.h2.util.CloseWatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -65,6 +66,9 @@ public class ZipNioArchive extends AbstractArchive {
     private DefaultMetaInf inf;
 
     private FileSystem zipFileSystem;
+
+    /** The watcher for unclosed archives */
+    private CloseWatcher watcher;
 
     /**
      * Shortcut for {@link ZipNioArchive#ZipNioArchive(Path, boolean)} with {@code false} as second parameter.
@@ -98,6 +102,8 @@ public class ZipNioArchive extends AbstractArchive {
         } catch (ProviderNotFoundException e) {
             throw new IOException("Can not open zip file '" + path + "'", e);
         }
+        dumpUnclosedArchives();
+        watcher = CloseWatcher.register(this, zipFileSystem, SHOULD_CREATE_STACK_TRACE);
     }
 
     @Override
@@ -193,6 +199,7 @@ public class ZipNioArchive extends AbstractArchive {
     @Override
     public void close() {
         if (zipFileSystem != null) {
+            CloseWatcher.unregister(watcher);
             try {
                 zipFileSystem.close();
             } catch (IOException e) {

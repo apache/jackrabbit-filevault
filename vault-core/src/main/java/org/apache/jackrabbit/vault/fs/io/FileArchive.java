@@ -33,7 +33,7 @@ import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.FileInputSource;
 
 /**
- * Implements an archived based on the file system
+ * Implements an archive based on the file system
  */
 public class FileArchive extends AbstractArchive {
 
@@ -47,6 +47,9 @@ public class FileArchive extends AbstractArchive {
     private OsEntry jcrRoot;
 
     public FileArchive(File rootDirectory) {
+        if (!rootDirectory.isDirectory()) {
+            throw new IllegalArgumentException("The given file " + rootDirectory + " is  not a directory!");
+        }
         this.rootDirectory = rootDirectory;
     }
 

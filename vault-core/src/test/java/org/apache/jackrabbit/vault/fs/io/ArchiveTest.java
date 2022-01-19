@@ -16,13 +16,14 @@
  */
 package org.apache.jackrabbit.vault.fs.io;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,13 +35,23 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
+import org.apache.jackrabbit.vault.fs.impl.ArchiveWrapper;
+import org.apache.jackrabbit.vault.fs.impl.SubPackageFilterArchive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
+import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -48,13 +59,29 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class ArchiveTest {
 
-    @Parameters(name = "{1}" )
-    public static Iterable<? extends Object[]> data() throws URISyntaxException {
+    @ClassRule
+    public static TemporaryFolder tempFolder = new TemporaryFolder();
+
+    @Parameters(name = "{2}" )
+    public static Iterable<? extends Object[]> data() throws URISyntaxException, IOException {
         Path zipPath = Paths.get(ArchiveTest.class.getResource("/test-packages/atomic-counter-test.zip").toURI());
         Supplier<Archive> zsaSupplier = () -> new ZipStreamArchive(ArchiveTest.class.getResourceAsStream("/test-packages/atomic-counter-test.zip"));
         Supplier<Archive> zaSupplier = () -> new ZipArchive(zipPath.toFile());
         Supplier<Archive> znaSupplier = () -> new ZipNioArchive(zipPath);
-        Supplier<Archive> maSupplier = () -> { 
+        Supplier<Archive> faSupplier = () -> {
+                try {
+                    return new FileArchive(IntegrationTestBase.getFile(ArchiveTest.class, "/test-packages/atomic-counter-test", () -> {
+                        try {
+                            return tempFolder.newFile();
+                        } catch (IOException e) {
+                            throw new UncheckedIOException("cannot create temp file", e);
+                        }
+                    }));
+                } catch (IOException e) {
+                    throw new UncheckedIOException("cannot create temp file", e);
+                }
+        };
+        Supplier<Archive> memArchiveSupplier = () -> { 
             MemoryArchive memoryArchive;
             try (InputStream input = ArchiveTest.class.getResourceAsStream("/test-packages/atomic-counter-test.zip")) {
                 memoryArchive = new MemoryArchive(false);
@@ -64,19 +91,36 @@ public class ArchiveTest {
             }
             return memoryArchive;
         };
+        Supplier<Archive> mappedArchiveSupplier = () -> new MappedArchive(new ZipArchive(zipPath.toFile()), PathMapping.IDENTITY);
+        Supplier<Archive> wrappedArchiveSupplier = () -> new ArchiveWrapper(new ZipArchive(zipPath.toFile()));
+        Supplier<Archive> subPackageFilterArchiveSupplier = () -> new SubPackageFilterArchive(new ZipArchive(zipPath.toFile()));
         return Arrays.asList(new Object[][] { 
-            { zsaSupplier, "ZipStreamArchive" },
-            { zaSupplier, "ZipArchive" },
-            { znaSupplier, "ZipNioArchive" },
-            { maSupplier, "MemoryArchive" }
+            { zsaSupplier, true, "ZipStreamArchive" },
+            { zaSupplier, true, "ZipArchive" },
+            { znaSupplier, true, "ZipNioArchive" },
+            { memArchiveSupplier, false, "MemoryArchive" },
+            { faSupplier, false, "FileArchive" },
+            { mappedArchiveSupplier, true, "MappedArchive" },
+            { wrappedArchiveSupplier, true, "ArchiveWrapper" },
+            { subPackageFilterArchiveSupplier, true, "SubPackageFilterArchive" }
+            // TODO: SubArchive, JcrArchive
         });
     }
 
     private final Supplier<Archive> archiveSupplier;
+    private final boolean hasCloseWatcher;
+    private final String name;
     private Archive archive;
 
-    public ArchiveTest(Supplier<Archive> archiveSupplier, String name) {
+    @BeforeClass
+    public static void setUpOnce() {
+        System.setProperty(AbstractArchive.PROPERTY_ENABLE_STACK_TRACES, "false");
+    }
+
+    public ArchiveTest(Supplier<Archive> archiveSupplier, boolean hasCloseWatcher, String name) {
         this.archiveSupplier = archiveSupplier;
+        this.hasCloseWatcher = hasCloseWatcher;
+        this.name = name;
     }
 
     @Before
@@ -102,7 +146,7 @@ public class ArchiveTest {
         Entry root = archive.getRoot();
         assertNotNull(root);
         assertTrue(root.isDirectory());
-        assertArrayEquals(new String[]{"META-INF", "jcr_root"}, root.getChildren().stream().map(Entry::getName).toArray(String[]::new));
+        MatcherAssert.assertThat(root.getChildren().stream().map(Entry::getName).collect(Collectors.toList()), Matchers.containsInAnyOrder("META-INF", "jcr_root"));
 
         Archive.Entry entry = archive.getEntry("META-INF/vault/properties.xml");
         try (InputStream i = archive.openInputStream(entry)) {
@@ -117,17 +161,19 @@ public class ArchiveTest {
             metaInf.loadProperties(i, "inputstream");
             assertEquals("Package Name", "atomic-counter-test", metaInf.getProperties().getProperty("name"));
         }
-        assertEquals(747, vaultInputSource.getContentLength());
+        assertEquals("Wrong size of entry \"META-INF/vault/properties.xml\"", 747, vaultInputSource.getContentLength());
 
-        Calendar expectedCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.ENGLISH);
-        expectedCalendar.setTime(sdf.parse("2017-02-14T09:33:22.000+00:00"));
-        
-        Calendar actualCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        // comparing getLastModified is tricky, as ZIP doesn't store normalized dates but just in MS-DOS format (https://docs.oracle.com/javase/8/docs/api/java/util/zip/ZipEntry.html#getTime--)
-        // normalize to UTC
-        actualCalendar.setTimeInMillis(vaultInputSource.getLastModified() + TimeZone.getDefault().getOffset(vaultInputSource.getLastModified()));
-        assertEquals(sdf.format(expectedCalendar.getTime()), sdf.format(actualCalendar.getTime()));
+        if (!"FileArchive".equals(name)) {
+            Calendar expectedCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.ENGLISH);
+            expectedCalendar.setTime(sdf.parse("2017-02-14T09:33:22.000+00:00"));
+            
+            Calendar actualCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+            // comparing getLastModified is tricky, as ZIP doesn't store normalized dates but just in MS-DOS format (https://docs.oracle.com/javase/8/docs/api/java/util/zip/ZipEntry.html#getTime--)
+            // normalize to UTC
+            actualCalendar.setTimeInMillis(vaultInputSource.getLastModified() + TimeZone.getDefault().getOffset(vaultInputSource.getLastModified()));
+            assertEquals(sdf.format(expectedCalendar.getTime()), sdf.format(actualCalendar.getTime()));
+        }
     }
 
     @Test
@@ -147,5 +193,18 @@ public class ArchiveTest {
     @Test
     public void testCloseWithoutOpen() {
         archive.close();
+    }
+
+    private void openArchive() throws IOException {
+        archiveSupplier.get().open(false);
+    }
+
+    @Test
+    public void testDumpForForgottenClose() throws IOException, InterruptedException {
+        assumeTrue("Skipping test as this archive has no CloseWatcher", hasCloseWatcher);
+        openArchive();
+        System.gc();
+        Thread.sleep(500);
+        assertTrue(AbstractArchive.dumpUnclosedArchives());
     }
 }

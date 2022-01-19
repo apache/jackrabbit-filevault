@@ -31,13 +31,14 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.h2.util.CloseWatcher;
 import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -103,6 +104,9 @@ public class ZipStreamArchive extends AbstractArchive {
      * internal buffer used for copying.
      */
     private final byte[] buffer = new byte[0x10000];
+
+    /** The watcher for unclosed archives */
+    private CloseWatcher watcher;
 
     /**
      * Creates a new zip stream archive on the given input stream.
@@ -184,6 +188,8 @@ public class ZipStreamArchive extends AbstractArchive {
                 log.debug("Zip stream does not contain nodetypes.");
             }
         }
+        dumpUnclosedArchives();
+        watcher = CloseWatcher.register(this, new NullInputStream(0), SHOULD_CREATE_STACK_TRACE);
     }
 
     /**
@@ -271,6 +277,9 @@ public class ZipStreamArchive extends AbstractArchive {
     public void close() {
         if (in != null) {
             IOUtils.closeQuietly(in);
+        }
+        if (watcher != null) {
+           CloseWatcher.unregister(watcher);
         }
         if (raf != null) {
             try {

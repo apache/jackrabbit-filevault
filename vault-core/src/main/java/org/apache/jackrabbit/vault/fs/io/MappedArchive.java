@@ -31,8 +31,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 /**
- * Implements an archive that remaps the entries of an underlying archive using a {@link PathMapping}.
+ * Implements an archive wrapper that remaps the entries of an underlying archive using a {@link PathMapping}.
  */
 public class MappedArchive extends AbstractArchive {
 

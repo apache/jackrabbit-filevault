@@ -254,6 +254,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
      * @param rootNodeName name of the root node
      * @param artifacts    the artifact set that could contain attachments
      * @param wspFilter    workspace filter
+     * @param idConflictPolicy conflict policy
      * @throws RepositoryException if an error occurs.
      */
     public DocViewSAXImporter(Node parentNode, String rootNodeName,
@@ -270,7 +271,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
         this.snsSupported = session.getRepository().
                 getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED).getBoolean();
         this.nsHelper = new JcrNamespaceHelper(session, null);
-        this.idConflictPolicy = idConflictPolicy;
+        this.idConflictPolicy = idConflictPolicy != null ? idConflictPolicy : IdConflictPolicy.FAIL;
         log.debug("idConflictPolicy: {}", idConflictPolicy);
         String rootPath = parentNode.getPath();
         if (!rootPath.equals("/")) {

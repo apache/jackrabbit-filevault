@@ -386,7 +386,10 @@ public class JcrPackageImpl implements JcrPackage {
             // MAX_VALUE disables saving completely, therefore we have to use a lower value!
             opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
         }
-        opts.setIdConflictPolicy(mgr.getDefaultIdConflictPolicy());
+        if (opts.getIdConflictPolicy() == null) {
+            log.debug("setting IdConflictPolicy to {}", mgr.getDefaultIdConflictPolicy());
+            opts.setIdConflictPolicy(mgr.getDefaultIdConflictPolicy());
+        }
         InstallContextImpl ctx = pack.prepareExtract(node.getSession(), opts, mgr.getSecurityConfig(), mgr.isStrictByDefault(),
                 mgr.overwritePrimaryTypesOfFoldersByDefault());
         JcrPackage snap = null;

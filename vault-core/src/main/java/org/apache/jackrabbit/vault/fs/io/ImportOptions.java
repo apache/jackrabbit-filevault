@@ -67,7 +67,7 @@ public class ImportOptions {
 
     private DependencyHandling dependencyHandling = null;
 
-    private IdConflictPolicy idConflictPolicy = null;
+    private @NotNull IdConflictPolicy idConflictPolicy = IdConflictPolicy.FAIL;
 
     private Boolean overwritePrimaryTypesOfFolders = null;
 
@@ -456,14 +456,7 @@ public class ImportOptions {
      * @since 3.5.1
      */
     public @NotNull IdConflictPolicy getIdConflictPolicy() {
-        return idConflictPolicy != null ? idConflictPolicy : IdConflictPolicy.FAIL;
-    }
-
-    /**
-     * @since 3.5.10
-     */
-    public boolean hasIdConflictPolicyBeenSet() {
-        return idConflictPolicy != null;
+        return idConflictPolicy;
     }
 
     /**
@@ -565,10 +558,7 @@ public class ImportOptions {
             return false;
         if (overwritePrimaryTypesOfFolders != other.overwritePrimaryTypesOfFolders)
             return false;
-        if (idConflictPolicy == null) {
-            if (other.idConflictPolicy != null)
-                return false;
-        } else if (!idConflictPolicy.equals(other.idConflictPolicy))
+        if (!idConflictPolicy.equals(other.idConflictPolicy))
             return false;
         return true;
     }
@@ -587,6 +577,6 @@ public class ImportOptions {
                 + (pathMapping != null ? "pathMapping=" + pathMapping + ", " : "")
                 + (dependencyHandling != null ? "dependencyHandling=" + dependencyHandling + ", " : "")
                 + "overwritePrimaryTypesOfFolders=" + overwritePrimaryTypesOfFolders + ", "
-                + "idConflictPolicy=" + (idConflictPolicy != null ? idConflictPolicy : IdConflictPolicy.FAIL) + "]";
+                + "idConflictPolicy=" + idConflictPolicy + "]";
     }
 }

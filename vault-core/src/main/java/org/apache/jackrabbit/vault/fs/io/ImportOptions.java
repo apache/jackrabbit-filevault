@@ -19,7 +19,6 @@ package org.apache.jackrabbit.vault.fs.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -30,7 +29,6 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Option that control the package import.
@@ -69,7 +67,7 @@ public class ImportOptions {
 
     private DependencyHandling dependencyHandling = null;
 
-    private IdConflictPolicy idConflictPolicy = null;
+    private @NotNull IdConflictPolicy idConflictPolicy = IdConflictPolicy.FAIL;
 
     private Boolean overwritePrimaryTypesOfFolders = null;
 
@@ -454,10 +452,10 @@ public class ImportOptions {
 
     /**
      * 
-     * @return the id conflict policy ({@code null} if not set before)
+     * @return the id conflict policy
      * @since 3.5.1
      */
-    public @Nullable IdConflictPolicy getIdConflictPolicy() {
+    public @NotNull IdConflictPolicy getIdConflictPolicy() {
         return idConflictPolicy;
     }
 
@@ -560,7 +558,7 @@ public class ImportOptions {
             return false;
         if (overwritePrimaryTypesOfFolders != other.overwritePrimaryTypesOfFolders)
             return false;
-        if (!Objects.equals(idConflictPolicy, other.idConflictPolicy))
+        if (!idConflictPolicy.equals(other.idConflictPolicy))
             return false;
         return true;
     }

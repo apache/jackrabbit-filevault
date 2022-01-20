@@ -37,6 +37,7 @@ import javax.jcr.nodetype.NodeType;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.util.Text;
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -117,12 +118,13 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @param roots the root paths to store the packages.
      */
     public JcrPackageRegistry(@NotNull Session session, @Nullable String ... roots) {
-        this(session, null, false, true, roots);
+        this(session, null, false, true, IdConflictPolicy.FAIL, roots);
     }
 
     public JcrPackageRegistry(@NotNull Session session, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig,
-            boolean isStrict, boolean overwritePrimaryTypesOfFoldersByDefault, @Nullable String... roots) {
-        super(securityConfig, isStrict, overwritePrimaryTypesOfFoldersByDefault);
+            boolean isStrict, boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy defaultIdConflictPolicy,
+            @Nullable String... roots) {
+        super(securityConfig, isStrict, overwritePrimaryTypesOfFoldersByDefault, defaultIdConflictPolicy);
         this.session = session;
         if (roots == null || roots.length == 0) {
             packRootPaths = new String[]{DEFAULT_PACKAGE_ROOT_PATH};

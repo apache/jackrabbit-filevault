@@ -24,6 +24,7 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
 import org.apache.jackrabbit.vault.packaging.JcrPackageManager;
@@ -81,7 +82,6 @@ public class PackagingImpl implements Packaging {
     Config config;
 
     public PackagingImpl() {
-        
     }
 
     @ObjectClassDefinition(
@@ -106,6 +106,9 @@ public class PackagingImpl implements Packaging {
 
         @AttributeDefinition(description = "Whether to overwrite the primary type of folders")
         boolean overwritePrimaryTypesOfFolders() default true;
+
+        @AttributeDefinition(description = "Default IdConflictPolicy")
+        IdConflictPolicy defaultIdConflictPolicy() default IdConflictPolicy.FAIL;
     }
 
     @Activate
@@ -126,7 +129,9 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackageManager getPackageManager(Session session) {
-        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authIdsForHookExecution(), config.authIdsForRootInstallation(), config.isStrict(), config.overwritePrimaryTypesOfFolders());
+        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authIdsForHookExecution(),
+                config.authIdsForRootInstallation(), config.isStrict(), config.overwritePrimaryTypesOfFolders(),
+                config.defaultIdConflictPolicy());
         mgr.setDispatcher(eventDispatcher);
         setBaseRegistry(mgr.getInternalRegistry(), registries);
         return mgr;
@@ -173,14 +178,16 @@ public class PackagingImpl implements Packaging {
         return getJcrPackageRegistry(session, true);
     }
 
-    
     @Override
     public PackageRegistry getJcrBasedPackageRegistry(Session session) {
         return getJcrPackageRegistry(session);
     }
 
     private JcrPackageRegistry getJcrPackageRegistry(Session session, boolean useBaseRegistry) {
-        JcrPackageRegistry registry = new JcrPackageRegistry(session, new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()), config.isStrict(), config.overwritePrimaryTypesOfFolders(), config.packageRoots());
+        JcrPackageRegistry registry = new JcrPackageRegistry(session,
+                new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()),
+                config.isStrict(), config.overwritePrimaryTypesOfFolders(), config.defaultIdConflictPolicy(),
+                config.packageRoots());
         registry.setDispatcher(eventDispatcher);
         if (useBaseRegistry) {
             setBaseRegistry(registry, registries);

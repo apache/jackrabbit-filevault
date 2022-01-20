@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -43,6 +44,7 @@ public class PackageTaskOptionsSerializer {
     private static final String TAG_DRY_RUN = "dryRun";
     private static final String TAG_IMPORT_MODE = "importMode";
     private static final String TAG_OVERWRITE_PRIMARY_TYPES_OF_FOLDERS = "overwritePrimaryTypesOfFolders";
+    private static final String TAG_ID_CONFLICT_POLICY = "idConflictPolicy";
 
     enum Type {
         ImportOptions;
@@ -98,6 +100,10 @@ public class PackageTaskOptionsSerializer {
         writeOption(writer, TAG_DRY_RUN, Boolean.class, importOptions.isDryRun());
         writeOption(writer, TAG_IMPORT_MODE, ImportMode.class, importOptions.getImportMode());
         writeOption(writer, TAG_OVERWRITE_PRIMARY_TYPES_OF_FOLDERS, Boolean.class, importOptions.overwritePrimaryTypesOfFolders());
+        // don't persist default conflict policy
+        if (importOptions.hasIdConflictPolicyBeenSet()) {
+            writeOption(writer, TAG_ID_CONFLICT_POLICY, IdConflictPolicy.class, importOptions.getIdConflictPolicy());
+        }
     }
 
     public ImportOptionsPackageTaskOption loadImportOptions(Element element) {
@@ -111,6 +117,7 @@ public class PackageTaskOptionsSerializer {
         readOption(element, TAG_DRY_RUN, Boolean.class,  options::setDryRun);
         readOption(element, TAG_IMPORT_MODE, ImportMode.class,  options::setImportMode);
         readOption(element, TAG_OVERWRITE_PRIMARY_TYPES_OF_FOLDERS, Boolean.class,  options::setOverwritePrimaryTypesOfFolders);
+        readOption(element, TAG_ID_CONFLICT_POLICY, IdConflictPolicy.class, options::setIdConflictPolicy);
         return new ImportOptionsPackageTaskOption(options);
     }
 

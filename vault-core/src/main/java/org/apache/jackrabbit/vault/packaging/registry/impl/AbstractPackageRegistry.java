@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import javax.jcr.Session;
 
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
@@ -85,7 +86,10 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
 
     private final boolean overwritePrimaryTypesOfFoldersByDefault;
 
-    public AbstractPackageRegistry(SecurityConfig securityConfig, boolean isStrictByDefault, boolean overwritePrimaryTypesOfFoldersByDefault) {
+    private final IdConflictPolicy defaultIdConflictPolicy;
+
+    public AbstractPackageRegistry(SecurityConfig securityConfig, boolean isStrictByDefault,
+            boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy defaultIdConflictPolicy) {
         if (securityConfig != null) {
             this.securityConfig = securityConfig;
         } else {
@@ -93,6 +97,7 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
         }
         this.isStrictByDefault = isStrictByDefault;
         this.overwritePrimaryTypesOfFoldersByDefault = overwritePrimaryTypesOfFoldersByDefault;
+        this.defaultIdConflictPolicy = defaultIdConflictPolicy;
     }
 
     public boolean isStrictByDefault() {
@@ -101,6 +106,10 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
 
     public boolean overwritePrimaryTypesOfFoldersByDefault() {
         return overwritePrimaryTypesOfFoldersByDefault;
+    }
+
+    public IdConflictPolicy getDefaultIdConflictPolicy() {
+        return defaultIdConflictPolicy;
     }
 
     /**

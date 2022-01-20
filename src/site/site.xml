@@ -38,12 +38,12 @@
         <item href="properties.html" name="Package Properties">
             <item href="packagetypes.html" name="Package Types" />
         </item>
-        <item href="config.html" name="Vault FS Configuration"/>
         <item href="settings.html" name="Settings"/>
         <item href="nodetypes.html" name="Node Types and Namespaces"/>
         <item href="privileges.html" name="Privileges"/>
         <item href="installhooks.html" name="Install Hooks"/>
       </item>
+      <item href="config.html" name="Configuration"/>
       <item href="referenceablenodes.html" name="Referenceable Nodes"/>
       <item href="rcp.html" name="Vault Remote Copy" />
     </menu>

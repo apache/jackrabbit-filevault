@@ -22,7 +22,7 @@ Configuration
 
 ## FileVault Core Bundle
 
-The configuration in this section affects the *FileVault Core Bundle* which is used for all client and server-side features of FileVault. It has a global effect (i.e. is not content packages specific)
+The configuration in this section affects the *FileVault Core Bundle* which is used for all client and server-side features of FileVault. It has a global effect (i.e. is not content-packages specific)
 
 ### System Properties
 

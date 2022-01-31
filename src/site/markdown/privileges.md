@@ -18,7 +18,9 @@
 Privileges
 ===========
 
-Packages can register custom [JCR privileges](https://s.apache.org/jcr-2.0-spec/16_Access_Control_Management.html#16.2%20Privilege%20Discovery) during import by carrying a `META-INF/vault/privileges.xml` file. 
+Packages can register custom [JCR privileges](https://s.apache.org/jcr-2.0-spec/16_Access_Control_Management.html#16.2%20Privilege%20Discovery) during import by carrying a `META-INF/vault/privileges.xml` file.  
+
+Its DTD is defined as
 
 ```xml
 <!DOCTYPE privileges [
@@ -30,5 +32,9 @@ Packages can register custom [JCR privileges](https://s.apache.org/jcr-2.0-spec/
 <!ATTLIST contains name NMTOKEN #REQUIRED>
 ]>
 ```
+
+The implementation is leveraging the [Jackrabbit API PrivilegeManager](https://www.javadoc.io/doc/org.apache.jackrabbit/oak-jackrabbit-api/latest/org/apache/jackrabbit/api/security/authorization/PrivilegeManager.html).
+
+The privilege **name** must be given in [qualified form](https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.2.5.2%20Qualified%20Form). Every element may carry [XML namespace declarations](https://www.w3.org/TR/2006/REC-xml-names11-20060816/#ns-decl) which are automatically registered in the destination repository during import as well. This should be used when the privilege is using a custom namespace URL.
 
 Aggregate privileges can be registered with the additional element `contains` which should reference an existing privilege name.

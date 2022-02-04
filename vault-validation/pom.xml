@@ -89,10 +89,11 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- 
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-resolver-maven-plugin</artifactId>
-            </plugin>
+            </plugin> -->
         </plugins>
     </build>
 

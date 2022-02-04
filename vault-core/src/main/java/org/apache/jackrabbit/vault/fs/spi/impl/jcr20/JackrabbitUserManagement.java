@@ -72,9 +72,8 @@ public class JackrabbitUserManagement implements UserManagement {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
+    @Deprecated
     public String getAuthorizableId(DocViewNode node) {
         // try Oak way of storing the id first:
         DocViewProperty idProp = node.props.get("rep:authorizableId");

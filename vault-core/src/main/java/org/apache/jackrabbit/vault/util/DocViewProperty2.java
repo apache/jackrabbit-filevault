@@ -61,7 +61,7 @@ import org.jetbrains.annotations.NotNull;
  * value := is a string representation of the value where the following characters are escaped: ',\[{' with a leading '\'
  * </code>
  * </pre>
- * @see <a href="https://jackrabbit.apache.org/filevault/docview.html">FileVault Document View Format<a>
+ * @see <a href="https://jackrabbit.apache.org/filevault/docview.html">FileVault Document View Format</a>
  * @since 3.6.0
  */
 public class DocViewProperty2 {
@@ -146,7 +146,7 @@ public class DocViewProperty2 {
     }
 
     /**
-     * Creates a new property based on a JCR {@link Property} object
+     * Creates a new property based on a JCR {@link Property} object.
      * @param prop the JCR property
      * @param sort if {@code true} multi-value properties should be sorted
      * @param useBinaryReferences {@code true} to use binary references
@@ -188,7 +188,7 @@ public class DocViewProperty2 {
     /**
      * Creates a new single-value property.
      * @param name name of the property
-     * @param value value.
+     * @param value value
      * @param type type of the property
      */
     public DocViewProperty2(@NotNull Name name, @NotNull String value, int type) {
@@ -198,7 +198,7 @@ public class DocViewProperty2 {
     /**
      * Creates a new single-value property with an undefined type.
      * @param name name of the property
-     * @param value value.
+     * @param value value
      */
     public DocViewProperty2(@NotNull Name name, @NotNull String value) {
         this(name, Collections.singletonList(value), false, PropertyType.UNDEFINED, false);
@@ -207,7 +207,7 @@ public class DocViewProperty2 {
     /**
      * Creates a new multi-value property.
      * @param name name of the property
-     * @param values values.
+     * @param values values
      * @param type type of the property
      */
     public DocViewProperty2(@NotNull Name name, @NotNull List<String> values, int type) {
@@ -217,8 +217,7 @@ public class DocViewProperty2 {
     /**
      * Creates a new multi-value property with an undefined type.
      * @param name name of the property
-     * @param values values.
-     * @param type type of the property
+     * @param values values
      */
     public DocViewProperty2(@NotNull Name name, @NotNull List<String> values) {
         this(name, values, true, PropertyType.UNDEFINED, false);
@@ -227,11 +226,11 @@ public class DocViewProperty2 {
     /**
      * Creates a new property.
      * @param name name of the property
-     * @param values string representation of values.
+     * @param values string representation of values
      * @param isMultiValue indicates if this is a multi-value property
      * @param type type of the property
      * @param isRef {@code true} to indicate that this is a binary reference property
-     * @throws IllegalArgumentException if single value property and not exactly 1 value is given.
+     * @throws IllegalArgumentException if single value property and not exactly 1 value is given
      */
     private DocViewProperty2(@NotNull Name name, @NotNull List<String> values, boolean isMultiValue, int type, boolean isRef) {
         this.name = name;
@@ -254,7 +253,7 @@ public class DocViewProperty2 {
      * Parses a enhanced docview property string and returns the property.
      * @param name name of the property
      * @param value (attribute) value
-     * @throws IllegalArgumentException in case the given value does not follow the doc view property grammar.
+     * @throws IllegalArgumentException in case the given value does not follow the doc view property grammar
      * @return a property
      */
     public static @NotNull DocViewProperty2 parse(String name, String value) {
@@ -495,7 +494,7 @@ public class DocViewProperty2 {
     }
 
     /**
-     * Sets this property on the given node
+     * Sets this property on the given node.
      *
      * @param node the node
      * @return {@code true} if the value was modified.

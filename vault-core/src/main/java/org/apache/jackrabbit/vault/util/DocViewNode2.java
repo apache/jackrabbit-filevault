@@ -34,7 +34,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Helper class that represents an immutable JCR node abstraction encapsulating multiple
  * {@link org.apache.jackrabbit.vault.util.DocViewProperty2} properties.
- * @see <a href="https://jackrabbit.apache.org/filevault/docview.html">FileVault Document View Format<a>
+ * @see <a href="https://jackrabbit.apache.org/filevault/docview.html">FileVault Document View Format</a>
  * @since 3.6.0
  */
 public class DocViewNode2 {

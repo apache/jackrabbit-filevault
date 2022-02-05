@@ -147,7 +147,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         enrichedMessages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, "Detected DocView..."));
         ValidatorDocViewParserHandler handler = new ValidatorDocViewParserHandler(docViewValidators, filePath, basePath);
         try {
-            docViewParser.parse(rootNodePath, new InputSource(new CloseShieldInputStream(input)), handler);
+            docViewParser.parse(rootNodePath, new InputSource(new CloseShieldInputStream(input)), handler, null);
             enrichedMessages.addAll(ValidationViolation.wrapMessages(null, handler.getViolations(), filePath, basePath, rootNodePath, 0, 0));
         } catch (XmlParseException e) {
             enrichedMessages.add(new ValidationViolation(severity, "Could not parse FileVault Document View XML: " + e.getMessage(), filePath, basePath, e.getNodePath(), e.getLineNumber(), e.getColumnNumber(), e));

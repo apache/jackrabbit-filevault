@@ -72,7 +72,6 @@ import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.fs.impl.PropertyValueArtifact;
-import org.apache.jackrabbit.vault.fs.impl.io.DocViewAnalyzer.NameSpace;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.DocViewParserHandler;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
@@ -201,7 +200,7 @@ public class DocViewImporter implements DocViewParserHandler {
     /**
      * the current namespace state
      */
-    private NameSpace nsStack = null;
+    private DocViewSAXHandler.Namespace nsStack = null;
 
     private int rootDepth;
 
@@ -271,7 +270,7 @@ public class DocViewImporter implements DocViewParserHandler {
     public void startPrefixMapping(String prefix, String uri) {
         // for backwards compatibility unknown namespaces in the repository need to be registered because some API can only deal with qualified/prefixed names
         log.trace("-> prefixMapping for {}:{}", prefix, uri);
-        NameSpace ns = new DocViewAnalyzer.NameSpace(prefix, uri);
+        DocViewSAXHandler.Namespace ns = new DocViewSAXHandler.Namespace(prefix, uri);
         // push on stack
         ns.next = nsStack;
         nsStack = ns;
@@ -308,8 +307,8 @@ public class DocViewImporter implements DocViewParserHandler {
     @Override
     public void endPrefixMapping(String prefix) {
         log.trace("<- prefixMapping for {}", prefix);
-        NameSpace ns = nsStack;
-        NameSpace prev = null;
+        DocViewSAXHandler.Namespace ns = nsStack;
+        DocViewSAXHandler.Namespace prev = null;
         while (ns != null && !ns.prefix.equals(prefix)) {
             prev = ns;
             ns = ns.next;

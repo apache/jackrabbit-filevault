@@ -29,6 +29,7 @@ import java.util.Optional;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.NameFactory;
@@ -44,6 +45,7 @@ import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.util.RejectingEntityDefaultHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -83,7 +85,42 @@ import org.xml.sax.helpers.NamespaceSupport;
 public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements NamespaceResolver {
 
 
-    private static final NameFactory FACTORY = NameFactoryImpl.getInstance();
+    /**
+	 * A representation of a namespace.  One of these will
+	 * be pushed on the namespace stack for each
+	 * element.
+	 */
+	public static final class Namespace {
+	
+	    /**
+	     * Next NameSpace element on the stack.
+	     */
+	    public Namespace next = null;
+	
+	    /**
+	     * Prefix of this NameSpace element.
+	     */
+	    public String prefix;
+	
+	    /**
+	     * Namespace URI of this NameSpace element.
+	     */
+	    public String uri;  // if null, then Element namespace is empty.
+	
+	    /**
+	     * Construct a namespace for placement on the
+	     * result tree namespace stack.
+	     *
+	     * @param prefix Prefix of this element
+	     * @param uri    URI of  this element
+	     */
+	    public Namespace(String prefix, String uri) {
+	        this.prefix = prefix;
+	        this.uri = uri;
+	    }
+	}
+
+	private static final NameFactory FACTORY = NameFactoryImpl.getInstance();
 
     /**
      * the default logger
@@ -103,8 +140,13 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     /**
      * the default name path resolver
      */
-   private final DefaultNamePathResolver npResolver = new DefaultNamePathResolver(this);
+    private final DefaultNamePathResolver npResolver = new DefaultNamePathResolver(this);
 
+    /**
+     * Optional JCR session used for namespace lookup if not declared in XML
+     */
+    private final @Nullable Session session;
+    
     private final DocViewParserHandler handler;
     private final String rootNodePath;
 
@@ -113,8 +155,8 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     private String currentPath;
     
     private Locator locator;
-
-    public DocViewSAXHandler(@NotNull DocViewParserHandler handler, @NotNull String rootNodePath) {
+    
+    public DocViewSAXHandler(@NotNull DocViewParserHandler handler, @NotNull String rootNodePath, @Nullable Session session) {
         super();
         Objects.requireNonNull(handler, "handler must not be null");
         this.handler = handler;
@@ -128,6 +170,7 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
         nodeStack = new LinkedList<>();
         currentPath = null;
         locator = new LocatorImpl();
+        this.session = session;
     }
 
     /**
@@ -221,6 +264,15 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
         }
         String uri = nsSupport.getURI(prefix);
         if (uri == null) {
+        	if (session != null) {
+        		try {
+					return session.getNamespaceURI(prefix);
+				} catch (NamespaceException e) {
+					throw e;
+				} catch (RepositoryException e) {
+					throw new NamespaceException("Unknown prefix " + prefix, e);
+				}
+        	}
             throw new NamespaceException("Unknown prefix " + prefix);
         }
         return uri;
@@ -230,6 +282,15 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     public String getPrefix(String uri) throws NamespaceException {
         String prefix = nsSupport.getPrefix(uri);
         if (prefix == null) {
+        	if (session != null) {
+        		try {
+					return session.getNamespacePrefix(uri);
+				} catch (NamespaceException e) {
+					throw e;
+				} catch (RepositoryException e) {
+					throw new NamespaceException("Unmapped URL " + prefix, e);
+				}
+        	}
             throw new NamespaceException("Unmapped URL " + uri);
         }
         return prefix;

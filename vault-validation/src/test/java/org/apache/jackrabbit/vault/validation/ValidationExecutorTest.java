@@ -149,15 +149,15 @@ public class ValidationExecutorTest {
             throws URISyntaxException, IOException, SAXException, ParserConfigurationException, ConfigurationException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/META-INF/vault/genericfile.txt")) {
             Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "vault/genericfile.txt", true);
-            MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
-            Mockito.verify(genericMetaInfDataValidator, Mockito.never()).validateMetaInfData(Mockito.any(), Mockito.any());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+            Mockito.verify(genericMetaInfDataValidator, Mockito.never()).validateMetaInfData(Mockito.any(), Mockito.any(), Mockito.any());
         }
     }
 
     @Test
     public void testMetaInfFolder() throws URISyntaxException, IOException, SAXException {
         Collection<ValidationViolation> messages = validateFolder(executor, Paths.get(""), "vault/genericfile.txt", true);
-        MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         Mockito.verify(metaInfPathValidator).validateMetaInfPath(Paths.get("vault", "genericfile.txt"), Paths.get(""), true);
     }
 
@@ -193,7 +193,7 @@ public class ValidationExecutorTest {
             throws URISyntaxException, IOException, SAXException, ParserConfigurationException, ConfigurationException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/genericfile.xml")) {
             Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "apps/genericfile.xml", false);
-            MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
             Mockito.verify(genericJcrDataValidator, Mockito.never()).validateJcrData(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         }
     }
@@ -226,7 +226,7 @@ public class ValidationExecutorTest {
         executor = new ValidationExecutor(validators);
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/genericfile.xml")) {
             Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "apps/genericfile.xml", false);
-            MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
             Mockito.verify(genericJcrDataValidator, Mockito.never()).validateJcrData(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         }
     }
@@ -234,7 +234,7 @@ public class ValidationExecutorTest {
     @Test
     public void testJcrRootFolder() throws URISyntaxException, IOException, SAXException {
         Collection<ValidationViolation> messages = validateFolder(executor, Paths.get(""), "apps.dir", false);
-        MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         NodeContext expectedNodeContext = new NodeContextImpl("/apps", Paths.get("apps.dir"), Paths.get(""));
         Mockito.verify(jcrPathValidator).validateJcrPath(expectedNodeContext, true, true);
         Mockito.verify(nodePathValidator).validate(expectedNodeContext);

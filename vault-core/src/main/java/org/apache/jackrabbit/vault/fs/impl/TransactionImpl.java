@@ -45,6 +45,7 @@ import org.apache.jackrabbit.vault.fs.impl.io.InputSourceArtifact;
 import org.apache.jackrabbit.vault.fs.impl.io.XmlAnalyzer;
 import org.apache.jackrabbit.vault.fs.io.AutoSave;
 import org.apache.jackrabbit.vault.fs.io.DocViewAnalyzerListener;
+import org.apache.jackrabbit.vault.fs.io.DocViewParser;
 import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PathComparator;
@@ -171,12 +172,12 @@ public class TransactionImpl implements VaultFsTransaction {
                     // a 'user-xml' that is imported as file
                     // btw: this only works for input sources that can
                     //      refetch their input stream
-                    serType = XmlAnalyzer.analyze(input);
-                    if (serType == SerializationType.XML_DOCVIEW) {
+                    if (DocViewParser.isDocView(input)) {
                         // in this case, the extension was added by the exporter.
                         aType = ArtifactType.PRIMARY;
                         repoName = base;
                         extension = ext;
+                        serType = SerializationType.XML_DOCVIEW;
                     } else {
                         // force generic
                         serType = SerializationType.GENERIC;

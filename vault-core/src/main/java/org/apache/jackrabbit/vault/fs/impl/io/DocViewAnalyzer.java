@@ -35,7 +35,6 @@ import org.xml.sax.InputSource;
 
 /**
  * Implements a docview analyzer that scans the XML for nodes.
- * TODO: not really necessary, replace with implementation of DocViewParserHandler....
  */
 public class DocViewAnalyzer implements DocViewParserHandler {
 
@@ -80,24 +79,19 @@ public class DocViewAnalyzer implements DocViewParserHandler {
         this.listener = listener;
     }
 
-    
     @Override
-	public void startDocViewNode(@NotNull String nodePath, @NotNull DocViewNode2 docViewNode,
-			@NotNull Optional<DocViewNode2> parentDocViewNode, int line, int column)
-			throws IOException, RepositoryException {
-    	if (docViewNode.getProperties().isEmpty()) {
-    		listener.onNode(nodePath, true, "");
-    	} else {
-    		listener.onNode(nodePath, false, docViewNode.getPrimaryType().orElse(""));
-    	}
-    	
-	}
+    public void startDocViewNode(@NotNull String nodePath, @NotNull DocViewNode2 docViewNode,@NotNull Optional<DocViewNode2> parentDocViewNode, int line, int column)
+        throws IOException, RepositoryException {
+        if (docViewNode.getProperties().isEmpty()) {
+            listener.onNode(nodePath, true, "");
+        } else {
+            listener.onNode(nodePath, false, docViewNode.getPrimaryType().orElse(""));
+        }
+    }
 
-	@Override
-	public void endDocViewNode(@NotNull String nodePath, @NotNull DocViewNode2 docViewNode,
-			@NotNull Optional<DocViewNode2> parentDocViewNode, int line, int column)
-			throws IOException, RepositoryException {
-		
-	}
+    @Override
+    public void endDocViewNode(@NotNull String nodePath, @NotNull DocViewNode2 docViewNode, @NotNull Optional<DocViewNode2> parentDocViewNode, int line, int column)
+            throws IOException, RepositoryException {
+    }
 
 }

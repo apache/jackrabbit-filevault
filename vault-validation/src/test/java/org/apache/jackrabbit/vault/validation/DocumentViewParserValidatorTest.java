@@ -159,7 +159,7 @@ public class DocumentViewParserValidatorTest {
     public void testDocViewWithEmptyElements() throws IOException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/emptyelements/.content.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "emptyelements", ".content.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
             // verify node names
             Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();
@@ -175,7 +175,7 @@ public class DocumentViewParserValidatorTest {
 
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child1.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "child1.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
             NameFactory nameFactory = NameFactoryImpl.getInstance();
             Collection<DocViewProperty2> properties = new ArrayList<>();
@@ -217,7 +217,7 @@ public class DocumentViewParserValidatorTest {
             throws ParserConfigurationException, SAXException, URISyntaxException, IOException, NamespaceException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child2/.content.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "child2", ".content.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
             NameFactory nameFactory = NameFactoryImpl.getInstance();
             Collection<DocViewProperty2> properties = new ArrayList<>();
@@ -244,7 +244,7 @@ public class DocumentViewParserValidatorTest {
         // https://issues.apache.org/jira/browse/JCRVLT-358"
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child2/child1.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "child2", "child1.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
             Mockito.verifyNoMoreInteractions(docViewXmlValidator);
 

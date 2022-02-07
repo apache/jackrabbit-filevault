@@ -19,12 +19,13 @@ package org.apache.jackrabbit.vault.fs.impl.io;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -71,7 +72,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
     /**
      * default logger
      */
-    private static final Logger log = DocViewSAXHandler.log;
+    private static final Logger log = DocViewImporter.log;
 
     private final JackrabbitSession session;
 
@@ -96,7 +97,7 @@ public class JackrabbitACLImporter implements DocViewAdapter {
         PRINCIPAL_SET_POLICY
     }
 
-    private final Stack<State> states = new Stack<State>();
+    private final Deque<State> states = new LinkedList<>();
 
     public JackrabbitACLImporter(Node accessControlledNode, AccessControlHandling aclHandling)
             throws RepositoryException {

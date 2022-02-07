@@ -27,7 +27,7 @@ import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
-import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
+import org.apache.jackrabbit.vault.validation.AnyValidationViolationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -57,7 +57,7 @@ public class MergeLimitationsValidatorTest {
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), false);
         ValidationExecutorTest.assertViolation(messages,
                 new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MergeLimitationsValidator.PACKAGE_NON_ROOT_NODE_MERGED, "/apps/test/deep")));
-        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
 
     @Test
@@ -66,8 +66,8 @@ public class MergeLimitationsValidatorTest {
          		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
          		new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), true);
-        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
-        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
 
 }

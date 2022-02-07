@@ -735,10 +735,10 @@ public class Importer {
                 if (".xml".equals(ext)) {
                     // this can either be an generic exported docview or a 'user-xml' that is imported as file
                     // btw: this only works for input sources that can refetch their input stream
-                    serType = XmlAnalyzer.analyze(is);
-                    if (serType == SerializationType.XML_DOCVIEW) {
+                    if (DocViewParser.isDocView(is)) {
                         // in this case, the extension was added by the exporter.
                         repoName = repoBase;
+                        serType = SerializationType.XML_DOCVIEW;
                     } else {
                         ext = "";
                         serType = SerializationType.GENERIC;

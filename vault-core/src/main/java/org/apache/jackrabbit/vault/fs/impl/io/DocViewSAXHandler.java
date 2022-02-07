@@ -187,16 +187,17 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     }
 
     public @NotNull Locator getDocumentLocator() {
-    	return this.locator;
+        return this.locator;
     }
-    
+
     /**
      * 
      * @return the node path which has been last processed
      */
     public @NotNull String getCurrentPath() {
-    	return currentPath != null ? currentPath : rootNodePath;
+        return currentPath != null ? currentPath : rootNodePath;
     }
+
     /**
      * {@inheritDoc}
      */
@@ -208,7 +209,6 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
             throw new SAXException(e);
         }
     }
-
 
     /**
      * {@inheritDoc}
@@ -264,15 +264,15 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
         }
         String uri = nsSupport.getURI(prefix);
         if (uri == null) {
-        	if (session != null) {
-        		try {
-					return session.getNamespaceURI(prefix);
-				} catch (NamespaceException e) {
-					throw e;
-				} catch (RepositoryException e) {
-					throw new NamespaceException("Unknown prefix " + prefix, e);
-				}
-        	}
+            if (session != null) {
+                try {
+                    return session.getNamespaceURI(prefix);
+                } catch (NamespaceException e) {
+                    throw e;
+                } catch (RepositoryException e) {
+                    throw new NamespaceException("Unknown prefix " + prefix, e);
+                }
+            }
             throw new NamespaceException("Unknown prefix " + prefix);
         }
         return uri;
@@ -282,15 +282,15 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     public String getPrefix(String uri) throws NamespaceException {
         String prefix = nsSupport.getPrefix(uri);
         if (prefix == null) {
-        	if (session != null) {
-        		try {
-					return session.getNamespacePrefix(uri);
-				} catch (NamespaceException e) {
-					throw e;
-				} catch (RepositoryException e) {
-					throw new NamespaceException("Unmapped URL " + prefix, e);
-				}
-        	}
+            if (session != null) {
+                try {
+                    return session.getNamespacePrefix(uri);
+                } catch (NamespaceException e) {
+                    throw e;
+                } catch (RepositoryException e) {
+                    throw new NamespaceException("Unmapped URL " + prefix, e);
+                }
+            }
             throw new NamespaceException("Unmapped URL " + uri);
         }
         return prefix;
@@ -325,16 +325,16 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
             Map.Entry<String, Integer> nameAndIndex = getNameAndIndex(ISO9075.decode(localName));
             index = nameAndIndex.getValue();
             try {
-            	name = FACTORY.create(uri, nameAndIndex.getKey());
-            	if (currentPath == null) {
-            		// root node element name should take precedence of root node name derived from path
-            		currentPath = Text.getRelativeParent(rootNodePath, 1);
-            	}
+                name = FACTORY.create(uri, nameAndIndex.getKey());
+                if (currentPath == null) {
+                    // root node element name should take precedence of root node name derived from path
+                    currentPath = Text.getRelativeParent(rootNodePath, 1);
+                }
                 currentPath = currentPath + "/" + npResolver.getJCRName(name);
             } catch (NamespaceException e) {
                 throw new SAXException("No prefix defined for namespace uri '" + uri + "' used in node name '" + nameAndIndex.getKey() + "'", e);
             } catch (IllegalArgumentException e) {
-            	throw new SAXException("Invalid name format used in node name '" + nameAndIndex.getKey() + "'", e);
+                throw new SAXException("Invalid name format used in node name '" + nameAndIndex.getKey() + "'", e);
             }
         }
         try {
@@ -349,7 +349,8 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
                         ISO9075.decode(attributes.getLocalName(i)));
                 DocViewProperty2 property = DocViewProperty2.parse(
                         pName.toString(),
-                        attributes.getValue(i));
+                        attributes.getValue(i),
+                        npResolver);
                 props.add(property);
                 
             }

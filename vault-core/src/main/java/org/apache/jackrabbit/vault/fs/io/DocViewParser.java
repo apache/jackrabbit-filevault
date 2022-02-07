@@ -17,6 +17,10 @@
 package org.apache.jackrabbit.vault.fs.io;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import javax.jcr.Session;
@@ -25,6 +29,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewSAXHandler;
 import org.jetbrains.annotations.Nullable;
 import org.xml.sax.InputSource;
@@ -39,7 +45,7 @@ public class DocViewParser {
 	
 	/** 
 	 * Thrown in case the XML is not <a href="https://www.w3.org/TR/REC-xml/#sec-well-formed">well-formed</a>
-	 * or no valid docview format 
+	 * or no valid docview format.
 	 */
     public static final class XmlParseException extends Exception {
 
@@ -57,49 +63,78 @@ public class DocViewParser {
             this.lineNumber = lineNumber;
             this.columnNumber = columnNumber;
         }
-      
+
         public XmlParseException(Throwable cause, String nodePath, int lineNumber, int columnNumber) {
             super(cause.getMessage(), cause);
             this.nodePath = nodePath;
             this.lineNumber = lineNumber;
             this.columnNumber = columnNumber;
         }
-        
+
         public XmlParseException(Throwable cause, String nodePath, Locator locator) {
             this(cause, nodePath, locator.getLineNumber(), locator.getColumnNumber());
         }
-        
+
         public String getNodePath() {
-			return nodePath;
-		}
-
-		public int getLineNumber() {
-        	return lineNumber;
+            return nodePath;
         }
-        
+
+        public int getLineNumber() {
+            return lineNumber;
+        }
+
         public int getColumnNumber() {
-        	return columnNumber;
+            return columnNumber;
         }
 
-		@Override
-		public int hashCode() {
-			return Objects.hash(nodePath, columnNumber, lineNumber, getMessage());
-		}
+        @Override
+        public int hashCode() {
+            return Objects.hash(nodePath, columnNumber, lineNumber, getMessage());
+        }
 
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			XmlParseException other = (XmlParseException) obj;
-			return Objects.equals(nodePath, other.nodePath) && columnNumber == other.columnNumber && lineNumber == other.lineNumber && getMessage().equals(other.getMessage());
-		}
-        
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            XmlParseException other = (XmlParseException) obj;
+            return Objects.equals(nodePath, other.nodePath) && columnNumber == other.columnNumber && lineNumber == other.lineNumber && getMessage().equals(other.getMessage());
+        }
     }
 
+    /**
+     *
+     * @param source the source to analyze
+     * @return {@code true} in case the given source is Document View XML format
+     * @throws IOException if an I/O error occurs
+     */
+    public static boolean isDocView(InputSource source) throws IOException {
+        String encoding = source.getEncoding() != null ? source.getEncoding() : StandardCharsets.UTF_8.name();
+        try (Reader reader = (source.getCharacterStream() != null ? source.getCharacterStream() : 
+               new InputStreamReader(source.getByteStream(), encoding))) {
+            return isDocView(reader);
+        }
+    }
+
+    public static boolean isDocView(Reader reader) throws IOException {
+        // read a couple of chars...1024 should be enough
+        char[] buffer = new char[1024];
+        int pos = 0;
+        while (pos<buffer.length) {
+            int read = reader.read(buffer, pos, buffer.length - pos);
+            if (read < 0) {
+                break;
+            }
+            pos+=read;
+        }
+        String str = new String(buffer, 0, pos);
+        // check for docview
+        return str.contains("<jcr:root") && str.contains("\"http://www.jcp.org/jcr/1.0\"");
+    }
+    
     private SAXParser createSaxParser() throws ParserConfigurationException, SAXException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);

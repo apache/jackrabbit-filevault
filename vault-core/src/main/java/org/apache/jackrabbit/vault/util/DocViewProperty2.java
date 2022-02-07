@@ -28,6 +28,7 @@ import java.util.Set;
 
 import javax.jcr.Binary;
 import javax.jcr.InvalidSerializedDataException;
+import javax.jcr.NamespaceException;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
@@ -41,9 +42,10 @@ import javax.jcr.version.VersionException;
 import org.apache.jackrabbit.api.ReferenceBinary;
 import org.apache.jackrabbit.commons.jackrabbit.SimpleReferenceBinary;
 import org.apache.jackrabbit.spi.Name;
-import org.apache.jackrabbit.spi.NameFactory;
+import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
+import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
+import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
-import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.util.XMLChar;
 import org.apache.jackrabbit.value.ValueHelper;
@@ -67,8 +69,6 @@ import org.jetbrains.annotations.NotNull;
 public class DocViewProperty2 {
 
     public static final String BINARY_REF = "BinaryRef";
-
-    private static final NameFactory FACTORY = NameFactoryImpl.getInstance();
 
     /**
      * name of the property
@@ -162,7 +162,8 @@ public class DocViewProperty2 {
         } else {
             values = new Value[] { prop.getValue() };
         }
-        return fromValues(FACTORY.create(prop.getName()), values, prop.getType(), isMultiValue, sort, useBinaryReferences);
+        NameResolver nameResolver = new DefaultNamePathResolver(prop.getSession());
+        return fromValues(nameResolver.getQName(prop.getName()), values, prop.getType(), isMultiValue, sort, useBinaryReferences);
     }
 
     static String serializeValue(Value value, boolean useBinaryReferences) throws RepositoryException {
@@ -255,8 +256,10 @@ public class DocViewProperty2 {
      * @param value (attribute) value
      * @throws IllegalArgumentException in case the given value does not follow the doc view property grammar
      * @return a property
+     * @throws NamespaceException 
+     * @throws IllegalNameException 
      */
-    public static @NotNull DocViewProperty2 parse(String name, String value) {
+    public static @NotNull DocViewProperty2 parse(String name, String value, NameResolver nameResolver) throws IllegalNameException, NamespaceException {
         boolean isMulti = false;
         boolean isBinaryRef = false;
         int type = PropertyType.UNDEFINED;
@@ -369,7 +372,7 @@ public class DocViewProperty2 {
         } else {
             vals = Collections.singletonList(tmp.toString());
         }
-        return new DocViewProperty2(FACTORY.create(name), vals, isMulti, type, isBinaryRef);
+        return new DocViewProperty2(nameResolver.getQName(name), vals, isMulti, type, isBinaryRef);
     }
     /**
      * Formats (serializes) the given JCR property value according to the enhanced docview syntax.

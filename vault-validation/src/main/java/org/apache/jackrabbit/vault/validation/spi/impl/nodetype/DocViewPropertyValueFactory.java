@@ -25,7 +25,6 @@ import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
 
 import org.apache.jackrabbit.value.ValueFactoryImpl;
-import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
 
 /** Creates JCR values from DocViewProperties */
@@ -42,20 +41,6 @@ public class DocViewPropertyValueFactory {
             type = PropertyType.STRING;
         }
         return valueFactory.createValue(value, type);
-    }
-
-    @Deprecated
-    public Value getValue(DocViewProperty property) throws ValueFormatException {
-        return getValue(property.values[0], property.type);
-    }
-
-    @Deprecated
-    public Value[] getValues(DocViewProperty property) throws ValueFormatException {
-        Collection<Value> values = new LinkedList<>();
-        for (String value : property.values) {
-            values.add(getValue(value, property.type));
-        }
-        return values.toArray(new Value[values.size()]);
     }
 
     public Value getValue(DocViewProperty2 property) throws ValueFormatException {

@@ -33,7 +33,7 @@ import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
-import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
+import org.apache.jackrabbit.vault.validation.AnyValidationViolationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -102,7 +102,7 @@ public class OakIndexDefinitionValidatorTest {
         try (InputStream input = this.getClass().getResourceAsStream("/oak-index/filter-with-acl.xml")) {
             DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
             filter.load(input);
-            MatcherAssert.assertThat(validator.validate(filter), AnyValidationMessageMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(validator.validate(filter), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         }
         NameFactory nameFactory = NameFactoryImpl.getInstance();
         DocViewNode2 node = new DocViewNode2(nameFactory.create("{}testindex"), Arrays.asList(
@@ -111,13 +111,13 @@ public class OakIndexDefinitionValidatorTest {
         
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/oak:index/rep:policy",
                 Paths.get("_oak_index", "_rep_policy.xml"), Paths.get("")), true);
-        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
         node = new DocViewNode2(nameFactory.create("{}allow"), Arrays.asList(
          		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "rep:GrantACE"),
          		new DocViewProperty2(NameConstants.REP_POLICY, Arrays.asList("/home]"), PropertyType.STRING)));
         messages = validator.validate(node, new NodeContextImpl("/oak:index/rep:policy/allow",
                 Paths.get("_oak_index", "_rep_policy.xml"), Paths.get("")), false);
-        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
 }

@@ -19,6 +19,8 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -123,8 +125,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
             // this closes the input source internally, therefore protect against closing
             // make sure to initialize the SLF4J logger appropriately (for the XmlAnalyzer)
             try {
-                SerializationType type = XmlAnalyzer.analyze(new InputSource(new CloseShieldInputStream(input)));
-                if (type == SerializationType.XML_DOCVIEW) {
+                if (DocViewParser.isDocView(new InputStreamReader(input, StandardCharsets.UTF_8))) {
                     //  remove .xml extension
                     String fileName = path.getFileName().toString();
                     fileName = fileName.substring(0, fileName.length() - ".xml".length());

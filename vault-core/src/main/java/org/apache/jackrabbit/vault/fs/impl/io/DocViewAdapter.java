@@ -24,11 +24,10 @@ import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.xml.sax.SAXException;
 
 /**
- * {@code DocViewAdapter} is used by the {@link org.apache.jackrabbit.vault.fs.impl.io.DocViewSAXHandler} to handle
+ * {@code DocViewAdapter} is used by the {@link org.apache.jackrabbit.vault.fs.impl.io.DocViewImporter} to handle
  * special content that is not importable using "normal" JCR calls. For example users and other protected content
  * needs to be imported using the {@link javax.jcr.Session#importXML(String, java.io.InputStream, int)} or similar.
  * 
- * TODO: check overlap with DocViewParserHandler
  */
 public interface DocViewAdapter {
 

@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
-import org.apache.jackrabbit.vault.fs.api.SerializationType;
-import org.apache.jackrabbit.vault.fs.impl.io.XmlAnalyzer;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
 import org.apache.jackrabbit.vault.util.Constants;

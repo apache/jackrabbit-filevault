@@ -42,7 +42,6 @@ import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewAnalyzer;
 import org.apache.jackrabbit.vault.fs.impl.io.ImportInfoImpl;
 import org.apache.jackrabbit.vault.fs.impl.io.InputSourceArtifact;
-import org.apache.jackrabbit.vault.fs.impl.io.XmlAnalyzer;
 import org.apache.jackrabbit.vault.fs.io.AutoSave;
 import org.apache.jackrabbit.vault.fs.io.DocViewAnalyzerListener;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser;

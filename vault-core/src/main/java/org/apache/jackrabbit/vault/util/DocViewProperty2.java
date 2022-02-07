@@ -233,7 +233,7 @@ public class DocViewProperty2 {
      * @param isRef {@code true} to indicate that this is a binary reference property
      * @throws IllegalArgumentException if single value property and not exactly 1 value is given
      */
-    private DocViewProperty2(@NotNull Name name, @NotNull List<String> values, boolean isMultiValue, int type, boolean isRef) {
+    protected DocViewProperty2(@NotNull Name name, @NotNull List<String> values, boolean isMultiValue, int type, boolean isRef) {
         this.name = name;
         this.values = Collections.unmodifiableList(values);
         this.isMultiValue = isMultiValue;

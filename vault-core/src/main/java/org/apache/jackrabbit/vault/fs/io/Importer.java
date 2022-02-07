@@ -68,7 +68,6 @@ import org.apache.jackrabbit.vault.fs.impl.io.FolderArtifactHandler;
 import org.apache.jackrabbit.vault.fs.impl.io.GenericArtifactHandler;
 import org.apache.jackrabbit.vault.fs.impl.io.ImportInfoImpl;
 import org.apache.jackrabbit.vault.fs.impl.io.InputSourceArtifact;
-import org.apache.jackrabbit.vault.fs.impl.io.XmlAnalyzer;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.DefaultNodeTypeSet;

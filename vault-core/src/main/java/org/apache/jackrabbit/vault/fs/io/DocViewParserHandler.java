@@ -24,12 +24,15 @@ import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Handler to be used with {@link DocViewParser}.
+ */
 public interface DocViewParserHandler {
     /**
      * Called for each element in the docview xml representing a node
      * @param nodePath the absolute node path of the node
      * @param docViewNode the deserialized node (incl. its properties)
-     * @param parentDocViewNode the parent deserialized node (only present if {@link docViewNode} is not the root node in the docview xml)
+     * @param parentDocViewNode the parent deserialized node (only present if {@code docViewNode} is not the root node in the docview xml)
      * @param line the current line number in the docview xml
      * @param column the current column number in the docview xml
      * @throws IOException
@@ -42,7 +45,7 @@ public interface DocViewParserHandler {
      * At this point in time all child nodes have been processed.
      * @param nodePath the absolute node path of the node
      * @param docViewNode the deserialized node (incl. its properties)
-     * @param parentDocViewNode the parent deserialized node (only present if {@link docViewNode} is not the root node in the docview xml)
+     * @param parentDocViewNode the parent deserialized node (only present if {@code docViewNode} is not the root node in the docview xml)
      * @param line the current line number in the docview xml
      * @param column the current column number in the docview xml
      * @throws IOException
@@ -63,11 +66,10 @@ public interface DocViewParserHandler {
      * @param uri the namespace uri
      */
     default void startPrefixMapping(String prefix, String uri) {};
-    
+
     /**
      * Called when a namespace mapping end in the docview xml.
      * @param prefix the namespace prefix
-     * @param uri the namespace uri
      */
     default void endPrefixMapping(String prefix) {};
 }

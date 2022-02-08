@@ -266,7 +266,7 @@ public class RepositoryCopier {
         currentSize = 0;
         totalSize = 0;
         start = System.currentTimeMillis();
-        
+
         AutoSave autoSave = new AutoSave();
         autoSave.setThreshold(getBatchSize());
         autoSave.setTracker(new ProgressTracker(tracker));
@@ -410,11 +410,17 @@ public class RepositoryCopier {
                             currentSize+=s;
                         }
                     } else {
-                        Value v = p.getValue();
-                        dst.setProperty(pName, v);
-                        long s= p.getLength();
-                        totalSize+=s;
-                        currentSize+=s;
+                        // Filter out unwanted properties.  Remove them from the destination if they are excluded by filter
+                        String pPath = p.getPath();
+                        if (srcFilter != null && !srcFilter.includesProperty(pPath)) {
+                            track(pPath, "------ I");
+                        } else {
+                            Value v = p.getValue();
+                            dst.setProperty(pName, v);
+                            long s= p.getLength();
+                            totalSize+=s;
+                            currentSize+=s;
+                        }
                     }
                 }
                 // remove obsolete properties

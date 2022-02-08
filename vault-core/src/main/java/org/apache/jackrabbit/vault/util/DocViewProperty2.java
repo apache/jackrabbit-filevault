@@ -252,7 +252,7 @@ public class DocViewProperty2 {
 
     /**
      * Parses a enhanced docview property string and returns the property.
-     * @param name name of the property
+     * @param name name of the property (either in qualified or extended form)
      * @param value (attribute) value
      * @throws IllegalArgumentException in case the given value does not follow the doc view property grammar
      * @return a property
@@ -354,10 +354,8 @@ public class DocViewProperty2 {
                         state = 'v';
                     }
                     break;
-
             }
         }
-        
         if (isMulti) {
             // add value if missing ']'
             if (tmp.length() > 0) {

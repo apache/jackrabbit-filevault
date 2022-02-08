@@ -86,41 +86,39 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
 
 
     /**
-	 * A representation of a namespace.  One of these will
-	 * be pushed on the namespace stack for each
-	 * element.
-	 */
-	public static final class Namespace {
-	
-	    /**
-	     * Next NameSpace element on the stack.
-	     */
-	    public Namespace next = null;
-	
-	    /**
-	     * Prefix of this NameSpace element.
-	     */
-	    public String prefix;
-	
-	    /**
-	     * Namespace URI of this NameSpace element.
-	     */
-	    public String uri;  // if null, then Element namespace is empty.
-	
-	    /**
-	     * Construct a namespace for placement on the
-	     * result tree namespace stack.
-	     *
-	     * @param prefix Prefix of this element
-	     * @param uri    URI of  this element
-	     */
-	    public Namespace(String prefix, String uri) {
-	        this.prefix = prefix;
-	        this.uri = uri;
-	    }
-	}
+     * A representation of a namespace. One of these will be pushed on the namespace
+     * stack for each element.
+     */
+    public static final class Namespace {
 
-	private static final NameFactory FACTORY = NameFactoryImpl.getInstance();
+        /**
+         * Next NameSpace element on the stack.
+         */
+        public Namespace next = null;
+
+        /**
+         * Prefix of this NameSpace element.
+         */
+        public String prefix;
+
+        /**
+         * Namespace URI of this NameSpace element.
+         */
+        public String uri; // if null, then Element namespace is empty.
+
+        /**
+         * Construct a namespace for placement on the result tree namespace stack.
+         *
+         * @param prefix Prefix of this element
+         * @param uri    URI of this element
+         */
+        public Namespace(String prefix, String uri) {
+            this.prefix = prefix;
+            this.uri = uri;
+        }
+    }
+
+    private static final NameFactory FACTORY = NameFactoryImpl.getInstance();
 
     /**
      * the default logger

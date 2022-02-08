@@ -302,6 +302,12 @@ Bundle-Category: jackrabbit
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.3.1</version>
                 </plugin>
+                <!--  update from 3.1.2 in ASF parent -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>3.2.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>

@@ -42,7 +42,7 @@ Example:
 
 ### Filter Elements
 The filter elements are independent of each other and define include and exclude patters for subtrees. The root of a
-subtree is defined by the `root` attribute, which must be an absolute path.
+subtree is defined by the `root` attribute, which must be an absolute path [in JCR 2.0 Path Standard Form][jcr.path-standard-form].
 The filter element can have an optional `mode` attribute which specified the [import mode][api.ImportMode] used when
 importing content. the following values are possible:
 
@@ -57,8 +57,8 @@ In addition it is possible to influence the auto-detection of the package type (
 
 ### Include and Exclude Elements
 The include and exclude elements can be added as optional children to the `filter` element to allow more fine grained filtering of the subtree during import and export. They have a
-mandatory `pattern` attribute which has the format of a [regexp][api.Pattern]. The regexp is matched against the full _path_ of the
-respective or potential JCR node, so it either must start with `/` (absolute regex) or a wildcard (relative regex).
+mandatory `pattern` attribute which has the format of a [regexp][api.Pattern]. The regexp is matched against the full
+respective or potential JCR node path [in JCR 2.0 Path Standard Form][jcr.path-standard-form], so it either must start with `/` (absolute regex) or a wildcard (relative regex).
 
 #### Order
 The order of the include and exclude elements is important. The paths are tested in a sequential order against all
@@ -185,3 +185,4 @@ Content Package Serialized Content
 [api.WorkspaceFilter]: apidocs/org/apache/jackrabbit/vault/fs/api/WorkspaceFilter.html
 [api.ImportMode]: apidocs/org/apache/jackrabbit/vault/fs/api/ImportMode.html
 [api.Pattern]: https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html
+[jcr.path-standard-form]: https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.4.3.1%20Standard%20Form

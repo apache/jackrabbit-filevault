@@ -20,24 +20,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jcr.NamespaceException;
-import javax.jcr.PropertyType;
-import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.NameFactory;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
-import org.apache.jackrabbit.vault.util.DocViewNode;
-import org.apache.jackrabbit.vault.util.DocViewProperty;
+import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.apache.jackrabbit.vault.validation.impl.util.DocumentViewXmlContentHandler;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -69,10 +69,7 @@ public class DocumentViewParserValidatorTest {
 
     @Before
     public void setUp() throws ParserConfigurationException, SAXException, IOException {
-        SAXParserFactory spf = SAXParserFactory.newInstance();
-        spf.setNamespaceAware(true);
-        spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        validator = new DocumentViewParserValidator(spf.newSAXParser(), ValidationMessageSeverity.ERROR);
+        validator = new DocumentViewParserValidator(ValidationMessageSeverity.ERROR);
         nodePathsAndLineNumbers = new HashMap<>();
         validator.setDocumentViewXmlValidators(Collections.singletonMap("docviewid", docViewXmlValidator));
     }
@@ -86,7 +83,7 @@ public class DocumentViewParserValidatorTest {
     @Test
     public void testDocViewDotContentXml()
             throws ParserConfigurationException, SAXException, URISyntaxException, IOException, NamespaceException {
-        Mockito.when(docViewXmlValidator.validate(Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "startDocView")));
+        Mockito.when(docViewXmlValidator.validate(Mockito.any(DocViewNode2.class), Mockito.any(), Mockito.anyBoolean())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "startDocView")));
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/.content.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", ".content.xml"), Paths.get(""), nodePathsAndLineNumbers);
             // filter
@@ -109,26 +106,25 @@ public class DocumentViewParserValidatorTest {
             expectedNodePathsAndLineNumber.put("/apps/somepath/jc:content", 22);
             expectedNodePathsAndLineNumber.put("/apps/01234_sample.jpg", 26);
             Assert.assertEquals(expectedNodePathsAndLineNumber, nodePathsAndLineNumbers);
-            Map<String, DocViewProperty> properties = new HashMap<>();
-            properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
-                    new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { "sling:Folder" }, false,
-                            PropertyType.UNDEFINED));
-            DocViewNode node = new DocViewNode("{}apps", "jc:root", null, properties, null, "sling:Folder");
+            Collection<DocViewProperty2> properties = new ArrayList<>();
+            properties.add(
+                    new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "sling:Folder"));
+            NameFactory nameFactory = NameFactoryImpl.getInstance();
+            DocViewNode2 node = new DocViewNode2(nameFactory.create("{}apps"), properties);
             Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps", Paths.get("apps", ".content.xml"), Paths.get("")), true);
 
-            properties = new HashMap<>();
-            properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
-                    new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { JcrConstants.NT_UNSTRUCTURED }, false,
-                            PropertyType.UNDEFINED));
-            properties.put("{}attribute1", new DocViewProperty("{}attribute1", new String[] { "value1" }, false, PropertyType.UNDEFINED));
-            node = new DocViewNode("{}somepath", "somepath", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
+            properties = new ArrayList<>();
+            properties.add(
+                    new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED));
+            properties.add(
+            		new DocViewProperty2(nameFactory.create("{}attribute1"), "value1"));
+            node = new DocViewNode2(nameFactory.create("{}somepath"), properties);
             Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/somepath", Paths.get("apps", ".content.xml"), Paths.get("")), false);
             
-            properties = new HashMap<>();
-            properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
-                    new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { JcrConstants.NT_UNSTRUCTURED }, false,
-                            PropertyType.UNDEFINED));
-            node = new DocViewNode("{http://www.jcp.org/jcr/1.0}content", "jc:content", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
+            properties = new ArrayList<>();
+            properties.add(
+                    new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED));
+            node = new DocViewNode2(NameConstants.JCR_CONTENT, properties);
             Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/somepath/jc:content", Paths.get("apps", ".content.xml"), Paths.get("")), false);
         }
     }
@@ -136,7 +132,7 @@ public class DocumentViewParserValidatorTest {
     @Test
     public void testDocViewDotContentXmlOnRootLevel()
             throws ParserConfigurationException, SAXException, URISyntaxException, IOException, NamespaceException {
-        Mockito.when(docViewXmlValidator.validate(Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "startDocView")));
+        Mockito.when(docViewXmlValidator.validate(Mockito.any(DocViewNode2.class), Mockito.any(), Mockito.anyBoolean())).thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "startDocView")));
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/.content.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get(".content.xml"), Paths.get(""), nodePathsAndLineNumbers);
             // filter
@@ -148,15 +144,13 @@ public class DocumentViewParserValidatorTest {
             Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();
             expectedNodePathsAndLineNumber.put("/", 6);
             Assert.assertEquals(expectedNodePathsAndLineNumber, nodePathsAndLineNumbers);
-            Map<String, DocViewProperty> properties = new HashMap<>();
-            properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
-                    new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { "rep:root" }, false,
-                            PropertyType.UNDEFINED));
-            properties.put(NameConstants.JCR_MIXINTYPES.toString(), new DocViewProperty(NameConstants.JCR_MIXINTYPES.toString(), new String[] { "rep:AccessControllable" ,"rep:RepoAccessControllable" }, true, PropertyType.UNDEFINED));
-            properties.put(NAME_SLING_RESOURCE_TYPE.toString(), new DocViewProperty(NAME_SLING_RESOURCE_TYPE.toString(), new String[] { "sling:redirect" }, false, PropertyType.UNDEFINED));
-            properties.put(NAME_SLING_TARGET.toString(), new DocViewProperty(NAME_SLING_TARGET.toString(), new String[] { "/index.html" }, false, PropertyType.UNDEFINED));
+            Collection<DocViewProperty2> properties = new ArrayList<>();
+            properties.add(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "rep:root"));
+            properties.add(new DocViewProperty2(NameConstants.JCR_MIXINTYPES, Arrays.asList("rep:AccessControllable" ,"rep:RepoAccessControllable")));
+            properties.add(new DocViewProperty2(NAME_SLING_RESOURCE_TYPE, "sling:redirect"));
+            properties.add(new DocViewProperty2(NAME_SLING_TARGET, "/index.html"));
             
-            DocViewNode node = new DocViewNode(NameConstants.JCR_ROOT.toString(), "jcr:root", null, properties, new String[] { "rep:AccessControllable" ,"rep:RepoAccessControllable" }, "rep:root");
+            DocViewNode2 node = new DocViewNode2(NameConstants.ROOT, properties);
             Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/", Paths.get(".content.xml"), Paths.get("")), true);
         }
     }
@@ -165,7 +159,7 @@ public class DocumentViewParserValidatorTest {
     public void testDocViewWithEmptyElements() throws IOException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/emptyelements/.content.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "emptyelements", ".content.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
             // verify node names
             Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();
@@ -181,21 +175,18 @@ public class DocumentViewParserValidatorTest {
 
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child1.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "child1.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
-            Map<String, DocViewProperty> properties = new HashMap<>();
-            properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
-                    new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { "sling:Folder" }, false,
-                            PropertyType.UNDEFINED));
-            DocViewNode node = new DocViewNode("{}child1", "jcr:root", null, properties, null, "sling:Folder");
+            NameFactory nameFactory = NameFactoryImpl.getInstance();
+            Collection<DocViewProperty2> properties = new ArrayList<>();
+            properties.add(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "sling:Folder"));
+            DocViewNode2 node = new DocViewNode2(nameFactory.create("{}child1"), properties);
             Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child1", Paths.get("apps", "child1.xml"), Paths.get("")), true);
 
-            properties = new HashMap<>();
-            properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
-                    new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { JcrConstants.NT_UNSTRUCTURED }, false,
-                            PropertyType.UNDEFINED));
-            properties.put("{}attribute1", new DocViewProperty("{}attribute1", new String[] { "value1" }, false, PropertyType.UNDEFINED));
-            node = new DocViewNode("{}somepath", "somepath", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
+            properties = new ArrayList<>();
+            properties.add(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED));
+            properties.add(new DocViewProperty2(nameFactory.create("{}attribute1"), "value1"));
+            node = new DocViewNode2(nameFactory.create("{}somepath"), properties);
             Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child1/somepath", Paths.get("apps", "child1.xml"), Paths.get("")), false);
 
             // verify node names
@@ -215,8 +206,9 @@ public class DocumentViewParserValidatorTest {
            
             ValidationExecutorTest.assertViolation(messages, 
                     new ValidationViolation(ValidationMessageSeverity.ERROR, 
-                    "Invalid XML found: Given root node name 'cq:child1' (implicitly given via filename) cannot be resolved. The prefix used in the filename must be declared as XML namespace in the child docview XML as well!",
-                    Paths.get("apps", "_cq_child1.xml"), Paths.get(""), "/apps/cq:child1",  0,0, null));
+                    "Could not parse FileVault Document View XML: Unknown namespace prefix used in file name 'cq:child1'",
+                    Paths.get("apps", "_cq_child1.xml"), Paths.get(""), "/apps/cq:child1", 20, 36, 
+                    new XmlParseException("Unknown namespace prefix used in file name 'cq:child1'", "/apps/cq:child1", 20, 36)));
         }
     }
 
@@ -225,21 +217,18 @@ public class DocumentViewParserValidatorTest {
             throws ParserConfigurationException, SAXException, URISyntaxException, IOException, NamespaceException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child2/.content.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "child2", ".content.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            MatcherAssert.assertThat(messages, AnyValidationViolationMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
-            Map<String, DocViewProperty> properties = new HashMap<>();
-            properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
-                    new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { "sling:Folder" }, false,
-                            PropertyType.UNDEFINED));
-            DocViewNode node = new DocViewNode("{}child3", "child3", null, properties, null, "sling:Folder");
+            NameFactory nameFactory = NameFactoryImpl.getInstance();
+            Collection<DocViewProperty2> properties = new ArrayList<>();
+            properties.add(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "sling:Folder"));
+            DocViewNode2 node = new DocViewNode2(nameFactory.create("{}child3"), properties);
             Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child3", Paths.get("apps", "child2", ".content.xml"), Paths.get("")), true);
 
-            properties = new HashMap<>();
-            properties.put(NameConstants.JCR_PRIMARYTYPE.toString(),
-                    new DocViewProperty(NameConstants.JCR_PRIMARYTYPE.toString(), new String[] { JcrConstants.NT_UNSTRUCTURED }, false,
-                            PropertyType.UNDEFINED));
-            properties.put("{}attribute1", new DocViewProperty("{}attribute1", new String[] { "value1" }, false, PropertyType.UNDEFINED));
-            node = new DocViewNode("{}somepath", "somepath", null, properties, null, JcrConstants.NT_UNSTRUCTURED);
+            properties.clear();
+            properties.add(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED));
+            properties.add(new DocViewProperty2(nameFactory.create("{}attribute1"), "value1"));
+            node = new DocViewNode2(nameFactory.create("{}somepath"), properties);
             Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child3/somepath", Paths.get("apps", "child2", ".content.xml"), Paths.get("")), false);
 
             // verify node names
@@ -255,7 +244,7 @@ public class DocumentViewParserValidatorTest {
         // https://issues.apache.org/jira/browse/JCRVLT-358"
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child2/child1.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "child2", "child1.xml"), Paths.get(""), nodePathsAndLineNumbers);
-            MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
             Mockito.verifyNoMoreInteractions(docViewXmlValidator);
 
@@ -273,9 +262,8 @@ public class DocumentViewParserValidatorTest {
 
            ValidationExecutorTest.assertViolation(messages,
                     new ValidationViolation(ValidationMessageSeverity.ERROR,
-                            String.format(DocumentViewXmlContentHandler.PARSE_VIOLATION_MESSAGE_STRING, "somepath",
-                                    "unknown type: Invalid"), Paths.get("apps/invalid/wrongtype.xml"), Paths.get(""), "/apps/invalid/wrongtype/somepath", 24, 6,
-                            new IllegalArgumentException("unknown type: Invalid")));
+                    		"Could not parse FileVault Document View XML: unknown type: Invalid", Paths.get("apps/invalid/wrongtype.xml"), Paths.get(""), "/apps/invalid/wrongtype/somepath", 24, 6,
+                            new XmlParseException(new IllegalArgumentException("unknown type: Invalid"), "/apps/invalid/wrongtype/somepath", 24, 6)));
         }
     }
 

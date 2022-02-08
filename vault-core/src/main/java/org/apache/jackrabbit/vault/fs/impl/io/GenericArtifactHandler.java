@@ -88,19 +88,7 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
                     }
                 }
             }
-            try {
-                DocViewSAXImporter handler = new DocViewSAXImporter(parent, name, artifacts, wspFilter, options.getIdConflictPolicy());
-                handler.setAclHandling(getAcHandling());
-                handler.setCugHandling(getCugHandling());
-                parseXmlWithSaxHandler(source, handler);
-                info.merge(handler.getInfo());
-            } catch (ParserConfigurationException e) {
-                throw new RepositoryException(e);
-            } catch (SAXException e) {
-                info = new ImportInfoImpl();
-                info.onError(path, e);
-                log.error("Error while parsing {}: {}", source.getSystemId(), e);
-            }
+            info.merge(importDocView(source, parent, name, artifacts, wspFilter, options.getIdConflictPolicy()));
         }
         return info;
     }

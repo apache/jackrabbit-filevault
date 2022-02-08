@@ -23,7 +23,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
-public class AnyValidationMessageMatcher extends TypeSafeMatcher<ValidationMessage> {
+public class AnyValidationViolationMessageMatcher<T extends ValidationMessage> extends TypeSafeMatcher<T> {
 
     @Override
     public void describeTo(Description description) {
@@ -31,14 +31,14 @@ public class AnyValidationMessageMatcher extends TypeSafeMatcher<ValidationMessa
     }
 
     @Override
-    protected boolean matchesSafely(ValidationMessage item) {
+    protected boolean matchesSafely(T item) {
         if (item.getSeverity().ordinal() >= ValidationMessageSeverity.WARN.ordinal()) {
             return true;
         }
         return false;
     }
-    
-    public static Matcher<Iterable<? super ValidationMessage>> noValidationInCollection() {
-        return Matchers.not(Matchers.hasItem(new AnyValidationMessageMatcher()));
+
+    public static Matcher<Iterable<? super ValidationViolation>> noValidationViolationMessageInCollection() {
+        return Matchers.not(Matchers.hasItem(new AnyValidationViolationMessageMatcher<>()));
     }
 }

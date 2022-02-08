@@ -19,6 +19,8 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -27,36 +29,32 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.parsers.SAXParser;
-
 import org.apache.commons.io.input.CloseShieldInputStream;
-import org.apache.jackrabbit.vault.fs.api.SerializationType;
-import org.apache.jackrabbit.vault.fs.impl.io.XmlAnalyzer;
+import org.apache.jackrabbit.vault.fs.io.DocViewParser;
+import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.validation.ValidationExecutor;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
-import org.apache.jackrabbit.vault.validation.impl.util.DocumentViewXmlContentHandler;
 import org.apache.jackrabbit.vault.validation.impl.util.EnhancedBufferedInputStream;
+import org.apache.jackrabbit.vault.validation.impl.util.ValidatorDocViewParserHandler;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.GenericJcrDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 public class DocumentViewParserValidator implements GenericJcrDataValidator {
 
     public static final String EXTENDED_FILE_AGGREGATE_FOLDER_SUFFIX = ".dir";
     private final Map<String, DocumentViewXmlValidator> docViewValidators;
-    private final SAXParser saxParser;
+    private final DocViewParser docViewParser;
     private final @NotNull ValidationMessageSeverity severity;
     
-    public DocumentViewParserValidator(SAXParser saxParser, @NotNull ValidationMessageSeverity severity) {
+    public DocumentViewParserValidator(@NotNull ValidationMessageSeverity severity) {
         super();
         this.docViewValidators = new HashMap<>();
-        this.saxParser = saxParser;
+        this.docViewParser = new DocViewParser();
         this.severity = severity;
     }
 
@@ -86,12 +84,9 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
 
         Path documentViewXmlRootPath = getDocumentViewXmlRootPath(bufferedInput, filePath);
         if (documentViewXmlRootPath != null) {
-            try {
-                messages.addAll(validateDocumentViewXml(bufferedInput, filePath, basePath, ValidationExecutor.filePathToNodePath(documentViewXmlRootPath),
+            messages.addAll(validateDocumentViewXml(bufferedInput, filePath, basePath, ValidationExecutor.filePathToNodePath(documentViewXmlRootPath),
                             nodePathsAndLineNumbers));
-            } catch (SAXException e) {
-                throw new IOException("Could not parse xml", e);
-            }
+            
         } else {
             messages.add(new ValidationMessage(ValidationMessageSeverity.INFO, "This file is not detected as docview xml file and therefore treated as binary"));
             nodePathsAndLineNumbers.put(ValidationExecutor.filePathToNodePath(filePath), 0);
@@ -128,8 +123,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
             // this closes the input source internally, therefore protect against closing
             // make sure to initialize the SLF4J logger appropriately (for the XmlAnalyzer)
             try {
-                SerializationType type = XmlAnalyzer.analyze(new InputSource(new CloseShieldInputStream(input)));
-                if (type == SerializationType.XML_DOCVIEW) {
+                if (DocViewParser.isDocView(new InputStreamReader(input, StandardCharsets.UTF_8))) {
                     //  remove .xml extension
                     String fileName = path.getFileName().toString();
                     fileName = fileName.substring(0, fileName.length() - ".xml".length());
@@ -147,18 +141,15 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
     }
 
     protected Collection<ValidationMessage> validateDocumentViewXml(InputStream input, @NotNull Path filePath, @NotNull Path basePath, String rootNodePath,
-            Map<String, Integer> nodePathsAndLineNumbers) throws IOException, SAXException {
+            Map<String, Integer> nodePathsAndLineNumbers) throws IOException {
         List<ValidationMessage> enrichedMessages = new LinkedList<>();
-        XMLReader xr = saxParser.getXMLReader();
-        final DocumentViewXmlContentHandler handler = new DocumentViewXmlContentHandler(filePath, basePath, rootNodePath,
-                docViewValidators);
         enrichedMessages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, "Detected DocView..."));
-        xr.setContentHandler(handler);
+        ValidatorDocViewParserHandler handler = new ValidatorDocViewParserHandler(docViewValidators, filePath, basePath);
         try {
-            xr.parse(new InputSource(new CloseShieldInputStream(input)));
+            docViewParser.parse(rootNodePath, new InputSource(new CloseShieldInputStream(input)), handler, null);
             enrichedMessages.addAll(ValidationViolation.wrapMessages(null, handler.getViolations(), filePath, basePath, rootNodePath, 0, 0));
-        } catch (SAXException e) {
-            enrichedMessages.add(new ValidationViolation(severity, "Invalid XML found: " + e.getMessage(), filePath, basePath, rootNodePath, 0, 0, e));
+        } catch (XmlParseException e) {
+            enrichedMessages.add(new ValidationViolation(severity, "Could not parse FileVault Document View XML: " + e.getMessage(), filePath, basePath, e.getNodePath(), e.getLineNumber(), e.getColumnNumber(), e));
         }
         nodePathsAndLineNumbers.putAll(handler.getNodePaths());
         return enrichedMessages;

@@ -32,7 +32,7 @@ import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.FilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
@@ -50,7 +50,8 @@ import org.jetbrains.annotations.Nullable;
  * @see <a href="https://issues.apache.org/jira/browse/JCRVLT-170">JCRVLT-170</a> */
 public final class PackageTypeValidator implements NodePathValidator, DocumentViewXmlValidator, FilterValidator, PropertiesValidator, MetaInfPathValidator {
 
-    protected static final String MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES = "Package of type '%s' is not supposed to contain includes/excludes below any of its filters!";
+    private static final String NODETYPE_SLING_OSGI_CONFIG = "sling:OsgiConfig";
+	protected static final String MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES = "Package of type '%s' is not supposed to contain includes/excludes below any of its filters!";
     protected static final String MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE = "Package of type '%s' must only contain sub packages of type '%s' but found subpackage of type '%s'!";
     protected static final String MESSAGE_UNSUPPORTED_SUB_PACKAGE = "Package of type '%s' is not supposed to contain any subpackages!";
     protected static final String MESSAGE_DEPENDENCY = "Package of type '%s' must not have package dependencies but found dependencies '%s'!";
@@ -63,7 +64,7 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
     protected static final String MESSAGE_NO_APP_CONTENT_FOUND = "Package of type '%s' is not supposed to contain content outside root nodes %s!";
     protected static final String MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE = "All mutable package types are prohibited and this package is of mutable type '%s'";
     protected static final String MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE = "All immutable package types are prohibited and this package is of immutable type '%s'";
-    protected static final String SLING_OSGI_CONFIG = "sling:OsgiConfig";
+    protected static final String SLING_OSGI_CONFIG = NODETYPE_SLING_OSGI_CONFIG;
     protected static final Path PATH_HOOKS = Paths.get(Constants.VAULT_DIR, Constants.HOOKS_DIR);
     private final @NotNull PackageType type;
     private final @NotNull ValidationMessageSeverity severity;
@@ -262,19 +263,19 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
 
     
     @Override
-    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext,
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext,
             boolean isRoot) {
         Collection<ValidationMessage> messages = new LinkedList<>();
         switch (type) {
         case CONTENT:
         case APPLICATION:
             // is it sling:OsgiConfig node?
-            if ("sling:OsgiConfig".equals(node.primary) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
+            if (node.getPrimaryType().isPresent() && NODETYPE_SLING_OSGI_CONFIG.equals(node.getPrimaryType().get()) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
             }
             break;
         case CONTAINER:
-            if ("sling:OsgiConfig".equals(node.primary) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
+            if (node.getPrimaryType().isPresent() && NODETYPE_SLING_OSGI_CONFIG.equals(node.getPrimaryType().get()) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
                 validContainerNodePaths.add(nodeContext.getNodePath());
             }
             break;

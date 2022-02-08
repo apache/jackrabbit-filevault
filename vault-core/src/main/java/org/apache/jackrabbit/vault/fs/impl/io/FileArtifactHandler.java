@@ -227,15 +227,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                         mode = wspFilter.getImportMode(path);
                     }
                     if (mode != ImportMode.MERGE) {
-                        try {
-                            DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter, options.getIdConflictPolicy());
-                            handler.setAclHandling(getAcHandling());
-                            handler.setCugHandling(getCugHandling());
-                            parseXmlWithSaxHandler(file.getInputSource(), handler);
-                            info.merge(handler.getInfo());
-                        } catch (ParserConfigurationException|SAXException e) {
-                            throw new RepositoryException(e);
-                        }
+                        info.merge(importDocView(file.getInputSource(), newParent, newName, newSet, wspFilter, options.getIdConflictPolicy()));
                     } else {
                         info.onNop(path);
                     }
@@ -322,15 +314,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
         if (idx > 0) {
             rootName = rootName.substring(0, idx);
         }
-        DocViewSAXImporter handler = new DocViewSAXImporter(parent, rootName, artifacts, wspFilter, options.getIdConflictPolicy());
-        handler.setAclHandling(getAcHandling());
-        handler.setCugHandling(getCugHandling());
-        try {
-            parseXmlWithSaxHandler(source, handler);
-            return handler.getInfo();
-        } catch (ParserConfigurationException|SAXException e) {
-            throw new RepositoryException(e);
-        } 
+        return importDocView(source, parent, rootName, artifacts, wspFilter, options.getIdConflictPolicy());
     }
 
     private boolean importNtResource(ImportInfo info, Node content, Artifact artifact)

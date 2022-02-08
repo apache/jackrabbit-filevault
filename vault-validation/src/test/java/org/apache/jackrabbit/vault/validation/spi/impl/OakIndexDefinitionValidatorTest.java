@@ -20,18 +20,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.jcr.PropertyType;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.jackrabbit.spi.NameFactory;
+import org.apache.jackrabbit.spi.commons.name.NameConstants;
+import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.jackrabbit.vault.util.DocViewNode;
-import org.apache.jackrabbit.vault.util.DocViewProperty;
-import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
+import org.apache.jackrabbit.vault.validation.AnyValidationViolationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -69,10 +71,10 @@ public class OakIndexDefinitionValidatorTest {
 
     @Test
     public void test_index_at_root() throws Exception {
-        Map<String, DocViewProperty> props = new HashMap<>();
-        props.put("includedPaths", new DocViewProperty("includedPaths", new String[] { "/home]" }, true, PropertyType.STRING));
-        DocViewNode node = new DocViewNode("testindex", "testindex", null, props, null, "oak:QueryIndexDefinition");
-
+        NameFactory nameFactory = NameFactoryImpl.getInstance();
+        DocViewNode2 node = new DocViewNode2(nameFactory.create("{}testindex"), Arrays.asList(
+         		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "oak:QueryIndexDefinition"),
+         		new DocViewProperty2(nameFactory.create("{}includedPaths"), Arrays.asList("/home]"), PropertyType.STRING)));
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/oak:index/testindex",
                 Paths.get("_oak_index", "testindex", ".content.xml"), Paths.get("")), true);
         ValidationExecutorTest.assertViolation(messages,
@@ -82,9 +84,10 @@ public class OakIndexDefinitionValidatorTest {
 
     @Test
     public void test_index_at_deep_path() throws Exception {
-        Map<String, DocViewProperty> props = new HashMap<>();
-        props.put("includedPaths", new DocViewProperty("includedPaths", new String[] { "/home]" }, true, PropertyType.STRING));
-        DocViewNode node = new DocViewNode("indexDef", "indexDef", null, props, null, "oak:QueryIndexDefinition");
+    	NameFactory nameFactory = NameFactoryImpl.getInstance();
+        DocViewNode2 node = new DocViewNode2(nameFactory.create("{}testindex"), Arrays.asList(
+         		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "oak:QueryIndexDefinition"),
+         		new DocViewProperty2(nameFactory.create("{}includedPaths"), Arrays.asList("/home]"), PropertyType.STRING)));
 
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/project/oak:index/indexDef",
                 Paths.get("apps", "project", "_oak_index", "content.xml"), Paths.get("")), false);
@@ -99,18 +102,22 @@ public class OakIndexDefinitionValidatorTest {
         try (InputStream input = this.getClass().getResourceAsStream("/oak-index/filter-with-acl.xml")) {
             DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
             filter.load(input);
-            MatcherAssert.assertThat(validator.validate(filter), AnyValidationMessageMatcher.noValidationInCollection());
+            MatcherAssert.assertThat(validator.validate(filter), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         }
-        Map<String, DocViewProperty> props = new HashMap<>();
-        props.put("rep:policy", new DocViewProperty("rep:policy", new String[] { "/home]" }, true, PropertyType.STRING));
-        DocViewNode node = new DocViewNode("rep:policy", "rep:policy", null, props, null, "rep:ACL");
-
+        NameFactory nameFactory = NameFactoryImpl.getInstance();
+        DocViewNode2 node = new DocViewNode2(nameFactory.create("{}testindex"), Arrays.asList(
+         		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "rep:ACL"),
+         		new DocViewProperty2(NameConstants.REP_POLICY, Arrays.asList("/home]"), PropertyType.STRING)));
+        
         Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/oak:index/rep:policy",
                 Paths.get("_oak_index", "_rep_policy.xml"), Paths.get("")), true);
-        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
-        node = new DocViewNode("allow", "allow", null, props, null, "rep:GrantACE");
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+        
+        node = new DocViewNode2(nameFactory.create("{}allow"), Arrays.asList(
+         		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "rep:GrantACE"),
+         		new DocViewProperty2(NameConstants.REP_POLICY, Arrays.asList("/home]"), PropertyType.STRING)));
         messages = validator.validate(node, new NodeContextImpl("/oak:index/rep:policy/allow",
                 Paths.get("_oak_index", "_rep_policy.xml"), Paths.get("")), false);
-        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
 }

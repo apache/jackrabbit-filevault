@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.validation.spi.util.NameUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,7 +50,7 @@ public interface DocumentViewXmlValidator extends Validator {
      * @param filePath the relative file path of the docview file containing this node
      * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
      * @return validation messages or {@code null}
-     * @deprecated Use {@link #validate(DocViewNode, NodeContext, boolean)} instead
+     * @deprecated Use {@link #validate(DocViewNode2, NodeContext, boolean)} instead
      */
     @Deprecated
     default @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
@@ -68,12 +69,27 @@ public interface DocumentViewXmlValidator extends Validator {
      * @param nodeContext the information about the node context (like path)
      * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
      * @return validation messages or {@code null}
+     * @deprecated Use {@link #validate(DocViewNode2, NodeContext, boolean)} instead
      */
+    @Deprecated
     default @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
         return validate(node, nodeContext.getNodePath(), nodeContext.getFilePath(), isRoot);
     }
-    
-    
+
+    /**
+     * Called for the beginning of each deserialized new JCR document view node.
+     * Child nodes have not yet been deserialized at this point in time but only the node itself and its direct properties.
+     * 
+     * @param node the node which should be validated
+     * @param nodeContext the information about the node context (like path)
+     * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
+     * @return validation messages or {@code null}
+     * @since 3.6.0
+     */
+    default @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
+        return validate(DocViewNode.fromDocViewNode2(node), nodeContext, isRoot);
+    }
+
     /**
      * Called for the end of each new JCR document view node.
      * Deserialization of the node information was already done when this method is called as well as all child nodes within the same docview file have been processed.
@@ -86,8 +102,23 @@ public interface DocumentViewXmlValidator extends Validator {
      * @param nodeContext the information about the node context (like path)
      * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
      * @return validation messages or {@code null}
+     * @deprecated Use {@link #validateEnd(DocViewNode2, NodeContext, boolean)} instead
      */
+    @Deprecated
     default @Nullable Collection<ValidationMessage> validateEnd(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
         return null;
+    }
+
+    /**
+     * Called for the end of each new deserialized JCR document view node (after all child nodes have been processed).
+     * 
+     * @param node the node which should be validated
+     * @param nodeContext the information about the node context (like path)
+     * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
+     * @return validation messages or {@code null}
+     * @since 3.6.0
+     */
+    default @Nullable Collection<ValidationMessage> validateEnd(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
+        return validateEnd(DocViewNode.fromDocViewNode2(node), nodeContext, isRoot);
     }
 }

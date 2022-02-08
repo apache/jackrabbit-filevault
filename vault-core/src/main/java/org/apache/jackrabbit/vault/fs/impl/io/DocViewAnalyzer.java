@@ -18,62 +18,30 @@
 package org.apache.jackrabbit.vault.fs.impl.io;
 
 import java.io.IOException;
+import java.util.Optional;
 
-import javax.jcr.NamespaceException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
-import org.apache.jackrabbit.spi.commons.name.NameConstants;
-import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
-import org.apache.jackrabbit.util.ISO9075;
-import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.io.DocViewAnalyzerListener;
-import org.apache.jackrabbit.vault.util.RejectingEntityDefaultHandler;
+import org.apache.jackrabbit.vault.fs.io.DocViewParser;
+import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
+import org.apache.jackrabbit.vault.fs.io.DocViewParserHandler;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Implements a docview analyzer that scans the XML for nodes.
  */
-public class DocViewAnalyzer extends RejectingEntityDefaultHandler implements NamespaceResolver {
+public class DocViewAnalyzer implements DocViewParserHandler {
 
     /**
      * the default logger
      */
     static final Logger log = LoggerFactory.getLogger(DocViewAnalyzer.class);
-
-    /**
-     * the importing session
-     */
-    private final Session session;
-
-    /**
-     * the name of the root node
-     */
-    private final String rootPath;
-
-    /**
-     * the current namespace state
-     */
-    private NameSpace nsStack = null;
-
-    /**
-     * current stack
-     */
-    private StackElement stack;
-
-    /**
-     * the default name path resolver
-     */
-    private final DefaultNamePathResolver npResolver = new DefaultNamePathResolver(this);
 
     /**
      * listener that receives node events
@@ -94,17 +62,9 @@ public class DocViewAnalyzer extends RejectingEntityDefaultHandler implements Na
                                InputSource source)
             throws IOException {
         try {
-            DocViewAnalyzer handler = new DocViewAnalyzer(listener, session, rootPath);
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
-            SAXParser parser = factory.newSAXParser();
-            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-            parser.parse(source, handler);
-        } catch (ParserConfigurationException e) {
-            throw new IllegalStateException(e);
-        } catch (SAXException e) {
+        	DocViewParser docViewParser = new DocViewParser();
+        	docViewParser.parse(rootPath, source, new DocViewAnalyzer(listener), session);
+        } catch (XmlParseException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -114,203 +74,24 @@ public class DocViewAnalyzer extends RejectingEntityDefaultHandler implements Na
      * of included created nodes.
      *
      * @param listener listener that receives node events
-     * @param session repository session used for namespace mapping
-     * @param rootPath name of the root node
      */
-    private DocViewAnalyzer(DocViewAnalyzerListener listener, Session session, String rootPath) {
+    private DocViewAnalyzer(DocViewAnalyzerListener listener) {
         this.listener = listener;
-        this.session = session;
-        this.rootPath = rootPath;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void startDocument() throws SAXException {
-        stack = new StackElement(null, Text.getRelativeParent(rootPath,1));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void endDocument() throws SAXException {
-        if (stack.parent != null) {
-            throw new IllegalStateException("stack mismatch");
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void characters(char ch[], int start, int length) throws SAXException {
-        // can be ignored in docview
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * Pushes the mapping to the stack and updates the namespace mapping in the
-     * session.
-     */
-    public void startPrefixMapping(String prefix, String uri) throws SAXException {
-        /*
-        log.debug("-> prefixMapping for {}:{}", prefix, uri);
-        NameSpace ns = new NameSpace(prefix, uri);
-        // push on stack
-        ns.next = nsStack;
-        nsStack = ns;
-        // check if uri is already registered
-        String oldPrefix;
-        try {
-            oldPrefix = session.getNamespacePrefix(uri);
-        } catch (NamespaceException e) {
-            // assume uri never registered
-            try {
-                session.getWorkspace().getNamespaceRegistry().registerNamespace(prefix, uri);
-            } catch (RepositoryException e1) {
-                throw new SAXException(e);
-            }
-            oldPrefix = prefix;
-        } catch (RepositoryException e) {
-            throw new SAXException(e);
-        }
-        // update mapping
-        if (!oldPrefix.equals(prefix)) {
-            try {
-                session.setNamespacePrefix(prefix, uri);
-            } catch (RepositoryException e) {
-                throw new SAXException(e);
-            }
-        }
-        */
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * Pops the mapping from the stack and updates the namespace mapping in the
-     * session if necessary.
-     */
-    public void endPrefixMapping(String prefix) throws SAXException {
-        /*
-        log.debug("<- prefixMapping for {}", prefix);
-        NameSpace ns = nsStack;
-        NameSpace prev = null;
-        while (ns != null && !ns.prefix.equals(prefix)) {
-            prev = ns;
-            ns = ns.next;
-        }
-        if (ns == null) {
-            throw new SAXException("Illegal state: prefix " + prefix + " never mapped.");
-        }
-        // remove from stack
-        if (prev == null) {
-            nsStack = ns.next;
+    @Override
+    public void startDocViewNode(@NotNull String nodePath, @NotNull DocViewNode2 docViewNode,@NotNull Optional<DocViewNode2> parentDocViewNode, int line, int column)
+        throws IOException, RepositoryException {
+        if (docViewNode.getProperties().isEmpty()) {
+            listener.onNode(nodePath, true, "");
         } else {
-            prev.next = ns.next;
-        }
-        // find old prefix
-        ns = ns.next;
-        while (ns != null && !ns.prefix.equals(prefix)) {
-            ns = ns.next;
-        }
-        // update mapping
-        if (ns != null) {
-            try {
-                session.setNamespacePrefix(prefix, ns.uri);
-            } catch (RepositoryException e) {
-                throw new SAXException(e);
-            }
-            log.debug("   remapped: {}:{}", prefix, ns.uri);
-        }
-        */
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        // special handling for root node
-        if (stack.parent == null) {
-            if (localName.equals(NameConstants.JCR_ROOT.getLocalName())
-                    && uri.equals(NameConstants.JCR_ROOT.getNamespaceURI())) {
-                qName = Text.getName(rootPath);
-            }
-        }
-        String label = ISO9075.decode(qName);
-        String name = label;
-        int idx = name.lastIndexOf('[');
-        if (idx > 0) {
-            name = name.substring(0, idx);
-        }
-        stack = stack.push(name);
-        if (attributes.getLength() == 0) {
-            listener.onNode(stack.getPath(), true, "");
-        } else {
-            // currently ignore namespace mappings in node type values
-            // todo: fix
-            String pt = attributes.getValue(NameConstants.JCR_PRIMARYTYPE.getNamespaceURI(), NameConstants.JCR_PRIMARYTYPE.getLocalName());
-            listener.onNode(stack.getPath(), false, pt == null ? "" : pt);
+            listener.onNode(nodePath, false, docViewNode.getPrimaryType().orElse(""));
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-        stack = stack.pop();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public String getURI(String prefix) throws NamespaceException {
-        try {
-            return session.getNamespaceURI(prefix);
-        } catch (RepositoryException e) {
-            throw new NamespaceException(e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public String getPrefix(String uri) throws NamespaceException {
-        try {
-            return session.getNamespacePrefix(uri);
-        } catch (RepositoryException e) {
-            throw new NamespaceException(e);
-        }
-    }
-
-    private static class StackElement  {
-
-        private final String path;
-
-        final StackElement parent;
-
-        public StackElement(StackElement parent, String name) {
-            if (parent == null) {
-                this.parent = null;
-                this.path = name;
-            } else {
-                this.path = parent.path + "/" + name;
-                this.parent = parent;
-            }
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public StackElement push(String name) {
-            return new StackElement(this, name);
-        }
-
-        public StackElement pop() {
-            return parent;
-        }
-
+    @Override
+    public void endDocViewNode(@NotNull String nodePath, @NotNull DocViewNode2 docViewNode, @NotNull Optional<DocViewNode2> parentDocViewNode, int line, int column)
+            throws IOException, RepositoryException {
     }
 
 }

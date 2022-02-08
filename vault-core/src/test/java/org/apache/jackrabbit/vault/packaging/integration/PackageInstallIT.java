@@ -78,7 +78,7 @@ public class PackageInstallIT extends IntegrationTestBase {
         assertNotNull(pack);
         assertPackageNodeExists(TMP_PACKAGE_ID);
 
-        // upload already unrwapps it, so check if definition is ok
+        // upload already unwraps it, so check if definition is ok
         assertNodeExists(getInstallationPath(TMP_PACKAGE_ID) + "/jcr:content/vlt:definition");
 
         // todo: check definition props

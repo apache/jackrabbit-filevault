@@ -31,8 +31,6 @@ import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.kohsuke.MetaInfServices;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @MetaInfServices
 public final class PackageTypeValidatorFactory implements ValidatorFactory {
@@ -75,11 +73,6 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_NO_TYPE = ValidationMessageSeverity.WARN;
 
     static final Set<String> DEFAULT_IMMUTABLE_ROOT_NODE_NAMES = new TreeSet<>(Arrays.asList("apps", "libs"));
-    
-    /**
-     * the default logger
-     */
-    private static final Logger log = LoggerFactory.getLogger(PackageTypeValidatorFactory.class);
 
     @Override
     public @Nullable Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {

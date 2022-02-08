@@ -40,12 +40,13 @@ import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
 import org.apache.jackrabbit.util.ISO9075;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
-import org.apache.jackrabbit.vault.util.DocViewProperty;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.util.ItemNameComparator2;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.apache.jackrabbit.util.Text;
+import org.xml.sax.SAXException;
 
 /**
  * The docview sax formatter generates SAX events to a given ContentHandler based on the aggregate tree.
@@ -259,9 +260,9 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
                 String attributeNamespaceUri = qAttributeName.getNamespaceURI();
                 if (attributeNamespaceUri.length()>0) {
                     writer.writeAttribute(nsResolver.getPrefix(attributeNamespaceUri), attributeNamespaceUri, qAttributeName.getLocalName(), 
-                            DocViewProperty.format(prop, sort, useBinaryReferences));
+                            DocViewProperty2.format(prop, sort, useBinaryReferences));
                 } else {
-                    writer.writeAttribute(qAttributeName.getLocalName(), DocViewProperty.format(prop, sort, useBinaryReferences));
+                    writer.writeAttribute(qAttributeName.getLocalName(), DocViewProperty2.format(prop, sort, useBinaryReferences));
                 }
                
             }

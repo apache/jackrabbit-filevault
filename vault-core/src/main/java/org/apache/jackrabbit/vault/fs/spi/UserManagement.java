@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.fs.spi;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 
 /**
  * {@code UserManagement}...
@@ -52,8 +53,23 @@ public interface UserManagement {
      * @return The id of the authorizable to be imported.
      *
      * @since 3.1.10
+     * @deprecated Use {@link #getAuthorizableId(DocViewNode2)} instead
      */
+    @Deprecated
     String getAuthorizableId(DocViewNode node);
+
+    /**
+     * Returns the id of the authorizable from the specified authorizable node
+     * to be imported.
+     *
+     * @param node the authorizable import node
+     * @return The id of the authorizable to be imported.
+     *
+     * @since 3.6.0
+     */
+    default String getAuthorizableId(DocViewNode2 node) {
+    	throw new UnsupportedOperationException();
+    }
 
     /**
      * Adds the given memberships to the specified group.

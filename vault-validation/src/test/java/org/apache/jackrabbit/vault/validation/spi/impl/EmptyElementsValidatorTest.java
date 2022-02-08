@@ -19,17 +19,15 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.jcr.PropertyType;
-
+import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.jackrabbit.vault.util.DocViewNode;
-import org.apache.jackrabbit.vault.util.DocViewProperty;
-import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
+import org.apache.jackrabbit.vault.validation.AnyValidationViolationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -54,35 +52,30 @@ public class EmptyElementsValidatorTest {
 
     @Test
     public void testWithEmptyElements() {
-        Map<String, DocViewProperty> props = new HashMap<>();
-        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
-
         // order node only (no other property)
-        DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, null);
-        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node1", Paths.get("node1"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
+        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, Collections.emptySet());
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node1", Paths.get("node1"), Paths.get("")), false), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
         // another order node (to be covered by another file)
-        node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, null);
-        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node2", Paths.get("node2"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node2", Paths.get("node2"), Paths.get("")), false), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
-        // another order node only
-        node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, null);
-        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node3", Paths.get("node3"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
+        // another order node 
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node3", Paths.get("node3"), Paths.get("")), false), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
-        // no order node (due to props)
-        node = new DocViewNode("jcr:root", "jcr:root", null, props, null, null);
-        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node4", Paths.get("node4"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
+        // no order node (due to jcr:title property)
+        node = new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node4", Paths.get("node4"), Paths.get("")), false), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
         // no order node (due to primary type)
-        node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "nt:unstructed");
-        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node5", Paths.get("node5"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
+        node = new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured")));
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node5", Paths.get("node5"), Paths.get("")), false), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
         // overwritten node 2 (plain file/folder)
         Assert.assertNull(validator.validate(new NodeContextImpl("/apps/test/node2", Paths.get("apps", "test", "node.xml"), Paths.get("base"))));
         
         // empty node with name rep:policy (doesn't do any harm and is included in standard packages from exporter as well)
-        node = new DocViewNode("rep:policy", "rep:polucy", null, Collections.emptyMap(), null, null);
-        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node6", Paths.get("node6"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
+        node = new DocViewNode2(NameConstants.REP_POLICY, Collections.emptySet());
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node6", Paths.get("node6"), Paths.get("")), false), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
         ValidationExecutorTest.assertViolation(validator.done(), 
                 new ValidationMessage(ValidationMessageSeverity.ERROR, EmptyElementsValidator.MESSAGE_EMPTY_NODES, "/apps/test/node1", Paths.get("node1"), Paths.get(""), null),
@@ -90,31 +83,25 @@ public class EmptyElementsValidatorTest {
     }
 
     @Test
-    public void testNoEmptyElements() {
-        Map<String, DocViewProperty> props = new HashMap<>();
-        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
-
+    public void testOnlyNonEmptyElements() {
         // primary node type set as well
-        DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, "nt:unstructured");
-        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("somepath1", Paths.get("/some/path"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
+        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, Collections.singleton(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured")));
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("somepath1", Paths.get("/some/path"), Paths.get("")), false), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
         // primary node type set with additional properties
-        node = new DocViewNode("jcr:root", "jcr:root", null, props, null, "nt:unstructured");
-        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("somepath2", Paths.get("/some/path"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
-        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());
+        node = new DocViewNode2(NameConstants.JCR_ROOT, Arrays.asList(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"), new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("somepath2", Paths.get("/some/path"), Paths.get("")), false), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
 
     @Test
     public void testWithEmptyElementsAndFolders() {
-        Map<String, DocViewProperty> props = new HashMap<>();
-        props.put("prop1", new DocViewProperty("prop1", new String[] { "value1" } , false, PropertyType.STRING));
-
         // order node only (no other property)
-        DocViewNode node = new DocViewNode("jcr:root", "jcr:root", null, Collections.emptyMap(), null, null);
-        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node1", Paths.get("node1"), Paths.get("")), false), AnyValidationMessageMatcher.noValidationInCollection());
+        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, Collections.emptySet());
+        MatcherAssert.assertThat(validator.validate(node, new NodeContextImpl("/apps/test/node1", Paths.get("node1"), Paths.get("")), false), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
         // folder below 
-        MatcherAssert.assertThat(validator.validate(new NodeContextImpl("/apps/test/node1", Paths.get("test"), Paths.get("base"))), AnyValidationMessageMatcher.noValidationInCollection());
-        MatcherAssert.assertThat(validator.done(), AnyValidationMessageMatcher.noValidationInCollection());;
+        MatcherAssert.assertThat(validator.validate(new NodeContextImpl("/apps/test/node1", Paths.get("test"), Paths.get("base"))), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+        MatcherAssert.assertThat(validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());;
     }
 }

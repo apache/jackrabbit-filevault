@@ -27,7 +27,7 @@ import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.Access
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
-import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.FilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
@@ -36,7 +36,7 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/** Validates that packages not having the property {@code allowIndexDefinitions=true} must not contain index definitions.
+/** Validates that packages not having the property {@code allowIndexDefinitions=true} must not contain index definitions and vice-versa.
  *  NPR-14102 - Automated check for index definition 
  */
 public final class OakIndexDefinitionValidator implements FilterValidator, DocumentViewXmlValidator {
@@ -75,9 +75,9 @@ public final class OakIndexDefinitionValidator implements FilterValidator, Docum
     }
 
     @Override
-    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
         ValidationMessage violation = null;
-        if (IndexConstants.INDEX_DEFINITIONS_NODE_TYPE.equals(node.primary)) {
+        if (node.getPrimaryType().isPresent() && IndexConstants.INDEX_DEFINITIONS_NODE_TYPE.equals(node.getPrimaryType().get())) {
             violation = new ValidationMessage(defaultMessageSeverity, String.format(MESSAGE_INDEX_AT_NODE, packageRootPathOfNotAllowedIndexDefinition));
         }
         return violation != null ? Collections.singleton(violation) : null;

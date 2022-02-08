@@ -68,7 +68,6 @@ import org.apache.jackrabbit.vault.fs.impl.io.FolderArtifactHandler;
 import org.apache.jackrabbit.vault.fs.impl.io.GenericArtifactHandler;
 import org.apache.jackrabbit.vault.fs.impl.io.ImportInfoImpl;
 import org.apache.jackrabbit.vault.fs.impl.io.InputSourceArtifact;
-import org.apache.jackrabbit.vault.fs.impl.io.XmlAnalyzer;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.DefaultNodeTypeSet;
@@ -735,10 +734,10 @@ public class Importer {
                 if (".xml".equals(ext)) {
                     // this can either be an generic exported docview or a 'user-xml' that is imported as file
                     // btw: this only works for input sources that can refetch their input stream
-                    serType = XmlAnalyzer.analyze(is);
-                    if (serType == SerializationType.XML_DOCVIEW) {
+                    if (DocViewParser.isDocView(is)) {
                         // in this case, the extension was added by the exporter.
                         repoName = repoBase;
+                        serType = SerializationType.XML_DOCVIEW;
                     } else {
                         ext = "";
                         serType = SerializationType.GENERIC;

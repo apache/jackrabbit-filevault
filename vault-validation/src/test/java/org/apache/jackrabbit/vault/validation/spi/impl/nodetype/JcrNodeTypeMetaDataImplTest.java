@@ -40,7 +40,7 @@ import org.apache.jackrabbit.spi.commons.conversion.MalformedPathException;
 import org.apache.jackrabbit.value.ValueFactoryImpl;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
+import org.apache.jackrabbit.vault.validation.AnyValidationViolationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
@@ -232,7 +232,7 @@ public class JcrNodeTypeMetaDataImplTest {
         Collection<ValidationMessage> messages = root.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, filter);
-        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
@@ -250,7 +250,7 @@ public class JcrNodeTypeMetaDataImplTest {
         // calling a second time will not lead to anything
         messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, filter);
-        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
         // now add mandatory child node
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
@@ -265,13 +265,13 @@ public class JcrNodeTypeMetaDataImplTest {
         messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, 
                 new DefaultWorkspaceFilter());
-        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
         // add arbitrary property to root
         MatcherAssert.assertThat(root.addProperty(createSimpleNodeContext("/"), ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(),ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR,  "property", false,
-                ValueFactoryImpl.getInstance().createValue("foo")), AnyValidationMessageMatcher.noValidationInCollection());
+                ValueFactoryImpl.getInstance().createValue("foo")), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
         NodeContext nodeContext = createSimpleNodeContext("nodeForMandatoryProperties");
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
@@ -324,7 +324,7 @@ public class JcrNodeTypeMetaDataImplTest {
         filter.add(new PathFilterSet("/"));
         Collection<ValidationMessage> messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(),  ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, filter);
-        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
         // mandatory property missing but not reported due to incremental validation
         NodeContext nodeContext = createSimpleNodeContext("nodeForMandatoryProperties");
@@ -333,7 +333,7 @@ public class JcrNodeTypeMetaDataImplTest {
                 ntManagerProvider.getItemDefinitionProvider(), nodeContext, "my:nodeType2");
         messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, filter);
-        MatcherAssert.assertThat(messages, AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
     
     @Test(expected = IllegalNameException.class)
@@ -358,7 +358,7 @@ public class JcrNodeTypeMetaDataImplTest {
         MatcherAssert.assertThat(root.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, "property", false,
-                ValueFactoryImpl.getInstance().createValue("foo")), AnyValidationMessageMatcher.noValidationInCollection());
+                ValueFactoryImpl.getInstance().createValue("foo")), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
         JcrNodeTypeMetaData node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
@@ -379,7 +379,7 @@ public class JcrNodeTypeMetaDataImplTest {
         MatcherAssert.assertThat(node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, "jcr:primaryType", false,
-                ValueFactoryImpl.getInstance().createValue("foo")), AnyValidationMessageMatcher.noValidationInCollection());
+                ValueFactoryImpl.getInstance().createValue("foo")), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
         // protected
         ValidationExecutorTest.assertViolation(node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
@@ -402,13 +402,13 @@ public class JcrNodeTypeMetaDataImplTest {
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, 
                 "my:constrainedStringProperty", false, ValueFactoryImpl.getInstance().createValue("prefix1foo")),
-                AnyValidationMessageMatcher.noValidationInCollection());
+                AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
         MatcherAssert.assertThat(node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),
                 ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, 
                 "my:constrainedStringProperty", false, ValueFactoryImpl.getInstance().createValue("foosuffix1")),
-                AnyValidationMessageMatcher.noValidationInCollection());
+                AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
         ValidationExecutorTest.assertViolation( node.addProperty(nodeContext, ntManagerProvider.getNamePathResolver(), ntManagerProvider.getEffectiveNodeTypeProvider(),
                 ntManagerProvider.getNodeTypeDefinitionProvider(), ntManagerProvider.getItemDefinitionProvider(),

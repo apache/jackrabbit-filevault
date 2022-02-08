@@ -39,18 +39,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
-import org.apache.jackrabbit.spi.commons.conversion.MalformedPathException;
 import org.apache.jackrabbit.spi.commons.conversion.NameParser;
 import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.value.BinaryValue;
 import org.apache.jackrabbit.value.DateValue;
 import org.apache.jackrabbit.value.StringValue;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
-import org.apache.jackrabbit.vault.util.DocViewNode;
-import org.apache.jackrabbit.vault.util.DocViewProperty;
-import org.apache.jackrabbit.util.Text;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.validation.ValidationExecutor;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.JcrPathValidator;
@@ -84,7 +83,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
     public NodeTypeValidator(boolean isIncremental, @NotNull WorkspaceFilter filter, @NotNull NodeTypeManagerProvider ntManagerProvider,
             @NotNull Name defaultPrimaryNodeType, @NotNull ValidationMessageSeverity defaultSeverity,
             @NotNull ValidationMessageSeverity severityForUnknownNodeTypes, @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations)
-            throws IllegalNameException, ConstraintViolationException, NoSuchNodeTypeException {
+            throws ConstraintViolationException, NoSuchNodeTypeException {
         this.filter = filter;
         this.ntManagerProvider = ntManagerProvider;
         this.defaultType = defaultPrimaryNodeType;
@@ -97,24 +96,24 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
         this.currentNodeTypeMetaData = JcrNodeTypeMetaDataImpl.createRoot(isIncremental, ntManagerProvider.getEffectiveNodeTypeProvider());
     }
 
-    static String getDocViewNodeLabel(DocViewNode node) {
-        StringBuilder sb = new StringBuilder(node.name);
-        sb.append(" [").append(node.primary);
-        if (node.mixins != null && node.mixins.length > 0) {
-            sb.append(" (").append(StringUtils.join(node.mixins, ", ")).append(")");
+    static String getDocViewNodeLabel(DocViewNode2 node) {
+        StringBuilder sb = new StringBuilder(node.getName().toString());
+        sb.append(" [").append(node.getPrimaryType().orElse("-"));
+        if (!node.getMixinTypes().isEmpty()) {
+            sb.append(" (").append(StringUtils.join(node.getMixinTypes(), ", ")).append(")");
         }
         sb.append("]");
         return sb.toString();
     }
 
     @Override
-    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext,
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext,
             boolean isRoot) {
 
-        if (node.primary == null) {
+        if (!node.getPrimaryType().isPresent()) {
             // only an issue if contained in the filter
             // if other properties are set this node is not only used for ordering purposes
-            if (filter.contains(nodeContext.getNodePath()) && !node.props.isEmpty()) {
+            if (filter.contains(nodeContext.getNodePath()) && !node.getProperties().isEmpty()) {
                 return Collections.singleton(
                         new ValidationMessage(defaultSeverity, String.format(MESSAGE_MISSING_PRIMARY_TYPE, nodeContext.getNodePath())));
             } else {
@@ -123,14 +122,14 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
             }
         }
         Collection<ValidationMessage> messages = new LinkedList<>();
-        messages.addAll(getOrCreateNewNode(nodeContext, false, isImplicit(nodeContext.getNodePath()), false, node.primary, node.mixins));
+        messages.addAll(getOrCreateNewNode(nodeContext, false, isImplicit(nodeContext.getNodePath()), false, node.getPrimaryType().get(), node.getMixinTypes().toArray(new String[0])));
 
-        for (DocViewProperty property : node.props.values()) {
+        for (DocViewProperty2 property : node.getProperties()) {
             try {
-                messages.addAll(addProperty(nodeContext, property.name, property.isMulti, docViewPropertyValueFactory.getValues(property)));
+                messages.addAll(addProperty(nodeContext, property.getName().toString(), property.isMultiValue(), docViewPropertyValueFactory.getValues(property)));
             } catch (ValueFormatException e) {
                 messages.add(new ValidationMessage(defaultSeverity,
-                        String.format(MESSAGE_INVALID_PROPERTY_VALUE, property.name, e.getLocalizedMessage())));
+                        String.format(MESSAGE_INVALID_PROPERTY_VALUE, property.getName(), e.getLocalizedMessage())));
             }
         }
 

@@ -31,7 +31,7 @@ import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.impl.DefaultPackageInfo;
-import org.apache.jackrabbit.vault.validation.AnyValidationMessageMatcher;
+import org.apache.jackrabbit.vault.validation.AnyValidationViolationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.hamcrest.MatcherAssert;
@@ -67,7 +67,7 @@ public class DependencyValidatorTest {
         resolvedPackageInfos.add(getPackageInfo("group1:package1:0.1", "/filter.xml", null));
         resolvedPackageInfos.add(getPackageInfo("group2:package2:2.9", "/simple-package/META-INF/vault/filter.xml", null));
         
-        MatcherAssert.assertThat(validator.validate(properties), AnyValidationMessageMatcher.noValidationInCollection());
+        MatcherAssert.assertThat(validator.validate(properties), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
 
     @Test

@@ -39,9 +39,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * {@code FilteredPropertyExportIT} cover testing the filtering of properties
+ * Covers testing the filtering of properties both during export and import
  */
-public class FilteredPropertyExportIT extends IntegrationTestBase {
+public class FilteredPropertiesIT extends IntegrationTestBase {
 
     @Before
     public void setUp() throws Exception {
@@ -446,6 +446,13 @@ public class FilteredPropertyExportIT extends IntegrationTestBase {
         } finally {
             pkgFile.delete();
         }
+    }
+
+    @Test
+    public void importWithDifferentFilterThanUsedForExport() {
+        // the package itself contains more properties than are supposed to be installed during import
+        
+        
     }
 
     /**

@@ -22,10 +22,12 @@ import java.util.Map;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.QNodeTypeDefinition;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Defines a generic set of node types.
  */
+@ProviderType
 public interface NodeTypeSet {
 
     Map<Name, QNodeTypeDefinition> getNodeTypes();

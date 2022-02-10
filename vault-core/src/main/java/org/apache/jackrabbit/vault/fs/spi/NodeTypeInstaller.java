@@ -23,9 +23,12 @@ import java.util.Collection;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * {@code NodeTypeInstaller}...
  */
+@ProviderType
 public interface NodeTypeInstaller {
 
     Collection<NodeType> install(ProgressTracker tracker, NodeTypeSet types)

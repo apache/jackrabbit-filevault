@@ -22,10 +22,13 @@ import java.util.Set;
 
 import javax.jcr.Session;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Defines a general provider for the JCR version specific services such as node
  * type management and access control handling.
  */
+@ProviderType
 public interface ServiceProvider {
 
     /**

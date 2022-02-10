@@ -18,11 +18,13 @@
 package org.apache.jackrabbit.vault.fs.spi;
 
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * {@code ProgressTracker}...
  *
  */
+@ProviderType
 public class ProgressTracker {
 
     protected ProgressTrackerListener listener;

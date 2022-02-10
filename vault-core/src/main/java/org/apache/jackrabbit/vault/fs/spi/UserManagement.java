@@ -21,10 +21,12 @@ import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * {@code UserManagement}...
  */
+@ProviderType
 public interface UserManagement {
 
     /**

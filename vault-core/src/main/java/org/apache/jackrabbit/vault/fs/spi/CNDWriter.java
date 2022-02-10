@@ -23,10 +23,12 @@ import java.util.Collection;
 import javax.jcr.nodetype.NodeType;
 
 import org.apache.jackrabbit.spi.QNodeTypeDefinition;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Generic interface for a CND writer.
  */
+@ProviderType
 public interface CNDWriter {
 
     void write(QNodeTypeDefinition nt) throws IOException;

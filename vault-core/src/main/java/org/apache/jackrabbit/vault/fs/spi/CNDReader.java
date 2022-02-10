@@ -21,10 +21,12 @@ import java.io.IOException;
 import java.io.Reader;
 
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * {@code CNDReader}...
  */
+@ProviderType
 public interface CNDReader extends NodeTypeSet {
 
     void read(Reader reader, String systemId, NamespaceMapping namespaceMapping)

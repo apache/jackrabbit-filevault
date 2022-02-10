@@ -20,9 +20,12 @@ package org.apache.jackrabbit.vault.fs.spi;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * {@code AccessControlManagement}...
  */
+@ProviderType
 public interface ACLManagement {
 
     /**

@@ -23,9 +23,12 @@ import java.util.Collection;
 import javax.jcr.RepositoryException;
 import javax.jcr.security.Privilege;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * {@code NodeTypeInstaller}...
  */
+@ProviderType
 public interface PrivilegeInstaller {
 
     Collection<Privilege> install(ProgressTracker tracker, PrivilegeDefinitions defs)

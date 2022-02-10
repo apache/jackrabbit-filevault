@@ -126,7 +126,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         }
 
         // get list of created paths
-        List<String> paths = new ArrayList<String>();
+        List<String> paths = new ArrayList<>();
         try {
             if (existingPath != null && parent.getSession().nodeExists(existingPath)) {
                 addPaths(paths, parent.getSession().getNode(existingPath));
@@ -183,7 +183,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
             // add the properties
             for (DocViewProperty2 p: ni.getProperties()) {
-                if (p.getStringValue() != null) {
+                if (p.getStringValue().isPresent()) {
                     attrs = new AttributesImpl();
                     // use qualified name due to https://issues.apache.org/jira/browse/OAK-9586
                     attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", resolver.getJCRName(p.getName()));

@@ -141,11 +141,11 @@ public interface PackageManager {
 
     /**
      * Re-wraps a package using the given meta information and file to
-     * store to. if file is {@code null} a temp file is generated.
+     * store to.
      *
      * @param opts export options
      * @param src source package
-     * @param file the file to write to
+     * @param file the file to write to (may be {@code null}) to create a new temp file
      * @return the newly created vault package
      *
      * @throws IOException if an I/O error occurs.

@@ -90,7 +90,7 @@ public class FileArchive extends AbstractArchive {
      */
     @Override
     public Entry getRoot() throws IOException {
-        return new OsEntry(eRoot.getRoot());
+        return new OsEntry(eRoot.getRoot(), true);
     }
 
     /**
@@ -128,9 +128,15 @@ public class FileArchive extends AbstractArchive {
     private static class OsEntry implements Entry {
 
         private final File file;
+        private final boolean isRoot;
 
         private OsEntry(File file) {
+            this(file, false);
+        }
+
+        private OsEntry(File file, boolean isRoot) {
             this.file = file;
+            this.isRoot = isRoot;
         }
 
         /**
@@ -138,6 +144,9 @@ public class FileArchive extends AbstractArchive {
          */
         @Override
         public String getName() {
+            if (isRoot) {
+                return "";
+            }
             return file.getName();
         }
 

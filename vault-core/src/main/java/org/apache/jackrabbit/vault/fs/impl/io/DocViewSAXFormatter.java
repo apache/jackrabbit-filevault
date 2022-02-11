@@ -99,7 +99,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
     protected final String jcrRoot;
 
     // used to temporarily store properties of a node
-    private final List<Property> props = new ArrayList<Property>();
+    private final List<Property> props = new ArrayList<>();
 
     /**
      * the export context
@@ -112,9 +112,18 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
     private final boolean useBinaryReferences;
 
     /**
-     * internally ignored properties
+     * Names of properties which should never be contained in the doc view serialization.
      */
-    private final Set<String> ignored = new HashSet<String>();
+    private static final Set<String> IGNORED_PROTECTED_PROPERTIES;
+    static {
+        Set<String> props = new HashSet<>();
+        props.add(JcrConstants.JCR_CREATED);
+        props.add(JcrConstants.JCR_CREATED_BY);
+        props.add(JcrConstants.JCR_BASEVERSION);
+        props.add(JcrConstants.JCR_VERSIONHISTORY);
+        props.add(JcrConstants.JCR_PREDECESSORS);
+        IGNORED_PROTECTED_PROPERTIES = Collections.unmodifiableSet(props);
+    }
 
     private ItemNameComparator2 itemNameComparator;
 
@@ -184,14 +193,6 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      */
     @Override
     public void onWalkBegin(Node root) throws RepositoryException {
-        // init ignored protected properties
-        ignored.clear();
-        ignored.add(JcrConstants.JCR_CREATED);
-        ignored.add(JcrConstants.JCR_CREATED_BY);
-        ignored.add(JcrConstants.JCR_BASEVERSION);
-        ignored.add(JcrConstants.JCR_VERSIONHISTORY);
-        ignored.add(JcrConstants.JCR_PREDECESSORS);
-
         try {
             writer.writeStartDocument();
         } catch (XMLStreamException e) {
@@ -230,7 +231,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
         String label = Text.getName(node.getPath());
         final String elemName;
         if (level == 0) {
-            // root node needs a name
+            // root node needs a special name
             elemName = jcrRoot;
         } else {
             // encode node name to make sure it's a valid xml name
@@ -289,7 +290,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      */
     @Override
     public void onProperty(Property prop, int level) throws RepositoryException {
-        if (ignored.contains(prop.getName()) && prop.getDefinition().isProtected()) {
+        if (IGNORED_PROTECTED_PROPERTIES.contains(prop.getName())) {
             return;
         }
 

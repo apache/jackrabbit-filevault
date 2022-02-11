@@ -266,7 +266,11 @@ public class ZipNioArchive extends AbstractArchive {
         @Override
         @NotNull
         public String getName() {
-            String name = path.getName(path.getNameCount()-1).toString();
+            int numNames = path.getNameCount();
+            if (numNames == 0) {
+                return "";
+            }
+            String name = path.getName(numNames-1).toString();
             // strip trailing slashes (returned by Zip File System provider for directories)
             if (name.endsWith("/")) {
                 name = name.substring(0, name.length()-1);

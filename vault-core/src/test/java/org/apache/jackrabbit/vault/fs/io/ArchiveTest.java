@@ -145,6 +145,7 @@ public class ArchiveTest {
         archive.open(true);
         Entry root = archive.getRoot();
         assertNotNull(root);
+        assertEquals("", root.getName());
         assertTrue(root.isDirectory());
         MatcherAssert.assertThat(root.getChildren().stream().map(Entry::getName).collect(Collectors.toList()), Matchers.containsInAnyOrder("META-INF", "jcr_root"));
 

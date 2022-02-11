@@ -218,11 +218,11 @@ public class PackageManagerImpl implements PackageManager {
             }
 
             final Set<String> metaInfIncludes;
-            final Set<String> metaInfExcludes;
+            final Set<String> metaInfExcludes = new HashSet<>();
             if (opts.getPostProcessor() == null) {
                 // no post processor, we keep all metadata files except the properties
                 metaInfIncludes = Collections.emptySet();
-                metaInfExcludes = Collections.singleton(Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
+                metaInfExcludes.add(Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
             } else {
                 
                 metaInfIncludes = new HashSet<>();
@@ -230,9 +230,11 @@ public class PackageManagerImpl implements PackageManager {
                 metaInfIncludes.add(Constants.META_DIR + "/" + Constants.NODETYPES_CND);
                 metaInfIncludes.add(Constants.META_DIR + "/" + Constants.CONFIG_XML);
                 metaInfIncludes.add(Constants.META_DIR + "/" + Constants.FILTER_XML);
-                metaInfExcludes = Collections.emptySet();
             }
 
+            if (inf.getFilter() != null) {
+                metaInfExcludes.add(Constants.META_DIR + "/" + Constants.FILTER_XML);
+            }
             try (Archive archive = src.getArchive()) {
                 archive.open(false);
                 addArchiveEntryToExporter(exporter, archive, "", archive.getRoot(), metaInfIncludes, metaInfExcludes);
@@ -246,6 +248,12 @@ public class PackageManagerImpl implements PackageManager {
                 tracker.track("A", Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
             }
 
+            if (inf.getFilter() != null) {
+                // write updated filter
+                try (InputStream filterStream = inf.getFilter().getSource()) {
+                    exporter.writeFile(filterStream, Constants.META_DIR + "/" + Constants.FILTER_XML);
+                }
+            }
             if (opts.getPostProcessor() != null) {
                 opts.getPostProcessor().process(exporter);
             }

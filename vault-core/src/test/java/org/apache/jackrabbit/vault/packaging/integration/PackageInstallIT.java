@@ -24,9 +24,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collections;
+import java.util.Properties;
 
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
@@ -44,12 +46,15 @@ import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.Dependency;
+import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcherImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
@@ -97,6 +102,25 @@ public class PackageInstallIT extends IntegrationTestBase {
         pack.install(opts);
 
         packMgr.rewrap(pack, opts.getListener());
+    }
+
+    /**
+     * Test if rewrap on a folder-based package works
+     */
+    @Test
+    public void testRewrapOnNonZipBasedArchive() throws RepositoryException, IOException, PackageException {
+        try (VaultPackage pack = loadVaultPackage("/test-packages/tmp.zip")) {
+            ExportOptions opts = new ExportOptions();
+            DefaultMetaInf meta = new DefaultMetaInf();
+            Properties props = new Properties();
+            props.setProperty(VaultPackage.NAME_GROUP, "jackrabbit/test");
+            props.setProperty(VaultPackage.NAME_NAME, "rewrapped-package");
+            meta.setProperties(props);
+            opts.setMetaInf(meta);
+            try (VaultPackage rewrappedPack = packMgr.rewrap(opts, pack, (File)null)) {
+                assertNotNull(rewrappedPack);
+            }
+        }
     }
 
     /**

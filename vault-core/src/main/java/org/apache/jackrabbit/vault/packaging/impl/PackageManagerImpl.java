@@ -21,13 +21,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -41,6 +40,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.impl.AggregateManagerImpl;
+import org.apache.jackrabbit.vault.fs.io.AbstractExporter;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.JarExporter;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
@@ -210,37 +210,34 @@ public class PackageManagerImpl implements PackageManager {
                 tracker = new ProgressTracker();
                 exporter.setVerbose(opts.getListener());
             }
-    
+
             // merge
             MetaInf inf = opts.getMetaInf();
-            try (ZipFile zip = new ZipFile(src.getFile(), ZipFile.OPEN_READ)) {
-                if (opts.getPostProcessor() == null) {
-                    // no post processor, we keep all files except the properties
-                    Enumeration<? extends ZipEntry> e = zip.entries();
-                    while (e.hasMoreElements()) {
-                        ZipEntry entry = (ZipEntry) e.nextElement();
-                        String path = entry.getName();
-                        if (!path.equals(Constants.META_DIR + "/" + Constants.PROPERTIES_XML)) {
-                            exporter.write(zip, entry);
-                        }
-                    }
-                } else {
-                    Set<String> keep = new HashSet<String>();
-                    keep.add(Constants.META_DIR + "/");
-                    keep.add(Constants.META_DIR + "/" + Constants.NODETYPES_CND);
-                    keep.add(Constants.META_DIR + "/" + Constants.CONFIG_XML);
-                    keep.add(Constants.META_DIR + "/" + Constants.FILTER_XML);
-                    Enumeration<? extends ZipEntry> e = zip.entries();
-                    while (e.hasMoreElements()) {
-                        ZipEntry entry = (ZipEntry) e.nextElement();
-                        String path = entry.getName();
-                        if (!path.startsWith(Constants.META_DIR + "/") || keep.contains(path)) {
-                            exporter.write(zip, entry);
-                        }
-                    }
-                }
+            if (inf == null || inf.getProperties() == null) {
+                throw new IllegalArgumentException("The export options didn't set the mandatory properties");
             }
-    
+
+            final Set<String> metaInfIncludes;
+            final Set<String> metaInfExcludes;
+            if (opts.getPostProcessor() == null) {
+                // no post processor, we keep all metadata files except the properties
+                metaInfIncludes = Collections.emptySet();
+                metaInfExcludes = Collections.singleton(Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
+            } else {
+                
+                metaInfIncludes = new HashSet<>();
+                metaInfIncludes.add(Constants.META_DIR + "/");
+                metaInfIncludes.add(Constants.META_DIR + "/" + Constants.NODETYPES_CND);
+                metaInfIncludes.add(Constants.META_DIR + "/" + Constants.CONFIG_XML);
+                metaInfIncludes.add(Constants.META_DIR + "/" + Constants.FILTER_XML);
+                metaInfExcludes = Collections.emptySet();
+            }
+
+            try (Archive archive = src.getArchive()) {
+                archive.open(false);
+                addArchiveEntryToExporter(exporter, archive, "", archive.getRoot(), metaInfIncludes, metaInfExcludes);
+            }
+
             // write updated properties
             ByteArrayOutputStream tmpOut = new ByteArrayOutputStream();
             inf.getProperties().storeToXML(tmpOut, "FileVault Package Properties", "utf-8");
@@ -248,9 +245,28 @@ public class PackageManagerImpl implements PackageManager {
             if (tracker != null) {
                 tracker.track("A", Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
             }
-    
+
             if (opts.getPostProcessor() != null) {
                 opts.getPostProcessor().process(exporter);
+            }
+        }
+    }
+
+    private static void addArchiveEntryToExporter(AbstractExporter exporter, Archive archive, String parentPath, Archive.Entry entry, Set<String> metaInfIncludes, Set<String> metaInfExcludes) throws IOException {
+        String path = parentPath + entry.getName();
+        if (path.startsWith(Constants.META_INF + "/")) {
+            if ((!metaInfIncludes.isEmpty() && !metaInfIncludes.contains(path)) || metaInfExcludes.contains(path)) {
+                return;
+            }
+        }
+        if (entry.isDirectory()) {
+            exporter.createDirectory(path);
+            for (Archive.Entry child : entry.getChildren()) {
+                addArchiveEntryToExporter(exporter, archive, path.isEmpty() ? path : path + "/", child, metaInfIncludes, metaInfExcludes);
+            }
+        } else {
+            try (InputStream input = archive.openInputStream(entry)) {
+                exporter.writeFile(input, path);
             }
         }
     }

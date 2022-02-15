@@ -43,6 +43,7 @@ import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.io.DocViewParserHandler;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
+import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.jackrabbit.vault.util.RejectingEntityDefaultHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -305,8 +306,8 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
                 && uri.equals(NameConstants.JCR_ROOT.getNamespaceURI())) {
             // special case for root (https://issues.apache.org/jira/browse/JCR-4625)
             if (rootNodePath.equals("/")) {
-                    name = NameConstants.ROOT;
-                    index = 0;
+                name = NameConstants.ROOT;
+                index = 0;
             } else {
                 Map.Entry<String, Integer> nameAndIndex = getNameAndIndex(Text.getName(rootNodePath));
                 index = nameAndIndex.getValue();
@@ -328,7 +329,7 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
                     // root node element name should take precedence of root node name derived from path
                     currentPath = Text.getRelativeParent(rootNodePath, 1);
                 }
-                currentPath = currentPath + "/" + npResolver.getJCRName(name);
+                currentPath = PathUtil.append(currentPath, npResolver.getJCRName(name));
             } catch (NamespaceException e) {
                 throw new SAXException("No prefix defined for namespace uri '" + uri + "' used in node name '" + nameAndIndex.getKey() + "'", e);
             } catch (IllegalArgumentException e) {

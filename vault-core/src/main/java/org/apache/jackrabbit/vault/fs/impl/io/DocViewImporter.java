@@ -827,10 +827,11 @@ public class DocViewImporter implements DocViewParserHandler {
             if (stack.checkForNode() && currentNode.hasNode(docViewNode.getName().toString())) {
                 existingNode = currentNode.getNode(docViewNode.getName().toString());
             }
-            if (docViewNode.getIdentifier().isPresent() && idConflictPolicy == IdConflictPolicy.FAIL) {
+            Optional<String> identifier = docViewNode.getIdentifier();
+            if (identifier.isPresent() && idConflictPolicy == IdConflictPolicy.FAIL) {
                 try {
                     // does uuid already exist in the repo?
-                    Node sameIdNode = session.getNodeByIdentifier(docViewNode.getIdentifier().get());
+                    Node sameIdNode = session.getNodeByIdentifier(identifier.get());
                     // edge-case: same node path -> uuid is kept
                     if (existingNode != null && existingNode.getPath().equals(sameIdNode.getPath())) {
                         log.debug("Node with existing identifier {} at {} is being updated without modifying its uuid", docViewNode.getIdentifier(), existingNode.getPath());
@@ -929,8 +930,9 @@ public class DocViewImporter implements DocViewParserHandler {
     private @Nullable Node updateExistingNode(@NotNull Node node, @NotNull DocViewNode2 ni, @NotNull ImportMode importMode) throws RepositoryException {
         VersioningState vs = new VersioningState(stack, node);
         Node updatedNode = null;
+        Optional<String> identifier = ni.getIdentifier();
         // try to set uuid via sysview import if it differs from existing one
-        if (ni.getIdentifier().isPresent() && !node.getIdentifier().equals(ni.getIdentifier().get()) && !"rep:root".equals(ni.getPrimaryType().orElse(""))) {
+        if (identifier.isPresent() && !node.getIdentifier().equals(identifier.get()) && !"rep:root".equals(ni.getPrimaryType().orElse(""))) {
             NodeStash stash = new NodeStash(session, node.getPath());
             stash.stash();
             Node parent = node.getParent();

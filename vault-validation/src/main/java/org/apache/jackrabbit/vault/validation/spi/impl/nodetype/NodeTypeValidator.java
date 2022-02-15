@@ -110,7 +110,8 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
     public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext,
             boolean isRoot) {
 
-        if (!node.getPrimaryType().isPresent()) {
+        Optional<String> primaryType = node.getPrimaryType();
+        if (!primaryType.isPresent()) {
             // only an issue if contained in the filter
             // if other properties are set this node is not only used for ordering purposes
             if (filter.contains(nodeContext.getNodePath()) && !node.getProperties().isEmpty()) {
@@ -122,7 +123,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
             }
         }
         Collection<ValidationMessage> messages = new LinkedList<>();
-        messages.addAll(getOrCreateNewNode(nodeContext, false, isImplicit(nodeContext.getNodePath()), false, node.getPrimaryType().get(), node.getMixinTypes().toArray(new String[0])));
+        messages.addAll(getOrCreateNewNode(nodeContext, false, isImplicit(nodeContext.getNodePath()), false, primaryType.get(), node.getMixinTypes().toArray(new String[0])));
 
         for (DocViewProperty2 property : node.getProperties()) {
             try {

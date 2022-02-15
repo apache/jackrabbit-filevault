@@ -77,7 +77,7 @@ public final class OakIndexDefinitionValidator implements FilterValidator, Docum
     @Override
     public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
         ValidationMessage violation = null;
-        if (node.getPrimaryType().isPresent() && IndexConstants.INDEX_DEFINITIONS_NODE_TYPE.equals(node.getPrimaryType().get())) {
+        if (IndexConstants.INDEX_DEFINITIONS_NODE_TYPE.equals(node.getPrimaryType().orElse(""))) {
             violation = new ValidationMessage(defaultMessageSeverity, String.format(MESSAGE_INDEX_AT_NODE, packageRootPathOfNotAllowedIndexDefinition));
         }
         return violation != null ? Collections.singleton(violation) : null;

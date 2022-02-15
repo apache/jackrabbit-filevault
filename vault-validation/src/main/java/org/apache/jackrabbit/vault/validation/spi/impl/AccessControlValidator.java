@@ -64,7 +64,7 @@ public class AccessControlValidator implements DocumentViewXmlValidator {
     @Override
     public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext,
             boolean isRoot) {
-        if (node.getPrimaryType().isPresent() && ACL_MANAGEMENT.isACLNodeType(node.getPrimaryType().get())) {
+        if (ACL_MANAGEMENT.isACLNodeType(node.getPrimaryType().orElse(""))) {
             hasFoundACLNode = true;
             if (accessControlHandling == AccessControlHandling.IGNORE || accessControlHandling == AccessControlHandling.CLEAR) {
                 return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_IGNORED_ACCESS_CONTROL_LIST, accessControlHandling)));

@@ -541,7 +541,7 @@ public class DocViewProperty2 {
             return true;
         } else {
             Value v = prop == null ? null : prop.getValue();
-            if (type == PropertyType.BINARY) {
+            if (v != null && type == PropertyType.BINARY) {
                 return applyBinary(node, v);
             }
             if (v == null || !v.getString().equals(values.get(0))) {

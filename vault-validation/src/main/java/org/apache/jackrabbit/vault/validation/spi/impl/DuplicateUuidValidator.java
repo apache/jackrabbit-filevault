@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
@@ -50,10 +51,11 @@ public class DuplicateUuidValidator implements DocumentViewXmlValidator {
 
     @Override
     public Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
-        if (node.getIdentifier().isPresent() && filter.contains(nodeContext.getNodePath())) {
-            String duplicateUuidPath = uuidsAndPaths.put(node.getIdentifier().get(), nodeContext.getNodePath());
+        Optional<String> identifier = node.getIdentifier();
+        if (identifier.isPresent() && filter.contains(nodeContext.getNodePath())) {
+            String duplicateUuidPath = uuidsAndPaths.put(identifier.get(), nodeContext.getNodePath());
             if (duplicateUuidPath != null) {
-                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_DUPLICATE_UUID, node.getIdentifier().get(), duplicateUuidPath, nodeContext.getNodePath())));
+                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_DUPLICATE_UUID, identifier.get(), duplicateUuidPath, nodeContext.getNodePath())));
             }
         }
         return null;

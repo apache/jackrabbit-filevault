@@ -270,12 +270,12 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
         case CONTENT:
         case APPLICATION:
             // is it sling:OsgiConfig node?
-            if (node.getPrimaryType().isPresent() && NODETYPE_SLING_OSGI_CONFIG.equals(node.getPrimaryType().get()) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
+            if (node.getPrimaryType().isPresent() && NODETYPE_SLING_OSGI_CONFIG.equals(node.getPrimaryType().orElse("")) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
                 messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
             }
             break;
         case CONTAINER:
-            if (node.getPrimaryType().isPresent() && NODETYPE_SLING_OSGI_CONFIG.equals(node.getPrimaryType().get()) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
+            if (node.getPrimaryType().isPresent() && NODETYPE_SLING_OSGI_CONFIG.equals(node.getPrimaryType().orElse("")) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
                 validContainerNodePaths.add(nodeContext.getNodePath());
             }
             break;

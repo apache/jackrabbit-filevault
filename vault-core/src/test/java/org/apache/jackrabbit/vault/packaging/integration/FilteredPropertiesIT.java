@@ -17,12 +17,16 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import javax.jcr.Node;
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
@@ -33,15 +37,23 @@ import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
+import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.util.JcrConstants;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * Covers testing the filtering of properties both during export and import
  */
 public class FilteredPropertiesIT extends IntegrationTestBase {
+
+    @Rule
+    public TemporaryFolder folder= new TemporaryFolder();
 
     @Before
     public void setUp() throws Exception {
@@ -449,12 +461,54 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void importWithDifferentFilterThanUsedForExport() {
+    public void importWithExcludedPropertiesContainedInSerializationNew() throws IOException, PackageException, RepositoryException, ConfigurationException {
+        clean("/testroot2");
+        clean("/testroot3");
+        
         // the package itself contains more properties than are supposed to be installed during import
-        
-        
+        String filterSrc = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<workspaceFilter version=\"1.0\">\n" +
+                "    <filter root=\"/testroot3\">\n" +
+                "        <exclude pattern=\"/testroot3/jcr:mixinTypes\" matchProperties=\"true\"/>\n" +
+                "        <exclude pattern=\"/testroot3/jcr:lastModified.*\" matchProperties=\"true\"/>\n" +
+                "        <exclude pattern=\"/testroot3/jcr:title\" matchProperties=\"true\"/>\n" +
+                "        <exclude pattern=\"/testroot3/someUnprotectedStringProperty\" matchProperties=\"true\"/>\n" +
+                "    </filter>\n" +
+                "</workspaceFilter>";
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.load(new ByteArrayInputStream(filterSrc.getBytes(StandardCharsets.UTF_8)));
+        File tmpFile = folder.newFile();
+        try (VaultPackage pkg = loadVaultPackage("/test-packages/protected_properties.zip")) {
+            try (VaultPackage pkgWithAdjustedFilter = packMgr.rewrap(createExportOptions(filter), pkg, tmpFile)) {
+                try (JcrPackage uploadedPackage = packMgr.upload(tmpFile, false, true, null)) {
+                    assertNotNull(uploadedPackage);
+                    uploadedPackage.install(getDefaultOptions());
+                    admin.save();
+                    assertProperty("/testroot3/someUnprotectedStringProperty2", "foo");
+                    assertPropertyMissing("/testroot3/jcr:mixinTypes");
+                    assertPropertyMissing("/testroot3/someUnprotectedStringProperty");
+                    assertPropertyMissing("/testroot3/jcr:title");
+                    // some protected properties are never imported, independent of their excludes
+                    // assertProperty("/testroot3/someProtectedBooleanProperty");
+
+                    // now test update on existing node
+                    Node node = admin.getNode("/testroot3");
+                    // modify some properties
+                    node.addMixin(JcrConstants.MIX_LAST_MODIFIED);
+                    node.setProperty(JcrConstants.JCR_TITLE, "title");
+                    admin.save();
+                    // install again
+                    uploadedPackage.install(getDefaultOptions());
+                    // make sure excluded properties are not extended or overwritten
+                    assertProperty("/testroot3/jcr:mixinTypes", new String[] { JcrConstants.MIX_LAST_MODIFIED } );
+                    assertProperty("/testroot3/jcr:title", "title");
+                }
+            }
+        }
     }
 
+    
     /**
      * Setup the path /tmp/foo/bar with properties set at each level
      */
@@ -478,7 +532,11 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
             throws IOException, RepositoryException {
 
         File tmpFile = File.createTempFile("vaulttest", ".zip");
+        packMgr.assemble(admin, createExportOptions(filter), tmpFile).close();
+        return tmpFile;
+    }
 
+    private static @NotNull ExportOptions createExportOptions(WorkspaceFilter filter) {
         ExportOptions options = new ExportOptions();
         DefaultMetaInf meta = new DefaultMetaInf();
         meta.setFilter(filter);
@@ -489,9 +547,7 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
         meta.setProperties(props);
 
         options.setMetaInf(meta);
-
-        packMgr.assemble(admin, options, tmpFile).close();
-        return tmpFile;
+        return options;
     }
 
     private void assertPropertiesExist(String rootPath, String... propNames)

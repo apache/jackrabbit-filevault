@@ -3,6 +3,7 @@
 <'vlt'='http://www.day.com/jcr/vault/1.0'>
 <'my'='http://jackrabbit.apache.org/filevault/testing'>
 
+// some operations fail due to residual protected property type (https://issues.apache.org/jira/browse/OAK-9695)
 [my:Folder] > nt:hierarchyNode
   - * (boolean) protected
   - * (string)

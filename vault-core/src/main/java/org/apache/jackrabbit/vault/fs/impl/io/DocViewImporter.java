@@ -84,6 +84,7 @@ import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.util.EffectiveNodeType;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
+import org.apache.jackrabbit.vault.util.PathUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -110,22 +111,29 @@ public class DocViewImporter implements DocViewParserHandler {
     static final Logger log = LoggerFactory.getLogger(DocViewImporter.class);
 
     /**
-     * these properties are protected but can be set nevertheless via system view xml import
+     * these properties are protected but are set for new nodes nevertheless via system view xml import
      */
-    static final Set<Name> PROTECTED_PROPERTIES;
+    static final Set<Name> PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES;
+
+    /**
+     * these properties are protected but are set for updated nodes via special JCR methods
+     */
+    static final Set<Name> PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES;
 
     static {
         Set<Name> props = new HashSet<>();
         props.add(NameConstants.JCR_PRIMARYTYPE);
         props.add(NameConstants.JCR_MIXINTYPES);
         props.add(NameConstants.JCR_UUID);
+        PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES = Collections.unmodifiableSet(props);
         props.add(NameConstants.JCR_ISCHECKEDOUT);
         props.add(NameConstants.JCR_BASEVERSION);
         props.add(NameConstants.JCR_PREDECESSORS);
         props.add(NameConstants.JCR_SUCCESSORS);
         props.add(NameConstants.JCR_VERSIONHISTORY);
-        PROTECTED_PROPERTIES = Collections.unmodifiableSet(props);
+        PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES = Collections.unmodifiableSet(props);
     }
+
 
     /**
      * the importing session
@@ -934,7 +942,7 @@ public class DocViewImporter implements DocViewParserHandler {
             // TODO: is this faster than using sysview import?
             // set new primary type (but never set rep:root)
             String primaryType = ni.getPrimaryType().orElseThrow(() -> new IllegalStateException("Mandatory property 'jcr:primaryType' missing from " + ni));
-            if (importMode == ImportMode.REPLACE && !"rep:root".equals(primaryType)) {
+            if (importMode == ImportMode.REPLACE && !"rep:root".equals(primaryType) && wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_PRIMARYTYPE))) {
                 if (!node.getPrimaryNodeType().getName().equals(primaryType)) {
                     vs.ensureCheckedOut();
                     node.setPrimaryType(primaryType);
@@ -943,37 +951,38 @@ public class DocViewImporter implements DocViewParserHandler {
             }
             // calculate mixins to be added
             Set<String> newMixins = new HashSet<>();
-            AccessControlHandling acHandling = getAcHandling(ni.getName());
-            for (String mixin : ni.getMixinTypes()) {
-                // omit name if mix:AccessControllable and CLEAR
-                if (!aclManagement.isAccessControllableMixin(mixin)
-                        || acHandling != AccessControlHandling.CLEAR) {
-                    newMixins.add(mixin);
+            if (wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_MIXINTYPES))) {
+                AccessControlHandling acHandling = getAcHandling(ni.getName());
+                for (String mixin : ni.getMixinTypes()) {
+                    // omit if mix:AccessControllable and CLEAR
+                    if (!aclManagement.isAccessControllableMixin(mixin)
+                            || acHandling != AccessControlHandling.CLEAR) {
+                        newMixins.add(mixin);
+                    }
                 }
-            }
-            // remove mixins not in package (only for mode = replace)
-            if (importMode == ImportMode.REPLACE) {
-                for (NodeType mix : node.getMixinNodeTypes()) {
-                    String name = mix.getName();
-                    if (!newMixins.remove(name)) {
-                        // special check for mix:AccessControllable
-                        if (!aclManagement.isAccessControllableMixin(name)
-                                || acHandling == AccessControlHandling.CLEAR
-                                || acHandling == AccessControlHandling.OVERWRITE) {
-                            vs.ensureCheckedOut();
-                            node.removeMixin(name);
-                            updatedNode = node;
+                // remove mixins not in package (only for mode = replace)
+                if (importMode == ImportMode.REPLACE) {
+                    for (NodeType mix : node.getMixinNodeTypes()) {
+                        String name = mix.getName();
+                        if (!newMixins.remove(name)) {
+                            // special check for mix:AccessControllable
+                            if (!aclManagement.isAccessControllableMixin(name)
+                                    || acHandling == AccessControlHandling.CLEAR
+                                    || acHandling == AccessControlHandling.OVERWRITE) {
+                                vs.ensureCheckedOut();
+                                node.removeMixin(name);
+                                updatedNode = node;
+                            }
                         }
                     }
                 }
+                // add remaining mixins (for all import modes)
+                for (String mixin : newMixins) {
+                    vs.ensureCheckedOut();
+                    node.addMixin(mixin);
+                    updatedNode = node;
+                }
             }
-            // add remaining mixins (for all import modes)
-            for (String mixin : newMixins) {
-                vs.ensureCheckedOut();
-                node.addMixin(mixin);
-                updatedNode = node;
-            }
-    
             // remove unprotected properties not in package (only for mode = replace)
             if (importMode == ImportMode.REPLACE) {
                 PropertyIterator pIter = node.getProperties();
@@ -990,9 +999,12 @@ public class DocViewImporter implements DocViewParserHandler {
                     }
                 }
             }
+            EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
+            // logging for uncovered protected properties
+            logIgnoredProtectedProperties(effectiveNodeType, node.getPath(), ni.getProperties(), PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES);
             
             // add/modify properties contained in package
-            if (setUnprotectedProperties(node, ni, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
+            if (setUnprotectedProperties(effectiveNodeType, node, ni, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
                 updatedNode = node;
             }
         }
@@ -1041,7 +1053,7 @@ public class DocViewImporter implements DocViewParserHandler {
             boolean addMixRef = false;
             
             if (ni.getIndex() > 0 && !ni.getIdentifier().isPresent()) {
-            	Collection<DocViewProperty2> preprocessedProperties = new LinkedList<>(ni.getProperties());
+                Collection<DocViewProperty2> preprocessedProperties = new LinkedList<>(ni.getProperties());
                 preprocessedProperties.add(new DocViewProperty2( NameConstants.JCR_UUID, UUID.randomUUID().toString(), PropertyType.STRING));
                 // check mixins
                 DocViewProperty2 mix = ni.getProperty(NameConstants.JCR_MIXINTYPES).orElse(null);
@@ -1066,11 +1078,14 @@ public class DocViewImporter implements DocViewParserHandler {
                 }
                 ni = ni.cloneWithDifferentProperties(preprocessedProperties);
             }
+
+            String nodePath = PathUtil.append(parentPath, npResolver.getJCRName(ni.getName()));
             // add the protected properties
             for (DocViewProperty2 p : ni.getProperties()) {
-                if (p.getStringValue().isPresent() && PROTECTED_PROPERTIES.contains(p.getName())) {
+                String qualifiedPropertyName = npResolver.getJCRName(p.getName());
+                if (p.getStringValue().isPresent() && PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES.contains(p.getName()) && wspFilter.includesProperty(nodePath + "/" + qualifiedPropertyName)) {
                     attrs = new AttributesImpl();
-                    attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", ATTRIBUTE_TYPE_CDATA, npResolver.getJCRName(p.getName()));
+                    attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", ATTRIBUTE_TYPE_CDATA, qualifiedPropertyName);
                     attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", ATTRIBUTE_TYPE_CDATA, PropertyType.nameFromValue(p.getType()));
                     handler.startElement(Name.NS_SV_URI, "property", "sv:property", attrs);
                     for (String v : p.getStringValues()) {
@@ -1086,7 +1101,11 @@ public class DocViewImporter implements DocViewParserHandler {
 
             // retrieve newly created node either by uuid, label or name
             Node node = getNodeByIdOrName(parentNode, ni, importUuidBehavior == ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
-            setUnprotectedProperties(node, ni, true, null);
+            EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
+
+            // logging for uncovered protected properties
+            logIgnoredProtectedProperties(effectiveNodeType, node.getPath(), ni.getProperties(), PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES);
+            setUnprotectedProperties(effectiveNodeType, node, ni, true, null);
             // remove mix referenceable if it was temporarily added
             if (addMixRef) {
                 node.removeMixin(JcrConstants.MIX_REFERENCEABLE);
@@ -1112,6 +1131,22 @@ public class DocViewImporter implements DocViewParserHandler {
                 throw new RepositoryException("Error while creating node", root);
             }
         }
+    }
+
+    private void logIgnoredProtectedProperties(EffectiveNodeType effectiveNodeType, String nodePath, Collection<DocViewProperty2> properties, Set<Name> importedProtectedProperties) {
+        // logging for protected properties which are not considered during import
+        properties.stream()
+            .filter(p -> p.getStringValue().isPresent() 
+                    && !importedProtectedProperties.contains(p.getName()))
+            .forEach(p -> {
+                try {
+                    if (isPropertyProtected(effectiveNodeType, p)) {
+                       log.warn("Ignore protected property '{}' on node '{}'", npResolver.getJCRName(p.getName()), nodePath);
+                    }
+                } catch (RepositoryException e) {
+                    throw new IllegalStateException("Error retrieving protected status of properties", e);
+                }
+            });
     }
 
     /**
@@ -1153,7 +1188,7 @@ public class DocViewImporter implements DocViewParserHandler {
         return node;
     }
 
-    private boolean setUnprotectedProperties(@NotNull Node node, @NotNull DocViewNode2 ni, boolean overwriteExistingProperties, @Nullable VersioningState vs) throws RepositoryException {
+    private boolean setUnprotectedProperties(@NotNull EffectiveNodeType effectiveNodeType, @NotNull Node node, @NotNull DocViewNode2 ni, boolean overwriteExistingProperties, @Nullable VersioningState vs) throws RepositoryException {
         boolean isAtomicCounter = false;
         for (String mixin : ni.getMixinTypes()) {
             if ("mix:atomicCounter".equals(mixin)) {
@@ -1161,7 +1196,6 @@ public class DocViewImporter implements DocViewParserHandler {
             }
         }
 
-        EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
         boolean modified = false;
         // add properties
         for (DocViewProperty2 prop : ni.getProperties()) {

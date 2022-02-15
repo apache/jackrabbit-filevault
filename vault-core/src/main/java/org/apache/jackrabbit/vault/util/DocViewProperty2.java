@@ -50,6 +50,7 @@ import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.util.XMLChar;
 import org.apache.jackrabbit.value.ValueHelper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Helper class that represents a JCR property in the FileVault (enhanced) document view format.
@@ -541,7 +542,7 @@ public class DocViewProperty2 {
             return true;
         } else {
             Value v = prop == null ? null : prop.getValue();
-            if (v != null && type == PropertyType.BINARY) {
+            if (type == PropertyType.BINARY) {
                 return applyBinary(node, v);
             }
             if (v == null || !v.getString().equals(values.get(0))) {
@@ -561,7 +562,7 @@ public class DocViewProperty2 {
         return false;
     }
 
-    private boolean applyBinary(@NotNull Node node, @NotNull Value... existingValues) throws ValueFormatException, VersionException, LockException, ConstraintViolationException, RepositoryException {
+    private boolean applyBinary(@NotNull Node node, @Nullable Value... existingValues) throws ValueFormatException, VersionException, LockException, ConstraintViolationException, RepositoryException {
         List<Value> binaryValues = new ArrayList<>(values.size());
         if (!isReferenceProperty) {
             for (String value : values) {

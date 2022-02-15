@@ -54,8 +54,8 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
         <bnd.version>6.1.0</bnd.version>
         <minimalMavenBuildVersion>3.6.1</minimalMavenBuildVersion><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
-        <minimalJavaBuildVersion>1.8</minimalJavaBuildVersion>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <minimalJavaBuildVersion>11</minimalJavaBuildVersion>
+        <maven.compiler.release>8</maven.compiler.release>
         <surefire.version>3.0.0-M5</surefire.version>
         <sling.url>http://localhost:4502</sling.url>
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
@@ -555,25 +555,6 @@ Bundle-Category: jackrabbit
     <!-- P R O F I L E S -->
     <!-- ====================================================================== -->
     <profiles>
-        <profile>
-            <id>java9-or-above</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <artifactId>maven-javadoc-plugin</artifactId>
-                            <configuration>
-                                <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
-                                <source>8</source>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
         <profile>
             <id>jacoco-report</id>
             <build>

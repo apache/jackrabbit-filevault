@@ -21,7 +21,7 @@
 library "filevault@master"
 
 vaultPipeline('ubuntu', 11, '3', {
-   vaultStageBuild(['ubuntu', 'Windows'], [8, 11, 17], ['3', '3.6.3'], 'apache_jackrabbit-filevault')
+   vaultStageBuild(['ubuntu', 'Windows'], [11, 17], ['3', '3.6.3'], 'apache_jackrabbit-filevault')
    vaultStageDeploy()
   }
 )

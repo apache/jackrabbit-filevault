@@ -1163,11 +1163,12 @@ public class DocViewImporter implements DocViewParserHandler {
         return effectiveNodeType.getApplicablePropertyDefinition(npResolver.getJCRName(docViewProperty.getName()), docViewProperty.isMultiValue(), docViewProperty.getType()).map(PropertyDefinition::isProtected).orElse(false);
     }
 
-    private Node getNodeByIdOrName(@NotNull Node currentNode, @NotNull DocViewNode2 ni, boolean isUuidNewlyAssigned) throws RepositoryException {
+    private Node getNodeByIdOrName(@NotNull Node currentNode, @NotNull DocViewNode2 ni, boolean isIdNewlyAssigned) throws RepositoryException {
         Node node = null;
-        if (ni.getIdentifier().isPresent() && !isUuidNewlyAssigned) {
+        Optional<String> id = ni.getIdentifier();
+        if (id.isPresent() && !isIdNewlyAssigned) {
             try {
-                node = currentNode.getSession().getNodeByIdentifier(ni.getIdentifier().get());
+                node = currentNode.getSession().getNodeByIdentifier(id.get());
             } catch (RepositoryException e) {
                 log.warn("Newly created node not found by uuid {}: {}", currentNode.getPath() + "/" + ni.getName(), e.toString());
             }
@@ -1183,7 +1184,7 @@ public class DocViewImporter implements DocViewParserHandler {
             try {
                 node = currentNode.getNode(ni.getName().toString());
             } catch (RepositoryException e) {
-                log.warn("Newly created node not found by name {}: {}", currentNode.getPath() + "/" + ni.getName(), e.toString());
+                log.debug("Newly created node not found by name {}: {}", currentNode.getPath() + "/" + ni.getName(), e.toString());
                 throw e;
             }
         }
@@ -1283,7 +1284,7 @@ public class DocViewImporter implements DocViewParserHandler {
          */
         private DocViewAdapter adapter;
 
-        public StackElement(@NotNull Node node, boolean isNew) throws RepositoryException {
+        public StackElement(@Nullable Node node, boolean isNew) throws RepositoryException {
             this.node = node;
             this.isNew = isNew;
             isCheckedOut = node == null || !node.isNodeType(JcrConstants.MIX_VERSIONABLE) || node.isCheckedOut();

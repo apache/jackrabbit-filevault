@@ -582,7 +582,7 @@ public class DocViewProperty2 {
                 Value binaryValue = node.getSession().getValueFactory().createValue(ref);
                 binaryValues.add(binaryValue);
                 // compare with existing value
-                if (!modified && n < existingValues.length && existingValues[n] != null) {
+                if (!modified && existingValues != null && n < existingValues.length && existingValues[n] != null) {
                     Binary existingBinary = existingValues[0].getBinary();
                     if (!existingBinary.equals(binaryValue.getBinary())) {
                         modified = true;

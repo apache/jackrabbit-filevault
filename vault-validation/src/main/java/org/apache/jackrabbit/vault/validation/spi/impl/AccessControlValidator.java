@@ -35,8 +35,8 @@ import org.jetbrains.annotations.Nullable;
 public class AccessControlValidator implements DocumentViewXmlValidator {
 
     protected static final JcrACLManagement ACL_MANAGEMENT = new JcrACLManagement();
-    protected static final String MESSAGE_IGNORED_ACCESS_CONTROL_LIST = "Found an access control list, but it is never considered during installation as the property 'acHandling' is set to '%s'!";
-    protected static final String MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST = "Found no access control list, but there is supposed to be one contained as the property 'acHandling' is set to '%s'!";
+    protected static final String MESSAGE_IGNORED_ACCESS_CONTROL_LIST = "Found an access control list, but it is never considered during installation as the property 'accessControlHandling' is set to '%s'!";
+    protected static final String MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST = "Found no access control list, but there is supposed to be one contained as the property 'accessControlHandling' is set to '%s'!";
     private final ValidationMessageSeverity severity;
     private final AccessControlHandling accessControlHandling;
     private boolean hasFoundACLNode;

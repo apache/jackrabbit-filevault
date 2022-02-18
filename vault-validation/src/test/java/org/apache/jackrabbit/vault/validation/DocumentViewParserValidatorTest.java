@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.validation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.NameFactory;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
+import org.apache.jackrabbit.vault.fs.io.DocViewParser;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
@@ -42,6 +44,7 @@ import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidator;
+import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.apache.sling.api.SlingConstants;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
@@ -69,7 +72,7 @@ public class DocumentViewParserValidatorTest {
 
     @Before
     public void setUp() throws ParserConfigurationException, SAXException, IOException {
-        validator = new DocumentViewParserValidator(ValidationMessageSeverity.ERROR);
+        validator = new DocumentViewParserValidator(ValidationMessageSeverity.ERROR, false);
         nodePathsAndLineNumbers = new HashMap<>();
         validator.setDocumentViewXmlValidators(Collections.singletonMap("docviewid", docViewXmlValidator));
     }
@@ -154,7 +157,30 @@ public class DocumentViewParserValidatorTest {
             Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/", Paths.get(".content.xml"), Paths.get("")), true);
         }
     }
-    
+
+    @Test
+    public void testDocViewWithNamespacedFilename()
+            throws ParserConfigurationException, SAXException, URISyntaxException, IOException, NamespaceException {
+        Path filePath = Paths.get("apps", "_cq_content.xml");
+        String nodePath = "/apps/cq:content";
+        String message = "Unknown namespace prefix used in file name 'cq:content'";
+        // fail during parsing due to unknown namespace in filename 
+        try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/_cq_content.xml")) {
+            Collection<ValidationMessage> messages = validator.validateJcrData(input, filePath, Paths.get(""), nodePathsAndLineNumbers);
+            ValidationExecutorTest.assertViolation(messages,
+                    new ValidationViolation(DocumentViewParserValidatorFactory.ID, ValidationMessageSeverity.ERROR, 
+                            "Could not parse FileVault Document View XML: " + message,
+                            filePath, Paths.get(""), nodePath, 19, 36, new DocViewParser.XmlParseException(message, nodePath, 19, 36)
+            ));
+        }
+        validator = new DocumentViewParserValidator(ValidationMessageSeverity.ERROR, true);
+        try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/_cq_content.xml")) {
+            Collection<ValidationMessage> messages = validator.validateJcrData(input, filePath, Paths.get(""), nodePathsAndLineNumbers);
+            // filter
+            MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+        }
+    }
+
     @Test
     public void testDocViewWithEmptyElements() throws IOException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/emptyelements/.content.xml")) {
@@ -205,7 +231,7 @@ public class DocumentViewParserValidatorTest {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "_cq_child1.xml"), Paths.get(""), nodePathsAndLineNumbers);
            
             ValidationExecutorTest.assertViolation(messages, 
-                    new ValidationViolation(ValidationMessageSeverity.ERROR, 
+                    new ValidationViolation(DocumentViewParserValidatorFactory.ID, ValidationMessageSeverity.ERROR, 
                     "Could not parse FileVault Document View XML: Unknown namespace prefix used in file name 'cq:child1'",
                     Paths.get("apps", "_cq_child1.xml"), Paths.get(""), "/apps/cq:child1", 20, 36, 
                     new XmlParseException("Unknown namespace prefix used in file name 'cq:child1'", "/apps/cq:child1", 20, 36)));
@@ -261,8 +287,9 @@ public class DocumentViewParserValidatorTest {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "invalid","wrongtype.xml"), Paths.get(""), nodePathsAndLineNumbers);
 
            ValidationExecutorTest.assertViolation(messages,
-                    new ValidationViolation(ValidationMessageSeverity.ERROR,
-                    		"Could not parse FileVault Document View XML: unknown type: Invalid", Paths.get("apps/invalid/wrongtype.xml"), Paths.get(""), "/apps/invalid/wrongtype/somepath", 24, 6,
+                    new ValidationViolation(DocumentViewParserValidatorFactory.ID,
+                            ValidationMessageSeverity.ERROR,
+                            "Could not parse FileVault Document View XML: unknown type: Invalid", Paths.get("apps/invalid/wrongtype.xml"), Paths.get(""), "/apps/invalid/wrongtype/somepath", 24, 6,
                             new XmlParseException(new IllegalArgumentException("unknown type: Invalid"), "/apps/invalid/wrongtype/somepath", 24, 6)));
         }
     }

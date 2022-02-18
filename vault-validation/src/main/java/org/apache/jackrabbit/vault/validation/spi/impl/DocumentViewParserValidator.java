@@ -29,7 +29,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.jcr.NamespaceException;
+
 import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
 import org.apache.jackrabbit.vault.util.Constants;
@@ -51,10 +54,25 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
     private final DocViewParser docViewParser;
     private final @NotNull ValidationMessageSeverity severity;
     
-    public DocumentViewParserValidator(@NotNull ValidationMessageSeverity severity) {
+    public DocumentViewParserValidator(@NotNull ValidationMessageSeverity severity, boolean allowUndeclaredPrefixInFileName) {
         super();
         this.docViewValidators = new HashMap<>();
-        this.docViewParser = new DocViewParser();
+        if (allowUndeclaredPrefixInFileName) {
+            NamespaceResolver nsResolver = new NamespaceResolver() {
+
+                @Override
+                public String getURI(String prefix) throws NamespaceException {
+                    return "http://undeclared.uri";
+                }
+                @Override
+                public String getPrefix(String uri) throws NamespaceException {
+                    return "undeclared prefix";
+                }
+            };
+            this.docViewParser = new DocViewParser(nsResolver);
+        } else {
+            this.docViewParser = new DocViewParser();
+        }
         this.severity = severity;
     }
 
@@ -146,10 +164,10 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         enrichedMessages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, "Detected DocView..."));
         ValidatorDocViewParserHandler handler = new ValidatorDocViewParserHandler(docViewValidators, filePath, basePath);
         try {
-            docViewParser.parse(rootNodePath, new InputSource(new CloseShieldInputStream(input)), handler, null);
+            docViewParser.parse(rootNodePath, new InputSource(new CloseShieldInputStream(input)), handler);
             enrichedMessages.addAll(ValidationViolation.wrapMessages(null, handler.getViolations(), filePath, basePath, rootNodePath, 0, 0));
         } catch (XmlParseException e) {
-            enrichedMessages.add(new ValidationViolation(severity, "Could not parse FileVault Document View XML: " + e.getMessage(), filePath, basePath, e.getNodePath(), e.getLineNumber(), e.getColumnNumber(), e));
+            enrichedMessages.add(new ValidationViolation(DocumentViewParserValidatorFactory.ID, severity, "Could not parse FileVault Document View XML: " + e.getMessage(), filePath, basePath, e.getNodePath(), e.getLineNumber(), e.getColumnNumber(), e));
         }
         nodePathsAndLineNumbers.putAll(handler.getNodePaths());
         return enrichedMessages;

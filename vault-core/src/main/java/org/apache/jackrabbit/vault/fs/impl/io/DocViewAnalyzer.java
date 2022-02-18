@@ -62,8 +62,8 @@ public class DocViewAnalyzer implements DocViewParserHandler {
                                InputSource source)
             throws IOException {
         try {
-        	DocViewParser docViewParser = new DocViewParser();
-        	docViewParser.parse(rootPath, source, new DocViewAnalyzer(listener), session);
+            DocViewParser docViewParser = new DocViewParser(session);
+            docViewParser.parse(rootPath, source, new DocViewAnalyzer(listener));
         } catch (XmlParseException e) {
             throw new IllegalStateException(e);
         }

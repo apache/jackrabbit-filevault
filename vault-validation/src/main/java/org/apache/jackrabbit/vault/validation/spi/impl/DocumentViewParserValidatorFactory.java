@@ -28,9 +28,17 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
 
     public static final String ID = ValidatorFactory.ID_PREFIX_JACKRABBIT + "docviewparser";
 
+    public static final String OPTION_ALLOW_UNDECLARED_PREFIX_IN_FILE_NAME = "allowUndeclaredPrefixInFileName";
+
     @Override
     public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
-        return new DocumentViewParserValidator(settings.getDefaultSeverity());
+        final boolean allowUndeclaredPrefixInFileName;
+        if (settings.getOptions().containsKey(OPTION_ALLOW_UNDECLARED_PREFIX_IN_FILE_NAME)) {
+            allowUndeclaredPrefixInFileName = Boolean.valueOf(settings.getOptions().get(OPTION_ALLOW_UNDECLARED_PREFIX_IN_FILE_NAME));
+        } else {
+            allowUndeclaredPrefixInFileName = false;
+        }
+        return new DocumentViewParserValidator(settings.getDefaultSeverity(), allowUndeclaredPrefixInFileName);
     }
 
     @Override

@@ -261,6 +261,19 @@ public class DocViewProperty2 {
      * @throws IllegalNameException 
      */
     public static @NotNull DocViewProperty2 parse(String name, String value, NameResolver nameResolver) throws IllegalNameException, NamespaceException {
+        return parse(nameResolver.getQName(name), value);
+    }
+
+    /**
+     * Parses a enhanced docview property string and returns the property.
+     * @param name name of the property
+     * @param value (attribute) value
+     * @throws IllegalArgumentException in case the given value does not follow the doc view property grammar
+     * @return a property
+     * @throws NamespaceException 
+     * @throws IllegalNameException 
+     */
+    public static @NotNull DocViewProperty2 parse(Name name, String value) throws IllegalNameException, NamespaceException {
         boolean isMulti = false;
         boolean isBinaryRef = false;
         int type = PropertyType.UNDEFINED;
@@ -371,7 +384,7 @@ public class DocViewProperty2 {
         } else {
             vals = Collections.singletonList(tmp.toString());
         }
-        return new DocViewProperty2(nameResolver.getQName(name), vals, isMulti, type, isBinaryRef);
+        return new DocViewProperty2(name, vals, isMulti, type, isBinaryRef);
     }
     /**
      * Formats (serializes) the given JCR property value according to the enhanced docview syntax.

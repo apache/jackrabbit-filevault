@@ -19,7 +19,6 @@ package org.apache.jackrabbit.vault.fs.io;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -29,24 +28,44 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.vault.fs.api.SerializationType;
+import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
+import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewSAXHandler;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
 /**
- * This is a thread-safe sax parser which deals with docview files and passes them to a given {@link DocViewParserHandler}.
+ * This is a thread-safe SAX parser which deals with docview files and passes them to a given {@link DocViewParserHandler}.
  * 
  */
 public class DocViewParser {
-	
-	/** 
-	 * Thrown in case the XML is not <a href="https://www.w3.org/TR/REC-xml/#sec-well-formed">well-formed</a>
-	 * or no valid docview format.
-	 */
+
+    private final @Nullable NamespaceResolver resolver;
+
+    public DocViewParser() {
+        this((NamespaceResolver)null);
+    }
+
+    /**
+     * 
+     * @param session uses the namespace from the session for resolving otherwise unknown namespace prefixes in docview files
+     */
+    public DocViewParser(@NotNull Session session) {
+        this(new SessionNamespaceResolver(session));
+    }
+
+    public DocViewParser(@Nullable NamespaceResolver resolver) {
+        this.resolver = resolver;
+    }
+
+    /**
+     * Thrown in case the XML is not
+     * <a href="https://www.w3.org/TR/REC-xml/#sec-well-formed">well-formed</a> or
+     * no valid docview format.
+     */
     public static final class XmlParseException extends Exception {
 
         /**
@@ -134,7 +153,7 @@ public class DocViewParser {
         // check for docview
         return str.contains("<jcr:root") && str.contains("\"http://www.jcp.org/jcr/1.0\"");
     }
-    
+
     private SAXParser createSaxParser() throws ParserConfigurationException, SAXException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -150,18 +169,17 @@ public class DocViewParser {
      * @param rootNodePath the path of the root node of the given docview xml
      * @param inputSource the source of the docview xml
      * @param handler the callback handler which gets the deserialized node information
-     * @param session optional session used for namespace resolution
      * @throws IOException 
      * @throws XmlParseException 
      */
-    public void parse(String rootNodePath, InputSource inputSource, DocViewParserHandler handler, @Nullable Session session) throws IOException, XmlParseException {
+    public void parse(String rootNodePath, InputSource inputSource, DocViewParserHandler handler) throws IOException, XmlParseException {
         final SAXParser parser;
         try {
             parser = createSaxParser();
         } catch (ParserConfigurationException|SAXException e) {
             throw new IllegalStateException("Could not create SAX parser" + e.getMessage(), e);
         }
-        DocViewSAXHandler docViewSaxHandler = new DocViewSAXHandler(handler, rootNodePath, session);
+        DocViewSAXHandler docViewSaxHandler = new DocViewSAXHandler(handler, rootNodePath, resolver);
         try {
             parser.parse(inputSource, docViewSaxHandler);
         } catch (SAXException|IllegalArgumentException e) {

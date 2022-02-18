@@ -16,16 +16,23 @@
  */
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import javax.jcr.NamespaceException;
+import javax.jcr.NamespaceRegistry;
 import javax.jcr.Node;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
+import org.apache.jackrabbit.api.JackrabbitRepository;
 import org.apache.jackrabbit.oak.jcr.Jcr;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
@@ -36,16 +43,14 @@ import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
 /**
- * Is rather an IT but not relying on {@link IntegrationTestBase}
+ * Tests namespace aware node/property imports
  */
-public class NamespaceImportTest {
+public class NamespaceImportIT extends IntegrationTestBase {
 
     private final static String PREFIX = "prefix";
 
@@ -53,27 +58,41 @@ public class NamespaceImportTest {
 
     private final static String URI2 = "http://two.namespace.io";
 
-    private Instance i1;
-
-    private Instance i2;
+    private Instance sourceOakRepository;
 
     @Before
-    public void setup() throws RepositoryException {
-        i1 = new Instance();
-        i2 = new Instance();
+    public void setUp() throws Exception {
+        sourceOakRepository = new Instance(); // source instance
 
         // Register namespaces with same prefix but different URIs
-        // on different instances, i1, i2
-        i1.registerNamespace(PREFIX, URI1);
-        i2.registerNamespace(PREFIX, URI2);
+        // on different instances
+        sourceOakRepository.registerNamespace(PREFIX, URI1);
+        super.setUp();
+        NamespaceRegistry nsRegistry = admin.getWorkspace().getNamespaceRegistry();
+        try {
+            if (URI1.equals(nsRegistry.getURI(PREFIX))) {
+                throw new IllegalStateException("prefix already registered for a different uri");
+            }
+        } catch (NamespaceException e) {
+            nsRegistry.registerNamespace(PREFIX, URI2);
+        }
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        sourceOakRepository.admin.logout();
+        if (sourceOakRepository.repository instanceof JackrabbitRepository) {
+            JackrabbitRepository.class.cast(sourceOakRepository.repository).shutdown();
+        }
+        super.tearDown();
     }
 
     @Test
     public void importClashingNamespace() throws RepositoryException, IOException, PackageException {
 
         // Set a property with the namespace prefix on instance i1
-        i1.getRootNode().addNode("tmp").setProperty("{" + URI1 + "}prop1", "value1");
-        i1.admin.save();
+        sourceOakRepository.getRootNode().addNode("tmp").setProperty("{" + URI1 + "}prop1", "value1");
+        sourceOakRepository.admin.save();
 
         // Export the property from instance i1 in a content package archive
 
@@ -89,16 +108,15 @@ public class NamespaceImportTest {
         opts.setMetaInf(inf);
 
         File tmpFile = File.createTempFile("vaulttest", "zip");
-        try (VaultPackage pkg = i1.packMgr.assemble(i1.admin, opts, tmpFile)) {
+        try (VaultPackage pkg = sourceOakRepository.packMgr.assemble(sourceOakRepository.admin, opts, tmpFile)) {
             Archive archive = pkg.getArchive();
 
-            // Import the archive in the instance i2, with strict mode enabled
-
+            // Import the archive in the target repo, with strict mode enabled
             ImportOptions io = new ImportOptions();
             io.setStrict(true);
-            i2.packMgr.extract(archive, io, true);
+            packMgr.extract(archive, io, true);
 
-            assertEquals(i2.getRootNode().getNode("tmp").getProperty("{" + URI1 + "}prop1").getString(), "value1");
+            assertEquals(admin.getRootNode().getNode("tmp").getProperty("{" + URI1 + "}prop1").getString(), "value1");
         } finally {
             tmpFile.delete();
         }
@@ -108,8 +126,8 @@ public class NamespaceImportTest {
     public void importClashingNamespaceOnPath() throws RepositoryException, IOException, PackageException {
 
         // Set a property with the namespace prefix on instance i1
-        i1.getRootNode().addNode("tmp").addNode("{" + URI1 + "}node1").setProperty("test", "value1");
-        i1.admin.save();
+        sourceOakRepository.getRootNode().addNode("tmp").addNode("{" + URI1 + "}node1").setProperty("test", "value1");
+        sourceOakRepository.admin.save();
 
         // Export the property from instance i1 in a content package archive
 
@@ -125,24 +143,33 @@ public class NamespaceImportTest {
         opts.setMetaInf(inf);
 
         File tmpFile = File.createTempFile("vaulttest", "zip");
-        try (VaultPackage pkg = i1.packMgr.assemble(i1.admin, opts, tmpFile)) {
+        try (VaultPackage pkg = sourceOakRepository.packMgr.assemble(sourceOakRepository.admin, opts, tmpFile)) {
             Archive archive = pkg.getArchive();
 
-            // Import the archive in the instance i2, with strict mode enabled
-
+            // Import the archive in another instance with strict mode enabled
             ImportOptions io = new ImportOptions();
             io.setStrict(true);
-            i2.packMgr.extract(archive, io, true);
+            packMgr.extract(archive, io, true);
 
-            assertEquals(i2.getRootNode().getProperty("tmp/{" + URI1 + "}node1/test").getString(), "value1");
+            assertEquals(admin.getRootNode().getProperty("tmp/{" + URI1 + "}node1/test").getString(), "value1");
 
-            i2.relogin();
-            assertNotEquals(PREFIX, i2.admin.getNamespacePrefix(URI1));
+            Session admin2 = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
+            assertNotEquals(PREFIX, admin2.getNamespacePrefix(URI1));
+            admin2.logout();
         } finally {
             tmpFile.delete();
         }
     }
 
+    @Test
+    public void importUndeclaredNamespaceOnDocViewPath() throws IOException, PackageException, RepositoryException {
+        // namespace declared in package but not in affected docview file
+        try (VaultPackage pkg = extractVaultPackageStrict("/test-packages/namespace.zip")) {
+            assertNotNull(pkg);
+        }
+    }
+
+    /** Simple Oak repository wrapper */
     private static final class Instance {
 
         final Repository repository;
@@ -168,11 +195,6 @@ public class NamespaceImportTest {
             admin.getWorkspace().getNamespaceRegistry().registerNamespace(prefix, uri);
         }
 
-        void relogin() throws RepositoryException {
-            admin.logout();
-            admin = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
-
-        }
     }
 
 }

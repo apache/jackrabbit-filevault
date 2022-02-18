@@ -28,8 +28,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
@@ -46,7 +44,6 @@ import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Creates nt:file structures from  {@link SerializationType#XML_GENERIC} or

@@ -295,6 +295,11 @@ public class ValidationExecutorTest {
         }
     }
 
+    /** 
+     * Assert that all messages (after ones with level < WARN are filtered out) are equal to the given violations
+     * @param messages the actual messages (to be filtered)
+     * @param violations the expected violations (in the right order)
+     */
     public static void assertViolation(Collection<? extends ValidationMessage> messages, ValidationMessage... violations) {
         ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.WARN, violations);
     }

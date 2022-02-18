@@ -29,12 +29,12 @@ import java.util.Optional;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.NameFactory;
-import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
 import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
+import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
+import org.apache.jackrabbit.spi.commons.conversion.ParsingNameResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
@@ -137,15 +137,15 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     private final NamespaceSupport nsSupport;
 
     /**
-     * the default name path resolver
+     * the name path resolver to use for the filename (outside the docview), only relevant to resolve jcr:root element
      */
-    private final DefaultNamePathResolver npResolver = new DefaultNamePathResolver(this);
+    private final NameResolver nameResolver;
 
     /**
-     * Optional JCR session used for namespace lookup if not declared in XML
+     * Optional additional namespace resolver used for namespace lookup if not declared in XML
      */
-    private final @Nullable Session session;
-    
+    private final @Nullable NamespaceResolver nsResolver;
+
     private final DocViewParserHandler handler;
     private final String rootNodePath;
 
@@ -155,7 +155,7 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     
     private Locator locator;
     
-    public DocViewSAXHandler(@NotNull DocViewParserHandler handler, @NotNull String rootNodePath, @Nullable Session session) {
+    public DocViewSAXHandler(@NotNull DocViewParserHandler handler, @NotNull String rootNodePath, @Nullable NamespaceResolver nsResolver) {
         super();
         Objects.requireNonNull(handler, "handler must not be null");
         this.handler = handler;
@@ -169,7 +169,8 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
         nodeStack = new LinkedList<>();
         currentPath = null;
         locator = new LocatorImpl();
-        this.session = session;
+        this.nsResolver = nsResolver;
+        this.nameResolver = new ParsingNameResolver(NameFactoryImpl.getInstance(), this);
     }
 
     /**
@@ -256,6 +257,9 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
         return new SimpleEntry<>(name, index);
     }
 
+    /**
+     * This considers both namespaces declared in the XML as well as namespaces from the underlying namespace resolver.
+     */
     @Override
     public String getURI(String prefix) throws NamespaceException {
         if (prefix.equals(Name.NS_EMPTY_PREFIX)) {
@@ -263,32 +267,23 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
         }
         String uri = nsSupport.getURI(prefix);
         if (uri == null) {
-            if (session != null) {
-                try {
-                    return session.getNamespaceURI(prefix);
-                } catch (NamespaceException e) {
-                    throw e;
-                } catch (RepositoryException e) {
-                    throw new NamespaceException("Unknown prefix " + prefix, e);
-                }
+            if (nsResolver != null) {
+                return nsResolver.getURI(prefix);
             }
             throw new NamespaceException("Unknown prefix " + prefix);
         }
         return uri;
     }
 
+    /**
+     * This considers both namespaces declared in the XML as well as namespaces from the underlying namespace resolver.
+     */
     @Override
     public String getPrefix(String uri) throws NamespaceException {
         String prefix = nsSupport.getPrefix(uri);
         if (prefix == null) {
-            if (session != null) {
-                try {
-                    return session.getNamespacePrefix(uri);
-                } catch (NamespaceException e) {
-                    throw e;
-                } catch (RepositoryException e) {
-                    throw new NamespaceException("Unmapped URL " + prefix, e);
-                }
+            if (nsResolver != null) {
+                return nsResolver.getPrefix(uri);
             }
             throw new NamespaceException("Unmapped URL " + uri);
         }
@@ -312,7 +307,7 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
                 Map.Entry<String, Integer> nameAndIndex = getNameAndIndex(Text.getName(rootNodePath));
                 index = nameAndIndex.getValue();
                 try {
-                    name = npResolver.getQName(nameAndIndex.getKey());
+                    name = nameResolver.getQName(nameAndIndex.getKey());
                 } catch (NamespaceException e) {
                     throw new SAXException("Unknown namespace prefix used in file name '" + nameAndIndex.getKey() + "'", e);
                 } catch (IllegalNameException e) {
@@ -329,9 +324,7 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
                     // root node element name should take precedence of root node name derived from path
                     currentPath = Text.getRelativeParent(rootNodePath, 1);
                 }
-                currentPath = PathUtil.append(currentPath, npResolver.getJCRName(name));
-            } catch (NamespaceException e) {
-                throw new SAXException("No prefix defined for namespace uri '" + uri + "' used in node name '" + nameAndIndex.getKey() + "'", e);
+                currentPath = PathUtil.append(currentPath, ISO9075.decode(qName));
             } catch (IllegalArgumentException e) {
                 throw new SAXException("Invalid name format used in node name '" + nameAndIndex.getKey() + "'", e);
             }
@@ -347,11 +340,9 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
                         attributes.getURI(i),
                         ISO9075.decode(attributes.getLocalName(i)));
                 DocViewProperty2 property = DocViewProperty2.parse(
-                        pName.toString(),
-                        attributes.getValue(i),
-                        npResolver);
+                        pName,
+                        attributes.getValue(i));
                 props.add(property);
-                
             }
             DocViewNode2 ni = new DocViewNode2(name, index, props);
             handler.startDocViewNode(currentPath, ni, Optional.ofNullable(nodeStack.peek()), locator.getLineNumber(), locator.getColumnNumber());

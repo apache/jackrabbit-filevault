@@ -165,7 +165,7 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
                 rootNodePath += "/";
             }
             rootNodePath += rootNodeName;
-            new DocViewParser().parse(rootNodePath, source, handler, parentNode.getSession());
+            new DocViewParser(parentNode.getSession()).parse(rootNodePath, source, handler);
         } catch (XmlParseException e) {
             // wrap as repositoryException although not semantically correct for backwards compatibility
             throw new RepositoryException(e);

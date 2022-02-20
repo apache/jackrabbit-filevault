@@ -18,12 +18,15 @@ Import-Package: org.apache.jackrabbit.spi2dav;resolution:=optional,\
                             org.apache.sling.jcr.api;resolution:=optional,\
                             org.apache.jackrabbit.*;version=!,\
                             *
+# include complete packages (all transitive dependencies lead to Import-Package instructions)
+-conditionalpackage: org.apache.jackrabbit.jcr2spi.*
 DynamicImport-Package: *
 -includeresource: @txw2-[0-9.]*.jar!/com/sun/xml/txw2/output/(IndentingXMLStreamWriter|DelegatingXMLStreamWriter).*,\
                   @woodstox-core-[0-9.]*.jar!/!module-info.class,\
                   @stax2-api-[0-9.]*.jar!/!module-info.class,\
                   @maven-artifact-[0-9.]*.jar!/org/apache/maven/artifact/versioning/ComparableVersion*.class,\
                   @h2-[0-9.]*.jar!/org/h2/util/CloseWatcher*.class
+                  
 # whitelist the private reference usage in Packaging.getJcrPackageRegistry(Session)
 -fixupmessages:"Export org.apache.jackrabbit.vault.packaging,  has 1,  private references [org.apache.jackrabbit.vault.packaging.registry.impl]"; \
     restrict:=warning; \

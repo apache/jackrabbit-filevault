@@ -40,6 +40,7 @@ import org.apache.jackrabbit.spi.commons.conversion.MalformedPathException;
 import org.apache.jackrabbit.value.ValueFactoryImpl;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.util.StandaloneManagerProvider;
 import org.apache.jackrabbit.vault.validation.AnyValidationViolationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
@@ -53,7 +54,7 @@ import org.junit.Test;
 
 public class JcrNodeTypeMetaDataImplTest {
 
-    private NodeTypeManagerProvider ntManagerProvider;
+    private StandaloneManagerProvider ntManagerProvider;
 
     private JcrNodeTypeMetaDataImpl root;
 
@@ -62,7 +63,7 @@ public class JcrNodeTypeMetaDataImplTest {
 
     @Before
     public void setUp() throws IOException, RepositoryException, ParseException {
-        ntManagerProvider = new NodeTypeManagerProvider();
+        ntManagerProvider = new StandaloneManagerProvider();
         root = JcrNodeTypeMetaDataImpl.createRoot(false, ntManagerProvider.getEffectiveNodeTypeProvider());
     }
 

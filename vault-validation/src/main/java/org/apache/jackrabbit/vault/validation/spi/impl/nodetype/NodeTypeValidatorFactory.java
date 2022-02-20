@@ -17,28 +17,24 @@
 package org.apache.jackrabbit.vault.validation.spi.impl.nodetype;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.io.UncheckedIOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.jar.Manifest;
 
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.cnd.ParseException;
+import org.apache.jackrabbit.vault.util.StandaloneManagerProvider;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.apache.jackrabbit.vault.validation.spi.util.classloaderurl.CndUtil;
 import org.apache.jackrabbit.vault.validation.spi.util.classloaderurl.URLFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -62,8 +58,6 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
     
     /** Comma-separated list of name spaces that are known as valid (even if not defined in the CND files). Use syntax "prefix1=ns-uri1,prefix2=nsuri2,...". */
     public static final String OPTION_VALID_NAMESPACES = "validNameSpaces";
-
-
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NodeTypeValidatorFactory.class);
 
@@ -109,59 +103,25 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
         }
 
         try {
-            NodeTypeManagerProvider ntManagerProvider = null;
-            ntManagerProvider = new NodeTypeManagerProvider();
-            for (String cndUrl : resolveJarUrls(cndUrls.split(","))) {
-                try (Reader reader = new InputStreamReader(URLFactory.createURL(cndUrl).openStream(), StandardCharsets.US_ASCII)) {
-                    LOGGER.info("Register node types from {}", cndUrl);
-                    ntManagerProvider.registerNodeTypes(reader);
-                } catch (RepositoryException | IOException | ParseException e) {
-                    throw new IllegalArgumentException("Error loading node types from CND at " + cndUrl, e);
+            StandaloneManagerProvider managerProvider = new StandaloneManagerProvider();
+            URLFactory.processUrlStreams(CndUtil.resolveJarUrls(Arrays.asList(cndUrls.split(","))), t -> {
+                try {
+                    managerProvider.registerNodeTypes(t);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
                 }
-            }
+                catch (ParseException | RepositoryException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            });
             for (Map.Entry<String, String> entry : validNameSpaces.entrySet()) {
-                ntManagerProvider.registerNamespace(entry.getKey(), entry.getValue());
+                managerProvider.registerNamespace(entry.getKey(), entry.getValue());
             }
-            return new NodeTypeValidator(context.isIncremental(), context.getFilter(), ntManagerProvider, ntManagerProvider.getNameResolver().getQName(defaultNodeType), settings.getDefaultSeverity(),
+            return new NodeTypeValidator(context.isIncremental(), context.getFilter(), managerProvider, managerProvider.getNameResolver().getQName(defaultNodeType), settings.getDefaultSeverity(),
                     severityForUnknownNodetypes, severityForDefaultNodeTypeViolations);
         } catch (IOException | RepositoryException | ParseException e) {
             throw new IllegalArgumentException("Error loading default node type " + defaultNodeType, e);
         }
-    }
-
-    /**
-     * Resolve URLs pointing to JARs with META-INF/MANIFEST carrying a {@code Sling-Nodetypes} header
-     * @param urls
-     * @return
-     */
-    static List<String> resolveJarUrls(String... urls) {
-        List<String> resolvedUrls = new LinkedList<>();
-        for (String url : urls) {
-            url = url.trim();
-            if (url.endsWith(".jar")) {
-                // https://docs.oracle.com/javase/7/docs/api/java/net/JarURLConnection.html
-                URL jarUrl;
-                try {
-                    jarUrl = URLFactory.createURL("jar:" + url + "!/");
-                    JarURLConnection jarConnection = (JarURLConnection)jarUrl.openConnection();
-                    Manifest manifest = jarConnection.getManifest();
-                    String slingNodetypes = manifest.getMainAttributes().getValue("Sling-Nodetypes");
-                    // split by "," and generate new JAR Urls
-                    if (slingNodetypes == null) {
-                        LOGGER.warn("No 'Sling-Nodetypes' header found in manifest of '{}'", jarUrl);
-                    } else {
-                        for (String nodetype : slingNodetypes.split(",")) {
-                            resolvedUrls.add(jarUrl.toString() + nodetype.trim());
-                        }
-                    }
-                } catch (IOException e) {
-                    throw new IllegalArgumentException("Could not read from JAR " + url, e);
-                }
-            } else {
-                resolvedUrls.add(url);
-            }
-        }
-        return resolvedUrls;
     }
 
     static Map<String,String> parseNamespaces(String optionValue) {

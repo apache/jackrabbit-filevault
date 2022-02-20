@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.jackrabbit.vault.validation.spi.impl.nodetype;
+package org.apache.jackrabbit.vault.util;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,8 +22,6 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import javax.jcr.AccessDeniedException;
-import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
 import javax.jcr.RepositoryException;
 import javax.jcr.UnsupportedRepositoryOperationException;
@@ -61,25 +59,35 @@ import org.apache.jackrabbit.spi.commons.nodetype.NodeTypeStorageImpl;
 import org.apache.jackrabbit.spi.commons.value.QValueFactoryImpl;
 import org.apache.jackrabbit.value.ValueFactoryImpl;
 import org.jetbrains.annotations.NotNull;
+import org.osgi.annotation.versioning.ProviderType;
 
-public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorage {
+/**
+ * A {@link ManagerProvider} which works without an underlying JCR repository.
+ * Useful for dealing with namespaces and node types outside the repository context.
+ */
+@ProviderType
+public final class StandaloneManagerProvider implements ManagerProvider, NamespaceStorage {
 
     // namespace related helpers
     private final @NotNull NamespaceMapping namespaceMapping;
     private final @NotNull NamespaceRegistry namespaceRegistry;
     private final @NotNull NamespaceResolver namespaceResolver;
     private final @NotNull NamePathResolver npResolver;
-    
-    // nodetype related helpers
+
+    // node type related helpers
     private final @NotNull NodeTypeStorage nodeTypeStorage;
     private final @NotNull NodeTypeRegistryImpl nodeTypeRegistry;
     private final @NotNull NodeTypeManagerImpl nodeTypeManager;
-    
+
     private final @NotNull ItemDefinitionProvider itemDefinitionProvider;
 
-    public NodeTypeManagerProvider() throws IOException, RepositoryException, ParseException {
+    public StandaloneManagerProvider() throws IOException, RepositoryException, ParseException {
+        this(true);
+    }
+
+    public StandaloneManagerProvider(boolean registerDefaultNodeTypes) throws IOException, RepositoryException, ParseException {
         namespaceMapping = new NamespaceMapping();
-        // add default mapping, the rest comes from the CDN provided via the reader
+        // add default mapping, the rest comes from the CND provided via the reader
         namespaceMapping.setMapping(NamespaceRegistry.PREFIX_EMPTY, NamespaceRegistry.NAMESPACE_EMPTY);
         namespaceRegistry = new NamespaceRegistryImpl(this);
         namespaceResolver = new RegistryNamespaceResolver(namespaceRegistry);
@@ -88,11 +96,12 @@ public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorag
         nodeTypeRegistry = NodeTypeRegistryImpl.create(nodeTypeStorage, namespaceRegistry);
         nodeTypeManager = new NodeTypeManagerImpl(nodeTypeRegistry, this);
         itemDefinitionProvider = new ItemDefinitionProviderImpl(nodeTypeRegistry, null, null);
-        // always provide default nodetypes
-        try (Reader reader = new InputStreamReader(
-                this.getClass().getResourceAsStream("/default-nodetypes.cnd"),
-                StandardCharsets.US_ASCII)) {
-            registerNodeTypes(reader);
+        if (registerDefaultNodeTypes) {
+            try (Reader reader = new InputStreamReader(
+                    this.getClass().getResourceAsStream("/default-nodetypes.cnd"),
+                    StandardCharsets.US_ASCII)) {
+                registerNodeTypes(reader);
+            }
         }
     }
 
@@ -107,12 +116,12 @@ public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorag
 
     @Override
     public @NotNull NameResolver getNameResolver() {
-        return npResolver;
+        return getNamePathResolver();
     }
 
     @Override
     public @NotNull PathResolver getPathResolver() {
-        return npResolver;
+        return getNamePathResolver();
     }
 
     @Override
@@ -180,24 +189,22 @@ public class NodeTypeManagerProvider implements ManagerProvider, NamespaceStorag
     }
 
     @Override
-    public String getPrefix(String uri) throws NamespaceException, RepositoryException {
+    public String getPrefix(String uri) throws RepositoryException {
         return namespaceMapping.getPrefix(uri);
     }
 
     @Override
-    public String getURI(String prefix) throws NamespaceException, RepositoryException {
+    public String getURI(String prefix) throws RepositoryException {
         return namespaceMapping.getURI(prefix);
     }
 
     @Override
-    public void registerNamespace(String prefix, String uri)
-            throws NamespaceException, UnsupportedRepositoryOperationException, AccessDeniedException, RepositoryException {
+    public void registerNamespace(String prefix, String uri) throws RepositoryException {
         namespaceMapping.setMapping(prefix, uri);
     }
 
     @Override
-    public void unregisterNamespace(String uri)
-            throws NamespaceException, UnsupportedRepositoryOperationException, AccessDeniedException, RepositoryException {
+    public void unregisterNamespace(String uri) throws RepositoryException {
         namespaceMapping.removeMapping(uri);
     }
 }

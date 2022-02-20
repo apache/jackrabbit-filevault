@@ -153,6 +153,11 @@
             <artifactId>jackrabbit-spi2dav</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-jcr2spi</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- JCR Stuff -->
         <dependency>
             <groupId>javax.jcr</groupId>

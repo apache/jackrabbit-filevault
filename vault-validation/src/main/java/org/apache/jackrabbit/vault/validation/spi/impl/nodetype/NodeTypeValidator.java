@@ -50,6 +50,7 @@ import org.apache.jackrabbit.value.StringValue;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
+import org.apache.jackrabbit.vault.util.StandaloneManagerProvider;
 import org.apache.jackrabbit.vault.validation.ValidationExecutor;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.JcrPathValidator;
@@ -74,13 +75,13 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
     private final ValidationMessageSeverity severityForUnknownNodeTypes;
     private final ValidationMessageSeverity severityForDefaultNodeTypeViolations;
     private final DocViewPropertyValueFactory docViewPropertyValueFactory;
-    private final NodeTypeManagerProvider ntManagerProvider;
+    private final StandaloneManagerProvider ntManagerProvider;
     private final Set<String> loggedUnknownNodeTypeMessages;
 
     private final @NotNull Name defaultType;
     private JcrNodeTypeMetaData currentNodeTypeMetaData;
 
-    public NodeTypeValidator(boolean isIncremental, @NotNull WorkspaceFilter filter, @NotNull NodeTypeManagerProvider ntManagerProvider,
+    public NodeTypeValidator(boolean isIncremental, @NotNull WorkspaceFilter filter, @NotNull StandaloneManagerProvider ntManagerProvider,
             @NotNull Name defaultPrimaryNodeType, @NotNull ValidationMessageSeverity defaultSeverity,
             @NotNull ValidationMessageSeverity severityForUnknownNodeTypes, @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations)
             throws ConstraintViolationException, NoSuchNodeTypeException {

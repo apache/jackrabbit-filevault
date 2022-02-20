@@ -16,9 +16,19 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.util.classloaderurl;
 
+import java.io.IOException;
+
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.function.Consumer;
 
+import org.osgi.annotation.versioning.ProviderType;
+
+@ProviderType
 public class URLFactory {
     public static final String TCCL_PROTOCOL_PREFIX = "tccl:";
     
@@ -37,5 +47,15 @@ public class URLFactory {
             url = new URL(spec);
         }
         return url;
+    }
+
+    public static void processUrlStreams(List<String> urls, Consumer<Reader> readerProcessor) {
+        for (String url : urls) {
+            try (Reader reader = new InputStreamReader(URLFactory.createURL(url).openStream(), StandardCharsets.US_ASCII)) {
+                readerProcessor.accept(reader);
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Error loading content from " + url, e);
+            }
+        }
     }
 }

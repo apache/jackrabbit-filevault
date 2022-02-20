@@ -138,6 +138,12 @@ public class DocViewParser {
         }
     }
 
+    /**
+     * Don't forget to reset the reader or use a new reader before parsing the xml.
+     * @param reader the reader from which to read the XML
+     * @return {@code true} in case the given source is Document View XML format
+     * @throws IOException
+     */
     public static boolean isDocView(Reader reader) throws IOException {
         // read a couple of chars...1024 should be enough
         char[] buffer = new char[1024];

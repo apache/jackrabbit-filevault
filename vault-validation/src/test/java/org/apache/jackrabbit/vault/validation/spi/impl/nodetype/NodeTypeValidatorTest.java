@@ -40,6 +40,7 @@ import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
+import org.apache.jackrabbit.vault.util.StandaloneManagerProvider;
 import org.apache.jackrabbit.vault.validation.AnyValidationViolationMessageMatcher;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorTest;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
@@ -70,7 +71,7 @@ public class NodeTypeValidatorTest {
 
     static NodeTypeValidator createValidator(WorkspaceFilter filter, Name defaultNodeType, String... cndUrls)
             throws IOException, RepositoryException, ParseException {
-        NodeTypeManagerProvider ntManagerProvider = new NodeTypeManagerProvider();
+        StandaloneManagerProvider ntManagerProvider = new StandaloneManagerProvider();
         for (String cndUrl : cndUrls) {
             try (Reader reader = new InputStreamReader(URLFactory.createURL(cndUrl).openStream(), StandardCharsets.US_ASCII)) {
                 ntManagerProvider.registerNodeTypes(reader);

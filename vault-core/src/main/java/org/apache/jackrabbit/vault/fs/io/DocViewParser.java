@@ -16,10 +16,14 @@
  */
 package org.apache.jackrabbit.vault.fs.io;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 import javax.jcr.Session;
@@ -28,20 +32,26 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewSAXHandler;
+import org.apache.jackrabbit.vault.util.Constants;
+import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.osgi.annotation.versioning.ProviderType;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
 /**
- * This is a thread-safe SAX parser which deals with docview files and passes them to a given {@link DocViewParserHandler}.
+ * This is a thread-safe SAX parser which deals with <a href="https://jackrabbit.apache.org/filevault/docview.html">FileVault Document View XML files</a>
+ * and passes them to a given {@link DocViewParserHandler}.
  * 
  */
-public class DocViewParser {
+@ProviderType
+public final class DocViewParser {
 
     private final @Nullable NamespaceResolver resolver;
 
@@ -126,6 +136,7 @@ public class DocViewParser {
 
     /**
      *
+     * Checks if the given {@link InputSource} is complying with the Document View XML format.
      * @param source the source to analyze
      * @return {@code true} in case the given source is Document View XML format
      * @throws IOException if an I/O error occurs
@@ -139,12 +150,13 @@ public class DocViewParser {
     }
 
     /**
+     * Checks if the given {@link Reader} is complying with the Document View XML format.
      * Don't forget to reset the reader or use a new reader before parsing the xml.
      * @param reader the reader from which to read the XML
      * @return {@code true} in case the given source is Document View XML format
      * @throws IOException
      */
-    public static boolean isDocView(Reader reader) throws IOException {
+    private static boolean isDocView(Reader reader) throws IOException {
         // read a couple of chars...1024 should be enough
         char[] buffer = new char[1024];
         int pos = 0;
@@ -158,6 +170,61 @@ public class DocViewParser {
         String str = new String(buffer, 0, pos);
         // check for docview
         return str.contains("<jcr:root") && str.contains("\"http://www.jcp.org/jcr/1.0\"");
+    }
+
+
+    /**
+     * Converts the given file path to the absolute root node path given that {@link InputStream} is complying with the Document View XML format.
+     * @param input the given input is automatically reset after this method returns
+     * @param filePath the file path of the file containing the potential docview xml, must be relative to the jcr_root directory
+     * @return either the absolute repository path of the root node of the given docview xml or {@code null} if no docview xml given
+     * @throws IOException */
+    public static @Nullable String getDocumentViewXmlRootNodePath(InputStream input, Path filePath) throws IOException {
+        if (filePath.isAbsolute()) {
+            throw new IllegalArgumentException("The filePath parameter must be given as relative path!");
+        }
+        
+        if (!(input instanceof BufferedInputStream)) {
+            input = new BufferedInputStream(input, 1024);
+        }
+        Path name = filePath.getFileName();
+        Path rootPath = null;
+        int nameCount = filePath.getNameCount();
+        if (name.equals(Paths.get(Constants.DOT_CONTENT_XML))) {
+            // get parent path
+            if (nameCount > 1) {
+                rootPath = filePath.getParent();
+            } else {
+                rootPath = Paths.get("");
+            } 
+            // correct suffix matching
+        } else if (name.toString().endsWith(".xml")) {
+
+            // we need to rely on a buffered input stream to be able to reset it later
+            input.mark(1024);
+            // analyze content
+            // this closes the input source internally, therefore protect against closing
+            // make sure to initialize the SLF4J logger appropriately (for the XmlAnalyzer)
+            try {
+                if (DocViewParser.isDocView(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                    //  remove .xml extension
+                    String fileName = filePath.getFileName().toString();
+                    fileName = fileName.substring(0, fileName.length() - ".xml".length());
+                    if (nameCount > 1) {
+                        rootPath = filePath.getParent().resolve(fileName);
+                    } else {
+                        rootPath = Paths.get(fileName);
+                    }
+                }
+            } finally {
+                input.reset();
+            }
+        }
+        if (rootPath == null) {
+            return null;
+        }
+        String platformPath = FilenameUtils.separatorsToUnix(rootPath.toString());
+        return "/" + PlatformNameFormat.getRepositoryPath(platformPath, true);
     }
 
     private SAXParser createSaxParser() throws ParserConfigurationException, SAXException {

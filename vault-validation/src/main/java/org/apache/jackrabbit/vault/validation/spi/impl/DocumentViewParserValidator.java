@@ -16,13 +16,9 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,7 +31,6 @@ import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
-import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.validation.ValidationExecutor;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.impl.util.EnhancedBufferedInputStream;
@@ -100,9 +95,9 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         // wrap input stream as buffered input stream (to be able to reset it and for performance reasons)
         final EnhancedBufferedInputStream bufferedInput = new EnhancedBufferedInputStream(input);
 
-        Path documentViewXmlRootPath = getDocumentViewXmlRootPath(bufferedInput, filePath);
-        if (documentViewXmlRootPath != null) {
-            messages.addAll(validateDocumentViewXml(bufferedInput, filePath, basePath, ValidationExecutor.filePathToNodePath(documentViewXmlRootPath),
+        String documentViewXmlRootNodePath = DocViewParser.getDocumentViewXmlRootNodePath(bufferedInput, filePath);
+        if (documentViewXmlRootNodePath != null) {
+            messages.addAll(validateDocumentViewXml(bufferedInput, filePath, basePath, documentViewXmlRootNodePath,
                             nodePathsAndLineNumbers));
             
         } else {
@@ -111,51 +106,6 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
         }
         
        return messages;
-    }
-
-    /** @param input the given input stream must be reset later on
-     * @param path
-     * @return either the path of the root node of the given docview xml or {@code null} if no docview xml given
-     * @throws IOException */
-    static Path getDocumentViewXmlRootPath(BufferedInputStream input, Path path) throws IOException {
-        Path name = path.getFileName();
-        Path rootPath = null;
-
-        int nameCount = path.getNameCount();
-        if (name.equals(Paths.get(Constants.DOT_CONTENT_XML))) {
-            if (nameCount > 1) {
-                rootPath = path.subpath(0, nameCount - 1);
-                // fix root mapping for http://jackrabbit.apache.org/filevault/vaultfs.html#Extended_File_aggregates
-                if (rootPath.toString().endsWith(EXTENDED_FILE_AGGREGATE_FOLDER_SUFFIX)) {
-                    rootPath = Paths.get(rootPath.toString().substring(0, rootPath.toString().length() - EXTENDED_FILE_AGGREGATE_FOLDER_SUFFIX.length()));
-                }
-            } else {
-                rootPath = Paths.get("");
-            }
-            // correct suffix matching
-        } else if (name.toString().endsWith(".xml")) {
-
-            // we need to rely on a buffered input stream to be able to reset it later
-            input.mark(1024);
-            // analyze content
-            // this closes the input source internally, therefore protect against closing
-            // make sure to initialize the SLF4J logger appropriately (for the XmlAnalyzer)
-            try {
-                if (DocViewParser.isDocView(new InputStreamReader(input, StandardCharsets.UTF_8))) {
-                    //  remove .xml extension
-                    String fileName = path.getFileName().toString();
-                    fileName = fileName.substring(0, fileName.length() - ".xml".length());
-                    if (nameCount > 1) {
-                        rootPath = path.subpath(0, nameCount - 1).resolve(fileName);
-                    } else {
-                        rootPath = Paths.get(fileName);
-                    }
-                }
-            } finally {
-                input.reset();
-            }
-        }
-        return rootPath;
     }
 
     protected Collection<ValidationMessage> validateDocumentViewXml(InputStream input, @NotNull Path filePath, @NotNull Path basePath, String rootNodePath,

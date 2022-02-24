@@ -16,6 +16,11 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl.nodetype;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -37,6 +42,7 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
+import org.apache.jackrabbit.commons.cnd.ParseException;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
 import org.apache.jackrabbit.spi.commons.conversion.NameParser;
@@ -53,6 +59,7 @@ import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.util.StandaloneManagerProvider;
 import org.apache.jackrabbit.vault.validation.ValidationExecutor;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
+import org.apache.jackrabbit.vault.validation.spi.GenericMetaInfDataValidator;
 import org.apache.jackrabbit.vault.validation.spi.JcrPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
@@ -61,7 +68,9 @@ import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValidator {
+public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValidator, GenericMetaInfDataValidator {
+    static final String MESSAGE_INVALID_CND_IN_PACKAGE = "Invalid CND file found in package at %s: %s. Cannot consider it for node type validation.";
+    static final String MESSAGE_REGISTERED_CND_IN_PACKAGE = "CDN file %s registered for node type validation";
     static final String MESSAGE_INVALID_PROPERTY_VALUE = "Property %s does not have a valid value: %s";
     static final String MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE = "%s Skip validation of nodes with that type/name";
     static final String MESSAGE_MISSING_PRIMARY_TYPE = "Mandatory jcr:primaryType missing on node '%s'";
@@ -105,6 +114,26 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    @Override
+    public @Nullable Collection<ValidationMessage> validateMetaInfData(@NotNull InputStream input, @NotNull Path filePath, @NotNull Path basePath) throws IOException {
+        try (InputStreamReader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+            ntManagerProvider.registerNodeTypes(reader);
+            return Collections.singleton(
+                    new ValidationMessage(ValidationMessageSeverity.INFO, String.format(MESSAGE_REGISTERED_CND_IN_PACKAGE, filePath)));
+        } catch (RepositoryException | ParseException e) {
+            return Collections.singleton(
+                    new ValidationMessage(defaultSeverity, String.format(MESSAGE_INVALID_CND_IN_PACKAGE, filePath, e.getMessage()), filePath, basePath, 0, 0, e));
+        }
+    }
+
+    @Override
+    public boolean shouldValidateMetaInfData(@NotNull Path filePath, @NotNull Path basePath) {
+        if (filePath.getFileName().toString().endsWith(".cnd")) {
+            return true;
+        }
+        return false;
     }
 
     @Override

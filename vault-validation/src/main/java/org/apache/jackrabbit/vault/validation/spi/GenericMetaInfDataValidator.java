@@ -18,11 +18,8 @@ package org.apache.jackrabbit.vault.validation.spi;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.ShutdownChannelGroupException;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Map;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;

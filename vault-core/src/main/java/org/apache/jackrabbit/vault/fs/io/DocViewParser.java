@@ -16,7 +16,6 @@
  */
 package org.apache.jackrabbit.vault.fs.io;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,6 +32,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewSAXHandler;
@@ -54,6 +54,8 @@ import org.xml.sax.SAXException;
 public final class DocViewParser {
 
     private final @Nullable NamespaceResolver resolver;
+
+    private static final int MAX_NUM_BYTES_TO_READ_FOR_DOCVIEW_DETECTION = 1024;
 
     public DocViewParser() {
         this((NamespaceResolver)null);
@@ -157,8 +159,8 @@ public final class DocViewParser {
      * @throws IOException
      */
     private static boolean isDocView(Reader reader) throws IOException {
-        // read a couple of chars...1024 should be enough
-        char[] buffer = new char[1024];
+        // read a couple of chars...1024 should be enough, assume 1 char = 1 byte
+        char[] buffer = new char[MAX_NUM_BYTES_TO_READ_FOR_DOCVIEW_DETECTION];
         int pos = 0;
         while (pos<buffer.length) {
             int read = reader.read(buffer, pos, buffer.length - pos);
@@ -183,10 +185,6 @@ public final class DocViewParser {
         if (filePath.isAbsolute()) {
             throw new IllegalArgumentException("The filePath parameter must be given as relative path!");
         }
-        
-        if (!(input instanceof BufferedInputStream)) {
-            input = new BufferedInputStream(input, 1024);
-        }
         Path name = filePath.getFileName();
         Path rootPath = null;
         int nameCount = filePath.getNameCount();
@@ -200,13 +198,12 @@ public final class DocViewParser {
             // correct suffix matching
         } else if (name.toString().endsWith(".xml")) {
 
-            // we need to rely on a buffered input stream to be able to reset it later
-            input.mark(1024);
+            input.mark(MAX_NUM_BYTES_TO_READ_FOR_DOCVIEW_DETECTION);
             // analyze content
             // this closes the input source internally, therefore protect against closing
             // make sure to initialize the SLF4J logger appropriately (for the XmlAnalyzer)
             try {
-                if (DocViewParser.isDocView(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                if (DocViewParser.isDocView(new InputStreamReader(new BoundedInputStream(input, MAX_NUM_BYTES_TO_READ_FOR_DOCVIEW_DETECTION), StandardCharsets.US_ASCII))) { // make sure only 1 byte = character is used
                     //  remove .xml extension
                     String fileName = filePath.getFileName().toString();
                     fileName = fileName.substring(0, fileName.length() - ".xml".length());

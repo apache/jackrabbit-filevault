@@ -55,7 +55,7 @@ public final class DocViewParser {
 
     private final @Nullable NamespaceResolver resolver;
 
-    private static final int MAX_NUM_BYTES_TO_READ_FOR_DOCVIEW_DETECTION = 1024;
+    public static final int MAX_NUM_BYTES_TO_READ_FOR_DOCVIEW_DETECTION = 1024;
 
     public DocViewParser() {
         this((NamespaceResolver)null);

@@ -21,7 +21,6 @@ import java.util.List;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.util.DocViewNode2;
-import org.xml.sax.SAXException;
 
 /**
  * {@code DocViewAdapter} is used by the {@link org.apache.jackrabbit.vault.fs.impl.io.DocViewImporter} to handle
@@ -34,21 +33,18 @@ public interface DocViewAdapter {
     /**
      * Start node is invoked when the importer descends into an element.
      * @param node the node
-     * @throws SAXException if a parsing error occurs.
      * @throws RepositoryException if a import exception occurs.
      */
     void startNode(DocViewNode2 node) throws RepositoryException;
 
     /**
      * Ends node is invoked when the importer ascends from an element.
-     * @throws SAXException if a parsing error occurs.
      * @throws RepositoryException if a import exception occurs.
      */
     void endNode() throws RepositoryException;
 
     /**
      * Is called by the importer if the adapter is no longer used and must finalize the import.
-     * @throws SAXException if a parsing error occurs.
      * @throws RepositoryException if a import exception occurs.
      * @return The paths that were created.
      */

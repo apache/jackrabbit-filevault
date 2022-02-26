@@ -1,0 +1,10 @@
+# https://cwiki.apache.org/confluence/display/INFRA/git+-+.asf.yaml+features#Git.asf.yamlfeatures-GitHubsettings
+github:
+  description: "Apache Jackrabbit FileVault"
+  homepage: https://jackrabbit.apache.org/filevault/index.html
+  labels:
+    - java
+    - jcr
+    - jackrabbit
+    - oak
+    - repository

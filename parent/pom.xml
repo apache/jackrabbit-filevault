@@ -245,6 +245,7 @@ Bundle-Category: jackrabbit
                     <artifactId>apache-rat-plugin</artifactId>
                     <configuration>
                         <excludes>
+                            <excludes>.asf.yaml</excludes>
                             <excludes>.ratignore</excludes>
                             <exclude>release.properties</exclude>
                             <exclude>.git/**</exclude>

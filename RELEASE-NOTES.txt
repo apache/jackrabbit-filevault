@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.5.8
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.6.0
 
 Introduction
 ------------
@@ -8,6 +8,39 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.6.0
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.6.0
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
+
+Bug
+    * [JCRVLT-457] - scm element in pom.xml removed during release:prepare
+    * [JCRVLT-588] - potential issue with symlinks in path for install cache
+    * [JCRVLT-589] - PackageInstallIT leaves test files in tmp folder
+    * [JCRVLT-605] - Don't set/overwrite excluded protected properties during import
+    * [JCRVLT-606] - Potential NPE in PackageManager.rewrap(....)
+
+Improvement
+    * [JCRVLT-357] - Split up DocViewSaxImporter: Separate parsing from importing
+    * [JCRVLT-559] - jackrabbit-nodetypes validator: Support CNDs contained in package
+    * [JCRVLT-580] - Execute ITs with multiple Maven versions
+    * [JCRVLT-583] - Update Logback to 1.2.10
+    * [JCRVLT-587] - Validator: Check for duplicate jcr:uuid values
+    * [JCRVLT-590] - Remove finalizer in ZipVaultPackage
+    * [JCRVLT-591] - Detect unclosed packages and archives
+    * [JCRVLT-592] - Update to Oak 1.42.0
+    * [JCRVLT-593] - vault-cli: Too many transitive libraries included
+    * [JCRVLT-600] - jackrabbit-docviewparser: optionally accept undeclared prefixes in file name
+    * [JCRVLT-601] - Improve documentation of namespace handling
+    * [JCRVLT-603] - Mark all classes in package 'o.a.j.vault.fs.spi' as ProviderType
+
+Task
+    * [JCRVLT-607] - Require Java 11+ for building
+    * [JCRVLT-594] - add test coverage for duplicate jcr:uuids in package content
+    * [JCRVLT-596] - add OSGi config for default IdConflictPolicy
 
 
 Changes in Jackrabbit FileVault 3.5.8

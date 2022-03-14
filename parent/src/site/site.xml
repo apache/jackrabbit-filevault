@@ -47,7 +47,7 @@
   _paq.push(['trackPageView']);
   _paq.push(['enableLinkTracking']);
   (function() {
-    var u="//matomo.privacy.apache.org/";
+    var u="https://matomo.privacy.apache.org/";
     _paq.push(['setTrackerUrl', u+'matomo.php']);
     _paq.push(['setSiteId', '4']);
     var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
@@ -56,6 +56,11 @@
 </script>
 <!-- End Matomo Code -->
        ]]></head>
+       <footer><![CDATA[
+<p>&#169; $date.get('yyyy')
+<a href="https://www.apache.org/">The Apache Software Foundation</a> &vert; <a href="https://privacy.apache.org/policies/privacy-policy-public.html">Privacy Policy</a>
+</p>
+       ]]></footer>
     </body>
 
     <skin>

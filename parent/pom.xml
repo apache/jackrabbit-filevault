@@ -282,6 +282,12 @@ Bundle-Category: jackrabbit
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>3.2.1</version>
                 </plugin>
+                <!-- Update from 3.10.0 in ASF Parent  -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.10.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -309,8 +315,6 @@ Bundle-Category: jackrabbit
                     <showDeprecation>false</showDeprecation>
                     <showWarnings>true</showWarnings>
                     <optimize>false</optimize>
-                    <!-- to workaround https://issues.apache.org/jira/browse/MCOMPILER-485 -->
-                    <createMissingPackageInfoClass>false</createMissingPackageInfoClass>
                 </configuration>
             </plugin>
             <plugin>

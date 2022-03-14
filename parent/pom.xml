@@ -420,10 +420,11 @@ Bundle-Category: jackrabbit
                 <version>1.2.12</version>
                 <scope>provided</scope>
             </dependency>
+            <!-- https://github.com/JetBrains/java-annotations -->
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
-                <version>18.0.0</version>
+                <version>23.0.0</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>

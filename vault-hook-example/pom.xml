@@ -47,7 +47,6 @@
             <!-- assemble dist -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2</version>
                 <executions>
                     <execution>
                         <id>assemble-distribution</id>
@@ -58,8 +57,7 @@
                         </configuration>
                         <phase>package</phase>
                         <goals>
-                            <goal>directory-inline</goal>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -68,7 +66,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
                 <configuration>
                     <archive>
                         <manifest>

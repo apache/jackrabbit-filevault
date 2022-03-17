@@ -70,7 +70,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValidator, GenericMetaInfDataValidator {
     static final String MESSAGE_INVALID_CND_IN_PACKAGE = "Invalid CND file found in package at %s: %s. Cannot consider it for node type validation.";
-    static final String MESSAGE_REGISTERED_CND_IN_PACKAGE = "CDN file %s registered for node type validation";
+    static final String MESSAGE_REGISTERED_CND_IN_PACKAGE = "CND file '%s' registered for node type validation";
     static final String MESSAGE_INVALID_PROPERTY_VALUE = "Property %s does not have a valid value: %s";
     static final String MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE = "%s Skip validation of nodes with that type/name";
     static final String MESSAGE_MISSING_PRIMARY_TYPE = "Mandatory jcr:primaryType missing on node '%s'";

@@ -347,11 +347,13 @@ public class AdvancedFilterValidatorTest {
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps/test2/something")));
 
+        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test4/test"), true, false),
+                AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         messages = validator.done();
         ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
                 new ValidationMessage(ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_ORPHANED_FILTER_ENTRIES,
-                                "entry with root '/apps/test', includes [regex: .*/valid] below root '/apps/test2', entry with root '/apps/test4/test'")));
+                                "entry with root '/apps/test', includes [regex: .*/valid] below root '/apps/test2'")));
     }
 
     @Test

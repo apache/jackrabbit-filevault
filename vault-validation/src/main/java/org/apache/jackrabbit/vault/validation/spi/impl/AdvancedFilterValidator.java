@@ -240,12 +240,6 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
      * @return
      */
     private Collection<ValidationMessage> validateNodePath(@NotNull String nodePath) {
-        if (isSubPackage) {
-            return null; // not relevant for sub packages
-        }
-        // remove from orphaned list
-        removeFromOrphanedFilterEntries(nodePath);
-        
         // now go through all includes
         if (!filter.contains(nodePath)) {
             if (filter.isAncestor(nodePath)) {
@@ -286,6 +280,12 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
     @Override
     public @Nullable Collection<ValidationMessage> validateJcrPath(@NotNull NodeContext nodeContext,
             boolean isFolder, boolean isDocViewXml) {
+        if (isSubPackage) {
+            return null; // not relevant for sub packages
+        }
+        // remove from orphaned list
+        removeFromOrphanedFilterEntries(nodeContext.getNodePath());
+
         if (!isFolder) {
             return validateNodePath(nodeContext.getNodePath());
         } else {

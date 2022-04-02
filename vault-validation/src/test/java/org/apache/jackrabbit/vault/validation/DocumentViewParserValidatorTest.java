@@ -40,6 +40,7 @@ import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.util.JcrConstants;
+import org.apache.jackrabbit.vault.validation.impl.util.ValidatorDocViewParserHandler;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -282,7 +283,7 @@ public class DocumentViewParserValidatorTest {
     }
 
     @Test
-    public void testDocViewWithInvalidType() throws ParserConfigurationException, SAXException, URISyntaxException, IOException {
+    public void testDocViewWithUnknownType() throws ParserConfigurationException, SAXException, URISyntaxException, IOException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/invalid/wrongtype.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "invalid","wrongtype.xml"), Paths.get(""), nodePathsAndLineNumbers);
 
@@ -294,4 +295,21 @@ public class DocumentViewParserValidatorTest {
         }
     }
 
+    @Test
+    public void testDocViewWithInvalidStringSerializationForType() throws ParserConfigurationException, SAXException, URISyntaxException, IOException {
+        try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/invalid/inconvertibletypes.xml")) {
+            Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "invalid","inconvertibletypes.xml"), Paths.get(""), nodePathsAndLineNumbers);
+
+           ValidationExecutorTest.assertViolation(messages,
+                    new ValidationViolation(DocumentViewParserValidatorFactory.ID,
+                            ValidationMessageSeverity.ERROR,
+                            String.format(ValidatorDocViewParserHandler.MESSAGE_INVALID_STRING_SERIALIZATION, "Long", "attribute2", "1.0"),
+                            Paths.get("apps/invalid/inconvertibletypes.xml"), Paths.get(""), "/apps/invalid/inconvertibletypes/somepath", 28, 6, null),
+                    new ValidationViolation(DocumentViewParserValidatorFactory.ID,
+                            ValidationMessageSeverity.ERROR,
+                            String.format(ValidatorDocViewParserHandler.MESSAGE_INVALID_STRING_SERIALIZATION, "Date", "attribute1", "somedate"),
+                            Paths.get("apps/invalid/inconvertibletypes.xml"), Paths.get(""), "/apps/invalid/inconvertibletypes/somepath", 28, 6, null) 
+                   );
+        }
+    }
 }

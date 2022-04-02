@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.util;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,7 +56,12 @@ public class DocViewNode2 {
         }
         this.index = index;
         Objects.requireNonNull(properties, "properties must not be null");
-        this.properties = properties.stream().collect(Collectors.toMap(DocViewProperty2::getName, Function.identity()));
+        this.properties = properties.stream().collect(Collectors.toMap(
+                DocViewProperty2::getName, 
+                Function.identity(),
+                (existing, replacement) -> existing,
+                LinkedHashMap::new // keep order of properties in the map
+                ));
     }
 
     public @NotNull DocViewNode2 cloneWithDifferentProperties(@NotNull Collection<DocViewProperty2> properties) {

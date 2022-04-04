@@ -49,7 +49,7 @@ import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.xml.sax.SAXException;
 
 /**
- * The docview sax formatter generates SAX events to a given ContentHandler based on the aggregate tree.
+ * Writes the enhanced docview XML based on the aggregate tree to a given {@link XMLStreamWriter}.
  */
 public class DocViewSAXFormatter implements AggregateWalkListener {
 

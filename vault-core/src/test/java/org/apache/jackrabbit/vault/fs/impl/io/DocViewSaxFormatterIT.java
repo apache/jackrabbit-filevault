@@ -18,12 +18,15 @@
 package org.apache.jackrabbit.vault.fs.impl.io;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jcr.GuestCredentials;
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
@@ -143,4 +146,61 @@ public class DocViewSaxFormatterIT extends IntegrationTestBase {
                 "    testproperty=\"lowercase\"/>\n", out.toString("utf-8"));
     }
 
+    @Test
+    public void testSnsNodeNames() throws RepositoryException, URISyntaxException, IOException {
+        Assume.assumeFalse(isOak()); // same-name siblings are only supported by Jackrabbit2
+        Node node = JcrUtils.getOrCreateByPath("/testroot", NodeType.NT_UNSTRUCTURED, admin);
+        node.addNode("childnode",  NodeType.NT_UNSTRUCTURED);
+        node.addNode("childnode",  NodeType.NT_UNSTRUCTURED);
+        node.addNode("childnode",  NodeType.NT_UNSTRUCTURED);
+        admin.save();
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/testroot"));
+        RepositoryAddress addr = new RepositoryAddress("/" + admin.getWorkspace().getName() + "/");
+        VaultFileSystem jcrfs = Mounter.mount(null, filter, addr, null, admin);
+        Aggregate a = jcrfs.getAggregateManager().getRoot().getAggregate("testroot");
+        DocViewSerializer s = new DocViewSerializer(a);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        s.writeContent(out);
+
+        assertEquals("valid xml",
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
+                "    jcr:primaryType=\"nt:unstructured\">\n" +
+                "    <childnode jcr:primaryType=\"nt:unstructured\"/>\n" +
+                "    <childnode_x005b_2_x005d_ jcr:primaryType=\"nt:unstructured\"/>\n" +
+                "    <childnode_x005b_3_x005d_ jcr:primaryType=\"nt:unstructured\"/>\n" +
+                "</jcr:root>\n", out.toString("utf-8"));
+    }
+
+    @Test
+    public void testSpecialNames() throws RepositoryException, URISyntaxException, IOException {
+        Node node = JcrUtils.getOrCreateByPath("/testroot", NodeType.NT_UNSTRUCTURED, admin);
+        node.addNode("1test",  NodeType.NT_UNSTRUCTURED);
+        Node childNode = node.addNode("test%test",  NodeType.NT_UNSTRUCTURED);
+        childNode.setProperty("_test&test", "test");
+        admin.save();
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/testroot"));
+        RepositoryAddress addr = new RepositoryAddress("/" + admin.getWorkspace().getName() + "/");
+        VaultFileSystem jcrfs = Mounter.mount(null, filter, addr, null, admin);
+        Aggregate a = jcrfs.getAggregateManager().getRoot().getAggregate("testroot");
+        DocViewSerializer s = new DocViewSerializer(a);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        s.writeContent(out);
+
+        assertEquals("valid xml",
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
+                "    jcr:primaryType=\"nt:unstructured\">\n" +
+                "    <_x0031_test jcr:primaryType=\"nt:unstructured\"/>\n" +
+                "    <test_x0025_test\n" +
+                "        jcr:primaryType=\"nt:unstructured\"\n" +
+                "        _test_x0026_test=\"test\"/>\n" +
+                "</jcr:root>\n", out.toString("utf-8"));
+    }
 }

@@ -257,7 +257,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
                 // attribute name (encode property name to make sure it's a valid xml name)
                 String attrName = ISO9075.encode(prop.getName());
                 Name qAttributeName = getQName(attrName);
-                boolean sort = qName.equals(NameConstants.JCR_MIXINTYPES);
+                boolean sort = qAttributeName.equals(NameConstants.JCR_MIXINTYPES);
                 String attributeNamespaceUri = qAttributeName.getNamespaceURI();
                 if (attributeNamespaceUri.length()>0) {
                     writer.writeAttribute(nsResolver.getPrefix(attributeNamespaceUri), attributeNamespaceUri, qAttributeName.getLocalName(), 

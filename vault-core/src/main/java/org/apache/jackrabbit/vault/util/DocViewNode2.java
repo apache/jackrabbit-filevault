@@ -16,20 +16,35 @@
  ************************************************************************/
 package org.apache.jackrabbit.vault.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.jcr.NamespaceException;
 import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
+import org.apache.jackrabbit.spi.commons.conversion.ParsingNameResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
+import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
+import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
+import org.apache.jackrabbit.util.ISO9075;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -68,6 +83,32 @@ public class DocViewNode2 {
         return new DocViewNode2(name, index, properties);
     }
 
+    @SuppressWarnings("unchecked")
+    public static @NotNull DocViewNode2 fromNode(@NotNull Node node, boolean isRoot, boolean useBinaryReferences) throws RepositoryException {
+        return fromNode(node, isRoot, JcrUtils.in((Iterator<Property>)node.getProperties()), useBinaryReferences);
+    }
+
+    public static @NotNull DocViewNode2 fromNode(@NotNull Node node, boolean isRoot, @NotNull Iterable<Property> properties, boolean useBinaryReferences) throws RepositoryException {
+        NameResolver nameResolver = new ParsingNameResolver(NameFactoryImpl.getInstance(), new SessionNamespaceResolver(node.getSession()));
+        final Name nodeName;
+        if (isRoot) {
+            nodeName = NameConstants.JCR_ROOT;
+        } else {
+            nodeName = nameResolver.getQName(node.getName());
+        }
+        Collection<DocViewProperty2> docViewProps = new ArrayList<>();
+        for (Property property : properties) {
+            Name propertyName =  nameResolver.getQName(property.getName());
+            boolean sort = propertyName.equals(NameConstants.JCR_MIXINTYPES);
+            docViewProps.add(DocViewProperty2.fromProperty(property, sort, useBinaryReferences));
+        }
+        int index = node.getIndex();
+        if (index == 1) {
+            index = 0; // we use 0 here, if no index necessary
+        }
+        return new DocViewNode2(nodeName, index, docViewProps);
+    }
+
     /** 
      * 
      * @return the name of the {@link Node} represented by this class
@@ -78,8 +119,8 @@ public class DocViewNode2 {
 
     /**
      * 
-     * @return 0, except if there is a same-name sibling in the docview. In that case the index gives the order of the SNS nodes.
-     *  @see <a href="https://s.apache.org/jcr-2.0-spec/22_Same-Name_Siblings.html#22.2%20Addressing%20Same-Name%20Siblings%20by%20Path">Same-Name Siblings</a>
+     * @return 0, except if there is a same-name sibling in the docview. In that case the index gives the 1-based order of the SNS nodes.
+     * @see <a href="https://s.apache.org/jcr-2.0-spec/22_Same-Name_Siblings.html#22.2%20Addressing%20Same-Name%20Siblings%20by%20Path">Same-Name Siblings</a>
      */
     public int getIndex() {
         return index;
@@ -162,7 +203,68 @@ public class DocViewNode2 {
         return index == other.index && areNamesEqual(name, other.name) && Objects.equals(properties, other.properties);
     }
 
-    static boolean areNamesEqual(@NotNull Name name,  @NotNull Name otherName ) {
+    static boolean areNamesEqual(@NotNull Name name, @NotNull Name otherName) {
         return Objects.equals(name.getLocalName(), otherName.getLocalName()) && Objects.equals(name.getNamespaceURI(), otherName.getNamespaceURI());
+    }
+
+    /**
+     * Writes the node's start tag (including the attributes for the properties and optionally the namespace declarations) to the given {@link XMLStreamWriter}.
+     * Use the following writer for properly formatting the output according to FileVault standards:
+     * {@code FormattingXmlStreamWriter.create(out, new DocViewFormat().getXmlOutputFormat())}.
+     * 
+     * @param writer the XMLStreamWriter to write to
+     * @param nsResolver the namespace resolver to use for retrieving prefixes for namespace URIs of {@link #getName()} and {@link DocViewProperty2#getName()}
+     * @param namespacePrefixes the namespace prefixes for which to emit namespace declarations in this node
+     * @throws NamespaceException in case no prefix is defined for the namespace URI of a name (either node's or property's)
+     * @throws XMLStreamException
+     * @since 3.6.2
+     */
+    public void writeStart(@NotNull XMLStreamWriter writer, @NotNull NamespaceResolver nsResolver, @NotNull Iterable<String> namespacePrefixes) throws NamespaceException, XMLStreamException {
+        // sort properties
+        Set<DocViewProperty2> props = new TreeSet<>(new DocViewProperty2Comparator(nsResolver));
+        props.addAll(properties.values());
+        // start element (node)
+        // with namespace?
+        String namespaceUri = getName().getNamespaceURI();
+        String localName = getName().getLocalName();
+        if (getIndex() > 1) {
+            localName += "[" + getIndex() + "]";
+        }
+        String encodedLocalName = ISO9075.encode(localName);
+       
+        if (namespaceUri.length()>0) {
+            writer.writeStartElement(nsResolver.getPrefix(namespaceUri), encodedLocalName, namespaceUri);
+        } else {
+            writer.writeStartElement(encodedLocalName);
+        }
+        for (String namespacePrefix : namespacePrefixes) {
+            if (Name.NS_XML_PREFIX.equals(namespacePrefix)) {
+                // skip 'xml' prefix as this would be an illegal namespace declaration
+                continue;
+            }
+            writer.writeNamespace(namespacePrefix, nsResolver.getURI(namespacePrefix));
+        }
+        for (DocViewProperty2 prop: props) {
+            String attributeLocalName = ISO9075.encode(prop.getName().getLocalName());
+            String attributeNamespaceUri = prop.getName().getNamespaceURI();
+            if (attributeNamespaceUri.length()>0) {
+                writer.writeAttribute(nsResolver.getPrefix(attributeNamespaceUri), attributeNamespaceUri, attributeLocalName, 
+                        prop.formatValue());
+            } else {
+                writer.writeAttribute(attributeLocalName, prop.formatValue());
+            }
+        }
+    }
+
+    /**
+     * Writes the node's end tag to the given {@link XMLStreamWriter}.
+     * Use the following writer for properly formatting the output according to FileVault standards:
+     * {@code FormattingXmlStreamWriter.create(out, new DocViewFormat().getXmlOutputFormat())}.
+     * @param writer the XMLStreamWriter to write to
+     * @throws XMLStreamException
+     * @since 3.6.2
+     */
+    public static void writeEnd(@NotNull XMLStreamWriter writer) throws XMLStreamException {
+        writer.writeEndElement();
     }
 }

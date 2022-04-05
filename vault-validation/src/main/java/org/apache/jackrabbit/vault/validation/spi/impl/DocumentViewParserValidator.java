@@ -112,7 +112,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
             Map<String, Integer> nodePathsAndLineNumbers) throws IOException {
         List<ValidationMessage> enrichedMessages = new LinkedList<>();
         enrichedMessages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, "Detected DocView..."));
-        ValidatorDocViewParserHandler handler = new ValidatorDocViewParserHandler(docViewValidators, filePath, basePath);
+        ValidatorDocViewParserHandler handler = new ValidatorDocViewParserHandler(severity, docViewValidators, filePath, basePath);
         try {
             docViewParser.parse(rootNodePath, new InputSource(new CloseShieldInputStream(input)), handler);
             enrichedMessages.addAll(ValidationViolation.wrapMessages(null, handler.getViolations(), filePath, basePath, rootNodePath, 0, 0));

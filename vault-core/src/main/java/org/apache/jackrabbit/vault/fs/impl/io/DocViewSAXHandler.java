@@ -178,7 +178,7 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
      */
     @Override
     public void startDocument() throws SAXException {
-        
+        this.handler.setNameResolver(nameResolver);
     }
 
     @Override

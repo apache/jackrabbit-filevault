@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.jetbrains.annotations.NotNull;
 
@@ -62,6 +63,7 @@ public interface DocViewParserHandler {
 
     /**
      * Called when a namespace mapping is defined in the docview xml.
+     * Rather use {@link #setNameResolver(NameResolver)} instead if you just need to resolve JCR names.
      * @param prefix the namespace prefix
      * @param uri the namespace uri
      */
@@ -69,7 +71,16 @@ public interface DocViewParserHandler {
 
     /**
      * Called when a namespace mapping end in the docview xml.
+     * Rather use {@link #setNameResolver(NameResolver)} instead if you just need to resolve JCR names.
      * @param prefix the namespace prefix
      */
     default void endPrefixMapping(String prefix) {};
+
+    /**
+     * Called before the first {@link DocViewParserHandler#startDocViewNode(String, DocViewNode2, Optional, int, int)} is called.
+     * Provides a NameResolver which can be used to resolve JCR names to their qualified form.
+     * Can be used instead of overwriting {@link #startPrefixMapping(String, String)} and {@link #endPrefixMapping(String)}.
+     * @param nameResolver the resolver aware of all namespaces and their prefixes defined in the underlying XML document.
+     */
+    default void setNameResolver(NameResolver nameResolver) {};
 }

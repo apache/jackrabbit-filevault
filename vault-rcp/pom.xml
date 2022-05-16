@@ -143,7 +143,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.6.0</version><!-- to support PROPAGATE_TRANSIENT_MARKER -->
+            <version>2.12.6.1</version><!-- to support PROPAGATE_TRANSIENT_MARKER -->
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>25</version>
+        <version>26</version>
         <relativePath />
     </parent>
 
@@ -269,24 +269,13 @@ Bundle-Category: jackrabbit
                     <configuration>
                         <skip>true</skip><!-- skip for all modules where not explicitly enabled -->
                         <skipDeploy>true</skipDeploy><!-- always deploy via maven-scm-publish-plugin -->
+                        <relativizeDecorationLinks>false</relativizeDecorationLinks><!-- leave absolute URLs untouched: https://maven.apache.org/plugins/maven-site-plugin/site-mojo.html#relativizeDecorationLinks -->
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.7</version>
-                </plugin>
-                <!-- Update from 3.1.2 in ASF Parent  -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.2.1</version>
-                </plugin>
-                <!-- Update from 3.10.0 in ASF Parent  -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.10.1</version>
+                    <version>0.8.8</version>
                 </plugin>
             </plugins>
         </pluginManagement>

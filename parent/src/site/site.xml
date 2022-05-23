@@ -37,25 +37,6 @@
         <breadcrumbs>
             <item name="Jackrabbit" href="https://jackrabbit.apache.org/"/>
         </breadcrumbs>
-       <head><![CDATA[
-<!-- Matomo -->
-<script>
-  var _paq = window._paq = window._paq || [];
-  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-  /* We explicitly disable cookie tracking to avoid privacy issues */
-  _paq.push(['disableCookies']);  
-  _paq.push(['trackPageView']);
-  _paq.push(['enableLinkTracking']);
-  (function() {
-    var u="https://matomo.privacy.apache.org/";
-    _paq.push(['setTrackerUrl', u+'matomo.php']);
-    _paq.push(['setSiteId', '4']);
-    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-  })();
-</script>
-<!-- End Matomo Code -->
-       ]]></head>
        <footer><![CDATA[
 <p>&#169; $date.get('yyyy')
 <a href="https://www.apache.org/">The Apache Software Foundation</a> &vert; <a href="https://privacy.apache.org/policies/privacy-policy-public.html">Privacy Policy</a>
@@ -66,7 +47,7 @@
     <skin>
         <groupId>org.apache.maven.skins</groupId>
         <artifactId>maven-fluido-skin</artifactId>
-        <version>1.10.0</version>
+        <version>1.11.0</version>
     </skin>
 
     <custom>
@@ -76,5 +57,14 @@
             <sideBarEnabled>true</sideBarEnabled>
             <googleSearch/>
         </fluidoSkin>
+        <matomo>
+            <siteId>4</siteId>
+            <url>https://analytics.apache.org</url>
+            <options>
+                <disableCookies/>
+                <trackPageView/>
+                <enableLinkTracking/>
+            </options>
+        </matomo>
     </custom>
 </project>

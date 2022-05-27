@@ -25,6 +25,7 @@ import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
+import org.jetbrains.annotations.NotNull;
 
 
 /**
@@ -33,11 +34,11 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 public class ArchiveValidationContext implements ValidationContext {
 
     private final WorkspaceFilter filter;
-    private final PackageProperties properties;
-    private final Path archivePath;
-    private final Collection<PackageInfo> resolvedDependencies;
+    @NotNull private final PackageProperties properties;
+    @NotNull private final Path archivePath;
+    @NotNull private final Collection<PackageInfo> resolvedDependencies;
 
-    public ArchiveValidationContext(Archive archive, Path archivePath, DependencyResolver resolver) throws IOException {
+    public ArchiveValidationContext(@NotNull Archive archive, @NotNull Path archivePath, @NotNull DependencyResolver resolver) throws IOException {
         this.archivePath = archivePath;
         properties = archive.getMetaInf().getPackageProperties();
         this.filter = archive.getMetaInf().getFilter();
@@ -48,12 +49,12 @@ public class ArchiveValidationContext implements ValidationContext {
     }
 
     @Override
-    public PackageProperties getProperties() {
+    public @NotNull PackageProperties getProperties() {
         return properties;
     }
 
     @Override
-    public WorkspaceFilter getFilter() {
+    public @NotNull WorkspaceFilter getFilter() {
         return filter;
     }
 
@@ -62,12 +63,12 @@ public class ArchiveValidationContext implements ValidationContext {
         return null;
     }
 
-    public Path getPackageRootPath() {
+    public @NotNull Path getPackageRootPath() {
         return archivePath;
     }
 
     @Override
-    public Collection<PackageInfo> getDependenciesPackageInfo() {
+    public @NotNull Collection<PackageInfo> getDependenciesPackageInfo() {
         return this.resolvedDependencies;
     }
 

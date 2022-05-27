@@ -17,7 +17,7 @@
 /**
  * Provides common implementations of {@link org.apache.jackrabbit.vault.validation.spi.ValidationContext}
  */
-@Version("1.0.0")
+@Version("1.0.1")
 package org.apache.jackrabbit.vault.validation.context;
 
 import org.osgi.annotation.versioning.Version;

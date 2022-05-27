@@ -21,6 +21,7 @@ import java.nio.file.Path;
 
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Implements a {@link ValidationContext} based on a sub package given through an {@link Archive}.
@@ -29,7 +30,7 @@ public class SubPackageInArchiveValidationContext extends ArchiveValidationConte
 
     private final ValidationContext containerPackageContext;
 
-    public SubPackageInArchiveValidationContext(ArchiveValidationContext containerPackageContext, Archive archive, Path archivePath, DependencyResolver resolver) throws IOException {
+    public SubPackageInArchiveValidationContext(@NotNull ArchiveValidationContext containerPackageContext, @NotNull Archive archive, @NotNull Path archivePath, @NotNull DependencyResolver resolver) throws IOException {
         super(archive, archivePath, resolver);
         this.containerPackageContext = containerPackageContext;
     }

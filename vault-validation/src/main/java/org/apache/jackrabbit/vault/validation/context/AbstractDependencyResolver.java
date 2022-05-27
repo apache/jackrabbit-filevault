@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract resolver supporting Maven repository dependency location URIs (starting with {@code maven}:).
+ * Abstract resolver supporting Maven repository dependency location URIs (starting with {@code maven:}).
  * All package dependencies are mapped to Maven coordinates by this class and then resolved via {@link #resolvePackageInfo(MavenCoordinates)}.
  * It comes with a cache so that the same package dependency is not resolved more than once.
  * This class is not thread-safe.
@@ -50,12 +50,12 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
     public static final String MAVEN_REPOSITORY_SCHEME = "maven";
     private final Collection<PackageInfo> packageInfoCache;
 
-    protected AbstractDependencyResolver(Collection<PackageInfo> packageInfoCache) {
+    protected AbstractDependencyResolver(@NotNull Collection<PackageInfo> packageInfoCache) {
         this.packageInfoCache = new LinkedList<>(packageInfoCache);
     }
 
     @Override
-    public Collection<PackageInfo> resolvePackageInfo(Dependency[] dependencies, Map<PackageId, URI> dependencyLocations) throws IOException {
+    public @NotNull Collection<PackageInfo> resolvePackageInfo(@NotNull Dependency[] dependencies, @NotNull Map<PackageId, URI> dependencyLocations) throws IOException {
         List<PackageInfo> packageInfos = new LinkedList<>();
         // resolve dependencies
         for (Dependency dependency : dependencies) {
@@ -95,7 +95,7 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
      * @return the resolved package info or {@code null}
      * @throws IOException
      */
-    private @Nullable PackageInfo resolvePackageInfo(Dependency dependency) throws IOException {
+    private @Nullable PackageInfo resolvePackageInfo(@NotNull Dependency dependency) throws IOException {
         // resolving a version range is not supported with Maven API, but only with lower level Aether API (requires Maven 3.5 or newer)
         // https://github.com/eclipse/aether-demo/blob/master/aether-demo-snippets/src/main/java/org/eclipse/aether/examples/FindAvailableVersions.java
         // therefore do an best effort resolve instead
@@ -129,11 +129,11 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
 
         private static final String DEFAULT_PACKAGING = "zip";
 
-        public MavenCoordinates(String groupId, String artifactId, String version) {
+        public MavenCoordinates(@NotNull String groupId, @NotNull String artifactId, String version) {
             this(groupId, artifactId, version, DEFAULT_PACKAGING, null);
         }
 
-        public MavenCoordinates(String groupId, String artifactId, String version, String packaging, String classifier) {
+        public MavenCoordinates(@NotNull String groupId, @NotNull String artifactId, String version,@NotNull String packaging, String classifier) {
             super();
             this.groupId = groupId;
             this.artifactId = artifactId;
@@ -142,7 +142,7 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
             this.classifier = classifier;
         }
 
-        public static MavenCoordinates parse(URI uri) {
+        public static @Nullable MavenCoordinates parse(URI uri) {
             if (!MAVEN_REPOSITORY_SCHEME.equals(uri.getScheme())) {
                 return null;
             }

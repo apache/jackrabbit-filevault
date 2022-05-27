@@ -40,7 +40,7 @@ public class DefaultPackageProperties extends PackagePropertiesImpl {
      * @return the package properties deserialized from the given file
      * @throws IOException in case deserializing from the file failed
      */
-    public static DefaultPackageProperties fromFile(Path path) throws IOException {
+    public static @NotNull DefaultPackageProperties fromFile(Path path) throws IOException {
         return new DefaultPackageProperties(path);
     }
 

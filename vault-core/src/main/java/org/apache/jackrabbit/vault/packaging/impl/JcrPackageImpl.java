@@ -780,7 +780,7 @@ public class JcrPackageImpl implements JcrPackage {
             // if the package is not installed at all, abort for required and strict handling
             if ((opts.getDependencyHandling() == DependencyHandling.STRICT && unresolved.size() > 0)
                     || (opts.getDependencyHandling() == DependencyHandling.REQUIRED && unresolved.size() > uninstalled.size())) {
-                String msg = String.format("Refusing to install package %s. required dependencies missing: %s", def.getId(), unresolved);
+                String msg = String.format("Refusing to install package %s: required dependencies missing: %s", def.getId(), unresolved);
                 log.error(msg);
                 throw new DependencyException(msg);
             }

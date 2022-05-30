@@ -29,8 +29,9 @@
       <item href="docview.html" name="Document View" />
       <item href="validation.html" name="Validation" />
     </menu>
-    <menu name="Using Filevault">
-      <item href="usage.html" name="VLT Usage" />
+    <menu name="Usage">
+      <item href="https://jackrabbit.apache.org/jcr/downloads.html#vlt" name="Download" />
+      <item href="usage.html" name="VLT Console Tool" />
       <item href="metadata.html" name="Metadata" >
         <item href="filter.html" name="Workspace Filter">
             <item href="importmode.html" name="Import Mode" />
@@ -47,7 +48,7 @@
       <item href="referenceablenodes.html" name="Referenceable Nodes"/>
       <item href="rcp.html" name="Vault Remote Copy" />
     </menu>
-    <menu name="Developing">
+    <menu name="Development">
       <item href="apidocs/index.html" name="API docs" />
       <item href="howto_release.html" name="How to create a release" />
     </menu>

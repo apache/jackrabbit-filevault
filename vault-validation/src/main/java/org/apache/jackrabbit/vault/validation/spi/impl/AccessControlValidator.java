@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * @see <a href="https://issues.apache.org/jira/browse/JCRVLT-255">JCRVLT-255</a>
+ * @see <a href="https://issues.apache.org/jira/browse/JCRVLT-433">JCRVLT-433</a>
  */
 public class AccessControlValidator implements DocumentViewXmlValidator {
 

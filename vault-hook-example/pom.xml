@@ -92,19 +92,14 @@
         <dependency>
             <groupId>javax.jcr</groupId>
             <artifactId>jcr</artifactId>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
 
-        <!-- SLF4j / Log4j -->
+        <!-- SLF4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <optional>true</optional>
+            <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

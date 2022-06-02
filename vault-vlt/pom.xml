@@ -89,4 +89,23 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <configuration>
+                        <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
+                        <!-- only check embedded dependencies, therefore exclude all external dependencies with vulnerabilities (provided by the container) -->
+                        <excludes>
+                            <exlude>*:commons-io</exlude>
+                            <exlude>*:httpclient</exlude>
+                            <exlude>*:log4j</exlude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

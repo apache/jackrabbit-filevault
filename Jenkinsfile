@@ -21,7 +21,11 @@
 library "filevault@master"
 
 vaultPipeline('ubuntu', 11, '3', {
-   vaultStageBuild(['ubuntu', 'Windows'], [11, 17], ['3', '3.6.3'], 'apache_jackrabbit-filevault')
+   vaultStageBuild(['ubuntu', 'Windows'], [11, 17], ['3', '3.6.3'], 'apache_jackrabbit-filevault', 
+     [
+       mainBuildArguments: '-U clean site deploy -Pjacoco-report,dependency-check -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml'
+     ]
+   )
    vaultStageDeploy()
   }
 )

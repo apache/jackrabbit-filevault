@@ -131,6 +131,12 @@
                                     implementation="org.apache.sling.maven.enforcer.RequireTransitiveProvidedDependenciesInRuntimeClasspath">
                                     <excludes>
                                         <exclude>javax.servlet:javax.servlet-api</exclude><!-- not used in the CLI context -->
+                                        <exclude>*:txw2</exclude><!-- embedded in vault-core -->
+                                        <exclude>*:woodstox-core</exclude><!-- embedded in vault-core -->
+                                        <exclude>*:stax2-api</exclude><!-- embedded in vault-core -->
+                                        <exclude>*:maven-artifact</exclude><!-- embedded in vault-core -->
+                                        <exclude>*:h2</exclude><!-- embedded in vault-core -->
+                                        <exclude>*:*.annotation*</exclude><!-- no annotation is evaluated at run time -->
                                     </excludes>
                                 </requireTransitiveProvidedDependenciesInRuntimeClasspath>
                             </rules>
@@ -150,6 +156,12 @@
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
             <version>3.6.1-SNAPSHOT</version>
+        </dependency>
+        <!-- transitive (but with scope "provided") dependency of vault -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.framework</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>

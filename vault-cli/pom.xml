@@ -127,8 +127,8 @@
                         </goals>
                         <configuration>
                             <rules>
-                                <requireTransitiveProvidedDependenciesInRuntimeClasspath
-                                    implementation="org.apache.sling.maven.enforcer.RequireTransitiveProvidedDependenciesInRuntimeClasspath">
+                                <requireProvidedDependenciesInRuntimeClasspath
+                                    implementation="org.apache.sling.maven.enforcer.RequireProvidedDependenciesInRuntimeClasspath">
                                     <excludes>
                                         <exclude>javax.servlet:javax.servlet-api</exclude><!-- not used in the CLI context -->
                                         <exclude>*:txw2</exclude><!-- embedded in vault-core -->
@@ -136,9 +136,14 @@
                                         <exclude>*:stax2-api</exclude><!-- embedded in vault-core -->
                                         <exclude>*:maven-artifact</exclude><!-- embedded in vault-core -->
                                         <exclude>*:h2</exclude><!-- embedded in vault-core -->
-                                        <exclude>*:*.annotation*</exclude><!-- no annotation is evaluated at run time -->
+                                        <!-- no annotations are evaluated at run time -->
+                                        <exclude>org.jetbrains:annotations</exclude>
+                                        <exclude>org.osgi:org.osgi.annotation</exclude>
+                                        <exclude>org.osgi:org.osgi.annotation.versioning</exclude>
+                                        <exclude>org.osgi:org.osgi.service.metatype.annotations</exclude>
+                                        <exclude>org.osgi:org.osgi.service.component.annotations</exclude>
                                     </excludes>
-                                </requireTransitiveProvidedDependenciesInRuntimeClasspath>
+                                </requireProvidedDependenciesInRuntimeClasspath>
                             </rules>
                             <fail>true</fail>
                         </configuration>
@@ -188,7 +193,7 @@
         <dependency>
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
-            <version>0.9.94</version>
+            <version>1.0</version>
         </dependency>
 
         <!-- JCR Stuff -->

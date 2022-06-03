@@ -108,6 +108,37 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- validate that all necessary dependencies are part of the application -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.sling</groupId>
+                        <artifactId>maven-enforcer-rules</artifactId>
+                        <version>0.0.1-SNAPSHOT</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>enforce-complete-runtime-classpath</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireTransitiveProvidedDependenciesInRuntimeClasspath
+                                    implementation="org.apache.sling.maven.enforcer.RequireTransitiveProvidedDependenciesInRuntimeClasspath">
+                                    <excludes>
+                                        <exclude>javax.servlet:javax.servlet-api</exclude><!-- not used in the CLI context -->
+                                    </excludes>
+                                </requireTransitiveProvidedDependenciesInRuntimeClasspath>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+              </plugin>
         </plugins>
     </build>
 

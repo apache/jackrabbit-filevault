@@ -62,6 +62,7 @@ import javax.jcr.security.AccessControlPolicyIterator;
 import javax.jcr.security.Privilege;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlEntry;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
@@ -111,7 +112,6 @@ import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
-import org.codehaus.plexus.util.Os;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -276,7 +276,7 @@ public class IntegrationTestBase  {
             FileUtils.deleteDirectory(directory);
         } catch (IOException ioe) {
             // retry after wait on Windows, as it may release file locks in a deferred manner
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            if (SystemUtils.IS_OS_WINDOWS) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ie) {

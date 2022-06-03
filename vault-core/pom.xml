@@ -229,13 +229,19 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- for parsing Maven versions -->
+        <!-- for parsing Maven versions (org.apache.maven.artifact.versioning.ComparableVersion) -->
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-artifact</artifactId>
             <version>3.8.4</version>
             <!-- embedded, therefore not transitively relevant -->
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- for the https://github.com/h2database/h2database/blob/master/h2/src/main/org/h2/util/CloseWatcher.java -->
         <dependency>

@@ -25,5 +25,7 @@ public enum IdConflictPolicy {
     CREATE_NEW_ID,
     /** Remove the node with the conflicting id along with its references (even if outside the filters). This goes beyond {@link ImportUUIDBehavior#IMPORT_UUID_COLLISION_REMOVE_EXISTING}, as it also does not only resolve UUID collisions but also replacements of referenceable nodes with different ids.
      * Use with care, as this may remove references outside the filter. */
-    FORCE_REMOVE_CONFLICTING_ID
+    FORCE_REMOVE_CONFLICTING_ID,
+    /** Assign the newly imported conflicting node a new id in case the conflicting existing node does not have the same parent (i.e. is a sibling), otherwise remove the existing node with the conflicting id but keep its references */
+    LEGACY
 }

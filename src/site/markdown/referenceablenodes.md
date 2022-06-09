@@ -26,7 +26,7 @@ The import behavior depends on the used FileVault version.
 
 ## Import behavior prior FileVault 3.5.2
 
-The ids of referenceable nodes are only kept during import when a node with the same name does not yet exist in the repository. For existing nodes the ids are never updated with the value from the package. They either get a new id or keep their old one (in case the old node was already a referenceable node). In case of conflicts with nodes at a different path, the existing conflicting node is [removed][5] but all its references are kept (i.e. they point to a different path after the import).
+The ids of referenceable nodes are only kept during import when a node with the same name does not yet exist in the repository. For existing nodes the ids are never updated with the value from the package. They either get a new id or keep their old one (in case the old node was already a referenceable node). In case of conflicts with nodes which are not siblings (i.e. don't share their direct parent node) the newly imported node gets a new UUID, on case of conflicts among siblings the existing conflicting node is [removed][5] but all its references are kept (i.e. they point to a different path after the import).
 
 ## Import behavior since FileVault 3.5.2
 
@@ -34,7 +34,7 @@ Since version 3.5.2 ([JCRVLT-551](https://issues.apache.org/jira/browse/JCRVLT-5
 
 ### Id Conflict Policies
 
-The import behavior of packages with conflicting ids can be tweaked with `ImportOptions.setIdConflictPolicy(...)`. For further details refer to its [javadoc][3]. The old behavior can be achieved with `IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID`.
+The import behavior of packages with conflicting ids can be tweaked with `ImportOptions.setIdConflictPolicy(...)` per package or the default can be overridden in the [OSGi Configuration](config.html). For further details refer to the [JavaDoc][3]. The old behavior can be achieved with `IdConflictPolicy.LEGACY`.
 
 [1]: https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.8%20Referenceable%20Nodes
 [2]: https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.8.2%20Referential%20Integrity

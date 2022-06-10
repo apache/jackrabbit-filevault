@@ -28,6 +28,9 @@ public enum IdConflictPolicy {
     FORCE_REMOVE_CONFLICTING_ID,
     /** Assign the newly imported conflicting node a new id in case the conflicting existing node does not have the same parent (i.e. is no sibling).
      * If the newly imported node is a sibling of the existing conflicting one either remove the existing node with the conflicting id but keep its references (in case the conflicting one is contained in the filter) 
-     * or skip the to be imported node (and continue with importing its children as if they were below the existing one) */
+     * or skip the to be imported node (and continue with importing its children as if they were below the existing one).
+     * This was the policy which was always used in FileVault prior version 3.5.2.
+     * @since 3.6.2
+     */
     LEGACY
 }

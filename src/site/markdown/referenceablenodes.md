@@ -26,7 +26,8 @@ The import behavior depends on the used FileVault version.
 
 ## Import behavior prior FileVault 3.5.2
 
-The ids of referenceable nodes are only kept during import when a node with the same name does not yet exist in the repository. For existing nodes the ids are never updated with the value from the package. They either get a new id or keep their old one (in case the old node was already a referenceable node). In case of conflicts with nodes which are not siblings (i.e. don't share their direct parent node) the newly imported node gets a new UUID, on case of conflicts among siblings the existing conflicting node is [removed][5] but all its references are kept (i.e. they point to a different path after the import).
+The ids of referenceable nodes are only kept during import when a node with the same name does not yet exist in the repository. For existing nodes the ids are never updated with the value from the package. They either get a new id or keep their old one (in case the old node was already a referenceable node). In case of conflicts with nodes which are not siblings (i.e. don't share their direct parent node) the newly imported node gets a new id. 
+In case of conflicts among siblings the existing conflicting node is [removed][5] but all its references are kept (i.e. they point to a different path after the import) when the existing conflicting node is contained in the filter rules, if the conflicting node is outside the filter rules the to-be imported node is skipped (and import continues with its children as if they were below the existing one).
 
 ## Import behavior since FileVault 3.5.2
 

@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
-    <filter root="/tmp"/>
+    <filter root="/tmp/sameparentconflicts/referenceable"/>
+    <filter root="/tmp/sameparentconflicts/duplicate"/>
+    <filter root="/tmp/differentparentconflicts/referenceable"/>
+    <filter root="/tmp/differentparentconflicts/duplicate"/>
 </workspaceFilter>

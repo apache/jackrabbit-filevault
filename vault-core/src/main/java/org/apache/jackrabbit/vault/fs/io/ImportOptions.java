@@ -452,7 +452,7 @@ public class ImportOptions {
 
     /**
      * 
-     * @return the id conflict policy
+     * @return the id conflict policy if one is set, otherwise {@link IdConflictPolicy#FAIL}
      * @since 3.5.1
      */
     public @NotNull IdConflictPolicy getIdConflictPolicy() {
@@ -460,7 +460,8 @@ public class ImportOptions {
     }
 
     /**
-     * @since 3.5.10
+     * @return {@code true} if {@link #setIdConflictPolicy(IdConflictPolicy)} has been called otherwise {@code false}
+     * @since 3.6.0
      */
     public boolean hasIdConflictPolicyBeenSet() {
         return idConflictPolicy != null;

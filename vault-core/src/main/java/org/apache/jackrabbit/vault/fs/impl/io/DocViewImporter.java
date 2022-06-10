@@ -835,12 +835,13 @@ public class DocViewImporter implements DocViewParserHandler {
                 try {
                     // does uuid already exist in the repo?
                     Node sameIdNode = session.getNodeByIdentifier(identifier.get());
+                    String newNodePath = currentNode.getPath() + "/" + npResolver.getJCRName(docViewNode.getName());
                     // edge-case: same node path -> uuid is kept
                     if (existingNode != null && existingNode.getPath().equals(sameIdNode.getPath())) {
-                        log.debug("Node at {} with existing identifier {} is being updated without modifying its uuid", existingNode.getPath(), docViewNode.getIdentifier());
+                        log.debug("Node at {} with existing identifier {} is being updated without modifying its identifier", existingNode.getPath(), docViewNode.getIdentifier());
                     } else {
-                        log.warn("Node Collision: To-be imported node {}/{} uses a node identifier {} which is already taken by {}, trying to resolve conflict according to policy {}", 
-                                 currentNode.getPath(), npResolver.getJCRName(docViewNode.getName()), docViewNode.getIdentifier(), sameIdNode.getPath(), idConflictPolicy.name());
+                        log.warn("Node Collision: To-be imported node {} uses a node identifier {} which is already taken by {}, trying to resolve conflict according to policy {}", 
+                                newNodePath, docViewNode.getIdentifier(), sameIdNode.getPath(), idConflictPolicy.name());
                         if (idConflictPolicy == IdConflictPolicy.FAIL) {
                             // uuid found in path covered by filter
                             if (isIncluded(sameIdNode, 0)) {
@@ -870,17 +871,17 @@ public class DocViewImporter implements DocViewParserHandler {
                                     importInfo.onDeleted(sameIdNodePath);
                                 } else {
                                     log.warn("Existing conflicting node {} has same parent as to-be imported one and is not contained in the filter, ignoring new node but continue with children below existing conflicting node", sameIdNodePath);
-                                    importInfo.onRemapped(currentNode.getPath() + "/" + npResolver.getJCRName(docViewNode.getName()), sameIdNodePath);
+                                    importInfo.onRemapped(newNodePath, sameIdNodePath);
                                     existingNode = sameIdNode;
                                 }
                             } else {
                                 log.warn("To-be imported node and existing conflicting node have different parents. Will create new identifier for the former. ({})",
-                                        currentNode.getPath() + "/" + npResolver.getJCRName(docViewNode.getName()));
-                                preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_UUID));
-                                preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_BASEVERSION));
-                                preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_PREDECESSORS));
-                                preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_SUCCESSORS));
-                                preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_VERSIONHISTORY));
+                                        newNodePath);
+                                preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_UUID) 
+                                        || p.getName().equals(NameConstants.JCR_BASEVERSION) 
+                                        || p.getName().equals(NameConstants.JCR_PREDECESSORS)
+                                        || p.getName().equals(NameConstants.JCR_SUCCESSORS)
+                                        || p.getName().equals(NameConstants.JCR_VERSIONHISTORY));
                             }
                         }
                     }

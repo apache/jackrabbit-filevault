@@ -60,6 +60,18 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <configuration>
+                        <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
+                        <!-- only check embedded dependencies, therefore exclude all external dependencies with vulnerabilities (provided by the container) -->
+                        <excludes>
+                            <exlude>*:commons-io</exlude>
+                            <exlude>*:httpclient</exlude>
+                        </excludes>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -241,7 +253,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.0.206</version>
+            <version>2.1.212</version>
             <scope>provided</scope>
         </dependency>
         <!-- test deps -->

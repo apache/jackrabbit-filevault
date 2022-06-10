@@ -277,6 +277,21 @@ Bundle-Category: jackrabbit
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>0.8.8</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>7.1.0</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -477,6 +492,7 @@ Bundle-Category: jackrabbit
                 <scope>provided</scope>
             </dependency>
 
+            <!-- these are minimum version referenced in OSGi bundles, for embedding a newer version should be used -->
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
@@ -600,6 +616,17 @@ Bundle-Category: jackrabbit
                             set system property also via argLine as only that allows late evaluation -->
                             <argLine>@{jacoco.command} -Djacoco.command=@{jacoco.command}</argLine>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>dependency-check</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
                     </plugin>
                 </plugins>
             </build>

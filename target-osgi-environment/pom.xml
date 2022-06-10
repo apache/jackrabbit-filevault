@@ -73,6 +73,14 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- never do vulnerabilities check for any surrounding OSGi bundles provided by a distribution -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

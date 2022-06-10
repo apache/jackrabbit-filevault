@@ -40,6 +40,22 @@
     </properties>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <configuration>
+                        <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
+                        <!-- only check embedded dependencies, therefore exclude all external dependencies with vulnerabilities (provided by the container) -->
+                        <excludes>
+                            <exlude>*:commons-io</exlude>
+                            <exlude>*:httpclient</exlude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <!-- ====================================================================== -->
             <!-- R A T  P L U G I N                                                    -->
@@ -140,12 +156,45 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- only used for the constants, not necessary at run time -->
+        <!-- Oak dependencies only used for the constants, not necessary at run time (due to inlining) -->
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-core</artifactId>
             <version>${oak.version}</version>
             <optional>true</optional>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                  <groupId>*</groupId>
+                  <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>oak-security-spi</artifactId>
+            <version>${oak.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                  <groupId>*</groupId>
+                  <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>oak-core-spi</artifactId>
+            <version>${oak.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                  <groupId>*</groupId>
+                  <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

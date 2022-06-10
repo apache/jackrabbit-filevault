@@ -34,6 +34,7 @@ import java.util.zip.ZipInputStream;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
@@ -42,7 +43,6 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
-import org.apache.tika.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -17,9 +17,8 @@
   limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/DECORATION/1.3.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.3.0 http://maven.apache.org/xsd/decoration-1.3.0.xsd"
+<project xmlns="http://maven.apache.org/DECORATION/1.8.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0 http://maven.apache.org/xsd/decoration-1.8.0.xsd"
          name="Jackrabbit FileVault">
   <body>
     <menu name="Overview">
@@ -57,7 +56,7 @@
       <item href="https://jackrabbit.apache.org/filevault-package-maven-plugin" name="Apache Jackrabbit FileVault - Package Maven Plugin" />
     </menu>
   </body>
-
+  <edit>https://github.com/apache/jackrabbit-filevault/edit/master</edit>
   <custom>
     <fluidoSkin>
       <gitHub>

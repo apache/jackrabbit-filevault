@@ -143,7 +143,7 @@ public class DocViewImporter implements DocViewParserHandler {
     private final Session session;
 
     /**
-     * final import information (initially empty)
+     * import information for the nodes touched through this DocView (initially empty)
      */
     private ImportInfoImpl importInfo = new ImportInfoImpl();
 
@@ -837,18 +837,19 @@ public class DocViewImporter implements DocViewParserHandler {
                     Node sameIdNode = session.getNodeByIdentifier(identifier.get());
                     // edge-case: same node path -> uuid is kept
                     if (existingNode != null && existingNode.getPath().equals(sameIdNode.getPath())) {
-                        log.debug("Node with existing identifier {} at {} is being updated without modifying its uuid", docViewNode.getIdentifier(), existingNode.getPath());
+                        log.debug("Node at {} with existing identifier {} is being updated without modifying its uuid", existingNode.getPath(), docViewNode.getIdentifier());
                     } else {
-                        // TODO: add common logging which includes the conflict policy
+                        log.warn("Node Collision: To-be imported node {}/{} uses a node identifier {} which is already taken by {}, trying to resolve conflict according to policy {}", 
+                                 currentNode.getPath(), npResolver.getJCRName(docViewNode.getName()), docViewNode.getIdentifier(), sameIdNode.getPath(), idConflictPolicy.name());
                         if (idConflictPolicy == IdConflictPolicy.FAIL) {
                             // uuid found in path covered by filter
                             if (isIncluded(sameIdNode, 0)) {
                                 Info sameIdNodeInfo = importInfo.getInfo(sameIdNode.getPath());
                                 // is the conflicting node part of the package (i.e. the package contained duplicate uuids)
                                 if (sameIdNodeInfo != null && sameIdNodeInfo.getType() != Type.DEL) {
-                                    throw new ReferentialIntegrityException("UUID " + docViewNode.getIdentifier() + " already taken by node " + sameIdNode.getPath() + " from the same package");
+                                    throw new ReferentialIntegrityException("Node identifier " + docViewNode.getIdentifier() + " already taken by node " + sameIdNode.getPath() + " from the same package");
                                 } else {
-                                    log.warn("Node identifier {} for to-be imported node {}/{} already taken by {}, trying to release it.", docViewNode.getIdentifier(), currentNode.getPath(), docViewNode.getName(), sameIdNode.getPath());
+                                    log.warn("Trying to remove existing conflicting node {} (and all its references)", sameIdNode.getPath());
                                     removeReferences(sameIdNode);
                                     String sameIdNodePath = sameIdNode.getPath();
                                     session.removeItem(sameIdNodePath);
@@ -857,21 +858,24 @@ public class DocViewImporter implements DocViewParserHandler {
                                 existingNode = null;
                             } else {
                                 // uuid found in path not-covered by filter
-                                throw new ReferentialIntegrityException("UUID " + docViewNode.getIdentifier() + " already taken by node " + sameIdNode.getPath());
+                                throw new ReferentialIntegrityException("Node identifier " + docViewNode.getIdentifier() + " already taken by node " + sameIdNode.getPath());
                             }
                         } else if (idConflictPolicy == IdConflictPolicy.LEGACY) {
                             // is the conflicting node a sibling
                             if (sameIdNode.getParent().isSame(currentNode)) {
-                                log.warn("Node identifier {} for to-be imported node {}/{} already taken by {}, trying to release it.", docViewNode.getIdentifier(), currentNode.getPath(), docViewNode.getName(), sameIdNode.getPath());
-                                // TODO: check if this is really the case for pre 3.5.2 and if it makes a difference if the conflict is part of the package or not
-                                removeReferences(sameIdNode);
                                 String sameIdNodePath = sameIdNode.getPath();
-                                session.removeItem(sameIdNodePath);
-                                log.warn("Node {} and its references removed", sameIdNodePath);
+                                if (isIncluded(sameIdNode, 0)) {
+                                    log.warn("Existing conflicting node {} has same parent as to-be imported one and is contained in the filter, trying to remove it.", sameIdNodePath);
+                                    session.removeItem(sameIdNodePath); // references point to new node afterwards
+                                    importInfo.onDeleted(sameIdNodePath);
+                                } else {
+                                    log.warn("Existing conflicting node {} has same parent as to-be imported one and is not contained in the filter, ignoring new node but continue with children below existing conflicting node", sameIdNodePath);
+                                    importInfo.onRemapped(currentNode.getPath() + "/" + npResolver.getJCRName(docViewNode.getName()), sameIdNodePath);
+                                    existingNode = sameIdNode;
+                                }
                             } else {
-                                log.warn("Packaged node at {} is referenceable and collides with existing node at {}. Will create new UUID for the former.",
-                                        currentNode.getPath() + "/" + npResolver.getJCRName(docViewNode.getName()),
-                                        sameIdNode.getPath());
+                                log.warn("To-be imported node and existing conflicting node have different parents. Will create new identifier for the former. ({})",
+                                        currentNode.getPath() + "/" + npResolver.getJCRName(docViewNode.getName()));
                                 preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_UUID));
                                 preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_BASEVERSION));
                                 preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_PREDECESSORS));

@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -363,15 +364,17 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
     @Test
     public void testImportDupPolicyLegacy() throws RepositoryException, IOException, PackageException {
         testImportDup(IdConflictPolicy.LEGACY);
-        // behaviour for same parent conflicts: remove the conflicting one (i.e. the first one), but keep references
+        // behaviour for same parent conflicts: remove the conflicting one (i.e. the first one) with the new one (references point to new one afterwards)
         Node referenceableNode = getNodeOrNull("/tmp/sameparentconflicts/referenceable");
         Node duplicateNode = getNodeOrNull("/tmp/sameparentconflicts/duplicate");
         if (duplicateNode == null && referenceableNode != null) {
             assertTrue(referenceableNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
             assertEquals(UUID_REFERENCEABLE, referenceableNode.getIdentifier());
+            admin.move(referenceableNode.getPath(), "/tmp/sameparentconflicts/referenceable-outsidepackage");
         } else if (duplicateNode != null && referenceableNode == null) {
             assertTrue(duplicateNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
             assertEquals(UUID_REFERENCEABLE, duplicateNode.getIdentifier());
+            admin.move(duplicateNode.getPath(), "/tmp/sameparentconflicts/referenceable-outsidepackage");
         } else {
             fail("both nodes imported");
         }
@@ -384,6 +387,18 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         Set<String> uuids = new HashSet<>(Arrays.asList(referenceableNode.getIdentifier(), duplicateNode.getIdentifier()));
         assertTrue(uuids.contains(UUID_REFERENCEABLE_CHILD)); // one must have kept the old id
         assertEquals(2, uuids.size());
+
+        // create a reference towards an identifier used by the package (but used now outside the packag filter)
+        referenceableNode = admin.getNode("/tmp/sameparentconflicts/referenceable-outsidepackage");
+        Node referenceNode = JcrUtils.getOrCreateByPath("/tmp/reference", JcrConstants.NT_UNSTRUCTURED, admin);
+        referenceNode.setProperty(PROPERTY_NAME, referenceableNode);
+
+        // now reinstall
+        testImportDup(IdConflictPolicy.LEGACY);
+        referenceableNode = getNodeOrNull("/tmp/sameparentconflicts/referenceable");
+        duplicateNode = getNodeOrNull("/tmp/sameparentconflicts/duplicate");
+        assertNull(referenceableNode); // package must not contain new conflicting nodes
+        assertNull(duplicateNode);
     }
 
     private Node getNodeOrNull(String path) throws RepositoryException {

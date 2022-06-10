@@ -3,5 +3,5 @@
     jcr:mixinTypes="[mix:referenceable,vlt:FullCoverage]"
     jcr:primaryType="sling:Folder"
     jcr:uuid="352c89a4-304f-4b87-9bed-e09275597df1"
-    someproperty="somevalue">
+    someproperty="somevaluefromduplicate">
 </jcr:root>

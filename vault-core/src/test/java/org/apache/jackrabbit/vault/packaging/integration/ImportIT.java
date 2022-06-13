@@ -31,6 +31,7 @@ import javax.jcr.SimpleCredentials;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.nodetype.NodeType;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
@@ -46,7 +47,6 @@ import org.apache.jackrabbit.vault.fs.io.JcrArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.codehaus.plexus.util.ExceptionUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;

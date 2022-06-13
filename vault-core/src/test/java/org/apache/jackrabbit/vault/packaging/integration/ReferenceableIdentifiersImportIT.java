@@ -36,12 +36,12 @@ import javax.jcr.PropertyIterator;
 import javax.jcr.ReferentialIntegrityException;
 import javax.jcr.RepositoryException;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
-import org.codehaus.plexus.util.ExceptionUtils;
 import org.junit.Assert;
 import org.junit.Test;
 

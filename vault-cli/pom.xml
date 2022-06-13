@@ -119,6 +119,47 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- validate that all necessary dependencies are part of the application -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.sling</groupId>
+                        <artifactId>maven-enforcer-rules</artifactId>
+                        <version>1.0.0</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>enforce-complete-runtime-classpath</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireProvidedDependenciesInRuntimeClasspath
+                                    implementation="org.apache.sling.maven.enforcer.RequireProvidedDependenciesInRuntimeClasspath">
+                                    <excludes>
+                                        <exclude>javax.servlet:javax.servlet-api</exclude><!-- not used in the CLI context -->
+                                        <exclude>*:txw2</exclude><!-- embedded in vault-core -->
+                                        <exclude>*:woodstox-core</exclude><!-- embedded in vault-core -->
+                                        <exclude>*:stax2-api</exclude><!-- embedded in vault-core -->
+                                        <exclude>*:maven-artifact</exclude><!-- embedded in vault-core -->
+                                        <exclude>*:h2</exclude><!-- embedded in vault-core -->
+                                        <!-- no annotations are evaluated at run time -->
+                                        <exclude>org.jetbrains:annotations</exclude>
+                                        <exclude>org.osgi:org.osgi.annotation</exclude>
+                                        <exclude>org.osgi:org.osgi.annotation.versioning</exclude>
+                                        <exclude>org.osgi:org.osgi.service.metatype.annotations</exclude>
+                                        <exclude>org.osgi:org.osgi.service.component.annotations</exclude>
+                                    </excludes>
+                                </requireProvidedDependenciesInRuntimeClasspath>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+              </plugin>
         </plugins>
     </build>
 
@@ -152,6 +193,12 @@
             <artifactId>org.apache.jackrabbit.vault</artifactId>
             <version>3.6.1-SNAPSHOT</version>
         </dependency>
+        <!-- transitive (but with scope "provided") dependency of vault -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.framework</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-vlt</artifactId>
@@ -177,7 +224,7 @@
         <dependency>
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
-            <version>0.9.94</version>
+            <version>1.0</version>
         </dependency>
 
         <!-- JCR Stuff -->

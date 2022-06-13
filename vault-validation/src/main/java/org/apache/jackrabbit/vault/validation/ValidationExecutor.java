@@ -309,10 +309,13 @@ public final class ValidationExecutor {
                                 enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
                             }
                         } 
+
                         // only do it if we haven't collected node paths from a previous run
-                        if (nodePathsAndLineNumbers.isEmpty()) {
-                            // convert file name to node path
-                            String nodePath = filePathToNodePath(filePath);
+                        String nodePath = filePathToNodePath(filePath);
+                        boolean treatedAsBinaryFile = nodePathsAndLineNumbers.size() == 1 &&
+                            nodePathsAndLineNumbers.getOrDefault(nodePath, Integer.MIN_VALUE) == 0;
+
+                        if (nodePathsAndLineNumbers.isEmpty() || treatedAsBinaryFile) {
                             log.debug("Found non-docview node '{}'", nodePath);
                             isDocViewXml = false;
                             nodePathsAndLineNumbers.put(nodePath, 0);

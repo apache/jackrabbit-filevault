@@ -309,13 +309,10 @@ public final class ValidationExecutor {
                                 enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
                             }
                         } 
-
-                        // only do it if we haven't collected node paths from a previous run
-                        String nodePath = filePathToNodePath(filePath);
-                        boolean treatedAsBinaryFile = nodePathsAndLineNumbers.size() == 1 &&
-                            nodePathsAndLineNumbers.getOrDefault(nodePath, Integer.MIN_VALUE) == 0;
-
-                        if (nodePathsAndLineNumbers.isEmpty() || treatedAsBinaryFile) {
+                        // if we haven't collected node paths from a previous run the input is no docview xml
+                        if (nodePathsAndLineNumbers.isEmpty()) {
+                            // convert file name to node path
+                            String nodePath = filePathToNodePath(filePath);
                             log.debug("Found non-docview node '{}'", nodePath);
                             isDocViewXml = false;
                             nodePathsAndLineNumbers.put(nodePath, 0);
@@ -375,7 +372,15 @@ public final class ValidationExecutor {
     static <T> Map<String, T> filterValidatorsByClass(Map<String, Validator> allValidators, Class<T> type) {
         return allValidators.entrySet().stream()
                 .filter(x -> type.isInstance(x.getValue()))
-                .collect(Collectors.toMap(Map.Entry::getKey, x -> type.cast(x.getValue())));
+                // keep map order
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey, 
+                    x -> type.cast(x.getValue()), 
+                    (u, v) -> {
+                        throw new IllegalStateException(String.format("Duplicate key %s", u));
+                    }, 
+                    LinkedHashMap::new
+                ));
     }
 
 }

@@ -268,17 +268,15 @@ public class DocumentViewParserValidatorTest {
 
     @Test
     public void testDocViewWithRegularFileNameWithRootElementDifferentThanJcrRoot() throws IOException {
-        // https://issues.apache.org/jira/browse/JCRVLT-358"
+        // https://issues.apache.org/jira/browse/JCRVLT-358 and https://issues.apache.org/jira/browse/JCRVLT-637
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/child2/child1.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "child2", "child1.xml"), Paths.get(""), nodePathsAndLineNumbers);
             MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
             Mockito.verifyNoMoreInteractions(docViewXmlValidator);
 
-            // verify node names
-            Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();
-            expectedNodePathsAndLineNumber.put("/apps/child2/child1.xml", 0);
-            Assert.assertEquals(expectedNodePathsAndLineNumber, nodePathsAndLineNumbers);
+            // verify node names in case this is no docview xml
+            Assert.assertEquals(new HashMap<>(), nodePathsAndLineNumbers);
         }
     }
 

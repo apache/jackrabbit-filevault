@@ -199,15 +199,15 @@ public class ValidationExecutorTest {
     }
 
     /*
-     * JCRVLT-637: verify that when the DocumentViewXmlValidator returns the binary file as nodePath with lineNumber 0 to the
-     * ValidationExecutor, {@code isDocViewXml} is set to false
+     * JCRVLT-637: verify that when the DocumentViewXmlValidator returns the binary file to the
+     * ValidationExecutor (i.e. without modifying {@code nodePathsAndLineNumbers}), {@code isDocViewXml} is set to {@code false}
      */
     @Test
     public void testGenericJcrDataWithBinaryFileDetected()
         throws URISyntaxException, IOException, SAXException, ParserConfigurationException, ConfigurationException {
         Mockito.when(genericJcrDataValidator.shouldValidateJcrData(Mockito.any(), Mockito.any())).thenReturn(true);
-        ReturnNodeAndLineNumberAnswer<Collection<ValidationMessage>> answer = new ReturnNodeAndLineNumberAnswer<>("/apps/genericfile.xml", 0);
-        Mockito.when(genericJcrDataValidator.validateJcrData(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenAnswer(answer);
+        // must not modify the 4th parameter
+        Mockito.when(genericJcrDataValidator.validateJcrData(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Collections.emptyList());
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/genericfile.xml")) {
             Collection<ValidationViolation> messages = validate(input, executor, Paths.get(""), "apps/genericfile.xml", false);
             MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());

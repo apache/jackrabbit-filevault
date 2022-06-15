@@ -86,12 +86,12 @@
                         <detectLinks>true</detectLinks>
                         <detectJavaApiLink>true</detectJavaApiLink>
                         <links>
-                            <link>https://jackrabbit.apache.org/api/2.20/</link>
-                            <link>https://www.javadoc.io/doc/org.apache.jackrabbit/oak-jackrabbit-api/${oak.version}/</link>
+                            <link>https://jackrabbit.apache.org/api/2.20</link>
+                            <link>https://www.javadoc.io/doc/org.apache.jackrabbit/oak-jackrabbit-api/${oak.version}</link>
                         </links>
                         <!-- as the JCR javadoc is not always available (https://issues.apache.org/jira/browse/JCR-4732) do not fail the build if it cannot be fetched -->
                         <offlineLinks>
-                            <offlineLink>https://s.apache.org/jcr-2.0-javadoc/</offlineLink>
+                            <offlineLink>https://s.apache.org/jcr-2.0-javadoc</offlineLink>
                         </offlineLinks>
                     </configuration>
                 </plugin>

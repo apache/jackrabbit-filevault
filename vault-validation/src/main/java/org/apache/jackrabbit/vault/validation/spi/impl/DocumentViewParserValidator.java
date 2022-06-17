@@ -102,7 +102,6 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
             
         } else {
             messages.add(new ValidationMessage(ValidationMessageSeverity.INFO, "This file is not detected as docview xml file and therefore treated as binary"));
-            nodePathsAndLineNumbers.put(ValidationExecutor.filePathToNodePath(filePath), 0);
         }
         
        return messages;

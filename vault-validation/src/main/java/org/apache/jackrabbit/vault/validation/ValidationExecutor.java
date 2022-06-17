@@ -309,7 +309,7 @@ public final class ValidationExecutor {
                                 enrichedMessages.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, basePath, null, 0, 0));
                             }
                         } 
-                        // only do it if we haven't collected node paths from a previous run
+                        // if we haven't collected node paths from a previous run the input is no docview xml
                         if (nodePathsAndLineNumbers.isEmpty()) {
                             // convert file name to node path
                             String nodePath = filePathToNodePath(filePath);
@@ -372,7 +372,15 @@ public final class ValidationExecutor {
     static <T> Map<String, T> filterValidatorsByClass(Map<String, Validator> allValidators, Class<T> type) {
         return allValidators.entrySet().stream()
                 .filter(x -> type.isInstance(x.getValue()))
-                .collect(Collectors.toMap(Map.Entry::getKey, x -> type.cast(x.getValue())));
+                // keep map order
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey, 
+                    x -> type.cast(x.getValue()), 
+                    (u, v) -> {
+                        throw new IllegalStateException(String.format("Duplicate key %s", u));
+                    }, 
+                    LinkedHashMap::new
+                ));
     }
 
 }

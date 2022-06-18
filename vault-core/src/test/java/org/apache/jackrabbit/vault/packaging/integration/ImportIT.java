@@ -368,6 +368,7 @@ public class ImportIT extends IntegrationTestBase {
         assertProperty("/testroot/jcr:createdBy", "admin"); // must have a different value than in the .content.xml as it is protected and set automatically
         assertPropertyMissing("/testroot/someProtectedBooleanProperty"); // is protected and skipped in the import
         assertProperty("/testroot/someUnprotectedStringProperty", "foo"); // is not protected and must be there
+        assertProperty("/testroot/someUnprotectedStringMvProperty", new String[0]);
     }
 
     @Test

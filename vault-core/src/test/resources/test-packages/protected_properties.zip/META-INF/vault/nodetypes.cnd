@@ -7,6 +7,6 @@
 [my:Folder] > nt:hierarchyNode
   - * (boolean) protected
   - * (string)
-  
+  - * (string) multiple
 [my:mixin]
   MIXIN

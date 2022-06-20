@@ -530,7 +530,7 @@ public class DocViewProperty2 {
             }
         }
         if (isMultiValue) {
-            Value[] vs = prop == null ? new Value[0] : prop.getValues();
+            Value[] vs = prop == null ? null : prop.getValues();
             if (type == PropertyType.BINARY) {
                 return applyBinary(node, vs);
             }

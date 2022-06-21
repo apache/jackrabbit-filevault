@@ -23,9 +23,15 @@ Details on how node ids are treated during import are outlined at [Referenceable
 
 <!-- MACRO{toc} -->
 
+Regular content
+----------------
 The import mode handling is inconsistent and has many edge cases for the mode `MERGE` and `UPDATE`. Therefore FileVault 3.5.0 introduces the new modes `MERGE_PROPERTIES` and `UPDATE_PROPERTIES` (in [JCRVLT-255][JCRVLT-255]) which behave much more predicatable. The details are outlined at the [JavaDoc][api.ImportMode].
 
-Import Mode behaviour on authorizables
+Access control list
+----------------------------------------------------
+The import mode handling for access control lists (name `rep:ACL`, `rep:CugPolicy` or `rep:PrincipalPolicy`) is  only affected by the [`acHandling` package property](properties.html) and not by the import mode set on the filter rule.
+
+Authorizables
 ----------------------------------------------------
 If an authorizable with the same name already exists, the active `ImportMode` controls how the existing authorizables are affected:
 
@@ -54,7 +60,7 @@ The authorizables are imported using the JCR import content handler and rely on 
 
 
 ### Scope of the workspace filter
-Note that the workspace filter of the package refers on the content of the package and not the existing authorizable. For example, if the package contains a user at `/home/users/t/test` which already exists in the repository at `/home/users/custom/te/test` then the workspace filter `/home/users/t` covers the user, but not `/home/users/custom`.
+Note that the workspace filter of the package refers to the content of the package and not the existing authorizable. For example, if the package contains a user at `/home/users/t/test` which already exists in the repository at `/home/users/custom/te/test` then the workspace filter `/home/users/t` covers the user, but not `/home/users/custom`.
 
 However, the importer keeps track of potential remapping of existing users and tries to calculate the filters accordingly.
 

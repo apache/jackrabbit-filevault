@@ -52,7 +52,7 @@ public class TypedMapWrapper extends AbstractMap<String,Object> implements Map<S
     public List<String> getStringList(String key) {
         List<?> objects = getTypedOrThrow(key, List.class);
         return objects.stream().map( o -> {
-            if (o.getClass().isAssignableFrom(String.class)) {
+            if (o instanceof String) {
                 return String.class.cast(o);
             }
             throw new IllegalArgumentException("List does not contain out of strings");
@@ -84,12 +84,12 @@ public class TypedMapWrapper extends AbstractMap<String,Object> implements Map<S
     }
 
     private <T> T getTypedOrThrow(String key, Class<T> clazz) {
-        return getTyped(key, clazz).orElseThrow(() -> new IllegalArgumentException("Key is unknown or value is no " + clazz));
+        return getTyped(key, clazz).orElseThrow(() -> new IllegalArgumentException("Key " + key + " is unknown or value is no " + clazz));
     }
 
     private <T> Optional<T> getTyped(String key, Class<T> clazz) {
         Object object = get(key);
-        if (object.getClass().isAssignableFrom(clazz)) {
+        if (clazz.isInstance(object)) {
             return Optional.of(clazz.cast(object));
         } else {
             return Optional.empty();

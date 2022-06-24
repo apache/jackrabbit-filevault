@@ -17,7 +17,7 @@
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress>
        <notes><![CDATA[
-       Oak GAV must not apply to JR2 CPE (like for 
+       Oak GAV must not apply to JR2 CPE
        ]]></notes>
        <packageUrl regex="true">^pkg:maven/org\.apache\.jackrabbit/oak\-.*@.*$</packageUrl>
        <cpe>cpe:/a:apache:jackrabbit</cpe>
@@ -38,16 +38,16 @@
     </suppress>
     <suppress>
        <notes><![CDATA[
-       file name: org.apache.sling.commons.classloader-1.2.2.jar
-       ]]></notes>
-       <packageUrl regex="true">^pkg:maven/org\.apache\.sling/org\.apache\.sling\.commons\.classloader@.*$</packageUrl>
-       <cpe>cpe:/a:apache-ssl:apache-ssl</cpe>
-    </suppress>
-    <suppress>
-       <notes><![CDATA[
        false positive for Oak classes e.g. for CVE-2021-40690
        ]]></notes>
        <packageUrl regex="true">^pkg:maven/org\.apache\.jackrabbit/oak-.*@.*$</packageUrl>
        <cpe>cpe:/a:apache:xml_security_for_java</cpe>
+    </suppress>
+    <suppress>
+       <notes><![CDATA[
+       file name: org.apache.sling.api-2.16.4.jar, is not embedded here but only a runtime dependency
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.apache\.sling/org\.apache\.sling\.api@.*$</packageUrl>
+       <vulnerabilityName>CVE-2022-32549</vulnerabilityName>
     </suppress>
 </suppressions>

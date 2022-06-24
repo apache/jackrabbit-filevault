@@ -43,11 +43,4 @@
        <packageUrl regex="true">^pkg:maven/org\.apache\.jackrabbit/oak-.*@.*$</packageUrl>
        <cpe>cpe:/a:apache:xml_security_for_java</cpe>
     </suppress>
-    <suppress>
-       <notes><![CDATA[
-       file name: org.apache.sling.api-2.16.4.jar, is not embedded here but only a runtime dependency
-       ]]></notes>
-       <packageUrl regex="true">^pkg:maven/org\.apache\.sling/org\.apache\.sling\.api@.*$</packageUrl>
-       <vulnerabilityName>CVE-2022-32549</vulnerabilityName>
-    </suppress>
 </suppressions>

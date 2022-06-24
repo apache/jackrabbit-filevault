@@ -80,7 +80,7 @@ The following example includes _all_ nodes in `/tmp` except those that end with 
 
 #### Property Filtering
 
-Since FileVault 3.1.28 ([JCRVLT-120](https://issues.apache.org/jira/browse/JCRVLT-120)) it is not only possible to filter on node level but also only include/exclude certain properties below a certain node by setting the attribute `matchProperties` on the `exlude`/`include` element to `true`. 
+Since FileVault 3.1.28 ([JCRVLT-120](https://issues.apache.org/jira/browse/JCRVLT-120)) it is not only possible to filter on node level but also only include/exclude certain properties below a certain node by setting the attribute `matchProperties` on the `exclude`/`include` element to `true`. 
 
 	<filter root="/tmp">
         <exclude pattern="/tmp/property1" matchProperties="true"/>

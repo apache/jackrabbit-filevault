@@ -45,7 +45,7 @@ Each validator settings are set for a specific validator id.
 
 ### Incremental Execution
 
-It is possible to run validation only on a subset of files contained in the package. Currently the [filevault-package-maven-plugin][filevault.maven] with its goal `validate-mojos` is leveraging that if running inside [Eclipse with m2e](https://www.eclipse.org/m2e/). To prevent some validators from emitting false positives they act less strict if executed in incremental mode. The table below outlines how incremental executions differ from full executions.
+It is possible to run validation only on a subset of files contained in the package. Currently the [filevault-package-maven-plugin][filevault.maven] with its goal `validate-files` is leveraging that if running inside [Eclipse with m2e](https://www.eclipse.org/m2e/). To prevent some validators from emitting false positives they act less strict if executed in incremental mode. The table below outlines how incremental executions differ from full executions.
 
 ### Standard Validators
 

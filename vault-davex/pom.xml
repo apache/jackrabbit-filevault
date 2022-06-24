@@ -98,8 +98,8 @@
                         <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
                         <!-- only check embedded dependencies, therefore exclude all external dependencies with vulnerabilities (provided by the container) -->
                         <excludes>
-                            <exlude>*:commons-io</exlude>
-                            <exlude>*:httpclient</exlude>
+                            <exclude>*:commons-io</exclude>
+                            <exclude>*:httpclient</exclude>
                         </excludes>
                     </configuration>
                 </plugin>

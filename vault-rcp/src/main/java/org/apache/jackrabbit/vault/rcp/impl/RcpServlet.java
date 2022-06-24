@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.jcr.Credentials;
@@ -32,6 +31,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.felix.utils.json.JSONParser;
+import org.apache.felix.utils.json.JSONWriter;
 import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
@@ -41,14 +42,9 @@ import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
-import org.apache.sling.commons.json.JSONArray;
-import org.apache.sling.commons.json.JSONException;
-import org.apache.sling.commons.json.JSONObject;
-import org.apache.sling.commons.json.io.JSONWriter;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.framework.Version;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -124,7 +120,6 @@ public class RcpServlet extends SlingAllMethodsServlet {
             } else {
                 String taskId = request.getRequestPathInfo().getSuffix();
                 JSONWriter w = new JSONWriter(response.getWriter());
-                w.setTidy(true);
     
                 if (taskId != null) {
                     taskId = taskId.substring(1);
@@ -146,14 +141,13 @@ public class RcpServlet extends SlingAllMethodsServlet {
                     w.endObject();
                 }
             }
-        } catch (JSONException e) {
-            throw new IOException(e.toString());
+        } catch (IOException e) {
+            throw new ServletException("Error writing JSON", e);
         }
     }
 
-    private void writeInfoJson(Writer writer) throws JSONException {
+    private void writeInfoJson(Writer writer) throws IOException {
         JSONWriter w = new JSONWriter(writer);
-        w.setTidy(true);
         w.object();
         w.key(Constants.BUNDLE_SYMBOLICNAME).value(bundle.getSymbolicName());
         w.key(Constants.BUNDLE_VERSION).value(bundle.getVersion().toString());
@@ -164,12 +158,11 @@ public class RcpServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
-        String json = IOUtils.toString(request.getReader());
-        JSONObject data;
+        TypedMapWrapper data;
         try {
-            data = new JSONObject(json);
-        } catch (JSONException e) {
-            log.error("Error while reading json: {}", e.toString());
+            data = new TypedMapWrapper(new JSONParser(request.getInputStream()).getParsed());
+        } catch (IOException e) {
+            log.error("Error while reading json", e);
             response.setStatus(500);
             return;
         }
@@ -205,14 +198,14 @@ public class RcpServlet extends SlingAllMethodsServlet {
                     creds = createCredentials(srcCreds);
                 }
                 Boolean recursive = null;
-                if (data.has(PARAM_RECURSIVE)) {
+                if (data.containsKey(PARAM_RECURSIVE)) {
                     recursive = data.optBoolean(PARAM_RECURSIVE, false);
                 }
 
                 ConnectionOptions.Builder connectionOptionsBuilder = ConnectionOptions.builder();
-                connectionOptionsBuilder.useSystemProperties(data.optBoolean(PARAM_USE_SYSTEM_PROPERTIES));
-                connectionOptionsBuilder.allowSelfSignedCertificates(data.optBoolean(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE));
-                connectionOptionsBuilder.disableHostnameVerification(data.optBoolean(PARAM_DISABLE_HOSTNAME_VERIFICATION));
+                connectionOptionsBuilder.useSystemProperties(data.optBoolean(PARAM_USE_SYSTEM_PROPERTIES, false));
+                connectionOptionsBuilder.allowSelfSignedCertificates(data.optBoolean(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE, false));
+                connectionOptionsBuilder.disableHostnameVerification(data.optBoolean(PARAM_DISABLE_HOSTNAME_VERIFICATION, false));
                 int connectionTimeoutMs = data.optInt(PARAM_CONNECTION_TIMEOUT_MS, -1);
                 connectionOptionsBuilder.connectionTimeoutMs(connectionTimeoutMs);
                 int requestTimeoutMs = data.optInt(PARAM_REQUEST_TIMEOUT_MS, -1);
@@ -220,27 +213,23 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 int socketTimeoutMs = data.optInt(PARAM_SOCKET_TIMEOUT_MS, -1);
                 connectionOptionsBuilder.socketTimeoutMs(socketTimeoutMs);
 
-                if (data.has(PARAM_PROXY_HOST)) {
+                if (data.containsKey(PARAM_PROXY_HOST)) {
                     connectionOptionsBuilder.proxyHost(data.getString(PARAM_PROXY_HOST));
-                    if (data.has(PARAM_PROXY_PORT)) {
+                    if (data.containsKey(PARAM_PROXY_PORT)) {
                         connectionOptionsBuilder.proxyPort(data.getInt(PARAM_PROXY_PORT));
                     }
-                    if (data.has(PARAM_PROXY_PROTOCOL)) {
+                    if (data.containsKey(PARAM_PROXY_PROTOCOL)) {
                         connectionOptionsBuilder.proxyProtocol(data.getString(PARAM_PROXY_PROTOCOL));
                     }
-                    if (data.has(PARAM_PROXY_USERNAME)) {
+                    if (data.containsKey(PARAM_PROXY_USERNAME)) {
                         connectionOptionsBuilder.proxyUsername(data.getString(PARAM_PROXY_USERNAME));
-                        if (data.has(PARAM_PROXY_PASSWORD)) {
+                        if (data.containsKey(PARAM_PROXY_PASSWORD)) {
                             connectionOptionsBuilder.proxyPassword(data.getString(PARAM_PROXY_PASSWORD));
                         }
                     }
                 }
-                if (data.has(PARAM_EXCLUDES)) {
-                    List<String> excludeList = new LinkedList<>();
-                    JSONArray excludes = data.getJSONArray(PARAM_EXCLUDES);
-                    for (int idx = 0; idx < excludes.length(); idx++) {
-                        excludeList.add(excludes.getString(idx));
-                    }
+                if (data.containsKey(PARAM_EXCLUDES)) {
+                    List<String> excludeList = data.getStringList(PARAM_EXCLUDES);
                     if (isEdit) {
                         task = taskMgr.editTask(id, address, connectionOptionsBuilder.build(), creds, dst, excludeList, null, recursive);
                     } else {
@@ -248,7 +237,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
                     }
                 } else {
                     final WorkspaceFilter filter;
-                    if (data.has(PARAM_FILTER)) {
+                    if (data.containsKey(PARAM_FILTER)) {
                         DefaultWorkspaceFilter filterImpl = new DefaultWorkspaceFilter();
                         filterImpl.load(IOUtils.toInputStream(data.getString(PARAM_FILTER), StandardCharsets.UTF_8));
                         filter = filterImpl;
@@ -263,22 +252,22 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 }
 
                 // add additional data
-                if (data.has(PARAM_BATCHSIZE)) {
+                if (data.containsKey(PARAM_BATCHSIZE)) {
                     task.getRcp().setBatchSize((int) data.getLong(PARAM_BATCHSIZE));
                 }
-                if (data.has(PARAM_UPDATE)) {
+                if (data.containsKey(PARAM_UPDATE)) {
                     task.getRcp().setUpdate(data.optBoolean(PARAM_UPDATE, false));
                 }
-                if (data.has(PARAM_ONLY_NEWER)) {
+                if (data.containsKey(PARAM_ONLY_NEWER)) {
                     task.getRcp().setOnlyNewer(data.optBoolean(PARAM_ONLY_NEWER, false));
                 }
-                if (data.has(PARAM_NO_ORDERING)) {
+                if (data.containsKey(PARAM_NO_ORDERING)) {
                     task.getRcp().setNoOrdering(data.optBoolean(PARAM_NO_ORDERING, false));
                 }
-                if (data.has(PARAM_THROTTLE)) {
+                if (data.containsKey(PARAM_THROTTLE)) {
                     task.getRcp().setThrottle(data.getLong(PARAM_THROTTLE));
                 }
-                if (data.has(PARAM_RESUME_FROM)) {
+                if (data.containsKey(PARAM_RESUME_FROM)) {
                     task.getRcp().setResumeFrom(data.getString(PARAM_RESUME_FROM));
                 }
                 if (isEdit) {
@@ -340,7 +329,6 @@ public class RcpServlet extends SlingAllMethodsServlet {
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
             JSONWriter w = new JSONWriter(response.getWriter());
-            w.setTidy(true);
             w.object();
             w.key("status").value("ok");
             w.key("id").value(id);
@@ -352,13 +340,12 @@ public class RcpServlet extends SlingAllMethodsServlet {
             response.setCharacterEncoding("utf-8");
             response.setStatus(500);
             JSONWriter w = new JSONWriter(response.getWriter());
-            w.setTidy(true);
             try {
                 w.object();
                 w.key("status").value("error");
                 w.key("message").value("Error while executing '" + cmd + "': " + e.getMessage());
                 w.endObject();
-            } catch (JSONException e1) {
+            } catch (IOException e1) {
                 // ignore
             }
         }
@@ -377,7 +364,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
         return creds;
     }
 
-    private static void write(JSONWriter w, RcpTask rcpTask) throws JSONException {
+    private static void write(JSONWriter w, RcpTask rcpTask) throws IOException {
         w.object();
         w.key(RcpServlet.PARAM_ID).value(rcpTask.getId());
         w.key(RcpServlet.PARAM_SRC).value(rcpTask.getSource().toString());

@@ -54,8 +54,8 @@
                         <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
                         <!-- only check embedded dependencies, therefore exclude all external dependencies with vulnerabilities (provided by the container) -->
                         <excludes>
-                            <exlude>*:commons-io</exlude>
-                            <exlude>*:guava</exlude>
+                            <exclude>*:commons-io</exclude>
+                            <exclude>*:guava</exclude>
                         </excludes>
                     </configuration>
                 </plugin>

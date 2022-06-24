@@ -36,7 +36,7 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
         if (settings.getOptions().containsKey(OPTION_ALLOW_UNDECLARED_PREFIX_IN_FILE_NAME)) {
             allowUndeclaredPrefixInFileName = Boolean.valueOf(settings.getOptions().get(OPTION_ALLOW_UNDECLARED_PREFIX_IN_FILE_NAME));
         } else {
-            allowUndeclaredPrefixInFileName = false;
+            allowUndeclaredPrefixInFileName = true;
         }
         return new DocumentViewParserValidator(settings.getDefaultSeverity(), allowUndeclaredPrefixInFileName);
     }

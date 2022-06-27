@@ -85,7 +85,8 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.6.1-SNAPSHOT</version>
+            <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- JCR Stuff -->

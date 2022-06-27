@@ -123,13 +123,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.sling</groupId>
-                        <artifactId>maven-enforcer-rules</artifactId>
-                        <version>1.0.0</version>
-                    </dependency>
-                </dependencies>
                 <executions>
                     <execution>
                         <id>enforce-complete-runtime-classpath</id>
@@ -147,6 +140,9 @@
                                         <exclude>*:stax2-api</exclude><!-- embedded in vault-core -->
                                         <exclude>*:maven-artifact</exclude><!-- embedded in vault-core -->
                                         <exclude>*:h2</exclude><!-- embedded in vault-core -->
+                                        <exclude>org.apache.commons:commons-jci-fam</exclude><!-- embedded in vault-sync -->
+                                        <exclude>commons-logging:commons-logging-api</exclude><!-- embedded in vault-sync -->
+                                        <exclude>org.apache.sling:org.apache.sling.jcr.api</exclude><!-- only used on server-side -->
                                         <!-- no annotations are evaluated at run time -->
                                         <exclude>org.jetbrains:annotations</exclude>
                                         <exclude>org.osgi:org.osgi.annotation</exclude>
@@ -191,7 +187,8 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.6.1-SNAPSHOT</version>
+            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
         <!-- transitive (but with scope "provided") dependency of vault -->
         <dependency>
@@ -202,17 +199,20 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-vlt</artifactId>
-            <version>3.6.1-SNAPSHOT</version>
+            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-sync</artifactId>
-            <version>3.6.1-SNAPSHOT</version>
+            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-davex</artifactId>
-            <version>3.6.1-SNAPSHOT</version>
+            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- CLI Stuff -->
@@ -220,11 +220,13 @@
             <groupId>org.apache.mahout.commons</groupId>
             <artifactId>commons-cli</artifactId>
             <version>2.0-mahout</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
             <version>1.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- JCR Stuff -->
@@ -251,6 +253,7 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.10</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

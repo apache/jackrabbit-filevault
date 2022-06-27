@@ -19,7 +19,7 @@
                   @jackrabbit-spi2dav-[0-9.]*(-SNAPSHOT)?.jar,\
                   @jackrabbit-jcr-client-[0-9.]*(-SNAPSHOT)?.jar,\
                   @jackrabbit-jcr2spi-[0-9.]*(-SNAPSHOT)?.jar
--conditionalpackage: org.apache.jackrabbit.util,org.apache.jackrabbit.api.security,org.apache.felix.utils.json
+-conditionalpackage: org.apache.jackrabbit.util,org.apache.jackrabbit.api.security.*,org.apache.felix.utils.json
 # make sure to only export the relevant packages (https://github.com/bndtools/bnd/issues/4219)
 -exportcontents: org.apache.jackrabbit.vault.rcp
 # due to Jackrabbit2 JARs poorly designed for OSGi, only export the class used in the API from package "org.apache.jackrabbit.spi2dav", as the other classes in that package have lots of private references

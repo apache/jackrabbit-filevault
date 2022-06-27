@@ -37,6 +37,7 @@
     <properties>
         <!-- http://maven.apache.org/ref/3.6.3/maven-model-builder/index.html#Inheritance_Assembly -->
         <project.directory>vault-validation</project.directory>
+        <jackrabbit.version>2.16.0</jackrabbit.version>
     </properties>
 
     <build>
@@ -51,6 +52,7 @@
                         <excludes>
                             <exclude>*:commons-io</exclude>
                             <exclude>*:httpclient</exclude>
+                            <exclude>*:guava</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
@@ -120,21 +122,30 @@
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
             <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
-
+        <!-- JCR Stuff -->
+        <dependency>
+            <groupId>javax.jcr</groupId>
+            <artifactId>jcr</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-spi-commons</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-jcr2spi</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- for parsing Maven versions -->
@@ -142,6 +153,7 @@
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-artifact</artifactId>
             <version>3.8.4</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -209,6 +221,7 @@
             <artifactId>metainf-services</artifactId>
             <version>1.8</version>
             <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
 
         <!-- testing -->

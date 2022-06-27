@@ -86,6 +86,13 @@
 
     <!-- the following dependencies are provided by AEM 6.4, all must have scope "provided" to prevent them polluting referencing modules -->
     <dependencies>
+        <!-- older FileVault shipped with AEM, necessary for non-core bundles which should work without updating vault core -->
+        <dependency>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <artifactId>org.apache.jackrabbit.vault</artifactId>
+            <version>3.1.38</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.framework</artifactId>

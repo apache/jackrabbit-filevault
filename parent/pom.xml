@@ -324,6 +324,26 @@ Bundle-Category: jackrabbit
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.sling</groupId>
+                        <artifactId>maven-enforcer-rules</artifactId>
+                        <version>1.1.0</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>enforce-explicit-scope</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireExplicitDependencyScope implementation="org.apache.sling.maven.enforcer.RequireExplicitDependencyScope" />
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
 
@@ -354,7 +374,6 @@ Bundle-Category: jackrabbit
                 <artifactId>oak-jackrabbit-api</artifactId>
                 <version>${oak.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>jackrabbit-spi</artifactId>
@@ -396,46 +415,29 @@ Bundle-Category: jackrabbit
                 <groupId>javax.jcr</groupId>
                 <artifactId>jcr</artifactId>
                 <version>2.0</version>
-                <scope>provided</scope>
             </dependency>
 
             <!-- SLF4j / Log4j -->
             <dependency>
                 <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4j.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
                 <version>${slf4j.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.12</version>
-                <scope>provided</scope>
             </dependency>
             <!-- https://github.com/JetBrains/java-annotations -->
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
                 <version>23.0.0</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>biz.aQute.bnd.annotation</artifactId>
                 <version>${bnd.version}</version>
-                <scope>compile</scope>
             </dependency>
             <!-- other -->
 
@@ -445,14 +447,12 @@ Bundle-Category: jackrabbit
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.framework</artifactId>
                 <version>1.8.0</version>
-                <scope>provided</scope>
             </dependency>
             <!-- Configuration Admin 1.6, Compendium R7 (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/cm/package-frame.html) -->
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.service.cm</artifactId>
                 <version>1.6.0</version>
-                <scope>provided</scope>
             </dependency>
             <!-- Service Component 1.4, Compendium R7 (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/component/package-frame.html) -->
             <!-- and component property types (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/component/propertytypes/package-frame.html) -->
@@ -460,14 +460,12 @@ Bundle-Category: jackrabbit
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.service.component</artifactId>
                 <version>1.4.0</version>
-                <scope>provided</scope>
             </dependency>
             <!-- Event Admin 1.3.1, Compendium R6 (https://osgi.org/javadoc/r6/cmpn/org/osgi/service/event/package-summary.html) -->
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.service.event</artifactId>
                 <version>1.3.1</version>
-                <scope>provided</scope>
             </dependency>
 
             <!-- OSGi Annotations: @Version -->
@@ -475,21 +473,18 @@ Bundle-Category: jackrabbit
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.annotation.versioning</artifactId>
                 <version>1.1.0</version>
-                <scope>provided</scope>
             </dependency>
             <!-- Declarative Service Annotations -->
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.service.component.annotations</artifactId>
                 <version>1.4.0</version>
-                <scope>provided</scope>
             </dependency>
             <!-- Metatype Annotations -->
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.service.metatype.annotations</artifactId>
                 <version>1.3.0</version>
-                <scope>provided</scope>
             </dependency>
 
             <!-- these are minimum version referenced in OSGi bundles, for embedding a newer version should be used -->
@@ -532,7 +527,6 @@ Bundle-Category: jackrabbit
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.13.2</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

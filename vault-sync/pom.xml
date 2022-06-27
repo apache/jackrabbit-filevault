@@ -106,6 +106,7 @@
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
             <version>3.1.38</version><!-- minimum version this bundle is compatible with -->
+            <scope>provided</scope>
         </dependency>
 
         <!-- JCR Stuff -->
@@ -134,25 +135,30 @@
             <artifactId>commons-io</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- embedded dependency -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jci-fam</artifactId>
             <version>1.0</version>
+            <scope>provided</scope>
         </dependency>
         <!-- OSGi Annotations: @Version -->
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.annotation.versioning</artifactId>
+            <scope>provided</scope>
         </dependency>
         <!-- Declarative Service Annotations -->
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.service.component.annotations</artifactId>
+            <scope>provided</scope>
         </dependency>
         <!-- Metatype Annotations -->
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.service.metatype.annotations</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- sling -->
@@ -160,14 +166,15 @@
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.jcr.api</artifactId>
             <version>2.0.6</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- SLF4j / Log4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
         </dependency>
-
     </dependencies>
 
 </project>

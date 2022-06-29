@@ -38,6 +38,7 @@ Example:
             <include pattern="/etc/project1/static(/.*)?" />
         </filter>
         <filter root="/etc/map" mode="merge" />
+        <filter root="/apps/old-project-location" type="cleanup" />
     </workspaceFilter>
 
 ### Filter Elements
@@ -52,7 +53,7 @@ importing content. the following values are possible:
 
 For a more detailed description of the import mode, see [here](importmode.html).
 
-In addition it is possible to influence the auto-detection of the package type (if not explicitly specified in the `properties.xml`) with the attribute `type`. The only supported value as of now is `cleanup` which means that the filter rule is ignored for the auto-detection of  the package type ([JCRVLT-220](https://issues.apache.org/jira/browse/JCRVLT-220))
+In addition it is possible to influence the auto-detection of the package type (if not explicitly specified in the `properties.xml`) with the attribute `type`. The only supported value as of now is `cleanup` which means that the filter rule is ignored for the auto-detection of the package type ([JCRVLT-220](https://issues.apache.org/jira/browse/JCRVLT-220)) as well as ignored for [validation of orphaned filter entries](validation.html) with the `jackrabbit-filter` validator. This is thought for nodes which are supposed to be removed during package installation (i.e. nodes which are not contained in any serialization files/folders).
 
 
 ### Include and Exclude Elements

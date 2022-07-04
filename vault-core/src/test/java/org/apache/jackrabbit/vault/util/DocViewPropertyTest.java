@@ -21,6 +21,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
 
 import javax.jcr.Binary;
 import javax.jcr.Property;
@@ -247,6 +249,20 @@ public class DocViewPropertyTest {
         assertEquals(DocViewProperty.fromValues("test", new Value[]{ value, value }, PropertyType.BINARY, true, false, true), true, PropertyType.BINARY, false, "", "");
         // regular binary  multi-value (references disabled)
         assertEquals(DocViewProperty.fromValues("test", new Value[]{ value, value }, PropertyType.BINARY, true, false, false), true, PropertyType.BINARY, false, "", "");
+    }
+
+    @Test
+    public void testFormat() {
+        DocViewProperty property = new DocViewProperty("test", new String[] { "value"}, false, PropertyType.UNDEFINED);
+        Assert.assertEquals("value", property.formatValue());
+        property = new DocViewProperty("test", new String[] {"true"}, false, PropertyType.BOOLEAN);
+        Assert.assertEquals("{Boolean}true", property.formatValue());
+        property = new DocViewProperty("test", new String[]{"path1", "path2"}, true, PropertyType.PATH);
+        Assert.assertEquals("{Path}[path1,path2]", property.formatValue());
+        property = new DocViewProperty("test", new String[]{""}, true, PropertyType.STRING);
+        Assert.assertEquals("[\\0]", property.formatValue());
+        property = new DocViewProperty("test", new String[]{"1234"}, false, PropertyType.BINARY, true);
+        Assert.assertEquals("{BinaryRef}1234", property.formatValue());
     }
 
     private void assertEscaped(String original, String expected, boolean multi) {

@@ -497,15 +497,15 @@ public class DocViewProperty2 {
 
     /**
      * Checks if the type of the given property is ambiguous in respect to it's
-     * property definition. the current implementation just checks some well
-     * known properties.
+     * property definition. The current implementation just returns {@code false} for
+     * some well known property names and for type = PropertyType.STRING or PropertyType.UNDEFINED.
      *
      * @param type the type
      * @param name the name
      * @return {@code true} if type information should be emitted, otherwise {@code false}
      */
     private static boolean isAmbiguous(int type, Name name) {
-        return type != PropertyType.STRING && !UNAMBIGUOUS.contains(name);
+        return type != PropertyType.STRING && type != PropertyType.UNDEFINED && !UNAMBIGUOUS.contains(name);
     }
 
     /**

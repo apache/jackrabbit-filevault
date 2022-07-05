@@ -18,14 +18,15 @@
  * under the License.
  */
 // use the shared library from https://github.com/apache/jackrabbit-filevault-jenkins-lib
-library "filevault@master"
+@Library('filevault@master') _
 
 vaultPipeline('ubuntu', 11, '3', {
-   vaultStageBuild(['ubuntu', 'Windows'], [11, 17], ['3', '3.6.3'], 'apache_jackrabbit-filevault', 
+  vaultStageSanityCheck()
+  vaultStageBuild(['Windows'], [17], [], 'apache_jackrabbit-filevault', 
      [
        mainBuildArguments: '-U clean site deploy -Pjacoco-report,dependency-check -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml'
      ]
-   )
-   vaultStageDeploy()
-  }
+  )
+  vaultStageDeploy()
+}
 )

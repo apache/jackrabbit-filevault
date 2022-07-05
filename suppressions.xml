@@ -43,4 +43,12 @@
        <packageUrl regex="true">^pkg:maven/org\.apache\.jackrabbit/oak-.*@.*$</packageUrl>
        <cpe>cpe:/a:apache:xml_security_for_java</cpe>
     </suppress>
+    <suppress>
+       <notes><![CDATA[
+       false positive: org.apache.sling.jcr.api-2.0.4.jar only Sling API and Sling Commons Logging affected
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.apache\.sling/org\.apache\.sling\.jcr\.api@.*$</packageUrl>
+       <cve>CVE-2022-32549</cve>
+    </suppress>
+    
 </suppressions>

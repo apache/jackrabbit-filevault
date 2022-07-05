@@ -478,7 +478,7 @@ public class DocViewProperty {
      * @return {@code true} if type information should be emitted, otherwise {@code false}
      */
     private static boolean isAmbiguous(int type, String name) {
-        return type != PropertyType.STRING && !UNAMBIGOUS.contains(name);
+        return type != PropertyType.STRING && type != PropertyType.UNDEFINED && !UNAMBIGOUS.contains(name);
     }
 
     /**

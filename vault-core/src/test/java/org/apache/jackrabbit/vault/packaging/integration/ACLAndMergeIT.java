@@ -478,10 +478,11 @@ public class ACLAndMergeIT extends IntegrationTestBase {
         extractVaultPackageStrict("/test-packages/ac_outside_filter.zip");
         assertNodeExists("/testroot/node_a");
 
-        // this ACL is not contained in the filter and not installed because ancestor is no filter root
+        // this ACL is not contained in the filter neither is its direct ancestor (node whose privileges are set)
+        // still nodes contained in the filter would be affected by the ACL
         assertPermissionMissing("/testroot", false, new String[]{"jcr:all"}, "everyone", null);
 
-        // this is not contained in the filter root but installed nevertheless (due to ancestor being a filter root)
+        // this ACL is not contained in the filter but its direct ancestor (the node whose privileges are set) is
         assertPermissionMissing("/testroot/secured", false, new String[]{"jcr:all"}, "everyone", null);
     }
 }

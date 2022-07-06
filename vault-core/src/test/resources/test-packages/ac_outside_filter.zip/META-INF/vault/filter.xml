@@ -21,4 +21,5 @@
        <include pattern="/testroot/secured/jcr:content"/>
        <include pattern="/testroot/node_a(/.*)?"/>
     </filter>
+    <filter root="/test2root/child/grandchild" />
 </workspaceFilter>

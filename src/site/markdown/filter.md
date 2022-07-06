@@ -140,6 +140,10 @@ All *uncovered* ancestor nodes are either
 1. since version 3.4.4 ([JCRVLT-417](https://issues.apache.org/jira/browse/JCRVLT-417)) created with the ancestor node type's default child type or if that is not set or prior to version 3.4.4 created with node type `nt:folder` (in case the the node type is *not* given with a `.content.xml` at the right location and the node does not yet exist in the repo) or
 1. not touched at all (in case they are already existing in the repo, no matter which node type is given with a `.content.xml` at the according location) 
 
+### Effect on Access Control Lists (ACLs)
+
+In order for ACLs to be installed the [ACL serialization node path](vaultfs.html#Authorization_Serialization) must be contained in the filter as well.
+
 ### Example
 
 Content Package Filter

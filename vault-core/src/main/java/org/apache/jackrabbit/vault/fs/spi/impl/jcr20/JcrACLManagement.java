@@ -34,6 +34,7 @@ public class JcrACLManagement implements ACLManagement {
      * {@inheritDoc}
      */
     public boolean isACLNodeType(String name) {
+        // all those inherit from rep:Policy
         return name.equals("rep:ACL") || name.equals("rep:CugPolicy") || name.equals("rep:PrincipalPolicy");
     }
 

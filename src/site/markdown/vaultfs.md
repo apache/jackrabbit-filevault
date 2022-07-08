@@ -291,6 +291,16 @@ The serialization of the artifacts is defined by the **serializer** that is prov
 1. a direct data serialization for the contents of file or binary artifacts and 
 2. an enhanced _docview_ serialization for the rest. The [_enhanced docview_ serialization][enhanceddocview] that is used allows multi-value properties and explicit types in contrast to regular [document view XML defined by JCR 2.0][docview].
 
+### Authorization Serialization
+
+As JCR 2.0 does not define if/how access control information is stored in the repository, FileVault only supports the Oak-specific implementation leveraging its internal repository format. It support the following node names:
+
+1. `rep:policy` or `repo:policy` (for repository-level ACLs) with structure as defined in <https://jackrabbit.apache.org/oak/docs/security/accesscontrol/default.html#representation-in-the-repository>
+1. `rep:cugPolicy` with structure as defined in <https://jackrabbit.apache.org/oak/docs/security/authorization/cug.html#representation-in-the-repository>
+1. `rep:principalPolicy`  with structure as defined in <https://jackrabbit.apache.org/oak/docs/security/authorization/principalbased.html#representation-in-the-repository>
+
+Those are serialized as [enhanced docview][enhanceddocview].
+
 Deserialization
 ---------------
 Although for exporting only 2 serialization types are used this is a bit different for importing. The importer analyzes the provided input sources and determines the following serialization types:
@@ -310,6 +320,9 @@ Depending on the configuration those input sources can be handled differently. C
 
 **generic data** produces a `nt:file` having the data as `nt:resource` content.
 
+### Authorization Deserialization
+
+Only the Oak-specific serializations as defined above are deserialized leveraging the [JCR 2.0 API defined in chapter 16][authorization].
 
 Terminology
 -----------
@@ -333,3 +346,4 @@ Terminology
 [enhanceddocview]: docview.html
 [docview]: https://s.apache.org/jcr-2.0-spec/7_Export.html#7.3%20Document%20View
 [sysview]: https://s.apache.org/jcr-2.0-spec/7_Export.html#7.2%20System%20View
+[authorization]: https://s.apache.org/jcr-2.0-spec/16_Access_Control_Management.html

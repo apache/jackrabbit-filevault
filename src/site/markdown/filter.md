@@ -121,14 +121,16 @@ The exact rules are outlined below
 
 Item covered by filter rule | Item contained in the Content Package | Item contained in the Repository (prior to Import/Installation) | State of Item in Repository after Import/Installation
 --- | --- | --- | ---
-no | yes | yes | not touched
-no | no | yes | not touched
-no | yes | no | *nodes which are ancestors of covered rules*: deserialized from content package (for backwards compatibility reasons), *nodes which are not ancestors of covered rules*: not touched. One should not rely on this behaviour, i.e. all items in the content package should always be covered by some filter rule to make the behaviour more explicit.
+no | yes | yes | not touched(*)
+no | no | yes | not touched(*)
+no | yes | no | *nodes which are ancestors of covered rules*: deserialized from content package (for backwards compatibility reasons), *nodes which are not ancestors of covered rules*: not touched. One should not rely on this behaviour, i.e. all items in the content package should always be covered by some filter rule to make the behaviour more explicit.(*)
 no | no | no | not existing (not touched)
 yes | yes | yes | overwritten
 yes | no | yes | removed
 yes | yes | no | deserialized from content package
 yes | no | no | not existing
+
+Mostly for historical reason both authorizable nodes and access control lists behave differently.
 
 ### Uncovered ancestor nodes
 
@@ -137,6 +139,10 @@ All *uncovered* ancestor nodes are either
 1. created with the node type and properties given in the package (in case the node type *is* given with a `.content.xml` at the right location and the node does not yet exist in the repo)
 1. since version 3.4.4 ([JCRVLT-417](https://issues.apache.org/jira/browse/JCRVLT-417)) created with the ancestor node type's default child type or if that is not set or prior to version 3.4.4 created with node type `nt:folder` (in case the the node type is *not* given with a `.content.xml` at the right location and the node does not yet exist in the repo) or
 1. not touched at all (in case they are already existing in the repo, no matter which node type is given with a `.content.xml` at the according location) 
+
+### Effect on Access Control Lists (ACLs)
+
+In order for ACLs to be installed the [ACL serialization node path](vaultfs.html#Authorization_Serialization) must be contained in the filter as well.
 
 ### Example
 

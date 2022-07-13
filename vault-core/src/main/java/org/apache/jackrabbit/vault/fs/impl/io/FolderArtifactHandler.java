@@ -107,7 +107,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
      * Handles generic artifact sets
      */
     @Override
-    public ImportInfoImpl accept(@NotNull ImportOptions options, WorkspaceFilter wspFilter, Node parent, String name,
+    public ImportInfoImpl accept(@NotNull ImportOptions options, boolean isStrictByDefault, WorkspaceFilter wspFilter, Node parent, String name,
                              ArtifactSetImpl artifacts)
             throws RepositoryException, IOException {
         Artifact dir = artifacts.getDirectory();

@@ -110,7 +110,8 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
      * <p>
      * Handles generic artifact sets
      */
-    public ImportInfoImpl accept(@NotNull ImportOptions options, WorkspaceFilter wspFilter, Node parent,
+    @Override
+    public ImportInfoImpl accept(@NotNull ImportOptions options, boolean isStrictByDefault, WorkspaceFilter wspFilter, Node parent,
                                 String name, ArtifactSetImpl artifacts)
             throws RepositoryException, IOException {
         // check if any file artifacts was removed

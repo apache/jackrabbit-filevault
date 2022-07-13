@@ -274,6 +274,7 @@ public class Importer {
      */
     private Map<String, TxInfo> removedIntermediates = new LinkedHashMap<String, TxInfo>();
 
+    private final boolean isStrict;
     private final boolean isStrictByDefault;
     private final boolean overwritePrimaryTypesOfFoldersByDefault;
 
@@ -291,6 +292,7 @@ public class Importer {
 
     public Importer(ImportOptions opts, boolean isStrictByDefault, boolean overwritePrimaryTypesOfFoldersByDefault) {
         this.opts = opts;
+        this.isStrict = opts.isStrict(isStrictByDefault);
         this.isStrictByDefault = isStrictByDefault;
         this.overwritePrimaryTypesOfFoldersByDefault = overwritePrimaryTypesOfFoldersByDefault;
     }
@@ -512,7 +514,7 @@ public class Importer {
         } else {
             if (hasErrors) {
                 track("Package imported (with errors, check logs!)", "");
-                if (opts.isStrict(isStrictByDefault)) {
+                if (isStrict) {
                     throw new RepositoryException("Some errors occurred while installing packages. Please check the logs for details. First exception is logged as cause.", firstException);
                 }
                 log.error("There were errors during package install. Please check the logs for details.");
@@ -561,7 +563,7 @@ public class Importer {
                 log.debug("Installing node types...");
                 installer.install(tracker, nodeTypes);
             } catch (RepositoryException e) {
-                if (opts.isStrict(isStrictByDefault)) {
+                if (isStrict) {
                     throw e;
                 }
                 track(e, "Packaged node types");
@@ -579,7 +581,7 @@ public class Importer {
                 log.debug("Registering privileges...");
                 installer.install(tracker, privileges);
             } catch (RepositoryException e) {
-                if (opts.isStrict(isStrictByDefault)) {
+                if (isStrict) {
                     throw e;
                 }
                 track(e, "Packaged privileges");
@@ -927,7 +929,7 @@ public class Importer {
                 imp = new ImportInfoImpl();
                 imp.onError(info.path, new IllegalStateException("Parent node not found."));
             } else {
-                imp = genericHandler.accept(opts, filter, node, info.artifacts.getPrimaryData().getRelativePath(), info.artifacts);
+                imp = genericHandler.accept(opts, isStrictByDefault, filter, node, info.artifacts.getPrimaryData().getRelativePath(), info.artifacts);
                 if (imp == null) {
                     throw new IllegalStateException("generic handler did not accept " + info.path);
                 }
@@ -958,12 +960,12 @@ public class Importer {
                     log.trace("skipping intermediate node at {}", info.path);
                 } else if (info.artifacts.getPrimaryData() == null) {
                     // create nt:folder node if not exists
-                    imp = folderHandler.accept(opts, filter, node, info.name,  info.artifacts);
+                    imp = folderHandler.accept(opts, isStrictByDefault, filter, node, info.name,  info.artifacts);
                     if (imp == null) {
                         throw new IllegalStateException("folder handler did not accept " + info.path);
                     }
                 } else {
-                    imp = genericHandler.accept(opts, filter, node, info.artifacts.getDirectory().getRelativePath(), info.artifacts);
+                    imp = genericHandler.accept(opts, isStrictByDefault, filter, node, info.artifacts.getDirectory().getRelativePath(), info.artifacts);
                     if (imp == null) {
                         throw new IllegalStateException("generic handler did not accept " + info.path);
                     }
@@ -975,7 +977,7 @@ public class Importer {
                 imp = new ImportInfoImpl();
                 imp.onError(info.path, new IllegalStateException("Parent node not found."));
             } else {
-                imp = fileHandler.accept(opts, filter, node, info.name,  info.artifacts);
+                imp = fileHandler.accept(opts, isStrictByDefault, filter, node, info.name,  info.artifacts);
                 if (imp == null) {
                     throw new IllegalStateException("file handler did not accept " + info.path);
                 }

@@ -468,7 +468,6 @@ public class IntegrationTestBase  {
      */
     public VaultPackage extractVaultPackageStrict(String name) throws IOException, PackageException, RepositoryException {
         ImportOptions  opts = getDefaultOptions();
-        opts.setStrict(true);
         return extractVaultPackage(name, opts);
     }
 

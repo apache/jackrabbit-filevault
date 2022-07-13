@@ -33,6 +33,7 @@ import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
 import org.apache.jackrabbit.vault.util.PathUtil;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
@@ -53,12 +54,8 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
 
     private ACLManagement aclManagement = ServiceProviderFactory.getProvider().getACLManagement();
 
-    /**
-     * {@inheritDoc}
-     *
-     * Handles generic artifact sets
-     */
-    public ImportInfoImpl accept(ImportOptions options, WorkspaceFilter wspFilter, Node parent,
+    @Override
+    public ImportInfoImpl accept(@NotNull ImportOptions options, boolean isStrictByDefault, WorkspaceFilter wspFilter, Node parent,
                                  String name, ArtifactSetImpl artifacts)
             throws RepositoryException, IOException {
         Artifact primary = artifacts.getPrimaryData();
@@ -88,7 +85,7 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
                     }
                 }
             }
-            info.merge(importDocView(source, parent, name, artifacts, wspFilter, options.getIdConflictPolicy()));
+            info.merge(importDocView(source, parent, name, artifacts, options.isStrict(isStrictByDefault), wspFilter, options.getIdConflictPolicy()));
         }
         return info;
     }

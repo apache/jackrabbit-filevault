@@ -39,6 +39,8 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 
 /**
@@ -46,6 +48,11 @@ import org.xml.sax.InputSource;
  *
  */
 public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpable {
+
+    /**
+     * default logger
+     */
+    private static final Logger log = LoggerFactory.getLogger(AbstractArtifactHandler.class);
 
     /**
      * access control handling.
@@ -110,34 +117,32 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
         return aclManagement;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public ImportInfo accept(Session session, Aggregate file,
                              ArtifactSet artifacts)
             throws RepositoryException, IOException {
         Node node = file.getNode();
         String name = node.getName();
-        return accept(new ImportOptions(), file.getManager().getWorkspaceFilter(),
+        return accept(new ImportOptions(), true, file.getManager().getWorkspaceFilter(),
                 name.length() == 0 ? node : node.getParent(),
                 name, (ArtifactSetImpl) artifacts);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public ImportInfo accept(Session session, Aggregate parent, String name,
                              ArtifactSet artifacts)
             throws RepositoryException, IOException {
         Node node = parent.getNode();
-        return accept(new ImportOptions(), parent.getManager().getWorkspaceFilter(),
+        return accept(new ImportOptions(), true, parent.getManager().getWorkspaceFilter(),
                 node, name, (ArtifactSetImpl) artifacts);
     }
 
     /**
      * Imports an artifact set below the node.
+     * This method is not part of the public API!
      *
      * @param options the import options
+     * @param isStrictByDefault whether the package should be imported with strict setting by default (i.e. in case ImportOptions has no explicit other flag value set)
      * @param wspFilter the workspace filter
      * @param parent the parent node
      * @param name the name of the (new) import
@@ -146,7 +151,7 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
      * @throws RepositoryException if an error occurs.
      * @throws IOException if an I/O error occurs.
      */
-    protected abstract ImportInfoImpl accept(@NotNull ImportOptions options, WorkspaceFilter wspFilter, Node parent,
+    public abstract ImportInfoImpl accept(@NotNull ImportOptions options, boolean isStrictByDefault, WorkspaceFilter wspFilter, Node parent,
                                          String name, ArtifactSetImpl artifacts)
             throws RepositoryException, IOException;
 
@@ -158,17 +163,29 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
     }
 
     protected ImportInfoImpl importDocView(InputSource source, Node parentNode, String rootNodeName, ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws IOException, RepositoryException {
+        return importDocView(source, parentNode, rootNodeName, artifacts, true, wspFilter, idConflictPolicy);
+    }
+
+    protected ImportInfoImpl importDocView(InputSource source, Node parentNode, String rootNodeName, ArtifactSetImpl artifacts, boolean isStrict, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws IOException, RepositoryException {
         DocViewImporter handler = new DocViewImporter(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, getAcHandling(), getCugHandling());
+        String rootNodePath = parentNode.getPath();
+        if (!rootNodePath.equals("/")) {
+            rootNodePath += "/";
+        }
+        rootNodePath += rootNodeName;
         try {
-            String rootNodePath = parentNode.getPath();
-            if (!rootNodePath.equals("/")) {
-                rootNodePath += "/";
-            }
-            rootNodePath += rootNodeName;
             new DocViewParser(parentNode.getSession()).parse(rootNodePath, source, handler);
         } catch (XmlParseException e) {
-            // wrap as repositoryException although not semantically correct for backwards compatibility
-            throw new RepositoryException(e);
+            if (!isStrict) {
+                // for backwards-compatibility (JCRVLT-644)
+                ImportInfoImpl info = new ImportInfoImpl();
+                info.onError(rootNodePath, e);
+                log.error("Error while parsing {}: {}", source.getSystemId(), e);
+                return info;
+            } else {
+                // wrap as repositoryException although not semantically correct for backwards compatibility
+                throw new RepositoryException(e);
+            }
         }
         return handler.getInfo();
     }

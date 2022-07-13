@@ -134,11 +134,30 @@
                         <goals>
                             <goal>resources</goal>
                         </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/site</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-xsds</id>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>vault-validation/src/main/resources</directory>
+                                    <includes>
+                                        <include>*.xsd</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}/site/xsd</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/site</outputDirectory>
-                </configuration>
+                
             </plugin>
         </plugins>
         

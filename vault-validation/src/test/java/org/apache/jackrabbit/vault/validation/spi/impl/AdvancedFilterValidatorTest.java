@@ -396,7 +396,7 @@ public class AdvancedFilterValidatorTest {
             Collection<ValidationMessage> messages = validator.validateMetaInfData(input, Paths.get("vault/filter.xml"), Paths.get(""));
             ValidationExecutorTest.assertViolation(messages,
                     new ValidationMessage(ValidationMessageSeverity.WARN,
-                            "cvc-enumeration-valid: Value 'invalid' is not facet-valid with respect to enumeration '[replace, merge, update]'. It must be a value from the enumeration.", 19, 49, null),
+                            "cvc-enumeration-valid: Value 'invalid' is not facet-valid with respect to enumeration '[replace, merge, merge_properties, update, update_properties]'. It must be a value from the enumeration.", 19, 49, null),
                     new ValidationMessage(ValidationMessageSeverity.WARN,
                         "cvc-attribute.3: The value 'invalid' of attribute 'mode' on element 'filter' is not valid with respect to its type, 'mode'.", 19, 49, null), // unclear why type is 'null'
                     new ValidationMessage(ValidationMessageSeverity.WARN,

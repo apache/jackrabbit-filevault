@@ -75,14 +75,14 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
     static @NotNull DocumentBuilderFactory createFilterXsdAwareDocumentBuilder(Locale locale) throws IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
-        try (InputStream xsdInput = AdvancedFilterValidatorFactory.class.getResourceAsStream("/filter.xsd")) {
+        try (InputStream xsdInput = AdvancedFilterValidatorFactory.class.getResourceAsStream("/workspacefilter-1.0.xsd")) {
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             // load a WXS schema, represented by a Schema instance
             Source schemaFile = new StreamSource(xsdInput);
             Schema schema = schemaFactory.newSchema(schemaFile);
             factory.setSchema(schema);
             if (xsdInput == null) {
-                throw new IllegalStateException("Can not load filter.xsd");
+                throw new IllegalStateException("Can not load workspacefilter-1.0.xsd");
             }
             factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");

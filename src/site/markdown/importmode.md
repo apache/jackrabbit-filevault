@@ -49,7 +49,7 @@ If an authorizable with the same name already exists, the active `ImportMode` co
 : Replaces the authorizable node completely with the content in the package **in place**. The importer effectively deletes and re-creates the authorizable at the path specified in the package (internally the content is imported using the content handler with `IMPORT_UUID_COLLISION_REPLACE_EXISTING`). Note that any sub-nodes of the authorizable are treated like normal content and obey the normal filter rules. However, if the authorizable existed at a different path as specified in the repository, the importer keeps track of the remapping and calculates the filters accordingly.
 
 
-**`ImportMode.MERGE`,`ImportMode.UPDATE_PROPERTIES`**
+**`ImportMode.MERGE`,`ImportMode.MERGE_PROPERTIES`**
 : Has no effect if the authorizable already existed except for group memberships (see below). Note that any sub-nodes of the authorizable are treated like normal content and obey the normal filter rules. However, if the authorizable existed at a different path as specified in the repository, the importer keeps track of the remapping and calculates the filters accordingly.
 
 ### Merging Group Members

@@ -32,7 +32,9 @@
         <xs:restriction base="xs:string">
           <xs:enumeration value="replace"/>
           <xs:enumeration value="merge"/>
+          <xs:enumeration value="merge_properties"/>
           <xs:enumeration value="update"/>
+          <xs:enumeration value="update_properties"/>
         </xs:restriction>
     </xs:simpleType>
   <xs:element name="workspaceFilter">

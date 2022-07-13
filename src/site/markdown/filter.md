@@ -31,7 +31,7 @@ The `filter.xml` consists of a set of `filter` elements, each with a mandatory `
 
 Example:
 
-    <workspaceFilter version="1.0">
+    <workspaceFilter xmlns="http://jackrabbit.apache.org/filevault/workspacefilter/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jackrabbit.apache.org/filevault/workspacefilter/1.0 https://jackrabbit.apache.org/filevault/xsd/workspacefilter-1.0.xsd" version="1.0">
         <filter root="/apps/project1" />
         <filter root="/etc/project1">
             <exclude pattern=".*\.gif" />
@@ -48,8 +48,10 @@ The filter element can have an optional `mode` attribute which specified the [im
 importing content. the following values are possible:
 
 1. `replace` : This is the normal behavior. Existing content is replaced completely by the imported content, i.e. is overridden or deleted accordingly.
-1. `merge` : Existing content is not modified, i.e. only new content is added and none is deleted or modified.
-1. `update` : Existing content is updated, new content is added and none is deleted.
+1. `merge` : Existing content is not modified, i.e. only new content is added and none is deleted or modified. Deprecated, as not handled consistently, use `merge_properties` instead.
+1. `merge_properties`: Existing content is not modified, i.e. only new content is added and none is deleted or modified. 
+1. `update` : Existing content is updated, new content is added and none is deleted. Deprecated, as not handled consistently, use `update_properties` instead.
+1. `update_properties`: Existing content is updated, new content is added and none is deleted.
 
 For a more detailed description of the import mode, see [here](importmode.html).
 

@@ -250,6 +250,7 @@ Bundle-Category: jackrabbit
                             <exclude>release.properties</exclude>
                             <exclude>.git/**</exclude>
                             <exclude>.idea/**</exclude>
+                            <exclude>.gitattributes</exclude>
                             <exclude>.gitignore</exclude>
                             <exclude>derby.log</exclude>
                             <exclude>**/*.zip/**</exclude>

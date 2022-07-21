@@ -543,7 +543,7 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             try {
                 oldPrefix = nsHelper.registerNamespace(prefix, uri);
             } catch (RepositoryException e1) {
-                throw new SAXException(e);
+                throw new SAXException(e1);
             }
         } catch (RepositoryException e) {
             throw new SAXException(e);

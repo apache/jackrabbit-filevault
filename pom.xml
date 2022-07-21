@@ -211,11 +211,16 @@
                             <report>ci-management</report>
                             <report>issue-management</report>
                             <report>licenses</report>
+                            <report>dependency-info</report>
                             <report>scm</report>
                             <report>distribution-management</report>
                         </reports>
                     </reportSet>
                 </reportSets>
+                <configuration>
+                    <artifactId>org.apache.jackrabbit.vault</artifactId>
+                    <packaging>jar</packaging>
+                </configuration>
             </plugin>
         </plugins>
     </reporting>

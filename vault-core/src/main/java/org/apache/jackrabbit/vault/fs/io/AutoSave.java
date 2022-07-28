@@ -172,7 +172,7 @@ public class AutoSave {
                 // either retry after some more nodes have been modified or after throttle 
                 // retry with next save() after another 10 nodes have been modified
                 failedSaveThreshold = 10;
-                log.warn("Retry auto-save after {} modified nodes", failedSaveThreshold);
+                log.warn("Retry auto-save after {} more modified nodes", failedSaveThreshold);
             }
         }
         lastSave = numModified;
@@ -201,7 +201,7 @@ public class AutoSave {
             }
         } catch (RepositoryException e) {
             if (isPotentiallyTransientException(e) && isIntermediate) {
-                log.warn("could not auto-save due to potentially transient exception {}", e.getCause());
+                log.warn("could not auto-save due to potentially transient exception {}", e.getMessage());
                 log.debug("auto save exception", e);
                 return false;
             } else {

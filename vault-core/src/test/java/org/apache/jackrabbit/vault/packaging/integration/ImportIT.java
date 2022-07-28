@@ -23,13 +23,20 @@ import static org.junit.Assert.assertFalse;
 import java.io.IOException;
 import java.security.Principal;
 
+import javax.jcr.AccessDeniedException;
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
+import javax.jcr.ReferentialIntegrityException;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
+import javax.jcr.version.VersionException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
@@ -421,5 +428,19 @@ public class ImportIT extends IntegrationTestBase {
         // Behavior in 3.4.0: myfolder's node type covered by package folder aggregate is not touched
         assertNodeHasPrimaryType("/testroot/myfolder", JcrConstants.NT_UNSTRUCTURED);
         assertNodeHasPrimaryType("/testroot/myfolder/mychild", JcrConstants.NT_UNSTRUCTURED);
+    }
+
+    @Test
+    public void testEnhancedFileAggregatePackageWithIntermediateSaves() throws IOException, ConfigurationException, AccessDeniedException, ItemExistsException, ReferentialIntegrityException, ConstraintViolationException, InvalidItemStateException, VersionException, LockException, NoSuchNodeTypeException, RepositoryException {
+        ImportOptions opts = getDefaultOptions();
+        opts.setAutoSaveThreshold(1); // auto-save after each deserialized aggregator
+        Importer importer = new Importer(opts);
+        try (Archive archive = getFileArchive("/test-packages/enhanced_file_aggregate.zip")) {
+            archive.open(true);
+            importer.run(archive, admin.getRootNode());
+            admin.save();
+        }
+        assertPropertyExists("/testroot/tika/config.xml/jcr:content/jcr:data");
+        assertProperty("/testroot/tika/config.xml/jcr:content/jcr:mimeType", "text/xml");
     }
 }

@@ -173,10 +173,11 @@ public class AutoSave {
                 // retry with next save() after another 10 nodes have been modified
                 failedSaveThreshold = 10;
                 log.warn("Retry auto-save after {} more modified nodes", failedSaveThreshold);
+            } else {
+                lastSave = numModified;
+                failedSaveThreshold = 0;
             }
         }
-        lastSave = numModified;
-        failedSaveThreshold = 0;
     }
 
     /**

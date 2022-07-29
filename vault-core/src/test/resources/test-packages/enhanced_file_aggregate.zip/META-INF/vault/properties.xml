@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="createdBy">root</entry>
+<entry key="allowIndexDefinitions">true</entry>
+<entry key="name">enhanced-file-aggregate-package</entry>
+<entry key="created">2022-05-26T10:38:55.609Z</entry>
+<entry key="version">1.0.0</entry>
+<entry key="packageType">application</entry>
+<entry key="requiresRoot">false</entry>
+<entry key="group">testpackages</entry>
+<entry key="description">test package containing enhanced file aggregate</entry>
+</properties>

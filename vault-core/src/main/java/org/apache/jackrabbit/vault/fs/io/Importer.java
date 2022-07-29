@@ -844,7 +844,7 @@ public class Importer {
             }
 
             if (autoSave.needsSave()) {
-                autoSave.save(session, false);
+                autoSave.save(session, true); // this is only intermediate
                 // save checkpoint
                 cpTxInfo = info;
                 cpAutosave = autoSave.copy();

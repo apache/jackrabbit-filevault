@@ -170,8 +170,8 @@ public class AutoSave {
             }
             if (!saveWithBackoff(session, isIntermediate)) {
                 // either retry after some more nodes have been modified or after throttle 
-                // retry with next save() after another 10 nodes have been modified
-                failedSaveThreshold = 10;
+                // retry with next save() after another 1024 nodes have been modified
+                failedSaveThreshold = 1024;
                 log.warn("Retry auto-save after {} more modified nodes", failedSaveThreshold);
             } else {
                 lastSave = numModified;

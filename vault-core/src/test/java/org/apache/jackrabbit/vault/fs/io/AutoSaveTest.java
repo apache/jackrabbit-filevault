@@ -66,14 +66,14 @@ public class AutoSaveTest {
         assertFalse(autoSave.needsSave());
         autoSave.modified(1);
         assertFalse(autoSave.needsSave());
-        autoSave.modified(99);
+        autoSave.modified(20);
         assertTrue(autoSave.needsSave());
         // 2nd failed attempt
         autoSave.save(session);
         assertFalse(autoSave.needsSave());
-        autoSave.modified(1);
+        autoSave.modified(9);
         assertFalse(autoSave.needsSave());
-        autoSave.modified(99);
+        autoSave.modified(1);
         Mockito.reset(session);
         // retry successfull
         autoSave.save(session);

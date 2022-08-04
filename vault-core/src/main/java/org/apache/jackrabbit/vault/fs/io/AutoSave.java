@@ -172,7 +172,7 @@ public class AutoSave {
                 // either retry after some more nodes have been modified or after throttle 
                 // retry with next save() after more nodes have been modified
                 failedSaveThreshold += threshold;
-                log.warn("Retry auto-save after {} more modified nodes", failedSaveThreshold);
+                log.warn("Retry auto-save after {} more modified nodes", threshold);
             } else {
                 lastSave = numModified;
                 failedSaveThreshold = 0;

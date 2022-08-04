@@ -263,7 +263,8 @@ public class AutoSave {
 
     @Override
     public String toString() {
-        return String.valueOf(threshold);
+        return "AutoSave [numModified=" + numModified + ", lastSave=" + lastSave + ", threshold=" + threshold + ", failedSaveThreshold="
+                + failedSaveThreshold + ", dryRun=" + dryRun + "]";
     }
 
 }

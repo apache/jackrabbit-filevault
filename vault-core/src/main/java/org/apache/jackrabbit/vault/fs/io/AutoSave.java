@@ -194,7 +194,7 @@ public class AutoSave {
                 try {
                     session.save();
                 } catch (RepositoryException e) {
-                    log.error("Error during auto save: {} - retrying after refresh...", e.getMessage());
+                    log.error("Error during auto save, retrying after refresh: {}", Importer.getExtendedThrowableMessage(e));
                     session.refresh(true);
                     session.save();
                 }
@@ -202,7 +202,7 @@ public class AutoSave {
             }
         } catch (RepositoryException e) {
             if (isPotentiallyTransientException(e) && isIntermediate) {
-                log.warn("Could not auto-save even after refresh due to potentially transient exception: {}", e.getMessage());
+                log.warn("Could not auto-save even after refresh due to potentially transient exception: {}", Importer.getExtendedThrowableMessage(e));
                 log.debug("Auto save exception", e);
                 return false;
             } else {

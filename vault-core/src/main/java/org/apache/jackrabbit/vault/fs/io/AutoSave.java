@@ -170,9 +170,9 @@ public class AutoSave {
             }
             if (!saveWithBackoff(session, isIntermediate)) {
                 // either retry after some more nodes have been modified or after throttle 
-                // retry with next save() after another 10 nodes have been modified
-                failedSaveThreshold = 10;
-                log.warn("Retry auto-save after {} more modified nodes", failedSaveThreshold);
+                // retry with next save() after more nodes have been modified
+                failedSaveThreshold = (diff - threshold) + 10; // 10 more
+                log.warn("Retry auto-save after {} more modified nodes", 10);
             } else {
                 lastSave = numModified;
                 failedSaveThreshold = 0;
@@ -213,7 +213,7 @@ public class AutoSave {
     }
 
     boolean isPotentiallyTransientException(RepositoryException e) {
-        if (e instanceof InvalidItemStateException || e instanceof ConstraintViolationException) {
+        if (e instanceof ConstraintViolationException) {
             return true;
         }
         return false;
@@ -263,7 +263,8 @@ public class AutoSave {
 
     @Override
     public String toString() {
-        return String.valueOf(threshold);
+        return "AutoSave [numModified=" + numModified + ", lastSave=" + lastSave + ", threshold=" + threshold + ", failedSaveThreshold="
+                + failedSaveThreshold + ", dryRun=" + dryRun + "]";
     }
 
 }

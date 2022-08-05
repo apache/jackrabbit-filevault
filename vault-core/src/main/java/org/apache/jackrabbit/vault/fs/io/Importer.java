@@ -466,7 +466,7 @@ public class Importer {
             }
         }
         cpAutosave = autoSave.copy();
-        LinkedList<TxInfo> skipList = new LinkedList<TxInfo>();
+        LinkedList<TxInfo> skipList = new LinkedList<>();
         while (recoveryRetryCounter++ < 10) {
             try {
                 commit(session, root, skipList);

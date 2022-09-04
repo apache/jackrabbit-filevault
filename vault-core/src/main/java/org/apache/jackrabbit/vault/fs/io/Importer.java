@@ -47,6 +47,7 @@ import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
@@ -272,7 +273,7 @@ public class Importer {
     /**
      * list of intermediate infos that were removed since the last auto save
      */
-    private Map<String, TxInfo> removedIntermediates = new LinkedHashMap<String, TxInfo>();
+    private Map<String, TxInfo> removedIntermediates = new LinkedHashMap<>();
 
     private final boolean isStrict;
     private final boolean isStrictByDefault;
@@ -291,10 +292,17 @@ public class Importer {
     }
 
     public Importer(ImportOptions opts, boolean isStrictByDefault, boolean overwritePrimaryTypesOfFoldersByDefault) {
+        this(opts, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault, null);
+    }
+
+    public Importer(ImportOptions opts, boolean isStrictByDefault, boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy defaultIdConflictPolicy) {
         this.opts = opts;
         this.isStrict = opts.isStrict(isStrictByDefault);
         this.isStrictByDefault = isStrictByDefault;
         this.overwritePrimaryTypesOfFoldersByDefault = overwritePrimaryTypesOfFoldersByDefault;
+        if (!this.opts.hasIdConflictPolicyBeenSet()) {
+            this.opts.setIdConflictPolicy(defaultIdConflictPolicy);
+        }
     }
 
     public ImportOptions getOptions() {

@@ -631,7 +631,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 
             }
             if (vltPkg instanceof ZipVaultPackage) {
-                ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault(), overwritePrimaryTypesOfFoldersByDefault());
+                ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault(), overwritePrimaryTypesOfFoldersByDefault(), getDefaultIdConflictPolicy());
                 dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
                 stateCache.updatePackageStatus(vltPkg.getId(), FSPackageStatus.EXTRACTED);
             } else {

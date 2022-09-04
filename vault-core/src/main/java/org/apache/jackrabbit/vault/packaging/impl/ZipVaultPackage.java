@@ -28,6 +28,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
@@ -163,8 +164,8 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws RepositoryException if a repository error during installation occurs.
      */
     public void extract(Session session, ImportOptions opts, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig,
-            boolean isStrict, boolean isOverwritePrimaryTypesOfFolders) throws PackageException, RepositoryException {
-        extract(prepareExtract(session, opts, securityConfig, isStrict, isOverwritePrimaryTypesOfFolders), null);
+            boolean isStrict, boolean isOverwritePrimaryTypesOfFolders, IdConflictPolicy defaultIdConflictPolicy) throws PackageException, RepositoryException {
+        extract(prepareExtract(session, opts, securityConfig, isStrict, isOverwritePrimaryTypesOfFolders,defaultIdConflictPolicy), null);
     }
 
     /**
@@ -186,6 +187,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      *
      * @param session repository session
      * @param opts import options
+     * @param defaultIdConflictPolicy 
      *
      * @throws javax.jcr.RepositoryException if a repository error during installation occurs.
      * @throws org.apache.jackrabbit.vault.packaging.PackageException if an error during packaging occurs
@@ -194,7 +196,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      */
     protected InstallContextImpl prepareExtract(Session session, ImportOptions opts,
             @NotNull AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrictByDefault,
-            boolean overwritePrimaryTypesOfFoldersByDefault) throws PackageException, RepositoryException {
+            boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy defaultIdConflictPolicy) throws PackageException, RepositoryException {
         if (!isValid()) {
             throw new IllegalStateException("Package not valid.");
         }
@@ -214,7 +216,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
             }
     
-            Importer importer = new Importer(opts, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault);
+            Importer importer = new Importer(opts, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault, defaultIdConflictPolicy);
             AccessControlHandling ac = getACHandling();
             if (opts.getAccessControlHandling() == null) {
                 opts.setAccessControlHandling(ac);

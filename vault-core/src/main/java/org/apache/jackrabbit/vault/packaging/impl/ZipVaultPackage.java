@@ -172,7 +172,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * {@inheritDoc}
      */
     public void extract(Session session, ImportOptions opts) throws RepositoryException, PackageException {
-        extract(session, opts, new AbstractPackageRegistry.SecurityConfig(null, null), false, true);
+        extract(session, opts, new AbstractPackageRegistry.SecurityConfig(null, null), false, true, null);
     }
 
     /**

@@ -92,22 +92,22 @@ public class PackagingImpl implements Packaging {
         /**
          * Defines the package roots of the package manager
          */
-        @AttributeDefinition(description = "The locations in the repository which are used by the package manager")
+        @AttributeDefinition(name = "Repository Path for Packages", description = "The locations in the repository which are used by the JCR package manager")
         String[] packageRoots() default {"/etc/packages"};
 
-        @AttributeDefinition(description = "The authorizable ids or principal names which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
+        @AttributeDefinition(name = "Allowed Users for Hook Execution", description = "The authorizable ids or principal names which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForHookExecution();
 
-        @AttributeDefinition(description = "The authorizable ids or principal names which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
+        @AttributeDefinition(name = "Allowed Users for Package Installation", description = "The authorizable ids or principal names which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForRootInstallation();
 
-        @AttributeDefinition(description = "The default value for strict imports (i.e. whether it just logs certain errors or always throws exceptions")
+        @AttributeDefinition(name = "Default Strict Mode", description = "The default value for strict imports. In strict mode every import failure leads to an exception, while with strict mode those failures are just logged but the import continues in a best effort manner")
         boolean isStrict() default true;
 
-        @AttributeDefinition(description = "Whether to overwrite the primary type of folders")
+        @AttributeDefinition(name = "Legacy Folder Primary Type Mode", description = "Whether to overwrite the primary type of folders during imports")
         boolean overwritePrimaryTypesOfFolders() default true;
 
-        @AttributeDefinition(description = "Default IdConflictPolicy")
+        @AttributeDefinition(name = "Default ID Conflict Policy", description = "Default node id conflict policy to use during import")
         IdConflictPolicy defaultIdConflictPolicy() default IdConflictPolicy.FAIL;
     }
 

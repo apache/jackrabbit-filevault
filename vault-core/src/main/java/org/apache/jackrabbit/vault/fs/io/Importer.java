@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
@@ -83,7 +85,6 @@ import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.Tree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -477,8 +478,8 @@ public class Importer {
                     log.error("Error while committing changes. Aborting.");
                     throw e;
                 } else {
-                    log.warn("Error while committing changes. Retrying import from checkpoint at {}. Retries {}/10",
-                            cpTxInfo == null ? "/" : cpTxInfo.path, recoveryRetryCounter);
+                    log.warn("Error while committing changes: Retrying import from checkpoint at {}. Retries {}/10. {}",
+                            cpTxInfo == null ? "/" : cpTxInfo.path, recoveryRetryCounter, getExtendedThrowableMessage(e));
                     autoSave = cpAutosave.copy();
                     // build skip list
                     skipList.clear();
@@ -508,6 +509,7 @@ public class Importer {
             if (hasErrors) {
                 track("Package import simulation finished. (with errors, check logs!)", "");
                 log.error("There were errors during package install simulation. Please check the logs for details.");
+                track("First error was " + getExtendedThrowableMessage(firstException), "");
             } else {
                 track("Package import simulation finished.", "");
             }
@@ -518,10 +520,44 @@ public class Importer {
                     throw new RepositoryException("Some errors occurred while installing packages. Please check the logs for details. First exception is logged as cause.", firstException);
                 }
                 log.error("There were errors during package install. Please check the logs for details.");
+                track("First error was " + getExtendedThrowableMessage(firstException), "");
             } else {
                 track("Package imported.", "");
             }
         }
+    }
+
+    /**
+     * Returns a human-readable error message from the throwable including all its causes till the root.
+     * Also the throwable class names are included in the message
+     * @param throwable from which to construct an error message
+     * @return the enhanced error message derived from the throwable
+     */
+    static String getExtendedThrowableMessage(Throwable throwable) {
+        StringBuilder messageBuilder = new StringBuilder();
+        if (throwable == null) {
+            return "";
+        }
+        messageBuilder.append(throwable.getClass().getName()).append(": ");
+        messageBuilder.append(throwable.getMessage());
+        Throwable cause = throwable.getCause();
+        while (cause != null) {
+            if (!isDelimiter(messageBuilder.charAt(messageBuilder.length()-1))) {
+                messageBuilder.append(".");
+            }
+            messageBuilder.append(" Caused by ")
+            .append(cause.getClass().getName())
+            .append(": ")
+            .append(cause.getMessage());
+            cause = cause.getCause();
+        }
+        return messageBuilder.toString();
+    }
+
+    /** all punctuation delimiters between sentences in English */
+    private static final List<Character> DELIMITERS = Arrays.asList('.', '?', '!');
+    static boolean isDelimiter(char character) {
+        return DELIMITERS.contains(character);
     }
 
     private TxInfo postFilter(TxInfo root) {

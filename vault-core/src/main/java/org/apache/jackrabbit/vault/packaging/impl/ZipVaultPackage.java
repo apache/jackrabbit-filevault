@@ -187,7 +187,10 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      *
      * @param session repository session
      * @param opts import options
-     * @param defaultIdConflictPolicy 
+     * @param securityConfig the security configuration determining e.g. the install hook limitations
+     * @param isStrictByDefault is true if packages should be installed in strict mode by default (if not set otherwise in {@code opts})
+     * @param overwritePrimaryTypesOfFoldersByDefault if folder aggregates' JCR primary type should be changed if the node is already existing or not
+     * @param defaultIdConflictPolicy the default {@link IdConflictPolicy} to use if no policy is set in {@code opts}. May be {@code null}.
      *
      * @throws javax.jcr.RepositoryException if a repository error during installation occurs.
      * @throws org.apache.jackrabbit.vault.packaging.PackageException if an error during packaging occurs

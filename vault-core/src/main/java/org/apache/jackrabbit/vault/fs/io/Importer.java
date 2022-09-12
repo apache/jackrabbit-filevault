@@ -49,6 +49,7 @@ import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
+import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
@@ -273,29 +274,63 @@ public class Importer {
     /**
      * list of intermediate infos that were removed since the last auto save
      */
-    private Map<String, TxInfo> removedIntermediates = new LinkedHashMap<String, TxInfo>();
+    private Map<String, TxInfo> removedIntermediates = new LinkedHashMap<>();
 
     private final boolean isStrict;
     private final boolean isStrictByDefault;
     private final boolean overwritePrimaryTypesOfFoldersByDefault;
 
+    /**
+     * Default constructor neither setting specific import options nor defaults.
+     */
     public Importer() {
          this(new ImportOptions(), false, true);
     }
 
+    /**
+     * Constructor which is not setting default options.
+     * @param opts
+     * @see #Importer(ImportOptions, boolean, boolean, IdConflictPolicy)
+     */
     public Importer(ImportOptions opts) {
         this(opts, false);
     }
 
+    /**
+     * Shortcut for {@link Importer#Importer(ImportOptions, boolean, boolean, IdConflictPolicy)} with no default id conflict policy.
+     * Also primary types of existing nodes are always overwritten.
+     * @param opts the import options to use during {@link #run(Archive, Node)} or {@link #run(Archive, Session, String)}
+     * @param isStrictByDefault is true if packages should be installed in strict mode by default (if not set otherwise in {@code opts})
+     */
     public Importer(ImportOptions opts, boolean isStrictByDefault) {
         this(opts, isStrictByDefault, true);
     }
 
+    /**
+     * Shortcut for {@link Importer#Importer(ImportOptions, boolean, boolean, IdConflictPolicy)} with no default id conflict policy.
+     * @param opts the import options to use during {@link #run(Archive, Node)} or {@link #run(Archive, Session, String)}
+     * @param isStrictByDefault is true if packages should be installed in strict mode by default (if not set otherwise in {@code opts})
+     * @param overwritePrimaryTypesOfFoldersByDefault if folder aggregates' JCR primary type should be changed if the node is already existing or not
+     */
     public Importer(ImportOptions opts, boolean isStrictByDefault, boolean overwritePrimaryTypesOfFoldersByDefault) {
+        this(opts, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault, null);
+    }
+
+    /**
+     * Constructor setting both specific import options as well as some defaults for options not set.
+     * @param opts the import options to use during {@link #run(Archive, Node)} or {@link #run(Archive, Session, String)}
+     * @param isStrictByDefault is true if packages should be installed in strict mode by default (if not set otherwise in {@code opts})
+     * @param overwritePrimaryTypesOfFoldersByDefault if folder aggregates' JCR primary type should be changed if the node is already existing or not
+     * @param defaultIdConflictPolicy the default {@link IdConflictPolicy} to use if no policy is set in {@code opts}. May be {@code null}.
+     */
+    public Importer(ImportOptions opts, boolean isStrictByDefault, boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy defaultIdConflictPolicy) {
         this.opts = opts;
         this.isStrict = opts.isStrict(isStrictByDefault);
         this.isStrictByDefault = isStrictByDefault;
         this.overwritePrimaryTypesOfFoldersByDefault = overwritePrimaryTypesOfFoldersByDefault;
+        if (!this.opts.hasIdConflictPolicyBeenSet()) {
+            this.opts.setIdConflictPolicy(defaultIdConflictPolicy);
+        }
     }
 
     public ImportOptions getOptions() {

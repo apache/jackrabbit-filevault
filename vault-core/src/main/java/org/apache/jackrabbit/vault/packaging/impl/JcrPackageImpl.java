@@ -353,7 +353,7 @@ public class JcrPackageImpl implements JcrPackage {
 
     private void extract(ImportOptions options, boolean createSnapshot, boolean replaceSnapshot)
             throws RepositoryException, PackageException, IOException {
-        extract(new HashSet<PackageId>(), options, createSnapshot, replaceSnapshot);
+        extract(new HashSet<>(), options, createSnapshot, replaceSnapshot);
     }
 
     /**
@@ -386,19 +386,15 @@ public class JcrPackageImpl implements JcrPackage {
             // MAX_VALUE disables saving completely, therefore we have to use a lower value!
             opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
         }
-        if (!opts.hasIdConflictPolicyBeenSet()) {
-            opts.setIdConflictPolicy(mgr.getDefaultIdConflictPolicy());
-        }
-        opts.setIdConflictPolicy(mgr.getDefaultIdConflictPolicy());
         InstallContextImpl ctx = pack.prepareExtract(node.getSession(), opts, mgr.getSecurityConfig(), mgr.isStrictByDefault(),
-                mgr.overwritePrimaryTypesOfFoldersByDefault());
+                mgr.overwritePrimaryTypesOfFoldersByDefault(), mgr.getDefaultIdConflictPolicy());
         JcrPackage snap = null;
         if (!opts.isDryRun() && createSnapshot) {
             ExportOptions eOpts = new ExportOptions();
             eOpts.setListener(opts.getListener());
             snap = snapshot(eOpts, replaceSnapshot, opts.getAccessControlHandling());
         }
-        List<String> subPackages = new ArrayList<String>();
+        List<String> subPackages = new ArrayList<>();
         pack.extract(ctx, subPackages);
         if (def != null && !opts.isDryRun()) {
             def.touchLastUnpacked();
@@ -417,7 +413,8 @@ public class JcrPackageImpl implements JcrPackage {
                     try {
                         p.tryUnwrap();
                     } catch (Exception e) {
-                        log.info("Sub package {} not valid: " + e, path);
+                        log.info("Sub package {} not valid: {}", path, e.getMessage());
+                        log.debug("Sub package {} not valid", path, e);
                     }
                 }
                 if (p.isValid()) {

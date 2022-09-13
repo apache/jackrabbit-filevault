@@ -51,7 +51,7 @@ Release management tasks
     2. Execute `mvn clean deploy -Papache-release -Dmaven.deploy.skip=true`. This tests if the release would work.
     3. Execute `mvn release:prepare`. This will update the POM files and tag the release in Git (btw: specifying the
         release version on the commandline doesn't update the module poms anymore lately).
-    4. Execute `mvn release:perform -Papache-release`. This will build the tagged release and deploy the artifacts to
+    4. Execute `mvn release:perform`. This will build the tagged release and deploy the artifacts to
         a new staging repository on _repository.apache.org_. 
         After the build, login to [https://repository.apache.org/][2] and you should see it there.
 

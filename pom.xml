@@ -90,6 +90,9 @@
                             <link>https://jackrabbit.apache.org/api/2.20</link>
                             <link>https://jackrabbit.apache.org/oak/docs/apidocs</link>
                         </links>
+                        <validateLinks>true</validateLinks>
+                        <doclint>all</doclint>
+                        <verbose>false</verbose>
                     </configuration>
                 </plugin>
            </plugins>

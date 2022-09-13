@@ -27,7 +27,7 @@ import java.util.TreeMap;
 public interface ImportInfo {
 
     /**
-     * @deprecated since 3.1
+     * @deprecated since 3.1 use {@link #getInfos()} to retrieve information about names
      * @return the name list
      */
     @Deprecated
@@ -102,7 +102,7 @@ public interface ImportInfo {
     /**
      * @param path the path
      * @return the error exception
-     * @deprecated since 3.1. use getInfo(path).getError();
+     * @deprecated since 3.1 use {@link #getInfo(String)}{@code .getError()}
      */
     @Deprecated
     Exception getError(String path);

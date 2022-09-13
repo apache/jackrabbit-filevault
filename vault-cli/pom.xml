@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.6.1-SNAPSHOT</version>
+        <version>3.6.2</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -131,8 +131,7 @@
                         </goals>
                         <configuration>
                             <rules>
-                                <requireProvidedDependenciesInRuntimeClasspath
-                                    implementation="org.apache.sling.maven.enforcer.RequireProvidedDependenciesInRuntimeClasspath">
+                                <requireProvidedDependenciesInRuntimeClasspath implementation="org.apache.sling.maven.enforcer.RequireProvidedDependenciesInRuntimeClasspath">
                                     <excludes>
                                         <exclude>javax.servlet:javax.servlet-api</exclude><!-- not used in the CLI context -->
                                         <exclude>*:txw2</exclude><!-- embedded in vault-core -->

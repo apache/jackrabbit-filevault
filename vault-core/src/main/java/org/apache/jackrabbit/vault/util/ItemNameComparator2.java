@@ -29,7 +29,7 @@ import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 
 /**
- * {@code ItemNameComparator2}...
+ * Orders items by their qualified name by using {@link QNameComparator}.
  */
 public class ItemNameComparator2 implements Comparator<Item> {
 

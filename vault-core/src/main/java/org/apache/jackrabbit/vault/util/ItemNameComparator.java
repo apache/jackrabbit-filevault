@@ -23,8 +23,8 @@ import java.util.Comparator;
 import javax.jcr.Item;
 
 
-/** {@code ItemNameComparator}...
- * Use {@link ItemNameComparator2} instead
+/**
+ * @deprecated Use {@link ItemNameComparator2} instead
  */
 @Deprecated
 

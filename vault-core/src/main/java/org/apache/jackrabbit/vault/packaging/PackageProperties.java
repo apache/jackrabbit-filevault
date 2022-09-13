@@ -159,8 +159,8 @@ public interface PackageProperties {
     String NAME_PACKAGE_TYPE = "packageType";
 
     /**
-     * the prefix for an install hook property. eg:
-     * 'installhook.test1.class = ....'
+     * The prefix for an install hook property name. The full name may look like this:
+     * {@code installhook.test1.class}.
      */
     String PREFIX_INSTALL_HOOK = "installhook.";
 

@@ -27,10 +27,10 @@ import javax.xml.namespace.QName;
  * Compares based on prefixes and local names as follows:
  * <ol>
  * <li>first ns prefixes</li>
- * <li>then prefixed attributes</li>
- * <li>only afterwards non-prefixed attributes</li>
+ * <li>then prefixed names</li>
+ * <li>only afterwards non-prefixed names</li>
  * </ol>
- * The letter case does not matter for the order, except when two names are equal. Only then the case will be considered as well.
+ * The latter case does not matter for the order, except when two names are equal. Only then the case will be considered as well.
  * 
  */
 public class QNameComparator implements Comparator<QName> {

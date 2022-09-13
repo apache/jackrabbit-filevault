@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Represents an entry in of the {@link VltEntries}
+ * Represents an entry in {@link VltEntries}
  */
 public interface VltEntry {
 

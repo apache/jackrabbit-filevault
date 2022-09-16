@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.6.0
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.6.2
 
 Introduction
 ------------
@@ -8,6 +8,38 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.6.2
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.6.2
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
+
+Bug
+    * [JCRVLT-584] - Forcing UUID on packages may break previously installable packages
+    * [JCRVLT-598] - need IdConflictPolicy compatible with 3.5.0 behavior
+    * [JCRVLT-620] - False positive in validator jackrabbit-filter: Found orphaned filter entries for include patterns only covering directories (nt:folder)
+    * [JCRVLT-637] - Validation fails for non-docview xml files serialized as extended file aggregates
+    * [JCRVLT-646] - Potential javax.jcr.nodetype.ConstraintViolationException while deserializing extended file aggregates
+    * [JCRVLT-650] - OSGi config for default id conflict policy not correctly applied
+
+Improvement
+    * [JCRVLT-612] - Enable Matomo Web Analytics
+    * [JCRVLT-623] - Validate that DocView values for a specific type are correct serializations (i.e. are a string which can be converted back to the given type)
+    * [JCRVLT-624] - Provide methods for writing docview XML from DocViewNode2 and DocViewProperty2
+    * [JCRVLT-628] - Wrong type information emitted for undefined DocViewProperty type
+    * [JCRVLT-634] - Make sure that vault-cli contains all necessary dependencies
+    * [JCRVLT-638] - Importing empty multivalue property does no longer work
+    * [JCRVLT-639] - jackrabbit-docviewparser: Don't fail for undeclared prefixes in file name by default
+    * [JCRVLT-640] - RCP bundle: Get rid of some Sling dependencies
+    * [JCRVLT-643] - Provide XSD for filter.xml
+    * [JCRVLT-644] - Import of package with not well-formed DocViews behaves differently since 3.6.0 for isStrict = false
+    * [JCRVLT-648] - Don't treat javax.jcr.InvalidItemStateException as transient during package import
+    * [JCRVLT-649] - Improve logging of errors in the ActivityLog and ProgressTracker
+
+Task
+    * [JCRVLT-597] - Update commons-io dependency to 2.11.0
 
 Changes in Jackrabbit FileVault 3.6.0
 --------------------------------------

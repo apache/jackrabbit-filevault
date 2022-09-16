@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.6.2
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.6.4
 
 Introduction
 ------------
@@ -9,10 +9,10 @@ create portable packages of repository content.
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
 
-Changes in Jackrabbit FileVault 3.6.2
+Changes in Jackrabbit FileVault 3.6.4
 --------------------------------------
 
-Release Notes - Jackrabbit FileVault - Version 3.6.2
+Release Notes - Jackrabbit FileVault - Version 3.6.4
 This version requires Java 8
 The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
 

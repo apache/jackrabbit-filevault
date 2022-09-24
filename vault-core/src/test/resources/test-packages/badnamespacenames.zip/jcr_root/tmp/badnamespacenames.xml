@@ -1,0 +1,13 @@
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:primaryType="sling:Folder"
+    xmlns:foo="bar"
+    xmlns:bar="qux"
+    xmlns:qux="foo">
+    <foo:child
+        jcr:primaryType="nt:unstructured">
+        <bar:child
+            jcr:primaryType="nt:unstructured"
+            qux:someproperty="xyz">
+        </bar:child>
+    </foo:child>
+</jcr:root>

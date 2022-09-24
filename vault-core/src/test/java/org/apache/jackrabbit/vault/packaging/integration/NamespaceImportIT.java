@@ -169,6 +169,22 @@ public class NamespaceImportIT extends IntegrationTestBase {
         }
     }
 
+
+    @Test
+    public void testBadNamespaceNames() throws RepositoryException, IOException, PackageException {
+        extractVaultPackageStrict("/test-packages/badnamespacenames.zip");
+
+        assertNodeExists("/tmp/badnamespacenames");
+
+        String prefixBar = admin.getNamespacePrefix("bar");
+        assertNodeExists("/tmp/badnamespacenames/" + prefixBar + ":child");
+        String prefixQux = admin.getNamespacePrefix("qux");
+        assertNodeExists("/tmp/badnamespacenames/" + prefixBar + ":child/" + prefixQux + ":child");
+        // Still fails: why?
+        // String prefixFoo = admin.getNamespacePrefix("foo");
+        // assertProperty("/tmp/badnamespacenames/" + prefixBar + ":child/" + prefixQux + ":child/" + prefixFoo + ":someproperty", "xyz");
+    }
+
     /** Simple Oak repository wrapper */
     private static final class Instance {
 

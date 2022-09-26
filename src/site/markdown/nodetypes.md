@@ -24,12 +24,15 @@ Node types and namespaces whose qualified name/prefix/uri is already registered 
 Implicit Namespace Registration
 -------
 
+Apart from the explicit namespace registration via CND files mentioned above they are sometimes also registered implicitly.
 [FileVault Document View (DocView) Format](./docview.html) enforces the declaration of each namespace with a mandatory prefix in the XML file. Those namespace mappings are globally registered lazily (i.e. when the according XML is processed) in case
 
-1) the namespace URI is not registered yet in the repository namespace registry
+1) the namespace URI is not registered (mapped) yet in the repository namespace registry
 2) the prefix is not yet bound to another URI
 
 In all other cases the namespace mapping is just [overwritten for the current session](https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.5.2%20Session-Local%20Mappings) (used for importing the docview XML).
+
+Due to this implicit registration there is technically no need to register namespaces which are used outside the node types in CND files.
 
 Namespace Prefixes
 -------

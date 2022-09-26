@@ -174,12 +174,29 @@ public class NamespaceImportIT extends IntegrationTestBase {
     public void testBadNamespaceNames() throws RepositoryException, IOException, PackageException {
         extractVaultPackageStrict("/test-packages/badnamespacenames.zip");
 
-        assertNodeExists("/tmp/badnamespacenames");
+        // Check that after the import, the session used for the import has
+        // namepace mapping for the namespaced items being imported
+        String prefixFoo = admin.getNamespacePrefix("name_foo");
+        assertNotNull(prefixFoo);
+        String prefixBar = admin.getNamespacePrefix("name_bar");
+        assertNotNull(prefixBar);
 
-        String prefixBar = admin.getNamespacePrefix("bar");
-        assertNodeExists("/tmp/badnamespacenames/" + prefixBar + ":child");
-        String prefixQux = admin.getNamespacePrefix("qux");
-        assertNodeExists("/tmp/badnamespacenames/" + prefixBar + ":child/" + prefixQux + ":child");
+        // assert node were created, checking the qualified name syntax
+        assertNodeExists("/tmp/badnamespacenames/" + prefixFoo + ":child");
+        assertNodeExists("/tmp/badnamespacenames/" + prefixFoo + ":child/" + prefixBar + ":child");
+
+        // retry with a fresh session and explicitly set namespace mappings
+        Session secondSession = admin.impersonate(new SimpleCredentials("admin", "admin".toCharArray()));
+        try {
+            secondSession.setNamespacePrefix("t_foo", "name_foo");
+            secondSession.setNamespacePrefix("t_bar", "name_bar");
+
+            secondSession.getNode("/tmp/badnamespacenames/t_foo:child/t_bar:child");
+        }
+        finally {
+            secondSession.logout();
+        }
+
         // Still fails: why?
         // String prefixFoo = admin.getNamespacePrefix("foo");
         // assertProperty("/tmp/badnamespacenames/" + prefixBar + ":child/" + prefixQux + ":child/" + prefixFoo + ":someproperty", "xyz");

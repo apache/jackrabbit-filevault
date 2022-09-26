@@ -33,6 +33,7 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 import javax.jcr.lock.LockException;
@@ -125,7 +126,7 @@ public class DocViewProperty2 {
         for (Value value : values) {
             strValues.add(serializeValue(value, useBinaryReferences));
         }
-        
+
         Boolean isBinaryRef = null;
         if (type == PropertyType.BINARY) {
             // either only binary references or regular binaries
@@ -509,6 +510,19 @@ public class DocViewProperty2 {
     }
 
     /**
+     * Returns a suitable qualified JCR name.
+     */
+    private String getQualifiedName(Session session, Name name) throws RepositoryException {
+        // TODO: could use nsresolver instead
+        String nsuri = name.getNamespaceURI();
+        if (nsuri.isEmpty()) {
+            return name.getLocalName();
+        } else {
+            return session.getNamespacePrefix(nsuri) + ":" + name.getLocalName();
+        }
+    }
+
+    /**
      * Sets this property on the given node.
      *
      * @param node the node
@@ -516,7 +530,8 @@ public class DocViewProperty2 {
      * @throws RepositoryException if a repository error occurs
      */
     public boolean apply(@NotNull Node node) throws RepositoryException {
-        Property prop = node.hasProperty(name.toString()) ? node.getProperty(name.toString()) : null;
+        String qualifiedName = getQualifiedName(node.getSession(), name);
+        Property prop = node.hasProperty(qualifiedName) ? node.getProperty(qualifiedName) : null;
         // check if multiple flags are equal
         if (prop != null && isMultiValue != prop.getDefinition().isMultiple()) {
             prop.remove();
@@ -547,9 +562,9 @@ public class DocViewProperty2 {
                 }
             }
             if (type == PropertyType.UNDEFINED) {
-                node.setProperty(name.toString(), values.toArray(new String[0]));
+                node.setProperty(qualifiedName, values.toArray(new String[0]));
             } else {
-                node.setProperty(name.toString(), values.toArray(new String[0]), type);
+                node.setProperty(qualifiedName, values.toArray(new String[0]), type);
             }
             // assume modified
             return true;
@@ -561,13 +576,13 @@ public class DocViewProperty2 {
             if (v == null || !v.getString().equals(values.get(0))) {
                 try {
                     if (type == PropertyType.UNDEFINED) {
-                        node.setProperty(name.toString(), values.get(0));
+                        node.setProperty(qualifiedName, values.get(0));
                     } else {
-                        node.setProperty(name.toString(), values.get(0), type);
+                        node.setProperty(qualifiedName, values.get(0), type);
                     }
                 } catch (ValueFormatException e) {
                     // forcing string
-                    node.setProperty(name.toString(), values.get(0), PropertyType.STRING);
+                    node.setProperty(qualifiedName, values.get(0), PropertyType.STRING);
                 }
                 return true;
             }
@@ -607,10 +622,11 @@ public class DocViewProperty2 {
             if (!modified) {
                 return false;
             }
+            String qualifiedName = getQualifiedName(node.getSession(), name);
             if (isMultiValue) {
-                node.setProperty(name.toString(), binaryValues.toArray(new Value[0]));
+                node.setProperty(qualifiedName, binaryValues.toArray(new Value[0]));
             } else {
-                node.setProperty(name.toString(), binaryValues.get(0));
+                node.setProperty(qualifiedName, binaryValues.get(0));
             }
             // the binary property is always modified (TODO: check if still correct with JCRVLT-110)
             return true;

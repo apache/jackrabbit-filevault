@@ -1200,17 +1200,10 @@ public class DocViewImporter implements DocViewParserHandler {
         return effectiveNodeType.getApplicablePropertyDefinition(npResolver.getJCRName(docViewProperty.getName()), docViewProperty.isMultiValue(), docViewProperty.getType()).map(PropertyDefinition::isProtected).orElse(false);
     }
 
-    private String getLexicalForm(Name name) throws RepositoryException {
-        String nsuri = name.getNamespaceURI();
-        // non-empty URI MUST contain ":" and MUST NOT contain curly braces
-        boolean uriok = nsuri.length() == 0 || (nsuri.indexOf(':') > 0 && nsuri.indexOf('{') < 0 && nsuri.indexOf("}") < 0);
-        return uriok ? name.toString() : npResolver.getJCRName(name);
-    }
-
     private Node getNodeByIdOrName(@NotNull Node currentNode, @NotNull DocViewNode2 ni, boolean isIdNewlyAssigned) throws RepositoryException {
         Node node = null;
         Optional<String> id = ni.getIdentifier();
-        String name = getLexicalForm(ni.getName());
+        String name = npResolver.getJCRName(ni.getName());
         if (id.isPresent() && !isIdNewlyAssigned) {
             try {
                 node = currentNode.getSession().getNodeByIdentifier(id.get());
@@ -1219,7 +1212,7 @@ public class DocViewImporter implements DocViewParserHandler {
             }
         }
         if (node == null) {
-            String snsName = getLexicalForm(ni.getSnsAwareName());
+            String snsName = npResolver.getJCRName(ni.getSnsAwareName());
             try {
                 node = currentNode.getNode(snsName);
             } catch (RepositoryException e) {
@@ -1248,7 +1241,7 @@ public class DocViewImporter implements DocViewParserHandler {
         boolean modified = false;
         // add properties
         for (DocViewProperty2 prop : ni.getProperties()) {
-            String name = getLexicalForm(prop.getName());
+            String name = npResolver.getJCRName(prop.getName());
             if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(name)) && wspFilter.includesProperty(node.getPath() + "/" + npResolver.getJCRName(prop.getName()))) {
                 // check if property is allowed
                 try {

@@ -169,6 +169,40 @@ public class NamespaceImportIT extends IntegrationTestBase {
         }
     }
 
+    @Test
+    public void testBadNamespaceNames() throws RepositoryException, IOException, PackageException {
+        extractVaultPackageStrict("/test-packages/badnamespacenames.zip");
+
+        // Check that after the import, the session used for the import has
+        // namepace mapping for the namespaced items being imported
+        String prefixFoo = admin.getNamespacePrefix("name_foo");
+        assertNotNull(prefixFoo);
+        String prefixBar = admin.getNamespacePrefix("name_bar");
+        assertNotNull(prefixBar);
+        String prefixQux = admin.getNamespacePrefix("name_qux");
+        assertNotNull(prefixQux);
+
+        // assert node were created, checking the qualified name syntax
+        assertNodeExists("/tmp/badnamespacenames/" + prefixFoo + ":child");
+        assertNodeExists("/tmp/badnamespacenames/" + prefixFoo + ":child/" + prefixBar + ":child");
+        assertProperty("/tmp/badnamespacenames/" + prefixFoo + ":child/" + prefixBar + ":child/" + prefixQux + ":someproperty", "xyz");
+
+        // retry with a fresh session and explicitly set namespace mappings
+        Session secondSession = admin.impersonate(new SimpleCredentials("admin", "admin".toCharArray()));
+        try {
+            secondSession.setNamespacePrefix("t_foo", "name_foo");
+            secondSession.setNamespacePrefix("t_bar", "name_bar");
+            secondSession.setNamespacePrefix("t_qux", "name_qux");
+
+            Node n1 = secondSession.getNode("/tmp/badnamespacenames/t_foo:child");
+            Node n2 = n1.getNode("t_bar:child");
+            n2.getProperty("t_qux:someproperty");
+        }
+        finally {
+            secondSession.logout();
+        }
+    }
+
     /** Simple Oak repository wrapper */
     private static final class Instance {
 

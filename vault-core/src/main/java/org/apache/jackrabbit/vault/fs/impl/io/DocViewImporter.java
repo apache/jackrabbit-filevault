@@ -218,8 +218,8 @@ public class DocViewImporter implements DocViewParserHandler {
     /**
      * {@code true} in case the repository supports same-name siblings
      */
-	private final boolean isSnsSupported;
-    
+    private final boolean isSnsSupported;
+
     /**
      * Creates a new importer that will imports the
      * items below the given root.
@@ -1203,25 +1203,27 @@ public class DocViewImporter implements DocViewParserHandler {
     private Node getNodeByIdOrName(@NotNull Node currentNode, @NotNull DocViewNode2 ni, boolean isIdNewlyAssigned) throws RepositoryException {
         Node node = null;
         Optional<String> id = ni.getIdentifier();
+        String name = npResolver.getJCRName(ni.getName());
         if (id.isPresent() && !isIdNewlyAssigned) {
             try {
                 node = currentNode.getSession().getNodeByIdentifier(id.get());
             } catch (RepositoryException e) {
-                log.warn("Newly created node not found by uuid {}: {}", currentNode.getPath() + "/" + ni.getName(), e.toString());
+                log.warn("Newly created node not found by uuid {}: {}", currentNode.getPath() + "/" + name, e.toString());
+            }
+        }
+        if (node == null) {
+            String snsName = npResolver.getJCRName(ni.getSnsAwareName());
+            try {
+                node = currentNode.getNode(snsName);
+            } catch (RepositoryException e) {
+                log.warn("Newly created node not found by SNS aware name {}: {}", currentNode.getPath() + "/" + snsName, e.toString());
             }
         }
         if (node == null) {
             try {
-                node = currentNode.getNode(ni.getSnsAwareName().toString());
+                node = currentNode.getNode(name);
             } catch (RepositoryException e) {
-                log.warn("Newly created node not found by SNS aware name {}: {}", currentNode.getPath() + "/" + ni.getSnsAwareName(), e.toString());
-            }
-        }
-        if (node == null) {
-            try {
-                node = currentNode.getNode(ni.getName().toString());
-            } catch (RepositoryException e) {
-                log.debug("Newly created node not found by name {}: {}", currentNode.getPath() + "/" + ni.getName(), e.toString());
+                log.debug("Newly created node not found by name {}: {}", currentNode.getPath() + "/" + name, e.toString());
                 throw e;
             }
         }
@@ -1239,7 +1241,8 @@ public class DocViewImporter implements DocViewParserHandler {
         boolean modified = false;
         // add properties
         for (DocViewProperty2 prop : ni.getProperties()) {
-            if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(prop.getName().toString())) && wspFilter.includesProperty(node.getPath() + "/" + npResolver.getJCRName(prop.getName()))) {
+            String name = npResolver.getJCRName(prop.getName());
+            if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(name)) && wspFilter.includesProperty(node.getPath() + "/" + npResolver.getJCRName(prop.getName()))) {
                 // check if property is allowed
                 try {
                     modified |= prop.apply(node);

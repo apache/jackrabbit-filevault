@@ -1,0 +1,13 @@
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" 
+    jcr:primaryType="nt:unstructured"
+    xmlns:prefix_foo="name_foo"
+    xmlns:prefix_bar="name_bar"
+    xmlns:prefix_qux="name_qux">
+    <prefix_foo:child
+        jcr:primaryType="nt:unstructured">
+        <prefix_bar:child
+            jcr:primaryType="nt:unstructured"
+            prefix_qux:someproperty="xyz">
+        </prefix_bar:child>
+    </prefix_foo:child>
+</jcr:root>

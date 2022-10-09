@@ -22,7 +22,7 @@
 
 vaultPipeline('ubuntu', 11, '3', {
   vaultStageSanityCheck()
-  vaultStageBuild(['Windows'], [17], [], 'apache_jackrabbit-filevault', 
+  vaultStageBuild(['Windows'], [17,19], [], 'apache_jackrabbit-filevault', 
      [
        mainBuildArguments: '-U clean site deploy -Pjacoco-report,dependency-check -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml'
      ]

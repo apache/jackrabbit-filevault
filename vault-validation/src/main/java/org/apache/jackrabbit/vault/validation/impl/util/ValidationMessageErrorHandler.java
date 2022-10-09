@@ -17,8 +17,8 @@
 package org.apache.jackrabbit.vault.validation.impl.util;
 
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -29,11 +29,11 @@ import org.xml.sax.helpers.DefaultHandler;
 public class ValidationMessageErrorHandler
         extends DefaultHandler {
 
-    private final List<ValidationMessage> messages;
+    private final Set<ValidationMessage> messages;
     private final ValidationMessageSeverity errorMessageSeverity;
 
     public ValidationMessageErrorHandler(ValidationMessageSeverity errorMessageSeverity) {
-        messages = new LinkedList<>();
+        messages = new LinkedHashSet<>();
         this.errorMessageSeverity = errorMessageSeverity;
     }
 

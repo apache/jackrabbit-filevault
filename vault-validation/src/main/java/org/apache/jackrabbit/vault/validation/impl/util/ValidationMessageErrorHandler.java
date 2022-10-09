@@ -17,10 +17,7 @@
 package org.apache.jackrabbit.vault.validation.impl.util;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;

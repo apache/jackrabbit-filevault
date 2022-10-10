@@ -655,8 +655,8 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         if (pkg == null) {
             throw new NoSuchPackageException().setId(id);
         }
-        JcrPackage pack = pkg.getJcrPackage();
         try {
+            JcrPackage pack = pkg.getJcrPackage();
             JcrPackage snap = pack.getSnapshot();
             if (snap != null) {
                 snap.getNode().remove();
@@ -665,6 +665,8 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             session.save();
         } catch (RepositoryException e) {
             throw new IOException(e);
+        } finally {
+            pkg.close();
         }
         dispatch(PackageEvent.Type.REMOVE, id, null);
     }

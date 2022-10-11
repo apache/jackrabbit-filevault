@@ -30,10 +30,13 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
+import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
+import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -177,6 +180,19 @@ public class PackageRegistryIT extends IntegrationTestBase {
         registry.remove(id);
         assertFalse("package must not exist", registry.contains(TMP_PACKAGE_ID));
         assertNull("package must not exist", registry.open(TMP_PACKAGE_ID));
+    }
+
+    @Test
+    public void testRemovePackageCallsClose() throws IOException, PackageException {
+        PackageId id = registry.register(getStream("/test-packages/tmp.zip"), false);
+        assertEquals("package id", TMP_PACKAGE_ID, id);
+
+        PackageRegistry testReg = Mockito.spy(registry);
+        JcrRegisteredPackage pack = Mockito.spy((JcrRegisteredPackage) registry.open(TMP_PACKAGE_ID));
+        Mockito.doReturn(pack).when(testReg).open(TMP_PACKAGE_ID);
+        testReg.remove(id);
+
+        Mockito.verify(pack, Mockito.times(1)).close();
     }
 
     /**

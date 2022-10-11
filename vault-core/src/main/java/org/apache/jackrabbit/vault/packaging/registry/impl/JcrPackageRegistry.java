@@ -651,22 +651,21 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     @SuppressWarnings("resource")
     @Override
     public void remove(@NotNull PackageId id) throws IOException, NoSuchPackageException {
-        JcrRegisteredPackage pkg = (JcrRegisteredPackage) open(id);
-        if (pkg == null) {
-            throw new NoSuchPackageException().setId(id);
-        }
-        try {
-            JcrPackage pack = pkg.getJcrPackage();
-            JcrPackage snap = pack.getSnapshot();
-            if (snap != null) {
-                snap.getNode().remove();
+        try (JcrRegisteredPackage pkg = (JcrRegisteredPackage) open(id)) {
+            if (pkg == null) {
+                throw new NoSuchPackageException().setId(id);
             }
-            pack.getNode().remove();
+            try (JcrPackage pack = pkg.getJcrPackage()) {
+                try (JcrPackage snap = pack.getSnapshot()) {
+                    if (snap != null) {
+                        snap.getNode().remove();
+                    }
+                }
+                pack.getNode().remove();
+            }
             session.save();
         } catch (RepositoryException e) {
             throw new IOException(e);
-        } finally {
-            pkg.close();
         }
         dispatch(PackageEvent.Type.REMOVE, id, null);
     }

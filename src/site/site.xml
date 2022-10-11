@@ -24,8 +24,11 @@
     <menu name="Overview">
       <item href="index.html" name="Welcome" />
       <item href="overview.html" name="Architecture Overview" />
-      <item href="vaultfs.html" name="Vault FS" />
-      <item href="docview.html" name="Document View" />
+      <item href="vaultfs.html" name="Vault FS" >
+        <item href="docview.html" name="Document View" />
+        <item href="authorizables.html" name="Authorizables" />
+        <item href="acls.html" name="Access Control Lists" />
+      </item>
       <item href="validation.html" name="Validation" />
     </menu>
     <menu name="Usage">

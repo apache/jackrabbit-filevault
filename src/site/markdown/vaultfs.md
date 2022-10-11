@@ -297,7 +297,7 @@ Although for exporting only 2 serialization types are used this is a bit differe
 
 * generic XML
 * (enhanced) docview XML
-* sysview XML, as defined in JCR 2.0][sysview]
+* sysview XML, as defined in [JCR 2.0][sysview]
 * generic data
 
 Depending on the configuration those input sources can be handled differently. Currently they are imported as follows:

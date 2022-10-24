@@ -633,6 +633,10 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
             return false;
         }
 
+        if (effectiveNodeType == null) {
+            // if effective node type cannot be determined, assume the worst case (i.e. node does not match definition)
+            return false;
+        }
         for (Name requiredType : nodeDefinition.getRequiredPrimaryTypes()) {
             // type must match all of the given types
             if (!effectiveNodeType.includesNodeType(requiredType)) {

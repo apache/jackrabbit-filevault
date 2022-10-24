@@ -126,6 +126,27 @@ public class JcrNodeTypeMetaDataImplTest {
     }
 
     @Test
+    public void testChildNodeWithUnknownType() throws IllegalNameException, NamespaceExceptionInNodeName, RepositoryException {
+        NodeContext nodeContext = createSimpleNodeContext("file");
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet());
+        // add node with mandatory child node
+        nodeContext = createSimpleNodeContext("file/jcr:content");
+        JcrNodeTypeMetaData file = root.addChildNode(ntManagerProvider.getNamePathResolver(),
+                ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(), nodeContext,
+                "nt:file");
+        // mandatory child node has unknown node type
+        JcrNodeTypeMetaData content = file.addUnknownChildNode( ntManagerProvider.getNameResolver(), nodeContext, "jcr:content");
+        Collection<ValidationMessage> messages = file.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
+                ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, filter);
+        ValidationExecutorTest.assertViolation(messages,
+                new ValidationMessage(ValidationMessageSeverity.ERROR,
+                        String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_CHILD_NODE_MISSING, "jcr:content [nt:base]", "types [nt:file]",
+                        nodeContext)));
+    }
+    
+    @Test
     public void testAddChildNode() throws IOException, InvalidNodeTypeDefinitionException, NodeTypeExistsException,
             UnsupportedRepositoryOperationException, ParseException, RepositoryException {
         try (InputStream input = this.getClass().getResourceAsStream("/simple-restricted-nodetypes.cnd");

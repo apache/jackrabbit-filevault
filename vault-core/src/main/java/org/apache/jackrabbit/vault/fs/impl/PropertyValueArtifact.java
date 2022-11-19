@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -162,7 +163,7 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
             // ensure caching of content type
             getContentType();
             // copy value to temp file
-            tmpFile = File.createTempFile("jcrfs", "dat");
+            tmpFile = Files.createTempFile("jcrfs", "dat").toFile();
             tmpFile.setLastModified(getLastModified());
             tmpFile.deleteOnExit();
             try (FileOutputStream out = new FileOutputStream(tmpFile);

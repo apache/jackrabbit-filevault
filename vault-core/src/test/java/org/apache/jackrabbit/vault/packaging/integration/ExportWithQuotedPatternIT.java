@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -79,7 +80,7 @@ public class ExportWithQuotedPatternIT extends IntegrationTestBase {
     private File assemblePackage(WorkspaceFilter filter)
             throws IOException, RepositoryException {
 
-        File tmpFile = File.createTempFile("vaulttest", ".zip");
+        File tmpFile = Files.createTempFile("vaulttest", ".zip").toFile();
 
         ExportOptions options = new ExportOptions();
         DefaultMetaInf meta = new DefaultMetaInf();

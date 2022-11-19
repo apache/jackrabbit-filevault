@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import javax.jcr.NamespaceException;
@@ -107,7 +108,7 @@ public class NamespaceImportIT extends IntegrationTestBase {
         inf.setProperties(props);
         opts.setMetaInf(inf);
 
-        File tmpFile = File.createTempFile("vaulttest", "zip");
+        File tmpFile = Files.createTempFile("vaulttest", "zip").toFile();
         try (VaultPackage pkg = sourceOakRepository.packMgr.assemble(sourceOakRepository.admin, opts, tmpFile)) {
             Archive archive = pkg.getArchive();
 
@@ -142,7 +143,7 @@ public class NamespaceImportIT extends IntegrationTestBase {
         inf.setProperties(props);
         opts.setMetaInf(inf);
 
-        File tmpFile = File.createTempFile("vaulttest", "zip");
+        File tmpFile = Files.createTempFile("vaulttest", "zip").toFile();
         try (VaultPackage pkg = sourceOakRepository.packMgr.assemble(sourceOakRepository.admin, opts, tmpFile)) {
             Archive archive = pkg.getArchive();
 

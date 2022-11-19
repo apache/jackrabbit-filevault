@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import javax.jcr.Node;
@@ -59,7 +60,7 @@ public class SerializationIT extends IntegrationTestBase {
         inf.setProperties(props);
 
         opts.setMetaInf(inf);
-        File tmpFile = File.createTempFile("vaulttest", "zip");
+        File tmpFile = Files.createTempFile("vaulttest", "zip").toFile();
         VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile);
 
         // check if entries are present

@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import javax.jcr.RepositoryException;
@@ -58,7 +59,7 @@ public class MappedExportIT extends IntegrationTestBase {
         opts.setMetaInf(inf);
         opts.setMountPath("/tmp/foo");
         opts.setRootPath("/content/geometrixx");
-        File tmpFile = File.createTempFile("vaulttest", "zip");
+        File tmpFile = Files.createTempFile("vaulttest", "zip").toFile();
         VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile);
 
         // check if entries are present

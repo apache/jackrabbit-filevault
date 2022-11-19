@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.registry.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -78,7 +79,7 @@ public class CompositePackageRegistryTest {
                 new MockPackageRegistry(PACKAGE1),
                 new MockPackageRegistry(MockPackageRegistry.NEW_PACKAGE_ID)
                 );
-        File file = File.createTempFile("vlt", null);
+        File file = Files.createTempFile("vlt", null).toFile();
         try {
             registry.register(file, false);
         } finally {
@@ -92,7 +93,7 @@ public class CompositePackageRegistryTest {
                 new MockPackageRegistry(PACKAGE1),
                 new MockPackageRegistry(PACKAGE3)
                 );
-        File file = File.createTempFile("vlt", null);
+        File file = Files.createTempFile("vlt", null).toFile();
         try {
             registry.register(file, false);
         } finally {
@@ -119,7 +120,7 @@ public class CompositePackageRegistryTest {
                 new MockPackageRegistry(PACKAGE1),
                 new MockPackageRegistry(PACKAGE3)
                 );
-        File file = File.createTempFile("vlt", null);
+        File file = Files.createTempFile("vlt", null).toFile();
         try {
             registry.registerExternal(file, false);
         } finally {

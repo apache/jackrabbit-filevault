@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -58,7 +59,7 @@ public class ManifestCreationExportIT extends IntegrationTestBase {
         inf.setProperties(props);
 
         opts.setMetaInf(inf);
-        File tmpFile = File.createTempFile("e-vaulttest", ".zip");
+        File tmpFile = Files.createTempFile("e-vaulttest", ".zip").toFile();
         try (VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile)) {
             String expected =
                     "Content-Package-Dependencies:foo:bar:[1.0,2.0)\n" +

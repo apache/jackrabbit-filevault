@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -43,7 +44,7 @@ public class FSRegisteredPackageTest {
     private static final PackageId DUMMY_ID = new PackageId("someGroup", "someName", "someVersion");
 
     private File getTempFile(String name) throws IOException {
-        File tmpFile = File.createTempFile("vaultpack", ".zip");
+        File tmpFile = Files.createTempFile("vaultpack", ".zip").toFile();
         try (InputStream in = getClass().getResourceAsStream(name);
             FileOutputStream out = FileUtils.openOutputStream(tmpFile)) {
             IOUtils.copy(in, out);

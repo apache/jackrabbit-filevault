@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import javax.jcr.RepositoryException;
@@ -77,7 +78,7 @@ public class PackageTypesIT extends IntegrationTestBase {
 
         options.setMetaInf(meta);
 
-        File tmpFile = File.createTempFile("vaulttest", "zip");
+        File tmpFile = Files.createTempFile("vaulttest", "zip").toFile();
         try (VaultPackage pkg = packMgr.assemble(admin, options, tmpFile)) {
             PackageType result = pkg.getProperties().getPackageType();
             assertEquals("Package type", expected, result);

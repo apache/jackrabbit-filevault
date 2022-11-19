@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -109,7 +110,7 @@ public class PackageManagerImpl implements PackageManager {
         boolean success = false;
         try {
             if (file == null) {
-                file = File.createTempFile("filevault", ".zip");
+                file = Files.createTempFile("filevault", ".zip").toFile();
                 isTmp = true;
             }
             out = FileUtils.openOutputStream(file);
@@ -176,7 +177,7 @@ public class PackageManagerImpl implements PackageManager {
         boolean isTmp = false;
         boolean success = false;
         if (file == null) {
-            file = File.createTempFile("filevault", ".zip");
+            file = Files.createTempFile("filevault", ".zip").toFile();
             isTmp = true;
         }
         try (OutputStream out = FileUtils.openOutputStream(file);){

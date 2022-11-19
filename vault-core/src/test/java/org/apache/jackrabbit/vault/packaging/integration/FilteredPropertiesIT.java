@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import javax.jcr.Node;
@@ -531,7 +532,7 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     private File assemblePackage(WorkspaceFilter filter)
             throws IOException, RepositoryException {
 
-        File tmpFile = File.createTempFile("vaulttest", ".zip");
+        File tmpFile = Files.createTempFile("vaulttest", ".zip").toFile();
         packMgr.assemble(admin, createExportOptions(filter), tmpFile).close();
         return tmpFile;
     }

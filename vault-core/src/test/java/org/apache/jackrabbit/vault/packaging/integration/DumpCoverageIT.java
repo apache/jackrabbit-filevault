@@ -119,6 +119,19 @@ public class DumpCoverageIT extends IntegrationTestBase {
         checkResults("Split roots", LANGUAGE_PAGES, listener.paths);
     }
 
+    @Test
+    public void testNestedRootsCoverage() throws IOException, RepositoryException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set1 = new PathFilterSet(TEST_ROOT + "/content/en");
+        PathFilterSet set2 = new PathFilterSet(TEST_ROOT + "/content/en/foo");
+        PathFilterSet set3 = new PathFilterSet(TEST_ROOT + "/content/fr");
+        filter.add(set1);
+        filter.add(set2);
+        filter.add(set3);
+        Collector listener = new Collector();
+        filter.dumpCoverage(admin, listener, true);
+        checkResults("nested roots", LANGUAGE_PAGES, listener.paths);
+    }
 
     private static class Collector implements ProgressTrackerListener {
         private final List<String> paths = new LinkedList<String>();

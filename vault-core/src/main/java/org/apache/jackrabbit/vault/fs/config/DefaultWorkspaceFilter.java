@@ -613,6 +613,9 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             String path = set.getRoot();
             uniquePaths.add(path.endsWith("/") ? path : path + "/");
         }
+        if (log.isTraceEnabled()) {
+            log.trace("Unique paths to cover: {}", uniquePaths);
+        }
 
         // exclude descendants
         List<String> pathsToTraverse = new ArrayList<>();
@@ -622,6 +625,9 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
                 pathsToTraverse.add(path);
                 last = path;
             }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("Unique paths to cover with descendants removed: {}", pathsToTraverse);
         }
 
         return pathsToTraverse;

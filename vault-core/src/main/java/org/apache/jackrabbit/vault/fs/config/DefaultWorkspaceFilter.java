@@ -26,9 +26,12 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
@@ -53,7 +56,6 @@ import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
-import org.apache.jackrabbit.vault.util.Tree;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.slf4j.Logger;
@@ -583,24 +585,46 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     public void dumpCoverage(Session session, ProgressTrackerListener listener, boolean skipJcrContent)
             throws RepositoryException {
         ProgressTracker tracker = new ProgressTracker(listener);
-        // get common ancestor
-        Tree<PathFilterSet> tree = new Tree<>();
-        for (PathFilterSet set: nodesFilterSets) {
-            tree.put(set.getRoot(), set);
+
+        for (String path : getNodesToDump()) {
+            javax.jcr.Node node;
+            if (session.nodeExists(path)) {
+                node = session.getNode(path);
+            } else if (session.nodeExists("/")) {
+                log.warn("Node {} not found. Using root node", path);
+                path ="/";
+                node = session.getRootNode();
+            } else {
+                throw new PathNotFoundException("Node " + path + " not found.");
+            }
+            log.debug("Starting coverage dump at {} (skipJcrContent={})", path, skipJcrContent);
+            dumpCoverage(node, tracker, skipJcrContent);
         }
-        String rootPath = tree.getRootPath();
-        javax.jcr.Node rootNode;
-        if (session.nodeExists(rootPath)) {
-            rootNode = session.getNode(rootPath);
-        } else if (session.nodeExists("/")) {
-            log.warn("Common ancestor {} not found. Using root node", rootPath);
-            rootNode = session.getRootNode();
-            rootPath = "/";
-        } else {
-            throw new PathNotFoundException("Common ancestor " + rootPath+ " not found.");
+    }
+
+    /**
+     * @return list of nodes to descend from for dumping
+     */
+    private List<String> getNodesToDump() {
+
+        // compute unique set of paths
+        Set<String> uniquePaths = new TreeSet<>();
+        for (PathFilterSet set : nodesFilterSets) {
+            String path = set.getRoot();
+            uniquePaths.add(path.endsWith("/") ? path : path + "/");
         }
-        log.debug("Starting coverage dump at {} (skipJcrContent={})", rootPath, skipJcrContent);
-        dumpCoverage(rootNode, tracker, skipJcrContent);
+
+        // exclude descendants
+        List<String> pathsToTraverse = new ArrayList<>();
+        String last = null;
+        for (String path : uniquePaths) {
+            if (last == null || !Text.isDescendant(last, path)) {
+                pathsToTraverse.add(path);
+                last = path;
+            }
+        }
+
+        return pathsToTraverse;
     }
 
     private void dumpCoverage(javax.jcr.Node node, ProgressTracker tracker, boolean skipJcrContent)

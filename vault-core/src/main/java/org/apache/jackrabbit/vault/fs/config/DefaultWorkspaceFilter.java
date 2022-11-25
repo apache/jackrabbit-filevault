@@ -585,7 +585,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         ProgressTracker tracker = new ProgressTracker(listener);
 
         List<javax.jcr.Node> nodes = new ArrayList<>();
-        for (String path : getNodesToDump()) {
+        for (String path : getEntryNodesRelevantForCoverage()) {
             if (session.nodeExists(path)) {
                 nodes.add(session.getNode(path));
                 dumpCoverage(session.getNode(path), tracker, skipJcrContent);
@@ -598,7 +598,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     /**
      * @return list of nodes to descend from for dumping
      */
-    private List<String> getNodesToDump() {
+    private List<String> getEntryNodesRelevantForCoverage() {
 
         // compute unique set of paths
         Set<String> uniquePaths = new TreeSet<>();

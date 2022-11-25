@@ -20,7 +20,6 @@ package org.apache.jackrabbit.vault.fs.api;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

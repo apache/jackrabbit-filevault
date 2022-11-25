@@ -135,7 +135,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @return this list
      */
     @NotNull
-    public FilterSet seal() {
+    public FilterSet<E> seal() {
         if (!sealed) {
             if (entries == null) {
                 entries = Collections.emptyList();
@@ -161,7 +161,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @return {@code this} suitable for chaining.
      */
     @NotNull
-    public FilterSet addAll(@NotNull FilterSet<E> set) {
+    public FilterSet<E> addAll(@NotNull FilterSet<E> set) {
         if (sealed) {
             throw new UnsupportedOperationException("FilterSet is sealed.");
         }
@@ -178,7 +178,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @return {@code this} suitable for chaining.
      */
     @NotNull
-    public FilterSet addInclude(@NotNull E filter) {
+    public FilterSet<E> addInclude(@NotNull E filter) {
         addEntry(new Entry<>(filter, true));
         return this;
     }
@@ -189,7 +189,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @return {@code this} suitable for chaining.
      */
     @NotNull
-    public FilterSet addExclude(@NotNull E filter) {
+    public FilterSet<E> addExclude(@NotNull E filter) {
         addEntry(new Entry<>(filter, false));
         return this;
     }
@@ -280,7 +280,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         if (this == o) return true;
         if (!(o instanceof FilterSet)) return false;
 
-        FilterSet<E> filterSet = (FilterSet<E>) o;
+        FilterSet<?> filterSet = (FilterSet<?>) o;
         if (entries != null ? !entries.equals(filterSet.entries) : filterSet.entries != null) return false;
         return root.equals(filterSet.root);
 
@@ -369,7 +369,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof Entry)) return false;
-            Entry entry = (Entry) o;
+            Entry<?> entry = (Entry<?>) o;
             return include == entry.include && filter.equals(entry.filter);
         }
 
@@ -380,6 +380,5 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
             return stringWriter.toString();
         }
 
-        
     }
 }

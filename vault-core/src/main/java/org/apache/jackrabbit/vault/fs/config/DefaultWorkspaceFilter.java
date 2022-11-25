@@ -582,22 +582,24 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     /**
      * {@inheritDoc}
      */
-    public void dumpCoverage(Session session, ProgressTrackerListener listener, boolean skipJcrContent)
-            throws RepositoryException {
+    public void dumpCoverage(Session session, ProgressTrackerListener listener, boolean skipJcrContent) throws RepositoryException {
         ProgressTracker tracker = new ProgressTracker(listener);
 
+        List<javax.jcr.Node> nodes = new ArrayList<>();
         for (String path : getNodesToDump()) {
-            javax.jcr.Node node;
             if (session.nodeExists(path)) {
-                node = session.getNode(path);
+                nodes.add(session.getNode(path));
             } else if (session.nodeExists("/")) {
-                log.warn("Node {} not found. Using root node", path);
-                path ="/";
-                node = session.getRootNode();
+                log.warn("Node {} not found. Descending from root node", path);
+                nodes.clear();
+                nodes.add(session.getRootNode());
             } else {
-                throw new PathNotFoundException("Node " + path + " not found.");
+                throw new PathNotFoundException("Node " + path + " not found, nor is root accessible.");
             }
-            log.debug("Starting coverage dump at {} (skipJcrContent={})", path, skipJcrContent);
+        }
+
+        for (javax.jcr.Node node : nodes) {
+            log.debug("Starting coverage dump at {} (skipJcrContent={})", node.getPath(), skipJcrContent);
             dumpCoverage(node, tracker, skipJcrContent);
         }
     }

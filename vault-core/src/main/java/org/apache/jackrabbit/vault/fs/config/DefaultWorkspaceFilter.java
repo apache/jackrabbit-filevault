@@ -584,10 +584,8 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     public void dumpCoverage(Session session, ProgressTrackerListener listener, boolean skipJcrContent) throws RepositoryException {
         ProgressTracker tracker = new ProgressTracker(listener);
 
-        List<javax.jcr.Node> nodes = new ArrayList<>();
         for (String path : getEntryNodesRelevantForCoverage()) {
             if (session.nodeExists(path)) {
-                nodes.add(session.getNode(path));
                 dumpCoverage(session.getNode(path), tracker, skipJcrContent);
             } else {
                 log.warn("Node {} not found (and thus will not be dumped)", path);

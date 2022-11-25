@@ -146,8 +146,7 @@ public interface WorkspaceFilter extends Dumpable {
             throws RepositoryException;
 
     /**
-     * Dumps the coverage of this filter using the given session. The traversal starts
-     * at the common ancestor of all filter sets. If {@code skipJcrContent} is {@code true}
+     * Dumps the coverage of this filter using the given session. If {@code skipJcrContent} is {@code true}
      * the jcr:content nodes are excluded from traversal and reporting.
      *
      * @param session session

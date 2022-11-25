@@ -45,11 +45,10 @@ public class DumpCoverageIT extends IntegrationTestBase {
 
     public static final String TEST_ROOT = "/testroot";
 
-    public static final List<String> ENGLISH_PAGES = Arrays
-            .asList(new String[] { TEST_ROOT + "/content/en", TEST_ROOT + "/content/en/foo", TEST_ROOT + "/content/en/bar" });
+    public static final List<String> ENGLISH_PAGES = Arrays.asList(TEST_ROOT + "/content/en", TEST_ROOT + "/content/en/foo",
+            TEST_ROOT + "/content/en/bar");
 
-    public static final List<String> FRENCH_PAGES = Arrays
-            .asList(new String[] { TEST_ROOT + "/content/fr", TEST_ROOT + "/content/fr/foo" });
+    public static final List<String> FRENCH_PAGES = Arrays.asList(TEST_ROOT + "/content/fr", TEST_ROOT + "/content/fr/foo");
 
     public static final List<String> LANGUAGE_PAGES;
     static {

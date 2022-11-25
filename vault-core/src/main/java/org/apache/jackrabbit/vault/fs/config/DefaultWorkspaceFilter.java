@@ -34,7 +34,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.jcr.NodeIterator;
-import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.xml.parsers.DocumentBuilder;
@@ -589,18 +588,10 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         for (String path : getNodesToDump()) {
             if (session.nodeExists(path)) {
                 nodes.add(session.getNode(path));
-            } else if (session.nodeExists("/")) {
-                log.warn("Node {} not found. Descending from root node", path);
-                nodes.clear();
-                nodes.add(session.getRootNode());
+                dumpCoverage(session.getNode(path), tracker, skipJcrContent);
             } else {
-                throw new PathNotFoundException("Node " + path + " not found, nor is root accessible.");
+                log.warn("Node {} not found (and thus will not be dumped)", path);
             }
-        }
-
-        for (javax.jcr.Node node : nodes) {
-            log.debug("Starting coverage dump at {} (skipJcrContent={})", node.getPath(), skipJcrContent);
-            dumpCoverage(node, tracker, skipJcrContent);
         }
     }
 

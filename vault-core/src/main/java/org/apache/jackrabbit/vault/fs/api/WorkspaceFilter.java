@@ -139,7 +139,7 @@ public interface WorkspaceFilter extends Dumpable {
     /**
      * Dumps the coverage of this filter against the given node to the listener.
      * @param rootNode root node
-     * @param listener listener
+     * @param listener listener which receives coverage information
      * @throws RepositoryException if an error occurs
      */
     void dumpCoverage(@NotNull Node rootNode, @NotNull ProgressTrackerListener listener)
@@ -150,7 +150,7 @@ public interface WorkspaceFilter extends Dumpable {
      * the jcr:content nodes are excluded from traversal and reporting.
      *
      * @param session session
-     * @param listener listener to report progress
+     * @param listener listener which receives coverage information
      * @param skipJcrContent {@code true} to skip jcr:content nodes
      * @throws RepositoryException if an error occurs
      */

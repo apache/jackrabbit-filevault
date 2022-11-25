@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
  * {@code ArtifactIterator}...
  *
  */
-public interface ArtifactIterator extends Iterator {
+public interface ArtifactIterator extends Iterator<Artifact> {
 
     /**
      * Returns the next artifact in the iteration.

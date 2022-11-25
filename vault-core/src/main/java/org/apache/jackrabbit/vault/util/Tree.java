@@ -140,11 +140,11 @@ public class Tree<E> {
 
         private E elem;
 
-        private final Node parent;
+        private final Node<E> parent;
 
         private final Map<String, Node<E>> children = new LinkedHashMap<String, Node<E>>();
 
-        private Node(Node parent, String name) {
+        private Node(Node<E> parent, String name) {
             this.parent = parent;
             this.name = name;
         }
@@ -182,7 +182,7 @@ public class Tree<E> {
             return elem;
         }
 
-        public Node getParent() {
+        public Node<E> getParent() {
             return parent;
         }
 

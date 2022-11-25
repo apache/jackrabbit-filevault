@@ -110,7 +110,7 @@ public class PathFilterSet extends FilterSet<PathFilter> {
 
     @Override
     @NotNull
-    public FilterSet seal() {
+    public FilterSet<PathFilter> seal() {
         if (!isSealed()) {
             super.seal();
             onlyRelativePatterns = true;

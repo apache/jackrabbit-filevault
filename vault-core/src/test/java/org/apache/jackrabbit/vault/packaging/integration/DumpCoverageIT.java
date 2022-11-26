@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -28,50 +29,47 @@ import java.util.List;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.commons.JcrUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.jackrabbit.util.Text;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
- * {@code ImportTests}...
+ * Tests of coverage dump functionality.
  */
 public class DumpCoverageIT extends IntegrationTestBase {
 
-    /**
-     * default logger
-     */
-    private static final Logger log = LoggerFactory.getLogger(DumpCoverageIT.class);
-
     public static final String TEST_ROOT = "/testroot";
 
-    public static final String[] ALL_PAGES = {
-            TEST_ROOT + "/content",
-            TEST_ROOT + "/content/en",
-            TEST_ROOT + "/content/en/foo",
-            TEST_ROOT + "/content/en/bar",
-            TEST_ROOT + "/content/fr",
-            TEST_ROOT + "/content/fr/foo"
-    };
-    public static final String[] LANGUAGE_PAGES = {
-            TEST_ROOT + "/content/en",
-            TEST_ROOT + "/content/en/foo",
-            TEST_ROOT + "/content/en/bar",
-            TEST_ROOT + "/content/fr",
-            TEST_ROOT + "/content/fr/foo"
-    };
-    public static String[] ALL_PATHS;
+    public static final List<String> ENGLISH_PAGES = Arrays.asList(TEST_ROOT + "/content/en", TEST_ROOT + "/content/en/foo",
+            TEST_ROOT + "/content/en/bar");
+
+    public static final List<String> FRENCH_PAGES = Arrays.asList(TEST_ROOT + "/content/fr", TEST_ROOT + "/content/fr/foo");
+
+    public static final List<String> LANGUAGE_PAGES;
     static {
-        ALL_PATHS = new String[ALL_PAGES.length*2];
-        for (int i=0; i<ALL_PAGES.length;i++) {
-            ALL_PATHS[i*2] = ALL_PAGES[i];
-            ALL_PATHS[i*2+1] = ALL_PAGES[i] + "/jcr:content";
+        LANGUAGE_PAGES = new ArrayList<>();
+        LANGUAGE_PAGES.addAll(ENGLISH_PAGES);
+        LANGUAGE_PAGES.addAll(FRENCH_PAGES);
+    }
+
+    public static final List<String> ALL_PAGES;
+    static {
+        ALL_PAGES = new ArrayList<>();
+        ALL_PAGES.add(TEST_ROOT + "/content");
+        ALL_PAGES.addAll(LANGUAGE_PAGES);
+    }
+
+    public static List<String> ALL_PATHS;
+    static {
+        ALL_PATHS = new ArrayList<>();
+        for (String page : ALL_PAGES) {
+            ALL_PATHS.add(page);
+            ALL_PATHS.add(page + "/jcr:content");
         }
     }
 
@@ -119,6 +117,31 @@ public class DumpCoverageIT extends IntegrationTestBase {
         checkResults("Split roots", LANGUAGE_PAGES, listener.paths);
     }
 
+    @Test
+    public void testNestedRootsCoverage() throws IOException, RepositoryException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set1 = new PathFilterSet(TEST_ROOT + "/content/en/foo");
+        PathFilterSet set2 = new PathFilterSet(TEST_ROOT + "/content/fr");
+        PathFilterSet set3 = new PathFilterSet(TEST_ROOT + "/content/en");
+        filter.add(set1);
+        filter.add(set2);
+        filter.add(set3);
+        Collector listener = new Collector();
+        filter.dumpCoverage(admin, listener, true);
+        checkResults("nested roots", LANGUAGE_PAGES, listener.paths);
+    }
+
+    @Test
+    public void testMissingRootsCoverage() throws IOException, RepositoryException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set1 = new PathFilterSet(TEST_ROOT + "/content/f");
+        PathFilterSet set2 = new PathFilterSet(TEST_ROOT + "/content/en");
+        filter.add(set1);
+        filter.add(set2);
+        Collector listener = new Collector();
+        filter.dumpCoverage(admin, listener, true);
+        checkResults("missing roots", ENGLISH_PAGES, listener.paths);
+    }
 
     private static class Collector implements ProgressTrackerListener {
         private final List<String> paths = new LinkedList<String>();
@@ -131,11 +154,11 @@ public class DumpCoverageIT extends IntegrationTestBase {
         }
     }
 
-    public static void checkResults(String msg, String[] expected, List<String> result) {
-        Arrays.sort(expected);
+    public static void checkResults(String msg, List<String> expected, List<String> result) {
+        Collections.sort(expected);
         Collections.sort(result);
-        String left = Text.implode(expected, "\n");
-        String right = Text.implode(result.toArray(new String[result.size()]), "\n");
+        String left = Text.implode(expected.toArray(new String[0]), "\n");
+        String right = Text.implode(result.toArray(new String[0]), "\n");
         assertEquals(msg, left, right);
     }
 }

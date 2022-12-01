@@ -8,3 +8,9 @@ github:
     - jackrabbit
     - oak
     - repository
+  autolink_jira:
+    - JCRVLT
+    - OAK
+    - JCR
+    - SLING
+    - FELIX

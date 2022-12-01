@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.6.4
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.6.6
 
 Introduction
 ------------
@@ -8,6 +8,27 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.6.6
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.6.4
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
+
+Bug
+    * [JCRVLT-658] - Importer fails for invalid namespace names (ones not containing a colon)
+    * [JCRVLT-662] - JcrPackageRegistry.remove() leaks temp file
+    * [JCRVLT-664] - Potential NPE in JcrNodeTypeMetaDataImpl.fulfillsNodeDefinition
+
+Improvement
+    * [JCRVLT-661] - Document serialization of authorizables and access control lists in JR2/Oak
+    * [JCRVLT-666] - improve performance of DefaultWorkspaceFilter.dumpCoverage (Session variant)
+    * [JCRVLT-667] - Tree: fix java warnings re generics
+
+Task
+    * [JCRVLT-652] - Enforce update of the release notes file prior release
+
 
 Changes in Jackrabbit FileVault 3.6.4
 --------------------------------------

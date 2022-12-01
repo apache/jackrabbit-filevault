@@ -12,7 +12,7 @@ utility to work and develop with repository content.
 Changes in Jackrabbit FileVault 3.6.6
 --------------------------------------
 
-Release Notes - Jackrabbit FileVault - Version 3.6.4
+Release Notes - Jackrabbit FileVault - Version 3.6.6
 This version requires Java 8
 The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
 

@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>parent/pom.xml</relativePath>
-        <version>3.6.5-SNAPSHOT</version>
+        <version>3.6.6</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -53,7 +53,7 @@
     </modules>
 
     <properties>
-        <project.build.outputTimestamp>2022-09-16T09:26:18Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2022-12-01T09:49:16Z</project.build.outputTimestamp>
     </properties>
 
     <distributionManagement>
@@ -289,7 +289,7 @@
                                         <fail message="RELEASE-NOTES.txt doesn't contain the version to be released (${project.version}), it needs to be updated prior to each release manually!">
                                             <condition>
                                                 <not>
-                                                    <resourcecontains resource="${basedir}/RELEASE-NOTES.txt" substring="${project.version}"/>
+                                                    <resourcecontains resource="${basedir}/RELEASE-NOTES.txt" substring="${project.version}" />
                                                 </not>
                                             </condition>
                                         </fail>

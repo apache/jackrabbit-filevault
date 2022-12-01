@@ -275,11 +275,30 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!-- JCR-2455: Automatic staging of non-Maven release artifacts -->
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
+                                <id>check-release-notes-updated</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <target>
+                                        <fail message="RELEASE-NOTES.txt doesn't contain the version to be released (${project.version}), it needs to be updated prior to each release manually!">
+                                            <condition>
+                                                <not>
+                                                    <resourcecontains resource="${basedir}/RELEASE-NOTES.txt" substring="${project.version}"/>
+                                                </not>
+                                            </condition>
+                                        </fail>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <!-- JCR-2455: Automatic staging of non-Maven release artifacts -->
+                            <execution>
+                                <id>prepare-staging-in-asf-dist</id>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>

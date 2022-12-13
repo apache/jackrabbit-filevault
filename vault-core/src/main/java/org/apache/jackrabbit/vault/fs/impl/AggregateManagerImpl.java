@@ -39,8 +39,8 @@ import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
-import org.apache.commons.collections.map.ReferenceMap;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.collections4.map.AbstractReferenceMap.ReferenceStrength;
+import org.apache.commons.collections4.map.ReferenceMap;
 import org.apache.jackrabbit.vault.fs.api.AggregateManager;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.ArtifactHandler;
@@ -129,7 +129,7 @@ public class AggregateManagerImpl implements AggregateManager {
      */
     private final Set<String> nodeTypes = new HashSet<String>();
 
-    private final Map<String, String> nameCache = new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+    private final Map<String, String> nameCache = new ReferenceMap<>(ReferenceStrength.WEAK, ReferenceStrength.WEAK);
 
     /**
      * config

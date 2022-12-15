@@ -166,7 +166,7 @@ public class Version implements Comparable<Version> {
      * @see "https://cwiki.apache.org/confluence/display/MAVENOLD/Versioning"
      * @see "https://semver.org/spec/v1.0.0.html"
      */
-    public int compareTo(@NotNull Version o) {
+    public int compareTo(Version o) {
         ComparableVersion thisVersion = new ComparableVersion(toString());
         ComparableVersion otherVersion = new ComparableVersion(o.toString());
         return thisVersion.compareTo(otherVersion);

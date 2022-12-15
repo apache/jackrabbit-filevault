@@ -104,7 +104,7 @@ public class DependencyTest extends TestCase {
 
     public void testMatches() {
         PackageId id = PackageId.fromString("apache/jackrabbit/product:jcr-content:5.5.0-SNAPSHOT.20111116");
-        Dependency d = Dependency.fromString("apache/jackrabbit/product:jcr-content:[5.5.0,)");
+        Dependency d = Dependency.fromString("apache/jackrabbit/product:jcr-content:[5.5.0-SNAPSHOT,)");
         assertTrue(d.matches(id));
     }
 
@@ -125,4 +125,6 @@ public class DependencyTest extends TestCase {
         String expected = "n1,g2:n2,g3:n3:1,g4:n4:[1,2],g3";
         assertEquals(expected, Dependency.toString(DependencyUtil.add(d, Dependency.fromString("g3"))));
     }
+
+
 }

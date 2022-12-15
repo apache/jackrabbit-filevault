@@ -105,9 +105,18 @@ public class VersionRangeTest extends TestCase {
         assertFalse("[1.0,2.0] excludes empty version", vr.isInRange(Version.EMPTY));
     }
 
+    /**
+     * A snapshot precedes the released version, so 1.0-SNAPSHOT is not contained in the range [1.0,2.0)
+     * - but the boundary can be a snapshot.
+     *
+     * @see <a href="https://github.com/apache/maven/blob/maven-3.8.6/maven-artifact/src/test/java/org/apache/maven/artifact/versioning/VersionRangeTest.java#L657">Maven VersionRangeTest.java</a>
+     */
     public void testRangeSnapshots() {
         VersionRange vr = VersionRange.fromString("[1.0,2.0)");
-        assertTrue("[1.0,2.0) includes 1.0-SNAPSHOT", vr.isInRange(v1s));
+        assertFalse("[1.0,2.0) excludes 1.0-SNAPSHOT", vr.isInRange(v1s));
+
+        vr = VersionRange.fromString("[1.0-SNAPSHOT,2.0)");
+        assertTrue("[1.0-SNAPSHOT,2.0) includes 1.0-SNAPSHOT", vr.isInRange(v1s));
     }
 
     public void testRangeInvalid() {

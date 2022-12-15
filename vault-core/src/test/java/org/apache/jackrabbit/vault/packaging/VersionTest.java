@@ -17,7 +17,11 @@
 
 package org.apache.jackrabbit.vault.packaging;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -27,6 +31,9 @@ import static org.junit.Assert.fail;
  * {@code VersionTest}...
  */
 public class VersionTest  {
+
+    @Rule
+    public ErrorCollector errorCollector = new ErrorCollector();
 
     @Test
     public void testFromSegments() {
@@ -64,20 +71,23 @@ public class VersionTest  {
         compare("1.1", "1.0.0", 1);
         compare("1.11", "1.9", 1);
         compare("1.1-SNAPSHOT", "1.0.0", 1);
-        compare("2.0", "2.0-beta-8", -1);
-        compare("2.0", "2.0-SNAPSHOT", -1);
+        compare("2.0", "2.0.1", -1);
+        compare("2.0", "2.0-beta-8", 1);
+        compare("2.0", "2.0-SNAPSHOT", 1);
         compare("1.11", "1.9-SNAPSHOT", 1);
         compare("1.11-SNAPSHOT", "1.9-SNAPSHOT", 1);
         compare("1.11-SNAPSHOT", "1.9", 1);
-        compare("1.1", "1.1-SNAPSHOT", -1);
-        compare("1.1-SNAPSHOT", "1.1-R12345", 1);
+        compare("1.1", "1.1-SNAPSHOT", 1);
+        compare("1.1-SNAPSHOT", "1.1-RC1", 1);
+        compare("1.1-SNAPSHOT", "1.1-R12345", -1);
+        compare("1.1.0-final", "1.1.0", 0);
         compare("2.1.492-NPR-12954-R012", "2.1.476", 1);
         compare("6.1.58", "6.1.58-FP3", -1);
         compare("6.1.58", "6.1.58.FP3", -1);
         compare("6.1.59", "6.1.58.FP3", 1);
         compare("6.1.58-FP3", "6.1.58-FP2", 1);
-        compare("6.1.58-FP3", "6.1.58.FP3", 0);
-        compare("6.1.58-FP3", "6.1.58.FP4", -1);
+        compare("6.1.58-FP3", "6.1.58.FP3", 1);
+        compare("6.1.58-FP3", "6.1.58.FP4", 1);
         compare("6.1.58.FP3", "6.1.58-FP4", -1);
         compare("6.1.58.FP3", "6.1.58.FP4", -1);
         compare("6.1.0", "6.1-FP3", -1);
@@ -88,16 +98,8 @@ public class VersionTest  {
         Version vv1 = Version.create(v1);
         Version vv2 = Version.create(v2);
         int ret = vv1.compareTo(vv2);
-        if (ret == comp) {
-            return;
-        }
-        if (ret < 0 && comp < 0) {
-            return;
-        }
-        if (ret > 0 && comp > 0) {
-            return;
-        }
-        fail(v1 + " compare to " + v2 + " must return " + comp);
+        errorCollector.checkThat(v1 + " compare to " + v2,
+                Math.signum(ret), CoreMatchers.is(Math.signum(comp)));
     }
 
 }

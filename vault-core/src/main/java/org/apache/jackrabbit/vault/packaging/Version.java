@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging;
 import java.util.ArrayList;
 
 import org.apache.jackrabbit.util.Text;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -135,44 +136,40 @@ public class Version implements Comparable<Version> {
     }
 
     /**
-     * Compares this version to the given one, segment by segment without any special
-     * "SNAPSHOT" handling.
+     * Compares this version to the given one. The comparison is compatible to the ordering used by
+     * <a href="https://maven.apache.org/">Apache Maven</a>. It version consists normally from 3 numbers -
+     * major version, minor version and patch level, and can be followed by a dash and a qualifier like SNAPSHOT.
+     * Version numbers can also consist of fewer or more numbers.
+     * If the comparison is not resolved by comparing the numbers, the algorith resorts to the qualifier - see
+     * <a href="https://cwiki.apache.org/confluence/display/MAVENOLD/Versioning">"Versioning" on Maven Wiki</a>
+     * for details.
      *
      * <pre>
-     * Examples:
+     * Some examples:
      * "1" &lt; "2"
      * "1.0" &lt; "2"
      * "2.0.1" &lt; "2.1"
      * "2.1" &lt; "2.1.1"
      * "2.9" &lt; "2.11"
-     * "2.1" &lt; "2.1-SNAPSHOT"
-     * "2.1" &lt; "2.1-R1234556"
-     * "2.1-R12345" &lt; "2.1-SNAPSHOT"
+     * "2.1-SNAPSHOT" &lt; "2.1"
+     * "2.1-RC1" &lt; "2.1"
+     * "2.1-RC1" &lt; "2.1-SNAPSHOT"
      * </pre>
      *
-     * @param o the other version
+     * Please note that this comparison does not use the exact segmentation presented in {@link #getNormalizedSegments()},
+     * but applies the maven comparison algorithm to the string representation {@link #toString()}.
+     *
+     * @param o the other version, not null
      * @return  a negative integer, zero, or a positive integer as this version
      *		is less than, equal to, or greater than the specified version.
+     *
+     * @see "https://cwiki.apache.org/confluence/display/MAVENOLD/Versioning"
+     * @see "https://semver.org/spec/v1.0.0.html"
      */
-    public int compareTo(Version o) {
-        String[] oSegs = o.getNormalizedSegments();
-        for (int i=0; i< Math.min(segments.length, oSegs.length); i++) {
-            String s1 = segments[i];
-            String s2 = oSegs[i];
-            int strCompare = s1.compareTo(s2);
-            if (strCompare == 0) {
-                continue;
-            }
-            try {
-                int v1 = Integer.parseInt(segments[i]);
-                int v2 = Integer.parseInt(oSegs[i]);
-                return v1 - v2;
-            } catch (NumberFormatException e) {
-                // no numbers, use string compare
-                return strCompare;
-            }
-        }
-        return segments.length - oSegs.length;
+    public int compareTo(@NotNull Version o) {
+        ComparableVersion thisVersion = new ComparableVersion(toString());
+        ComparableVersion otherVersion = new ComparableVersion(o.toString());
+        return thisVersion.compareTo(otherVersion);
     }
 
     /**

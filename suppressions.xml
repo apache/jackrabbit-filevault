@@ -50,5 +50,11 @@
        <packageUrl regex="true">^pkg:maven/org\.apache\.sling/org\.apache\.sling\.jcr\.api@.*$</packageUrl>
        <cve>CVE-2022-32549</cve>
     </suppress>
-    
+    <suppress>
+       <notes><![CDATA[
+       file name: h2-2.1.212.jar, usage in FileVault not affected, see https://github.com/h2database/h2database/issues/3686
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+       <cve>CVE-2022-45868</cve>
+    </suppress>
 </suppressions>

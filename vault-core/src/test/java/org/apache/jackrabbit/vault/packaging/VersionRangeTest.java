@@ -109,7 +109,7 @@ public class VersionRangeTest extends TestCase {
      * A snapshot precedes the released version, so 1.0-SNAPSHOT is not contained in the range [1.0,2.0)
      * - but the boundary can be a snapshot.
      *
-     * @see "https://github.com/apache/maven/blob/maven-3.8.6/maven-artifact/src/test/java/org/apache/maven/artifact/versioning/VersionRangeTest.java#L657"
+     * @see <a href="https://github.com/apache/maven/blob/maven-3.8.6/maven-artifact/src/test/java/org/apache/maven/artifact/versioning/VersionRangeTest.java#L657">Maven VersionRangeTest.java</a>
      */
     public void testRangeSnapshots() {
         VersionRange vr = VersionRange.fromString("[1.0,2.0)");

@@ -140,9 +140,8 @@ public class Version implements Comparable<Version> {
      * <a href="https://maven.apache.org/">Apache Maven</a>. A version usually consists  out of three numerical parts separated by dot -
      * major version, minor version and patch level, and can be followed by a dash and a qualifier like SNAPSHOT.
      * Version numbers can also consist of fewer or more parts (numerical, string, ....).
-     * If the comparison is not resolved by comparing the numbers, the algorith resorts to the qualifier - see
-     * <a href="https://cwiki.apache.org/confluence/display/MAVENOLD/Versioning">"Versioning" on Maven Wiki</a>
-     * for details.
+     * The comparison of the versions conforms to the
+     * <a href="https://maven.apache.org/pom.html#version-order-specification">Maven version order specification</a>.
      *
      * <pre>
      * Some examples:
@@ -163,8 +162,8 @@ public class Version implements Comparable<Version> {
      * @return  a negative integer, zero, or a positive integer as this version
      *		is less than, equal to, or greater than the specified version.
      *
-     * @see "https://cwiki.apache.org/confluence/display/MAVENOLD/Versioning"
-     * @see "https://semver.org/spec/v1.0.0.html"
+     * @see <a href="https://maven.apache.org/pom.html#version-order-specification">Maven version order specification</a>
+     * @see <a href="https://semver.org/spec/v1.0.0.html">Semantic Versioning 1.0.0</a>
      */
     public int compareTo(Version o) {
         ComparableVersion thisVersion = new ComparableVersion(toString());

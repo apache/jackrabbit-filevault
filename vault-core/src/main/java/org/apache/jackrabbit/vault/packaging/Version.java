@@ -137,9 +137,9 @@ public class Version implements Comparable<Version> {
 
     /**
      * Compares this version to the given one. The comparison is compatible to the ordering used by
-     * <a href="https://maven.apache.org/">Apache Maven</a>. It version consists normally from 3 numbers -
+     * <a href="https://maven.apache.org/">Apache Maven</a>. A version usually consists  out of three numerical parts separated by dot -
      * major version, minor version and patch level, and can be followed by a dash and a qualifier like SNAPSHOT.
-     * Version numbers can also consist of fewer or more numbers.
+     * Version numbers can also consist of fewer or more parts (numerical, string, ....).
      * If the comparison is not resolved by comparing the numbers, the algorith resorts to the qualifier - see
      * <a href="https://cwiki.apache.org/confluence/display/MAVENOLD/Versioning">"Versioning" on Maven Wiki</a>
      * for details.

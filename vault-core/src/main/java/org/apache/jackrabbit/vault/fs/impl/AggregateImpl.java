@@ -36,6 +36,9 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
 import org.apache.jackrabbit.api.ReferenceBinary;
+import org.apache.jackrabbit.commons.iterator.NodeIterable;
+import org.apache.jackrabbit.commons.iterator.PropertyIterable;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -50,7 +53,6 @@ import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.io.AggregateWalkListener;
 import org.apache.jackrabbit.vault.util.NodeNameComparator;
 import org.apache.jackrabbit.vault.util.PathUtil;
-import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -436,50 +438,70 @@ public class AggregateImpl implements Aggregate {
      * Walks the tree.
      *
      * @param aggregateWalkListener the listener
-     * @param relPath rel path of node
+     * @param relativePath relative path of node
      * @param node the current node
      * @param depth the depth of the node
      * @throws RepositoryException if an error occurs.
      */
-    private void walk(AggregateWalkListener aggregateWalkListener, String relPath, Node node, int depth)
+    private void walk(AggregateWalkListener aggregateWalkListener, String relativePath, Node node, int depth)
             throws RepositoryException {
         if (node != null) {
-            boolean included = includes(relPath);
+            boolean included = includes(relativePath);
+
             aggregateWalkListener.onNodeBegin(node, included, depth);
-            PropertyIterator piter = node.getProperties();
-            while (piter.hasNext()) {
-                Property prop = piter.nextProperty();
-                if (includes(relPath + "/" + prop.getName())) {
+
+            Iterable<Property> properties = new PropertyIterable(node.getProperties());
+            for (Property prop : properties) {
+                if (includes(relativePath + "/" + prop.getName())) {
                     aggregateWalkListener.onProperty(prop, depth + 1);
                 }
             }
+
             aggregateWalkListener.onChildren(node, depth);
 
-            // copy nodes to list
-            NodeIterator niter = node.getNodes();
-            long size = niter.getSize();
-            List<Node> nodes = new ArrayList<Node>(size > 0 ? (int) size : 16);
-            while (niter.hasNext()) {
-                nodes.add(niter.nextNode());
-            }
-
-            // if node is not orderable, sort them alphabetically
             boolean hasOrderableChildNodes = node.getPrimaryNodeType().hasOrderableChildNodes();
+            Iterable<Node> children = new NodeIterable(node.getNodes());
+
+            // if children not ordered: find included children, sort alphabetically
             if (!hasOrderableChildNodes) {
-                Collections.sort(nodes, NodeNameComparator.INSTANCE);
-            }
-            for (Node child: nodes) {
-                String p = relPath + "/" + Text.getName(child.getPath());
-                if (includes(p)) {
-                    walk(aggregateWalkListener, p, child, depth + 1);
-                } else {
-                    // only inform if node is orderable
-                    if (hasOrderableChildNodes) {
-                        aggregateWalkListener.onNodeIgnored(child, depth+1);
+                List<Node> sorted = new ArrayList<>();
+                for (Node child : children) {
+                    String path = relativePath + "/" + Text.getName(child.getPath());
+                    if (includes(path)) {
+                        sorted.add(child);
                     }
                 }
+                Collections.sort(sorted, NodeNameComparator.INSTANCE);
+                children = sorted;
             }
+
+            walk(aggregateWalkListener, relativePath, children, depth, hasOrderableChildNodes);
+
             aggregateWalkListener.onNodeEnd(node, included, depth);
+        }
+    }
+
+    /**
+     * Walks the children of a node.
+     *
+     * @param aggregateWalkListener the listener
+     * @param relativePath relative path of node
+     * @param children the node's children (potentially filtered)
+     * @param depth the depth of the node
+     * @throws RepositoryException if an error occurs.
+     */
+    private void walk(AggregateWalkListener aggregateWalkListener, String relativePath, Iterable<Node> children, int depth,
+            boolean hasOrderableChildNodes) throws RepositoryException {
+        for (Node child : children) {
+            String path = relativePath + "/" + Text.getName(child.getPath());
+            if (includes(path)) {
+                walk(aggregateWalkListener, path, child, depth + 1);
+            } else {
+                // only inform if node is orderable
+                if (hasOrderableChildNodes) {
+                    aggregateWalkListener.onNodeIgnored(child, depth + 1);
+                }
+            }
         }
     }
 

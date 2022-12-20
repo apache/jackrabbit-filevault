@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>28</version>
+        <version>29</version>
         <relativePath />
     </parent>
 
@@ -233,7 +233,7 @@ Bundle-Category: jackrabbit
                         <dependency>
                             <groupId>org.apache.maven.release</groupId>
                             <artifactId>maven-release-oddeven-policy</artifactId>
-                            <version>3.0.0-M6</version>
+                            <version>3.0.0-M7</version>
                         </dependency>
                     </dependencies>
                 </plugin>

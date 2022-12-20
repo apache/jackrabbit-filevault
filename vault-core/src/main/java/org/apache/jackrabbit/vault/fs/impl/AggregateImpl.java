@@ -525,7 +525,7 @@ public class AggregateImpl implements Aggregate {
             if (includes == null) {
                 includes = new HashSet<String>();
             }
-            includes.add(mgr.cacheString(relPath));
+            includes.add(relPath);
             if (!node.isSame(getNode())) {
                 // ensure that parent nodes are included
                 include(node.getParent(), null);
@@ -569,7 +569,7 @@ public class AggregateImpl implements Aggregate {
             }
             // ensure that parent node is included as well
             include(parent, null);
-            includes.add(mgr.cacheString(relPath));
+            includes.add(relPath);
             if (prop.getType() == PropertyType.BINARY) {
                 boolean includeBinary = true;
                 if (useBinaryReferences) {
@@ -604,7 +604,7 @@ public class AggregateImpl implements Aggregate {
         if (idx > 0) {
             String pfx = name.substring(0, idx);
             if (!prefixes.contains(pfx)) {
-                prefixes.add(mgr.cacheString(pfx));
+                prefixes.add(pfx);
             }
         }
     }

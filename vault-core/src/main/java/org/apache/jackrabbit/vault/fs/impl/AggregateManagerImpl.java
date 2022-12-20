@@ -39,8 +39,6 @@ import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
-import org.apache.commons.collections.map.ReferenceMap;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.AggregateManager;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.ArtifactHandler;
@@ -128,8 +126,6 @@ public class AggregateManagerImpl implements AggregateManager {
      * the aggregates
      */
     private final Set<String> nodeTypes = new HashSet<String>();
-
-    private final Map<String, String> nameCache = new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
 
     /**
      * config
@@ -332,16 +328,6 @@ public class AggregateManagerImpl implements AggregateManager {
 
     public String getNamespaceURI(String prefix) throws RepositoryException {
         return session.getNamespaceURI(prefix);
-    }
-
-    public String cacheString(String string) {
-        String ret = nameCache.get(string);
-        if (ret == null) {
-            // create copy to keep retained size minimal
-            ret = new String(string);
-            nameCache.put(ret, ret);
-        }
-        return ret;
     }
 
     public void startTracking(ProgressTrackerListener pTracker) {

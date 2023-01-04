@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.6.6
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.6.8
 
 Introduction
 ------------
@@ -8,6 +8,24 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.6.8
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.6.8
+This version requires Java 8
+The bundles are backwards compatible with Oak 1.8 and Jackrabbit 2.16
+
+Bug
+    * [JCRVLT-674] - dependency-check issues while building master branch
+
+Improvement
+    * [JCRVLT-672] - Provide a Version comparison function complying to Maven version ordering specification
+    * [JCRVLT-673] - AggregateImpl: do not collect & sort nodes that will be skipped anyway
+
+Task
+    * [JCRVLT-670] - remove (non-test) dependency to commons-collections4
+
 
 Changes in Jackrabbit FileVault 3.6.6
 --------------------------------------

@@ -31,7 +31,7 @@
     <!-- ====================================================================== -->
     <groupId>org.apache.jackrabbit.vault</groupId>
     <artifactId>parent</artifactId>
-    <version>3.6.8</version>
+    <version>3.6.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Apache Jackrabbit FileVault (Parent Project)</name>
@@ -59,7 +59,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <surefire.version>3.0.0-M7</surefire.version>
         <sling.url>http://localhost:4502</sling.url>
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
-        <project.build.outputTimestamp>2023-01-05T14:56:20Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2022-12-01T09:50:25Z</project.build.outputTimestamp>
     </properties>
 
     <!-- ====================================================================== -->
@@ -70,7 +70,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <connection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</developerConnection>
         <url>https://github.com/apache/jackrabbit-filevault/tree/${project.scm.tag}</url>
-        <tag>jackrabbit-filevault-3.6.8</tag>
+        <tag>master</tag>
     </scm>
 
     <!-- ====================================================================== -->

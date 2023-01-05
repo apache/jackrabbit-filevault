@@ -24,7 +24,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.6.9-SNAPSHOT</version>
+        <version>3.6.7-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->

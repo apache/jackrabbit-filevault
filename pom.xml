@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>parent/pom.xml</relativePath>
-        <version>3.6.9-SNAPSHOT</version>
+        <version>3.6.7-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -53,7 +53,7 @@
     </modules>
 
     <properties>
-        <project.build.outputTimestamp>2023-01-05T14:27:46Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2022-12-01T09:50:25Z</project.build.outputTimestamp>
     </properties>
 
     <distributionManagement>

@@ -134,17 +134,17 @@ public class ExecutionContext {
                 }
             } catch (ExecutionException e) {
                 if (e.getCause() == null || e.getCause() == e) {
-                    log.error("{}: {}", c.getName(), e.getMessage());
+                    log.error("{}: {}", c.getName(), e.getMessage(), e);
                 } else {
                     StringBuffer buf = new StringBuffer();
                     addCause(buf, e.getCause(), null);
-                    log.error("{}: {}", c.getName(), buf.toString());
+                    log.error("{}: {}", c.getName(), buf.toString(), e);
 
                 }
             } catch (Throwable e) {
                 StringBuffer buf = new StringBuffer();
                 addCause(buf, e, null);
-                log.error("{}: {}", c.getName(), buf.toString());
+                log.error("{}: {}", c.getName(), buf.toString(), e);
                 return true;
             }
         }

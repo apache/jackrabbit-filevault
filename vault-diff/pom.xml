@@ -62,6 +62,17 @@
     <!-- B U I L D   D E F I N I T I O N                                        -->
     <!-- ====================================================================== -->
     <build>
+        <pluginManagement>
+            <plugins>
+                 <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <configuration>
+                        <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
+                    </configuration>
+                 </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <!-- exclude test resources from rat-check -->
             <plugin>

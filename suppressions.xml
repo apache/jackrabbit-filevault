@@ -57,4 +57,25 @@
        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
        <cve>CVE-2022-45868</cve>
     </suppress>
+    <suppress>
+       <notes><![CDATA[
+       file name: diffutils-1.2.1.jar, wrong match for pattern cpe:2.3:a:utils_project:utils:1.2.1:*:*:*:*:*:*:*
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/com\.googlecode\.java\-diff\-utils/diffutils@.*$</packageUrl>
+       <cve>CVE-2021-4277</cve>
+    </suppress>
+    <suppress>
+       <notes><![CDATA[
+       file name: org.apache.felix.utils-1.11.8.jar, wrong match for pattern cpe:2.3:a:utils_project:utils:1.2.1:*:*:*:*:*:*:*
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.apache\.felix/org\.apache\.felix\.utils@.*$</packageUrl>
+       <cve>CVE-2021-4277</cve>
+    </suppress>
+    <suppress>
+       <notes><![CDATA[
+       file name: plexus-utils-3.3.0.jar, wrong match for pattern cpe:2.3:a:utils_project:utils:1.2.1:*:*:*:*:*:*:*
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.codehaus\.plexus/plexus\-utils@.*$</packageUrl>
+       <cve>CVE-2021-4277</cve>
+    </suppress>
 </suppressions>

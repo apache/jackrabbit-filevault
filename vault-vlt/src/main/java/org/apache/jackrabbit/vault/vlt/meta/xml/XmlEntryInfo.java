@@ -39,7 +39,7 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class XmlEntryInfo implements VltEntryInfo {
 
-    private static final String AN_NAME = "name";
+    private static final String AN_NAME = "name"; // file name, mandatory for type "mine" and "theirs"
     private static final String AN_DATE = "date";
     private static final String AN_MD5 = "md5";
     private static final String AN_CONTENT_TYPE = "contentType";
@@ -212,27 +212,28 @@ public class XmlEntryInfo implements VltEntryInfo {
 
     public void write(XMLStreamWriter writer) throws XMLStreamException {
         writer.writeStartElement(type.name().toLowerCase());
+        writeAttributes(writer);
         writer.writeEndElement();
         dirty = false;
     }
 
-    protected void addAttributes(AttributesImpl attrs) {
+    protected void writeAttributes(XMLStreamWriter writer) throws XMLStreamException {
         if (name != null) {
-            attrs.addAttribute("", AN_NAME, "", "CDATA", name);
+            writer.writeAttribute(AN_NAME, name);
         }
         if (date > 0) {
             Calendar c = Calendar.getInstance();
             c.setTimeInMillis(date);
-            attrs.addAttribute("", AN_DATE, "", "CDATA", ISO8601.format(c));
+            writer.writeAttribute(AN_DATE, ISO8601.format(c));
         }
         if (md5 != null) {
-            attrs.addAttribute("", AN_MD5, "", "CDATA", md5.toString());
+            writer.writeAttribute(AN_MD5, md5.toString());
         }
         if (contentType != null) {
-            attrs.addAttribute("", AN_CONTENT_TYPE, "", "CDATA", contentType);
+            writer.writeAttribute(AN_CONTENT_TYPE, contentType);
         }
         if (size > 0) {
-            attrs.addAttribute("", AN_SIZE, "", "CDATA", String.valueOf(size));
+            writer.writeAttribute(AN_SIZE, String.valueOf(size));
         }
     }
 

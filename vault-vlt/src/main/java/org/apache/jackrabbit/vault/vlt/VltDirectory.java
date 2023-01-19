@@ -18,11 +18,16 @@ package org.apache.jackrabbit.vault.vlt;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.jcr.RepositoryException;
 
@@ -33,6 +38,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFsTransaction;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.FileInputSource;
 import org.apache.jackrabbit.vault.util.LineOutputStream;
+import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.apache.jackrabbit.vault.vlt.actions.Action;
 import org.apache.jackrabbit.vault.vlt.meta.MetaDirectory;
 import org.apache.jackrabbit.vault.vlt.meta.VltEntries;
@@ -74,6 +80,78 @@ public class VltDirectory {
         //entriesFile = new File(metaDir, ENTRIES_FILE_NAME);
 
         init();
+    }
+
+    /** 
+     * Escapes the given name according to the file escaping rules in case a conflicting file name (e.g. just differ by case in case-ignoring filesystem) exists
+     * in the current directory.
+     * 
+     * @param name
+     * @return
+     */
+    String escapeToMakeUnique(String name) {
+        File newFile = new File(dir, name);
+        Predicate<VltFile> sameFilePredicate = f -> { 
+            try {
+                return Files.isSameFile(f.getFile().toPath(), newFile.toPath());
+            } catch (NoSuchFileException e) {
+                // ignore
+                return false;
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        };
+        Optional<VltFile> conflictingFile = getFiles().stream().filter(sameFilePredicate).findFirst();
+        if (conflictingFile.isPresent()) {
+            int firstDiffIndex = indexOfDifference(name, conflictingFile.get().getName());
+            StringBuilder newName = new StringBuilder(name.substring(0, firstDiffIndex));
+            PlatformNameFormat.addEscapedCharacter(newName, name.charAt(firstDiffIndex));
+            newName.append(name.substring(firstDiffIndex+1));
+            return newName.toString();
+        } else {
+            return name;
+        }
+    }
+
+    /**
+     * Compares two Strings, and returns the index at which the
+     * Strings begin to differ.
+     *
+     * For example,
+     * <code>indexOfDifference("i am a machine", "i am a robot") -> 7</code>
+     *
+     * <pre>
+     * StringUtils.indexOfDifference(null, null) = -1
+     * StringUtils.indexOfDifference("", "") = -1
+     * StringUtils.indexOfDifference("", "abc") = 0
+     * StringUtils.indexOfDifference("abc", "") = 0
+     * StringUtils.indexOfDifference("abc", "abc") = -1
+     * StringUtils.indexOfDifference("ab", "abxyz") = 2
+     * StringUtils.indexOfDifference("abcde", "abxyz") = 2
+     * StringUtils.indexOfDifference("abcde", "xyz") = 0
+     * </pre>
+     *
+     * @param str1  the first String, may be null
+     * @param str2  the second String, may be null
+     * @return the index where str2 and str1 begin to differ; -1 if they are equal
+     */
+    private static int indexOfDifference(String str1, String str2) {
+        if (str1 == str2) {
+            return -1;
+        }
+        if (str1 == null || str2 == null) {
+            return 0;
+        }
+        int i;
+        for (i = 0; i < str1.length() && i < str2.length(); ++i) {
+            if (str1.charAt(i) != str2.charAt(i)) {
+                break;
+            }
+        }
+        if (i < str2.length() || i < str1.length()) {
+            return i;
+        }
+        return -1;
     }
 
     public VltDirectory getParent() throws VltException {

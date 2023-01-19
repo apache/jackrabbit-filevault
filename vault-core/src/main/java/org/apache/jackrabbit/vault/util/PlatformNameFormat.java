@@ -100,9 +100,7 @@ public class PlatformNameFormat {
                  case '/':
                  case'?':
                  case'%':
-                     buf.append('%');
-                     buf.append(Character.forDigit(c / 16, 16));
-                     buf.append(Character.forDigit(c % 16, 16));
+                     addEscapedCharacter(buf, c);
                      break;
                  default:
                      buf.append(c);
@@ -113,6 +111,12 @@ public class PlatformNameFormat {
         } else {
             return buf.substring(1);
         }
+    }
+
+    public static void addEscapedCharacter(StringBuilder buf, char c) {
+        buf.append('%');
+        buf.append(Character.forDigit(c / 16, 16));
+        buf.append(Character.forDigit(c % 16, 16));
     }
 
     /**

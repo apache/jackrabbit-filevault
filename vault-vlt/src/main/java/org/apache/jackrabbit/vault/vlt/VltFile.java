@@ -95,6 +95,10 @@ public class VltFile implements DocumentSource {
     public VltFile(VltDirectory parent, String name, VltEntry entry)
             throws VltException {
         this.parent = parent;
+        if (entry == null) {
+            // potentially modify the name
+            name = parent.escapeToMakeUnique(name);
+        }
         this.name = name;
         this.entry = entry;
         this.file = new File(parent.getDirectory(), name);

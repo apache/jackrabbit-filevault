@@ -31,13 +31,11 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.vlt.meta.xml.zip.UpdateableZipFile;
-import org.junit.Ignore;
 
 /**
  * {@code Test}...
  */
-@Ignore
-public class Test {
+public class ManualIT {
 
     public static final String TEXT = "/*\n" +
             " * Licensed to the Apache Software Foundation (ASF) under one or more\n" +

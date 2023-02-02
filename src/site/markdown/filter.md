@@ -98,17 +98,17 @@ Usage for Export
 When exporting content into the filesystem or a content package, the workspace filter defines which nodes are
 serialized. It is important to know, that only the nodes that match the filter are actually traversed, which can lead to unexpected results.
 
-for example:
+For example:
 
     <filter root="/tmp">
         <include pattern="/tmp/a(/.*)?"/>
         <include pattern="/tmp/b/c(/.*)?"/>
     </filter>
 
-Will include the `/tmp/a` subtree, but not the `/tmp/b/c` subtree, since `/tmp/b` does not match the filter and is
-therefor not traversed.
+The above will include the `/tmp/a` subtree, but not the `/tmp/b/c` subtree, since `/tmp/b` does not match the filter and is
+therefore not traversed.
 
-There is one exception, if **all** the pattern are relative (i.e. don't start with a slash), then the algorithm is:
+There is one exception, if **all** the patterns are relative (i.e. don't start with a slash), then the algorithm is:
 
 1. start at the filter root
 2. traverse **all** child nodes recursively

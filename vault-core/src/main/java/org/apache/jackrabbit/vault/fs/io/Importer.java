@@ -39,10 +39,12 @@ import java.util.Set;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.version.Version;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.api.security.authorization.PrincipalSetPolicy;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
@@ -81,6 +83,7 @@ import org.apache.jackrabbit.vault.fs.spi.PrivilegeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol.JackrabbitAccessControlPolicy;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
@@ -186,12 +189,16 @@ public class Importer {
     /**
      * set of paths to versionable nodes that need to be checked in after import
      */
-    private final Set<String> nodesToCheckin = new HashSet<String>();
+    private final Set<String> nodesToCheckin = new HashSet<>();
 
     /**
      * map of group memberships that need to be applied after import
      */
-    private final Map<String, String[]> memberships = new HashMap<String, String[]>();
+    private final Map<String, String[]> memberships = new HashMap<>();
+
+    private Map<String, List<? extends AccessControlPolicy>> deletedPrincipalAcls = new HashMap<>();
+
+    private List<String> createdAuthorizableIds = new LinkedList<>();
 
     /**
      * general flag that indicates if the import had (recoverable) errors
@@ -259,7 +266,7 @@ public class Importer {
     /**
      * the checkpoint import info.
      */
-    private ImportInfo cpImportInfo;
+    private ImportInfoImpl cpImportInfo;
 
     /**
      * retry counter for the batch auto recovery
@@ -328,7 +335,7 @@ public class Importer {
         this.isStrict = opts.isStrict(isStrictByDefault);
         this.isStrictByDefault = isStrictByDefault;
         this.overwritePrimaryTypesOfFoldersByDefault = overwritePrimaryTypesOfFoldersByDefault;
-        if (!this.opts.hasIdConflictPolicyBeenSet()) {
+        if (!this.opts.hasIdConflictPolicyBeenSet() && defaultIdConflictPolicy != null) {
             this.opts.setIdConflictPolicy(defaultIdConflictPolicy);
         }
     }
@@ -540,6 +547,7 @@ public class Importer {
         if (tracker != null) {
             tracker.setMode(ProgressTrackerListener.Mode.TEXT);
         }
+        restorePrincipalAcls(session);
         checkinNodes(session);
         applyMemberships(session);
         applyPatches();
@@ -563,6 +571,53 @@ public class Importer {
                 track("Package imported.", "");
             }
         }
+    }
+
+    private void restorePrincipalAcls(Session session) throws RepositoryException {
+        for (String authorizableId : createdAuthorizableIds) {
+            String principalName = userManagement.getPrincipalName(session, authorizableId);
+            if (deletedPrincipalAcls.containsKey(principalName)) {
+                if (opts.isDryRun()) {
+                    track("Dry run: Would potentially restore principal ACLs of " + principalName + " ...", "");
+                } else {
+                    for (AccessControlPolicy policy : deletedPrincipalAcls.get(principalName)) {
+                        // CUG or ACL handling relevant?
+                        AccessControlHandling aclHandling;
+                        if (policy instanceof PrincipalSetPolicy) {
+                            aclHandling = opts.getCugHandling();
+                        } else {
+                            aclHandling = opts.getAccessControlHandling();
+                        }
+                        // convert aclHandling (as this was set for the imported ACLs, not the existing ones)
+                        final AccessControlHandling aclHandlingForRestoredPolicy;
+                        switch (aclHandling) {
+                            case OVERWRITE:
+                                aclHandlingForRestoredPolicy = AccessControlHandling.IGNORE;
+                                break;
+                            case IGNORE:
+                                aclHandlingForRestoredPolicy = AccessControlHandling.OVERWRITE;
+                                break;
+                            case CLEAR:
+                                aclHandlingForRestoredPolicy = AccessControlHandling.IGNORE;
+                                break;
+                            case MERGE:
+                                aclHandlingForRestoredPolicy = AccessControlHandling.MERGE;
+                                break;
+                            default:
+                                aclHandlingForRestoredPolicy = AccessControlHandling.MERGE;
+                           
+                        }
+                        String accessControlledPath = userManagement.getAuthorizablePath(session, authorizableId);
+                        List<String> paths = JackrabbitAccessControlPolicy.fromAccessControlPolicy(policy).apply(session, aclHandlingForRestoredPolicy, accessControlledPath);
+                        for (String path: paths) {
+                            track("Restored principal ACLs of " + principalName, path);
+                        }
+                    }
+                }
+            }
+        }
+        
+        
     }
 
     /**
@@ -895,7 +950,7 @@ public class Importer {
 
     private void commit(Session session, TxInfo info, LinkedList<TxInfo> skipList) throws RepositoryException, IOException {
         try {
-            ImportInfo imp = null;
+            ImportInfoImpl imp = null;
             if (skipList.isEmpty()) {
                 if (info == cpTxInfo) {
                     // don't need to import again, just set import info
@@ -907,6 +962,8 @@ public class Importer {
                         nodesToCheckin.addAll(imp.getToVersion());
                         memberships.putAll(imp.getMemberships());
                         autoSave.modified(imp.numModified());
+                        deletedPrincipalAcls.putAll(imp.getDeletedPrincipalAcls());
+                        createdAuthorizableIds.addAll(imp.getCreatedAuthorizableIds());
                     }
                 }
             } else if (log.isDebugEnabled()) {

@@ -14,8 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.fs.spi.impl.jcr20;
 
-@Version("2.6.0")
-package org.apache.jackrabbit.vault.fs.spi;
+import java.security.Principal;
 
-import org.osgi.annotation.versioning.Version;
+/** Helper class to create users/groups with intermediate path */
+public final class SimplePrincipal implements Principal {
+    private final String name;
+
+    public SimplePrincipal(String name) {
+        if(name == null) {
+            throw new IllegalArgumentException("Name cannot be null");
+        }
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return (
+                other instanceof SimplePrincipal)
+                && (this.name.equals(((SimplePrincipal)other).name));
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+}

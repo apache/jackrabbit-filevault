@@ -14,8 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.util;
 
-@Version("2.6.0")
-package org.apache.jackrabbit.vault.fs.spi;
+import javax.jcr.ValueFormatException;
 
-import org.osgi.annotation.versioning.Version;
+/**
+ * Wraps a {@link ValueFormatException} with an unchecked exception.
+ * Useful in {@link FunctionalInterface} methods/lambda expressions which must not throw checked exceptions.
+ * @since 3.6.10
+ *
+ */
+public class UncheckedValueFormatException extends RuntimeException {
+
+    private static final long serialVersionUID = 7179774059211440453L;
+
+    public UncheckedValueFormatException(ValueFormatException e) {
+        super(e);
+    }
+
+    @Override
+    public synchronized ValueFormatException getCause() {
+        return (ValueFormatException) super.getCause();
+    }
+}

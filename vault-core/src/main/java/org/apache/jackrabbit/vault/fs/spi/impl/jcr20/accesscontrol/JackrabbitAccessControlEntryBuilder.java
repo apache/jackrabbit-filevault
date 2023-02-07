@@ -1,4 +1,4 @@
-/*
+/*************************************************************************
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -13,9 +13,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ ************************************************************************/
+package org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol;
+
+import javax.jcr.Value;
+
+/**
+ * Builder for an entry to be used with {@link PrincipalBasedAccessControlList} or {@link ResourceBasedAccessControlList}.
+ *
+ * @param <T> the type of the entry
  */
+public interface JackrabbitAccessControlEntryBuilder<T extends AbstractAccessControlEntry> {
 
-@Version("2.6.0")
-package org.apache.jackrabbit.vault.fs.spi;
+    T build();
 
-import org.osgi.annotation.versioning.Version;
+    void addRestriction(String restrictionName, Value[] values);
+
+}

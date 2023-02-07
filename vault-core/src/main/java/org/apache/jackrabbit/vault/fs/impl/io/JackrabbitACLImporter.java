@@ -16,48 +16,44 @@
  ************************************************************************/
 package org.apache.jackrabbit.vault.fs.impl.io;
 
-import java.security.Principal;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.jcr.NamespaceException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
-import javax.jcr.ValueFactory;
-import javax.jcr.security.AccessControlEntry;
-import javax.jcr.security.AccessControlException;
-import javax.jcr.security.AccessControlManager;
-import javax.jcr.security.AccessControlPolicy;
-import javax.jcr.security.AccessControlPolicyIterator;
-import javax.jcr.security.Privilege;
+import javax.jcr.ValueFormatException;
 
-import org.apache.jackrabbit.api.JackrabbitSession;
-import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
-import org.apache.jackrabbit.api.security.JackrabbitAccessControlManager;
-import org.apache.jackrabbit.api.security.authorization.PrincipalAccessControlList;
-import org.apache.jackrabbit.api.security.authorization.PrincipalSetPolicy;
-import org.apache.jackrabbit.api.security.principal.PrincipalManager;
-import org.apache.jackrabbit.api.security.user.Authorizable;
-import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
 import org.apache.jackrabbit.spi.commons.conversion.NamePathResolver;
-import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.JackrabbitACLManagement;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol.AbstractAccessControlEntry;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol.JackrabbitAccessControlEntryBuilder;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol.JackrabbitAccessControlPolicy;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol.JackrabbitAccessControlPolicyBuilder;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol.PrincipalBasedAccessControlEntry;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol.PrincipalBasedAccessControlList;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol.PrincipalSetAccessControlPolicy;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol.ResourceBasedAccessControlEntry;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.accesscontrol.ResourceBasedAccessControlList;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
+import org.apache.jackrabbit.vault.util.UncheckedRepositoryException;
+import org.apache.jackrabbit.vault.util.UncheckedValueFormatException;
 import org.slf4j.Logger;
 
 /**
@@ -66,6 +62,7 @@ import org.slf4j.Logger;
  */
 public class JackrabbitACLImporter implements DocViewAdapter {
 
+    // TODO: move to repository impl specific package
     private static final Name NAME_REP_EFFECTIVE_PATH = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "effectivePath");
     private static final Name NAME_REP_PRINCIPAL_NAMES = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "principalNames");
 
@@ -74,29 +71,39 @@ public class JackrabbitACLImporter implements DocViewAdapter {
      */
     private static final Logger log = DocViewImporter.log;
 
-    private final JackrabbitSession session;
+    private final Session session;
 
     private final AccessControlHandling aclHandling;
-
-    private final AccessControlManager acMgr;
-
-    private final PrincipalManager pMgr;
 
     private final String accessControlledPath;
 
     private final  NamePathResolver resolver;
 
-    private ImportedPolicy<? extends AccessControlPolicy> importPolicy;
-
+    /**
+     * The state representing the level of the last evaluated node (i.e. the parent)
+     *
+     */
     private enum State {
         INITIAL,
-        ACL,
-        ACE,
-        RESTRICTION,
-        ERROR,
-        PRINCIPAL_SET_POLICY
+        RESOURCE_BASED_ACL,
+        PRINCIPAL_BASED_ACL,
+        PRINCIPAL_SET_POLICY,
+        RESOURCE_BASED_ACE,
+        PRINCIPAL_BASED_ACE,
+        RESTRICTION
     }
 
+    /** all property names on either rep:GrantACE/rep:DenyACE or rep:Restrictions which don't represent an access control restriction */
+    private static final Set<Name> NON_RESTRICTION_PROPERTY_NAMES = new HashSet<>(Arrays.asList(
+            NameConstants.REP_PRINCIPAL_NAME,
+            NameConstants.JCR_PRIMARYTYPE,
+            NameConstants.JCR_MIXINTYPES,
+            NameConstants.REP_PRIVILEGES
+            ));
+
+    private JackrabbitAccessControlPolicyBuilder<?> policyBuilder;
+    private JackrabbitAccessControlEntryBuilder<? extends AbstractAccessControlEntry> entryBuilder;
+   
     private final Deque<State> states = new LinkedList<>();
 
     public JackrabbitACLImporter(Node accessControlledNode, AccessControlHandling aclHandling)
@@ -115,433 +122,156 @@ public class JackrabbitACLImporter implements DocViewAdapter {
             throw new RepositoryException("Error while reading access control content: unsupported AccessControlHandling: " + aclHandling);
         }
         this.accessControlledPath = path;
-        this.session = (JackrabbitSession) session;
-        this.acMgr = this.session.getAccessControlManager();
-        this.pMgr = this.session.getPrincipalManager();
+        this.session = session;
         this.aclHandling = aclHandling;
         this.states.push(State.INITIAL);
         this.resolver = new DefaultNamePathResolver(session);
     }
 
-    public void startNode(DocViewNode2 node) {
+    public void startNode(DocViewNode2 node) throws RepositoryException, IOException {
         State state = states.peek();
-        switch (state) {
-            case INITIAL:
-                String primaryType = node.getPrimaryType().orElseThrow(() -> new IllegalStateException("Error while reading access control content: Missing 'jcr:primaryType'"));
-                if ("rep:ACL".equals(primaryType)) {
-                    importPolicy = new ImportedAcList();
-                    state = State.ACL;
-                } else if ("rep:CugPolicy".equals(primaryType)) {
-                    importPolicy = new ImportedPrincipalSet(node);
-                    state = State.PRINCIPAL_SET_POLICY;
-                } else if ("rep:PrincipalPolicy".equals(primaryType)) {
-                    importPolicy = new ImportedPrincipalAcList(node);
-                    state = State.ACL;
-                } else {
-                    log.error("Error while reading access control content: Expected rep:ACL or rep:CugPolicy but was: {}", node.getPrimaryType());
-                    state = State.ERROR;
-                }
-                break;
-            case ACL:
-            case ACE:
-            case RESTRICTION:
-                state = importPolicy.append(state, node);
-                break;
-            case PRINCIPAL_SET_POLICY:
-                state = importPolicy.append(state, node);
-                break;
-            case ERROR:
-                // stay in error
-                break;
-        }
+        try {
+            switch (state) {
+                case INITIAL:
+                    String primaryType = node.getPrimaryType().orElseThrow(() -> new IllegalStateException("Error while reading access control content: Missing 'jcr:primaryType'"));
+                    if (JackrabbitACLManagement.NT_REP_ACL.equals(primaryType)) {
+                        policyBuilder = new ResourceBasedAccessControlList.Builder();
+                        state = State.RESOURCE_BASED_ACL;
+                    } else if (JackrabbitACLManagement.NT_REP_CUG_POLICY.equals(primaryType)) {
+                        // just collect the rep:principalNames property
+                        Collection<String> principalNames = node.getPropertyValues(NAME_REP_PRINCIPAL_NAMES);
+                        policyBuilder = new PrincipalSetAccessControlPolicy.Builder(principalNames);
+                        state = State.PRINCIPAL_SET_POLICY;
+                    } else if (JackrabbitACLManagement.NT_REP_PRINCIPAL_POLICY.equals(primaryType)) {
+                        String principalName = node.getPropertyValue(NameConstants.REP_PRINCIPAL_NAME).orElseThrow(() -> new IllegalStateException("mandatory property 'rep:principalName' missing on principal policy node"));
+                        policyBuilder = new PrincipalBasedAccessControlList.Builder(principalName);
+                        state = State.PRINCIPAL_BASED_ACL;
+                    } else {
+                        throw new IOException("Error while reading access control content: Expected rep:ACL, rep:PrincipalPolicy or rep:CugPolicy primary type but found: " + node.getPrimaryType().toString());
+                    }
+                    break;
+                case RESOURCE_BASED_ACL:
+                case PRINCIPAL_BASED_ACL:
+                case RESOURCE_BASED_ACE:
+                case PRINCIPAL_BASED_ACE:
+                case RESTRICTION:
+                    state = startEntryNode(node, state);
+                    break;
+                case PRINCIPAL_SET_POLICY:
+                    throw new IOException("Error while reading access control content: Unexpected node: " + node.getPrimaryType().orElse("") + " for state " + state);
+            }
+        } catch (UncheckedRepositoryException e) {
+            throw e.getCause();
+        } 
         states.push(state);
+    }
+
+    /**
+     * Extracts all information from rep:GrantACE/rep:DenyACE and children.
+     * This is used for both resource-based and principal based access control entries.
+     * 
+     * @param node
+     * @param state
+     * @return
+     * @see <a href="https://jackrabbit.apache.org/oak/docs/security/accesscontrol/default.html#representation-in-the-repository">Oak Access Control Management : The Default Implementation</a>
+     * @see <a href="https://jackrabbit.apache.org/oak/docs/security/authorization/principalbased.html#representation-in-the-repository">Oak Principal Based Access Control Management</a>
+     * @see <a href="https://jackrabbit.apache.org/oak/docs/security/authorization/restriction.html#representation-in-the-repository">Oak Restrictions</a>
+     */
+    private State startEntryNode(DocViewNode2 node, State state) throws IOException {
+        final State newState;
+        switch(state) {
+            case RESOURCE_BASED_ACL: {
+                final boolean allow;
+                final String primaryType = node.getPrimaryType().orElseThrow(() -> new IllegalStateException("mandatory property 'jcr:primaryType' missing on ace node"));
+                if (JackrabbitACLManagement.NT_REP_GRANT_ACE.equals(primaryType)) {
+                    allow = true;
+                } else if (JackrabbitACLManagement.NT_REP_DENY_ACE.equals(primaryType)) {
+                    allow = false;
+                } else {
+                    throw new IOException("Unexpected node ACE type inside resource based ACL: " + node.getPrimaryType());
+                }
+                final String principalName = node.getPropertyValue(NameConstants.REP_PRINCIPAL_NAME).orElseThrow(() -> new IllegalStateException("mandatory property 'rep:principalName' missing"));
+                Collection<String> privileges = node.getPropertyValues(NameConstants.REP_PRIVILEGES);
+                entryBuilder = new ResourceBasedAccessControlEntry.Builder(privileges, allow, principalName);
+                extractRestrictions(node).entrySet().stream().forEach( entry -> entryBuilder.addRestriction(entry.getKey(), entry.getValue()));
+                newState = State.RESOURCE_BASED_ACE;
+                break;
+            }
+            case PRINCIPAL_BASED_ACL: {
+                if (!"rep:PrincipalEntry".equals(node.getPrimaryType().orElseThrow(() -> new IllegalStateException("mandatory property 'jcr:primaryType' missing on principal policy node")))) {
+                    throw new IOException("Unexpected node ACE type inside principal based ACL: " + node.getPrimaryType());
+                }
+                Collection<String> privileges = node.getPropertyValues(NameConstants.REP_PRIVILEGES);
+                String v = node.getPropertyValue(NAME_REP_EFFECTIVE_PATH).orElseThrow(() -> new IllegalStateException("mandatory property 'rep:effectivePath ' missing on principal entry node"));
+                final String effectivePath;
+                if (v.isEmpty()) {
+                    effectivePath = null;
+                } else {
+                    effectivePath = v;
+                }
+                entryBuilder = new PrincipalBasedAccessControlEntry.Builder(privileges, effectivePath);
+                newState = State.PRINCIPAL_BASED_ACE;
+                break;
+            }
+            case RESOURCE_BASED_ACE:
+            case PRINCIPAL_BASED_ACE: {
+                if (!JackrabbitACLManagement.NT_REP_RESTRICTIONS.equals(node.getPrimaryType().orElseThrow(() -> new IllegalStateException("mandatory property 'jcr:primaryType' missing on principal policy node")))) {
+                    throw new IllegalArgumentException("Unexpected restriction type inside principal or resource based ACE: " + node.getPrimaryType());
+                }
+                extractRestrictions(node).entrySet().stream().forEach( entry -> entryBuilder.addRestriction(entry.getKey(), entry.getValue()));
+                newState = State.RESTRICTION;
+                break;
+            }
+            case RESTRICTION:
+                throw new IOException("Restriction nodes are not supposed to have any children but found " + node.toString());
+            default:
+                throw new IllegalArgumentException("This method must not be called with state " + state);
+        }
+        return newState;
+    }
+
+    private Map<String, Value[]> extractRestrictions(DocViewNode2 node) {
+       return node.getProperties().stream()
+                .filter(p -> (!NON_RESTRICTION_PROPERTY_NAMES.contains(p.getName())))
+                .collect(Collectors.<DocViewProperty2, String, Value[]>toMap(
+                        p -> {
+                            try {
+                                return resolver.getJCRName(p.getName());
+                            } catch (NamespaceException e) {
+                                // should not happen
+                                throw new IllegalStateException("Cannot retrieve qualified name for " + p.getName().toString(), e);
+                            }
+                        }, 
+                        p -> {
+                            try {
+                                return p.getValues(session.getValueFactory()).toArray(new Value[0]);
+                            } catch (ValueFormatException e) {
+                                throw new UncheckedValueFormatException(e);
+                            } catch (RepositoryException e) {
+                                throw new UncheckedRepositoryException(e);
+                            }
+                        }));
     }
 
     public void endNode() {
         State state = states.pop();
-        importPolicy.endNode(state);
+        switch(state) {
+            case RESOURCE_BASED_ACE:
+            case PRINCIPAL_BASED_ACE: {
+                policyBuilder.addEntry(entryBuilder.build());
+                break;
+            }
+            default:
+                // nothing happens in all other states
+        }
     }
 
     public List<String> close() throws RepositoryException {
         if (states.peek() != State.INITIAL) {
             log.error("Unexpected end state: {}", states.peek());
         }
-        List<String> paths = new ArrayList<>();
-        importPolicy.apply(paths, resolver);
-        return paths;
+        JackrabbitAccessControlPolicy policy = policyBuilder.build();
+        return policy.apply(session, aclHandling, accessControlledPath);
     }
 
-    private void addPathIfExists(List<String> paths, String path) throws RepositoryException {
-        if (session.nodeExists(path)) {
-            paths.add(path);
-        }
-    }
-
-    private abstract class ImportedPolicy<T extends AccessControlPolicy> {
-
-        abstract State append(State state, DocViewNode2 node);
-
-        abstract void endNode(State state);
-
-        abstract void apply(List<String> paths, NameResolver resolver) throws RepositoryException;
-
-        Principal getPrincipal(final String principalName) {
-            Principal principal = new Principal() {
-                public String getName() {
-                    return principalName;
-                }
-            };
-            return principal;
-        }
-
-        T getPolicy(Class<T> clz) throws RepositoryException {
-            for (AccessControlPolicy p : acMgr.getPolicies(accessControlledPath)) {
-                if (clz.isAssignableFrom(p.getClass())) {
-                    return clz.cast(p);
-                }
-            }
-            return null;
-        }
-
-        T getPolicy(Class<T> clz, Principal principal) throws RepositoryException {
-            if (acMgr instanceof JackrabbitAccessControlManager) {
-                for (AccessControlPolicy p : ((JackrabbitAccessControlManager) acMgr).getPolicies(principal)) {
-                    if (clz.isAssignableFrom(p.getClass())) {
-                        return clz.cast(p);
-                    }
-                }
-            }
-            return null;
-        }
-
-        T getApplicablePolicy(Class<T> clz) throws RepositoryException {
-            AccessControlPolicyIterator iter = acMgr.getApplicablePolicies(accessControlledPath);
-            while (iter.hasNext()) {
-                AccessControlPolicy p = iter.nextAccessControlPolicy();
-                if (clz.isAssignableFrom(p.getClass())) {
-                    return clz.cast(p);
-                }
-            }
-
-            // no applicable policy
-            throw new RepositoryException("no applicable AccessControlPolicy of type "+ clz + " on " +
-                    (accessControlledPath == null ? "'root'" : accessControlledPath));
-        }
-
-        T getApplicablePolicy(Class<T> clz, Principal principal) throws RepositoryException {
-            if (acMgr instanceof JackrabbitAccessControlManager) {
-                for (AccessControlPolicy p : ((JackrabbitAccessControlManager) acMgr).getApplicablePolicies(principal)) {
-                    if (clz.isAssignableFrom(p.getClass())) {
-                        return clz.cast(p);
-                    }
-                }
-            }
-
-            // no applicable policy
-            throw new AccessControlException("no applicable AccessControlPolicy of type "+ clz + " for " + principal.getName());
-        }
-    }
-
-    private final class ImportedAcList extends ImportedPolicy<JackrabbitAccessControlList> {
-
-        private List<ACE> aceList = new ArrayList<>();
-        private ACE currentACE;
-
-        private ImportedAcList() {
-        }
-
-        @Override
-        State append(State state, DocViewNode2 childNode) {
-            if (state == State.ACL) {
-                try {
-                    currentACE = new ACE(childNode);
-                    aceList.add(currentACE);
-                    return State.ACE;
-                } catch (IllegalArgumentException e) {
-                    log.error("Error while reading access control content: {}", e);
-                    return State.ERROR;
-                }
-            } else if (state == State.ACE) {
-                currentACE.addRestrictions(childNode);
-                return State.RESTRICTION;
-            } else {
-                log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.getPrimaryType(), state);
-                return State.ERROR;
-            }
-        }
-
-        @Override
-        void endNode(State state) {
-            if (state == State.ACE) {
-                currentACE = null;
-            }
-        }
-
-        @Override
-        void apply(List<String> paths, NameResolver resolver) throws RepositoryException {
-            // find principals of existing ACL
-            JackrabbitAccessControlList acl = getPolicy(JackrabbitAccessControlList.class);
-            Set<String> existingPrincipals = new HashSet<String>();
-            if (acl != null) {
-                for (AccessControlEntry ace: acl.getAccessControlEntries()) {
-                    existingPrincipals.add(ace.getPrincipal().getName());
-                }
-
-                // remove existing policy for 'overwrite'
-                if (aclHandling == AccessControlHandling.OVERWRITE) {
-                    acMgr.removePolicy(accessControlledPath, acl);
-                    acl = null;
-                }
-            }
-
-            if (acl == null) {
-                acl = getApplicablePolicy(JackrabbitAccessControlList.class);
-            }
-
-            // clear all ACEs of the package principals for merge (VLT-94), otherwise the `acl.addEntry()` below
-            // might just combine the privileges.
-            if (aclHandling == AccessControlHandling.MERGE) {
-                for (ACE entry : aceList) {
-                    for (AccessControlEntry ace : acl.getAccessControlEntries()) {
-                        if (ace.getPrincipal().getName().equals(entry.principalName)) {
-                            acl.removeAccessControlEntry(ace);
-                        }
-                    }
-                }
-            }
-
-            // apply ACEs of package
-            for (ACE ace : aceList) {
-                final String principalName = ace.principalName;
-                if (aclHandling == AccessControlHandling.MERGE_PRESERVE && existingPrincipals.contains(principalName)) {
-                    // skip principal if it already has an ACL
-                    continue;
-                }
-                Principal principal = getPrincipal(principalName);
-
-                Map<String, Value> svRestrictions = new HashMap<String, Value>();
-                Map<String, Value[]> mvRestrictions = new HashMap<String, Value[]>();
-                ace.convertRestrictions(acl, session.getValueFactory(), resolver, svRestrictions, mvRestrictions);
-                acl.addEntry(principal, ace.getPrivileges(acMgr), ace.allow, svRestrictions, mvRestrictions);
-            }
-            acMgr.setPolicy(accessControlledPath, acl);
-
-            if (accessControlledPath == null) {
-                addPathIfExists(paths, "/rep:repoPolicy");
-            } else if ("/".equals(accessControlledPath)) {
-                addPathIfExists(paths, "/rep:policy");
-            } else {
-                addPathIfExists(paths, accessControlledPath + "/rep:policy");
-            }
-        }
-    }
-
-    private final class ImportedPrincipalSet extends ImportedPolicy<PrincipalSetPolicy> {
-
-        private final Collection<String> principalNames;
-
-        private ImportedPrincipalSet(DocViewNode2 node) {
-            // don't change the status as a cug policy may not have child nodes.
-            // just collect the rep:principalNames property
-            // any subsequent state would indicate an error
-            principalNames = node.getPropertyValues(NAME_REP_PRINCIPAL_NAMES);
-        }
-
-        @Override
-        State append(State state, DocViewNode2 childNode) {
-            log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.getPrimaryType(), state);
-            return State.ERROR;
-        }
-
-        @Override
-        void endNode(State state) {
-            // nothing to do
-        }
-
-        @Override
-        void apply(List<String> paths, NameResolver resolver) throws RepositoryException {
-            PrincipalSetPolicy psPolicy = getPolicy(PrincipalSetPolicy.class);
-            if (psPolicy != null) {
-                Set<Principal> existingPrincipals = psPolicy.getPrincipals();
-                // remove existing policy for 'overwrite'
-                if (aclHandling == AccessControlHandling.OVERWRITE) {
-                    psPolicy.removePrincipals(existingPrincipals.toArray(new Principal[existingPrincipals.size()]));
-                }
-            } else {
-                psPolicy = getApplicablePolicy(PrincipalSetPolicy.class);
-            }
-
-            // TODO: correct behavior for MERGE and MERGE_PRESERVE?
-            Principal[] principals = principalNames.stream().map(name -> getPrincipal(name)).toArray(Principal[]::new);
-
-            psPolicy.addPrincipals(principals);
-            acMgr.setPolicy(accessControlledPath, psPolicy);
-
-            if ("/".equals(accessControlledPath)) {
-                addPathIfExists(paths, "/rep:cugPolicy");
-            } else {
-                addPathIfExists(paths, accessControlledPath + "/rep:cugPolicy");
-            }
-        }
-    }
-
-    private final class ImportedPrincipalAcList extends ImportedPolicy<PrincipalAccessControlList> {
-
-        private final Principal principal;
-        private final List<PrincipalEntry> entries = new ArrayList<>();
-        private PrincipalEntry currentEntry;
-
-        private ImportedPrincipalAcList(DocViewNode2 node) {
-             String principalName = node.getPropertyValue(NameConstants.REP_PRINCIPAL_NAME).orElseThrow(() -> new IllegalStateException("mandatory property 'rep:principalName' missing on principal policy node"));
-             Principal p = pMgr.getPrincipal(principalName);
-             if (p == null) {
-                 try {
-                     Authorizable a = session.getUserManager().getAuthorizableByPath(accessControlledPath);
-                     if (a != null) {
-                         p = a.getPrincipal();
-                     }
-                 } catch (RepositoryException e) {
-                     log.debug("Error while trying to retrieve user/group from access controlled path {}, {}", accessControlledPath, e.getMessage());
-                 }
-                 if (p == null) {
-                     p = getPrincipal(principalName);
-                 }
-             }
-             principal = p;
-        }
-
-        @Override
-        State append(State state, DocViewNode2 childNode) {
-            if (state == State.ACL) {
-                if (!"rep:PrincipalEntry".equals(childNode.getPrimaryType().orElseThrow(() -> new IllegalStateException("mandatory property 'jcr:primaryType' missing on principal policy node")))) {
-                    log.error("Unexpected node type of access control entry: {}", childNode.getPrimaryType());
-                    return State.ERROR;
-                }
-                currentEntry = new PrincipalEntry(childNode);
-                entries.add(currentEntry);
-                return State.ACE;
-            } else if (state == State.ACE) {
-                currentEntry.addRestrictions(childNode);
-                return State.RESTRICTION;
-            } else {
-                log.error("Error while reading access control content: Unexpected node: {} for state {}", childNode.getPrimaryType(), state);
-                return State.ERROR;
-            }
-        }
-
-        @Override
-        void endNode(State state) {
-            if (state == State.ACE) {
-                currentEntry = null;
-            }
-        }
-
-        @Override
-        void apply(List<String> paths, NameResolver resolver) throws RepositoryException {
-            if (aclHandling == AccessControlHandling.MERGE_PRESERVE) {
-                log.debug("MERGE_PRESERVE for principal-based access control list is equivalent to IGNORE.");
-                return;
-            }
-
-            PrincipalAccessControlList acl = getPolicy(PrincipalAccessControlList.class, principal);
-            if (acl != null && aclHandling == AccessControlHandling.OVERWRITE) {
-                // remove existing policy for 'OVERWRITE'
-                acMgr.removePolicy(acl.getPath(), acl);
-                acl = null;
-            }
-
-            if (acl == null) {
-                acl = getApplicablePolicy(PrincipalAccessControlList.class, principal);
-            }
-
-            // apply ACEs of package for MERGE and OVERWRITE
-            for (PrincipalEntry entry : entries) {
-                Map<String, Value> svRestrictions = new HashMap<>();
-                Map<String, Value[]> mvRestrictions = new HashMap<String, Value[]>();
-                entry.convertRestrictions(acl, session.getValueFactory(), resolver, svRestrictions, mvRestrictions);
-                acl.addEntry(entry.effectivePath, entry.getPrivileges(acMgr), svRestrictions, mvRestrictions);
-            }
-            acMgr.setPolicy(acl.getPath(), acl);
-
-            if (accessControlledPath == null) {
-                addPathIfExists(paths, "/rep:repoPolicy");
-            } else if ("/".equals(accessControlledPath)) {
-                addPathIfExists(paths, "/rep:policy");
-            } else {
-                addPathIfExists(paths, accessControlledPath + "/rep:policy");
-            }
-        }
-    }
-
-    private static class AbstractEntry {
-
-        private final Collection<String> privileges;
-        private final Map<Name, DocViewProperty2> restrictions;
-
-        private AbstractEntry(DocViewNode2 node) {
-            privileges = node.getPropertyValues(NameConstants.REP_PRIVILEGES);
-            restrictions = new HashMap<>();
-            addRestrictions(node);
-        }
-
-        void addRestrictions(DocViewNode2 node) {
-            restrictions.putAll(node.getProperties().stream().collect(Collectors.toMap(DocViewProperty2::getName, Function.identity())));
-        }
-
-        void convertRestrictions(JackrabbitAccessControlList acl, ValueFactory vf, NameResolver resolver, Map<String, Value> svRestrictions, Map<String, Value[]> mvRestrictions) throws RepositoryException {
-            for (String restName : acl.getRestrictionNames()) {
-                DocViewProperty2 restriction = restrictions.get(resolver.getQName(restName));
-                if (restriction != null) {
-                    Value[] values = new Value[restriction.getStringValues().size()];
-                    int type = acl.getRestrictionType(restName);
-                    for (int i=0; i<values.length; i++) {
-                        values[i] = vf.createValue(restriction.getStringValues().get(i), type);
-                    }
-                    if (restriction.isMultiValue()) {
-                        mvRestrictions.put(restName, values);
-                    } else {
-                        svRestrictions.put(restName, values[0]);
-                    }
-                }
-            }
-        }
-
-        Privilege[] getPrivileges(AccessControlManager acMgr) throws RepositoryException {
-            return AccessControlUtils.privilegesFromNames(acMgr, privileges.toArray(new String[0]));
-        }
-    }
-
-    private static class ACE extends AbstractEntry {
-
-        private final boolean allow;
-        private final String principalName;
-
-        private ACE(DocViewNode2 childNode) {
-            super(childNode);
-            String primaryType = childNode.getPrimaryType().orElseThrow(() -> new IllegalStateException("mandatory property 'jcr:primaryType' missing on ace node"));
-            if ("rep:GrantACE".equals(primaryType)) {
-                allow = true;
-            } else if ("rep:DenyACE".equals(primaryType)) {
-                allow = false;
-            } else {
-                throw new IllegalArgumentException("Unexpected node ACE type: " + childNode.getPrimaryType());
-            }
-            principalName = childNode.getPropertyValue(NameConstants.REP_PRINCIPAL_NAME).orElseThrow(() -> new IllegalStateException("mandatory property 'rep:principalName' missing"));
-        }
-    }
-
-    private static class PrincipalEntry extends AbstractEntry {
-
-        private final String effectivePath;
-
-        private PrincipalEntry(DocViewNode2 node) {
-            super(node);
-            String v = node.getPropertyValue(NAME_REP_EFFECTIVE_PATH).orElseThrow(() -> new IllegalStateException("mandatory property 'rep:effectivePath ' missing on principal entry node"));
-            if (v.isEmpty()) {
-                effectivePath = null;
-            } else {
-                effectivePath = v;
-            }
-        }
-    }
 }

@@ -20,7 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
-import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.JcrACLManagement;
+import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.JackrabbitACLManagement;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
@@ -34,7 +35,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class AccessControlValidator implements DocumentViewXmlValidator {
 
-    protected static final JcrACLManagement ACL_MANAGEMENT = new JcrACLManagement();
+    protected static final ACLManagement ACL_MANAGEMENT = new JackrabbitACLManagement();
     protected static final String MESSAGE_IGNORED_ACCESS_CONTROL_LIST = "Found an access control list, but it is never considered during installation as the property 'acHandling' is set to '%s'!";
     protected static final String MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST = "Found no access control list, but there is supposed to be one contained as the property 'acHandling' is set to '%s'!";
     private final ValidationMessageSeverity severity;

@@ -54,6 +54,7 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
+import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.version.VersionException;
 
 import org.apache.jackrabbit.spi.Name;
@@ -481,7 +482,9 @@ public class DocViewImporter implements DocViewParserHandler {
                                     }
                                 }
                             } 
+
                             if (shouldRemoveChild) {
+                                stashPrincipalAcls(child);
                                 importInfo.onDeleted(path);
                                 child.remove();
                             }
@@ -502,6 +505,14 @@ public class DocViewImporter implements DocViewParserHandler {
         stack = stack.pop();
         if (node != null && (numChildren == 0 && !childNames.isEmpty() || stack.isRoot())) {
             importInfo.addNameList(node.getPath(), childNames);
+        }
+    }
+
+    protected void stashPrincipalAcls(Node node) throws RepositoryException {
+        Map<String, List<? extends AccessControlPolicy>> principalAcls = aclManagement.getPrincipalAcls(node);
+        if (!principalAcls.isEmpty()) {
+            log.debug("Stashing {} principal ACLs below to be deleted node {}", principalAcls.size(), node.getPath());
+            importInfo.onDeletedPrincipalAcls(principalAcls);
         }
     }
 
@@ -723,24 +734,29 @@ public class DocViewImporter implements DocViewParserHandler {
      * @param node the parent node
      * @param docViewNode   doc view node of the authorizable
      * @throws RepositoryException if an error accessing the repository occurrs.
+     * @throws IOException 
      * @throws SAXException        if an XML parsing error occurrs.
      */
-    private void handleAuthorizable(Node node, DocViewNode2 docViewNode) throws RepositoryException {
+    private void handleAuthorizable(Node node, DocViewNode2 docViewNode) throws RepositoryException, IOException {
         String id = userManagement.getAuthorizableId(docViewNode);
         String newPath = node.getPath() + "/" + npResolver.getJCRName(docViewNode.getName());
         boolean isIncluded = wspFilter.contains(newPath);
         String oldPath = userManagement.getAuthorizablePath(this.session, id);
+        // what to do with policies inside the authorizable node subtree?
+        boolean keepAcPolicies = aclHandling == AccessControlHandling.IGNORE || 
+                aclHandling == AccessControlHandling.MERGE || 
+                aclHandling == AccessControlHandling.MERGE_PRESERVE;
         if (oldPath == null) {
             if (!isIncluded) {
                 log.trace("auto-creating authorizable node not in filter {}", newPath);
             }
 
             // just import the authorizable node
-            log.trace("Authorizable element detected. starting sysview transformation {}", newPath);
+            log.trace("Authorizable element detected. Starting sysview transformation {}", newPath);
             stack = stack.push();
-            stack.adapter = new JcrSysViewTransformer(node, wspFilter.getImportMode(newPath));
+            stack.adapter = new JcrSysViewTransformer(node, wspFilter.getImportMode(newPath), keepAcPolicies);
             stack.adapter.startNode(docViewNode);
-            importInfo.onCreated(newPath);
+            importInfo.onAuthorizableCreated(id);
             return;
         }
 
@@ -782,16 +798,19 @@ public class DocViewImporter implements DocViewParserHandler {
                 // just replace the entire subtree for now.
                 log.trace("Authorizable element detected. starting sysview transformation {}", newPath);
                 stack = stack.push();
-                stack.adapter = new JcrSysViewTransformer(node, mode);
+                // the principal ACLs are automatically restored by the JcrSysViewTransformer (depending on aclHandling)
+                stack.adapter = new JcrSysViewTransformer(node, mode, keepAcPolicies);
                 stack.adapter.startNode(docViewNode);
-                importInfo.onReplaced(newPath);
+                importInfo.onReplaced(oldPath);
+                importInfo.onAuthorizableCreated(id);
                 break;
 
             case UPDATE:
             case UPDATE_PROPERTIES:
                 log.trace("Authorizable element detected. starting sysview transformation {}", newPath);
                 stack = stack.push();
-                stack.adapter = new JcrSysViewTransformer(node, oldPath, mode);
+                // the principal ACLs are automatically restored by the JcrSysViewTransformer (depending on aclHandling)
+                stack.adapter = new JcrSysViewTransformer(node, oldPath, mode, keepAcPolicies);
                 // we need to tweak the ni.name so that the sysview import does not
                 // rename the authorizable node name
                 String newName = Text.getName(oldPath);
@@ -813,7 +832,8 @@ public class DocViewImporter implements DocViewParserHandler {
                 );
                 
                 stack.adapter.startNode(mapped);
-                importInfo.onReplaced(newPath);
+                importInfo.onReplaced(oldPath);
+                importInfo.onAuthorizableCreated(id);
                 break;
         }
     }

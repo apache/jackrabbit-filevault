@@ -39,13 +39,22 @@ public interface UserManagement {
 
     /**
      * Returns the path of the authorizable or {@code null} if not exists.
-     * @param name the authorizable name
+     * @param id the authorizable id
      * @param session the session to access the repository
      * @return path of authorizable
      *
      * @since 2.3.26
      */
-    String getAuthorizablePath(Session session, String name);
+    String getAuthorizablePath(Session session, String id);
+
+    /**
+     * 
+     * @param session the session to access the repository
+     * @param id the authorizable id
+     * @return the principal name corresponding to the given authorizable id or {@code null} if the authorizable id cannot be found
+     * @since 3.6.10
+     */
+    String getPrincipalName(Session session, String id);
 
     /**
      * Returns the id of the authorizable from the specified authorizable node

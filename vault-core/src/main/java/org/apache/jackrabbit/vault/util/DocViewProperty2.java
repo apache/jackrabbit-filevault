@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.jcr.Binary;
 import javax.jcr.InvalidSerializedDataException;
@@ -35,6 +36,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
@@ -49,13 +51,14 @@ import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.util.XMLChar;
+import org.apache.jackrabbit.value.ValueFactoryImpl;
 import org.apache.jackrabbit.value.ValueHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Helper class that represents a JCR property in the FileVault (enhanced) document view format.
- * It contains formatting and parsing methods for writing/reading enhanced
+ * Immutable helper class that represents a JCR property in the FileVault (enhanced) document view format.
+ * It contains formatting and parsing methods for serializing/deserializing enhanced
  * docview properties.
  * <br>
  * The string representation adheres to the following grammar:
@@ -703,6 +706,10 @@ public class DocViewProperty2 {
         return type;
     }
 
+    private int getSafeType() {
+        return type == PropertyType.UNDEFINED ? PropertyType.STRING : type;
+    }
+
     public @NotNull Optional<String> getStringValue() {
         if (!values.isEmpty()) {
             return Optional.of(values.get(0));
@@ -712,5 +719,38 @@ public class DocViewProperty2 {
 
     public @NotNull List<String> getStringValues() {
         return values;
+    }
+
+    /**
+     * @param valueFactory the value factory to use for converting the underlying string to the JCR value
+     * @return the value or empty if no value set. For multi value only the first item is returned
+     * @throws ValueFormatException
+     * @since 3.6.10
+     */ 
+    public @NotNull Optional<Value> getValue(@NotNull ValueFactory valueFactory) throws ValueFormatException {
+        if (!values.isEmpty()) {
+            return Optional.of(valueFactory.createValue(values.get(0), getSafeType()));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * @param valueFactory the value factory to use for converting the underlying string to the JCR value
+     * @return the list of values, may be empty. In case of single value entry just a single value list.
+     * @throws ValueFormatException
+     * @since 3.6.10
+     */
+    public @NotNull List<Value> getValues(@NotNull ValueFactory valueFactory) throws ValueFormatException {
+        try {
+            return values.stream().map(v -> {
+                try {
+                    return valueFactory.createValue(v, getSafeType());
+                } catch (ValueFormatException e) {
+                    throw new UncheckedValueFormatException(e);
+                }
+            }).collect(Collectors.toList());
+        } catch (UncheckedValueFormatException e) {
+            throw e.getCause();
+        }
     }
 }

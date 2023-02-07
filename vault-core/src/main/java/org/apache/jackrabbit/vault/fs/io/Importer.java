@@ -328,7 +328,7 @@ public class Importer {
         this.isStrict = opts.isStrict(isStrictByDefault);
         this.isStrictByDefault = isStrictByDefault;
         this.overwritePrimaryTypesOfFoldersByDefault = overwritePrimaryTypesOfFoldersByDefault;
-        if (!this.opts.hasIdConflictPolicyBeenSet()) {
+        if (!this.opts.hasIdConflictPolicyBeenSet() && defaultIdConflictPolicy != null) {
             this.opts.setIdConflictPolicy(defaultIdConflictPolicy);
         }
     }

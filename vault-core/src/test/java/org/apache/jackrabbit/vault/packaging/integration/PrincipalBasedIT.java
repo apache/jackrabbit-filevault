@@ -24,6 +24,8 @@ import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlManager;
 import org.apache.jackrabbit.api.security.authorization.PrincipalAccessControlList;
+import org.apache.jackrabbit.api.security.authorization.PrivilegeCollection;
+import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
@@ -46,6 +48,7 @@ import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -57,12 +60,14 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
+import javax.jcr.ValueFormatException;
 import javax.jcr.security.AccessControlEntry;
 import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.security.Privilege;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -224,16 +229,47 @@ public class PrincipalBasedIT extends IntegrationTestBase {
     }
 
     @Test
+    public void testNewUserHandlingIgnoreModeReplace() throws Exception {
+        assumeTrue(isOak());
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.IGNORE);
+        opts.setImportMode(ImportMode.REPLACE);
+
+        admin.getNode(testUser.getPath()).remove();
+        admin.save();
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
+        Principal p = userManager.getAuthorizable(SYSTEM_USER_ID).getPrincipal();
+        assertEquals(0, acMgr.getPolicies(p).length);
+    }
+
+    @Test
     public void testHandlingIgnoreModeReplace() throws Exception {
         assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.IGNORE);
         opts.setImportMode(ImportMode.REPLACE);
 
+        final String oldPath = testUser.getPath();
         extractVaultPackage("/test-packages/principalbased.zip", opts);
         // user may have been moved due to 'replace' mode -> need to retrieve again
-        Principal p = userManager.getAuthorizable(SYSTEM_USER_ID).getPrincipal();
-        assertEquals(0, acMgr.getPolicies(p).length);
+        Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
+        assertPolicy(newUser.getPrincipal(),
+                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
+    }
+
+    @Test
+    public void testNoPolicyHandlingIgnoreModeReplace() throws Exception {
+        assumeTrue(isOak());
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.IGNORE);
+        opts.setImportMode(ImportMode.REPLACE);
+
+        final String oldPath = testUser.getPath();
+        extractVaultPackage("/test-packages/principalbased_nopolicy.zip", opts);
+        // user may have been moved due to 'replace' mode -> need to retrieve again
+        Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
+        assertPolicy(newUser.getPrincipal(),
+                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
     }
 
     @Test
@@ -259,6 +295,20 @@ public class PrincipalBasedIT extends IntegrationTestBase {
     }
 
     @Test
+    public void testNewUserHandlingOverwriteModeReplace() throws Exception {
+        assumeTrue(isOak());
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
+        opts.setImportMode(ImportMode.REPLACE);
+
+        admin.getNode(testUser.getPath()).remove();
+        admin.save();
+
+        extractVaultPackage("/test-packages/principalbased.zip");
+        assertPolicy(testUser.getPrincipal(), packageEntries);
+    }
+
+    @Test
     public void testHandlingOverwriteModeReplace() throws Exception {
         assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
@@ -267,6 +317,18 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
         extractVaultPackage("/test-packages/principalbased.zip");
         assertPolicy(testUser.getPrincipal(), packageEntries);
+    }
+
+    @Test
+    public void testNoPolicyHandlingOverwriteModeReplace() throws Exception {
+        assumeTrue(isOak());
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
+        opts.setImportMode(ImportMode.REPLACE);
+
+        extractVaultPackage("/test-packages/principalbased_nopolicy.zip");
+        Principal p = userManager.getAuthorizable(SYSTEM_USER_ID).getPrincipal();
+        assertEquals(0, acMgr.getPolicies(p).length);
     }
 
     @Test
@@ -298,16 +360,54 @@ public class PrincipalBasedIT extends IntegrationTestBase {
     }
 
     @Test
+    public void testNewUserHandlingMergeModeReplace() throws Exception {
+        assumeTrue(isOak());
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.MERGE);
+        opts.setImportMode(ImportMode.REPLACE);
+
+        admin.getNode(testUser.getPath()).remove();
+        admin.save();
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
+
+        // user may have been moved due to 'replace' mode -> need to retrieve again
+        assertPolicy(userManager.getAuthorizable(SYSTEM_USER_ID).getPrincipal(), packageEntries);
+    }
+
+    @Test
     public void testHandlingMergeModeReplace() throws Exception {
         assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE);
         opts.setImportMode(ImportMode.REPLACE);
 
+        final String oldPath = testUser.getPath();
         extractVaultPackage("/test-packages/principalbased.zip", opts);
 
         // user may have been moved due to 'replace' mode -> need to retrieve again
-        assertPolicy(userManager.getAuthorizable(SYSTEM_USER_ID).getPrincipal(), packageEntries);
+        Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
+
+        List<AccessControlEntry> expected = Lists.newArrayList(
+                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
+        expected.addAll(ImmutableList.copyOf(packageEntries));
+
+        assertPolicy(newUser.getPrincipal(), expected.toArray(new AccessControlEntry[0]));
+    }
+
+    @Test
+    public void testNoPolicyHandlingMergeModeReplace() throws Exception {
+        assumeTrue(isOak());
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.MERGE);
+        opts.setImportMode(ImportMode.REPLACE);
+
+        final String oldPath = testUser.getPath();
+        extractVaultPackage("/test-packages/principalbased_nopolicy.zip", opts);
+
+        // user may have been moved due to 'replace' mode -> need to retrieve again
+        Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
+        assertPolicy(newUser.getPrincipal(),
+                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
     }
 
     @Test
@@ -333,15 +433,119 @@ public class PrincipalBasedIT extends IntegrationTestBase {
     }
 
     @Test
+    public void testNewUserHandlingMergePreserveModeReplace() throws Exception {
+        assumeTrue(isOak());
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
+        opts.setImportMode(ImportMode.REPLACE);
+
+        admin.getNode(testUser.getPath()).remove();
+        admin.save();
+
+        extractVaultPackage("/test-packages/principalbased.zip", opts);
+        Principal p = userManager.getAuthorizable(SYSTEM_USER_ID).getPrincipal();
+        assertPolicy(p, packageEntries);
+    }
+
+    @Test
     public void testHandlingMergePreserveModeReplace() throws Exception {
         assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
         opts.setImportMode(ImportMode.REPLACE);
 
+        final String oldPath = testUser.getPath();
         extractVaultPackage("/test-packages/principalbased.zip", opts);
         // user may have been moved due to 'replace' mode -> need to retrieve again
-        Principal p = userManager.getAuthorizable(SYSTEM_USER_ID).getPrincipal();
-        assertEquals(0, acMgr.getPolicies(p).length);
+        Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
+        assertPolicy(newUser.getPrincipal(),
+                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
+    }
+
+    @Test
+    public void testNoPolicyHandlingMergePreserveModeReplace() throws Exception {
+        assumeTrue(isOak());
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
+        opts.setImportMode(ImportMode.REPLACE);
+
+        final String oldPath = testUser.getPath();
+        extractVaultPackage("/test-packages/principalbased_nopolicy.zip", opts);
+        // user may have been moved due to 'replace' mode -> need to retrieve again
+        Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
+        assertPolicy(newUser.getPrincipal(),
+                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
+    }
+
+    static AccessControlEntry[] filterEffectivePathForMovedSelf(final AccessControlEntry[] entries,
+                                                                      final String oldPath,
+                                                                      final String newPath) {
+        return Stream.of(entries).map(ace -> {
+            if (ace instanceof PrincipalAccessControlList.Entry) {
+                PrincipalAccessControlList.Entry pace = (PrincipalAccessControlList.Entry) ace;
+                final String effectivePath = pace.getEffectivePath();
+                if (effectivePath != null
+                        && (oldPath.equals(effectivePath) || effectivePath.startsWith(oldPath + "/"))) {
+                    return new EffectivePathEntryWrapper(pace, newPath +
+                            pace.getEffectivePath().substring(oldPath.length()));
+                } else {
+                    return ace;
+                }
+            } else {
+                return ace;
+            }
+        }).toArray(AccessControlEntry[]::new);
+    }
+
+    static class EffectivePathEntryWrapper implements PrincipalAccessControlList.Entry {
+
+        private final PrincipalAccessControlList.Entry pace;
+        @Nullable
+        private final String effectivePath;
+
+        public EffectivePathEntryWrapper(PrincipalAccessControlList.Entry pace, @Nullable String effectivePath) {
+            this.pace = pace;
+            this.effectivePath = effectivePath;
+        }
+
+        @Override
+        public @Nullable String getEffectivePath() {
+            return effectivePath;
+        }
+
+        @Override
+        public boolean isAllow() {
+            return pace.isAllow();
+        }
+
+        @Override
+        public @NotNull String[] getRestrictionNames() throws RepositoryException {
+            return pace.getRestrictionNames();
+        }
+
+        @Override
+        public @Nullable Value getRestriction(@NotNull String s) throws ValueFormatException, RepositoryException {
+            return pace.getRestriction(s);
+        }
+
+        @Override
+        public @Nullable Value[] getRestrictions(@NotNull String s) throws RepositoryException {
+            return pace.getRestrictions(s);
+        }
+
+        @Override
+        public @NotNull PrivilegeCollection getPrivilegeCollection() throws RepositoryException {
+            return pace.getPrivilegeCollection();
+        }
+
+        @Override
+        public Principal getPrincipal() {
+            return pace.getPrincipal();
+        }
+
+        @Override
+        public Privilege[] getPrivileges() {
+            return pace.getPrivileges();
+        }
     }
 }

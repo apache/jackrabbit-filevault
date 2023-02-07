@@ -61,9 +61,9 @@ public class FileArchive extends AbstractArchive {
         if (jcrRoot != null) {
             return;
         }
-        eRoot = ExportRoot.findRoot(rootDirectory);
+        eRoot = new ExportRoot(rootDirectory);
         if (!eRoot.isValid()) {
-            throw new IOException("No " + Constants.ROOT_DIR + " found.");
+            throw new IOException("Either no " + Constants.ROOT_DIR + " or no " + Constants.META_INF + " directory found below " + rootDirectory);
         }
         jcrRoot = new OsEntry(eRoot.getJcrRoot());
     }

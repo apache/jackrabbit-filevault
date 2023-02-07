@@ -17,8 +17,6 @@
 
 package org.apache.jackrabbit.vault.fs.spi.impl.jcr20;
 
-import java.util.UUID;
-
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -45,6 +43,7 @@ public class JackrabbitUserManagement implements UserManagement {
 
     // https://issues.apache.org/jira/browse/OAK-9584
     public static final Name NAME_REP_AUTHORIZABLE_ID = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "authorizableId");
+
     /**
      * default logger
      */
@@ -55,21 +54,26 @@ public class JackrabbitUserManagement implements UserManagement {
      * {@inheritDoc}
      */
     public boolean isAuthorizableNodeType(String ntName) {
-        return ntName.equals("rep:Group") || ntName.equals("rep:User");
+        return ntName.equals("rep:Group") || ntName.equals("rep:User") || ntName.equals("rep:SystemUser");
     }
 
     /**
      * {@inheritDoc}
      */
-    public String getAuthorizablePath(Session session, String name) {
-        // currently we rely on the implementation detail to keep the API dependency to jackrabbit  < 2.3.
+    public String getAuthorizablePath(Session session, String id) {
+        Authorizable authorizable;
         try {
-            UUID uuid = UUID.nameUUIDFromBytes(name.toLowerCase().getBytes("UTF-8"));
-            return session.getNodeByIdentifier(uuid.toString()).getPath();
-        } catch (Exception e) {
-            // ignore
+            authorizable = getAuthorizable(session, id);
+            if (authorizable == null) {
+                log.debug("No existing authorizable with id {} found", id);
+                return null;
+            }
+            return authorizable.getPath();
+        } catch (RepositoryException e) {
+            log.warn("Unable to get authorizable path of {}: {}", id, e.getMessage(), e);
+            return null;
         }
-        return null;
+       
     }
 
     @Override
@@ -104,19 +108,10 @@ public class JackrabbitUserManagement implements UserManagement {
      * {@inheritDoc}
      */
     public void addMembers(Session session, String id, String[] membersUUID) {
-        if (!(session instanceof JackrabbitSession)) {
-            log.warn("Unable to update membership. no jackrabbit session.");
-            return;
-        }
+        Authorizable auth;
         UserManager uMgr;
         try {
-            uMgr = ((JackrabbitSession) session).getUserManager();
-        } catch (RepositoryException e) {
-            log.warn("Unable to update membership of {}. Error while retrieving user manager.", id, e);
-            return;
-        }
-        Authorizable auth;
-        try {
+            uMgr = getUserManager(session);
             auth = uMgr.getAuthorizable(id);
         } catch (RepositoryException e) {
             log.warn("Unable to update membership of {}. Error while retrieving authorizable.", id, e);
@@ -157,5 +152,30 @@ public class JackrabbitUserManagement implements UserManagement {
                 log.warn("unable to add authorizable '{}' to group '{}'. Internal Error: {}", new Object[]{uuid, id, e});
             }
         }
+    }
+
+    private UserManager getUserManager(Session session) throws RepositoryException {
+        if (!(session instanceof JackrabbitSession)) {
+            throw new RepositoryException("no jackrabbit session.");
+        }
+        return ((JackrabbitSession) session).getUserManager();
+    }
+
+    private Authorizable getAuthorizable(Session session, String id) throws RepositoryException {
+        return getUserManager(session).getAuthorizable(id);
+    }
+
+    @Override
+    public String getPrincipalName(Session session, String id) {
+        try {
+            Authorizable auth = getAuthorizable(session, id);
+            if (auth != null) {
+                return auth.getPrincipal().getName();
+            }
+        } catch (RepositoryException e) {
+            log.warn("Unable to get principal name of {}. Error while retrieving user manager or authorizable.", id, e);
+            return null;
+        }
+        return null;
     }
 }

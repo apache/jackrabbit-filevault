@@ -88,7 +88,7 @@ public class JackrabbitServiceProvider implements ServiceProvider {
      */
     public ACLManagement getACLManagement() {
         if (aclManagement == null) {
-            aclManagement = new JcrACLManagement();
+            aclManagement = new JackrabbitACLManagement();
         }
         return aclManagement;
     }

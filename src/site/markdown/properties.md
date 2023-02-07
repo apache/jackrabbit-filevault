@@ -85,6 +85,7 @@ Example:
 | allowIndexDefinitions | If set to `true` indicates that the package contains an [Oak Index Definition](https://jackrabbit.apache.org/oak/docs/query/indexing.html#index-defnitions). Otherwise the package is not supposed to contain an index definition. This may be important to know prior to installation as installing/updating an index definition might have a severe performance impact especially on large repositories| no | false
 | groupId | The Maven groupId of the underlying Maven module from which this package was built. Only set if built via the [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) | no | n/a
 | artifactId | The Maven artifactId of the underlying Maven module from which this package was built. Only set if built via the [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) | no | n/a
+| vault.feature.stashPrincipalPolicies | If set to `true` will always restore existing principal policies after installing a package with `AccessControlHandling` being set to anything but `CLEAR` or `OVERWRITE`. Only evaluated since 3.8.10 ([JCRVLT-683](https://issues.apache.org/jira/browse/JCRVLT-683)). | no | The system property `vault.feature.stashPrincipalPolicies` is used as default. This is described with its default value at [Configuration](config.html).
 
 Manifest File
 ---------------

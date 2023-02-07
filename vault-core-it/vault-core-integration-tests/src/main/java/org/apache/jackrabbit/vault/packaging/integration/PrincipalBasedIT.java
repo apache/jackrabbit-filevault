@@ -16,16 +16,16 @@
  */
 package org.apache.jackrabbit.vault.packaging.integration;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -48,6 +48,8 @@ import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
@@ -57,7 +59,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 public class PrincipalBasedIT extends IntegrationTestBase {
@@ -140,30 +141,13 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     private void assertPolicy(@NotNull Principal principal, @NotNull AccessControlEntry... expectedEntries) throws RepositoryException {
         for (AccessControlPolicy policy : acMgr.getPolicies(principal)) {
+            // disregard the order
             if (policy instanceof PrincipalAccessControlList) {
                 PrincipalAccessControlList pacl = (PrincipalAccessControlList) policy;
                 AccessControlEntry[] aces = pacl.getAccessControlEntries();
-                assertEquals(expectedEntries.length, aces.length);
-
-                for (int i = 0; i < expectedEntries.length; i++) {
-                    assertTrue(expectedEntries[i] instanceof PrincipalAccessControlList.Entry);
-                    assertTrue(aces[i] instanceof PrincipalAccessControlList.Entry);
-
-
-                    PrincipalAccessControlList.Entry entry = (PrincipalAccessControlList.Entry) aces[i];
-                    PrincipalAccessControlList.Entry expected = (PrincipalAccessControlList.Entry) expectedEntries[i];
-
-                    assertEquals(expected.getEffectivePath(), entry.getEffectivePath());
-                    assertEquals(ImmutableSet.copyOf(expected.getPrivileges()), ImmutableSet.copyOf(entry.getPrivileges()));
-                    assertEquals(ImmutableSet.copyOf(expected.getRestrictionNames()), ImmutableSet.copyOf(entry.getRestrictionNames()));
-                    for (String rName : expected.getRestrictionNames()) {
-                        if (pacl.isMultiValueRestriction(rName)) {
-                            assertArrayEquals(expected.getRestrictions(rName), entry.getRestrictions(rName));
-                        } else {
-                            assertEquals(expected.getRestriction(rName), entry.getRestriction(rName));
-                        }
-                    }
-                }
+                MatcherAssert.assertThat(Arrays.asList(aces), Matchers.containsInAnyOrder(Arrays.stream(aces)
+                        .map(e -> new PrincipalBasedStashingIT.PrincipalAccessControlEntryMatcher(e, pacl))
+                        .collect(Collectors.toList())));
                 return;
             }
         }

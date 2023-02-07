@@ -34,6 +34,7 @@ import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
 import org.apache.jackrabbit.spi.commons.conversion.NamePathResolver;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
+import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.JackrabbitACLManagement;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.jetbrains.annotations.NotNull;
@@ -82,11 +83,11 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
     private long ignoreLevel = 0;
 
-    public JcrSysViewTransformer(@NotNull Node node, @NotNull ImportMode importMode) throws RepositoryException {
-        this(node, null, importMode);
+    public JcrSysViewTransformer(@NotNull Node node, @NotNull ImportMode importMode, boolean keepAcPolicies) throws RepositoryException {
+        this(node, null, importMode, keepAcPolicies);
     }
 
-    JcrSysViewTransformer(@NotNull Node node, @Nullable String existingPath, @NotNull ImportMode importMode) throws RepositoryException {
+    JcrSysViewTransformer(@NotNull Node node, @Nullable String existingPath, @NotNull ImportMode importMode, boolean keepAcPolicies) throws RepositoryException {
         Session session = node.getSession();
         parent = node;
         handler = session.getImportContentHandler(
@@ -110,6 +111,9 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         if (existingPath != null) {
             // check if there is an existing node with the name
             recovery = new NodeStash(session, existingPath).excludeName("rep:cache");
+            if (!keepAcPolicies) {
+                recovery.excludeName(JackrabbitACLManagement.REP_POLICY).excludeName(JackrabbitACLManagement.REP_PRINCIPAL_POLICY);
+            }
             recovery.stash(null);
         }
         excludeNode(NAME_REP_CACHE);

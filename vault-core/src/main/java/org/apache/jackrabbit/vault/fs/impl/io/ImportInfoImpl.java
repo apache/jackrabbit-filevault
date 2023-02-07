@@ -17,11 +17,13 @@
 
 package org.apache.jackrabbit.vault.fs.impl.io;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -29,8 +31,10 @@ import java.util.TreeMap;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.version.Version;
 
+import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.MultiPathMapping;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
@@ -66,6 +70,29 @@ public class ImportInfoImpl implements ImportInfo {
 
     private Map<String, String[]> memberships;
 
+    /**
+     * The principal ACLs which have been deleted during the import (might need to be restored later in case parent authorizable has been recreated)
+     */
+    private final Map<String, List<? extends AccessControlPolicy>> deletedPrincipalAcls;
+
+    public Map<String, List<? extends AccessControlPolicy>> getDeletedPrincipalAcls() {
+        return deletedPrincipalAcls;
+    }
+
+    public List<String> getCreatedAuthorizableIds() {
+        return createdAuthorizableIds;
+    }
+
+    /**
+     * All authorizable ids being deleted during the import
+     */
+    private final List<String> deletedAuthorizableIds;
+
+    /**
+     * All authorizable ids being created during the import
+     */
+    private final List<String> createdAuthorizableIds;
+
     public static ImportInfo create(ImportInfo base) {
         if (base == null) {
             return new ImportInfoImpl();
@@ -75,6 +102,9 @@ public class ImportInfoImpl implements ImportInfo {
     }
 
     public ImportInfoImpl() {
+        deletedPrincipalAcls = new HashMap<>();
+        createdAuthorizableIds = new ArrayList<>();
+        deletedAuthorizableIds = new ArrayList<>();
     }
 
     public ImportInfoImpl merge(ImportInfo base) {
@@ -94,6 +124,9 @@ public class ImportInfoImpl implements ImportInfo {
             } else {
                 memberships.putAll(baseImpl.getMemberships());
             }
+            deletedPrincipalAcls.putAll(baseImpl.deletedPrincipalAcls);
+            deletedAuthorizableIds.addAll(baseImpl.deletedAuthorizableIds);
+            createdAuthorizableIds.addAll(baseImpl.createdAuthorizableIds);
         }
         return this;
     }
@@ -162,6 +195,10 @@ public class ImportInfoImpl implements ImportInfo {
     public void onStashed(String path) {
         // path currently unused
         numModified += 1;
+    }
+
+    public void onDeletedPrincipalAcls(Map<String, List<? extends AccessControlPolicy>> principalAcls) {
+        deletedPrincipalAcls.putAll(principalAcls);
     }
 
     /**
@@ -262,6 +299,10 @@ public class ImportInfoImpl implements ImportInfo {
 
     public Map<String, String[]> getMemberships() {
         return memberships == null ? Collections.<String, String[]>emptyMap() : memberships;
+    }
+
+    public void onAuthorizableCreated(String id) throws RepositoryException {
+        createdAuthorizableIds.add(id);
     }
 
     static final class InfoImpl implements Info {

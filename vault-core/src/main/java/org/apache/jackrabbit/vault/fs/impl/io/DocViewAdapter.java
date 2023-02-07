@@ -16,6 +16,7 @@
  ************************************************************************/
 package org.apache.jackrabbit.vault.fs.impl.io;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
@@ -35,19 +36,19 @@ public interface DocViewAdapter {
      * @param node the node
      * @throws RepositoryException if a import exception occurs.
      */
-    void startNode(DocViewNode2 node) throws RepositoryException;
+    void startNode(DocViewNode2 node) throws IOException, RepositoryException;
 
     /**
      * Ends node is invoked when the importer ascends from an element.
      * @throws RepositoryException if a import exception occurs.
      */
-    void endNode() throws RepositoryException;
+    void endNode() throws IOException, RepositoryException;
 
     /**
      * Is called by the importer if the adapter is no longer used and must finalize the import.
      * @throws RepositoryException if a import exception occurs.
      * @return The paths that were created.
      */
-    List<String> close() throws RepositoryException;
+    List<String> close() throws IOException, RepositoryException;
 
 }

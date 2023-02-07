@@ -17,9 +17,14 @@
 
 package org.apache.jackrabbit.vault.fs.spi;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.security.AccessControlPolicy;
 
+import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -70,4 +75,14 @@ public interface ACLManagement {
      * @throws RepositoryException if an error occurs
      */
     void clearACL(Node node) throws RepositoryException;
+
+    /**
+     * 
+     * @param node the start node from where to collect principal policies
+     * @return all collected principal access control policies per principal name inside the given node (even nested ones)
+     * @throws RepositoryException in case some error occurred while collecting the principal policies
+     * @see <a href="https://jackrabbit.apache.org/archive/wiki/JCR/AccessControl_115513330.html">Access Control</a>
+     * @since 3.6.10
+     */
+    @NotNull Map<String, List<? extends AccessControlPolicy>> getPrincipalAcls(Node node) throws RepositoryException;
 }

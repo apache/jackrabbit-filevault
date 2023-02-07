@@ -30,6 +30,7 @@ The import mode handling is inconsistent and has many edge cases for the mode `M
 Access control list
 ----------------------------------------------------
 The import mode handling for access control lists (name `rep:ACL`, `rep:CugPolicy` or `rep:PrincipalPolicy`) is  only affected by the [`acHandling` package property](properties.html) and not by the import mode set on the filter rule.
+For principal policies there is the special [package](properties.html) and [system property](config.html) `vault.feature.stashPrincipalPolicies` which determines how principal policies behave.
 
 Authorizables
 ----------------------------------------------------

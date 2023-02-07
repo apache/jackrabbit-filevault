@@ -162,7 +162,6 @@ public class IntegrationTestBase  {
     public static void initRepository() throws RepositoryException, IOException {
         initRepository(useFileStore(), false);
     }
- 
 
     protected static boolean useFileStore() {
         // don't use by default because it is slower and pollutes the log

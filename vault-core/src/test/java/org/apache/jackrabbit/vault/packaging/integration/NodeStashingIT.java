@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 
@@ -36,6 +37,8 @@ public class NodeStashingIT extends IntegrationTestBase {
 
     @Test
     public void testStashMixinMandatoryChildNode() throws RepositoryException, IOException, PackageException {
+
+        assumeTrue(isOak());
 
         ImportOptions options = getDefaultOptions();
         options.setImportMode(ImportMode.MERGE_PROPERTIES);

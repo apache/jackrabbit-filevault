@@ -1,0 +1,12 @@
+<jcr:root
+  xmlns:jcr="http://www.jcp.org/jcr/1.0"
+  xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+  xmlns:mix="http://www.jcp.org/jcr/mix/1.0"
+  xmlns:teststash="https://issues.apache.org/jira/browse/JCRVLT-684"
+  jcr:primaryType="nt:unstructured">
+  <stash
+    jcr:primaryType="teststash:noChildNodes"
+    jcr:mixinTypes="[mix:referenceable"
+    jcr:uuid="c842f252-ab9c-11ed-9e53-00155d01040f">
+  </stash>
+</jcr:root>

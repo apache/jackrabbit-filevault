@@ -212,7 +212,7 @@ public class NodeStash {
         Property mixinProperty = tmpNode.hasProperty(JcrConstants.JCR_MIXINTYPES + PROTECTED_PROPERTIES_SUFFIX) ? tmpNode.getProperty(JcrConstants.JCR_MIXINTYPES + PROTECTED_PROPERTIES_SUFFIX) : null;
         if (mixinProperty != null) {
             for (Value value : mixinProperty.getValues()) {
-                tmpNode.addMixin(value.getString());
+                destNode.addMixin(value.getString());
             }
         }
         PropertyIterator propIterator = tmpNode.getProperties();

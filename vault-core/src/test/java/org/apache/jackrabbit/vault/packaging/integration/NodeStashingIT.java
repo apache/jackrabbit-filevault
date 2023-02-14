@@ -38,11 +38,12 @@ public class NodeStashingIT extends IntegrationTestBase {
     @Test
     public void testStashMixinMandatoryChildNode() throws RepositoryException, IOException, PackageException {
 
-        assumeTrue(isOak());
+        assumeTrue(isOak()); // see JCRVLT-687
 
         ImportOptions options = getDefaultOptions();
         options.setImportMode(ImportMode.MERGE_PROPERTIES);
 
+        // import test structure from package
         extractVaultPackage("/test-packages/stashing/create.zip", options);
 
         assertNodeExists("/tmp/stash");
@@ -53,7 +54,8 @@ public class NodeStashingIT extends IntegrationTestBase {
         assertTrue(node1.isNodeType("{" + TESTNS + "}noChildNodes"));
         assertTrue(node1.isNodeType("{" + TESTNS + "}hasMandatoryChildNode"));
 
-        // import same path but without mixin allowing child nodes
+        // update same path but without mixin allowing child nodes and different
+        // UUID so that node stashing kicks in
         extractVaultPackage("/test-packages/stashing/update.zip", options);
 
         // child node should be retained

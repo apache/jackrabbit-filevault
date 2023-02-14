@@ -36,12 +36,21 @@ public class NodeStashingIT extends IntegrationTestBase {
     private static final String TESTNS = "https://issues.apache.org/jira/browse/JCRVLT-684";
 
     @Test
-    public void testStashMixinMandatoryChildNode() throws RepositoryException, IOException, PackageException {
+    public void testStashMixinMandatoryChildNodeModeReplace() throws RepositoryException, IOException, PackageException {
+        testStashMixinMandatoryChildNode(ImportMode.REPLACE);
+    }
+
+    @Test
+    public void testStashMixinMandatoryChildNodeModeMergeProperties() throws RepositoryException, IOException, PackageException {
+        testStashMixinMandatoryChildNode(ImportMode.MERGE_PROPERTIES);
+    }
+
+    private void testStashMixinMandatoryChildNode(ImportMode mode) throws RepositoryException, IOException, PackageException {
 
         assumeTrue(isOak());
 
         ImportOptions options = getDefaultOptions();
-        options.setImportMode(ImportMode.MERGE_PROPERTIES);
+        options.setImportMode(mode);
 
         extractVaultPackage("/test-packages/stashing.zip", options);
 

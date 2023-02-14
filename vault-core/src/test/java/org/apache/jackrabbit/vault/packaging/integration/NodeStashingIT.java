@@ -52,7 +52,8 @@ public class NodeStashingIT extends IntegrationTestBase {
         ImportOptions options = getDefaultOptions();
         options.setImportMode(mode);
 
-        extractVaultPackage("/test-packages/stashing.zip", options);
+        // import test structure from package
+        extractVaultPackage("/test-packages/stashing/create.zip", options);
 
         assertNodeExists("/tmp/stash");
         assertNodeExists("/tmp/stash/{" + TESTNS + "}mandatoryChildNode");
@@ -62,8 +63,9 @@ public class NodeStashingIT extends IntegrationTestBase {
         assertTrue(node1.isNodeType("{" + TESTNS + "}noChildNodes"));
         assertTrue(node1.isNodeType("{" + TESTNS + "}hasMandatoryChildNode"));
 
-        // import same path but without mixin allowing child nodes
-        extractVaultPackage("/test-packages/stashing2.zip", options);
+        // update same path but without mixin allowing child nodes and different
+        // UUID so that node stashing kicks in
+        extractVaultPackage("/test-packages/stashing/update.zip", options);
 
         // child node should be retained
         assertNodeExists("/tmp/stash");

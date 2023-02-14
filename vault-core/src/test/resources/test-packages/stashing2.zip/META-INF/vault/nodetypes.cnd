@@ -1,7 +1,0 @@
-<'teststash'='https://issues.apache.org/jira/browse/JCRVLT-684'>
-
-[teststash:noChildNodes]
-
-[teststash:hasMandatoryChildNode]
-  mixin
-  + teststash:mandatoryChildNode mandatory

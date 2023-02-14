@@ -3,7 +3,7 @@
 <properties>
 <comment>FileVault Package Properties</comment>
 <entry key="createdBy">admin</entry>
-<entry key="name">test_referenceable</entry>
+<entry key="name">test_stashing_create</entry>
 <entry key="lastModified">2015-12-16T16:59:10.779+01:00</entry>
 <entry key="lastModifiedBy">admin</entry>
 <entry key="created">2015-12-16T16:59:10.795+01:00</entry>

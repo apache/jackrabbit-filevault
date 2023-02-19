@@ -84,4 +84,13 @@ public class AutoSaveTest {
         // next regular save after 100 more nodes
         assertTrue(autoSave.needsSave());
     }
+
+    @Test
+    public void testSaveWithMaxThreshold() throws RepositoryException {
+        Mockito.lenient().doThrow(new RepositoryException("Forced exception")).when(session).save();
+        AutoSave autoSave = new AutoSave(Integer.MAX_VALUE);
+        autoSave.modified(2);
+        autoSave.save(session, true);
+        autoSave.save(session, false);
+    }
 }

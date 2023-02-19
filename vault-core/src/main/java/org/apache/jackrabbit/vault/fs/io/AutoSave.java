@@ -17,7 +17,6 @@
 
 package org.apache.jackrabbit.vault.fs.io;
 
-import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.ConstraintViolationException;
@@ -49,7 +48,8 @@ public class AutoSave {
     private int lastSave;
 
     /**
-     * number of modified nodes that trigger a save. default is 1024
+     * Number of modified nodes that trigger a save. Default is 1024.
+     * When {@link Integer#MAX_VALUE} is used, no save should be triggered at all (neither intermediate nor final)
      */
     private int threshold = 1024;
 
@@ -83,6 +83,10 @@ public class AutoSave {
 
     public AutoSave(int threshold) {
         this.threshold = threshold;
+    }
+
+    boolean isDisabled() {
+        return threshold == Integer.MAX_VALUE;
     }
 
     public AutoSave copy() {
@@ -137,17 +141,18 @@ public class AutoSave {
     }
 
     /**
-     * saves the changes under the given node and resets the counter
+     * Saves the changes under the given node and resets the counter.
      * @param session the session to save. can be {@code null}
+     * @param isIntermediate {@code false} when this is the final attempt, otherwise {@code true}.
      * @throws RepositoryException if an error occurs.
      */
     public void save(@Nullable Session session, boolean isIntermediate) throws RepositoryException {
+        if (isDisabled()) {
+            log.trace("Save disabled.");
+            return;
+        }
         int diff = numModified - lastSave;
         if (isIntermediate) {
-            if (threshold == Integer.MAX_VALUE) {
-                log.trace("Intermediate save disabled.");
-                return;
-            }
             log.debug("Threshold of {} reached. {} approx {} transient changes.", 
                     threshold,
                     dryRun ? "dry run, reverting" : "saving",

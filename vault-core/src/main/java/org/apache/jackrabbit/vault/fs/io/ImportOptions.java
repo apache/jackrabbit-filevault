@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import javax.jcr.Session;
+
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathMapping;
@@ -49,7 +51,7 @@ public class ImportOptions {
 
     private boolean dryRun;
 
-    private int autoSave = -1;
+    private int autoSaveThreshold = -1;
 
     private AccessControlHandling acHandling = null;
 
@@ -92,7 +94,7 @@ public class ImportOptions {
             patchKeepInRepo = base.patchKeepInRepo;
             nonRecursive = base.nonRecursive;
             dryRun = base.dryRun;
-            autoSave = base.autoSave;
+            autoSaveThreshold = base.autoSaveThreshold;
             acHandling = base.acHandling;
             cugHandling = base.cugHandling;
             importMode = base.importMode;
@@ -119,7 +121,7 @@ public class ImportOptions {
         ret.patchKeepInRepo = patchKeepInRepo;
         ret.nonRecursive = nonRecursive;
         ret.dryRun = dryRun;
-        ret.autoSave = autoSave;
+        ret.autoSaveThreshold = autoSaveThreshold;
         ret.acHandling = acHandling;
         ret.cugHandling = cugHandling;
         ret.importMode = importMode;
@@ -342,20 +344,22 @@ public class ImportOptions {
 
     /**
      * Sets the auto-save threshold. See {@link AutoSave}
-     * @param threshold the threshold in number of nodes.
+     * @param autoSaveThreshold the threshold in number of nodes.
      * @since 2.2.16
      */
-    public void setAutoSaveThreshold(int threshold) {
-        this.autoSave = threshold;
+    public void setAutoSaveThreshold(int autoSaveThreshold) {
+        this.autoSaveThreshold = autoSaveThreshold;
     }
 
     /**
      * Returns the auto-save threshold.
+     * If {@link Integer#MAX_VALUE} both {@link Session#save()} and {@link Session#refresh(boolean)} must not be
+     * executed during {@link Importer#run(Archive, Session, String)}.
      * @return the auto-save threshold.
      * @since 2.2.16
      */
     public int getAutoSaveThreshold() {
-        return autoSave;
+        return autoSaveThreshold;
     }
 
     /**
@@ -481,7 +485,7 @@ public class ImportOptions {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((acHandling == null) ? 0 : acHandling.hashCode());
-        result = prime * result + autoSave;
+        result = prime * result + autoSaveThreshold;
         result = prime * result + ((cndPattern == null) ? 0 : cndPattern.hashCode());
         result = prime * result + ((cugHandling == null) ? 0 : cugHandling.hashCode());
         result = prime * result + ((dependencyHandling == null) ? 0 : dependencyHandling.hashCode());
@@ -513,7 +517,7 @@ public class ImportOptions {
         ImportOptions other = (ImportOptions) obj;
         if (acHandling != other.acHandling)
             return false;
-        if (autoSave != other.autoSave)
+        if (autoSaveThreshold != other.autoSaveThreshold)
             return false;
         if (cndPattern == null) {
             if (other.cndPattern != null)
@@ -579,7 +583,7 @@ public class ImportOptions {
         return "ImportOptions [strict=" + strict + ", " + (listener != null ? "listener=" + listener + ", " : "")
                 + (patchParentPath != null ? "patchParentPath=" + patchParentPath + ", " : "")
                 + (patchDirectory != null ? "patchDirectory=" + patchDirectory + ", " : "") + "patchKeepInRepo=" + patchKeepInRepo
-                + ", nonRecursive=" + nonRecursive + ", dryRun=" + dryRun + ", autoSave=" + autoSave + ", "
+                + ", nonRecursive=" + nonRecursive + ", dryRun=" + dryRun + ", autoSave=" + autoSaveThreshold + ", "
                 + (acHandling != null ? "acHandling=" + acHandling + ", " : "")
                 + (cugHandling != null ? "cugHandling=" + cugHandling + ", " : "")
                 + (importMode != null ? "importMode=" + importMode + ", " : "")

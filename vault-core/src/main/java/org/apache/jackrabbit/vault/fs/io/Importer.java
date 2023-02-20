@@ -373,8 +373,8 @@ public class Importer {
     }
 
     /**
-     * Runs the importer
-     *
+     * Runs the importer from the given root node.
+     * Shortcut for {@link #run(Archive, Session, String)} with the session and path from the given node.
      * @param archive the archive to import
      * @param importRoot the root node to import
      *
@@ -391,6 +391,9 @@ public class Importer {
 
     /**
      * Runs the importer with the given session.
+     * {@link Session#save()} and potentially {@link Session#refresh(boolean)} are automatically called during the import
+     * in the given session, except when {@link ImportOptions#setAutoSaveThreshold(int)} with value {@link Integer#MAX_VALUE} has been set.
+     * In all other cases the changes are automatically persisted (potentially in batches) potentially after advanced retry mechanisms.
      *
      * @param archive the archive to import
      * @param session the session importing the archive
@@ -401,7 +404,7 @@ public class Importer {
      *
      * @since 2.7.0
      */
-    public void run(Archive archive, Session session,  String parentPath)
+    public void run(Archive archive, Session session, String parentPath)
             throws IOException, RepositoryException, ConfigurationException {
         this.archive = archive;
 
@@ -509,7 +512,7 @@ public class Importer {
                 autoSave.save(session, false);
                 break;
             } catch (RepositoryException e) {
-                if (recoveryRetryCounter == 10) {
+                if (autoSave.isDisabled() || recoveryRetryCounter == 10) {
                     log.error("Error while committing changes. Aborting.");
                     throw e;
                 } else {
@@ -1169,14 +1172,16 @@ public class Importer {
                 track("U", String.format("%s", authPath));
             }
         }
-        try {
-            session.save();
-        } catch (RepositoryException e) {
-            log.error("Error while updating memberships.", e);
+        if (!autoSave.isDisabled()) {
             try {
-                session.refresh(false);
-            } catch (RepositoryException e1) {
-                // ignore
+                session.save();
+            } catch (RepositoryException e) {
+                log.error("Error while updating memberships.", e);
+                try {
+                    session.refresh(false);
+                } catch (RepositoryException e1) {
+                    // ignore
+                }
             }
         }
         memberships.clear();

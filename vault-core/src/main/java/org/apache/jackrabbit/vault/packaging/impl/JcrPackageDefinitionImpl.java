@@ -83,7 +83,6 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
 
     @Nullable
     private String userId;
-
     /**
      * Creates a new definition base on the underlying node.
      * @param definitionNode the definition node
@@ -751,6 +750,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         setProperty(props, VaultPackage.NAME_LAST_WRAPPED_BY, get(PN_LAST_WRAPPED_BY));
         setProperty(props, VaultPackage.NAME_CREATED, getCalendar(PN_CREATED));
         setProperty(props, VaultPackage.NAME_CREATED_BY, get(PN_CREATED_BY));
+        setProperty(props, VaultPackage.NAME_GENERATOR, "qux");
         setProperty(props, VaultPackage.NAME_DEPENDENCIES, Dependency.toString(getDependencies()));
         setProperty(props, VaultPackage.NAME_AC_HANDLING, get(PN_AC_HANDLING));
         setProperty(props, VaultPackage.NAME_CND_PATTERN, get(PN_CND_PATTERN));

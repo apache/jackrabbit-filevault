@@ -91,6 +91,11 @@ public interface PackageProperties {
     String NAME_CREATED_BY = "createdBy";
 
     /**
+     * Name of the 'generator' meta-inf property
+     */
+    String NAME_GENERATOR = "generator";
+ 
+    /**
      * Name of the last wrapped meta-inf property
      * @since 2.2.22
      */

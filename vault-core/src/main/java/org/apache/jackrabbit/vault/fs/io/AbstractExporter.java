@@ -400,6 +400,28 @@ public abstract class AbstractExporter implements AutoCloseable {
     }
 
     /**
+     * Returns the version of an Oak module.
+     *
+     * @param moduleName the name of the module
+     * @param clazz a class of the module
+     * @return the version (or "SNAPSHOT" when unknown)
+     */
+    public String getVersion(String moduleName, Class<?> clazz) {
+        // borrowed from oak-commons
+        String version = "SNAPSHOT"; // fallback
+        try (InputStream stream = clazz
+                .getResourceAsStream("/META-INF/maven/org.apache.jackrabbit.vault/" + moduleName + "/pom.properties")) {
+            if (stream != null) {
+                Properties properties = new Properties();
+                properties.load(stream);
+                return properties.getProperty("version", version);
+            }
+        } catch (IOException ignored) {
+        }
+        return version;
+    }
+
+    /**
      * Opens the exporter and initializes the undelying structures.
      * @throws IOException if an I/O error occurs
      * @throws RepositoryException if a repository error occurs

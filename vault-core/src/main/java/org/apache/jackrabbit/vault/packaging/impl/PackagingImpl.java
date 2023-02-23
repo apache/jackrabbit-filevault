@@ -101,7 +101,7 @@ public class PackagingImpl implements Packaging {
         @AttributeDefinition(name = "Allowed Users for Package Installation", description = "The authorizable ids or principal names which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForRootInstallation();
 
-        @AttributeDefinition(name = "Default Strict Mode", description = "The default value for strict imports. In strict mode every import failure leads to an exception, while with strict mode those failures are just logged but the import continues in a best effort manner")
+        @AttributeDefinition(name = "Default Strict Mode", description = "Whether by default imports are executed in strict mode. In strict mode every import failure leads to an exception, while without strict mode those failures are just logged but the import continues in a best effort manner")
         boolean isStrict() default true;
 
         @AttributeDefinition(name = "Legacy Folder Primary Type Mode", description = "Whether to overwrite the primary type of folders during imports")

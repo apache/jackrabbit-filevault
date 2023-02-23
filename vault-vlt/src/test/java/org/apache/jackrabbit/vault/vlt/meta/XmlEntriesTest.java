@@ -14,26 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.jackrabbit.vault.vlt.meta;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.Dumpable;
 import org.apache.jackrabbit.vault.util.MD5;
 import org.apache.jackrabbit.vault.vlt.VltException;
+import org.apache.jackrabbit.vault.vlt.meta.xml.XmlEntries;
+import org.apache.jackrabbit.vault.vlt.meta.xml.XmlEntryInfo;
+import org.apache.jackrabbit.vault.vlt.meta.xml.zip.ZipMetaDir;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import junit.framework.TestCase;
+class XmlEntriesTest {
 
-/**
- * {@code TestEntries}...
- */
-public abstract class AbstractTestEntries extends TestCase {
-
-    protected File file = new File("target/vlt-test-entries.zip");
+    private File file;
 
     private boolean verbose;
 
@@ -41,7 +51,13 @@ public abstract class AbstractTestEntries extends TestCase {
 
     protected VltEntries entries;
 
-    abstract protected void open() throws IOException, VltException;
+    @TempDir
+    File tempDir;
+
+    protected void open() throws IOException, VltException {
+        dir = new ZipMetaDir(file);
+        entries = dir.getEntries();
+    }
 
     protected void close() throws IOException {
         if (entries != null) {
@@ -58,7 +74,8 @@ public abstract class AbstractTestEntries extends TestCase {
         open();
     }
 
-    public void testRepoAddress() throws IOException, VltException {
+    @Test
+    void testRepoAddress() throws IOException, VltException {
         open();
         assertNull(dir.getRepositoryUrl());
         dir.setRepositoryUrl("http://localhost:8080");
@@ -67,15 +84,17 @@ public abstract class AbstractTestEntries extends TestCase {
         assertEquals("http://localhost:8080", dir.getRepositoryUrl());
     }
 
-    public void testAddEntry() throws VltException, IOException {
+    @Test
+    void testAddEntry() throws VltException, IOException {
         open();
         assertFalse(entries.hasEntry("foo.png"));
-        VltEntry e = entries.update("foo.png", "/bla", "foo.png");
+        entries.update("foo.png", "/bla", "foo.png");
         reopen();
         assertTrue(entries.hasEntry("foo.png"));
     }
 
-    public void testAddInfo() throws VltException, IOException {
+    @Test
+    void testAddInfo() throws VltException, IOException {
         testAddEntry();
 
         assertTrue(entries.hasEntry("foo.png"));
@@ -89,7 +108,8 @@ public abstract class AbstractTestEntries extends TestCase {
         assertNotNull(e.base());
     }
 
-    public void testModifyInfo() throws VltException, IOException {
+    @Test
+    void testModifyInfo() throws VltException, IOException {
         testAddInfo();
         reopen();
 
@@ -101,6 +121,7 @@ public abstract class AbstractTestEntries extends TestCase {
         base.setDate(1000);
         base.setMd5(new MD5(2,3));
         base.setSize(4);
+        ((XmlEntryInfo) base).setName("myName");
         reopen();
         e = entries.getEntry("foo.png");
         base = e.base();
@@ -108,8 +129,19 @@ public abstract class AbstractTestEntries extends TestCase {
         assertEquals(1000, base.getDate());
         assertEquals(new MD5(2,3), base.getMd5());
         assertEquals(4, base.getSize());
+        assertEquals("myName", ((XmlEntryInfo) base).getName());
     }
 
+    @BeforeEach
+    protected void setUp() throws Exception {
+        file = new File(tempDir, "vlt-test-entries.zip");
+        dir = new ZipMetaDir(file);
+        dir.create("/a/b/c");
+        dir.close();
+        dir = null;
+    }
+
+    @AfterEach
     protected void tearDown() throws Exception {
         if (entries != null && verbose) {
             PrintWriter out = new PrintWriter(System.out);
@@ -118,6 +150,31 @@ public abstract class AbstractTestEntries extends TestCase {
                 ((Dumpable) entries).dump(new DumpContext(out), true);
             }
             out.flush();
+        }
+    }
+
+    @Test
+    void testXSS() throws VltException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!DOCTYPE entries [\n" +
+                "   <!ENTITY % foo \"bar\">\n" +
+                "]>\n" +
+                "<entries path=\"/home/users/m/mCY2rm1YSMlKFlJ-NEN3\">\n" +
+                " <entry name=\".content.xml\" rp=\"\" ap=\"/home/users/m/mCY2rm1YSMlKFlJ-NEN3\">\n" +
+                "   <base date=\"2018-10-02T11:44:02.000+02:00\" md5=\"268b8e1f6d7b3fc9ec71226ee1a9dc70\" contentType=\"text/xml\" size=\"946\"/>\n" +
+                "   <work date=\"2018-10-02T11:44:02.000+02:00\" md5=\"268b8e1f6d7b3fc9ec71226ee1a9dc70\" contentType=\"text/xml\" size=\"946\"/>\n" +
+                " </entry>\n" +
+                " <entry name=\"_rep_policy.xml\" rp=\"\" ap=\"/home/users/m/mCY2rm1YSMlKFlJ-NEN3/rep:policy\">\n" +
+                "   <base date=\"2018-10-02T11:44:02.000+02:00\" md5=\"5a788decc1968551e2838bc46914f75a\" contentType=\"text/xml\" size=\"500\"/>\n" +
+                "   <work date=\"2018-10-02T11:44:02.000+02:00\" md5=\"5a788decc1968551e2838bc46914f75a\" contentType=\"text/xml\" size=\"500\"/>\n" +
+                " </entry>\n" +
+                "</entries>";
+        try {
+            XmlEntries entries = XmlEntries.load(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+            assertTrue(entries.hasEntry(".content.xml"));
+            fail("XML entries with DTD should fail.");
+        } catch (VltException e) {
+            // ok
         }
     }
 }

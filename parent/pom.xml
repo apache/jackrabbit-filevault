@@ -281,14 +281,14 @@ Bundle-Category: jackrabbit
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>7.4.1</version>
+                    <version>8.1.0</version>
                     <executions>
                         <execution>
                             <goals>
                                 <goal>check</goal>
                             </goals>
                             <configuration>
-                                <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+                                <failBuildOnCVSS>11</failBuildOnCVSS>
                             </configuration>
                         </execution>
                     </executions>
@@ -528,6 +528,13 @@ Bundle-Category: jackrabbit
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.13.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.9.2</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

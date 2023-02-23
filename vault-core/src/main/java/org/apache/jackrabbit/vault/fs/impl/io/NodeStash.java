@@ -187,16 +187,15 @@ public class NodeStash {
                     }
                 }
             }
-            if (importMode != ImportMode.REPLACE) {
-                try {
-                    recoverProperties(importMode==ImportMode.MERGE || importMode == ImportMode.MERGE_PROPERTIES);
-                } catch (RepositoryException e) {
-                    log.warn("Unable to restore properties at {} due to: {}. Properties will remain in temporary location: {}",
-                            path, e.getMessage(), tmpNode.getPath());
-                    if (importInfo != null) {
-                        importInfo.onError(path, e);
-                        hasErrors = true;
-                    }
+
+            try {
+                recoverProperties(importMode == ImportMode.MERGE || importMode == ImportMode.MERGE_PROPERTIES);
+            } catch (RepositoryException e) {
+                log.warn("Unable to restore properties at {} due to: {}. Properties will remain in temporary location: {}", path,
+                        e.getMessage(), tmpNode.getPath());
+                if (importInfo != null) {
+                    importInfo.onError(path, e);
+                    hasErrors = true;
                 }
             }
             if (!hasErrors) {
@@ -204,7 +203,7 @@ public class NodeStash {
             }
         }
     }
-    
+
     private void recoverProperties(boolean overwriteNewOnes) throws RepositoryException {
         Node destNode = session.getNode(path);
 
@@ -212,7 +211,7 @@ public class NodeStash {
         Property mixinProperty = tmpNode.hasProperty(JcrConstants.JCR_MIXINTYPES + PROTECTED_PROPERTIES_SUFFIX) ? tmpNode.getProperty(JcrConstants.JCR_MIXINTYPES + PROTECTED_PROPERTIES_SUFFIX) : null;
         if (mixinProperty != null) {
             for (Value value : mixinProperty.getValues()) {
-                tmpNode.addMixin(value.getString());
+                destNode.addMixin(value.getString());
             }
         }
         PropertyIterator propIterator = tmpNode.getProperties();

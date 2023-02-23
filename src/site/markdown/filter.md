@@ -42,10 +42,10 @@ Example:
     </workspaceFilter>
 
 ### Filter Elements
-The filter elements are independent of each other and define include and exclude patters for subtrees. The root of a
+The filter elements are independent of each other and define include and exclude patterns for subtrees. The root of a
 subtree is defined by the `root` attribute, which must be an absolute path [in JCR 2.0 Path Standard Form][jcr.path-standard-form].
 The filter element can have an optional `mode` attribute which specified the [import mode][api.ImportMode] used when
-importing content. the following values are possible:
+importing content. The following values are possible:
 
 1. `replace` : This is the normal behavior. Existing content is replaced completely by the imported content, i.e. is overridden or deleted accordingly.
 1. `merge` : Existing content is not modified, i.e. only new content is added and none is deleted or modified. Deprecated, as not handled consistently, use `merge_properties` instead.
@@ -98,17 +98,17 @@ Usage for Export
 When exporting content into the filesystem or a content package, the workspace filter defines which nodes are
 serialized. It is important to know, that only the nodes that match the filter are actually traversed, which can lead to unexpected results.
 
-for example:
+For example:
 
     <filter root="/tmp">
         <include pattern="/tmp/a(/.*)?"/>
         <include pattern="/tmp/b/c(/.*)?"/>
     </filter>
 
-Will include the `/tmp/a` subtree, but not the `/tmp/b/c` subtree, since `/tmp/b` does not match the filter and is
-therefor not traversed.
+The above will include the `/tmp/a` subtree, but not the `/tmp/b/c` subtree, since `/tmp/b` does not match the filter and is
+therefore not traversed.
 
-There is one exception, if **all** the pattern are relative (i.e. don't start with a slash), then the algorithm is:
+There is one exception, if **all** the patterns are relative (i.e. don't start with a slash), then the algorithm is:
 
 1. start at the filter root
 2. traverse **all** child nodes recursively
@@ -137,7 +137,7 @@ yes | no | no | not existing
 All *uncovered* ancestor nodes are either
 
 1. created with the node type and properties given in the package (in case the node type *is* given with a `.content.xml` at the right location and the node does not yet exist in the repo)
-1. since version 3.4.4 ([JCRVLT-417](https://issues.apache.org/jira/browse/JCRVLT-417)) created with the ancestor node type's default child type or if that is not set or prior to version 3.4.4 created with node type `nt:folder` (in case the the node type is *not* given with a `.content.xml` at the right location and the node does not yet exist in the repo) or
+1. since version 3.4.4 ([JCRVLT-417](https://issues.apache.org/jira/browse/JCRVLT-417)) created with the ancestor node type's default child type or if that is not set or prior to version 3.4.4 created with node type `nt:folder` (in case the node type is *not* given with a `.content.xml` at the right location and the node does not yet exist in the repo) or
 1. not touched at all (in case they are already existing in the repo, no matter which node type is given with a `.content.xml` at the according location) 
 
 ### Example

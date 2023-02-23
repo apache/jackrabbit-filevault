@@ -148,6 +148,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <!-- see JCRVLT-680 -->
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- for parsing Maven versions -->
         <dependency>
             <groupId>org.apache.maven</groupId>

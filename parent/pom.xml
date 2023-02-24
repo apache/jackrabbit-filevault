@@ -48,8 +48,8 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jackrabbit.version>2.20.7</jackrabbit.version>
-        <oak.version>1.44.0</oak.version>
+        <jackrabbit.version>2.20.8</jackrabbit.version>
+        <oak.version>1.48.0</oak.version>
         <slf4j.version>1.7.25</slf4j.version>
         <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
         <bnd.version>6.4.0</bnd.version>

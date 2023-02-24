@@ -201,7 +201,8 @@ public abstract class AbstractExporter implements AutoCloseable {
             // update properties
             setProperty(MetaInf.CREATED, Calendar.getInstance());
             setProperty(MetaInf.CREATED_BY, mgr.getUserId());
-            setProperty(MetaInf.GENERATOR, getVersion("org.apache.jackrabbit.vault", this.getClass()));
+            String moduleName = "org.apache.jackrabbit.vault";
+            setProperty(MetaInf.GENERATOR, moduleName + ":" + getVersion(moduleName, this.getClass()));
             setProperty(MetaInf.PACKAGE_FORMAT_VERSION, String.valueOf(MetaInf.FORMAT_VERSION_2));
 
             // get filter and translate if necessary

@@ -83,6 +83,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
 
     @Nullable
     private String userId;
+
     /**
      * Creates a new definition base on the underlying node.
      * @param definitionNode the definition node

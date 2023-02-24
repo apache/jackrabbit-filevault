@@ -406,7 +406,7 @@ public abstract class AbstractExporter implements AutoCloseable {
      * @param clazz a class of the module
      * @return the version (or "SNAPSHOT" when unknown)
      */
-    public String getVersion(String moduleName, Class<?> clazz) {
+    private String getVersion(String moduleName, Class<?> clazz) {
         // borrowed from oak-commons
         String version = "SNAPSHOT"; // fallback
         try (InputStream stream = clazz

@@ -418,7 +418,7 @@ public abstract class AbstractExporter implements AutoCloseable {
                 return properties.getProperty("version", version);
             }
         } catch (IOException ignored) {
-            log.warn("failed to read prom properties for " + moduleName, ignored);
+            log.warn("failed to read pom properties for " + moduleName, ignored);
         }
         return version;
     }

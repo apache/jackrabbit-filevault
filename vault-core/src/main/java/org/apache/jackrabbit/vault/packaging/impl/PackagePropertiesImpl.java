@@ -115,6 +115,14 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
      * {@inheritDoc}
      */
     @Override
+    public String getGenerator() {
+        return getProperty(NAME_GENERATOR);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Calendar getLastWrapped() {
         return getDateProperty(NAME_LAST_WRAPPED);
     }

@@ -65,7 +65,7 @@ public interface MetaInf {
     String CREATED_BY = "createdBy";
 
     /**
-     * Name of the 'created' property
+     * Name of the 'generator' property
      */
     String GENERATOR = "generator";
 

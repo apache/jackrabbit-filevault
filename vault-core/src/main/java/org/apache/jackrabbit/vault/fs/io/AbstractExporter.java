@@ -110,6 +110,11 @@ public abstract class AbstractExporter implements AutoCloseable {
 
     protected ExportInfo exportInfo = new ExportInfo();
 
+    private static String DEFAULT_GENERATOR = "org.apache.jackrabbit.vault" + ":"
+            + getVersion("org.apache.jackrabbit.vault", AbstractExporter.class);
+
+    private String generator = DEFAULT_GENERATOR;
+
     public boolean isVerbose() {
         return tracker != null;
     }
@@ -141,6 +146,24 @@ public abstract class AbstractExporter implements AutoCloseable {
         if (properties != null) {
             this.properties.putAll(properties);
         }
+    }
+
+    /**
+     * @return generator information (for diagnostical purposes; usually in
+     *         "name:version" format). {@code null} when n/a. Defaults to
+     *         "org.apache.jackrabbit.vault:version".
+     */
+    public String getGenerator() {
+        return generator;
+    }
+
+    /**
+     * @param generator
+     *            generator information (for diagnostical purposes; usually in
+     *            "name:version" format). {@code null} when n/a.
+     */
+    public void setGenerator(String generator) {
+        this.generator = generator;
     }
 
     public String getRootPath() {
@@ -201,8 +224,7 @@ public abstract class AbstractExporter implements AutoCloseable {
             // update properties
             setProperty(MetaInf.CREATED, Calendar.getInstance());
             setProperty(MetaInf.CREATED_BY, mgr.getUserId());
-            String moduleName = "org.apache.jackrabbit.vault";
-            setProperty(MetaInf.GENERATOR, moduleName + ":" + getVersion(moduleName, this.getClass()));
+            setProperty(MetaInf.GENERATOR, generator);
             setProperty(MetaInf.PACKAGE_FORMAT_VERSION, String.valueOf(MetaInf.FORMAT_VERSION_2));
 
             // get filter and translate if necessary
@@ -407,7 +429,7 @@ public abstract class AbstractExporter implements AutoCloseable {
      * @param clazz a class of the module
      * @return the version (or "SNAPSHOT" when unknown)
      */
-    private String getVersion(String moduleName, Class<?> clazz) {
+    private static String getVersion(String moduleName, Class<?> clazz) {
         // borrowed from oak-commons
         String version = "SNAPSHOT"; // fallback
         try (InputStream stream = clazz

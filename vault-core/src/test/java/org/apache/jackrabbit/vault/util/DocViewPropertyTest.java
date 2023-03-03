@@ -30,6 +30,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
+import javax.jcr.ValueFormatException;
 import javax.jcr.nodetype.PropertyDefinition;
 
 import org.apache.jackrabbit.commons.jackrabbit.SimpleReferenceBinary;
@@ -177,6 +178,32 @@ public class DocViewPropertyTest {
         Assert.assertEquals(new DocViewProperty("foo", new String[] {""}, true, PropertyType.UNDEFINED), dp);
     }
 
+    /**
+     * Special test for mv properties with 1 empty string value (JCR-3661)
+     * @throws Exception
+     */
+    @Test
+    public void testEmptyString() throws Exception {
+        Property p = Mockito.mock(Property.class);
+        Value value = Mockito.mock(Value.class);
+
+        Mockito.when(value.getString()).thenReturn("");
+        PropertyDefinition pd = Mockito.mock(PropertyDefinition.class);
+        Mockito.when(pd.isMultiple()).thenReturn(false);
+
+        Mockito.when(p.getType()).thenReturn(PropertyType.STRING);
+        Mockito.when(p.getName()).thenReturn("foo");
+        Mockito.when(p.getValue()).thenReturn(value);
+        Mockito.when(p.getDefinition()).thenReturn(pd);
+
+        String result = DocViewProperty.format(p);
+        Assert.assertEquals("formatted property", "\\0", result);
+
+        // now round trip back
+        DocViewProperty dp = DocViewProperty.parse("foo", result);
+        Assert.assertEquals(new DocViewProperty("foo", new String[] {""}, true, PropertyType.UNDEFINED), dp);
+    }
+    
     @Test
     public void testEmptyMVBoolean() throws Exception {
         Property p = Mockito.mock(Property.class);
@@ -194,6 +221,28 @@ public class DocViewPropertyTest {
 
         String result = DocViewProperty.format(p);
         Assert.assertEquals("formatted property", "{Boolean}[false]", result);
+
+        // now round trip back
+        DocViewProperty dp = DocViewProperty.parse("foo", result);
+        Assert.assertEquals(new DocViewProperty("foo", new String[] {"false"}, true, PropertyType.BOOLEAN), dp);
+    }
+
+    @Test
+    public void testBinary() throws ValueFormatException, IllegalStateException, RepositoryException {
+        Property p = Mockito.mock(Property.class);
+        Value value = Mockito.mock(Value.class);
+
+        Mockito.when(value.getString()).thenReturn("");
+        PropertyDefinition pd = Mockito.mock(PropertyDefinition.class);
+        Mockito.when(pd.isMultiple()).thenReturn(false);
+
+        Mockito.when(p.getType()).thenReturn(PropertyType.BINARY);
+        Mockito.when(p.getName()).thenReturn("foo");
+        Mockito.when(p.getValue()).thenReturn(value);
+        Mockito.when(p.getDefinition()).thenReturn(pd);
+
+        String result = DocViewProperty.format(p);
+        Assert.assertEquals("formatted property", "{Binary}", result);
 
         // now round trip back
         DocViewProperty dp = DocViewProperty.parse("foo", result);

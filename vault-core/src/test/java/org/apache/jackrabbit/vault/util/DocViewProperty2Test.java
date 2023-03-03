@@ -39,6 +39,7 @@ import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
 import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
 import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
+import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
 import org.apache.jackrabbit.value.ValueFactoryImpl;
@@ -199,6 +200,13 @@ public class DocViewProperty2Test {
         // now round trip back
         DocViewProperty2 dp = DocViewProperty2.parse("foo", result, nameResolver);
         Assert.assertEquals(new DocViewProperty2(nameFoo, Arrays.asList(""), PropertyType.UNDEFINED), dp);
+    }
+
+    @Test
+    public void testUndefinedType() {
+        DocViewProperty2 dp = new DocViewProperty2(NameConstants.JCR_LASTMODIFIEDBY, "[Bar\"\\");
+        String actualValue = dp.formatValue();
+        Assert.assertEquals("\\[Bar\"\\\\", actualValue);
     }
 
     @Test

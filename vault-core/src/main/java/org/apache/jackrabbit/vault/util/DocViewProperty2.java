@@ -442,6 +442,7 @@ public class DocViewProperty2 {
                     case PropertyType.STRING:
                     case PropertyType.NAME:
                     case PropertyType.PATH:
+                    case PropertyType.UNDEFINED:
                         attrValue.append(escape(value, isMultiValue));
                         break;
                     default:

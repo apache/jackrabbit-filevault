@@ -247,6 +247,7 @@ public interface PackageProperties {
     /**
      * Returns the name and version of the component that generated the package.
      * @return the generator or {@code null} if n/a
+     * @since 3.6.10
      */
     String getGenerator();
 

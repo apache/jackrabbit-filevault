@@ -63,7 +63,12 @@ public interface MetaInf {
      * Name of the 'created by' property
      */
     String CREATED_BY = "createdBy";
-    
+
+    /**
+     * Name of the 'generator' property
+     */
+    String GENERATOR = "generator";
+
     /**
      * Returns the package format version of this package. If the package
      * lacks this information, {@link #FORMAT_VERSION_2} is returned, since this

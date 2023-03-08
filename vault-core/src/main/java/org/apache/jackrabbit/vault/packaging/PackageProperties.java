@@ -91,6 +91,11 @@ public interface PackageProperties {
     String NAME_CREATED_BY = "createdBy";
 
     /**
+     * Name of the generator by meta-inf property
+     */
+    String NAME_GENERATOR = "generator";
+
+    /**
      * Name of the last wrapped meta-inf property
      * @since 2.2.22
      */
@@ -238,6 +243,13 @@ public interface PackageProperties {
      * @return the creator
      */
     String getCreatedBy();
+
+    /**
+     * Returns the name and version of the component that generated the package.
+     * @return the generator or {@code null} if n/a
+     * @since 3.6.10
+     */
+    String getGenerator();
 
     /**
      * Returns the date when this package was wrapped or {@code null} if n/a.

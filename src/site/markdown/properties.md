@@ -36,6 +36,7 @@ Example:
     <properties>
 	<comment>FileVault Package Properties</comment>
 	<entry key="createdBy">admin</entry>
+	<entry key="generator">org.apache.jackrabbit.vault:3.6.10</entry>
 	<entry key="name">acs-aem-commons-content</entry>
 	<entry key="lastModified">2018-06-14T11:50:32.369+02:00</entry>
 	<entry key="lastModifiedBy">admin</entry>
@@ -68,6 +69,7 @@ Example:
 | dependencies-locations | Optional comma-separated list of dependencies' locations. Each item has the format `<package-id>=<uri>`. Currently [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) is using a URI scheme for Maven coordinates like `maven:<groupId>:<artifactId>:<version>[[:<classifier>]:packaging]`. | no | empty
 | created | A date string in the format `±YYYY-MM-DDThh:mm:ss.SSSTZD` specifying when the package has been created initially (see also [ISO8601][api.ISO8601]) | no | empty
 | createdBy | A user name indicating who initially created this package | no | empty
+| generator | Information about the generator of the package | no | for packages created by filevault: `org.apache.jackrabbit.vault:version`
 | lastWrapped | A date string in the format `±YYYY-MM-DDThh:mm:ss.SSSTZD` specifying when the package has been last wrapped (i.e. rebuilt) (see also [ISO8601][api.ISO8601]) | no | empty
 | lastWrappedBy | A user name indicating who last modified this package | no | empty
 | acHandling | See [AccessControlHandling][api.AccessControlHandling]. | no | ignore

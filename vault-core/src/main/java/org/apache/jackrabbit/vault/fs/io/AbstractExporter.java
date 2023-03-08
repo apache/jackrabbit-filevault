@@ -110,6 +110,11 @@ public abstract class AbstractExporter implements AutoCloseable {
 
     protected ExportInfo exportInfo = new ExportInfo();
 
+    private static String DEFAULT_GENERATOR = "org.apache.jackrabbit.vault" + ":"
+            + getVersion("org.apache.jackrabbit.vault", AbstractExporter.class);
+
+    private String generator = DEFAULT_GENERATOR;
+
     public boolean isVerbose() {
         return tracker != null;
     }
@@ -141,6 +146,24 @@ public abstract class AbstractExporter implements AutoCloseable {
         if (properties != null) {
             this.properties.putAll(properties);
         }
+    }
+
+    /**
+     * @return generator information (for diagnostical purposes; usually in
+     *         "name:version" format). {@code null} when n/a. Defaults to
+     *         "org.apache.jackrabbit.vault:version".
+     */
+    public String getGenerator() {
+        return generator;
+    }
+
+    /**
+     * @param generator
+     *            generator information (for diagnostical purposes; usually in
+     *            "name:version" format). {@code null} when n/a.
+     */
+    public void setGenerator(String generator) {
+        this.generator = generator;
     }
 
     public String getRootPath() {
@@ -201,6 +224,7 @@ public abstract class AbstractExporter implements AutoCloseable {
             // update properties
             setProperty(MetaInf.CREATED, Calendar.getInstance());
             setProperty(MetaInf.CREATED_BY, mgr.getUserId());
+            setProperty(MetaInf.GENERATOR, generator);
             setProperty(MetaInf.PACKAGE_FORMAT_VERSION, String.valueOf(MetaInf.FORMAT_VERSION_2));
 
             // get filter and translate if necessary
@@ -396,6 +420,29 @@ public abstract class AbstractExporter implements AutoCloseable {
             return PackageType.CONTENT;
         }
         return PackageType.MIXED;
+    }
+
+    /**
+     * Returns the version of an Oak module.
+     *
+     * @param moduleName the name of the module
+     * @param clazz a class of the module
+     * @return the version (or "SNAPSHOT" when unknown)
+     */
+    private static String getVersion(String moduleName, Class<?> clazz) {
+        // borrowed from oak-commons
+        String version = "SNAPSHOT"; // fallback
+        try (InputStream stream = clazz
+                .getResourceAsStream("/META-INF/maven/org.apache.jackrabbit.vault/" + moduleName + "/pom.properties")) {
+            if (stream != null) {
+                Properties properties = new Properties();
+                properties.load(stream);
+                return properties.getProperty("version", version);
+            }
+        } catch (IOException ignored) {
+            log.warn("failed to read pom properties for " + moduleName, ignored);
+        }
+        return version;
     }
 
     /**

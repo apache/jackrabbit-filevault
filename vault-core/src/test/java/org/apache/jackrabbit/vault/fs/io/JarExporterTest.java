@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -78,6 +79,13 @@ public class JarExporterTest {
                 }
                 target.delete();
             }
+        }
+    }
+
+    @Test
+    public void checkGenerator() throws RepositoryException, IOException {
+        try (JarExporter exporter = new JarExporter(new ByteArrayOutputStream());) {
+            assertEquals("org.apache.jackrabbit.vault:SNAPSHOT", exporter.getGenerator());
         }
     }
 

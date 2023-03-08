@@ -649,6 +649,13 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     /**
      * {@inheritDoc}
      */
+    public String getGenerator() {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public Calendar getLastUnwrapped() {
         return getCalendar(PN_LAST_UNWRAPPED);
     }
@@ -976,7 +983,6 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         return null;
     }
 
-    
     @Override
     public Calendar getDateProperty(String name) {
         return getCalendar(name);

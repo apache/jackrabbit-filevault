@@ -14,11 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.util;
+
+import javax.jcr.RepositoryException;
 
 /**
- * The FileVault validation framework SPI. Provides classes/interfaces to implement validators on FileVault packages.
+ * Wraps a {@link RepositoryException} with an unchecked exception.
+ * Useful in {@link FunctionalInterface} methods/lambda expressions which must not throw checked exceptions.
+ * @since 3.6.10
+ *
  */
-@Version("1.6.0")
-package org.apache.jackrabbit.vault.validation.spi;
+public class UncheckedRepositoryException extends RuntimeException {
 
-import org.osgi.annotation.versioning.Version;
+    private static final long serialVersionUID = 7179774059211440453L;
+
+    public UncheckedRepositoryException(RepositoryException e) {
+        super(e);
+    }
+
+    @Override
+    public synchronized RepositoryException getCause() {
+        return (RepositoryException) super.getCause();
+    }
+}

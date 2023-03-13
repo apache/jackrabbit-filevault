@@ -175,6 +175,40 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- We use a class from the config admin implementation to read config files -->
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.configadmin</artifactId>
+            <version>1.8.12</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- JSON Configurations -->
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.cm.json</artifactId>
+            <version>1.0.6</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- transitive (but provided scope) dep of felix.cm.json -->
+        <dependency>
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-core</artifactId>
+            <version>1.2.3</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-json_1.1_spec</artifactId>
+            <version>1.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.converter</artifactId>
+            <version>1.0.14</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- Oak dependencies only used for the constants, not necessary at run time (due to inlining) -->
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>

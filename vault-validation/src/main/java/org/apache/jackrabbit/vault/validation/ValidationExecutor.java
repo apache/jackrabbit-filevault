@@ -44,6 +44,7 @@ import org.apache.jackrabbit.vault.validation.spi.JcrPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
+import org.apache.jackrabbit.vault.validation.spi.OsgiConfigurationValidator;
 import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
@@ -53,6 +54,8 @@ import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedFilterValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedPropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidator;
 import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidatorFactory;
+import org.apache.jackrabbit.vault.validation.spi.impl.OsgiConfigurationParserValidator;
+import org.apache.jackrabbit.vault.validation.spi.impl.OsgiConfigurationParserValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -68,15 +71,16 @@ import org.slf4j.LoggerFactory;
 public final class ValidationExecutor {
 
     public static final String EXTENSION_BINARY = ".binary";
-    private final Map<String, DocumentViewXmlValidator> documentViewXmlValidators;
-    private final Map<String, NodePathValidator> nodePathValidators;
-    private final Map<String, GenericJcrDataValidator> genericJcrDataValidators;
-    private final Map<String, GenericMetaInfDataValidator> genericMetaInfDataValidators;
-    private final Map<String, MetaInfPathValidator> metaInfPathValidators;
-    private final Map<String, JcrPathValidator> jcrPathValidators;
-    private final Map<String, FilterValidator> filterValidators;
-    private final Map<String, PropertiesValidator> propertiesValidators;
-    private final @NotNull Map<String, Validator> validatorsById;
+    private final Map<@NotNull String, @NotNull DocumentViewXmlValidator> documentViewXmlValidators;
+    private final Map<@NotNull String, @NotNull NodePathValidator> nodePathValidators;
+    private final Map<@NotNull String, @NotNull GenericJcrDataValidator> genericJcrDataValidators;
+    private final Map<@NotNull String, @NotNull GenericMetaInfDataValidator> genericMetaInfDataValidators;
+    private final Map<@NotNull String, @NotNull MetaInfPathValidator> metaInfPathValidators;
+    private final Map<@NotNull String, @NotNull JcrPathValidator> jcrPathValidators;
+    private final Map<@NotNull String, @NotNull FilterValidator> filterValidators;
+    private final Map<@NotNull String, @NotNull PropertiesValidator> propertiesValidators;
+    private final @NotNull Map<@NotNull String, @NotNull Validator> validatorsById;
+    private final Map<@NotNull String, @NotNull OsgiConfigurationValidator> osgiConfigurationValidators;
 
     /**
      * the default logger
@@ -88,17 +92,21 @@ public final class ValidationExecutor {
      * 
      * @param validatorsById a map of validator ids and actual validators
      */
-    public ValidationExecutor(@NotNull Map<String, Validator> validatorsById) {
-        this.validatorsById = validatorsById;
-        this.documentViewXmlValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, DocumentViewXmlValidator.class);
-        this.nodePathValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, NodePathValidator.class);
-        this.genericJcrDataValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, GenericJcrDataValidator.class);
-        this.genericMetaInfDataValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, GenericMetaInfDataValidator.class);
-        this.metaInfPathValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, MetaInfPathValidator.class);
-        this.jcrPathValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, JcrPathValidator.class);
-        this.filterValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, FilterValidator.class);
-        this.propertiesValidators = ValidationExecutor.filterValidatorsByClass(validatorsById, PropertiesValidator.class);
-        
+    public ValidationExecutor(@NotNull Map<@NotNull String, @NotNull Validator> validatorsById) {
+        this.validatorsById = new LinkedHashMap<>(validatorsById);
+        this.osgiConfigurationValidators = ValidationExecutor.filterValidatorsByClass(this.validatorsById, OsgiConfigurationValidator.class);
+        if (osgiConfigurationValidators.isEmpty()) {
+            // remove irrelevant parser in case no downstream validators are registered
+            this.validatorsById.remove(OsgiConfigurationParserValidatorFactory.ID);
+        }
+        this.documentViewXmlValidators = ValidationExecutor.filterValidatorsByClass(this.validatorsById, DocumentViewXmlValidator.class);
+        this.nodePathValidators = ValidationExecutor.filterValidatorsByClass(this.validatorsById, NodePathValidator.class);
+        this.genericJcrDataValidators = ValidationExecutor.filterValidatorsByClass(this.validatorsById, GenericJcrDataValidator.class);
+        this.genericMetaInfDataValidators = ValidationExecutor.filterValidatorsByClass(this.validatorsById, GenericMetaInfDataValidator.class);
+        this.metaInfPathValidators = ValidationExecutor.filterValidatorsByClass(this.validatorsById, MetaInfPathValidator.class);
+        this.jcrPathValidators = ValidationExecutor.filterValidatorsByClass(this.validatorsById, JcrPathValidator.class);
+        this.filterValidators = ValidationExecutor.filterValidatorsByClass(this.validatorsById, FilterValidator.class);
+        this.propertiesValidators = ValidationExecutor.filterValidatorsByClass(this.validatorsById, PropertiesValidator.class);
         // nested validators (i.e. ones called from specific low-level validators) need to be linked
         for (Validator validator : validatorsById.values()) {
             if (validator instanceof AdvancedFilterValidator) {
@@ -110,6 +118,9 @@ public final class ValidationExecutor {
             if (validator instanceof DocumentViewParserValidator) {
                 DocumentViewParserValidator.class.cast(validator).setDocumentViewXmlValidators(documentViewXmlValidators);
             }
+            if (validator instanceof OsgiConfigurationParserValidator) {
+                OsgiConfigurationParserValidator.class.cast(validator).setOsgiConfigurationValidators(osgiConfigurationValidators);
+            }
         }
         
         // jcr path validators requires documentviewparservalidator (as that retrieves the JCR paths in the first place)
@@ -118,6 +129,7 @@ public final class ValidationExecutor {
             pathValidatorIds.addAll(nodePathValidators.keySet());
             throw new IllegalStateException("For the validators with id(s) '" + String.join(", ", pathValidatorIds) + "' it is mandatory to also enable validator '" + DocumentViewParserValidatorFactory.ID + "'");
         }
+        
     }
 
     /**
@@ -145,6 +157,7 @@ public final class ValidationExecutor {
         // plus the ones bound to other validators
         unusedValidators.keySet().removeAll(filterValidators.keySet());
         unusedValidators.keySet().removeAll(propertiesValidators.keySet());
+        unusedValidators.keySet().removeAll(osgiConfigurationValidators.keySet());
         return unusedValidators;
     }
 
@@ -202,7 +215,7 @@ public final class ValidationExecutor {
     public @NotNull Collection<ValidationViolation> done() {
         Collection<ValidationViolation> allViolations = new LinkedList<>();
         // go through all validators (even the nested ones)
-        for (Map.Entry<String, Validator>entry : validatorsById.entrySet()) {
+        for (Map.Entry<@NotNull String, @NotNull Validator>entry : validatorsById.entrySet()) {
             try {
                 Collection<ValidationMessage> violations = entry.getValue().done();
                 if (violations != null && !violations.isEmpty()) {
@@ -369,7 +382,7 @@ public final class ValidationExecutor {
         return repositoryPath;
     }
 
-    static <T> Map<String, T> filterValidatorsByClass(Map<String, Validator> allValidators, Class<T> type) {
+    static <@NotNull T> @NotNull Map<@NotNull String, @NotNull T> filterValidatorsByClass(@NotNull Map<@NotNull String, @NotNull Validator> allValidators, @NotNull Class<T> type) {
         return allValidators.entrySet().stream()
                 .filter(x -> type.isInstance(x.getValue()))
                 // keep map order

@@ -6,3 +6,4 @@ src/test/resources/**/.vltignore
 src/test/resources/**/.dummy
 src/test/resources/**/*.lst
 src/test/resources/**/*.MF
+src/test/resources/osgi-configuration/**

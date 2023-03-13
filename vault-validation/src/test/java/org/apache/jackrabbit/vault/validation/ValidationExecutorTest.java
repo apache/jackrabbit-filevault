@@ -16,6 +16,8 @@
  */
 package org.apache.jackrabbit.vault.validation;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -39,12 +41,14 @@ import org.apache.jackrabbit.vault.validation.spi.JcrPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
+import org.apache.jackrabbit.vault.validation.spi.OsgiConfigurationValidator;
 import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidatorFactory;
+import org.apache.jackrabbit.vault.validation.spi.impl.OsgiConfigurationParserValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -75,9 +79,13 @@ public class ValidationExecutorTest {
     @Mock
     private GenericMetaInfDataValidator genericMetaInfDataValidator2;
     @Mock
+    private GenericMetaInfDataValidator osgiConfigurationParserValidator;
+    @Mock
     private JcrPathValidator jcrPathValidator;
     @Mock
     private MetaInfPathValidator metaInfPathValidator;
+    @Mock
+    private OsgiConfigurationValidator osgiConfigurationValidator;
     @Mock
     private Validator unusedValidator;
     @Mock
@@ -85,9 +93,10 @@ public class ValidationExecutorTest {
     
     private ValidationExecutor executor;
 
+    private Map<String, Validator> validators;
     @Before
     public void setUp() throws ParserConfigurationException, SAXException {
-        Map<String, Validator> validators = new LinkedHashMap<>();
+        validators = new LinkedHashMap<>();
         validators.put("docviewid", docViewXmlValidator);
         validators.put("propertiesid", propertiesValidator);
         validators.put("genericmetadataid", genericMetaInfDataValidator);
@@ -97,6 +106,8 @@ public class ValidationExecutorTest {
         validators.put("jcrpathid", jcrPathValidator);
         validators.put("metainfpathid", metaInfPathValidator);
         validators.put("nodepathid", nodePathValidator);
+        validators.put(OsgiConfigurationParserValidatorFactory.ID, osgiConfigurationParserValidator);
+        validators.put("osgiConfigurationValidator", osgiConfigurationValidator);
         validators.put("unusedid", unusedValidator);
         executor = new ValidationExecutor(validators);
     }
@@ -107,6 +118,14 @@ public class ValidationExecutorTest {
         MatcherAssert.assertThat(executor.getUnusedValidatorsById(), Matchers.aMapWithSize(1));
     }
 
+    @Test
+    public void testWithoutOsgiValidator() throws ParserConfigurationException {
+        assertEquals(12, executor.getAllValidatorsById().size());
+        validators.remove("osgiConfigurationValidator");
+        // this must implicitly remove the jackrabbit-osgiconfigparser as well
+        executor = new ValidationExecutor(validators);
+        assertEquals(10, executor.getAllValidatorsById().size());
+    }
     @Test
     public void testValidateNodePath() throws ParserConfigurationException, SAXException, IOException, URISyntaxException {
         Mockito.when(nodePathValidator.validate(Mockito.argThat(new NodeContextNodePathMatcher("/apps/invalid/wrongtype.xml")))).thenReturn(Collections.singletonList(new ValidationMessage(ValidationMessageSeverity.ERROR, "Invalid node path")));

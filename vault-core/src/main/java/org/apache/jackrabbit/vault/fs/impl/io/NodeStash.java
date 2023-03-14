@@ -38,10 +38,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Helper class isolating the task of temporarily moving child nodes and properties to a
- * different location in order to be able to recover (and properly merge) them
- * later on.
- * This is useful when sysview xml is about to be imported, as that clears everything not explicitly mentioned
+ * Helper class isolating the task of temporarily moving child nodes and
+ * properties to a different location in order to be able to recover (and
+ * properly merge) them later on.
+ * <p>
+ * This is useful when system view XML is about to be imported, as that clears
+ * everything not explicitly mentioned.
  */
 public class NodeStash {
 
@@ -84,16 +86,17 @@ public class NodeStash {
     private Node getOrCreateTemporaryNode() throws RepositoryException {
         if (tmpNode != null) {
             return tmpNode;
-        }
-        for (String rootPath: ROOTS) {
-            try {
-                Node root = session.getNode(rootPath);
-                return tmpNode = root.addNode("tmp" + System.currentTimeMillis(), JcrConstants.NT_UNSTRUCTURED);
-            } catch (RepositoryException e) {
-                log.debug("unable to create temporary stash location below {}.", rootPath);
+        } else {
+            for (String rootPath : ROOTS) {
+                try {
+                    Node root = session.getNode(rootPath);
+                    return tmpNode = root.addNode("tmp" + System.currentTimeMillis(), JcrConstants.NT_UNSTRUCTURED);
+                } catch (RepositoryException e) {
+                    log.debug("unable to create temporary stash location below {}.", rootPath);
+                }
             }
+            throw new RepositoryException("Unable to create temporary root (no suitable location found).");
         }
-        throw new RepositoryException("Unable to create temporary root below.");
     }
 
     /**
@@ -115,6 +118,10 @@ public class NodeStash {
         try {
             Node parent = session.getNode(path);
             Node tmp = getOrCreateTemporaryNode();
+
+            int childNodeCount = 0;
+            int propertyCount = 0;
+
             NodeIterator nodeIterator = parent.getNodes();
             while (nodeIterator.hasNext()) {
                 Node child = nodeIterator.nextNode();
@@ -125,6 +132,7 @@ public class NodeStash {
                 }
                 try {
                     session.move(child.getPath(), tmp.getPath() + "/" + name);
+                    childNodeCount += 1;
                 } catch (RepositoryException e) {
                     log.error("Error while moving child node to temporary location. Child will be removed.", e);
                 }
@@ -143,14 +151,20 @@ public class NodeStash {
                     stashPropertyName = null;
                 }
                 if (stashPropertyName != null) {
+                    propertyCount += 1;
                     if (property.isMultiple()) {
                         tmp.setProperty(stashPropertyName, property.getValues(), property.getType());
                     } else {
                         tmp.setProperty(stashPropertyName, property.getValue(), property.getType());
                     }
-                } 
+                }
             }
-            return parent.getPrimaryNodeType().getName();
+
+            String primaryType = parent.getPrimaryNodeType().getName();
+            log.debug("Stashed node {} of type {} as {} ({} properties, {} child nodes).", path, primaryType, tmp.getPath(),
+                    propertyCount, childNodeCount);
+
+            return primaryType;
         } catch (RepositoryException e) {
             log.warn("error while moving child nodes (ignored)", e);
             return null;
@@ -179,7 +193,8 @@ public class NodeStash {
                         session.move(child.getPath(), newPath);
                     }
                 } catch (RepositoryException e) {
-                    log.warn("Unable to move child back to new location at {} due to: {}. Node will remain in temporary location: {}",
+                    log.warn(
+                            "Unable to move child back to new location at {} due to: {}. Node will remain in temporary location: {}",
                             newPath, e.getMessage(), child.getPath());
                     if (importInfo != null) {
                         importInfo.onError(newPath, e);
@@ -198,8 +213,13 @@ public class NodeStash {
                     hasErrors = true;
                 }
             }
+
+            log.debug("Restored properties and child nodes of {} from {} (mode: {}).", path, tmpNode.getPath(), importMode);
+
             if (!hasErrors) {
                 tmpNode.remove();
+            } else {
+                log.debug("Temporary node {} not removed due to errors while restoring child items.", tmpNode.getPath());
             }
         }
     }

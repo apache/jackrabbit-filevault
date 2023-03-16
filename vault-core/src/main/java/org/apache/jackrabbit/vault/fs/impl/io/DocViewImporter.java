@@ -984,6 +984,7 @@ public class DocViewImporter implements DocViewParserHandler {
             if (importMode == ImportMode.REPLACE && !"rep:root".equals(primaryType) && wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_PRIMARYTYPE))) {
                 if (!node.getPrimaryNodeType().getName().equals(primaryType)) {
                     vs.ensureCheckedOut();
+                    log.trace("Setting primary node type {} for {}", primaryType, node.getPath());
                     node.setPrimaryType(primaryType);
                     updatedNode = node;
                 }

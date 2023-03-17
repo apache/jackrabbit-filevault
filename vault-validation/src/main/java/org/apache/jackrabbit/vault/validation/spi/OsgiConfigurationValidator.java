@@ -20,6 +20,9 @@ import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Validator interface for OSGi configurations in any of the serialization formats supported by 
  * <a href="https://sling.apache.org/documentation/bundles/configuration-installer-factory.html">Sling Configuration Installer Factory</a>.
@@ -36,5 +39,5 @@ public interface OsgiConfigurationValidator extends Validator {
      * @param nodePath the repository path of the node which contains the given OSGi configuration
      * @return validation messages or {@code null}
      */
-    Collection<ValidationMessage> validateConfig(Map<String, Object> config, String pid, String subname, String nodePath);
+    @Nullable Collection<ValidationMessage> validateConfig(@NotNull Map<String, Object> config, @NotNull String pid, @Nullable String subname, @NotNull String nodePath);
 }

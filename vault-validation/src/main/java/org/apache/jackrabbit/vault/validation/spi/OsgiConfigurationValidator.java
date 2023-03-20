@@ -26,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Validator interface for OSGi configurations in any of the serialization formats supported by 
  * <a href="https://sling.apache.org/documentation/bundles/configuration-installer-factory.html">Sling Configuration Installer Factory</a>.
- *
+ * @since 3.6.10
  */
 public interface OsgiConfigurationValidator extends Validator {
 

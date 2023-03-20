@@ -980,11 +980,13 @@ public class DocViewImporter implements DocViewParserHandler {
         } else {
             // TODO: is this faster than using sysview import?
             // set new primary type (but never set rep:root)
-            String primaryType = ni.getPrimaryType().orElseThrow(() -> new IllegalStateException("Mandatory property 'jcr:primaryType' missing from " + ni));
-            if (importMode == ImportMode.REPLACE && !"rep:root".equals(primaryType) && wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_PRIMARYTYPE))) {
-                if (!node.getPrimaryNodeType().getName().equals(primaryType)) {
+            String newPrimaryType = ni.getPrimaryType().orElseThrow(() -> new IllegalStateException("Mandatory property 'jcr:primaryType' missing from " + ni));
+            if (importMode == ImportMode.REPLACE && !"rep:root".equals(newPrimaryType) && wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_PRIMARYTYPE))) {
+                String currentPrimaryType = node.getPrimaryNodeType().getName();
+                if (!currentPrimaryType.equals(newPrimaryType)) {
                     vs.ensureCheckedOut();
-                    node.setPrimaryType(primaryType);
+                    log.trace("Changing primary node type for {} from {} to {}", node.getPath(), currentPrimaryType, newPrimaryType);
+                    node.setPrimaryType(newPrimaryType);
                     updatedNode = node;
                 }
             }

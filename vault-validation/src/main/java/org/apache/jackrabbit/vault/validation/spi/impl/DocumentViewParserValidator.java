@@ -31,7 +31,6 @@ import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
-import org.apache.jackrabbit.vault.validation.ValidationExecutor;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.impl.util.EnhancedBufferedInputStream;
 import org.apache.jackrabbit.vault.validation.impl.util.ValidatorDocViewParserHandler;
@@ -74,7 +73,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
     public void setDocumentViewXmlValidators(Map<String, DocumentViewXmlValidator> documentViewXmlValidators) {
         this.docViewValidators.putAll(documentViewXmlValidators);
     }
-   
+
     @Override
     public Collection<ValidationMessage> done() {
         return null;

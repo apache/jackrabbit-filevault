@@ -41,7 +41,7 @@ public interface GenericJcrDataValidator extends Validator {
      * 
      * @param input the input stream of the file which ends up below jcr_root in the package located at filePath
      * @param filePath file path relative to the jcr_root directory (i.e. does not start with {@code jcr_root})
-     * @param nodePathsAndLineNumbers a map which should be filled with all node path and their according line numbers if nodes are detected in the given input
+     * @param nodePathsAndLineNumbers a map which should be filled with all node path and their according line numbers if nodes are detected in the given input.
      * @return a collection of validation messages or {@code null}
      * @throws IOException in case the input stream could not be accessed
      * @deprecated Use {@link #validateJcrData(InputStream, Path, Path, Map)} instead.

@@ -63,8 +63,8 @@ public class OsgiConfigurationParserValidator implements DocumentViewXmlValidato
 
     private static final String SLING_OSGI_CONFIG_NODETYPE = "sling:OsgiConfig";
 
-    private static final String OSGI_CONFIG_NODE_PATH = "/(?:[^/]*/){0,4}?config(?:\\..*)?/.*";
-    
+    private static final String OSGI_CONFIG_NODE_PATH = "/(?:[^/]*/){0,4}?config(?:\\.[^/]*)?/.*";
+
     private static final Pattern OSGI_CONFIG_NODE_PATH_PATTERN = Pattern.compile(OSGI_CONFIG_NODE_PATH);
 
     /**

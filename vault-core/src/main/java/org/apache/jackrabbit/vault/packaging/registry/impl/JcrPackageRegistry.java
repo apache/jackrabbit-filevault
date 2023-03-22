@@ -361,33 +361,94 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
+    @NotNull
+    @Override
+    public PackageId register(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
+        ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
+        try (JcrPackage pkg = upload(pack, replace)) {
+            return pkg.getPackage().getId();
+        } catch (RepositoryException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @NotNull
+    @Override
+    public PackageId registerExternal(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
+        throw new UnsupportedOperationException("linking files to repository persistence is not supported.");
+    }
+
     public JcrPackage upload(InputStream in, boolean replace)
             throws RepositoryException, IOException, PackageExistsException {
-
+    
         MemoryArchive archive = new MemoryArchive(true);
-        Binary bin;
+        final Binary bin;
         try (InputStreamPump pump = new InputStreamPump(in , archive)) {
             // this will cause the input stream to be consumed and the memory archive being initialized.
             bin = session.getValueFactory().createBinary(pump);
         }
-
-        if (archive.getJcrRoot() == null) {
-            String msg = "Stream is not a content package. Missing 'jcr_root'.";
-            bin.dispose();
+        try {
+            return upload(archive, bin, replace);
+        } finally {
             archive.close();
+            bin.dispose();
+        }
+    }
+
+    /**
+     * Uploads the given package to the JCR package manager,
+     * @param pkg the package
+     * @param replace
+     * @return the uploaded package
+     * @throws RepositoryException
+     * @throws IOException
+     * @throws PackageExistsException
+     */
+    public JcrPackage upload(@NotNull ZipVaultPackage pkg, boolean replace) throws RepositoryException, IOException, PackageExistsException {
+
+        final Binary binary;
+        File file = pkg.getFile();
+        if (file != null) {
+            try (InputStream input = new FileInputStream(file)) {
+                binary = session.getValueFactory().createBinary(input);
+            }
+        } else {
+            try (InputStream input = new NullInputStream(0)) {
+                binary = session.getValueFactory().createBinary(input);
+            }
+        }
+        try {
+            // the archive is implicitly closed with the given ZipVaultPackage
+            return upload(pkg.getArchive(), binary, replace);
+        } finally {
+            binary.dispose();
+        }
+    }
+
+    /**
+     * 
+     * @param archive the source archive to upload
+     * @param binary the binary value holding the actual package, is not disposed
+     * @param replace whether to replace an existing package with the same id
+     * @return the newly uploaded package
+     * @throws IOException 
+     * @throws RepositoryException 
+     * @throws PackageExistsException 
+     */
+    private JcrPackage upload(@NotNull Archive archive, Binary binary, boolean replace) throws RepositoryException, IOException, PackageExistsException {
+        // open zip packages
+        if (archive.getJcrRoot() == null) {
+            String msg = "Given archive is not a content package. Missing 'jcr_root'.";
+            log.error(msg);
             throw new IOException(msg);
         }
 
-        final MetaInf inf = archive.getMetaInf();
-        PackageId pid = inf.getPackageProperties().getId();
-
         // invalidate pid if path is unknown
+        PackageId pid = archive.getMetaInf().getPackageProperties().getId();
         if (pid == null) {
             pid = createRandomPid();
         }
         if (!pid.isValid()) {
-            bin.dispose();
-            archive.close();
             throw new RepositoryException("Unable to create package. Illegal package name.");
         }
 
@@ -413,104 +474,16 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             if (replace) {
                 parent.getNode(name).remove();
             } else {
-                archive.close();
                 throw new PackageExistsException("Package already exists: " + pid).setId(pid);
             }
         }
         JcrPackage jcrPack = null;
         try {
-            jcrPack = createNew(parent, pid, bin, archive);
+            jcrPack = createNew(parent, pid, binary, archive);
             JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
             Calendar newCreateDate = def == null ? null : def.getCreated();
             // only transfer the old package state to the new state in case both packages have the same create date
             if (state != null && newCreateDate != null && oldCreatedDate != null && oldCreatedDate.compareTo(newCreateDate) == 0) {
-                def.setState(state);
-            }
-            dispatch(PackageEvent.Type.UPLOAD, pid, null);
-            return jcrPack;
-        } finally {
-            bin.dispose();
-            if (jcrPack == null) {
-                session.refresh(false);
-            } else {
-                session.save();
-            }
-        }
-    }
-
-    @NotNull
-    @Override
-    public PackageId register(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
-        ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
-        try (JcrPackage pkg = upload(pack, replace)) {
-            return pkg.getPackage().getId();
-        } catch (RepositoryException e) {
-            throw new IOException(e);
-        }
-    }
-
-    @NotNull
-    @Override
-    public PackageId registerExternal(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
-        throw new UnsupportedOperationException("linking files to repository persistence is not supported.");
-    }
-
-    /**
-     * Uploads the given package to the JCR package manager,
-     * @param pkg the package
-     * @param replace
-     * @return the uploaded package
-     * @throws RepositoryException
-     * @throws IOException
-     * @throws PackageExistsException
-     */
-    public JcrPackage upload(@NotNull ZipVaultPackage pkg, boolean replace) throws RepositoryException, IOException, PackageExistsException {
-
-        // open zip packages
-        if (pkg.getArchive().getJcrRoot() == null) {
-            String msg = "Zip File is not a content package. Missing 'jcr_root'.";
-            log.error(msg);
-            pkg.close();
-            throw new IOException(msg);
-        }
-
-        // invalidate pid if path is unknown
-        PackageId pid = pkg.getId();
-        if (pid == null) {
-            pid = createRandomPid();
-        }
-        if (!pid.isValid()) {
-            throw new RepositoryException("Unable to create package. Illegal package name.");
-        }
-
-        // create parent node
-        String path = getInstallationPath(pid) + ".zip";
-        String parentPath = Text.getRelativeParent(path, 1);
-        String name = Text.getName(path);
-        Node parent = mkdir(parentPath, false);
-
-        // remember installation state properties (GRANITE-2018)
-        JcrPackageDefinitionImpl.State state = null;
-
-        if (parent.hasNode(name)) {
-            try (JcrPackage oldPackage = new JcrPackageImpl(this, parent.getNode(name))) {
-                JcrPackageDefinitionImpl oldDef = (JcrPackageDefinitionImpl) oldPackage.getDefinition();
-                if (oldDef != null) {
-                    state = oldDef.getState();
-                }
-            }
-
-            if (replace) {
-                parent.getNode(name).remove();
-            } else {
-                throw new PackageExistsException("Package already exists: " + pid).setId(pid);
-            }
-        }
-        JcrPackage jcrPack = null;
-        try {
-            jcrPack = createNew(parent, pid, pkg, false);
-            JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
-            if (state != null && def != null) {
                 def.setState(state);
             }
             dispatch(PackageEvent.Type.UPLOAD, pid, null);

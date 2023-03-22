@@ -124,10 +124,10 @@ public class PackageInstallIT extends IntegrationTestBase {
     }
 
     /**
-     * Tests if unwrapping an already installed package preserves the status
+     * Tests if uploading an already installed package preserves the status
      */
     @Test
-    public void testUnwrapPreserveInstall() throws RepositoryException, IOException, PackageException {
+    public void testUploadPreserveInstallStatus() throws RepositoryException, IOException, PackageException {
 
         JcrPackage pack = packMgr.upload(getStream("/test-packages/tmp.zip"), true, true);
         assertNotNull(pack);
@@ -144,6 +144,7 @@ public class PackageInstallIT extends IntegrationTestBase {
         assertNotNull(pack);
         PackageId pkgId = pack.getDefinition().getId();
         assertTrue(pack.isValid());
+        // installation status must be kept
         assertTrue(pack.isInstalled());
         assertEquals(lastUnpacked, pack.getDefinition().getLastUnpacked().getTimeInMillis());
 
@@ -157,6 +158,27 @@ public class PackageInstallIT extends IntegrationTestBase {
         pack = packMgr.upload(getStream("/test-packages/tmp_with_modified_created_date.zip"), true, true);
         assertNotNull(pack);
         assertTrue(pack.isValid());
+        assertFalse(pack.isInstalled());
+    }
+
+    /**
+     * Tests if uploading an already installed SNAPSHOT version package drops the status
+     */
+    @Test
+    public void testUploadDropInstallStatusForSnapshots() throws RepositoryException, IOException, PackageException {
+        JcrPackage pack = packMgr.upload(getStream("/test-packages/simple-snapshot-version.zip"), true, true);
+        assertNotNull(pack);
+        assertTrue(pack.isValid());
+        pack.install(getDefaultOptions());
+        assertTrue(pack.isInstalled());
+        long lastUnpacked = pack.getDefinition().getLastUnpacked().getTimeInMillis();
+        assertTrue(lastUnpacked > 0);
+
+        // now upload again, but don't install
+        pack = packMgr.upload(getStream("/test-packages/simple-snapshot-version.zip"), true, true);
+        assertNotNull(pack);
+        assertTrue(pack.isValid());
+        // installation status must not be kept
         assertFalse(pack.isInstalled());
     }
 

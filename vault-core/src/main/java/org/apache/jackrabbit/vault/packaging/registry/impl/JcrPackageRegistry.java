@@ -38,7 +38,6 @@ import org.apache.commons.io.input.NullInputStream;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
-import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
@@ -458,17 +457,24 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         String name = Text.getName(path);
         Node parent = mkdir(parentPath, false);
 
-        // remember installation state properties (GRANITE-2018)
         JcrPackageDefinitionImpl.State state = null;
-        Calendar oldCreatedDate = null;
 
         if (parent.hasNode(name)) {
-            try (JcrPackage oldPackage = new JcrPackageImpl(this, parent.getNode(name))) {
-                JcrPackageDefinitionImpl oldDef = (JcrPackageDefinitionImpl) oldPackage.getDefinition();
-                if (oldDef != null) {
-                    state = oldDef.getState();
-                    oldCreatedDate = oldDef.getCreated();
+            // remember installation state properties (GRANITE-2018)
+            // only for non-snapshot versions ...
+            if (!pid.getVersion().isSnapshot()) {
+                try (JcrPackage oldPackage = new JcrPackageImpl(this, parent.getNode(name))) {
+                    JcrPackageDefinitionImpl oldDef = (JcrPackageDefinitionImpl) oldPackage.getDefinition();
+                    if (oldDef != null) {
+                        Calendar newCreateDate = archive.getMetaInf().getPackageProperties().getCreated();
+                        Calendar oldCreatedDate = oldDef.getCreated();
+                        if (newCreateDate != null && oldCreatedDate != null && oldCreatedDate.compareTo(newCreateDate) == 0) {
+                            // ... and only in case both packages have the same create date
+                            state = oldDef.getState();
+                        }
+                    }
                 }
+                
             }
 
             if (replace) {
@@ -481,9 +487,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         try {
             jcrPack = createNew(parent, pid, binary, archive);
             JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) jcrPack.getDefinition();
-            Calendar newCreateDate = def == null ? null : def.getCreated();
-            // only transfer the old package state to the new state in case both packages have the same create date
-            if (state != null && newCreateDate != null && oldCreatedDate != null && oldCreatedDate.compareTo(newCreateDate) == 0) {
+            if (state != null && def != null) {
                 def.setState(state);
             }
             dispatch(PackageEvent.Type.UPLOAD, pid, null);

@@ -18,14 +18,14 @@
 package org.apache.jackrabbit.vault.packaging;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * {@code VersionTest}...
@@ -102,4 +102,12 @@ public class VersionTest  {
                 Math.signum(ret), CoreMatchers.is(Math.signum(comp)));
     }
 
+    @Test
+    public void testIsSnapshot() {
+        assertFalse(Version.create("1").isSnapshot());
+        assertFalse(Version.create("1.SNAPSHOT.0").isSnapshot());
+        assertFalse(Version.create("1.0.0-qualifier").isSnapshot());
+        assertFalse(Version.create("1.0.0-snapshot").isSnapshot());
+        assertTrue(Version.create("1.0.0-SNAPSHOT").isSnapshot());
+    }
 }

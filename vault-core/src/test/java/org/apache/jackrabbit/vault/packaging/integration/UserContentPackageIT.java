@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import javax.jcr.Node;
@@ -507,7 +508,7 @@ public class UserContentPackageIT extends IntegrationTestBase {
 
         opts.setMetaInf(inf);
 
-        File tmpFile = File.createTempFile("vaulttest", ".zip");
+        File tmpFile = Files.createTempFile("vaulttest", ".zip").toFile();
         VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile);
 
         pkg.close();

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.file.Files;
 import java.util.zip.ZipEntry;
 
 import org.apache.commons.io.FileUtils;
@@ -111,7 +112,7 @@ public class ZipMetaFile implements MetaFile {
     public File openTempFile() throws IOException {
         if (tmpFile == null) {
             File parentDir = parent.getZip().getZipFile().getParentFile();
-            tmpFile = File.createTempFile(".vlt-", ".tmp", parentDir);
+            tmpFile = Files.createTempFile(parentDir.toPath(), ".vlt-", ".tmp").toFile();
             tmpFile.createNewFile();
             copyToSilent(tmpFile, true);
         }

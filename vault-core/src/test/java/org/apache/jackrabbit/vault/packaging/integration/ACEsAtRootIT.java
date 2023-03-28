@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.security.Principal;
 import java.util.Properties;
 import java.util.zip.Deflater;
@@ -121,7 +122,7 @@ public class ACEsAtRootIT extends IntegrationTestBase {
         opts.setRootPath("/");
         opts.setCompressionLevel(Deflater.BEST_SPEED);
 
-        File tmpFile = File.createTempFile("vaulttest", ".zip");
+        File tmpFile = Files.createTempFile("vaulttest", ".zip").toFile();
         OutputStream os = new FileOutputStream(tmpFile);
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
         packMgr.assemble(admin, opts, os);

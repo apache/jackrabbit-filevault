@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -155,7 +156,7 @@ public class UpdateableZipFile {
             return;
         }
         // create tmp file
-        File newZip = File.createTempFile(file.getName(), ".tmp", file.getParentFile());
+        File newZip = Files.createTempFile(file.getParentFile().toPath(), file.getName(), ".tmp").toFile();
         try (ZipOutputStream out = new ZipOutputStream(
                 new BufferedOutputStream(new FileOutputStream(newZip)))) {
             out.setLevel(Deflater.NO_COMPRESSION);

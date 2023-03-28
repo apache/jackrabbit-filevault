@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -321,7 +322,7 @@ public class JcrPackageImpl implements JcrPackage {
                     throw new IOException("Error while reading stream", e);
                 }
             } else {
-                File tmpFile = File.createTempFile("vaultpack", ".zip");
+                File tmpFile = Files.createTempFile("vaultpack", ".zip").toFile();
                 Binary bin = getData().getBinary();
                 try (FileOutputStream out = FileUtils.openOutputStream(tmpFile); 
                     InputStream in = bin.getStream()) {

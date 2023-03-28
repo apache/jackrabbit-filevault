@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -232,7 +233,7 @@ public class ZipStreamArchive extends AbstractArchive {
             pos += read;
             if (pos == decompressed.length) {
                 // switch to raf
-                tmpFile = File.createTempFile("__vlttmpbuffer", ".dat");
+                tmpFile = Files.createTempFile("__vlttmpbuffer", ".dat").toFile();
                 raf = new RandomAccessFile(tmpFile, "rw");
                 raf.write(decompressed);
                 decompressed = null;

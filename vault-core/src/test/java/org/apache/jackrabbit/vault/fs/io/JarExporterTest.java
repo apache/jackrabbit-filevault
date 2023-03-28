@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.zip.ZipException;
 
@@ -55,7 +56,7 @@ public class JarExporterTest {
     public void testEntriesWithSuppressedCompression() throws RepositoryException, IOException {
         Mocks m = new Mocks("org/apache/jackrabbit/vault/fs/io/JarExporter/testEntriesWithSuppressedCompression");
         for (int level : new int[] { NO_COMPRESSION, BEST_COMPRESSION, BEST_SPEED }) {
-            File target = File.createTempFile("testEntriesWithSuppressedCompression", ".zip", null);
+            File target = Files.createTempFile("testEntriesWithSuppressedCompression", ".zip").toFile();
             ZipStreamArchive archive = null;
             try {
                 JarExporter exporter = new JarExporter(target, level);

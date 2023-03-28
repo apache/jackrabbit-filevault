@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import javax.jcr.Node;
@@ -113,7 +114,7 @@ public class EscapedExportIT extends IntegrationTestBase {
     }
 
     private void assembleAndReinstallPackage() throws IOException, PackageException, RepositoryException {
-        File pkgFile = File.createTempFile("vaulttest", ".zip");
+        File pkgFile = Files.createTempFile("vaulttest", ".zip").toFile();
 
         try {
             ExportOptions options = new ExportOptions();

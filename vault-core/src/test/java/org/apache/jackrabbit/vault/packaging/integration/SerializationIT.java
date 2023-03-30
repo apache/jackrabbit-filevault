@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +30,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.util.ISO9075;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
@@ -81,4 +83,54 @@ public class SerializationIT extends IntegrationTestBase {
         tmpFile.delete();
     }
 
+    @Test
+    public void exportProblematicWhitespaceTest() throws RepositoryException, IOException, PackageException {
+        // name containing non-ASCII whitespace character; disallowed in
+        // Jackrabbit Classic, allowed in Jackrabbit Oak
+        String testName = "x\u200ay";
+        try {
+            Node testRoot = admin.getRootNode().addNode("testroot", NodeType.NT_UNSTRUCTURED);
+            testRoot.addNode(testName, NodeType.NT_UNSTRUCTURED);
+            admin.save();
+        }
+        catch (RepositoryException ex) {
+            // if we can't add that node, there's nothing to test
+            return;
+        }
+
+        String encodedName = ISO9075.encode(testName);
+        ExportOptions opts = new ExportOptions();
+        DefaultMetaInf inf = new DefaultMetaInf();
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/testroot/a"));
+        inf.setFilter(filter);
+        Properties props = new Properties();
+        props.setProperty(VaultPackage.NAME_GROUP, "jackrabbit/test");
+        props.setProperty(VaultPackage.NAME_NAME, "test-package");
+        inf.setProperties(props);
+
+        opts.setMetaInf(inf);
+        File tmpFile = File.createTempFile("vaulttest", "zip");
+        try {
+            VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile);
+
+            // check if entries are present
+            Archive.Entry e = pkg.getArchive().getEntry("/jcr_root/testroot/.content.xml");
+            assertNotNull("entry should exist", e);
+            String src = IOUtils.toString(pkg.getArchive().getInputSource(e).getByteStream(), "utf-8");
+            String expected =
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                            "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
+                            "    jcr:primaryType=\"nt:unstructured\">\n" +
+                            "    <" + encodedName + "/>\n" +
+                            "</jcr:root>\n";
+            assertEquals("content.xml must be correct, containing '" + encodedName + "'", expected, src);
+            pkg.close();
+        } catch (RepositoryException ex) {
+            // expected until JCRVLT-700 is resolved
+            assertTrue(ex.getMessage().contains("not allowed in name"));
+        }
+
+        tmpFile.delete();
+    }
 }

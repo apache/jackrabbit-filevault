@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -390,7 +391,7 @@ public final class ValidationExecutor {
                     Map.Entry::getKey, 
                     x -> type.cast(x.getValue()), 
                     (u, v) -> {
-                        throw new IllegalStateException(String.format("Duplicate key %s", u));
+                        throw new IllegalStateException(String.format(Locale.ENGLISH, "Duplicate key %s", u));
                     }, 
                     LinkedHashMap::new
                 ));

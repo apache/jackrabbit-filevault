@@ -16,6 +16,8 @@
  */
 package org.apache.jackrabbit.vault.vlt;
 
+import java.util.Locale;
+
 /**
  * The file action represents an action that was performed on a file.
  *
@@ -41,7 +43,7 @@ public enum FileAction {
     }
 
     public String toString() {
-        return name().toLowerCase() + " (" + letter + ")";
+        return name().toLowerCase(Locale.ROOT) + " (" + letter + ")";
     }
 
 }

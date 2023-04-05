@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Optional;
@@ -99,7 +100,7 @@ public class OverlappingFilterValidator implements FilterValidator {
                 if (set2.isPresent()) {
                     validationMessages.add(
                             new ValidationMessage(ValidationMessageSeverity.DEBUG,
-                                    String.format(MESSAGE_OVERLAPPING_FILTER_ROOTS,
+                                    String.format(Locale.ENGLISH, MESSAGE_OVERLAPPING_FILTER_ROOTS,
                                             set1.getRoot(), packagePath, set2.get().getRoot(), otherPackageFiltersPerPackage.getKey())
                                             + " (prior checking includes/excludes)"));
                     // 2. only allow if the canonical includes are excludes in the other rule
@@ -153,7 +154,7 @@ public class OverlappingFilterValidator implements FilterValidator {
                 ValidationMessageSeverity severity =  isSingleNodeFilterPattern ? severityForOverlappingSingleNodePatterns : defaultSeverity;
                 messages.add(
                         new ValidationMessage(severity,
-                                String.format(MESSAGE_OVERLAPPING_FILTERS,
+                                String.format(Locale.ENGLISH, MESSAGE_OVERLAPPING_FILTERS,
                                         includeFilterSet.getRoot(), getPatternLabel(includeFilter), packagePathIncludeFilterSet, excludeFilterSet, packagePathExcludeFilterSet)));
             }
         }

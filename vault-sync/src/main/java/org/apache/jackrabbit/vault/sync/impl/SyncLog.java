@@ -17,10 +17,14 @@
 package org.apache.jackrabbit.vault.sync.impl;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,14 +46,16 @@ public class SyncLog {
     }
 
     public void log(String fmt, Object ... args) {
-        String msg = String.format(fmt, args);
+        String msg = String.format(Locale.ENGLISH, fmt, args);
         log.info("{}", msg);
 
         StringBuilder line = new StringBuilder();
-        line.append(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now()));
+        line.append(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now(ZoneOffset.UTC)));
         line.append(msg);
         line.append("\n");
-        try (FileWriter writer = new FileWriter(logFile, true)) {
+        
+        try (FileOutputStream fileOutputStream = new FileOutputStream(logFile, true);
+             OutputStreamWriter writer = new OutputStreamWriter(fileOutputStream, StandardCharsets.US_ASCII)) {
             writer.write(line.toString());
         } catch (IOException e) {
             log.error("Unable to update log file: {}", logFile, e);

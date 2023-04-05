@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
@@ -56,7 +57,7 @@ public class AccessControlValidator implements DocumentViewXmlValidator {
         if (!isIncremental) {
             // make sure that at least one rep:Policy node is contained
             if (!hasFoundACLNode && accessControlHandling != AccessControlHandling.IGNORE && accessControlHandling != AccessControlHandling.CLEAR) {
-                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST, accessControlHandling)));
+                return Collections.singleton(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_INEFFECTIVE_ACCESS_CONTROL_LIST, accessControlHandling)));
             }
         }
         return null;
@@ -68,7 +69,7 @@ public class AccessControlValidator implements DocumentViewXmlValidator {
         if (ACL_MANAGEMENT.isACLNodeType(node.getPrimaryType().orElse(""))) {
             hasFoundACLNode = true;
             if (accessControlHandling == AccessControlHandling.IGNORE || accessControlHandling == AccessControlHandling.CLEAR) {
-                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_IGNORED_ACCESS_CONTROL_LIST, accessControlHandling)));
+                return Collections.singleton(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_IGNORED_ACCESS_CONTROL_LIST, accessControlHandling)));
             }
         }
         return null;

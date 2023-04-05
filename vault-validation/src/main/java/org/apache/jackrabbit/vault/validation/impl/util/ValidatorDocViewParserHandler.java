@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -115,9 +116,9 @@ public class ValidatorDocViewParserHandler implements DocViewParserHandler {
                     } catch (ValueFormatException e) {
                         String message;
                         try {
-                            message = String.format(MESSAGE_INVALID_STRING_SERIALIZATION, PropertyType.nameFromValue(property.getType()), nameResolver.getJCRName(property.getName()), value);
+                            message = String.format(Locale.ENGLISH, MESSAGE_INVALID_STRING_SERIALIZATION, PropertyType.nameFromValue(property.getType()), nameResolver.getJCRName(property.getName()), value);
                         } catch (NamespaceException e1) {
-                            message = String.format(MESSAGE_INVALID_STRING_SERIALIZATION, PropertyType.nameFromValue(property.getType()), property.getName(), value);
+                            message = String.format(Locale.ENGLISH, MESSAGE_INVALID_STRING_SERIALIZATION, PropertyType.nameFromValue(property.getType()), property.getName(), value);
                         }
                         violations.add(new ValidationViolation(DocumentViewParserValidatorFactory.ID, severity, message, filePath, basePath, nodePath, lineNumber, columnNumber, null));
                     }

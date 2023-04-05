@@ -21,9 +21,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -32,11 +35,12 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 
 import org.apache.jackrabbit.commons.JcrUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.sync.impl.VaultSyncServiceImpl;
-import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.VltException;
+import org.apache.jackrabbit.vault.vlt.actions.Sync.Command;
 
 /**
  * {@code Checkout}...
@@ -116,7 +120,7 @@ public class Sync extends AbstractAction {
     private void init(VltContext ctx, Session s) throws VltException, RepositoryException {
         // check if in vlt checkout
         if (ctx.getExportRoot().isValid()) {
-            ctx.getStdout().printf("Starting initialization of sync service in existing vlt checkout %s for %s%n",
+            ctx.getStdout().printf(Locale.ENGLISH, "Starting initialization of sync service in existing vlt checkout %s for %s%n",
                     ctx.getExportRoot().getJcrRoot().getAbsolutePath(),
                     mountPoint);
             // check if config is present, assume installed
@@ -127,12 +131,14 @@ public class Sync extends AbstractAction {
             }
             register(ctx, s, true);
             ctx.getStdout().printf(
+                    Locale.ENGLISH, 
                     "%nThe directory %1$s is now enabled for syncing.%n" +
                     "You might perform a 'sync-once' by setting the%n" +
                     "appropriate flag in the %1$s/.vlt-sync-config.properties file.%n%n",
                     localDir.getAbsolutePath());
         } else {
-            ctx.getStdout().printf("Starting initialization of sync service in a non vlt checkout directory %s for %s%n",
+            ctx.getStdout().printf(Locale.ENGLISH,
+                    "Starting initialization of sync service in a non vlt checkout directory %s for %s%n",
                     localDir.getAbsolutePath(),
                     mountPoint);
             // check if empty
@@ -147,6 +153,7 @@ public class Sync extends AbstractAction {
             }
             register(ctx, s, true);
             ctx.getStdout().printf(
+                    Locale.ENGLISH, 
                     "%nThe directory %1$s is now enabled for syncing.%n" +
                     "You need to configure the filter %1$s/.vlt-sync-filter.xml to setup the%n" +
                     "proper paths. You might also perform a 'sync-once' by setting the%n" +
@@ -264,7 +271,7 @@ public class Sync extends AbstractAction {
             if (root.hasNode(jarName)) {
                 root.getNode(jarName).remove();
             }
-            JcrUtils.putFile(root, jarName, "application/octet-stream", in, Calendar.getInstance());
+            JcrUtils.putFile(root, jarName, "application/octet-stream", in, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
         } catch (IOException e) {
             throw new VltException("Error while installing bundle", e);
         } finally {

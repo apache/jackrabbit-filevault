@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -66,7 +67,7 @@ public final class DependencyValidator implements PropertiesValidator {
                         String root = set.getRoot();
                         PackageInfo existing = roots.get(root);
                         if (existing != null) {
-                            String msg = String.format(MESSAGE_DEPENDENCIES_WITH_OVERLAPPING_FILTERS,
+                            String msg = String.format(Locale.ENGLISH, MESSAGE_DEPENDENCIES_WITH_OVERLAPPING_FILTERS,
                                     resolvedDependency.getId(), root, existing.getId());
                             messages.add(new ValidationMessage(severity, msg));
                         }
@@ -77,7 +78,7 @@ public final class DependencyValidator implements PropertiesValidator {
                 }
             }
             if (!isDependencyResolved) {
-                String msg = String.format(MESSAGE_UNRESOLVED_DEPENDENCY, dependency);
+                String msg = String.format(Locale.ENGLISH, MESSAGE_UNRESOLVED_DEPENDENCY, dependency);
                 messages.add(new ValidationMessage(severityForUnresolvedDependencies, msg));
                 continue;
             }

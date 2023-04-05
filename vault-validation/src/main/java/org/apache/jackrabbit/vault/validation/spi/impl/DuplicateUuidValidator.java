@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -55,7 +56,7 @@ public class DuplicateUuidValidator implements DocumentViewXmlValidator {
         if (identifier.isPresent() && filter.contains(nodeContext.getNodePath())) {
             String duplicateUuidPath = uuidsAndPaths.put(identifier.get(), nodeContext.getNodePath());
             if (duplicateUuidPath != null) {
-                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_DUPLICATE_UUID, identifier.get(), duplicateUuidPath, nodeContext.getNodePath())));
+                return Collections.singleton(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_DUPLICATE_UUID, identifier.get(), duplicateUuidPath, nodeContext.getNodePath())));
             }
         }
         return null;

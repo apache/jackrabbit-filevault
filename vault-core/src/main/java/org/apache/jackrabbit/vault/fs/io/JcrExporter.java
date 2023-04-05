@@ -19,7 +19,10 @@ package org.apache.jackrabbit.vault.fs.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.jcr.Binary;
 import javax.jcr.Node;
@@ -140,7 +143,7 @@ public class JcrExporter extends AbstractExporter {
                 }
                 break;
         }
-        Calendar now = Calendar.getInstance();
+        Calendar now = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
         if (a.getLastModified() >= 0) {
             now.setTimeInMillis(a.getLastModified());
         }
@@ -163,7 +166,7 @@ public class JcrExporter extends AbstractExporter {
             }
             Binary b = content.getSession().getValueFactory().createBinary(in);
             content.setProperty(JcrConstants.JCR_DATA, b);
-            content.setProperty(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance());
+            content.setProperty(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
             if (!content.hasProperty(JcrConstants.JCR_MIMETYPE)){
                 content.setProperty(JcrConstants.JCR_MIMETYPE, "application/octet-stream");
             }

@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.fs.impl.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -27,9 +28,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import javax.jcr.ImportUUIDBehavior;
@@ -707,7 +710,7 @@ public class DocViewImporter implements DocViewParserHandler {
         }
         // always update last modified if binary was modified (bug #22969)
         if (!node.hasProperty(JcrConstants.JCR_LASTMODIFIED) || modified) {
-            Calendar lastModified = Calendar.getInstance();
+            Calendar lastModified = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
             node.setProperty(JcrConstants.JCR_LASTMODIFIED, lastModified);
             modified = true;
         }

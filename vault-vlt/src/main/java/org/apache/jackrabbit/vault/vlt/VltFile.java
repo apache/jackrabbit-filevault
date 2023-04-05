@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.vlt;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -25,6 +26,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -79,7 +81,7 @@ public class VltFile implements DocumentSource {
         }
 
         public String toString() {
-            return name().toLowerCase() + " (" + letter + ")";
+            return name().toLowerCase(Locale.ROOT) + " (" + letter + ")";
         }
     }
 
@@ -290,10 +292,10 @@ public class VltFile implements DocumentSource {
         }
         if (MimeTypes.isBinary(work.getContentType()) || MimeTypes.isBinary(base.getContentType())) {
             PrintStream s = parent.getContext().getStdout();
-            s.printf("Index: %s%n", getName());
+            s.printf(Locale.ENGLISH, "Index: %s%n", getName());
             s.println("===================================================================");
             s.println("Cannot display: file marked as binary type.");
-            s.printf("vlt:mime-type = %s%n", work.getContentType());
+            s.printf(Locale.ENGLISH, "vlt:mime-type = %s%n", work.getContentType());
             s.flush();
             return;
         }
@@ -396,7 +398,8 @@ public class VltFile implements DocumentSource {
         if (!force) {
             // check if the file still contains the diff markers
             boolean mayContainMarker = false;
-            try (BufferedReader in = new BufferedReader(new FileReader(file))) {
+            try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file), Constants.ENCODING);
+                 BufferedReader in = new BufferedReader(reader)) {
                 String line;
                 while ((line = in.readLine()) != null) {
                     if (line.startsWith(Hunk3.MARKER_B[0])
@@ -433,7 +436,7 @@ public class VltFile implements DocumentSource {
             case OBSTRUCTED:
             case REPLACED:
                 if (!force || remoteFile == null) {
-                    throw error("update not possible. file is " + state.name().toLowerCase() + ". " +
+                    throw error("update not possible. file is " + state.name().toLowerCase(Locale.ROOT) + ". " +
                             "Specify --force to overwrite existing files.");
                 }
                 return doUpdate(remoteFile, false);

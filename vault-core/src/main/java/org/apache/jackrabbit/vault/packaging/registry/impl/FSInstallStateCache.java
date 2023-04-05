@@ -21,11 +21,14 @@ import java.io.UncheckedIOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZoneOffset;
 import java.util.AbstractMap;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
@@ -155,7 +158,7 @@ class FSInstallStateCache extends AbstractMap<PackageId, FSInstallState> {
         }
         Long installTime = state.getInstallationTime();
         if (FSPackageStatus.EXTRACTED == targetStatus) {
-            installTime = Calendar.getInstance().getTimeInMillis();
+            installTime = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT).getTimeInMillis();
         }
         FSInstallState targetState = new FSInstallState(pid, targetStatus, state.getFilePath())
               .withDependencies(state.getDependencies())

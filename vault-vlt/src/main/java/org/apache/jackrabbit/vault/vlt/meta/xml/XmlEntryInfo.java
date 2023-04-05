@@ -19,7 +19,10 @@ package org.apache.jackrabbit.vault.vlt.meta.xml;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -31,7 +34,6 @@ import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.meta.MetaFile;
 import org.apache.jackrabbit.vault.vlt.meta.VltEntryInfo;
 import org.w3c.dom.Element;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code Entry}...
@@ -211,7 +213,7 @@ public class XmlEntryInfo implements VltEntryInfo {
     }
 
     public void write(XMLStreamWriter writer) throws XMLStreamException {
-        writer.writeStartElement(type.name().toLowerCase());
+        writer.writeStartElement(type.name().toLowerCase(Locale.ROOT));
         writeAttributes(writer);
         writer.writeEndElement();
         dirty = false;
@@ -222,7 +224,7 @@ public class XmlEntryInfo implements VltEntryInfo {
             writer.writeAttribute(AN_NAME, name);
         }
         if (date > 0) {
-            Calendar c = Calendar.getInstance();
+            Calendar c = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
             c.setTimeInMillis(date);
             writer.writeAttribute(AN_DATE, ISO8601.format(c));
         }
@@ -241,7 +243,7 @@ public class XmlEntryInfo implements VltEntryInfo {
             throws VltException {
         Type type;
         try {
-            type = Type.valueOf(elem.getNodeName().toUpperCase());
+            type = Type.valueOf(elem.getNodeName().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new VltException("unknown entry type '" + elem.getNodeName() + "'");
         }

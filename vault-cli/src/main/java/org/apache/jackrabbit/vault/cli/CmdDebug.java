@@ -18,7 +18,9 @@
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 
@@ -80,7 +82,7 @@ public class CmdDebug extends AbstractJcrFsCommand {
                 DefaultWorkspaceFilter r = new DefaultWorkspaceFilter();
                 try {
                     r.load(file);
-                    DumpContext dCtx = new DumpContext(new PrintWriter(System.out));
+                    DumpContext dCtx = new DumpContext(new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.US_ASCII)));
                     r.dump(dCtx, false);
                     dCtx.flush();
                     

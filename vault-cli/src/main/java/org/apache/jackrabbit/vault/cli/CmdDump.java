@@ -19,7 +19,9 @@ package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.apache.commons.cli2.Argument;
@@ -72,7 +74,7 @@ public class CmdDump extends AbstractJcrFsCommand {
             } else {
                 Object f = ctx.getCurrentFile().getFile(path, false).unwrap();
                 if (f instanceof Dumpable) {
-                    DumpContext dCtx = new DumpContext(new PrintWriter(System.out));
+                    DumpContext dCtx = new DumpContext(new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.US_ASCII)));
                     ((Dumpable) f).dump(dCtx, true);
                     dCtx.flush();
                 } else {
@@ -80,7 +82,7 @@ public class CmdDump extends AbstractJcrFsCommand {
                 }
             }
         } else {
-            fs.getAggregateManager().dumpConfig(new PrintWriter(System.out));
+            fs.getAggregateManager().dumpConfig(new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.US_ASCII)));
         }
     }
 

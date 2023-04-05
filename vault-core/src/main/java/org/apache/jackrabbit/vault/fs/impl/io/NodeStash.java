@@ -20,6 +20,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -182,7 +183,7 @@ public class NodeStash {
             }
 
             String primaryType = parent.getPrimaryNodeType().getName();
-            String message = String.format("Stashed node %s of type %s as %s (%d child nodes, %d properties, elapsed %s).", path, primaryType,
+            String message = String.format(Locale.ENGLISH, "Stashed node %s of type %s as %s (%d child nodes, %d properties, elapsed %s).", path, primaryType,
                     tmp.getPath(), childNodeCount, propertyCount, Duration.ofMillis(System.currentTimeMillis() - start));
             if (shouldWarn) {
                 log.warn(message);
@@ -264,7 +265,7 @@ public class NodeStash {
             log.debug("Restored properties and child nodes of {} from {} (mode: {}).", path, tmpNode.getPath(), importMode);
 
             if (shouldWarn) {
-                String message = String.format("Stashed node recovery for %s done (%d child nodes, elapsed %s).", path,
+                String message = String.format(Locale.ENGLISH, "Stashed node recovery for %s done (%d child nodes, elapsed %s).", path,
                         childNodeCount, Duration.ofMillis(System.currentTimeMillis() - start));
                 log.warn(message);
             }

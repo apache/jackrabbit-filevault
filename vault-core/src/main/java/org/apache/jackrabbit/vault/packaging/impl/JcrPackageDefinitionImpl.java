@@ -20,14 +20,17 @@ package org.apache.jackrabbit.vault.packaging.impl;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -240,7 +243,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             }
         }
         defNode.setProperty("unwrapped", (Value) null);
-        defNode.setProperty(PN_LAST_UNWRAPPED, Calendar.getInstance());
+        defNode.setProperty(PN_LAST_UNWRAPPED, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
         if (autoSave) {
             defNode.getSession().save();
         }
@@ -503,7 +506,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     public void touch(Calendar now, boolean autoSave) {
         try {
             defNode.setProperty(PN_LASTMODIFIED,
-                    now == null ? Calendar.getInstance() : now);
+                    now == null ? Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT) : now);
             defNode.setProperty(PN_LASTMODIFIED_BY, getUserId());
             if (autoSave) {
                 defNode.getSession().save();
@@ -537,7 +540,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     void sealForAssembly(Calendar now) {
         try {
             if (now == null) {
-                now = Calendar.getInstance();
+                now = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
             }
             defNode.setProperty(PN_BUILD_COUNT, String.valueOf(getBuildCount() + 1));
             defNode.setProperty(PN_CREATED, now);
@@ -566,7 +569,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     void sealForRewrap(Calendar now) {
         try {
             if (now == null) {
-                now = Calendar.getInstance();
+                now = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
             }
             defNode.setProperty(PN_BUILD_COUNT, String.valueOf(getBuildCount() + 1));
             if (!defNode.hasProperty(PN_CREATED)) {
@@ -590,7 +593,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      */
     void touchLastUnpacked() {
         try {
-            defNode.setProperty(PN_LAST_UNPACKED, Calendar.getInstance());
+            defNode.setProperty(PN_LAST_UNPACKED, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
             defNode.setProperty(PN_LAST_UNPACKED_BY, getUserId());
             defNode.getSession().save();
         } catch (RepositoryException e) {
@@ -970,7 +973,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         try {
             return acHandling == null
                     ? null
-                    : AccessControlHandling.valueOf(acHandling.toUpperCase());
+                    : AccessControlHandling.valueOf(acHandling.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             log.warn("invalid access control handling in definition: {} of {}", acHandling, getId());
             return null;

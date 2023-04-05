@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -1211,10 +1212,10 @@ public class Importer {
                 Node node = session.getNode(path);
                 try {
                     if (opts.isDryRun()) {
-                        track("V", String.format("%s (---)", path));
+                        track("V", String.format(Locale.ENGLISH, "%s (---)", path));
                     } else {
                         Version v = node.checkin();
-                        track("V", String.format("%s (%s)", path, v.getName()));
+                        track("V", String.format(Locale.ENGLISH, "%s (%s)", path, v.getName()));
                     }
                 } catch (RepositoryException e) {
                     log.error("Error while checkin node {}: {}",path, e.toString());
@@ -1242,7 +1243,7 @@ public class Importer {
                 if (!opts.isDryRun()) {
                     userManagement.addMembers(session, id, members);
                 }
-                track("U", String.format("%s", authPath));
+                track("U", String.format(Locale.ENGLISH, "%s", authPath));
             }
         }
         if (!autoSave.isDisabled()) {

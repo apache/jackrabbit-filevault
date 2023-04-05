@@ -18,6 +18,7 @@
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import javax.jcr.RepositoryException;
 
@@ -52,7 +53,7 @@ public class CmdCat extends AbstractJcrFsCommand {
                     file.getArtifact().spool(System.out);
                     System.out.flush();
                 } else {
-                    System.out.printf("Refusing to print contents of a '%s' file.%n", ct);
+                    System.out.printf(Locale.ENGLISH, "Refusing to print contents of a '%s' file.%n", ct);
                 }
             } catch (IOException e) {
                 throw new ExecutionException("Error while downloading file.",e);

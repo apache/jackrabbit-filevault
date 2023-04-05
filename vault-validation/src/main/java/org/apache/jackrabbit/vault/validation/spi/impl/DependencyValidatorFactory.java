@@ -16,6 +16,8 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
+import java.util.Locale;
+
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
@@ -37,7 +39,7 @@ public final class DependencyValidatorFactory implements ValidatorFactory {
         final ValidationMessageSeverity severityForUnresolvedDependencies;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES);
-            severityForUnresolvedDependencies = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            severityForUnresolvedDependencies = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
         } else {
             severityForUnresolvedDependencies = DEFAULT_SEVERITY_FOR_UNRESOLVED_DEPENDENCIES;
         }

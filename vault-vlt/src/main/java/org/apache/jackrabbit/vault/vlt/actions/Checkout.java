@@ -18,7 +18,9 @@ package org.apache.jackrabbit.vault.vlt.actions;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import javax.jcr.RepositoryException;
@@ -116,7 +118,7 @@ public class Checkout extends AbstractAction {
             }
 
             if (ctx.isVerbose()) {
-                DumpContext dc = new DumpContext(new PrintWriter(ctx.getStdout()));
+                DumpContext dc = new DumpContext(new PrintWriter(new OutputStreamWriter(ctx.getStdout(), StandardCharsets.US_ASCII)));
                 dc.println("Filter");
                 ctx.getMetaInf().getFilter().dump(dc, true);
                 dc.outdent();

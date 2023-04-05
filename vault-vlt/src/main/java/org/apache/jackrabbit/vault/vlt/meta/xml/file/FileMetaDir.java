@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.vlt.meta.xml.file;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -98,7 +99,7 @@ public class FileMetaDir implements MetaDirectory {
         File mpFile = new File(dir, ADDRESS_FILE_NAME);
         List<String> lines = new LinkedList<String>();
         lines.add(url);
-        FileUtils.writeLines(mpFile, lines, Constants.ENCODING);
+        FileUtils.writeLines(mpFile, StandardCharsets.US_ASCII.name(), lines, Constants.ENCODING);
     }
 
     public VltEntries getEntries() throws VltException {

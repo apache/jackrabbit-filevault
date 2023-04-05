@@ -101,7 +101,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         final ValidationMessageSeverity severityForUncoveredAncestorNode;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES);
-            severityForUncoveredAncestorNode = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            severityForUncoveredAncestorNode = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
         } else {
             severityForUncoveredAncestorNode = DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES;
         }
@@ -109,7 +109,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         final ValidationMessageSeverity severityForUndefinedFilterRootAncestors;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNDEFINED_FILTER_ROOT_ANCESTORS)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNDEFINED_FILTER_ROOT_ANCESTORS);
-            severityForUndefinedFilterRootAncestors = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            severityForUndefinedFilterRootAncestors = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
         } else {
             // application packages must define every ancestor via package dependencies according to https://issues.apache.org/jira/browse/JCRVLT-170
             if (PackageType.APPLICATION.equals(context.getProperties().getPackageType())) {
@@ -118,7 +118,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
             } else if(settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS)) {
                 log.warn("Using deprecated option " + OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS + ". Please switch to " + OPTION_SEVERITY_FOR_UNDEFINED_FILTER_ROOT_ANCESTORS + " instead!");
                 String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNCOVERED_FILTER_ROOT_ANCESTORS);
-                severityForUndefinedFilterRootAncestors = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+                severityForUndefinedFilterRootAncestors = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
             } else {
                 severityForUndefinedFilterRootAncestors = DEFAULT_SEVERITY_FOR_UNDEFINED_FILTER_ROOT_ANCESTORS;
             }
@@ -131,7 +131,7 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
         } else {
             if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_ORPHANED_FILTER_RULES)) {
                 String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_ORPHANED_FILTER_RULES);
-                severityForOrphanedFilterRules = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+                severityForOrphanedFilterRules = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
             } else {
                 severityForOrphanedFilterRules = DEFAULT_SEVERITY_FOR_ORPHANED_FILTER_RULES;
             }

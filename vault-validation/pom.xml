@@ -111,6 +111,16 @@
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-resolver-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>de.thetaphi</groupId>
+                <artifactId>forbiddenapis</artifactId>
+                <configuration>
+                    <excludes>
+                        <!-- excluded embedded 3rd party libraries -->
+                        <exclude>org/apache/jackrabbit/jcr2spi/**/*.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -128,7 +129,7 @@ public class SyncConfig {
         syncOnce = null;
         if (sm.length() > 0) {
             try {
-                syncOnce = SyncMode.valueOf(sm.toUpperCase());
+                syncOnce = SyncMode.valueOf(sm.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException e) {
                 log.warn("Unknown syncOnce value: " + e);
             }
@@ -163,7 +164,7 @@ public class SyncConfig {
     }
 
     public void save() throws IOException {
-        setProperty(PROP_SYNC_ONCE, syncOnce == null ? "" : syncOnce.name().toLowerCase());
+        setProperty(PROP_SYNC_ONCE, syncOnce == null ? "" : syncOnce.name().toLowerCase(Locale.ROOT));
         setProperty(PROP_SYNC_LOG, syncLog);
         setProperty(PROP_DISABLED, String.valueOf(disabled));
 

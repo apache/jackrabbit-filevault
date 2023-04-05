@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -425,7 +426,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         String mode = elem.getAttribute("mode");
         if (mode != null && mode.length() > 0) {
             try {
-                ImportMode importMode = ImportMode.valueOf(mode.toUpperCase());
+                ImportMode importMode = ImportMode.valueOf(mode.toUpperCase(Locale.ROOT));
                 nodeFilters.setImportMode(importMode);
                 propFilters.setImportMode(importMode);
                 bothFilters.setImportMode(importMode);
@@ -531,7 +532,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
                 writer.writeStartElement("filter");
                 writer.writeAttribute("root", set.getRoot());
                 if (set.getImportMode() != ImportMode.REPLACE) {
-                    writer.writeAttribute("mode", set.getImportMode().name().toLowerCase());
+                    writer.writeAttribute("mode", set.getImportMode().name().toLowerCase(Locale.ROOT));
                 }
                 if (set.getType() != null) {
                     writer.writeAttribute("type", set.getType());

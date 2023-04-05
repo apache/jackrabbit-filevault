@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.vlt.meta;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * Represents an entry in {@link VltEntries}
@@ -41,7 +42,7 @@ public interface VltEntry {
         }
 
         public String toString() {
-            return name().toLowerCase() + " (" + letter + ")";
+            return name().toLowerCase(Locale.ROOT) + " (" + letter + ")";
         }
 
     }

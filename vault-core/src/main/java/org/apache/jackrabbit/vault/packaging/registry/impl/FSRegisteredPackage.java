@@ -17,7 +17,10 @@
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.Dependency;
@@ -97,7 +100,7 @@ public class FSRegisteredPackage implements RegisteredPackage {
     @Nullable
     @Override
     public Calendar getInstallationTime() {
-        Calendar cal = Calendar.getInstance();
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
         Long installTime;
         try {
             installTime = registry.getInstallState(getId()).getInstallationTime();

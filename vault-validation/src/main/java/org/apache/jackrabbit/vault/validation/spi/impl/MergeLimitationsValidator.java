@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.Locale;
 
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -62,7 +63,7 @@ public class MergeLimitationsValidator implements DocumentViewXmlValidator {
     public Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
         // find out if one of the filter roots is pointing to any of the aggregator's non-root nodes
         if (!isRoot && !node.getProperties().isEmpty() && rootNodePathsOfMergeRules.contains(nodeContext.getNodePath())) {
-            return Collections.singleton(new ValidationMessage(severity, String.format(PACKAGE_NON_ROOT_NODE_MERGED, nodeContext.getNodePath())));
+            return Collections.singleton(new ValidationMessage(severity, String.format(Locale.ENGLISH, PACKAGE_NON_ROOT_NODE_MERGED, nodeContext.getNodePath())));
         }
         return null;
     }

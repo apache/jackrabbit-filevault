@@ -16,8 +16,11 @@
  */
 package org.apache.jackrabbit.vault.packaging.hooks;
 
+import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -104,7 +107,7 @@ public class ExampleHook implements InstallHook {
     private void doInstalled(InstallContext ctx) throws RepositoryException {
         // update a property in the install
         Node testNode = ctx.getSession().getNode(testNodePath);
-        testNode.setProperty("hook-example", Calendar.getInstance());
+        testNode.setProperty("hook-example", Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
         ctx.getSession().save();
     }
 

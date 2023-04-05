@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -112,7 +113,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
             writer.writeAttribute(ATTR_VERSION, String.valueOf(version));
             for (PackageTask task: plan.getTasks()) {
                 writer.writeStartElement(TAG_TASK);
-                writer.writeAttribute(ATTR_CMD, task.getType().name().toLowerCase());
+                writer.writeAttribute(ATTR_CMD, task.getType().name().toLowerCase(Locale.ROOT));
                 writer.writeAttribute(ATTR_PACKAGE_ID, task.getPackageId().toString());
                 optionsSerializer.save(writer, task.getOptions());
                 writer.writeEndElement();
@@ -172,7 +173,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     }
 
     private void readTask(Element elem) throws IOException {
-        PackageTask.Type type = PackageTask.Type.valueOf(elem.getAttribute(ATTR_CMD).toUpperCase());
+        PackageTask.Type type = PackageTask.Type.valueOf(elem.getAttribute(ATTR_CMD).toUpperCase(Locale.ROOT));
         PackageId id = PackageId.fromString(elem.getAttribute(ATTR_PACKAGE_ID));
         
         PackageTaskBuilder packageTaskBuilder = addTask().with(id);

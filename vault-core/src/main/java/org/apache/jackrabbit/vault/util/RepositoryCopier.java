@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.util;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -590,7 +591,7 @@ public class RepositoryCopier {
 
     private void track(String path, String fmt, Object ... args) {
         if (tracker != null) {
-            tracker.onMessage(ProgressTrackerListener.Mode.TEXT, String.format(fmt, args), path);
+            tracker.onMessage(ProgressTrackerListener.Mode.TEXT, String.format(Locale.ENGLISH, fmt, args), path);
         }
     }
 

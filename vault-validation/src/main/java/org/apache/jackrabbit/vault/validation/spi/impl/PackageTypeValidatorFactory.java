@@ -17,6 +17,7 @@
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -49,7 +50,6 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
      * Some artifacts are not based on file nodes (e.g. sling:OsgiConfig nodes), those do not need to match this regex.
      */
     public static final String OPTION_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX = "additionalJcrInstallerFileNodePathRegex";
-
 
     public static final String OPTION_SEVERITY_FOR_LEGACY_TYPE = "legacyTypeSeverity";
 
@@ -94,14 +94,14 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
         final ValidationMessageSeverity severityForNoType;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_NO_TYPE)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_NO_TYPE);
-            severityForNoType = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            severityForNoType = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
         } else {
             severityForNoType = DEFAULT_SEVERITY_FOR_NO_TYPE;
         }
         final ValidationMessageSeverity severityForLegacyType;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_LEGACY_TYPE)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_LEGACY_TYPE);
-            severityForLegacyType = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            severityForLegacyType = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
         } else {
             severityForLegacyType = DEFAULT_SEVERITY_FOR_LEGACY_TYPE;
         }

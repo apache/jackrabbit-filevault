@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 /**
@@ -85,17 +86,12 @@ public class LineElementsFactory implements ElementsFactory {
      */
     public static LineElementsFactory create(FileDocumentSource source, boolean ignoreWs, String charset)
             throws IOException {
-        Reader text = charset == null
-                ? new FileReader(source.getFile())
-                : new InputStreamReader(new FileInputStream(source.getFile()), charset);
-        try {
+        
+        try (FileInputStream fis = new FileInputStream(source.getFile());
+              InputStreamReader text = charset == null
+                        ? new InputStreamReader(fis, StandardCharsets.UTF_8)
+                        : new InputStreamReader(fis, charset)) {
             return create(source, text, ignoreWs);
-        } finally {
-            try {
-                text.close();
-            } catch (IOException e) {
-                // ignore
-            }
         }
     }
 

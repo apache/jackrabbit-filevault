@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -132,7 +133,7 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
                 .collect(Collectors.toList());
         if (!invalidNodes.isEmpty()) {
             return invalidNodes.stream().map(
-                    e -> new ValidationMessage(severity, String.format(MESSAGE_ONLY_OSGI_BUNDLE_OR_CONFIG_OR_SUBPACKAGE_ALLOWED, type), e.getNodePath(), e.getFilePath(), e.getBasePath(), null))
+                    e -> new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_ONLY_OSGI_BUNDLE_OR_CONFIG_OR_SUBPACKAGE_ALLOWED, type), e.getNodePath(), e.getFilePath(), e.getBasePath(), null))
                     .collect(Collectors.toList());
         }
         return null;
@@ -148,18 +149,18 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
         switch (type) {
         case CONTENT:
             if (isImmutableContent(nodeContext.getNodePath())) {
-                messages.add(new ValidationMessage(severity, String.format(MESSAGE_APP_CONTENT, type, immutableRootNodeNames.stream().collect(Collectors.joining("' or '", "'", "'")))));
+                messages.add(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_APP_CONTENT, type, immutableRootNodeNames.stream().collect(Collectors.joining("' or '", "'", "'")))));
             }
             if (isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), true)) {
-                messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
+                messages.add(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
             }
             break;
         case APPLICATION:
             if (!isImmutableContent(nodeContext.getNodePath())) {
-                messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_APP_CONTENT_FOUND, type, immutableRootNodeNames.stream().collect(Collectors.joining("' or '", "'", "'")))));
+                messages.add(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_NO_APP_CONTENT_FOUND, type, immutableRootNodeNames.stream().collect(Collectors.joining("' or '", "'", "'")))));
             }
             if (isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), true)) {
-                messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
+                messages.add(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
             }
             // sub packages are detected via validate(Properties) on the sub package
             break;
@@ -187,7 +188,7 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
         switch (type) {
         case APPLICATION:
             if (!allowComplexFilterRulesInApplicationPackages && hasIncludesOrExcludes(filter)) {
-                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES, type)));
+                return Collections.singleton(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES, type)));
             }
             break;
         case CONTENT:
@@ -221,40 +222,40 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
             // must not contain hooks (this detects external hooks)
             if (!properties.getExternalHooks().isEmpty() && !allowInstallHooksInApplicationPackages) {
                 messages.add(new ValidationMessage(severity,
-                        String.format(MESSAGE_PACKAGE_HOOKS, properties.getPackageType(), properties.getExternalHooks())));
+                        String.format(Locale.ENGLISH, MESSAGE_PACKAGE_HOOKS, properties.getPackageType(), properties.getExternalHooks())));
             }
             if (prohibitImmutableContent) {
                 messages.add(new ValidationMessage(severity,
-                        String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+                        String.format(Locale.ENGLISH, MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
             }
             break;
         case CONTENT:
             if (prohibitMutableContent) {
                 messages.add(new ValidationMessage(severity,
-                        String.format(MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+                        String.format(Locale.ENGLISH, MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
             }
             break;
         case CONTAINER:
             // no dependencies
             if (properties.getDependencies() != null && properties.getDependencies().length > 0) {
                 messages.add(new ValidationMessage(severity,
-                        String.format(MESSAGE_DEPENDENCY, properties.getPackageType(), StringUtils.join(properties.getDependencies()))));
+                        String.format(Locale.ENGLISH, MESSAGE_DEPENDENCY, properties.getPackageType(), StringUtils.join(properties.getDependencies()))));
             }
             if (prohibitImmutableContent) {
                 messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+                        String.format(Locale.ENGLISH, MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
             }
             break;
         case MIXED:
             messages.add(
-                    new ValidationMessage(severityForLegacyType, String.format(MESSAGE_LEGACY_TYPE, properties.getPackageType())));
+                    new ValidationMessage(severityForLegacyType, String.format(Locale.ENGLISH, MESSAGE_LEGACY_TYPE, properties.getPackageType())));
             if (prohibitImmutableContent) {
                 messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+                        String.format(Locale.ENGLISH, MESSAGE_PROHIBITED_IMMUTABLE_PACKAGE_TYPE, properties.getPackageType())));
             }
             if (prohibitMutableContent) {
                 messages.add(new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
+                        String.format(Locale.ENGLISH, MESSAGE_PROHIBITED_MUTABLE_PACKAGE_TYPE, properties.getPackageType())));
             }
             break;
         }
@@ -271,7 +272,7 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
         case APPLICATION:
             // is it sling:OsgiConfig node?
             if (node.getPrimaryType().isPresent() && NODETYPE_SLING_OSGI_CONFIG.equals(node.getPrimaryType().orElse("")) && isOsgiBundleOrConfigurationNode(nodeContext.getNodePath(), false)) {
-                messages.add(new ValidationMessage(severity, String.format(MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
+                messages.add(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_NO_OSGI_BUNDLE_OR_CONFIG_ALLOWED, type)));
             }
             break;
         case CONTAINER:
@@ -303,17 +304,17 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
         switch (containerPackageType) {
         case APPLICATION:
             // no sub packages allowed
-            message = new ValidationMessage(severity, String.format(MESSAGE_UNSUPPORTED_SUB_PACKAGE, containerPackageType));
+            message = new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_UNSUPPORTED_SUB_PACKAGE, containerPackageType));
             break;
         case CONTENT:
             if (packageType != PackageType.CONTENT) {
-                message = new ValidationMessage(severity, String.format(MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, containerPackageType,
+                message = new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, containerPackageType,
                         PackageType.CONTENT.toString(), packageType));
             }
             break;
         case CONTAINER:
             if (packageType == PackageType.MIXED) {
-                message = new ValidationMessage(severityForLegacyType, String.format(MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, containerPackageType,
+                message = new ValidationMessage(severityForLegacyType, String.format(Locale.ENGLISH, MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, containerPackageType,
                         StringUtils.join(new String[] { PackageType.APPLICATION.toString(), PackageType.CONTENT.toString(),
                                 PackageType.CONTAINER.toString() }, ", "),
                         packageType));
@@ -331,7 +332,7 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
         case APPLICATION:
             if (filePath.startsWith(PATH_HOOKS) && !allowInstallHooksInApplicationPackages)
                 // must not contain hooks (this detects internal hooks)
-                return Collections.singleton(new ValidationMessage(severity, String.format(MESSAGE_PACKAGE_HOOKS, type, filePath)));
+                return Collections.singleton(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_PACKAGE_HOOKS, type, filePath)));
         default:
             break;
         }

@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.cli;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.Option;
@@ -97,7 +98,7 @@ abstract public class AbstractCmdLs extends AbstractJcrFsCommand {
     }
 
     public static String formatDate(long date) {
-        final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ENGLISH);
         return date == 0 ? "" : fmt.format(new Date(date));
     }
 }

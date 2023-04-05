@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.jackrabbit.oak.plugins.index.IndexConstants;
 import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.AccessControlConstants;
@@ -67,7 +68,7 @@ public final class OakIndexDefinitionValidator implements FilterValidator, Docum
                 if (pathFilter.getRoot().contains("/" + AccessControlConstants.REP_POLICY)) {
                     violations.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, "Ignoring filter entry " + pathFilter  + " as it is referring to an ACL"));
                 } else {
-                    violations.add(new ValidationMessage(defaultMessageSeverity, String.format(MESSAGE_POTENTIAL_INDEX_IN_FILTER, packageRootPathOfNotAllowedIndexDefinition, pathFilter.getRoot())));
+                    violations.add(new ValidationMessage(defaultMessageSeverity, String.format(Locale.ENGLISH, MESSAGE_POTENTIAL_INDEX_IN_FILTER, packageRootPathOfNotAllowedIndexDefinition, pathFilter.getRoot())));
                 }
             }
         }
@@ -78,7 +79,7 @@ public final class OakIndexDefinitionValidator implements FilterValidator, Docum
     public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
         ValidationMessage violation = null;
         if (IndexConstants.INDEX_DEFINITIONS_NODE_TYPE.equals(node.getPrimaryType().orElse(""))) {
-            violation = new ValidationMessage(defaultMessageSeverity, String.format(MESSAGE_INDEX_AT_NODE, packageRootPathOfNotAllowedIndexDefinition));
+            violation = new ValidationMessage(defaultMessageSeverity, String.format(Locale.ENGLISH, MESSAGE_INDEX_AT_NODE, packageRootPathOfNotAllowedIndexDefinition));
         }
         return violation != null ? Collections.singleton(violation) : null;
     }

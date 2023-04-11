@@ -110,7 +110,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
         if (existingPath != null) {
             // check if there is an existing node with the name
             recovery = new NodeStash(session, existingPath).excludeName("rep:cache");
-            recovery.stash();
+            recovery.stash(null);
         }
         excludeNode(NAME_REP_CACHE);
         this.importMode = importMode;

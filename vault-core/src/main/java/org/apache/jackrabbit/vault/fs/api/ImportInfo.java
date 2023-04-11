@@ -52,6 +52,12 @@ public interface ImportInfo {
     void onCreated(String path);
 
     /**
+     * Marks that the child node at {@code path} was moved due to stashing.
+     * @param path the path
+     */
+    void onStashed(String path);
+
+    /**
      * Marks that the node at {@code path} was deleted.
      * @param path the path
      */
@@ -125,7 +131,7 @@ public interface ImportInfo {
      * @return a new, merged info.
      */
     ImportInfo merge(ImportInfo info);
-    
+
     /**
      * returns the number of non-NOP entries.
      * @return the number of modified entries.

@@ -55,7 +55,9 @@ public interface ImportInfo {
      * Marks that the child node at {@code path} was moved due to stashing.
      * @param path the path
      */
-    void onStashed(String path);
+    default void onStashed(String path) {
+        // by default do nothing
+    };
 
     /**
      * Marks that the node at {@code path} was deleted.

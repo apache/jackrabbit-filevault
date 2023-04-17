@@ -22,11 +22,15 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
+import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
+import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener.Mode;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Test;
@@ -65,6 +69,9 @@ public class NodeStashingIT extends IntegrationTestBase {
 
         // update same path but without mixin allowing child nodes and different
         // UUID so that node stashing kicks in
+        Collector col = new Collector();
+        options.setListener(col);
+
         extractVaultPackage("/test-packages/stashing/update.zip", options);
 
         // child node should be retained
@@ -79,5 +86,21 @@ public class NodeStashingIT extends IntegrationTestBase {
 
         // make sure mixin type was restored
         assertTrue(node2.isNodeType("{" + TESTNS + "}hasMandatoryChildNode"));
+
+        String expected = "saving approx 3 nodes...";
+        assertTrue("Expected message '" + expected + "' not seen in: " + col.actions, col.actions.contains(expected));
+    }
+
+    private static class Collector implements ProgressTrackerListener {
+        private final List<String> actions = new LinkedList<>();
+
+        public void onMessage(Mode mode, String action, String path) {
+            if (Mode.PATHS == mode) {
+                actions.add(action);
+            }
+        }
+
+        public void onError(Mode mode, String path, Exception e) {
+        }
     }
 }

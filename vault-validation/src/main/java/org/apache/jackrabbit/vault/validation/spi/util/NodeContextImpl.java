@@ -17,6 +17,7 @@
 package org.apache.jackrabbit.vault.validation.spi.util;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.jetbrains.annotations.NotNull;
@@ -25,12 +26,20 @@ public final class NodeContextImpl implements NodeContext {
     private final @NotNull String nodePath;
     private final @NotNull Path filePath;
     private final @NotNull Path basePath;
+    private final int line;
+    private final int column;
 
     public NodeContextImpl(@NotNull String nodePath, @NotNull Path filePath, @NotNull Path basePath) {
+        this(nodePath, filePath, basePath, 0, 0);
+    }
+
+    public NodeContextImpl(@NotNull String nodePath, @NotNull Path filePath, @NotNull Path basePath, int line, int column) {
         super();
         this.nodePath = nodePath;
         this.filePath = filePath;
         this.basePath = basePath;
+        this.line = line;
+        this.column = column;
     }
 
     @Override
@@ -49,13 +58,18 @@ public final class NodeContextImpl implements NodeContext {
     }
 
     @Override
+    public int getLine() {
+        return line;
+    }
+
+    @Override
+    public int getColumn() {
+        return column;
+    }
+
+    @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((basePath == null) ? 0 : basePath.hashCode());
-        result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
-        result = prime * result + ((nodePath == null) ? 0 : nodePath.hashCode());
-        return result;
+        return Objects.hash(basePath, column, filePath, line, nodePath);
     }
 
     @Override
@@ -67,27 +81,14 @@ public final class NodeContextImpl implements NodeContext {
         if (getClass() != obj.getClass())
             return false;
         NodeContextImpl other = (NodeContextImpl) obj;
-        if (basePath == null) {
-            if (other.basePath != null)
-                return false;
-        } else if (!basePath.equals(other.basePath))
-            return false;
-        if (filePath == null) {
-            if (other.filePath != null)
-                return false;
-        } else if (!filePath.equals(other.filePath))
-            return false;
-        if (nodePath == null) {
-            if (other.nodePath != null)
-                return false;
-        } else if (!nodePath.equals(other.nodePath))
-            return false;
-        return true;
+        return Objects.equals(basePath, other.basePath) && column == other.column && Objects.equals(filePath, other.filePath)
+                && line == other.line && Objects.equals(nodePath, other.nodePath);
     }
 
     @Override
     public String toString() {
-        return "NodeContextImpl [" + (nodePath != null ? "nodePath=" + nodePath + ", " : "")
-                + (filePath != null ? "filePath=" + filePath + ", " : "") + (basePath != null ? "basePath=" + basePath : "") + "]";
+        return "NodeContextImpl [nodePath=" + nodePath + ", filePath=" + filePath + ", basePath=" + basePath + ", line=" + line
+                + ", column=" + column + "]";
     }
+
 }

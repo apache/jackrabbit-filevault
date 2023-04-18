@@ -115,7 +115,7 @@ public class DocumentViewParserValidatorTest {
                     new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "sling:Folder"));
             NameFactory nameFactory = NameFactoryImpl.getInstance();
             DocViewNode2 node = new DocViewNode2(nameFactory.create("{}apps"), properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps", Paths.get("apps", ".content.xml"), Paths.get("")), true);
+            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps", Paths.get("apps", ".content.xml"), Paths.get(""), 19, 35), true);
 
             properties = new ArrayList<>();
             properties.add(
@@ -123,13 +123,13 @@ public class DocumentViewParserValidatorTest {
             properties.add(
             		new DocViewProperty2(nameFactory.create("{}attribute1"), "value1"));
             node = new DocViewNode2(nameFactory.create("{}somepath"), properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/somepath", Paths.get("apps", ".content.xml"), Paths.get("")), false);
+            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/somepath", Paths.get("apps", ".content.xml"), Paths.get(""), 21, 29), false);
             
             properties = new ArrayList<>();
             properties.add(
                     new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED));
             node = new DocViewNode2(NameConstants.JCR_CONTENT, properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/somepath/jc:content", Paths.get("apps", ".content.xml"), Paths.get("")), false);
+            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/somepath/jc:content", Paths.get("apps", ".content.xml"), Paths.get(""), 22, 54), false);
         }
     }
 
@@ -155,7 +155,7 @@ public class DocumentViewParserValidatorTest {
             properties.add(new DocViewProperty2(NAME_SLING_TARGET, "/index.html"));
             
             DocViewNode2 node = new DocViewNode2(NameConstants.ROOT, properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/", Paths.get(".content.xml"), Paths.get("")), true);
+            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/", Paths.get(".content.xml"), Paths.get(""), 6, 32), true);
         }
     }
 
@@ -208,13 +208,13 @@ public class DocumentViewParserValidatorTest {
             Collection<DocViewProperty2> properties = new ArrayList<>();
             properties.add(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "sling:Folder"));
             DocViewNode2 node = new DocViewNode2(nameFactory.create("{}child1"), properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child1", Paths.get("apps", "child1.xml"), Paths.get("")), true);
+            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child1", Paths.get("apps", "child1.xml"), Paths.get(""), 20, 36), true);
 
             properties = new ArrayList<>();
             properties.add(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED));
             properties.add(new DocViewProperty2(nameFactory.create("{}attribute1"), "value1"));
             node = new DocViewNode2(nameFactory.create("{}somepath"), properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child1/somepath", Paths.get("apps", "child1.xml"), Paths.get("")), false);
+            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child1/somepath", Paths.get("apps", "child1.xml"), Paths.get(""), 23, 6), false);
 
             // verify node names
             Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();
@@ -250,13 +250,13 @@ public class DocumentViewParserValidatorTest {
             Collection<DocViewProperty2> properties = new ArrayList<>();
             properties.add(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "sling:Folder"));
             DocViewNode2 node = new DocViewNode2(nameFactory.create("{}child3"), properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child3", Paths.get("apps", "child2", ".content.xml"), Paths.get("")), true);
+            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child3", Paths.get("apps", "child2", ".content.xml"), Paths.get(""), 20, 36), true);
 
             properties.clear();
             properties.add(new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED));
             properties.add(new DocViewProperty2(nameFactory.create("{}attribute1"), "value1"));
             node = new DocViewNode2(nameFactory.create("{}somepath"), properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child3/somepath", Paths.get("apps", "child2", ".content.xml"), Paths.get("")), false);
+            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/child3/somepath", Paths.get("apps", "child2", ".content.xml"), Paths.get(""), 23, 6), false);
 
             // verify node names
             Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();

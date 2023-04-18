@@ -56,11 +56,11 @@ public class ValidationMessage {
     }
 
     public ValidationMessage(@NotNull ValidationMessageSeverity severity, @NotNull String message, @NotNull NodeContext nodeContext) {
-        this(severity, message, nodeContext.getNodePath(), nodeContext.getFilePath(), nodeContext.getBasePath(), 0, 0, null);
+        this(severity, message, nodeContext.getNodePath(), nodeContext.getFilePath(), nodeContext.getBasePath(), nodeContext.getLine(), nodeContext.getColumn(), null);
     }
 
     public ValidationMessage(@NotNull ValidationMessageSeverity severity, @NotNull String message, @NotNull NodeContext nodeContext, Throwable throwable) {
-        this(severity, message, nodeContext.getNodePath(), nodeContext.getFilePath(), nodeContext.getBasePath(), 0, 0, throwable);
+        this(severity, message, nodeContext.getNodePath(), nodeContext.getFilePath(), nodeContext.getBasePath(), nodeContext.getLine(), nodeContext.getColumn(), throwable);
     }
 
     public ValidationMessage(@NotNull ValidationMessageSeverity severity, @NotNull String message, Path filePath, Path basePath, int line, int column, Throwable throwable) {

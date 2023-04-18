@@ -142,8 +142,8 @@ public class JcrNodeTypeMetaDataImplTest {
                 ntManagerProvider.getItemDefinitionProvider(), ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, filter);
         ValidationExecutorTest.assertViolation(messages,
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_CHILD_NODE_MISSING, "jcr:content [nt:base]", "types [nt:file]",
-                        nodeContext)));
+                        String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_CHILD_NODE_MISSING, "jcr:content [nt:base]", "types [nt:file]"),
+                        nodeContext));
     }
     
     @Test
@@ -256,9 +256,10 @@ public class JcrNodeTypeMetaDataImplTest {
                 ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, filter);
         MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
+        NodeContext nodeContext = createSimpleNodeContext("name2");
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
-                ntManagerProvider.getItemDefinitionProvider(), createSimpleNodeContext("name2"),
+                ntManagerProvider.getItemDefinitionProvider(), nodeContext,
                 "my:nodeType1");
         
         // mandatory child node missing inside filter
@@ -267,7 +268,7 @@ public class JcrNodeTypeMetaDataImplTest {
                 ntManagerProvider.getItemDefinitionProvider(),ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR, filter);
         ValidationExecutorTest.assertViolation(messages, new ValidationMessage(ValidationMessageSeverity.ERROR,
                 String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_CHILD_NODE_MISSING, "my:namedChild1 [my:nodeType1]", "types [my:nodeType1]",
-                        "/name2")));
+                        "/name2"), nodeContext));
 
         // calling a second time will not lead to anything
         messages = node.finalizeValidation(ntManagerProvider.getNamePathResolver(), ntManagerProvider.getNodeTypeDefinitionProvider(),
@@ -295,7 +296,7 @@ public class JcrNodeTypeMetaDataImplTest {
                 ntManagerProvider.getItemDefinitionProvider(),ValidationMessageSeverity.ERROR, ValidationMessageSeverity.ERROR,  "property", false,
                 ValueFactoryImpl.getInstance().createValue("foo")), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         
-        NodeContext nodeContext = createSimpleNodeContext("nodeForMandatoryProperties");
+        nodeContext = createSimpleNodeContext("nodeForMandatoryProperties");
         node = root.addChildNode(ntManagerProvider.getNamePathResolver(),
                 ntManagerProvider.getEffectiveNodeTypeProvider(), ntManagerProvider.getNodeTypeDefinitionProvider(),
                 ntManagerProvider.getItemDefinitionProvider(), nodeContext, "my:nodeType2");

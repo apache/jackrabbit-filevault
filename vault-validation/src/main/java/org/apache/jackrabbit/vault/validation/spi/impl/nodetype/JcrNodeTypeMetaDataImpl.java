@@ -62,6 +62,7 @@ import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -334,7 +335,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
             // in incremental validations ignore missing mandatory properties and child nodes (as they might not be visible to the validator)
             if (!isIncremental) {
                 messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG,
-                        "Validate children and mandatory properties of " + getQualifiedPath(namePathResolver)));
+                        "Validate children and mandatory properties of " + getQualifiedPath(namePathResolver), context));
                 messages.addAll(validateChildNodes(namePathResolver, nodeTypeDefinitionProvider, itemDefinitionProvider, severity, severityForDefaultNodeTypeViolations, filter));
                 messages.addAll(validateMandatoryProperties(namePathResolver, severity, severityForDefaultNodeTypeViolations));
             }
@@ -342,11 +343,11 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
             childNodesByName.clear();
             isValidationDone = true;
             messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG,
-                    "Remove node information of children of " + getQualifiedPath(namePathResolver)));
+                    "Remove node information of children of " + getQualifiedPath(namePathResolver), context));
             return messages;
         } else {
             return Collections.singletonList(new ValidationMessage(ValidationMessageSeverity.DEBUG,
-                    "Already finalized validation of " + getQualifiedPath(namePathResolver)));
+                    "Already finalized validation of " + getQualifiedPath(namePathResolver), context));
         }
     }
 
@@ -397,7 +398,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                         messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
                                 String.format(MESSAGE_MANDATORY_CHILD_NODE_MISSING,
                                 getNodeDefinitionLabel(namePathResolver, mandatoryNodeType),
-                                getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType))));
+                                getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType)), context));
                     } else {
                         // if mandatory child nodes are missing outside filter rules, this is not an issue
                         messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, String.format(MESSAGE_MANDATORY_UNCONTAINED_CHILD_NODE_MISSING,
@@ -648,25 +649,8 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
 
     public static @NotNull JcrNodeTypeMetaDataImpl createRoot(boolean isIncremental, @NotNull EffectiveNodeTypeProvider effectiveNodeTypeProvider)
             throws ConstraintViolationException, NoSuchNodeTypeException {
-        return new JcrNodeTypeMetaDataImpl(isIncremental, new NodeContext() {
-
-            @Override
-            public @NotNull String getNodePath() {
-                return "";
-            }
-
-            @Override
-            @NotNull
-            public java.nio.file.@NotNull Path getFilePath() {
-                return Paths.get("");
-            }
-
-            @Override
-            public java.nio.file.@NotNull Path getBasePath() {
-                return Paths.get("");
-            }
-            
-        }, NameConstants.ROOT, NameConstants.REP_ROOT, effectiveNodeTypeProvider.getEffectiveNodeType(
+        return new JcrNodeTypeMetaDataImpl(isIncremental, new NodeContextImpl("", Paths.get(""), Paths.get("")),
+            NameConstants.ROOT, NameConstants.REP_ROOT, effectiveNodeTypeProvider.getEffectiveNodeType(
                 new Name[] {
                         NameConstants.REP_ROOT,
                         NameConstants.REP_ACCESS_CONTROLLABLE,

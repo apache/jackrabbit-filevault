@@ -114,7 +114,7 @@ public class NodeStash {
      * Moves the child nodes and optionally properties of the path to a temporary location.
      * @return the stashed node's primary type (if it needs to be kept)
      */
-    public @Nullable String stash() {
+    public @Nullable String stash(@Nullable ImportInfo importInfo) {
         try {
             Node parent = session.getNode(path);
             Node tmp = getOrCreateTemporaryNode();
@@ -131,8 +131,12 @@ public class NodeStash {
                     continue;
                 }
                 try {
-                    session.move(child.getPath(), tmp.getPath() + "/" + name);
+                    String path = child.getPath();
+                    session.move(path, tmp.getPath() + "/" + name);
                     childNodeCount += 1;
+                    if (importInfo != null) {
+                        importInfo.onStashed(path);
+                    }
                 } catch (RepositoryException e) {
                     log.error("Error while moving child node to temporary location. Child will be removed.", e);
                 }
@@ -183,6 +187,7 @@ public class NodeStash {
             Node parent = session.getNode(path);
             NodeIterator iter = tmpNode.getNodes();
             boolean hasErrors = false;
+
             while (iter.hasNext()) {
                 Node child = iter.nextNode();
                 String newPath = parent.getPath() + "/" + child.getName();
@@ -190,7 +195,11 @@ public class NodeStash {
                     if (session.nodeExists(newPath)) {
                         log.debug("Skipping restore from temporary location {} as node already exists at {}", child.getPath(), newPath);
                     } else {
-                        session.move(child.getPath(), newPath);
+                        String path = child.getPath();
+                        session.move(path, newPath);
+                        if (importInfo != null) {
+                            importInfo.onStashed(path);
+                        }
                     }
                 } catch (RepositoryException e) {
                     log.warn(

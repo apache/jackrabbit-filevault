@@ -971,7 +971,7 @@ public class DocViewImporter implements DocViewParserHandler {
         // try to set uuid via sysview import if it differs from existing one
         if (identifier.isPresent() && !node.getIdentifier().equals(identifier.get()) && !"rep:root".equals(ni.getPrimaryType().orElse(""))) {
             NodeStash stash = new NodeStash(session, node.getPath());
-            stash.stash();
+            stash.stash(importInfo);
             Node parent = node.getParent();
             removeReferences(node);
             node.remove();

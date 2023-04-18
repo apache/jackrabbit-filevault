@@ -158,6 +158,12 @@ public class ImportInfoImpl implements ImportInfo {
         numErrors++;
     }
 
+    @Override
+    public void onStashed(String path) {
+        // path currently unused
+        numModified += 1;
+    }
+
     /**
      * remembers that a package path was remapped during import. e.g. when the importer follows and existing
      * authorizable for MERGE and UPDATE modes.
@@ -211,7 +217,7 @@ public class ImportInfoImpl implements ImportInfo {
     public Collection<String> getToVersion() {
         return toVersion;
     }
-    
+
     public void registerToVersion(String path) {
         toVersion.add(path);
     }

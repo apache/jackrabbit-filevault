@@ -182,7 +182,7 @@ public class NodeTypeValidatorTest {
         ValidationExecutorTest.assertViolation(validator.done(),
                 new ValidationMessage(ValidationMessageSeverity.ERROR,
                         String.format(JcrNodeTypeMetaDataImpl.MESSAGE_MANDATORY_CHILD_NODE_MISSING,
-                                "jcr:content [nt:base]", "types [nt:file]", "/apps/test/node4")));
+                                "jcr:content [nt:base]", "types [nt:file]", "/apps/test/node4"), nodeContext));
         MatcherAssert.assertThat(validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
 

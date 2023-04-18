@@ -334,7 +334,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
             // in incremental validations ignore missing mandatory properties and child nodes (as they might not be visible to the validator)
             if (!isIncremental) {
                 messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG,
-                        "Validate children and mandatory properties of " + getQualifiedPath(namePathResolver)));
+                        "Validate children and mandatory properties of " + getQualifiedPath(namePathResolver), context));
                 messages.addAll(validateChildNodes(namePathResolver, nodeTypeDefinitionProvider, itemDefinitionProvider, severity, severityForDefaultNodeTypeViolations, filter));
                 messages.addAll(validateMandatoryProperties(namePathResolver, severity, severityForDefaultNodeTypeViolations));
             }
@@ -342,11 +342,11 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
             childNodesByName.clear();
             isValidationDone = true;
             messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG,
-                    "Remove node information of children of " + getQualifiedPath(namePathResolver)));
+                    "Remove node information of children of " + getQualifiedPath(namePathResolver), context));
             return messages;
         } else {
             return Collections.singletonList(new ValidationMessage(ValidationMessageSeverity.DEBUG,
-                    "Already finalized validation of " + getQualifiedPath(namePathResolver)));
+                    "Already finalized validation of " + getQualifiedPath(namePathResolver), context));
         }
     }
 
@@ -397,7 +397,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                         messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
                                 String.format(MESSAGE_MANDATORY_CHILD_NODE_MISSING,
                                 getNodeDefinitionLabel(namePathResolver, mandatoryNodeType),
-                                getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType))));
+                                getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType)), context));
                     } else {
                         // if mandatory child nodes are missing outside filter rules, this is not an issue
                         messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, String.format(MESSAGE_MANDATORY_UNCONTAINED_CHILD_NODE_MISSING,

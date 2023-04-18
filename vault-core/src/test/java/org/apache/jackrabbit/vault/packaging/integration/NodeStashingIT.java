@@ -87,6 +87,7 @@ public class NodeStashingIT extends IntegrationTestBase {
         // make sure mixin type was restored
         assertTrue(node2.isNodeType("{" + TESTNS + "}hasMandatoryChildNode"));
 
+        // before JCRVLT-697, this would have been only one node
         String expected = "saving approx 3 nodes...";
         assertTrue("Expected message '" + expected + "' not seen in: " + col.actions, col.actions.contains(expected));
     }

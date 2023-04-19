@@ -23,8 +23,9 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Meta information about a node:
  * <ul>
- * <li>jcr path</li>
- * <li>file path of the file which defined the node</li>
+ * <li>JCR path</li>
+ * <li>file system path of the file which defined the node</li>
+ * <li>optionally line and column in the the file which defined the node</li>
  * </ul>
  */
 public interface NodeContext {
@@ -47,4 +48,21 @@ public interface NodeContext {
      */
     @NotNull Path getBasePath();
 
+    /**
+     * 
+     * @return the line where the serialization of the node was found, 0 for unspecified. This is only set for a node context originating from a DocView XML file.
+     * @since 3.6.10
+     */
+    default int getLine() {
+        return 0;
+    }
+
+    /**
+     * 
+     * @return the column where the serialization of the node was found, 0 for unspecified. This is only set for a node context originating from a DocView XML file.
+     * @since 3.6.10
+     */
+    default int getColumn() {
+        return 0;
+    }
 }

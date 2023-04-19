@@ -125,9 +125,9 @@ public class ValidatorDocViewParserHandler implements DocViewParserHandler {
             try {
                 final Collection<ValidationMessage> messages;
                 if (isStart) {
-                    messages = entry.getValue().validate(docViewNode, new NodeContextImpl(nodePath, filePath, basePath), !parentDocViewNode.isPresent());
+                    messages = entry.getValue().validate(docViewNode, new NodeContextImpl(nodePath, filePath, basePath, lineNumber, columnNumber), !parentDocViewNode.isPresent());
                 } else {
-                    messages = entry.getValue().validateEnd(docViewNode, new NodeContextImpl(nodePath, filePath, basePath), !parentDocViewNode.isPresent());
+                    messages = entry.getValue().validateEnd(docViewNode, new NodeContextImpl(nodePath, filePath, basePath, lineNumber, columnNumber), !parentDocViewNode.isPresent());
                 }
                 if (messages != null && !messages.isEmpty()) {
                     violations.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, null, nodePath,

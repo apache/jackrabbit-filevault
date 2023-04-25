@@ -175,11 +175,15 @@ public class PackageTypeValidatorTest {
         MatcherAssert.assertThat(validator.validate(properties), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
         Mockito.when(parentContainerProperties.getPackageType()).thenReturn(PackageType.CONTAINER);
-        
+
         // validate sub packages of type Mixed
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.MIXED);
         PackageTypeValidator subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, false, PackageType.MIXED, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_IMMUTABLE_ROOT_NODE_NAMES, parentContainerContext);
-        ValidationExecutorTest.assertViolation(subPackageValidator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, PackageType.CONTAINER, StringUtils.join(new String[] {PackageType.APPLICATION.toString(),PackageType.CONTENT.toString(),PackageType.CONTAINER.toString()}, ", "),  PackageType.MIXED)));
+        ValidationExecutorTest.assertViolation(subPackageValidator.validate(properties),
+                ValidationMessageSeverity.INFO,
+                new ValidationMessage(ValidationMessageSeverity.INFO, String.format(PackageTypeValidator.MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, PackageType.CONTAINER, StringUtils.join(new String[] {PackageType.APPLICATION.toString(),PackageType.CONTENT.toString(),PackageType.CONTAINER.toString()}, ", "),  PackageType.MIXED)),
+                new ValidationMessage(ValidationMessageSeverity.INFO, String.format(PackageTypeValidator.MESSAGE_LEGACY_TYPE, PackageType.MIXED))
+        );
 
         // validate sub packages of type Content
         subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, false,  PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_IMMUTABLE_ROOT_NODE_NAMES, parentContainerContext);

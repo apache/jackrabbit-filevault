@@ -312,8 +312,8 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
             }
             break;
         case CONTAINER:
-            if (packageType != PackageType.APPLICATION && packageType != PackageType.CONTAINER && packageType != PackageType.CONTENT) {
-                message = new ValidationMessage(severity, String.format(MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, containerPackageType,
+            if (packageType == PackageType.MIXED) {
+                message = new ValidationMessage(severityForLegacyType, String.format(MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE, containerPackageType,
                         StringUtils.join(new String[] { PackageType.APPLICATION.toString(), PackageType.CONTENT.toString(),
                                 PackageType.CONTAINER.toString() }, ", "),
                         packageType));

@@ -22,7 +22,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.api.JackrabbitSession;
+import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlManager;
+import org.apache.jackrabbit.api.security.JackrabbitAccessControlPolicy;
 import org.apache.jackrabbit.api.security.authorization.PrincipalAccessControlList;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
@@ -53,11 +55,14 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.security.AccessControlEntry;
+import javax.jcr.security.AccessControlException;
 import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.security.Privilege;
 import java.security.Principal;
@@ -199,6 +204,24 @@ public class PrincipalBasedIT extends IntegrationTestBase {
             }
         }
         fail("expected PrincipalAccessControlList for principal " + principal.getName());
+    }
+
+    @Test
+    public void testEntriesFromSetup() throws AccessDeniedException, AccessControlException, UnsupportedRepositoryOperationException, RepositoryException {
+        @NotNull
+        JackrabbitAccessControlPolicy[] applicablePolicies = acMgr.getApplicablePolicies(testUser.getPrincipal());
+        // for some reason only 1 is returned and no longer 2 as in the setUp method
+        assertEquals(1, applicablePolicies.length);
+        JackrabbitAccessControlPolicy policy = applicablePolicies[0];
+        if (policy instanceof PrincipalAccessControlList) {
+            // this should be returned as in setup
+        } else if (policy instanceof JackrabbitAccessControlList) {
+            // this is instead returned with no entries!
+            AccessControlEntry[] entries = ((JackrabbitAccessControlList) policy).getAccessControlEntries();
+            assertEquals(2, entries.length); // this should be the two from setUp(..)
+        } else {
+            fail("Found unexpected policy for principal " + testUser.getPrincipal());
+        }
     }
 
     @Test

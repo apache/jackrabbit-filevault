@@ -17,11 +17,18 @@
 
 package org.apache.jackrabbit.vault.fs.impl.io;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.ZoneOffset;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.jcr.GuestCredentials;
 import javax.jcr.ItemExistsException;
@@ -43,6 +50,7 @@ import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
 import org.apache.jackrabbit.core.security.principal.EveryonePrincipal;
+import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.Mounter;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -53,8 +61,6 @@ import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.junit.Assume;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class DocViewSaxFormatterIT extends IntegrationTestBase {
 
@@ -225,5 +231,33 @@ public class DocViewSaxFormatterIT extends IntegrationTestBase {
                 "    jcr:mixinTypes=\"[mix:created,mix:lockable,mix:title]\"\n" + // sort mixins alphabetically
                 "    jcr:primaryType=\"nt:unstructured\"\n" +
                 "    customMv=\"[value2,value3,value1]\"/>\n", serialization); // don't sort other mv-properties
+    }
+
+    @Test
+    public void testUnprotectedAndProtectedProperties() throws RepositoryException, URISyntaxException, IOException {
+        Node node = JcrUtils.getOrCreateByPath("/testroot", NodeType.NT_UNSTRUCTURED, admin);
+        node.addMixin(JcrConstants.MIX_LOCKABLE);
+        node.addMixin(JcrConstants.MIX_LAST_MODIFIED); // adds protected, auto-created properties jcr:lastModified (DATE) and jcr:lastModifiedBy (String)
+        node.addMixin(JcrConstants.MIX_VERSIONABLE);
+        Calendar date = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
+        node.setProperty("jcr:created", date);
+        admin.save();
+
+        String serialization = getSerializedAggregate(admin, "/testroot");
+
+        assertTrue(node.hasProperty(JcrConstants.JCR_BASEVERSION));
+        // export should contain both protected and unprotected properties
+        // only the ones which have a special name and(!) are protected are excluded (like jcr:baseVersion)
+        assertEquals("valid xml",
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" xmlns:mix=\"http://www.jcp.org/jcr/mix/1.0\"\n" +
+                "    jcr:created=\"{Date}"+ ISO8601.format(date) + "\"\n" +
+                "    jcr:isCheckedOut=\"{Boolean}true\"\n" +
+                "    jcr:lastModified=\"{Date}" + ISO8601.format(node.getProperty("jcr:lastModified").getDate()) + "\"\n" +
+                "    jcr:lastModifiedBy=\"admin\"\n" +
+                "    jcr:mixinTypes=\"[mix:lastModified,mix:lockable,mix:versionable]\"\n" +
+                "    jcr:primaryType=\"nt:unstructured\"\n" +
+                "    jcr:uuid=\"" + node.getIdentifier() + "\"/>\n"
+                , serialization); 
     }
 }

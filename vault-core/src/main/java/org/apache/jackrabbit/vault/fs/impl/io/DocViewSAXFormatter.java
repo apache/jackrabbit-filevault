@@ -107,9 +107,9 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
     private final boolean useBinaryReferences;
 
     /**
-     * Names of properties which should never be contained in the doc view serialization.
+     * Names of properties which should not be contained in the doc view serialization in case they are protected (in the underlying node definition).
      */
-    private static final Set<String> IGNORED_PROTECTED_PROPERTIES;
+    private static final Set<String> IGNORED_POTENTIALLY_PROTECTED_PROPERTIES;
     static {
         Set<String> props = new HashSet<>();
         props.add(JcrConstants.JCR_CREATED);
@@ -117,7 +117,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
         props.add(JcrConstants.JCR_BASEVERSION);
         props.add(JcrConstants.JCR_VERSIONHISTORY);
         props.add(JcrConstants.JCR_PREDECESSORS);
-        IGNORED_PROTECTED_PROPERTIES = Collections.unmodifiableSet(props);
+        IGNORED_POTENTIALLY_PROTECTED_PROPERTIES = Collections.unmodifiableSet(props);
     }
 
     protected DocViewSAXFormatter(Aggregate aggregate, XMLStreamWriter writer)
@@ -222,7 +222,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      */
     @Override
     public void onProperty(Property prop, int level) throws RepositoryException {
-        if (IGNORED_PROTECTED_PROPERTIES.contains(prop.getName())) {
+        if (IGNORED_POTENTIALLY_PROTECTED_PROPERTIES.contains(prop.getName()) && prop.getDefinition().isProtected()) {
             return;
         }
 

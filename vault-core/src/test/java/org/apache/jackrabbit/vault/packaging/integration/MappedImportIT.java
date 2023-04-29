@@ -194,13 +194,15 @@ public class MappedImportIT extends IntegrationTestBase {
 
         ImportOptions opts = getDefaultOptions();
         RegexpPathMapping pathMapping = new RegexpPathMapping();
-        pathMapping.addMapping("/testroot/(.*)", "/root/$1");
+        pathMapping.addMapping("/testroot/_cq_tags/(.*)", "/root/_cq_tags/$1");
+        pathMapping.addMapping("/testroot/cq:tags/(.*)", "/root/cq:tags/$1");
         opts.setPathMapping(pathMapping);
 
         pack.install(opts);
 
-        assertNodeExists("/root/a");
-        assertNodeMissing("/testroot/a");
+
+        assertNodeExists("/root/cq:tags/foo");
+        assertNodeMissing("/testroot/cq:tags/foo");
     }
 
 

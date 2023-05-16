@@ -213,7 +213,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-core</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.version.test}</version>
             <optional>true</optional>
             <scope>provided</scope>
             <exclusions>
@@ -226,7 +226,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-security-spi</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.version.test}</version>
             <optional>true</optional>
             <scope>provided</scope>
             <exclusions>
@@ -239,7 +239,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-core-spi</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.version.test}</version>
             <optional>true</optional>
             <scope>provided</scope>
             <exclusions>

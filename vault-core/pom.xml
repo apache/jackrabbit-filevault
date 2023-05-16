@@ -315,26 +315,26 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-core</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.version.test}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-core</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.version.test}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-jcr</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.version.test}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-segment-tar</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.version.test}</version>
             <scope>test</scope>
         </dependency>
         <!-- transitive dependency of oak-segment-tar, necessary for filedatastore (https://issues.apache.org/jira/browse/OAK-6542) -->
@@ -347,7 +347,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-authorization-principalbased</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.version.test}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

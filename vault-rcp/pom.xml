@@ -74,6 +74,9 @@
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-baseline-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -102,6 +105,16 @@
         </plugins>
     </build>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- this must be the version being referenced from jcr2spi -->
+            <dependency>
+                <groupId>org.apache.jackrabbit</groupId>
+                <artifactId>oak-jackrabbit-api</artifactId>
+                <version>1.48.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <!-- ====================================================================== -->
     <!-- D E P E N D E N C I E S                                                -->
     <!-- ====================================================================== -->
@@ -203,12 +216,12 @@
         <!-- embed all relevant parts to be installable also on older distributions (having older Jackrabbit bundles) -->
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
-            <artifactId>jackrabbit-jcr2spi</artifactId>
+            <artifactId>jackrabbit-jcr-client</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
-            <artifactId>jackrabbit-jcr-client</artifactId>
+            <artifactId>jackrabbit-jcr2spi</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

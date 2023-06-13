@@ -12,6 +12,6 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
--include ~../target-osgi-environment/min-target-osgi-environment/min-target.bndrun
+-include ~../target-osgi-environment/max-target-osgi-environment/max-target.bndrun
 # due to https://github.com/bndtools/bnd/issues/5673 we have to override the standalone instruction
--standalone: ../vault-core/target/index.xml,../target-osgi-environment/min-target-osgi-environment/target/index.xml
+-standalone: ../vault-core/target/index.xml,../target-osgi-environment/max-target-osgi-environment/target/index.xml

@@ -12,14 +12,4 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
--standalone: ${fileuri;${.}/target/index.xml}
-
--runfw: org.apache.felix.framework
--runee: JavaSE-1.8
-
--resolve.effective: active
-
-# workaround for https://issues.apache.org/jira/browse/SLING-7608 and https://issues.apache.org/jira/browse/SLING-7604
--runsystemcapabilities: osgi.service;objectClass=org.apache.sling.commons.classloader.DynamicClassLoaderManager,\
-osgi.service;objectClass:List<String>="javax.jcr.Repository,org.apache.sling.jcr.api.SlingRepository"
+-include ../target-osgi-environment/max-target-osgi-environment/max-target.bndrun

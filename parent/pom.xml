@@ -48,8 +48,14 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jackrabbit.version>2.20.8</jackrabbit.version>
-        <oak.version>1.48.0</oak.version>
+        <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
+        <jackrabbit.min.version>2.20.8</jackrabbit.min.version>
+        <!-- for embedded/test dependencies the newest version should be used -->
+        <jackrabbit.max.version>2.20.10</jackrabbit.max.version>
+        <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
+        <oak.min.version>1.22.4</oak.min.version>
+        <!-- for embedded/test dependencies the newest version should be used -->
+        <oak.max.version>1.48.0</oak.max.version>
         <slf4j.version>1.7.25</slf4j.version>
         <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
         <bnd.version>6.4.0</bnd.version>
@@ -369,46 +375,47 @@ Bundle-Category: jackrabbit
     <!-- ====================================================================== -->
     <dependencyManagement>
         <dependencies>
-            <!-- jackrabbit -->
+            <!-- jackrabbit dependencies usually provided as dedicated OSGi bundles (not embedded)-->
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>oak-jackrabbit-api</artifactId>
-                <version>${oak.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-spi</artifactId>
-                <version>${jackrabbit.version}</version>
+                <version>${oak.min.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>jackrabbit-jcr-commons</artifactId>
-                <version>${jackrabbit.version}</version>
+                <version>${jackrabbit.min.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jackrabbit</groupId>
+                <artifactId>jackrabbit-spi</artifactId>
+                <version>${jackrabbit.min.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>jackrabbit-spi-commons</artifactId>
-                <version>${jackrabbit.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-jcr2spi</artifactId>
-                <version>${jackrabbit.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-jcr-client</artifactId>
-                <version>${jackrabbit.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-spi2dav</artifactId>
-                <version>${jackrabbit.version}</version>
+                <version>${jackrabbit.min.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>jackrabbit-webdav</artifactId>
-                <version>${jackrabbit.version}</version>
+                <version>${jackrabbit.min.version}</version>
+            </dependency>
+            <!-- the following jackrabbit dependencies are usually not used on the server side, i.e. not available in OSGi containers -->
+            <dependency>
+                <groupId>org.apache.jackrabbit</groupId>
+                <artifactId>jackrabbit-jcr2spi</artifactId>
+                <version>${jackrabbit.max.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jackrabbit</groupId>
+                <artifactId>jackrabbit-spi2dav</artifactId>
+                <version>${jackrabbit.max.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jackrabbit</groupId>
+                <artifactId>jackrabbit-jcr-client</artifactId>
+                <version>${jackrabbit.max.version}</version>
             </dependency>
 
             <!-- JCR Stuff -->

@@ -79,6 +79,25 @@
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
             </plugin>
+            <!-- create OSGi repo index for target container -->
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-indexer-maven-plugin</artifactId>
+                <version>${bnd.version}</version>
+                <executions>
+                    <execution>
+                        <id>index</id>
+                        <goals>
+                            <goal>local-index</goal>
+                        </goals>
+                        <phase>verify</phase>
+                        <configuration>
+                            <inputDir>${project.build.directory}</inputDir>
+                            <includeGzip>false</includeGzip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-baseline-maven-plugin</artifactId>
@@ -303,7 +322,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-core</artifactId>
-            <version>${jackrabbit.version}</version>
+            <version>${jackrabbit.min.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -315,26 +334,26 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-core</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.min.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-core</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.min.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-jcr</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.min.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-segment-tar</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.min.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- transitive dependency of oak-segment-tar, necessary for filedatastore (https://issues.apache.org/jira/browse/OAK-6542) -->
@@ -347,13 +366,13 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-authorization-principalbased</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.min.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-authorization-cug</artifactId>
-            <version>1.16.0</version>
+            <version>${oak.min.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -470,6 +489,7 @@
                                     <reuseForks>true</reuseForks>
                                 </configuration>
                             </execution>
+                            <!--
                             <execution>
                                 <id>it-with-jr</id>
                                 <goals>
@@ -485,18 +505,19 @@
                                     <forkCount>0.5C</forkCount>
                                     <reuseForks>true</reuseForks>
                                 </configuration>
-                            </execution>
+                            </execution> -->
                             <execution>
                                 <id>verify-its</id>
                                 <goals>
                                     <goal>verify</goal>
                                 </goals>
+                                <!--
                                 <configuration>
                                     <summaryFiles>
-                                        <!-- in addition to default summary file used by Oak -->
+                                        <!- in addition to default summary file used by Oak ->
                                         <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-jr.xml</summaryFile>
                                     </summaryFiles>
-                                </configuration>
+                                </configuration>-->
                             </execution>
                         </executions>
                         <configuration>

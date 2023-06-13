@@ -183,7 +183,7 @@ public final class CugHandlingTest {
     }
 
     public static void assertProperty(Node node, String name, Set<String> values) throws RepositoryException {
-        Set<String> strings = new HashSet();
+        Set<String> strings = new HashSet<String>();
         for (Value v: node.getProperty(name).getValues()) {
             strings.add(v.getString());
         }

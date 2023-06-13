@@ -21,10 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.security.Principal;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Credentials;
@@ -39,10 +36,10 @@ import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
-import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
 import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
 import org.junit.After;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -155,6 +152,7 @@ public class AdminPermissionCheckerIT extends IntegrationTestBase {
     }
 
     @Test
+    @Ignore("Due to executing ITs with Oak < 1.40")
     public void testBoundPrincipalIsAdmin() throws LoginException, RepositoryException {
         // only run test on Oak
         Assume.assumeTrue(isOak());
@@ -174,6 +172,7 @@ public class AdminPermissionCheckerIT extends IntegrationTestBase {
     }
 
     @Test
+    @Ignore("Due to executing ITs with Oak < 1.40")
     public void testIsOak140() {
         // only run test on Jackrabbit
         Assume.assumeTrue(isOak());

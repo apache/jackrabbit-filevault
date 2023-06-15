@@ -14,4 +14,4 @@
    See the License for the specific language governing permissions and
    limitations under the License.
   -->
-Please read [Vault Remote Copy](../vault-doc/src/site/markdown/rcp.md) for more details.
+Please read [Vault Remote Copy](../src/site/markdown/rcp.md) for more details.

@@ -16,10 +16,25 @@
  */
 package org.apache.jackrabbit.vault.packaging.integration;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
+import java.io.IOException;
+import java.security.Principal;
+import java.util.List;
+import java.util.Map;
+
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
+import javax.jcr.ValueFactory;
+import javax.jcr.security.AccessControlEntry;
+import javax.jcr.security.AccessControlPolicy;
+import javax.jcr.security.Privilege;
+
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlManager;
@@ -27,20 +42,8 @@ import org.apache.jackrabbit.api.security.authorization.PrincipalAccessControlLi
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
-import org.apache.jackrabbit.oak.commons.PathUtils;
-import org.apache.jackrabbit.oak.jcr.Jcr;
-import org.apache.jackrabbit.oak.security.internal.SecurityProviderHelper;
-import org.apache.jackrabbit.oak.spi.mount.Mounts;
-import org.apache.jackrabbit.oak.spi.security.ConfigurationParameters;
-import org.apache.jackrabbit.oak.spi.security.SecurityProvider;
-import org.apache.jackrabbit.oak.spi.security.authorization.AuthorizationConfiguration;
 import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.AccessControlConstants;
-import org.apache.jackrabbit.oak.spi.security.authorization.principalbased.FilterProvider;
-import org.apache.jackrabbit.oak.spi.security.authorization.principalbased.impl.FilterProviderImpl;
-import org.apache.jackrabbit.oak.spi.security.authorization.principalbased.impl.PrincipalBasedAuthorizationConfiguration;
 import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants;
-import org.apache.jackrabbit.oak.spi.security.user.UserConfiguration;
-import org.apache.jackrabbit.oak.spi.security.user.UserConstants;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -50,36 +53,17 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
-import javax.jcr.ValueFactory;
-import javax.jcr.security.AccessControlEntry;
-import javax.jcr.security.AccessControlPolicy;
-import javax.jcr.security.Privilege;
-import java.security.Principal;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 public class PrincipalBasedIT extends IntegrationTestBase {
 
-    private static final String INTERMEDIATE_PATH = "intermediate";
     private static final String EFFECTIVE_PATH = "/testroot/secured";
     private static final String SYSTEM_USER_ID = "testSystemUser";
-    private static String SERVICE_USER_PATH;
-    static {
-        String usersPath = getSecurityConfigurationParameters().getConfigValue(UserConfiguration.NAME, ConfigurationParameters.EMPTY).getConfigValue(UserConstants.PARAM_USER_PATH, UserConstants.DEFAULT_USER_PATH);
-        SERVICE_USER_PATH = PathUtils.concat(usersPath, UserConstants.DEFAULT_SYSTEM_RELATIVE_PATH, INTERMEDIATE_PATH);
-    }
     @ClassRule
     public static final OsgiContext context = new OsgiContext();
 
@@ -96,7 +80,8 @@ public class PrincipalBasedIT extends IntegrationTestBase {
         super.setUp();
 
         userManager = ((JackrabbitSession) admin).getUserManager();
-        testUser = userManager.createSystemUser(SYSTEM_USER_ID, SERVICE_USER_PATH);
+        String serviceUserPath = repositoryProvider.getServiceUserPath();
+        testUser = userManager.createSystemUser(SYSTEM_USER_ID, serviceUserPath);
         admin.save();
 
         ValueFactory vf = admin.getValueFactory();
@@ -115,7 +100,7 @@ public class PrincipalBasedIT extends IntegrationTestBase {
         }
         admin.save();
 
-        User testUser2 = userManager.createSystemUser(SYSTEM_USER_ID+"_2", SERVICE_USER_PATH);
+        User testUser2 = userManager.createSystemUser(SYSTEM_USER_ID+"_2", serviceUserPath);
         for (AccessControlPolicy policy : acMgr.getApplicablePolicies(testUser2.getPrincipal())) {
             if (policy instanceof PrincipalAccessControlList) {
                 PrincipalAccessControlList pacl = (PrincipalAccessControlList) policy;
@@ -148,25 +133,9 @@ public class PrincipalBasedIT extends IntegrationTestBase {
     }
 
     @BeforeClass
-    public static void initRepository() {
-        repository = new Jcr()
-                .with(createSecurityProvider())
-                .withAtomicCounter()
-                .createRepository();
-    }
-
-    public static SecurityProvider createSecurityProvider() {
-        SecurityProvider securityProvider = IntegrationTestBase.createSecurityProvider();
-
-        FilterProvider fp = new FilterProviderImpl();
-        // trigger activate method
-        context.registerInjectActivateService(fp, ImmutableMap.of("path", SERVICE_USER_PATH));
-
-        PrincipalBasedAuthorizationConfiguration principalBasedAuthorizationConfiguration = new PrincipalBasedAuthorizationConfiguration();
-        principalBasedAuthorizationConfiguration.bindFilterProvider(fp);
-        principalBasedAuthorizationConfiguration.bindMountInfoProvider(Mounts.defaultMountInfoProvider());
-        SecurityProviderHelper.updateConfig(securityProvider, principalBasedAuthorizationConfiguration, AuthorizationConfiguration.class);
-        return securityProvider;
+    public static void initRepository() throws RepositoryException, IOException {
+        assumeTrue(isOak());
+        initRepository(false, true);
     }
 
     private void assertPolicy(@NotNull Principal principal, @NotNull AccessControlEntry... expectedEntries) throws RepositoryException {
@@ -203,7 +172,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingIgnoreModeUpdate() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.IGNORE);
         opts.setImportMode(ImportMode.UPDATE);
@@ -214,7 +182,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingIgnoreModeMerge() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.IGNORE);
         opts.setImportMode(ImportMode.MERGE);
@@ -225,7 +192,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingIgnoreModeReplace() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.IGNORE);
         opts.setImportMode(ImportMode.REPLACE);
@@ -238,7 +204,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingOverwriteModeUpdate() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
         opts.setImportMode(ImportMode.UPDATE);
@@ -249,7 +214,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingOverwriteModeMerge() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
         opts.setImportMode(ImportMode.MERGE);
@@ -260,7 +224,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingOverwriteModeReplace() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
         opts.setImportMode(ImportMode.REPLACE);
@@ -271,7 +234,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingMergeModeUpdate() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE);
         opts.setImportMode(ImportMode.UPDATE);
@@ -285,7 +247,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingMergeModeMerge() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE);
         opts.setImportMode(ImportMode.MERGE);
@@ -299,7 +260,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingMergeModeReplace() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE);
         opts.setImportMode(ImportMode.REPLACE);
@@ -312,7 +272,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingMergePreserveModeUpdate() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
         opts.setImportMode(ImportMode.UPDATE);
@@ -323,7 +282,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingMergePreserveModeMerge() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
         opts.setImportMode(ImportMode.MERGE);
@@ -334,7 +292,6 @@ public class PrincipalBasedIT extends IntegrationTestBase {
 
     @Test
     public void testHandlingMergePreserveModeReplace() throws Exception {
-        assumeTrue(isOak());
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(AccessControlHandling.MERGE_PRESERVE);
         opts.setImportMode(ImportMode.REPLACE);

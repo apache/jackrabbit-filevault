@@ -46,7 +46,6 @@ import javax.jcr.version.VersionException;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.api.ReferenceBinary;
 import org.apache.jackrabbit.commons.JcrUtils;
-import org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
@@ -56,7 +55,6 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -107,8 +105,8 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
     }
 
     @BeforeClass
-    public static void initRepository() throws RepositoryException, IOException, InvalidFileStoreVersionException {
-        initRepository(isOak(), true); // always use BlobStore with Oak
+    public static void initRepository() throws RepositoryException, IOException {
+        initRepository(true, false); // always use BlobStore with Oak
     }
 
     @Before

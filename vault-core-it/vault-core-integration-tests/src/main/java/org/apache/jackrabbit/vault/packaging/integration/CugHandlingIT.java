@@ -17,45 +17,6 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
-import org.apache.jackrabbit.api.JackrabbitRepository;
-import org.apache.jackrabbit.api.JackrabbitSession;
-import org.apache.jackrabbit.api.security.user.UserManager;
-import org.apache.jackrabbit.oak.jcr.Jcr;
-import org.apache.jackrabbit.oak.query.QueryEngineSettings;
-import org.apache.jackrabbit.oak.security.internal.SecurityProviderBuilder;
-import org.apache.jackrabbit.oak.security.internal.SecurityProviderHelper;
-import org.apache.jackrabbit.oak.spi.security.ConfigurationParameters;
-import org.apache.jackrabbit.oak.spi.security.SecurityProvider;
-import org.apache.jackrabbit.oak.spi.security.authorization.AuthorizationConfiguration;
-import org.apache.jackrabbit.oak.spi.security.authorization.cug.impl.CugConfiguration;
-import org.apache.jackrabbit.oak.spi.security.user.UserConstants;
-import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
-import org.apache.jackrabbit.vault.fs.io.Archive;
-import org.apache.jackrabbit.vault.fs.io.FileArchive;
-import org.apache.jackrabbit.vault.fs.io.ImportOptions;
-import org.apache.jackrabbit.vault.fs.io.ZipArchive;
-import org.apache.jackrabbit.vault.packaging.PackageException;
-import org.apache.jackrabbit.vault.packaging.VaultPackage;
-import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
-
-import javax.jcr.Node;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
-import javax.jcr.Value;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.apache.jackrabbit.vault.fs.io.AccessControlHandling.IGNORE;
 import static org.apache.jackrabbit.vault.fs.io.AccessControlHandling.MERGE;
 import static org.apache.jackrabbit.vault.fs.io.AccessControlHandling.OVERWRITE;
@@ -63,9 +24,27 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
-/** This is more an IT but isn't derived from IntegrationTestBase, therefore doesn't need parametrization */
-public final class CugHandlingTest {
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.Value;
+
+import org.apache.jackrabbit.api.JackrabbitSession;
+import org.apache.jackrabbit.api.security.user.UserManager;
+import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+public final class CugHandlingIT extends IntegrationTestBase {
 
     private static final String TEST_ROOT = "/testroot";
 
@@ -79,9 +58,12 @@ public final class CugHandlingTest {
      */
     private static final String CUG_PACKAGE_2 = "/test-packages/cug-test-2.zip";
 
-    private Repository repository;
-
-    private Session adminSession;
+    
+    @BeforeClass
+    public static void initRepository() throws RepositoryException, IOException {
+        assumeTrue(isOak());
+        initRepository(useFileStore(), false, TEST_ROOT);
+    }
 
     /**
      * When cugHandling is set to IGNORE, rep:cugPolicy node should not be created.
@@ -89,7 +71,7 @@ public final class CugHandlingTest {
     @Test
     public void testCugIgnore() throws Exception {
        extractVaultPackage(CUG_PACKAGE_1, IGNORE);
-       Node testRoot = adminSession.getNode(TEST_ROOT);
+       Node testRoot = admin.getNode(TEST_ROOT);
        assertNodeExists(testRoot, "node_with_cug");
        Node nodeWithCug = testRoot.getNode("node_with_cug");
        assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
@@ -103,7 +85,7 @@ public final class CugHandlingTest {
     public void testCugMerge() throws Exception {
         extractVaultPackage(CUG_PACKAGE_2, OVERWRITE);
         extractVaultPackage(CUG_PACKAGE_1, MERGE);
-        Node testRoot = adminSession.getNode(TEST_ROOT);
+        Node testRoot = admin.getNode(TEST_ROOT);
         assertNodeExists(testRoot, "node_with_cug");
         Node nodeWithCug = testRoot.getNode("node_with_cug");
         assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
@@ -121,7 +103,7 @@ public final class CugHandlingTest {
     public void testCugMergePreserve() throws Exception {
         extractVaultPackage(CUG_PACKAGE_2, OVERWRITE);
         extractVaultPackage(CUG_PACKAGE_1, AccessControlHandling.MERGE_PRESERVE);
-        Node testRoot = adminSession.getNode(TEST_ROOT);
+        Node testRoot = admin.getNode(TEST_ROOT);
         assertNodeExists(testRoot, "node_with_cug");
         Node nodeWithCug = testRoot.getNode("node_with_cug");
         assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
@@ -138,7 +120,7 @@ public final class CugHandlingTest {
     public void testCugOverwrite() throws Exception {
         extractVaultPackage(CUG_PACKAGE_1, OVERWRITE);
         extractVaultPackage(CUG_PACKAGE_2, OVERWRITE);
-        Node testRoot = adminSession.getNode(TEST_ROOT);
+        Node testRoot = admin.getNode(TEST_ROOT);
         assertNodeExists(testRoot, "node_with_cug");
         Node nodeWithCug = testRoot.getNode("node_with_cug");
         assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
@@ -157,7 +139,7 @@ public final class CugHandlingTest {
         ImportOptions opts = new ImportOptions();
         opts.setAccessControlHandling(MERGE);
         extractVaultPackage(CUG_PACKAGE_2, opts);
-        Node testRoot = adminSession.getNode(TEST_ROOT);
+        Node testRoot = admin.getNode(TEST_ROOT);
         assertNodeExists(testRoot, "node_with_cug");
         Node nodeWithCug = testRoot.getNode("node_with_cug");
         assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
@@ -197,78 +179,9 @@ public final class CugHandlingTest {
     public static void assertNodeMissing(Node parent, String relPath) throws RepositoryException {
         assertFalse(parent.getPath() + "/" + relPath + " should not exist", parent.hasNode(relPath));
     }
-    
-    //*********************************************
-    // Helpers
-    //*********************************************
-
-    private Archive getFileArchive(String name) {
-        final URL packageURL = getClass().getResource(name);
-        final String filename = packageURL.getFile();
-        final File file = new File(filename);
-        if (file.isDirectory()) {
-            return new FileArchive(file);
-        } else {
-            return new ZipArchive(file);
-        }
-    }
-
-    private void extractVaultPackage(String name, AccessControlHandling cugHandling) throws PackageException, RepositoryException, IOException {
-        ImportOptions opts = new ImportOptions();
-        opts.setCugHandling(cugHandling);
-        extractVaultPackage(name, opts);
-    }
-
-    private void extractVaultPackage(String name, ImportOptions opts) throws PackageException, RepositoryException, IOException {
-        VaultPackage pack = new ZipVaultPackage(getFileArchive(name), true);
-        pack.extract(adminSession, opts);
-    }
 
     private static Set<String> asSet(String ... values) {
         return new TreeSet<>(Arrays.asList(values));
-    }
-
-    //*********************************************
-    // setUp/tearDown
-    //*********************************************
-
-    @Before
-    public void setUp() throws Exception {
-        repository = createRepository();
-        adminSession = repository.login(new SimpleCredentials(UserConstants.DEFAULT_ADMIN_ID, UserConstants.DEFAULT_ADMIN_ID.toCharArray()));
-        createUsers(adminSession);
-        adminSession.save();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        try {
-            adminSession.refresh(false);
-            if (adminSession.nodeExists(TEST_ROOT)) {
-                adminSession.getNode(TEST_ROOT).remove();
-            }
-            adminSession.save();
-        } finally {
-            adminSession.logout();
-            if (repository instanceof JackrabbitRepository) {
-                ((JackrabbitRepository) repository).shutdown();
-            }
-            repository = null;
-        }
-    }
-
-    private static SecurityProvider createSecirityProvider() {
-        ConfigurationParameters params = ConfigurationParameters.of(
-                "cugSupportedPaths", TEST_ROOT,
-                "cugEnabled", true
-        );
-        CugConfiguration cugConfiguration = new CugConfiguration();
-        cugConfiguration.setParameters(params);
-        SecurityProvider result = SecurityProviderBuilder.newBuilder()
-                                                         .with(ConfigurationParameters.of(params))
-                                                         .build();
-        SecurityProviderHelper.updateConfig(result, cugConfiguration, AuthorizationConfiguration.class);
-        return result;
     }
 
     private static void createUsers(Session session) throws RepositoryException {
@@ -278,14 +191,5 @@ public final class CugHandlingTest {
         userManager.createUser("principal-3", "pwd-3");
     }
 
-    private static Repository createRepository() {
-        SecurityProvider securityProvider = createSecirityProvider();
-        QueryEngineSettings queryEngineSettings = new QueryEngineSettings();
-        queryEngineSettings.setFailTraversal(true);
-        Jcr jcr = new Jcr();
-        jcr.with(securityProvider);
-        jcr.with(queryEngineSettings);
-        return jcr.createRepository();
-    }
 
 }

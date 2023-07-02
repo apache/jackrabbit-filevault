@@ -30,8 +30,16 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.CopyOption;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.jar.JarFile;
@@ -62,42 +70,16 @@ import javax.jcr.security.AccessControlPolicyIterator;
 import javax.jcr.security.Privilege;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlEntry;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.UserManager;
-import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
-import org.apache.jackrabbit.core.RepositoryImpl;
-import org.apache.jackrabbit.core.config.RepositoryConfig;
-import org.apache.jackrabbit.core.data.FileDataStore;
-import org.apache.jackrabbit.core.security.principal.EveryonePrincipal;
-import org.apache.jackrabbit.core.security.principal.PrincipalImpl;
-import org.apache.jackrabbit.oak.jcr.Jcr;
-import org.apache.jackrabbit.oak.plugins.blob.datastore.DataStoreBlobStore;
-import org.apache.jackrabbit.oak.plugins.tree.impl.RootProviderService;
-import org.apache.jackrabbit.oak.plugins.tree.impl.TreeProviderService;
-import org.apache.jackrabbit.oak.security.internal.SecurityProviderBuilder;
-import org.apache.jackrabbit.oak.security.user.RandomAuthorizableNodeName;
-import org.apache.jackrabbit.oak.segment.SegmentNodeStore;
-import org.apache.jackrabbit.oak.segment.SegmentNodeStoreBuilders;
-import org.apache.jackrabbit.oak.segment.file.FileStore;
-import org.apache.jackrabbit.oak.segment.file.FileStoreBuilder;
-import org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException;
-import org.apache.jackrabbit.oak.spi.blob.BlobStore;
-import org.apache.jackrabbit.oak.spi.security.ConfigurationParameters;
-import org.apache.jackrabbit.oak.spi.security.SecurityProvider;
-import org.apache.jackrabbit.oak.spi.security.authorization.AuthorizationConfiguration;
-import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants;
-import org.apache.jackrabbit.oak.spi.security.user.AuthorizableNodeName;
-import org.apache.jackrabbit.oak.spi.security.user.UserConfiguration;
-import org.apache.jackrabbit.oak.spi.security.user.UserConstants;
-import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction;
-import org.apache.jackrabbit.oak.spi.xml.ImportBehavior;
-import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
+import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.FileArchive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -111,6 +93,7 @@ import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcherI
 import org.apache.jackrabbit.vault.packaging.impl.ActivityLog;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
+import org.apache.jackrabbit.vault.packaging.integration.RepositoryProvider.RepositoryWithMetadata;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -130,14 +113,7 @@ public class IntegrationTestBase  {
      * default logger
      */
     private static final Logger log = LoggerFactory.getLogger(IntegrationTestBase.class);
-
     
-    private static final File DIR_JR2_REPO_HOME = new File("target", "repository-jr2-" + System.getProperty("repoSuffix", "fork1"));
-    private static final File DIR_OAK_REPO_HOME = new File("target", "repository-oak-" + System.getProperty("repoSuffix", "fork1"));
-
-    private static final File DIR_OAK_FILE_STORE = new File(DIR_OAK_REPO_HOME, "filestore");
-    private static final File DIR_OAK_BLOB_STORE = new File(DIR_OAK_FILE_STORE, "blobstore");
-
     public static final PackageId TMP_PACKAGE_ID = new PackageId("my_packages", "tmp", "");
 
     public static final PackageId TMP_SNAPSHOT_PACKAGE_ID = PackageId.fromString("my_packages/.snapshot:tmp");
@@ -167,13 +143,14 @@ public class IntegrationTestBase  {
      */
     public static String TEST_PACKAGE_C_10 = "/test-packages/test_c-1.0.zip";
 
-
     @ClassRule
     public static TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private static FileStore fileStore = null;
+    public static RepositoryProvider repositoryProvider;
 
-    protected static Repository repository;
+    private static RepositoryWithMetadata repositoryWithMetadata;
+
+    protected static Repository repository = null;
 
     protected Session admin;
 
@@ -182,96 +159,38 @@ public class IntegrationTestBase  {
     protected Set<String> preTestAuthorizables;
 
     @BeforeClass
-    public static void initRepository() throws RepositoryException, IOException, InvalidFileStoreVersionException {
-        initRepository(isOak(), useFileStore());
+    public static void initRepository() throws RepositoryException, IOException {
+        initRepository(useFileStore(), false);
+    }
+ 
+
+    protected static boolean useFileStore() {
+        // don't use by default because it is slower and pollutes the log
+        return Boolean.parseBoolean(System.getProperty("fds", "false"));
     }
 
-    /**
-     * 
-     * @param isOak {@code true} in case IT should run against Oak, otherwise runs again JR2
-     * @param useFileStore only evaluated for Oak. Optionally uses a dedicated BlobStore with Oak
-     * @throws RepositoryException
-     * @throws IOException
-     * @throws InvalidFileStoreVersionException
-     */
-    public static void initRepository(boolean isOak, boolean useFileStore) throws RepositoryException, IOException, InvalidFileStoreVersionException {
-        if (isOak) {
-            Jcr jcr;
-            if (useFileStore) {
-                BlobStore blobStore = createBlobStore();
-                DIR_OAK_FILE_STORE.mkdirs();
-                fileStore = FileStoreBuilder.fileStoreBuilder(DIR_OAK_FILE_STORE)
-                        .withBlobStore(blobStore)
-                        .build();
-                SegmentNodeStore nodeStore = SegmentNodeStoreBuilders.builder(fileStore).build();
-                jcr = new Jcr(nodeStore);
-            } else {
-                // in-memory repo
-                jcr = new Jcr();
+    private static RepositoryProvider getRepositoryProvider() {
+        if (repositoryProvider == null) {
+            Iterator<RepositoryProvider> repositoryProviderIterator = ServiceLoader.load(RepositoryProvider.class, IntegrationTestBase.class.getClassLoader()).iterator();
+            if (!repositoryProviderIterator.hasNext()) {
+                throw new IllegalStateException("Haven't found any service implementation of " + RepositoryProvider.class.getName());
             }
-
-            repository = jcr
-                    .with(createSecurityProvider())
-                    .withAtomicCounter()
-                    .createRepository();
-
-            // setup default read ACL for everyone
-            Session admin = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
-            AccessControlUtils.addAccessControlEntry(admin, "/", EveryonePrincipal.getInstance(), new String[]{"jcr:read"}, true);
-            admin.save();
-            admin.logout();
-        } else {
-            try (InputStream in = IntegrationTestBase.class.getResourceAsStream("repository.xml")) {
-                RepositoryConfig cfg = RepositoryConfig.create(in, DIR_JR2_REPO_HOME.getPath());
-                repository = RepositoryImpl.create(cfg);
+            repositoryProvider = repositoryProviderIterator.next();
+            if (repositoryProviderIterator.hasNext()) {
+                throw new IllegalStateException("Found more than one service implementation of " + RepositoryProvider.class.getName());
             }
         }
+        return repositoryProvider;
+    }
+    public static void initRepository(boolean useFileStore, boolean enablePrincipalBasedAuthorization, String... cugEnabledPaths) throws RepositoryException, IOException {
+        repositoryWithMetadata = getRepositoryProvider().createRepository(useFileStore, enablePrincipalBasedAuthorization, cugEnabledPaths);
+        repository = repositoryWithMetadata.getRepository();
         log.info("repository created: {} {}",
                 repository.getDescriptor(Repository.REP_NAME_DESC),
                 repository.getDescriptor(Repository.REP_VERSION_DESC));
     }
 
-    public static ConfigurationParameters getSecurityConfigurationParameters() {
-        Properties userProps = new Properties();
-        AuthorizableNodeName nameGenerator = new RandomAuthorizableNodeName();
-
-        userProps.put(UserConstants.PARAM_USER_PATH, "/home/users");
-        userProps.put(UserConstants.PARAM_GROUP_PATH, "/home/groups");
-        userProps.put(AccessControlAction.USER_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_ALL});
-        userProps.put(AccessControlAction.GROUP_PRIVILEGE_NAMES, new String[] {PrivilegeConstants.JCR_READ});
-        userProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
-        userProps.put(UserConstants.PARAM_AUTHORIZABLE_NODE_NAME, nameGenerator);
-        userProps.put("cacheExpiration", 3600*1000);
-        Properties authzProps = new Properties();
-        authzProps.put(ProtectedItemImporter.PARAM_IMPORT_BEHAVIOR, ImportBehavior.NAME_BESTEFFORT);
-        return ConfigurationParameters.of(
-                UserConfiguration.NAME, ConfigurationParameters.of(userProps),
-                AuthorizationConfiguration.NAME, ConfigurationParameters.of(authzProps));
-    }
-
-    public static SecurityProvider createSecurityProvider() {
-        SecurityProvider securityProvider = SecurityProviderBuilder.newBuilder()
-                .with(getSecurityConfigurationParameters())
-                .withRootProvider(new RootProviderService())
-                .withTreeProvider(new TreeProviderService()).build();
-        return securityProvider;
-    }
-
-    public static boolean useFileStore() {
-        // don't use by default because it is slower and pollutes the log
-        return Boolean.parseBoolean(System.getProperty("fds", "false"));
-    }
-
-    private static BlobStore createBlobStore() throws IOException {
-        DIR_OAK_BLOB_STORE.mkdirs();
-        FileDataStore fds = new FileDataStore();
-        fds.setMinRecordLength(4092);
-        fds.setPath(DIR_OAK_BLOB_STORE.getAbsolutePath());
-        fds.init(DIR_OAK_REPO_HOME.getAbsolutePath());
-        return new DataStoreBlobStore(fds);
-    }
-
-    private static void deleteDirectory(File directory) throws IOException {
+    public static void deleteDirectory(File directory) throws IOException {
         try {
             FileUtils.deleteDirectory(directory);
         } catch (IOException ioe) {
@@ -292,19 +211,12 @@ public class IntegrationTestBase  {
     }
 
     @AfterClass
-    public static void shutdownRepository() throws IOException {
-        if (repository instanceof RepositoryImpl) {
-            ((RepositoryImpl) repository).shutdown();
-            deleteDirectory(DIR_JR2_REPO_HOME);
-        } else if (repository instanceof org.apache.jackrabbit.oak.jcr.repository.RepositoryImpl) {
-            ((org.apache.jackrabbit.oak.jcr.repository.RepositoryImpl) repository).shutdown();
-            if (fileStore != null) {
-                fileStore.close();
-                fileStore = null;
-            }
-            deleteDirectory(DIR_OAK_REPO_HOME);
+    public static void shutdownRepository() throws IOException, RepositoryException {
+        if (repository != null) {
+            getRepositoryProvider().closeRepository(repositoryWithMetadata);
+            repositoryWithMetadata = null;
+            repository = null;
         }
-        repository = null;
     }
 
     @Before
@@ -328,25 +240,24 @@ public class IntegrationTestBase  {
 
     @After
     public void tearDown() throws Exception {
-        // remove test authorizables
-        admin.refresh(false);
-        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
-        for (String id: getAllAuthorizableIds()) {
-            if (!preTestAuthorizables.remove(id)) {
-                removeAuthorizable(mgr, id);
-            }
-        }
-        admin.save();
-
         packMgr = null;
         if (admin != null) {
+            admin.refresh(false);
+            // remove test authorizables
+            UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+            for (String id: getAllAuthorizableIds()) {
+                if (!preTestAuthorizables.remove(id)) {
+                    removeAuthorizable(mgr, id);
+                }
+            }
+            admin.save();
             admin.logout();
             admin = null;
         }
     }
 
     public static boolean isOak() {
-        return Boolean.parseBoolean(System.getProperty("oak", "true"));
+        return getRepositoryProvider().isOak();
     }
 
     public void clean(String path) {
@@ -407,15 +318,54 @@ public class IntegrationTestBase  {
             throw new IOException("Could not convert class resource URL to URI", e);
         }
         if (uri.isOpaque()) { // non hierarchical URIs (for resources in a JAR)  can not use classical file operations
-            File tmpFile = tmpFileSupplier.get();
-            try (InputStream in = getStream(clazz, name)) {
-                Files.copy(in, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            if (uri.getScheme().equals("jar")) {
+                // separate path by jar file path and path inside jar
+                final String[] array = uri.toString().split("!");
+                final Map<String, String> env = new HashMap<>();
+                File tmpFile = tmpFileSupplier.get();
+                // supports both directories and files
+                try (FileSystem fs = FileSystems.newFileSystem(URI.create(array[0]), env)) {
+                    final Path sourcePath = fs.getPath(array[1]);
+                    if (Files.isDirectory(sourcePath)) {
+                        copyDirectory(sourcePath, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    } else {
+                        Files.copy(sourcePath, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+                return tmpFile;
+            } else {
+                throw new IllegalStateException("Unsupported file system exception for uri " + uri);
             }
-            return tmpFile;
         } else {
             return new File(uri);
         }
     }
+
+    /** Cannot use PathUtils.copyDirectory due to https://issues.apache.org/jira/browse/IO-719 */
+    public static void copyDirectory(Path source, Path target, CopyOption... options)
+            throws IOException {
+        if (Files.isRegularFile(target)) {
+            Files.delete(target);
+        }
+        Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                    throws IOException {
+                Files.createDirectories(target.resolve(source.relativize(dir).toString()));
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                    throws IOException {
+                Files.copy(file, target.resolve(source.relativize(file).toString()), options);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+    
+    
     public Archive getFileArchive(String name) throws IOException {
         final File file = getFile(name);
         if (file.isDirectory()) {
@@ -454,7 +404,7 @@ public class IntegrationTestBase  {
      * @throws RepositoryException
      */
     public VaultPackage extractVaultPackage(String name) throws IOException, PackageException, RepositoryException {
-        return extractVaultPackage(name, null);
+        return extractVaultPackage(name, (ImportOptions)null);
     }
 
     /**
@@ -468,6 +418,12 @@ public class IntegrationTestBase  {
      */
     public VaultPackage extractVaultPackageStrict(String name) throws IOException, PackageException, RepositoryException {
         ImportOptions  opts = getDefaultOptions();
+        return extractVaultPackage(name, opts);
+    }
+
+    public VaultPackage extractVaultPackage(String name, AccessControlHandling acHandling) throws IOException, PackageException, RepositoryException {
+        ImportOptions opts = getDefaultOptions();
+        opts.setAccessControlHandling(acHandling);
         return extractVaultPackage(name, opts);
     }
 

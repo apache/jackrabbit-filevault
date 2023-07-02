@@ -328,7 +328,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testInstallExternalUnScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
+    public void testInstallExternalUnScoped() throws IOException, PackageException, RepositoryException {
         File file = getFile("/test-packages/mixed_package.zip");
         
         cleanPaths(APPLICATION_PATHS);
@@ -348,7 +348,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testInstallExternalContentScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
+    public void testInstallExternalContentScoped() throws IOException, PackageException, RepositoryException {
         File file = getFile("/test-packages/mixed_package.zip");
 
         cleanPaths(APPLICATION_PATHS);
@@ -366,14 +366,14 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         checkFiltered(CONTENT_PATHS, APPLICATION_PATHS, listener.paths);
     }
 
-    private void cleanPaths(String[] paths) throws IOException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException  {
+    private void cleanPaths(String[] paths) throws IOException, RepositoryException {
         for (String path : paths) {
             clean(path);
         }
     }
 
     @Test
-    public void testInstallExternalApplicationScoped() throws IOException, PackageException, RepositoryException, org.apache.jackrabbit.oak.segment.file.InvalidFileStoreVersionException {
+    public void testInstallExternalApplicationScoped() throws IOException, PackageException, RepositoryException {
         File file = getFile("/test-packages/mixed_package.zip");
         
         cleanPaths(APPLICATION_PATHS);

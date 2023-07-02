@@ -19,7 +19,9 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -33,7 +35,6 @@ import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
 import org.apache.jackrabbit.api.JackrabbitRepository;
-import org.apache.jackrabbit.oak.jcr.Jcr;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
@@ -43,6 +44,7 @@ import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl;
+import org.apache.jackrabbit.vault.packaging.integration.RepositoryProvider.RepositoryWithMetadata;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,10 +60,11 @@ public class NamespaceImportIT extends IntegrationTestBase {
 
     private final static String URI2 = "http://two.namespace.io";
 
-    private Instance sourceOakRepository;
+    private Instance sourceOakRepository = null;
 
     @Before
     public void setUp() throws Exception {
+        assumeTrue(isOak());
         sourceOakRepository = new Instance(); // source instance
 
         // Register namespaces with same prefix but different URIs
@@ -80,9 +83,11 @@ public class NamespaceImportIT extends IntegrationTestBase {
 
     @After
     public void tearDown() throws Exception {
-        sourceOakRepository.admin.logout();
-        if (sourceOakRepository.repository instanceof JackrabbitRepository) {
-            JackrabbitRepository.class.cast(sourceOakRepository.repository).shutdown();
+        if (sourceOakRepository != null) {
+            sourceOakRepository.admin.logout();
+            if (sourceOakRepository.repository instanceof JackrabbitRepository) {
+                JackrabbitRepository.class.cast(sourceOakRepository.repository).shutdown();
+            }
         }
         super.tearDown();
     }
@@ -204,7 +209,9 @@ public class NamespaceImportIT extends IntegrationTestBase {
     }
 
     /** Simple Oak repository wrapper */
-    private static final class Instance {
+    private static final class Instance implements Closeable {
+
+        private final RepositoryWithMetadata repositoryWithMetadata;
 
         final Repository repository;
 
@@ -213,8 +220,9 @@ public class NamespaceImportIT extends IntegrationTestBase {
         final JcrPackageManagerImpl packMgr;
 
         private Instance()
-                throws RepositoryException {
-            repository = new Jcr().createRepository();
+                throws RepositoryException, IOException {
+            repositoryWithMetadata = repositoryProvider.createRepository(false, false);
+            repository = repositoryWithMetadata.getRepository();
             admin = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
             packMgr = new JcrPackageManagerImpl(admin, new String[0]);
         }
@@ -227,6 +235,16 @@ public class NamespaceImportIT extends IntegrationTestBase {
         void registerNamespace(String prefix, String uri)
                 throws RepositoryException {
             admin.getWorkspace().getNamespaceRegistry().registerNamespace(prefix, uri);
+        }
+
+        @Override
+        public void close() throws IOException {
+            admin.logout();
+            try {
+                repositoryProvider.closeRepository(repositoryWithMetadata);
+            } catch (RepositoryException e) {
+                throw new IOException(e);
+            }
         }
 
     }

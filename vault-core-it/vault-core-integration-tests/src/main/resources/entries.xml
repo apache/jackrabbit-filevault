@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+
+<!--
+  the entries element holds information about the mountpoint and the relative
+  path of this vault controlled directory.
+
+  @attr uri  the mountpoint of the jcrfs
+  @attr path the path within the jcrfs
+-->
+<entries uri="rmi://127.0.0.1:1234/crx/crx.default" path="/apps/test">
+  <!--
+    An entry element represents a vault controlled file (or directory) which
+    normally is also present as working copy.
+
+    @attr name  the name of the entry
+  -->
+  <entry name="myfile.txt">
+    <!--
+      The base element contains information about the original file retrieved
+      from the server. the base file.
+
+      @attr md5  the md5 checksum. the checksum is calculated when the file is
+                 retrieved from the server and always corresponds to the
+                 checksum of the physical file.
+      @attr size the file size. this size always corresponds to the one of the
+                 physical file.
+      @attr date the last modification date of the file. if the remote file did
+                 not provide a last modification date, it's initialized to the
+                 current time. please note that the last modification time of
+                 the physical base file is set to this value as well.
+      @attr contentType
+                 the content type of the file.
+    -->
+    <base md5="1234.." size="443" date="0" contentType="text/plain" />
+    <!--
+      The work element contains information about the working file.
+      The md5,size and date attributes are calculated whenever a status update
+      is performed. it may be that they can differ from the values of the
+      physical file.
+
+      @attr md5  the md5 checksum. may not correspond to the checksum of the
+                 physical file.
+      @attr size the file size. may not correspond to the size of the physical
+                 file.
+      @attr date the last modification date of the file. may not correspond to
+                 the last modification date of the physical file.
+      @attr contentType
+                 the content type of the file.
+    -->
+    <work md5="1234.." size="443" date="0" contentType="text/plain" />
+  </entry>
+
+  <!--
+    If the entry represents a directory which has just empty base and work
+    elements.
+  -->
+  <entry name="subdir">
+    <base/>
+    <work/>
+  </entry>
+  
+  <!--
+    Modifed file example.
+    After a status update the values of the work element are recalculated.
+    note that the actual status (like modified, missing, etc.) is not included
+    in the entries file.
+  -->
+  <entry name="myfile.txt">
+    <base md5="1234..0" size="443" date="0" />
+    <work md5="1234..1" size="543" date="1" />
+  </entry>
+
+  <!--
+    Added file example.
+    It only contains the information about the working file.
+  -->
+  <entry name="myfile.txt">
+    <work md5="1234..1" size="543" date="1" />
+  </entry>
+
+  <!--
+    Deleted file example.
+    It only contains the information about the base file
+  -->
+  <entry name="myfile.txt" state="deleted">
+    <base md5="1234..0" size="443" date="0" />
+  </entry>
+
+  <!--
+    Conflicted file example.
+    In case of a conflict (your modifications are not mergeable with the updated
+    file from the server) there are 3 additional files put to the working
+    directory: a copy of the base file (.base), a copy of your working file
+    (.mine) and a copy of the new remote file (.theirs). The working file then
+    contains then blocks of conflicting regions.
+  -->
+  <entry name="myfile.txt">
+    <!--
+      this represents still the original base file as present before the
+      conflicting update.
+
+      @attr name the file name of the copy in the working directory
+    -->
+    <base name="myfile.txt.base" md5="1234..0" size="443" date="0" />
+
+    <!--
+      this represents the working file but with conflict blocks.
+    -->
+    <work md5="44333" size="843" date="3" />
+
+    <!--
+      this represents the original working file as present before the
+      update.
+    -->
+    <mine name="myfile.txt.mine" md5="1234..1" size="543" date="1" />
+
+    <!--
+      this represents the updated file from the server
+    -->
+    <theirs name="myfile.txt.theirs" md5="1234..2" size="554" date="2" />
+  </entry>
+
+</entries>

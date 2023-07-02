@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<registryMetadata packageid="test:test-package-with-etc:1.0" size="-1" filepath="/var/folders/rm/vlg2h6m16mb0f65djmnb12xr0000gq/T/junit1443483155243547543/junit9008025097740758307/home/test/test-package-with-etc-1.0.zip" external="false" packagestatus="registered">
+    <workspacefilter>
+        <filter root="/etc">
+            <rule include="/etc"/>
+            <rule include="/etc/clientlibs"/>
+            <rule include="/etc/clientlibs/granite"/>
+            <rule include="/etc/clientlibs/granite/test(/.*)?"/>
+        </filter>
+    </workspacefilter>
+    <packageproperties createdBy="admin" name="test-package-with-etc" lastModified="2017-05-16T17:23:18.391+09:00" lastModifiedBy="admin" acHandling="MERGE_PRESERVE" created="2017-05-16T17:23:18.655+09:00" buildCount="1" version="1.0" dependencies="" packageFormatVersion="2" group="test" lastWrappedBy="admin"/>
+</registryMetadata>

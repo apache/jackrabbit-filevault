@@ -133,9 +133,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.converter</artifactId>
-            <version>1.0.14</version>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.util.converter</artifactId>
+            <version>1.0.9</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

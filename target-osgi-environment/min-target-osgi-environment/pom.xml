@@ -37,7 +37,7 @@
     <properties>
         <jackrabbit.version>2.20.8</jackrabbit.version>
         <oak.version>1.22.14</oak.version>
-        <jackson.version>2.13.4</jackson.version>
+        <jackson.version>2.13.4.2</jackson.version>
     </properties>
 
     <!-- the following dependencies are provided by AEM 6.5.16, all must have scope "provided" to prevent them polluting referencing modules -->

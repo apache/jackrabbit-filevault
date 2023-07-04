@@ -192,7 +192,7 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.jcr.base</artifactId>
-            <version>3.1.6</version>
+            <version>3.1.12</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

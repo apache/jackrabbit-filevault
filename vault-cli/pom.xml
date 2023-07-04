@@ -123,6 +123,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.sling</groupId>
+                        <artifactId>maven-enforcer-rules</artifactId>
+                        <version>1.2.0</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>enforce-complete-runtime-classpath</id>
@@ -131,7 +138,7 @@
                         </goals>
                         <configuration>
                             <rules>
-                                <requireProvidedDependenciesInRuntimeClasspath implementation="org.apache.sling.maven.enforcer.RequireProvidedDependenciesInRuntimeClasspath">
+                                <requireProvidedDependenciesInRuntimeClasspath>
                                     <excludes>
                                         <exclude>javax.servlet:javax.servlet-api</exclude><!-- not used in the CLI context -->
                                         <exclude>*:txw2</exclude><!-- embedded in vault-core -->

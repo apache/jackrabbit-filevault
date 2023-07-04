@@ -21,8 +21,6 @@ import java.util.Map;
 
 import javax.jcr.Session;
 
-import javax.jcr.Session;
-
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.CredentialsProvider;

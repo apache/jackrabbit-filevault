@@ -16,19 +16,18 @@
  */
 package org.apache.jackrabbit.vault.fs.api;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.jackrabbit.vault.fs.impl.SubPackageFilterArchive;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
-import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 /**
  * {@code SubPackageFilterArchiveTest}...
@@ -43,7 +42,7 @@ public class SubPackageFilterArchiveTest {
     @Before
     public void setup() throws Exception {
         memoryArchive = new MemoryArchive(false);
-        InputStream in = IntegrationTestBase.class.getResourceAsStream("/test-packages/subtest.zip");
+        InputStream in = SubPackageFilterArchiveTest.class.getResourceAsStream("/test-packages/subtest.zip");
         memoryArchive.run(in);
         in.close();
         archive = new SubPackageFilterArchive(memoryArchive);

@@ -1,0 +1,142 @@
+<?xml version="1.0"?><!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <!-- ====================================================================== -->
+    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
+    <!-- ====================================================================== -->
+    <parent>
+        <groupId>org.apache.jackrabbit.vault</groupId>
+         <artifactId>vault-core-it</artifactId>
+        <version>3.6.9-SNAPSHOT</version>
+    </parent>
+
+    <!-- ====================================================================== -->
+    <!-- P R O J E C T  D E S C R I P T I O N                                   -->
+    <!-- ====================================================================== -->
+    <artifactId>vault-core-it-execution</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Apache Jackrabbit FileVault Core IT Execution</name>
+
+    <!-- ====================================================================== -->
+    <!-- M O D U L E S                                                          -->
+    <!-- ====================================================================== -->
+    <modules>
+        <module>vault-core-it-execution-oak-max</module>
+        <module>vault-core-it-execution-jr2-min</module>
+    </modules>
+
+    <!-- ====================================================================== -->
+    <!-- B U I L D                                                              -->
+    <!-- ====================================================================== -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>execute-it</id>
+                            <goals>
+                                <goal>integration-test</goal>
+                            </goals>
+                            <configuration>
+                                <systemPropertyVariables>
+                                    <oak>true</oak>
+                                    <repoSuffix>fork${surefire.forkNumber}</repoSuffix>
+                                    <!-- https://issues.apache.org/jira/browse/OAK-8903 -->
+                                    <oak.datastore.sharedTransient>true</oak.datastore.sharedTransient>
+                                </systemPropertyVariables>
+                                <argLine>@{jacoco.command} -Xmx1024m</argLine>
+                                <forkCount>0.5C</forkCount>
+                                <reuseForks>true</reuseForks>
+                                <dependenciesToScan>org.apache.jackrabbit.vault:vault-core-integration-tests</dependenciesToScan>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>verify-it</id>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- ====================================================================== -->
+                <!-- R A T   P L U G I N                                                    -->
+                <!-- ====================================================================== -->
+                <plugin>
+                    <groupId>org.apache.rat</groupId>
+                    <artifactId>apache-rat-plugin</artifactId>
+                    <configuration>
+                        <excludes>
+                            <exclude>vault-core-it-execution-oak-min/**</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <artifactId>vault-core-integration-tests</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+   
+    <profiles>
+        <profile>
+            <activation>
+                <jdk>[,14)</jdk>
+            </activation>
+            <modules>
+                <!-- due to https://issues.apache.org/jira/browse/OAK-7358 only compatible with JDK < 14-->
+                <module>vault-core-it-execution-oak-min</module>
+            </modules>
+        </profile>
+        
+    </profiles>
+</project>

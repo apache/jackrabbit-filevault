@@ -21,9 +21,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.function.Supplier;
@@ -43,7 +45,6 @@ import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.impl.ArchiveWrapper;
 import org.apache.jackrabbit.vault.fs.impl.SubPackageFilterArchive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
-import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -70,15 +71,10 @@ public class ArchiveTest {
         Supplier<Archive> znaSupplier = () -> new ZipNioArchive(zipPath);
         Supplier<Archive> faSupplier = () -> {
                 try {
-                    return new FileArchive(IntegrationTestBase.getFile(ArchiveTest.class, "/test-packages/atomic-counter-test", () -> {
-                        try {
-                            return tempFolder.newFile();
-                        } catch (IOException e) {
-                            throw new UncheckedIOException("cannot create temp file", e);
-                        }
-                    }));
-                } catch (IOException e) {
-                    throw new UncheckedIOException("cannot create temp file", e);
+                    URI uri = Objects.requireNonNull(ArchiveTest.class.getResource("/test-packages/atomic-counter-test"),  "Could not find class resource with name '/test-packages/atomic-counter-test'").toURI();
+                    return new FileArchive(new File(uri));
+                } catch (URISyntaxException e) {
+                    throw new IllegalStateException("Cannot get URI to test resource", e);
                 }
         };
         Supplier<Archive> memArchiveSupplier = () -> { 

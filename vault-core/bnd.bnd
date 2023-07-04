@@ -13,10 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-# JR2 packages not semantically versioned
 Import-Package: org.apache.jackrabbit.spi2dav;resolution:=optional,\
                             org.apache.sling.jcr.api;resolution:=optional,\
-                            org.apache.jackrabbit.*;version=!,\
                             *
 # include complete packages (all transitive dependencies lead to Import-Package instructions)
 -conditionalpackage: org.apache.jackrabbit.jcr2spi.*

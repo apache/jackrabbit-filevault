@@ -34,6 +34,10 @@
 
     <name>Apache Jackrabbit FileVault Core IT</name>
 
+    <properties>
+        <!-- skip all modules inside this tree from Sonarcloud analysis -->
+        <sonar.skip>true</sonar.skip>
+    </properties>
     <!-- ====================================================================== -->
     <!-- M O D U L E S                                                          -->
     <!-- ====================================================================== -->

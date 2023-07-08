@@ -41,6 +41,12 @@
         <plugins>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <!-- put derby.log (created for Jackrabbit based ITs below target instead of the current directory) -->
+                        <derby.stream.error.file>target/derby.log</derby.stream.error.file>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>

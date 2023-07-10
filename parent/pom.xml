@@ -574,31 +574,6 @@ Bundle-Category: jackrabbit
                                     <append>true</append>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>merge-unit-and-it</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>merge</goal>
-                                </goals>
-                                <configuration>
-                                    <fileSets>
-                                        <fileSet>
-                                            <directory>${project.build.directory}</directory>
-                                            <includes>
-                                                <include>jacoco-unit.exec</include>
-                                                <include>jacoco-it.exec</include>
-                                            </includes>
-                                        </fileSet>
-                                    </fileSets>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>report-merged</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>report</goal>
-                                </goals>
-                            </execution>
                         </executions>
                     </plugin>
                     

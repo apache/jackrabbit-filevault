@@ -55,6 +55,8 @@
 
     <properties>
         <project.build.outputTimestamp>2023-01-05T15:25:16Z</project.build.outputTimestamp>
+        <!-- add some coverage excludes -->
+        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/vault-coverage-aggregate/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <distributionManagement>
@@ -385,6 +387,12 @@ file://${basedir}/target/vote.txt
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>jacoco-report</id>
+            <modules>
+                <module>vault-coverage-aggregate</module>
+            </modules>
         </profile>
     </profiles>
 </project>

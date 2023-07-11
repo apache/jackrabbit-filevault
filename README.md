@@ -2,10 +2,10 @@
 ![GitHub](https://img.shields.io/github/license/apache/jackrabbit-filevault)
 [![Maven Central](https://img.shields.io/maven-central/v/org.apache.jackrabbit.vault/vault-cli.svg?label=Maven%20Central)](https://search.maven.org/artifact//org.apache.jackrabbit.vault/vault-cli)
 [![Build Status](https://ci-builds.apache.org/buildStatus/icon?job=Jackrabbit%2Ffilevault%2Fmaster)](https://ci-builds.apache.org/job/Jackrabbit/job/filevault/job/master/)
-[![SonarCloud Status](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=alert_status)](https://sonarcloud.io/dashboard?id=apache_jackrabbit-filevault)
-[![SonarCloud Coverage](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=coverage)](https://sonarcloud.io/component_measures/metric/coverage/list?id=apache_jackrabbit-filevault)
-[![SonarCloud Bugs](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=bugs)](https://sonarcloud.io/component_measures/metric/reliability_rating/list?id=apache_jackrabbit-filevault)
-[![SonarCloud Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=vulnerabilities)](https://sonarcloud.io/component_measures/metric/security_rating/list?id=apache_jackrabbit-filevault)
+[![SonarCloud Status](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=alert_status)](https://sonarcloud.io/summary/overall?id=apache_jackrabbit-filevault)
+[![SonarCloud Coverage](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=coverage)](https://sonarcloud.io/component_measures?metric=Coverage&view=list&id=apache_jackrabbit-filevault)
+[![SonarCloud Bugs](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=bugs)](https://sonarcloud.io/project/issues?resolved=false&types=BUG&id=apache_jackrabbit-filevault)
+[![SonarCloud Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=vulnerabilities)](https://sonarcloud.io/project/issues?resolved=false&types=VULNERABILITY&id=apache_jackrabbit-filevault)
 
 Welcome to Apache Jackrabbit FileVault
 ===========================================================

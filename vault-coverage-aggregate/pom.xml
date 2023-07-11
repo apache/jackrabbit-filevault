@@ -37,51 +37,61 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>vault-core-it-execution-jr2-min</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>vault-core-it-execution-oak-min</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>vault-core-it-execution-oak-max</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>vault-davex</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>vault-diff</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>vault-rcp</artifactId>
+            <artifactId>org.apache.jackrabbit.vault.rcp</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>vault-sync</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>vault-validation</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>vault-vlt</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>
@@ -98,6 +108,12 @@
                         <goals>
                             <goal>report-aggregate</goal>
                         </goals>
+                        <configuration>
+                            <includes>
+                                <!-- shaded 3rd party classes -->
+                                <include>org/apache/jackrabbit/vault/**</include>
+                            </includes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -38,6 +38,10 @@
         Provides an example of a package install hook that uses a class not available in bundles classpath
     </description>
 
+    <properties>
+        <!-- skip from Sonarcloud analysis -->
+        <sonar.skip>true</sonar.skip>
+    </properties>
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
     <!-- ====================================================================== -->

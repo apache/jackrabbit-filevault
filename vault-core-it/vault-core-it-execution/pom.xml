@@ -104,7 +104,7 @@
                     <groupId>org.apache.rat</groupId>
                     <artifactId>apache-rat-plugin</artifactId>
                     <configuration>
-                        <excludes>
+                        <excludes combine.children="append">
                             <exclude>vault-core-it-execution-oak-min/**</exclude>
                         </excludes>
                     </configuration>

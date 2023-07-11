@@ -764,9 +764,13 @@ public class JcrPackageImpl implements JcrPackage {
                     unresolved.add(dep);
                 } else {
                     RegisteredPackage pack = mgr.open(id);
-                    if (pack != null && !pack.isInstalled()) {
-                        unresolved.add(dep);
-                        uninstalled.add(pack);
+                    if (pack != null) {
+                        if (!pack.isInstalled()) {
+                            unresolved.add(dep);
+                            uninstalled.add(pack);
+                        } else {
+                            pack.close();
+                        }
                     }
                 }
             }

@@ -36,7 +36,7 @@ Example:
     <properties>
 	<comment>FileVault Package Properties</comment>
 	<entry key="createdBy">admin</entry>
-	<entry key="generator">org.apache.jackrabbit.vault:3.6.10</entry>
+	<entry key="generator">org.apache.jackrabbit.vault:3.7.0</entry>
 	<entry key="name">acs-aem-commons-content</entry>
 	<entry key="lastModified">2018-06-14T11:50:32.369+02:00</entry>
 	<entry key="lastModifiedBy">admin</entry>

@@ -51,7 +51,7 @@ public interface NodeContext {
     /**
      * 
      * @return the line where the serialization of the node was found, 0 for unspecified. This is only set for a node context originating from a DocView XML file.
-     * @since 3.6.10
+     * @since 3.7.0
      */
     default int getLine() {
         return 0;
@@ -60,7 +60,7 @@ public interface NodeContext {
     /**
      * 
      * @return the column where the serialization of the node was found, 0 for unspecified. This is only set for a node context originating from a DocView XML file.
-     * @since 3.6.10
+     * @since 3.7.0
      */
     default int getColumn() {
         return 0;

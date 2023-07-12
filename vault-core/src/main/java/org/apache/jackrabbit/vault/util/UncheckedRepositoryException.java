@@ -21,7 +21,7 @@ import javax.jcr.RepositoryException;
 /**
  * Wraps a {@link RepositoryException} with an unchecked exception.
  * Useful in {@link FunctionalInterface} methods/lambda expressions which must not throw checked exceptions.
- * @since 3.6.10
+ * @since 3.7.0
  *
  */
 public class UncheckedRepositoryException extends RuntimeException {

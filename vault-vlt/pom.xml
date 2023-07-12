@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>3.6.9-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -85,6 +85,11 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

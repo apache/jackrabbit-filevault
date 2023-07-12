@@ -52,7 +52,7 @@ public interface UserManagement {
      * @param session the session to access the repository
      * @param id the authorizable id
      * @return the principal name corresponding to the given authorizable id or {@code null} if the authorizable id cannot be found
-     * @since 3.6.10
+     * @since 3.7.0
      */
     String getPrincipalName(Session session, String id);
 

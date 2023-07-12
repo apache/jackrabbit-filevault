@@ -34,6 +34,7 @@ import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.VltDirectory;
 import org.apache.jackrabbit.vault.vlt.VltException;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,7 +158,8 @@ public class Ignored implements PathFilter {
         ctx.outdent();
     }
 
-    public PathFilter translate(PathMapping mapping) {
+    @Override
+    public @NotNull PathFilter translate(PathMapping mapping) {
         return this;
     }
 }

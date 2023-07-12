@@ -725,7 +725,7 @@ public class DocViewProperty2 {
      * @param valueFactory the value factory to use for converting the underlying string to the JCR value
      * @return the value or empty if no value set. For multi value only the first item is returned
      * @throws ValueFormatException
-     * @since 3.6.10
+     * @since 3.7.0
      */ 
     public @NotNull Optional<Value> getValue(@NotNull ValueFactory valueFactory) throws ValueFormatException {
         if (!values.isEmpty()) {
@@ -738,7 +738,7 @@ public class DocViewProperty2 {
      * @param valueFactory the value factory to use for converting the underlying string to the JCR value
      * @return the list of values, may be empty. In case of single value entry just a single value list.
      * @throws ValueFormatException
-     * @since 3.6.10
+     * @since 3.7.0
      */
     public @NotNull List<Value> getValues(@NotNull ValueFactory valueFactory) throws ValueFormatException {
         try {

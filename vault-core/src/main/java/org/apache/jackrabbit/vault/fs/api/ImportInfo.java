@@ -54,7 +54,7 @@ public interface ImportInfo {
     /**
      * Marks that the child node at {@code path} was moved due to stashing.
      * @param path the path
-     * @since 3.6.10
+     * @since 3.7.0
      */
     default void onStashed(String path) {
         // by default do nothing

@@ -185,7 +185,7 @@ public class Version implements Comparable<Version> {
     /**
      * 
      * @return {@code true} in case this version indicates a SNAPSHOT (i.e. mutable) version
-     * @since 3.6.10
+     * @since 3.7.0
      */
     public boolean isSnapshot() {
         return str != null && (str.endsWith("SNAPSHOT"));

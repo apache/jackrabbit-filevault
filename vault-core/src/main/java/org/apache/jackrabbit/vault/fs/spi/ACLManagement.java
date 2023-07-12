@@ -82,7 +82,7 @@ public interface ACLManagement {
      * @return all collected principal access control policies per principal name inside the given node (even nested ones)
      * @throws RepositoryException in case some error occurred while collecting the principal policies
      * @see <a href="https://jackrabbit.apache.org/archive/wiki/JCR/AccessControl_115513330.html">Access Control</a>
-     * @since 3.6.10
+     * @since 3.7.0
      */
     @NotNull Map<String, List<? extends AccessControlPolicy>> getPrincipalAcls(Node node) throws RepositoryException;
 }

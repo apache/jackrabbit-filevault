@@ -14,3 +14,5 @@ github:
     - JCR
     - SLING
     - FELIX
+  dependabot_alerts:  true
+  dependabot_updates: false

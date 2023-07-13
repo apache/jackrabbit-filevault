@@ -35,6 +35,7 @@ import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.VltDirectory;
 import org.apache.jackrabbit.vault.vlt.VltException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +83,7 @@ public class Ignored implements PathFilter {
     }
 
 
-    public boolean matches(String path) {
+    public boolean matches(@NotNull String path) {
         for (PathFilter p: getIgnored()) {
             if (p.matches(path)) {
                 return true;
@@ -147,7 +148,7 @@ public class Ignored implements PathFilter {
         return true;
     }
 
-    public void dump(DumpContext ctx, boolean isLast) {
+    public void dump(@NotNull DumpContext ctx, boolean isLast) {
         ctx.printf(isLast, "%s:", getClass().getSimpleName());
         ctx.indent(isLast);
         Iterator<PathFilter> iter = getIgnored().iterator();
@@ -159,7 +160,7 @@ public class Ignored implements PathFilter {
     }
 
     @Override
-    public @NotNull PathFilter translate(PathMapping mapping) {
+    public @NotNull PathFilter translate(@Nullable PathMapping mapping) {
         return this;
     }
 }

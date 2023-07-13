@@ -28,7 +28,6 @@ import java.io.Writer;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.VaultFileCopy;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.util.Constants;
@@ -308,19 +307,13 @@ public class VltFile implements DocumentSource {
             out.write("===================================================================");
             out.writeNewLine();
 
-            Reader r0 = getBaseFile(false) == null ? null : getBaseFile(false).getReader();
-            Document d0 = new Document(this, LineElementsFactory.create(this, r0, false));
-            Reader r1 = file.exists() ? new InputStreamReader(FileUtils.openInputStream(file), Constants.ENCODING) : null;
-            Document d1 = new Document(this, LineElementsFactory.create(this, r1, false));
-
-            DocumentDiff diff;
-            try {
-                diff = d0.diff(d1);
-            } finally {
-                IOUtils.closeQuietly(r0);
-                IOUtils.closeQuietly(r1);
+            try (Reader r0 = getBaseFile(false) == null ? null : getBaseFile(false).getReader();
+                 Reader r1 = file.exists() ? new InputStreamReader(FileUtils.openInputStream(file), Constants.ENCODING) : null) {
+                Document d0 = new Document(this, LineElementsFactory.create(this, r0, false));
+                Document d1 = new Document(this, LineElementsFactory.create(this, r1, false));
+                DocumentDiff diff = d0.diff(d1);
+                diff.write(out, 3);
             }
-            diff.write(out, 3);
             out.flush();
         } catch (IOException e) {
             throw exception("Error while writing diff.", e);
@@ -724,29 +717,21 @@ public class VltFile implements DocumentSource {
                 return FileAction.CONFLICTED;
             }
 
+            DocumentDiff3 diff;
             // do a 3-way diff between the base, the local and the remote one.
             // we currently do not use document sources, since we don't really have
             // a label to provide (like rev. num, etc).
-            Reader r0 = baseFile.getReader();
-            Reader r1 = tmpFile.getReader();
-            Document baseDoc = new Document(null, LineElementsFactory.create(new MetaFileDocSource(baseFile), r0, false));
-            Document leftDoc = new Document(null, LineElementsFactory.create(new FileDocumentSource(file), false, Constants.ENCODING));
-            Document rightDoc = new Document(null, LineElementsFactory.create(new MetaFileDocSource(tmpFile), r1, false));
-
-            DocumentDiff3 diff;
-            try {
+            try (Reader r0 = baseFile.getReader();
+                 Reader r1 = tmpFile.getReader()) {
+                Document baseDoc = new Document(null, LineElementsFactory.create(new MetaFileDocSource(baseFile), r0, false));
+                Document leftDoc = new Document(null, LineElementsFactory.create(new FileDocumentSource(file), false, Constants.ENCODING));
+                Document rightDoc = new Document(null, LineElementsFactory.create(new MetaFileDocSource(tmpFile), r1, false));
                 diff = baseDoc.diff3(leftDoc, rightDoc);
-            } finally {
-                IOUtils.closeQuietly(r0);
-                IOUtils.closeQuietly(r1);
             }
 
             // save the diff output
-            Writer out = new OutputStreamWriter(FileUtils.openOutputStream(file), Constants.ENCODING);
-            try {
+            try (Writer out = new OutputStreamWriter(FileUtils.openOutputStream(file), Constants.ENCODING)) {
                 diff.write(new DiffWriter(out), false);
-            } catch (IOException e) {
-                IOUtils.closeQuietly(out);
             }
 
             if (diff.hasConflicts()) {
@@ -842,25 +827,18 @@ public class VltFile implements DocumentSource {
             return FileAction.CONFLICTED;
         }
 
-        try {
+        MetaFile baseFile = getBaseFile(false);
+        try (Reader r0 = baseFile.getReader();
+            Reader r1 = tmpFile.getReader()) {
             // do a 3-way diff between the base, the local and the remote one.
             // we currently do not use document sources, since we don't really have
             // a label to provide (like rev. num, etc).
-
-            MetaFile baseFile = getBaseFile(false);
-            Reader r0 = baseFile.getReader();
-            Reader r1 = tmpFile.getReader();
+            
             Document baseDoc = new Document(null, LineElementsFactory.create(new MetaFileDocSource(baseFile), r0, false));
             Document leftDoc = new Document(null, LineElementsFactory.create(new FileDocumentSource(file), false, Constants.ENCODING));
             Document rightDoc = new Document(null, LineElementsFactory.create(new MetaFileDocSource(tmpFile), r1, false));
 
-            DocumentDiff3 diff;
-            try {
-                diff = baseDoc.diff3(leftDoc, rightDoc);
-            } finally {
-                IOUtils.closeQuietly(r0);
-                IOUtils.closeQuietly(r1);
-            }
+            DocumentDiff3 diff = baseDoc.diff3(leftDoc, rightDoc);
 
             if (diff.hasConflicts()) {
                 return FileAction.CONFLICTED;

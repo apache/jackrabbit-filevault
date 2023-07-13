@@ -30,7 +30,6 @@
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
     <artifactId>vault-hook-externalclass-test</artifactId>
-    <version>3.6.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Apache Jackrabbit FileVault Package Hook Sling Example</name>

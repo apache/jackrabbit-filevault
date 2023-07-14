@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>parent</artifactId>
         <relativePath>parent/pom.xml</relativePath>
-        <version>3.7.0</version>
+        <version>3.7.1-SNAPSHOT</version>
     </parent>
 
     <!-- ====================================================================== -->
@@ -54,7 +54,7 @@
     </modules>
 
     <properties>
-        <project.build.outputTimestamp>2023-07-14T09:57:24Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2023-07-14T09:59:01Z</project.build.outputTimestamp>
         <!-- https://docs.sonarcloud.io/enriching/test-coverage/test-coverage-parameters/#javakotlinscalajvm -->
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/vault-coverage-aggregate/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>

@@ -351,7 +351,7 @@ The release candidate is a zip archive of the sources in:
 
 https://github.com/apache/jackrabbit-filevault/tree/jackrabbit-filevault-${project.version}/
 
-The release notes can be found in JIRA at https://issues.apache.org/jira/projects/JCRVLT/versions/...
+The release notes can be found in JIRA at https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12314920&version=...
 
 The command for running automated checks against this release candidate is:
 $ sh check-release.sh filevault ${project.version} ${checksum}

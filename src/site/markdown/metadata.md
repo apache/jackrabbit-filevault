@@ -18,15 +18,15 @@
 Metadata
 ===========
 
-Every repository export/package carries metadata (within the folder `META-INF/vault`).
+Every repository export/package carries metadata (within the folder `).
 
-Category | Location | Description | Relevant for Import or Export?
+Category | Path | Description | Relevant for Import or Export? | Mandatory for Packages?
 --- | --- | --- | ---
-[Workspace Filters](filter.html) | `filter.xml` | Contains import rules and subtree paths to be imported/exported | both
-[Package Properties](properties.html) | `properties.xml` | Main metadata of packages | import
-[FileVault FS Configuration](config.html#FileVault_Filesystem_Configuration) | `config.xml` | FS configuration affecting serialization of aggregates | export  
-[Settings](settings.html) | `settings.xml` | Allows to ignore certain file names | export
-[Node Types and Namespaces](nodetypes.html) | `*.cnd` | Registration of JCR node types and namespaces | import
-[Privileges ](privileges.html) | `privileges.xml` | Registration of custom JCR privileges | import
-[Package Definition](packagedefinition.html) | `definition/.content.xml`| Additional metadata | import
-[Install Hooks](installhooks.html) | `hooks/*.jar` | Allows post/pre-processing of packages | import
+[Workspace Filters](filter.html) | `META-INF/vault/filter.xml` | Contains import rules and subtree paths to be imported/exported | both | yes
+[Package Properties](properties.html) | `META-INF/vault/properties.xml` (and `META-INF/MANIFEST.MF`) | Main metadata of packages | import | yes
+[FileVault FS Configuration](config.html#FileVault_Filesystem_Configuration) | `META-INF/vault/config.xml` | FS configuration affecting serialization of aggregates | export | no
+[Settings](settings.html) | `META-INF/vault/settings.xml` | Allows to ignore certain file names | export | no
+[Node Types and Namespaces](nodetypes.html) | `META-INF/vault/*.cnd` | Registration of JCR node types and namespaces | import | no
+[Privileges ](privileges.html) | `META-INF/vault/privileges.xml` | Registration of custom JCR privileges | import | no
+[Package Definition](packagedefinition.html) | `META-INF/vault/definition/.content.xml`| Additional metadata | import | no
+[Install Hooks](installhooks.html) | `META-INF/vault/hooks/*.jar` | Allows post/pre-processing of packages | import | no

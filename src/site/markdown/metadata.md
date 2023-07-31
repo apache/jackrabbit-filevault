@@ -18,7 +18,7 @@
 Metadata
 ===========
 
-Every repository export/package carries metadata (within the folder `).
+Every repository export/package carries metadata which is evaluated during import and/or export.
 
 Category | Path | Description | Relevant for Import or Export? | Mandatory for Packages?
 --- | --- | --- | ---

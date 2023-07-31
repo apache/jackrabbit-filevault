@@ -19,7 +19,7 @@ Settings
 ===========
 
 The FileVault settings can be adjusted with a `META-INF/vault/settings.xml` file. 
-The settings allow to ignore certain certain file names during export operations.
+The settings allow to ignore certain files/directories during import operations.
 An example settings file looks like this:
 
 ```xml
@@ -29,4 +29,5 @@ An example settings file looks like this:
 </vault>
 ```
 
-The `name` attribute is compared with the file name (not the full file path) and is not parsed as regular expression!
+The `name` attribute is compared with the file/directory name (not the full file path) and is not parsed as regular expression!
+Both `.vlt` directories and files having a name starting with `.vlt-` are always implicitly ignored and don't need to be added.

@@ -18,15 +18,15 @@
 Metadata
 ===========
 
-Every repository export/package carries metadata (usually within the folder `META-INF/vault`).
+Every repository export/package carries metadata (within the folder `META-INF/vault`).
 
-This is
-
-* [Filters (filter.xml)](filter.html), mandatory
-* [Package Properties (properties.xml)](properties.html), mandatory for packages
-* [Configuration (config.xml)](config.html), optional
-* [Settings (settings.xml)](settings.html), optional
-* [Nodetypes (*.cnd)](nodetypes.html), optional
-* [Privileges (privileges.xml)](privileges.html), optional
-* [Package Definition (definition/.content.xml)](packagedefinition.html), optional
-* [Install Hooks](installhooks.html), optional
+Category | Location | Description | Relevant for Import or Export?
+--- | --- | --- | ---
+[Workspace Filters](filter.html) | `filter.xml` | Contains import rules and subtree paths to be imported/exported | both
+[Package Properties](properties.html) | `properties.xml` | Main metadata of packages | import
+[FileVault FS Configuration](config.html#FileVault_Filesystem_Configuration) | `config.xml` | FS configuration affecting serialization of aggregates | export  
+[Settings](settings.html) | `settings.xml` | Allows to ignore certain file names | export
+[Node Types and Namespaces](nodetypes.html) | `*.cnd` | Registration of JCR node types and namespaces | import
+[Privileges ](privileges.html) | `privileges.xml` | Registration of custom JCR privileges | import
+[Package Definition](packagedefinition.html) | `definition/.content.xml`| Additional metadata | import
+[Install Hooks](installhooks.html) | `hooks/*.jar` | Allows post/pre-processing of packages | import

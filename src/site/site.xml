@@ -44,6 +44,7 @@
         <item href="settings.html" name="Settings"/>
         <item href="nodetypes.html" name="Node Types and Namespaces"/>
         <item href="privileges.html" name="Privileges"/>
+        <item href="packagedefinition.html" name="Package Definition"/>
         <item href="installhooks.html" name="Install Hooks"/>
       </item>
       <item href="config.html" name="Configuration"/>

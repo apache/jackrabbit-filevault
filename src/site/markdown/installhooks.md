@@ -45,5 +45,17 @@ The class loader can be overridden by calling [`ImportOptions.setHookClassLoader
 
 You must make sure that the external install hook class is accessible from the used class loader.
 
+3rd Party Hooks
+-----
+Name | Description | Link
+--- | --- | ---
+Asset Workflow Hook | Disables AEM Asset workflows during package installation | <https://github.com/orbinson/be.orbinson.aem.sdk-dev-tools#asset-workflow-hook>
+Oak Reindex Hook | Automatically manages the reindexing in Oak when index definitions are installed | <https://github.com/code-distillery/filevault-oak-reindex-hook>
+AEM Easy Content Upgrade | Executes Groovy scripts | <https://github.com/valtech/aem-easy-content-upgrade>
+Access Control Tool for AEM | Installs JCR permissions from YAML configurations | <https://github.com/Netcentric/accesscontroltool>
+Vault Upgrade Hook | Executes additional operations via Groovy, Sling Pipes and some other means | <https://github.com/Netcentric/vault-upgrade-hook>
+
+Please raise a PR to get other 3rd party hooks listed above.
+
 [api.InstallHook]: apidocs/org/apache/jackrabbit/vault/packaging/InstallHook.html
 [api.ImportOptions]: apidocs/org/apache/jackrabbit/vault/fs/io/ImportOptions.html

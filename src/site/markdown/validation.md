@@ -83,6 +83,17 @@ Validator Class | Description | Scope | Called from another validator
 `GenericMetaInfDataValidator` | Called for all META-INF files (even `vault/filter.xml` nor `vault/properties.xml`). In general prefer the higher level validators (i.e. `FilterValidator` or `PropertiesValidator` if possible) | `META-INF` | no
 `MetaInfFilePathValidator` | Called for each file path contained in the package below META-INF | `META-INF` | no
 
+### 3rd Party Validators
+
+Name | Description | Link
+--- | --- | ---
+Sling Repoinit Validator | Validates Sling Repoinit statements | <https://sling.apache.org/documentation/bundles/repository-initialization.html#filevault-validator>
+AEM Cloud Validator | Prevents invalid usage patterns for AEM as a Cloud Service | <https://github.com/Netcentric/aem-cloud-validator>
+AEM Replication Medata Validator | Enforces correct replication metadata for certain nodes | <https://github.com/Netcentric/aem-replication-metadata-validator>
+AEM Content Classification Validator | Validates usage of nodes according to AEM Content Classification | <https://github.com/Netcentric/aem-classification/tree/master/aem-classification-validator>
+
+Please raise a PR to get other 3rd party validators listed above.
+
 ## Validation API
 
 The API for calling validation on specific files is provided in [package `org.apache.jackrabbit.vault.validation`][javadoc.api].

@@ -324,7 +324,7 @@ public interface PackageProperties {
     String getProperty(String name);
 
     /**
-     * Returns the package type or {@code null} if not package type was specified for this package.
+     * Returns the package type or {@code null} if no package type was specified for this package.
      * @return the package type
      */
     @Nullable

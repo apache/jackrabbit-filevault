@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.validation.spi;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Set;
 
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.PackageInfo;
@@ -28,6 +29,7 @@ import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The validation context encapsulates information about the package for which the validation is triggered.
+ * In addition validators may use it to pass information to other validators via attributes.
  * This class is used from both validators (SPI) and validation API but for historical reasons is located in (wrong) package {@code org.apache.jackrabbit.vault.validation.spi}.
  */
 @ProviderType
@@ -53,14 +55,14 @@ public interface ValidationContext {
 
     /**
      * Returns the root path of the package.
-     * @return either the path to the ZIP file or a directory containing an exploded package.
+     * @return either the path to the ZIP file or a directory containing an exploded package. For subpackages starts with the package root path of the root container and appends each sub container package root path with the default separator.
      */
     @NotNull Path getPackageRootPath();
 
     /**
-     * PackageInfo for all resolved package dependencies.
+     * {@link PackageInfo} for all resolved package dependencies.
      * In contrast to {@link PackageProperties#getDependencies()} the resolved dependencies also
-     * carry the main metadata of the dependencies.
+     * carry the main metadata (next to their coordinates).
      * @return the package info of all resolved package dependencies (i.e. the ones for which an artifact was found).
      */
     @NotNull Collection<PackageInfo> getDependenciesPackageInfo();
@@ -72,4 +74,33 @@ public interface ValidationContext {
     default boolean isIncremental() {
         return false;
     }
+
+    /**
+     * Sets an attribute with the given name to the given value.
+     * @param name the name of the attribute to set
+     * @param value the value to set the attribute to
+     * @return the old value of the attribute with the given name or {@code null} if there was no value set
+     * @see #getAttribute(String)
+     * @since 3.7.1
+     */
+    Object setAttribute(String name, Object value);
+
+    /**
+     * Retrieves the value of the attribute with the given name.
+     * @param name the name of the attribute to retrieve
+     * @return the value of the attribute with the given name or {@code null} if there was no value set
+     * @see #setAttribute(String, Object)
+     * @see #getAttributeNames()
+     * @since 3.7.1
+     */
+    Object getAttribute(String name);
+
+    /**
+     * Returns a set of all attribute names which have been set before. 
+     * @return a set of attribute names which contain values
+     * @see #getAttribute(String)
+     * @see #setAttribute(String, Object)
+     * @since 3.7.1
+     */
+    Set<String> getAttributeNames();
 }

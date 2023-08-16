@@ -14,10 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Provides common implementations of {@link org.apache.jackrabbit.vault.validation.spi.ValidationContext}
- */
-@Version("1.1.0")
 package org.apache.jackrabbit.vault.validation.context;
 
-import org.osgi.annotation.versioning.Version;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
+import org.jetbrains.annotations.NotNull;
+
+public abstract class AbstractValidationContext implements ValidationContext {
+
+    @NotNull
+    protected final Map<String, Object> attributes;
+
+    protected AbstractValidationContext() {
+        this.attributes = new HashMap<>();
+    }
+
+    @Override
+    public Object setAttribute(String name, Object value) {
+        return attributes.put(name, value);
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return attributes.get(name);
+    }
+
+    @Override
+    public Set<String> getAttributeNames() {
+        return attributes.keySet();
+    }
+
+}

@@ -31,11 +31,12 @@ import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.impl.DefaultPackageProperties;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.apache.jackrabbit.vault.validation.context.AbstractValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class PackageFolderValidationContext implements ValidationContext {
+public class PackageFolderValidationContext extends AbstractValidationContext {
 
     private final Path rootFolder;
     private final DefaultWorkspaceFilter filter;
@@ -72,8 +73,6 @@ public class PackageFolderValidationContext implements ValidationContext {
 
     @Override
     public @NotNull Collection<PackageInfo> getDependenciesPackageInfo() {
-        // TODO Auto-generated method stub
         return Collections.emptyList();
     }
-
 }

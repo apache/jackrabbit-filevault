@@ -31,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Implements a {@link ValidationContext} based on a given {@link Archive}.
  */
-public class ArchiveValidationContext implements ValidationContext {
+public class ArchiveValidationContext extends AbstractValidationContext {
 
     private final WorkspaceFilter filter;
     @NotNull private final PackageProperties properties;

@@ -17,11 +17,11 @@
 
 # TODO: spi-commons and webdav?
 -includeresource: \
-                  @jackrabbit-jcr-client-[0-9.]*(-SNAPSHOT)?.jar,\
-                  @jackrabbit-jcr2spi-[0-9.]*(-SNAPSHOT)?.jar,\
-                  @jackrabbit-spi2dav-[0-9.]*(-SNAPSHOT)?.jar,\
-                  @vault-davex-[0-9.]*(-SNAPSHOT)?.jar,\
-                  @oak-jackrabbit-api-[0-9.]*(-SNAPSHOT)?.jar,
+                  @jackrabbit-jcr-client-*.jar,\
+                  @jackrabbit-jcr2spi-*.jar,\
+                  @jackrabbit-spi2dav-*.jar,\
+                  @vault-davex-*.jar,\
+                  @oak-jackrabbit-api-*.jar,
 -conditionalpackage: org.apache.felix.utils.json
 # make sure to only export the relevant packages (https://github.com/bndtools/bnd/issues/4219)
 -exportcontents: org.apache.jackrabbit.vault.rcp

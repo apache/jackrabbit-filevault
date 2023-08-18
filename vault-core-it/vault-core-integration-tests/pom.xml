@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>vault-core-it</artifactId>
         <relativePath>..</relativePath>
-        <version>3.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <!-- ====================================================================== -->

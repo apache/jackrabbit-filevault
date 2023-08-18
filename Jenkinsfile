@@ -20,9 +20,9 @@
 // use the shared library from https://github.com/apache/jackrabbit-filevault-jenkins-lib
 @Library('filevault@master') _
 
-vaultPipeline('ubuntu', 11, '3', {
+vaultPipeline('ubuntu', 17, '3', {
   vaultStageSanityCheck()
-  vaultStageBuild(['Windows'], [17,21], [], 'apache_jackrabbit-filevault', 
+  vaultStageBuild(['Windows'], [11,21], [], 'apache_jackrabbit-filevault', 
      [
        mainBuildArguments: '-U clean site deploy -Pjacoco-report,dependency-check -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml'
      ]

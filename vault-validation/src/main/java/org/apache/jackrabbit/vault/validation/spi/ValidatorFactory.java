@@ -42,9 +42,10 @@ public interface ValidatorFactory {
     @Nullable Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings);
 
     /**
-     * Returns whether the validator should by default also called for subpackages.
+     * Determines whether the validator should by default also be executed for subpackages.
+     * In case {@code true} is returned here the validator should make sure to evaluate {@link ValidationContext#isSubpackageOnlyValidation()} to not emit duplicate validation messages.
      * 
-     * @return {@code true} in case the validation with this validator should also happen for subpackages (recursively), otherwise {@code false}
+     * @return {@code true} in case the validation with this validator should also happen for subpackages (even nested ones), otherwise {@code false}
      */
     boolean shouldValidateSubpackages();
 
@@ -56,7 +57,7 @@ public interface ValidatorFactory {
      * @return the id of the validator returned by {@link #createValidator(ValidationContext, ValidatorSettings)}
      */
     @NotNull String getId();
-    
+
     /**
      * The service ranking will influence the order in which the validators will be called.
      * In general:

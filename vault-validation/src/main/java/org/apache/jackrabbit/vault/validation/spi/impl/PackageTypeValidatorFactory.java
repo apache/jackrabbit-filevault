@@ -137,7 +137,7 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
             immutableRootNodeNames = DEFAULT_IMMUTABLE_ROOT_NODE_NAMES;
         }
         @NotNull PackageType packageType = (context.getProperties().getPackageType() != null) ? context.getProperties().getPackageType() : PackageType.MIXED;
-        return new PackageTypeValidator(context.getFilter(), settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, allowInstallHooksInApplicationPackages, packageType, jcrInstallerNodePathRegex, jcrInstallerAdditionalFileNodePathRegex, immutableRootNodeNames, context.getContainerValidationContext());
+        return new PackageTypeValidator(context.getFilter(), settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, allowInstallHooksInApplicationPackages, packageType, jcrInstallerNodePathRegex, jcrInstallerAdditionalFileNodePathRegex, immutableRootNodeNames, context.getContainerValidationContext(), context.isSubpackageOnlyValidation());
     }
 
     @Override

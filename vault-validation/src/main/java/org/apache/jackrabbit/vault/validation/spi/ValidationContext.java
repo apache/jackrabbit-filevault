@@ -49,7 +49,7 @@ public interface ValidationContext {
 
     /**
      * Returns the validation context of the container package.
-     * @return the validation context of the container in case this is the context of a sub package otherwise {@code null}.
+     * @return the validation context of the container in case this is the context of a subpackage otherwise {@code null}.
      */
     @Nullable ValidationContext getContainerValidationContext();
 
@@ -67,6 +67,13 @@ public interface ValidationContext {
      */
     @NotNull Collection<PackageInfo> getDependenciesPackageInfo();
 
+    /**
+     * 
+     * @return {@code true} in case only validation messages specific to subpackages should be emitted.
+     */
+    default boolean isSubpackageOnlyValidation() {
+        return false;
+    }
     /**
      * 
      * @return {@code true} in case the validation is incremental (i.e. does not cover all files in a package). This should relax some validations.

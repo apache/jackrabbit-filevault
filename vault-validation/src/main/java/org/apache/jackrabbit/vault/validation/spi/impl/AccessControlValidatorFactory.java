@@ -35,7 +35,6 @@ public final class AccessControlValidatorFactory implements ValidatorFactory {
 
     @Override
     public boolean shouldValidateSubpackages() {
-        // necessary to call nested validators which should be called for subpackages
         return false;
     }
 

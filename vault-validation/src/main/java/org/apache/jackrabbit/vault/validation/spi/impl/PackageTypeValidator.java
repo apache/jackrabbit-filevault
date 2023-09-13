@@ -81,12 +81,13 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
     private final Set<String> immutableRootNodeNames;
     private List<String> validContainerNodePaths;
     private List<NodeContext> potentiallyDisallowedContainerNodes;
+    private boolean isSubpackageOnlyValidation;
 
     public PackageTypeValidator(@NotNull WorkspaceFilter workspaceFilter, @NotNull ValidationMessageSeverity severity,
             @NotNull ValidationMessageSeverity severityForNoPackageType, @NotNull ValidationMessageSeverity severityForLegacyType,
             boolean prohibitMutableContent, boolean prohibitImmutableContent, boolean allowComplexFilterRulesInApplicationPackages,
             boolean allowInstallHooksInApplicationPackages, @NotNull PackageType type, @NotNull Pattern jcrInstallerNodePathRegex, 
-            Pattern jcrInstallerAdditionalFileNodePathRegex, @NotNull Set<String> immutableRootNodeNames, @Nullable ValidationContext containerValidationContext) {
+            Pattern jcrInstallerAdditionalFileNodePathRegex, @NotNull Set<String> immutableRootNodeNames, @Nullable ValidationContext containerValidationContext, boolean isSubpackageOnlyValidation) {
         this.type = type;
         this.severity = severity;
         this.severityForNoPackageType = severityForNoPackageType;
@@ -102,6 +103,7 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
         this.filter = workspaceFilter;
         this.validContainerNodePaths = new LinkedList<>();
         this.potentiallyDisallowedContainerNodes = new LinkedList<>();
+        this.isSubpackageOnlyValidation = isSubpackageOnlyValidation;
     }
 
     private boolean isOsgiBundleOrConfigurationNode(String nodePath, boolean isFileNode) {
@@ -184,6 +186,9 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
 
     @Override
     public Collection<ValidationMessage> validate(@NotNull WorkspaceFilter filter) {
+        if (isSubpackageOnlyValidation) {
+            return null;
+        }
         switch (type) {
         case APPLICATION:
             if (!allowComplexFilterRulesInApplicationPackages && hasIncludesOrExcludes(filter)) {

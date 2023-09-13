@@ -42,6 +42,7 @@ import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.validation.impl.util.ValidatorDocViewParserHandler;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
+import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidator;
@@ -54,6 +55,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -104,6 +106,7 @@ public class DocumentViewParserValidatorTest {
                             "startDocView", Paths.get("apps/.content.xml"), Paths.get(""), "/apps/01234_sample.jpg", 26, 55, null));
 
             // verify node names
+            InOrder orderVerifier = Mockito.inOrder(docViewXmlValidator);
             Map<String, Integer> expectedNodePathsAndLineNumber = new HashMap<>();
             expectedNodePathsAndLineNumber.put("/apps", 19);
             expectedNodePathsAndLineNumber.put("/apps/somepath", 21);
@@ -115,22 +118,33 @@ public class DocumentViewParserValidatorTest {
                     new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "sling:Folder"));
             NameFactory nameFactory = NameFactoryImpl.getInstance();
             DocViewNode2 node = new DocViewNode2(nameFactory.create("{}apps"), properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps", Paths.get("apps", ".content.xml"), Paths.get(""), 19, 35), true);
+            NodeContextImpl contextRootNode = new NodeContextImpl("/apps", Paths.get("apps", ".content.xml"), Paths.get(""), 19, 35);
+            orderVerifier.verify(docViewXmlValidator).validate(node, contextRootNode, true);
 
             properties = new ArrayList<>();
             properties.add(
                     new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED));
             properties.add(
-            		new DocViewProperty2(nameFactory.create("{}attribute1"), "value1"));
-            node = new DocViewNode2(nameFactory.create("{}somepath"), properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/somepath", Paths.get("apps", ".content.xml"), Paths.get(""), 21, 29), false);
+                    new DocViewProperty2(nameFactory.create("{}attribute1"), "value1"));
+            DocViewNode2 childNode = new DocViewNode2(nameFactory.create("{}somepath"), properties);
+            NodeContextImpl contextChildNode = new NodeContextImpl("/apps/somepath", Paths.get("apps", ".content.xml"), Paths.get(""), 21, 29);
+            orderVerifier.verify(docViewXmlValidator).validate(childNode, contextChildNode, false);
             
             properties = new ArrayList<>();
             properties.add(
                     new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED));
-            node = new DocViewNode2(NameConstants.JCR_CONTENT, properties);
-            Mockito.verify(docViewXmlValidator).validate(node, new NodeContextImpl("/apps/somepath/jc:content", Paths.get("apps", ".content.xml"), Paths.get(""), 22, 54), false);
+            DocViewNode2 grandChildNode = new DocViewNode2(NameConstants.JCR_CONTENT, properties);
+            NodeContextImpl contextGrandChildNode = new NodeContextImpl("/apps/somepath/jc:content", Paths.get("apps", ".content.xml"), Paths.get(""), 22, 54);
+            orderVerifier.verify(docViewXmlValidator).validate(grandChildNode, contextGrandChildNode, false);
+            
+            orderVerifier.verify(docViewXmlValidator).validateEnd(grandChildNode, duplicateNodeContextWithDifferentLocation(contextGrandChildNode, 23, 22), false);
+            orderVerifier.verify(docViewXmlValidator).validateEnd(childNode, duplicateNodeContextWithDifferentLocation(contextChildNode, 24, 16), false);
+            orderVerifier.verify(docViewXmlValidator).validateEnd(node, duplicateNodeContextWithDifferentLocation(contextRootNode, 27, 11), true);
         }
+    }
+
+    private static final NodeContextImpl duplicateNodeContextWithDifferentLocation(NodeContext nodeContext, int line, int column) {
+        return new NodeContextImpl(nodeContext.getNodePath(), nodeContext.getFilePath(), nodeContext.getBasePath(), line, column);
     }
 
     @Test

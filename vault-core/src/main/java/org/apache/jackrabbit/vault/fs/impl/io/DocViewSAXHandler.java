@@ -356,8 +356,8 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     public void endElement(String uri, String localName, String qName) throws SAXException {
         log.trace("<- element {}", qName);
         try {
-            currentPath = Text.getRelativeParent(currentPath, 1);
             handler.endDocViewNode(currentPath, nodeStack.pop(), Optional.ofNullable(nodeStack.peek()), locator.getLineNumber(), locator.getColumnNumber());
+            currentPath = Text.getRelativeParent(currentPath, 1);
         } catch (RepositoryException|IOException e) {
             throw new SAXException(e);
         }

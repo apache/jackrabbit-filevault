@@ -21,10 +21,10 @@ Package Types
 Overview
 ------
 Package types limit what repository locations a content package may contain ([JCRVLT-170](https://issues.apache.org/jira/browse/JCRVLT-170)). In addition they may impose other limitations in terms of install hooks, package dependencies and allowed filter rules.
-The package type classification helps to clarify the purpose and also the deployment of the package (e.g. when using the [Oak Composite Node Store](https://jackrabbit.apache.org/oak/docs/nodestore/compositens.html), which mounts several repository folders in read-only mode).
+The package type classification helps to clarify the purpose and also eases the deployment of the package (e.g. when using the [Oak Composite Node Store](https://jackrabbit.apache.org/oak/docs/nodestore/compositens.html), which mounts several repository folders in read-only mode).
 The package type is set in the [package properties](properties.html).
 
-Package types are not enforced in any way (yet) when importing packages. Currently they are only enforced by the [jackrabbit-packagetype validator][validators] and to a certain degree by third party tools like [Apache Sling Content-Package to Feature Model Converter](https://github.com/apache/sling-org-apache-sling-feature-cpconverter).
+Package types are not evaluated in any way (yet) when importing packages. Currently their restrictions are only enforced by the [jackrabbit-packagetype validator][validators] and to a certain degree evaluated by third party tools like [Apache Sling Content-Package to Feature Model Converter](https://github.com/apache/sling-org-apache-sling-feature-cpconverter).
 
 Restrictions
 --------

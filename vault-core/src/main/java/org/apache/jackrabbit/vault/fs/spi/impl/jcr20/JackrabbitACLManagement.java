@@ -24,12 +24,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 import javax.jcr.security.AccessControlManager;
 import javax.jcr.security.AccessControlPolicy;
 
@@ -37,11 +35,8 @@ import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlManager;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlPolicy;
 import org.apache.jackrabbit.api.security.user.Authorizable;
-import org.apache.jackrabbit.api.security.user.Group;
-import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.JcrUtils;
-import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
 import org.apache.jackrabbit.vault.util.UncheckedRepositoryException;
@@ -73,6 +68,11 @@ public class JackrabbitACLManagement implements ACLManagement {
      * The primary node type name of the principal based access control policy node.
      */
     public static final String NT_REP_PRINCIPAL_POLICY = "rep:PrincipalPolicy";
+
+    /**
+     * The primary node type name of intermediate folders within which authorizables might be found.
+     */
+    public static final String NT_REP_AUTHORIZABLE_FOLDER = "rep:AuthorizableFolder";
    
     /** the name of the repository wide ACL policy node (both principal and resource based) */
     public static final String REP_REPO_POLICY = "rep:repoPolicy";
@@ -103,30 +103,10 @@ public class JackrabbitACLManagement implements ACLManagement {
      */
     public static final String MIX_REP_PRINCIPAL_BASED_MIXIN = "rep:PrincipalBasedMixin";
 
-    private String groupsRootPath;
-    private String usersRootPath;
     private final UserManagement userManagement;
 
     public JackrabbitACLManagement() {
         userManagement = new JackrabbitUserManagement();
-    }
-
-    /**
-     * Determines the authorizable root paths (as Jackrabbit/Oak stores authorizables inside the repo below a dedicated root path)
-     * @param session
-     * @throws RepositoryException
-     */
-    private synchronized void determineAuthorizableRootPaths(Session session) throws RepositoryException {
-        JackrabbitSession jrSession = (JackrabbitSession)session;
-        UserManager userMgr = jrSession.getUserManager();
-        // userMgr.autoSave(false) is not supported by Oak
-        String testAuthorizableId = UUID.randomUUID().toString();
-        Group group = userMgr.createGroup(new SimplePrincipal(testAuthorizableId), "intermediate");
-        groupsRootPath = Text.getRelativeParent(group.getPath(), 2);
-        group.remove();
-        User user = userMgr.createUser(testAuthorizableId, "test", new SimplePrincipal(testAuthorizableId), "intermediate");
-        usersRootPath = Text.getRelativeParent(user.getPath(), 2);
-        user.remove();
     }
 
     /**
@@ -202,18 +182,22 @@ public class JackrabbitACLManagement implements ACLManagement {
         return node.getDepth() == 0;
     }
 
-    private boolean areAuthorizablesAllowedBelowPath(Session session, String nodePath) throws RepositoryException {
-        if (usersRootPath == null || groupsRootPath == null) {
-            determineAuthorizableRootPaths(session);
-        }
-        return nodePath.startsWith(usersRootPath) || nodePath.startsWith(groupsRootPath);
+    private boolean isAuthorizable(Node node) throws RepositoryException {
+        return userManagement.isAuthorizableNodeType(node.getPrimaryNodeType().getName());
+    }
+
+    private boolean isAuthorizableFolder(Node node) throws RepositoryException {
+        return node.isNodeType(NT_REP_AUTHORIZABLE_FOLDER);
+    }
+
+    private boolean areAuthorizablesAllowedBelowPath(Node node) throws RepositoryException {
+        return isAuthorizableFolder(node) || isAuthorizable(node);
     }
 
     @Override
     public @NotNull Map<String, List<? extends AccessControlPolicy>> getPrincipalAcls(Node node) throws RepositoryException {
         // first do a quick check if path may contain principal ACLs at all before triggering expensive traversal
-        if (!areAuthorizablesAllowedBelowPath(node.getSession(), node.getPath())) {
-            // TODO: Oak does not allow principal based authorizables everywhere, so we may restrict further
+        if (!areAuthorizablesAllowedBelowPath(node)) {
             return Collections.emptyMap();
         }
         JackrabbitSession jrSession = (JackrabbitSession)node.getSession();
@@ -260,13 +244,12 @@ public class JackrabbitACLManagement implements ACLManagement {
     }
 
     private void findPrincipalsRecursively(UserManager userMgr, Node node, Consumer<Principal> principalConsumer) throws RepositoryException {
-        // TODO: check if the additional check with UserManagement isAuthorizableNodeType really speeds things up...
-        if (userManagement.isAuthorizableNodeType(node.getPrimaryNodeType().getName())) {
+        if (isAuthorizable(node)) {
             Authorizable authorizable = userMgr.getAuthorizableByPath(node.getPath());
             if (authorizable != null) {
                 principalConsumer.accept(authorizable.getPrincipal());
             }
-        } else {
+        } else if (isAuthorizableFolder(node)) {
             for (Node child : JcrUtils.in(((Iterator<Node>)node.getNodes()))) {
                 findPrincipalsRecursively(userMgr, child, principalConsumer);
             }

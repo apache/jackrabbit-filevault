@@ -190,14 +190,14 @@ public class JackrabbitACLManagement implements ACLManagement {
         return node.isNodeType(NT_REP_AUTHORIZABLE_FOLDER);
     }
 
-    private boolean areAuthorizablesAllowedBelowPath(Node node) throws RepositoryException {
+    private boolean areAuthorizablesAllowed(Node node) throws RepositoryException {
         return isAuthorizableFolder(node) || isAuthorizable(node);
     }
 
     @Override
     public @NotNull Map<String, List<? extends AccessControlPolicy>> getPrincipalAcls(Node node) throws RepositoryException {
         // first do a quick check if path may contain principal ACLs at all before triggering expensive traversal
-        if (!areAuthorizablesAllowedBelowPath(node)) {
+        if (!areAuthorizablesAllowed(node)) {
             return Collections.emptyMap();
         }
         JackrabbitSession jrSession = (JackrabbitSession)node.getSession();

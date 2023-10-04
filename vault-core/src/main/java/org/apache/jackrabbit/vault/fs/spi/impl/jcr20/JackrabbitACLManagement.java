@@ -198,6 +198,8 @@ public class JackrabbitACLManagement implements ACLManagement {
     public @NotNull Map<String, List<? extends AccessControlPolicy>> getPrincipalAcls(Node node) throws RepositoryException {
         // first do a quick check if path may contain principal ACLs at all before triggering expensive traversal
         if (!areAuthorizablesAllowed(node)) {
+            // TODO: Oak restricts further where principal ACLs may be maintained (https://jackrabbit.apache.org/oak/docs/security/authorization/principalbased.html#filterprovider-implementation)
+            // there could be a shortcut evaluating that as well
             return Collections.emptyMap();
         }
         JackrabbitSession jrSession = (JackrabbitSession)node.getSession();

@@ -102,13 +102,13 @@ Vault Sync
 ----------
 The vault sync service is used to synchronize repository content with a local filesystem representation and vice versa.
 This is achieved by installing an OSGi service that will listen for repository changes and scans the filesystem contents
-periodically. It uses the same serialization format as vault for mapping the repository contents to disk.
+periodically. It uses the same serialization format as vault for mapping the repository contents to disk. For accessing the repository it uses an Apache Sling service (therefore can only be started when Sling JCR API and an according implementation bundle are available).
 
 The vault sync service is a development tool and it is highly discouraged to use it on a productive system.
 Also note that the service can only sync with the local filesystem and cannot be used for remote development.
 
-The initial version (2.3.22 / 2.4.24) only supports simple files and folders but detects special vault serialized files
-(`.content.xml`, `dialog.xml`, etc) and ignores them silently. Thus it is possible to use vault sync on a default vlt
+Currently it only supports simple files (`nt:file`) and folders (`nt:hierachyNode`) but detects special vault serialized files
+(`.content.xml`, `dialog.xml`, etc) and ignores them silently ([JCRVLT-125](https://issues.apache.org/jira/browse/JCRVLT-125)). Thus it is possible to use vault sync on a default vlt
 checkout.
 
 ### Installation and Configuration
@@ -135,14 +135,14 @@ initialize the sync root with the following files:
 : log file that contains information about the operations performed during syncing
 
 `.vlt-sync-filter.xml`
-: filter that is neede to configure what portions of the repository are synced.
+: filter that is needed to configure what portions of the repository are synced.
 
 The vault sync service can also be installed using the vlt command line tool. See _Vlt Integration_ below.
 
 ### .vlt-sync-filter.xml
 The sync filter has the format of a normal vault workspace filter. If the sync root lies on a vlt checkout, specifically
-points to a jcr_root directory of a such, then no `.vlt-sync-filter.xml` is initialized in the sync root, but the one
-defined by the respective vlt checkout is used. this is usually `META-INF/vault/filter.xml`.
+points to a `jcr_root` directory of a such, then no `.vlt-sync-filter.xml` is initialized in the sync root, but the one
+defined by the respective vlt checkout is used. This is usually `META-INF/vault/filter.xml`.
 
 ### .vlt-sync-config.properties
 This config has the following default content:

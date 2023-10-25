@@ -18,6 +18,8 @@ package org.apache.jackrabbit.vault.sync.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -63,9 +66,6 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
     public static final String SYNC_SPECS = "vault.sync.syncroots";
 
     public static final String SYNC_ENABLED = "vault.sync.enabled";
-
-    @Reference
-    private SlingRepository repository;
 
     private Session session;
 
@@ -105,22 +105,27 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
     }
 
     @Activate
-    protected void activate(Config config) throws RepositoryException {
-        List<SyncHandler> newSyncSpecs = new LinkedList<SyncHandler>();
-        for (String def : config.vault_sync_syncroots()) {
-            SyncHandler spec = new SyncHandler(new File(def));
+    public VaultSyncServiceImpl(@Reference SlingRepository slingRepository, Config config) throws RepositoryException {
+        this(slingRepository.loginAdministrative(null), 
+                config.vault_sync_enabled(), 
+                config.vault_sync_fscheckinterval() * 1000l, 
+                Arrays.stream(config.vault_sync_syncroots()).map(File::new).collect(Collectors.toList()));
+    }
+
+    VaultSyncServiceImpl(Session session, boolean isEnabled, long fsCheckIntervalMilliseconds, Collection<File> syncRoots) throws RepositoryException {
+        List<SyncHandler> newSyncSpecs = new LinkedList<>();
+        for (File syncRoot : syncRoots) {
+            SyncHandler spec = new SyncHandler(syncRoot);
             newSyncSpecs.add(spec);
             log.info("Added sync specification: {}", spec);
         }
+        this.session = session;
         syncHandlers = newSyncSpecs.toArray(new SyncHandler[newSyncSpecs.size()]);
-        enabled = config.vault_sync_enabled();
-        checkDelay = config.vault_sync_fscheckinterval() * 1000;
+        enabled = isEnabled;
+        checkDelay = fsCheckIntervalMilliseconds;
 
         log.info("Vault Sync service is {}", enabled ? "enabled" : "disabled");
         if (enabled) {
-            // setup session
-            session = repository.loginAdministrative(null);
-
             // set up observation listener
             session.getWorkspace().getObservationManager().addEventListener(
                     this,
@@ -142,10 +147,6 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
     protected void deactivate() {
         waitLock.lock();
         try {
-            if (session != null) {
-                session.logout();
-                session = null;
-            }
             enabled = false;
             waitCondition.signalAll();
         } finally {
@@ -159,6 +160,11 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
                 fsCheckThread.interrupt();
             }
             fsCheckThread = null;
+        }
+        // session is still accessed in fsCheckThread, therefore close it last
+        if (session != null) {
+            session.logout();
+            session = null;
         }
     }
 

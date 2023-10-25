@@ -34,10 +34,12 @@ import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.FileInputSource;
 import org.apache.jackrabbit.vault.util.MimeTypes;
+import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -485,8 +487,9 @@ public class TreeSync {
             if (parentNode == null && node == null) {
                 return null;
             }
+            
             return node == null
-                    ? parentNode.getPath() + "/" + jcrName
+                    ? PathUtil.append(parentNode.getPath(), jcrName)
                     : node.getPath();
 
         }

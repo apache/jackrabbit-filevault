@@ -52,51 +52,57 @@
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-core-it-support-oak</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-core</artifactId>
             <version>${oak.min.version}</version>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-core</artifactId>
             <version>${oak.min.version}</version>
             <classifier>tests</classifier>
-            <scope>test</scope>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-data</artifactId>
+            <version>2.20.1</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-jcr</artifactId>
             <version>${oak.min.version}</version>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-segment-tar</artifactId>
             <version>${oak.min.version}</version>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <!-- transitive artifactItem of oak-segment-tar, necessary for filedatastore (https://issues.apache.org/jira/browse/OAK-6542) -->
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
             <version>3.2.3</version>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-authorization-principalbased</artifactId>
             <version>${oak.min.version}</version>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-authorization-cug</artifactId>
             <version>${oak.min.version}</version>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 

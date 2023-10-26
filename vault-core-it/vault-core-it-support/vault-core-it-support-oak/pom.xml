@@ -38,6 +38,12 @@
     <!-- ====================================================================== -->
     <dependencies>
         <dependency>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <artifactId>vault-core-it-support-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-core</artifactId>
             <version>${oak.min.version}</version>
@@ -79,6 +85,19 @@
             <artifactId>org.apache.felix.converter</artifactId>
             <version>1.0.14</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- http://metainf-services.kohsuke.org/index.html -->
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <version>1.8</version>
+            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

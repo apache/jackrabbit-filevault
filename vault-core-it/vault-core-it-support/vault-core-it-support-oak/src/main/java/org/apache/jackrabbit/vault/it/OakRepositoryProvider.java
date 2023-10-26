@@ -58,8 +58,8 @@ import org.apache.jackrabbit.oak.spi.security.user.UserConstants;
 import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction;
 import org.apache.jackrabbit.oak.spi.xml.ImportBehavior;
 import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter;
-import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
-import org.apache.jackrabbit.vault.packaging.integration.RepositoryProvider;
+import org.apache.jackrabbit.vault.integration.support.RepositoryProvider;
+import org.apache.jackrabbit.vault.integration.support.RepositoryProviderHelper;
 import org.kohsuke.MetaInfServices;
 import org.osgi.util.converter.Converters;
 import org.slf4j.Logger;
@@ -76,7 +76,7 @@ public class OakRepositoryProvider implements RepositoryProvider {
     /**
      * default logger
      */
-    private static final Logger log = LoggerFactory.getLogger(IntegrationTestBase.class);
+    private static final Logger log = LoggerFactory.getLogger(OakRepositoryProvider.class);
 
     
     private static final File DIR_OAK_REPO_HOME = new File("target", "repository-oak-" + System.getProperty("repoSuffix", "fork1"));
@@ -186,7 +186,7 @@ public class OakRepositoryProvider implements RepositoryProvider {
         if (fileStore != null) {
             fileStore.close();
         }
-        IntegrationTestBase.deleteDirectory(DIR_OAK_REPO_HOME);
+        RepositoryProviderHelper.deleteDirectory(DIR_OAK_REPO_HOME);
     }
 
     @Override

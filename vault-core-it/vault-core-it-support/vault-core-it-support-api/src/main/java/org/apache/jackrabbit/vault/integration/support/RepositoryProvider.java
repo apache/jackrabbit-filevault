@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.jackrabbit.vault.packaging.integration;
+package org.apache.jackrabbit.vault.integration.support;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,7 +24,7 @@ import javax.jcr.RepositoryException;
 
 public interface RepositoryProvider {
 
-    public final static class RepositoryWithMetadata {
+    public static final class RepositoryWithMetadata {
         private final Repository repository;
         private final Map<String, Object> metadata;
         public RepositoryWithMetadata(Repository repository, Map<String, Object> metadata) {

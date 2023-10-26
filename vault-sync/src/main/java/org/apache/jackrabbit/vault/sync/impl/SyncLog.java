@@ -19,7 +19,7 @@ package org.apache.jackrabbit.vault.sync.impl;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.slf4j.Logger;
@@ -35,8 +35,6 @@ public class SyncLog {
      */
     private static final Logger log = LoggerFactory.getLogger(SyncLog.class);
 
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss ");
-
     private final File logFile;
 
     public SyncLog(File logFile) {
@@ -48,7 +46,7 @@ public class SyncLog {
         log.info("{}", msg);
 
         StringBuilder line = new StringBuilder();
-        line.append(DATE_FMT.format(Instant.now()));
+        line.append(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now()));
         line.append(msg);
         line.append("\n");
         try (FileWriter writer = new FileWriter(logFile, true)) {

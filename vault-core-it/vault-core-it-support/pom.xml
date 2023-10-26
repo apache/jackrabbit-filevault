@@ -37,29 +37,9 @@
     <!-- M O D U L E S                                                          -->
     <!-- ====================================================================== -->
     <modules>
+        <module>vault-core-it-support-api</module>
         <module>vault-core-it-support-oak</module>
         <module>vault-core-it-support-jackrabbit</module>
     </modules>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!-- http://metainf-services.kohsuke.org/index.html -->
-        <dependency>
-            <groupId>org.kohsuke.metainf-services</groupId>
-            <artifactId>metainf-services</artifactId>
-            <version>1.8</version>
-            <optional>true</optional>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jackrabbit.vault</groupId>
-            <artifactId>vault-core-integration-tests</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
 </project>

@@ -25,8 +25,8 @@ import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.core.RepositoryImpl;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
-import org.apache.jackrabbit.vault.packaging.integration.IntegrationTestBase;
-import org.apache.jackrabbit.vault.packaging.integration.RepositoryProvider;
+import org.apache.jackrabbit.vault.integration.support.RepositoryProvider;
+import org.apache.jackrabbit.vault.integration.support.RepositoryProviderHelper;
 import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,14 +37,14 @@ public class JackrabbitRepositoryProvider implements RepositoryProvider {
     /**
      * default logger
      */
-    private static final Logger log = LoggerFactory.getLogger(IntegrationTestBase.class);
+    private static final Logger log = LoggerFactory.getLogger(JackrabbitRepositoryProvider.class);
 
     private static final File DIR_JR2_REPO_HOME = new File("target", "repository-jr2-" + System.getProperty("repoSuffix", "fork1"));
 
     @Override
     public RepositoryWithMetadata createRepository(boolean arg0, boolean arg1, String... arg2) throws RepositoryException, IOException {
         Repository repository;
-        try (InputStream in = IntegrationTestBase.class.getResourceAsStream("/repository.xml")) {
+        try (InputStream in = JackrabbitRepositoryProvider.class.getResourceAsStream("/repository.xml")) {
             RepositoryConfig cfg = RepositoryConfig.create(in, DIR_JR2_REPO_HOME.getPath());
             repository = RepositoryImpl.create(cfg);
         }
@@ -54,7 +54,7 @@ public class JackrabbitRepositoryProvider implements RepositoryProvider {
     @Override
     public void closeRepository(RepositoryWithMetadata repositoryWithMetadata) throws IOException {
         ((RepositoryImpl) repositoryWithMetadata.getRepository()).shutdown();
-        IntegrationTestBase.deleteDirectory(DIR_JR2_REPO_HOME);
+        RepositoryProviderHelper.deleteDirectory(DIR_JR2_REPO_HOME);
     }
 
     @Override
@@ -66,4 +66,5 @@ public class JackrabbitRepositoryProvider implements RepositoryProvider {
     public boolean isOak() {
         return false;
     }
+
 }

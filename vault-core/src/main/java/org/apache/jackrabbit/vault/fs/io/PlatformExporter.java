@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
 
 import javax.jcr.RepositoryException;
 
@@ -83,13 +85,30 @@ public class PlatformExporter extends AbstractExporter {
      */
     public void close() throws IOException {
         if (pruneMissing) {
-            for (ExportInfo.Entry e: exportInfo.getEntries().values()) {
-                if (e.type == ExportInfo.Type.DELETE) {
-                    File file = new File(e.path);
-                    FileUtils.deleteQuietly(file);
-                    track("D", PathUtil.getRelativePath(localParent.getAbsolutePath(), e.path));
-                }
-            }
+            // first, remove all empty directories
+            exportInfo.getEntries().values().stream()
+                .filter(e -> e.type == ExportInfo.Type.RMDIR)
+                .map(e -> e.path)
+                .sorted(Comparator.comparingInt(String::length))
+                .forEachOrdered(path -> {
+                    File file = new File(path);
+                    if (file.exists()) {
+                        FileUtils.deleteQuietly(file);
+                        track("D", PathUtil.getRelativePath(localParent.getAbsolutePath(), path));
+                    }
+                });
+
+            // then remove files, which are still there
+            exportInfo.getEntries().values().stream()
+                .filter(e -> e.type == ExportInfo.Type.DELETE)
+                .map(e -> e.path)
+                .forEach(path -> {
+                    File file = new File(path);
+                    if (file.exists()) {
+                        FileUtils.deleteQuietly(file);
+                        track("D", PathUtil.getRelativePath(localParent.getAbsolutePath(), path));
+                    }
+                });
         }
     }
 
@@ -116,12 +135,13 @@ public class PlatformExporter extends AbstractExporter {
             throws RepositoryException, IOException {
         File dir = new File(localParent, getPlatformFilePath(file, relPath));
         mkdirs(dir);
-        track("A", PathUtil.getRelativeFilePath(localParent.getAbsolutePath(), dir.getAbsolutePath()));
+        exportInfo.update(ExportInfo.Type.MKDIR, dir.getPath());
     }
 
     public void createDirectory(String relPath) throws IOException {
         File dir = new File(localParent, relPath);
         mkdirs(dir);
+        exportInfo.update(ExportInfo.Type.MKDIR, dir.getPath());
     }
 
     public void writeFile(VaultFile file, String relPath)
@@ -132,10 +152,11 @@ public class PlatformExporter extends AbstractExporter {
         }
         if (local.exists()) {
             exportInfo.update(ExportInfo.Type.UPDATE, local.getPath());
+            track("U", PathUtil.getRelativeFilePath(localParent.getAbsolutePath(), local.getAbsolutePath()));
         } else {
             exportInfo.update(ExportInfo.Type.ADD, local.getPath());
+            track("A", PathUtil.getRelativeFilePath(localParent.getAbsolutePath(), local.getAbsolutePath()));
         }
-        track("A", PathUtil.getRelativeFilePath(localParent.getAbsolutePath(), local.getAbsolutePath()));
         Artifact a = file.getArtifact();
         switch (a.getPreferredAccess()) {
             case NONE:
@@ -149,7 +170,7 @@ public class PlatformExporter extends AbstractExporter {
 
             case STREAM:
                 try (InputStream in = a.getInputStream();
-                     OutputStream out = new FileOutputStream(local)) {
+                    OutputStream out = new FileOutputStream(local)) {
                     IOUtils.copy(in, out);
                 }
                 break;
@@ -167,18 +188,22 @@ public class PlatformExporter extends AbstractExporter {
             }
             if (local.exists()) {
                 exportInfo.update(ExportInfo.Type.UPDATE, local.getPath());
+                track("U", PathUtil.getRelativeFilePath(localParent.getAbsolutePath(), local.getAbsolutePath()));
             } else {
                 exportInfo.update(ExportInfo.Type.ADD, local.getPath());
+                track("A", PathUtil.getRelativeFilePath(localParent.getAbsolutePath(), local.getAbsolutePath()));
             }
-            Files.copy(in, local.toPath());
+            Files.copy(in, local.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } finally {
             in.close();
         }
     }
 
     private void mkdirs(File dir) throws IOException {
-        dir.mkdirs();
-        exportInfo.update(ExportInfo.Type.MKDIR, dir.getPath());
+        if (!dir.exists()) {
+            dir.mkdirs();
+            track("A", PathUtil.getRelativeFilePath(localParent.getAbsolutePath(), dir.getAbsolutePath()));
+        }
     }
 
 }

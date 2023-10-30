@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
+import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
@@ -201,6 +202,9 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
             docViewNode.writeStart(writer, nsResolver, namespacePrefixes);
         } catch (XMLStreamException e) {
             throw new RepositoryException(e);
+        } catch (IllegalNameException e) {
+            // augment exception message with path of node causing the problem
+            throw new IllegalNameException(e.getMessage() + " (on path '" + node.getPath() + "')", e);
         }
     }
 

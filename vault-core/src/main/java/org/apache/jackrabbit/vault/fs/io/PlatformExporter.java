@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import javax.jcr.RepositoryException;
 
@@ -170,7 +171,7 @@ public class PlatformExporter extends AbstractExporter {
             } else {
                 exportInfo.update(ExportInfo.Type.ADD, local.getPath());
             }
-            Files.copy(in, local.toPath());
+            Files.copy(in, local.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } finally {
             in.close();
         }

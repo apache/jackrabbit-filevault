@@ -21,6 +21,8 @@ Bug
     [JCRVLT-718] - DocumentViewXmlValidator.validateEnd(...) called with wrong nodePath
     [JCRVLT-721] - Importing content packages with minimum permissions fails
     [JCRVLT-722] - SyncLog: java.time.temporal.UnsupportedTemporalTypeException: Unsupported field: DayOfMonth
+    [JCRVLT-725] - Exporting twice via vlt leads to java.nio.file.FileAlreadyExistsException
+    [JCRVLT-727] - vlt-sync: Prune unused synced directories
 
 Improvement
 

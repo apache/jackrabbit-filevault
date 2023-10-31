@@ -23,7 +23,7 @@
         <groupId>org.apache.jackrabbit.vault</groupId>
         <artifactId>org.apache.jackrabbit.vault.target-osgi-environment</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>${revision}</version>
+        <version>3.7.2</version>
     </parent>
 
     <!-- ====================================================================== -->

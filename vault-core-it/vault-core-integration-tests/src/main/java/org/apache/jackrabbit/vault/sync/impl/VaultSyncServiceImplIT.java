@@ -61,7 +61,7 @@ public class VaultSyncServiceImplIT extends IntegrationTestBase {
             Path filterFile = syncRootDirectory1.resolve(".vlt-sync-filter.xml");
             assertTrue(Files.exists(filterFile));
             // check for file not yet being there in repo
-            assertNodeMissing("/testroot/testfile1.txt");
+            assertNodeMissing("/testroot/testfile.txt");
             // modify filter
             try (InputStream input = this.getClass().getResourceAsStream("filter.xml")) {
                 Files.copy(input, filterFile, StandardCopyOption.REPLACE_EXISTING);

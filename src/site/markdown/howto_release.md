@@ -62,7 +62,7 @@ Release management tasks
        
         svn co https://dist.apache.org/repos/dist/dev/jackrabbit/filevault dist-dev-filevault
         cd dist-dev-filevault
-        cp -r /path/to/jackrabbit/target/checkout/target/$version $version
+        cp -r /path/to/jackrabbit/target/checkout/target/$version filevault/$version
         svn add $version
         svn commit -m "Apache Jackrabbit Filevault $version release candidate" $version
        

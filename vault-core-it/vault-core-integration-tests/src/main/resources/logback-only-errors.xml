@@ -27,6 +27,7 @@
 
   <logger name="org.apache.jackrabbit.oak.query.QueryImpl" level="WARN"/>
   <logger name="org.apache.jackrabbit.oak.plugins.index.IndexUpdate" level="WARN" />
+  <logger name="org.apache.jackrabbit.vault.sync.impl" level="DEBUG" />
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />

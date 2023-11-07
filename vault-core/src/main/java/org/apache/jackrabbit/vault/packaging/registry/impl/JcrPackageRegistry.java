@@ -363,11 +363,12 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     @NotNull
     @Override
     public PackageId register(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
-        ZipVaultPackage pack = new ZipVaultPackage(file, false, true);
-        try (JcrPackage pkg = upload(pack, replace)) {
-            return pkg.getPackage().getId();
-        } catch (RepositoryException e) {
-            throw new IOException(e);
+        try (ZipVaultPackage pack = new ZipVaultPackage(file, false, true)) {
+            try (JcrPackage pkg = upload(pack, replace)) {
+                return pkg.getPackage().getId();
+            } catch (RepositoryException e) {
+                throw new IOException(e);
+            }
         }
     }
 

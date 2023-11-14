@@ -53,19 +53,18 @@ public class VaultSyncServiceImplIT extends IntegrationTestBase {
     public void testAddRemoveFileFromNonVltCheckoutFolder() throws RepositoryException, IOException, InterruptedException {
         Path syncRootDirectory1 = tmpFolder.newFolder().toPath();
         Session newAdminSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
+        // setup .vlt-sync-filter.xml in advance, otherwise changes to it are detected potentially later than the ones to the actual file
+        Path filterFile = syncRootDirectory1.resolve(".vlt-sync-filter.xml");
+        // modify filter
+        try (InputStream input = this.getClass().getResourceAsStream("filter.xml")) {
+            Files.copy(input, filterFile, StandardCopyOption.REPLACE_EXISTING);
+        }
+        // check for file not yet being there in repo
+        assertNodeMissing("/testroot/testfile.txt");
+       
         // create new session
-        VaultSyncServiceImpl service = new VaultSyncServiceImpl(newAdminSession, true, 250, Collections.singleton(syncRootDirectory1.toFile()));
+        VaultSyncServiceImpl service = new VaultSyncServiceImpl(newAdminSession, true, 50, Collections.singleton(syncRootDirectory1.toFile()));
         try {
-            Awaitility.setDefaultTimeout(Duration.ofSeconds(20));
-            // verify filter is created automatically
-            Path filterFile = syncRootDirectory1.resolve(".vlt-sync-filter.xml");
-            assertTrue(Files.exists(filterFile));
-            // check for file not yet being there in repo
-            assertNodeMissing("/testroot/testfile.txt");
-            // modify filter
-            try (InputStream input = this.getClass().getResourceAsStream("filter.xml")) {
-                Files.copy(input, filterFile, StandardCopyOption.REPLACE_EXISTING);
-            }
             Path syncDirectory = syncRootDirectory1.resolve("testroot");
             try (InputStream input = this.getClass().getResourceAsStream("testfile1.txt")) {
                 Files.createDirectories(syncDirectory);
@@ -78,6 +77,10 @@ public class VaultSyncServiceImplIT extends IntegrationTestBase {
             });
             Node fileNode = admin.getNode("/testroot/testfile.txt");
             Calendar lastModified1 = JcrUtils.getLastModified(fileNode);
+
+            // wait until the change on the JCR has been processed and ignored by VaultSyncService
+            Thread.sleep(200); // must be longer than poll intervall
+
             // now change file
             try (InputStream input = this.getClass().getResourceAsStream("testfile2.txt")) {
                 Files.copy(input, syncDirectory.resolve("testfile.txt"), StandardCopyOption.REPLACE_EXISTING);

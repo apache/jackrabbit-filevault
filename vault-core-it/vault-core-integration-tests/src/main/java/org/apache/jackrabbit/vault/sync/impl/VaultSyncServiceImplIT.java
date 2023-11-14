@@ -78,9 +78,6 @@ public class VaultSyncServiceImplIT extends IntegrationTestBase {
             Node fileNode = admin.getNode("/testroot/testfile.txt");
             Calendar lastModified1 = JcrUtils.getLastModified(fileNode);
 
-            // wait until the change on the JCR has been processed and ignored by VaultSyncService
-            Thread.sleep(200); // must be longer than poll intervall
-
             // now change file
             try (InputStream input = this.getClass().getResourceAsStream("testfile2.txt")) {
                 Files.copy(input, syncDirectory.resolve("testfile.txt"), StandardCopyOption.REPLACE_EXISTING);

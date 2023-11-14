@@ -16,8 +16,6 @@
  */
 package org.apache.jackrabbit.vault.sync.impl;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -25,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
-import java.time.Duration;
 import java.util.Calendar;
 import java.util.Collections;
 
@@ -63,7 +60,7 @@ public class VaultSyncServiceImplIT extends IntegrationTestBase {
         assertNodeMissing("/testroot/testfile.txt");
        
         // create new session
-        VaultSyncServiceImpl service = new VaultSyncServiceImpl(newAdminSession, true, 50, Collections.singleton(syncRootDirectory1.toFile()));
+        VaultSyncServiceImpl service = new VaultSyncServiceImpl(newAdminSession, true, 250, Collections.singleton(syncRootDirectory1.toFile()));
         try {
             Path syncDirectory = syncRootDirectory1.resolve("testroot");
             try (InputStream input = this.getClass().getResourceAsStream("testfile1.txt")) {
@@ -113,11 +110,12 @@ public class VaultSyncServiceImplIT extends IntegrationTestBase {
         // create new session
         VaultSyncServiceImpl service = new VaultSyncServiceImpl(newAdminSession, true, 250, Collections.singleton(syncRootDirectory1.toFile()));
         try {
-            // wait a bit
-            Thread.sleep(5000);
+           
             Path syncFile = syncRootDirectory1.resolve(Paths.get("testroot", "testfile"));
             Awaitility.await().until(() -> Files.exists(syncFile));
             FileTime lastModified1 = Files.getLastModifiedTime(syncFile);
+            // wait at least 1 second to really have a different date
+            Thread.sleep(1000);
             // now modify node
             try (InputStream input = this.getClass().getResourceAsStream("testfile2.txt")) {
                 JcrUtils.putFile(testRootNode, "testfile", MimeTypes.APPLICATION_OCTET_STREAM, input);

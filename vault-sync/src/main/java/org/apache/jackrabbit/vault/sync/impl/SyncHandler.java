@@ -274,16 +274,20 @@ public class SyncHandler implements FilesystemAlterationListener {
             log.debug("**** about sync jcr:/{} -> file://{}", path, file.getAbsolutePath());
             Node node;
             Node parentNode;
+            final String operation;
             if (session.nodeExists(path)) {
                 node = session.getNode(path);
                 parentNode = node.getParent();
+                operation = "updated/created";
             } else {
                 node = null;
                 String parentPath = Text.getRelativeParent(path, 1);
                 parentNode = session.nodeExists(parentPath)
                         ? session.getNode(parentPath)
                         : null;
+                operation = "deleted";
             }
+            log.debug("**** about sync jcr:/{} -> file://{} ({})", path, file.getAbsolutePath(), operation);
             TreeSync tree = createTreeSync(SyncMode.JCR2FS);
             res.merge(tree.syncSingle(parentNode, node, file, recursive));
         }

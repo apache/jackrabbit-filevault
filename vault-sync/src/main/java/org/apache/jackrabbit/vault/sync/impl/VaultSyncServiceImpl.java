@@ -145,7 +145,7 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
     }
 
     @Deactivate
-    protected void deactivate() throws UnsupportedRepositoryOperationException, RepositoryException {
+    protected void deactivate() throws RepositoryException {
         waitLock.lock();
         try {
             enabled = false;
@@ -233,6 +233,7 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
                 } else {
                     modified.add(path);
                 }
+                log.debug("Received JCR event {} leading to the following modifications: {}", evt, String.join(",", modified));
             }
             waitLock.lock();
             try {

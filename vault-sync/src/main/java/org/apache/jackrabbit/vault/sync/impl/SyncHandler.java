@@ -271,7 +271,6 @@ public class SyncHandler implements FilesystemAlterationListener {
                 continue;
             }
             File file = getFileForJcrPath(path);
-            log.debug("**** about sync jcr:/{} -> file://{}", path, file.getAbsolutePath());
             Node node;
             Node parentNode;
             final String operation;

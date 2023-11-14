@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
@@ -144,7 +145,7 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
     }
 
     @Deactivate
-    protected void deactivate() {
+    protected void deactivate() throws RepositoryException {
         waitLock.lock();
         try {
             enabled = false;
@@ -163,6 +164,7 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
         }
         // session is still accessed in fsCheckThread, therefore close it last
         if (session != null) {
+            session.getWorkspace().getObservationManager().removeEventListener(this);
             session.logout();
             session = null;
         }
@@ -231,6 +233,7 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
                 } else {
                     modified.add(path);
                 }
+                log.debug("Received JCR event {} leading to the following modifications: {}", evt, String.join(",", modified));
             }
             waitLock.lock();
             try {

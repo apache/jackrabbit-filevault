@@ -280,13 +280,13 @@ public class JcrPackageImpl implements JcrPackage {
      * Creates a new package by creating the appropriate archive.
      *
      * This is basically a workaround to ensure that 'rewrap' has a zip file to work on.
-     * Ideally rewrap should not realy on the archive format.
+     * Ideally rewrap should not rely on the archive format.
      *
      * @param forceFileArchive if {@code true} a file archive is enforced
      * @return the package
      *
-     * @throws RepositoryException If a repository error occurrs.
-     * @throws IOException if an i/o error occurrs.
+     * @throws RepositoryException If a repository error occurs.
+     * @throws IOException if an i/o error occurs.
      */
     @NotNull
     protected VaultPackage getPackage(boolean forceFileArchive) throws RepositoryException, IOException {

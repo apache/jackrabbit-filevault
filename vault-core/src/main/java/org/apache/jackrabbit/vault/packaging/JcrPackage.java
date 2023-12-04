@@ -36,22 +36,22 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
 
     /**
-     * Nodetype name of a package node
+     * Node type name of a package node
      */
     String NT_VLT_PACKAGE = "vlt:Package";
 
     /**
-     * Nodetype name of a definition node
+     * Node type name of a package definition node
      */
     String NT_VLT_PACKAGE_DEFINITION = "vlt:PackageDefinition";
 
     /**
-     * Nodename of the definition node
+     * Node name of the definition node
      */
     String NN_VLT_DEFINITION = "vlt:definition";
 
     /**
-     * default mime type of a package
+     * Default mime type of a package
      */
     String MIME_TYPE = "application/zip";
 
@@ -85,7 +85,9 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
     boolean isSealed();
 
     /**
-     * Returns the vault package stored in the data of this package
+     * Returns the vault package stored in the data of this package.
+     * Opens the package implicitly therefore {@link #close()} needs to be afterwards.
+     * 
      * @return the package, this is closed when {@link #close} is called on this package
      * @throws RepositoryException if an error occurs
      * @throws IOException if an I/O error occurs
@@ -94,7 +96,8 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
     VaultPackage getPackage() throws RepositoryException, IOException;
 
     /**
-     * Extracts the package contents to the repository
+     * Extracts the package contents to the repository.
+     * Opens the package implicitly therefore {@link #close()} needs to be afterwards.
      *
      * @param opts import options
      * @throws RepositoryException if a repository error during installation occurs.
@@ -109,6 +112,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
     /**
      * Installs the package contents to the repository but creates a snapshot if
      * necessary.
+     * Opens the package implicitly therefore {@link #close()} needs to be afterwards.
      *
      * @param opts import options
      * @throws RepositoryException if a repository error during installation occurs.
@@ -247,6 +251,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
     /**
      * Closes this package and destroys all temporary data.
      * Only necessary to call when {@link #getPackage()}, {@link  #extract(ImportOptions)} or {@link #install(ImportOptions)} has been called.
+     * Is a no-op when none of these methods have been called on this package.
      */
     void close();
 

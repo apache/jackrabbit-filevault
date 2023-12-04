@@ -59,7 +59,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * Returns the package definition of this package
      * @return the package definition or {@code null} if this package is
      *         not valid.
-     * @throws RepositoryException if an error occurrs
+     * @throws RepositoryException if an error occurs
      */
     @Nullable
     JcrPackageDefinition getDefinition() throws RepositoryException;
@@ -87,6 +87,9 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
     /**
      * Returns the vault package stored in the data of this package.
      * Opens the package implicitly therefore {@link #close()} needs to be afterwards.
+     * This is potentially a costly operation as this requires uncompressing the ZIP stream
+     * (and potentially creating temporary files) therefore prefer using {@link #getDefinition()} whenever possible
+     * to access meta data.
      * 
      * @return the package, this is closed when {@link #close} is called on this package
      * @throws RepositoryException if an error occurs

@@ -52,6 +52,7 @@ import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,19 +100,19 @@ public class TestImportDuplicateUUIDs extends IntegrationTestBase {
     
     
     @Test
-    public void testInstallPackage() throws Exception {
+    public void testInstallPackage_LEGACY() throws Exception {
         String srcName = randomAlphanumeric(10) + ".png";
         String srcPath = append(testRoot.getPath(), srcName);
         String dstPath = srcPath + "-renamed";
         
-        Node source = getOrCreateByPath(srcPath, NT_UNSTRUCTURED, "dam:Asset", admin, true);
-        Node child1 = source.addNode("jcr:content","dam:AssetContent");
-        child1.setProperty("someprop", "somevalue");
+        Node asset = getOrCreateByPath(srcPath, NT_UNSTRUCTURED, "dam:Asset", admin, true);
+        Node assetContent = asset.addNode("jcr:content","dam:AssetContent");
+        assetContent.setProperty("someprop", "somevalue");
         
-        addFileNode(source,"binary.png");
+        Node binaryNode = addFileNode(asset,"binary.png");
 
-        assertNodeExists(child1.getPath());
-        source.addMixin(MIX_REFERENCEABLE);
+        assertNodeExists(assetContent.getPath());
+        asset.addMixin(MIX_REFERENCEABLE);
         File pkgFile = exportContentPackage(srcPath);
         admin.save();
 
@@ -121,9 +122,42 @@ public class TestImportDuplicateUUIDs extends IntegrationTestBase {
         installContentPackage(pkgFile, IdConflictPolicy.LEGACY);
         
         assertNodeExists(srcPath);
-        assertNodeExists(srcPath + "/child1");
-        assertProperty(child1.getPath() + "/someprop", "somevalue");
+        assertNodeExists(srcPath + "/jcr:content");
+        assertProperty(assetContent.getPath() + "/someprop", "somevalue");
     }
+    
+    
+    // Identical to the one above, but with different IdConflictPolicy
+    @Test
+    public void testInstallPackage_CREATE_NEW_ID() throws Exception {
+        String srcName = randomAlphanumeric(10) + ".png";
+        String srcPath = append(testRoot.getPath(), srcName);
+        String dstPath = srcPath + "-renamed";
+        
+        Node asset = getOrCreateByPath(srcPath, NT_UNSTRUCTURED, "dam:Asset", admin, true);
+        Node assetContent = asset.addNode("jcr:content","dam:AssetContent");
+        assetContent.setProperty("someprop", "somevalue");
+        
+        Node binaryNode = addFileNode(asset,"binary.png");
+
+        assertNodeExists(assetContent.getPath());
+        asset.addMixin(MIX_REFERENCEABLE);
+        File pkgFile = exportContentPackage(srcPath);
+        admin.save();
+
+        admin.move(srcPath, dstPath);
+        assertNodeMissing(srcPath);
+        
+        installContentPackage(pkgFile, IdConflictPolicy.CREATE_NEW_ID);
+        
+        assertNodeExists(srcPath);
+        assertNodeExists(srcPath + "/jcr:content");
+        assertProperty(assetContent.getPath() + "/someprop", "somevalue");
+    }
+    
+    
+    
+    
 
     
     private Node addFileNode (Node parent, String name) throws Exception {
@@ -166,8 +200,6 @@ public class TestImportDuplicateUUIDs extends IntegrationTestBase {
     }
 
     private void installContentPackage(File pkgFile, IdConflictPolicy policy) throws RepositoryException, IOException, ConfigurationException {
-    	
-    	FileUtils.copyFile(pkgFile, new File("/Users/joerg/Day/customers/deloitte/2023-12-20/test", pkgFile.getName()));
     	
         try (ZipArchive archive = new ZipArchive(pkgFile);) {
 	        archive.open(true);

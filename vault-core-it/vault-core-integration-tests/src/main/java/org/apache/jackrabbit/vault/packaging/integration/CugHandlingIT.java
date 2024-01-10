@@ -41,6 +41,7 @@ import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -70,12 +71,13 @@ public final class CugHandlingIT extends IntegrationTestBase {
      */
     @Test
     public void testCugIgnore() throws Exception {
-       extractVaultPackage(CUG_PACKAGE_1, IGNORE);
-       Node testRoot = admin.getNode(TEST_ROOT);
-       assertNodeExists(testRoot, "node_with_cug");
-       Node nodeWithCug = testRoot.getNode("node_with_cug");
-       assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
-       assertNodeMissing(nodeWithCug, "rep:cugPolicy");
+       try (VaultPackage vp1 = extractVaultPackage(CUG_PACKAGE_1, IGNORE)) {
+           Node testRoot = admin.getNode(TEST_ROOT);
+           assertNodeExists(testRoot, "node_with_cug");
+           Node nodeWithCug = testRoot.getNode("node_with_cug");
+           assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
+           assertNodeMissing(nodeWithCug, "rep:cugPolicy");
+       }
     }
 
     /**
@@ -83,16 +85,17 @@ public final class CugHandlingIT extends IntegrationTestBase {
      */
     @Test
     public void testCugMerge() throws Exception {
-        extractVaultPackage(CUG_PACKAGE_2, OVERWRITE);
-        extractVaultPackage(CUG_PACKAGE_1, MERGE);
-        Node testRoot = admin.getNode(TEST_ROOT);
-        assertNodeExists(testRoot, "node_with_cug");
-        Node nodeWithCug = testRoot.getNode("node_with_cug");
-        assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
-        assertNodeExists(nodeWithCug, "rep:cugPolicy");
-        Node cugNode = nodeWithCug.getNode("rep:cugPolicy");
-        assertProperty(cugNode, "jcr:primaryType", "rep:CugPolicy");
-        assertProperty(cugNode,"rep:principalNames", asSet("principal-1", "principal-2", "principal-3"));
+        try (VaultPackage vp2 = extractVaultPackage(CUG_PACKAGE_2, OVERWRITE);
+                VaultPackage vp1 = extractVaultPackage(CUG_PACKAGE_1, MERGE)) {
+            Node testRoot = admin.getNode(TEST_ROOT);
+            assertNodeExists(testRoot, "node_with_cug");
+            Node nodeWithCug = testRoot.getNode("node_with_cug");
+            assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
+            assertNodeExists(nodeWithCug, "rep:cugPolicy");
+            Node cugNode = nodeWithCug.getNode("rep:cugPolicy");
+            assertProperty(cugNode, "jcr:primaryType", "rep:CugPolicy");
+            assertProperty(cugNode, "rep:principalNames", asSet("principal-1", "principal-2", "principal-3"));
+        }
     }
 
     /**
@@ -101,16 +104,17 @@ public final class CugHandlingIT extends IntegrationTestBase {
      */
     @Test
     public void testCugMergePreserve() throws Exception {
-        extractVaultPackage(CUG_PACKAGE_2, OVERWRITE);
-        extractVaultPackage(CUG_PACKAGE_1, AccessControlHandling.MERGE_PRESERVE);
-        Node testRoot = admin.getNode(TEST_ROOT);
-        assertNodeExists(testRoot, "node_with_cug");
-        Node nodeWithCug = testRoot.getNode("node_with_cug");
-        assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
-        assertNodeExists(nodeWithCug, "rep:cugPolicy");
-        Node cugNode = nodeWithCug.getNode("rep:cugPolicy");
-        assertProperty(cugNode, "jcr:primaryType", "rep:CugPolicy");
-        assertProperty(cugNode,"rep:principalNames", asSet("principal-1", "principal-2", "principal-3"));
+        try (VaultPackage vp2 = extractVaultPackage(CUG_PACKAGE_2, OVERWRITE);
+                VaultPackage vp1 = extractVaultPackage(CUG_PACKAGE_1, AccessControlHandling.MERGE_PRESERVE)) {
+            Node testRoot = admin.getNode(TEST_ROOT);
+            assertNodeExists(testRoot, "node_with_cug");
+            Node nodeWithCug = testRoot.getNode("node_with_cug");
+            assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
+            assertNodeExists(nodeWithCug, "rep:cugPolicy");
+            Node cugNode = nodeWithCug.getNode("rep:cugPolicy");
+            assertProperty(cugNode, "jcr:primaryType", "rep:CugPolicy");
+            assertProperty(cugNode, "rep:principalNames", asSet("principal-1", "principal-2", "principal-3"));
+        }
     }
 
     /**
@@ -118,16 +122,17 @@ public final class CugHandlingIT extends IntegrationTestBase {
      */
     @Test
     public void testCugOverwrite() throws Exception {
-        extractVaultPackage(CUG_PACKAGE_1, OVERWRITE);
-        extractVaultPackage(CUG_PACKAGE_2, OVERWRITE);
-        Node testRoot = admin.getNode(TEST_ROOT);
-        assertNodeExists(testRoot, "node_with_cug");
-        Node nodeWithCug = testRoot.getNode("node_with_cug");
-        assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
-        assertNodeExists(nodeWithCug, "rep:cugPolicy");
-        Node cugNode = nodeWithCug.getNode("rep:cugPolicy");
-        assertProperty(cugNode, "jcr:primaryType", "rep:CugPolicy");
-        assertProperty(cugNode,"rep:principalNames", asSet("principal-2", "principal-3"));
+        try (VaultPackage vp1 = extractVaultPackage(CUG_PACKAGE_1, OVERWRITE);
+                VaultPackage vp2 = extractVaultPackage(CUG_PACKAGE_2, OVERWRITE)) {
+            Node testRoot = admin.getNode(TEST_ROOT);
+            assertNodeExists(testRoot, "node_with_cug");
+            Node nodeWithCug = testRoot.getNode("node_with_cug");
+            assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
+            assertNodeExists(nodeWithCug, "rep:cugPolicy");
+            Node cugNode = nodeWithCug.getNode("rep:cugPolicy");
+            assertProperty(cugNode, "jcr:primaryType", "rep:CugPolicy");
+            assertProperty(cugNode, "rep:principalNames", asSet("principal-2", "principal-3"));
+        }
     }
 
     /**
@@ -135,18 +140,19 @@ public final class CugHandlingIT extends IntegrationTestBase {
      */
     @Test
     public void testCugSameAsAclByDefault() throws Exception {
-        extractVaultPackage(CUG_PACKAGE_1, OVERWRITE);
         ImportOptions opts = new ImportOptions();
         opts.setAccessControlHandling(MERGE);
-        extractVaultPackage(CUG_PACKAGE_2, opts);
-        Node testRoot = admin.getNode(TEST_ROOT);
-        assertNodeExists(testRoot, "node_with_cug");
-        Node nodeWithCug = testRoot.getNode("node_with_cug");
-        assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
-        assertNodeExists(nodeWithCug, "rep:cugPolicy");
-        Node cugNode = nodeWithCug.getNode("rep:cugPolicy");
-        assertProperty(cugNode, "jcr:primaryType", "rep:CugPolicy");
-        assertProperty(cugNode,"rep:principalNames", asSet("principal-1", "principal-2", "principal-3"));
+        try (VaultPackage vp1 = extractVaultPackage(CUG_PACKAGE_1, OVERWRITE);
+                VaultPackage vp2 = extractVaultPackage(CUG_PACKAGE_2, opts)) {
+            Node testRoot = admin.getNode(TEST_ROOT);
+            assertNodeExists(testRoot, "node_with_cug");
+            Node nodeWithCug = testRoot.getNode("node_with_cug");
+            assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
+            assertNodeExists(nodeWithCug, "rep:cugPolicy");
+            Node cugNode = nodeWithCug.getNode("rep:cugPolicy");
+            assertProperty(cugNode, "jcr:primaryType", "rep:CugPolicy");
+            assertProperty(cugNode, "rep:principalNames", asSet("principal-1", "principal-2", "principal-3"));
+        }
     }
 
     //*********************************************

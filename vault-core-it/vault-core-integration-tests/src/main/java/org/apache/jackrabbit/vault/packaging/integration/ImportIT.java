@@ -316,15 +316,16 @@ public class ImportIT extends IntegrationTestBase {
 
         // Import with a session associated to the test user
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/tmp.zip"));
-        archive.open(true);
-        ImportOptions opts = getDefaultOptions();
-        opts.setStrict(false);
-        Importer importer = new Importer(opts);
-        importer.run(archive, session, "/");
-        session.logout();
+        try (ZipArchive archive = new ZipArchive(getFile("/test-packages/tmp.zip"))) {
+            archive.open(true);
+            ImportOptions opts = getDefaultOptions();
+            opts.setStrict(false);
+            Importer importer = new Importer(opts);
+            importer.run(archive, session, "/");
+            session.logout();
 
-        assertNodeExists("/tmp/foo/bar/tobi");
+            assertNodeExists("/tmp/foo/bar/tobi");
+        }
     }
 
     @Test
@@ -351,15 +352,16 @@ public class ImportIT extends IntegrationTestBase {
 
         // Import with a session associated to the test user
         Session session = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
-        ZipArchive archive = new ZipArchive(getFile("/test-packages/tmp_foo.zip"));
-        archive.open(true);
-        ImportOptions opts = getDefaultOptions();
-        opts.setStrict(false);
-        Importer importer = new Importer(opts);
-        importer.run(archive, session, "/");
-        session.logout();
+        try (ZipArchive archive = new ZipArchive(getFile("/test-packages/tmp_foo.zip"))) {
+            archive.open(true);
+            ImportOptions opts = getDefaultOptions();
+            opts.setStrict(false);
+            Importer importer = new Importer(opts);
+            importer.run(archive, session, "/");
+            session.logout();
 
-        assertNodeExists("/tmp/foo/bar/tobi");
+            assertNodeExists("/tmp/foo/bar/tobi");
+        }
     }
 
     @Test

@@ -20,7 +20,6 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Calendar;
 import java.util.Properties;
 
@@ -30,7 +29,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
 
-import org.apache.jackrabbit.commons.cnd.CndImporter;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -58,14 +56,10 @@ public class ImportDuplicateUUIDsIT extends IntegrationTestBase {
 
     private Node testRoot;
 
-    private static final String NODE_TYPES = "<test='test:'>\n"
-            + "[test:Asset] > nt:hierarchyNode\n"
-            + "  + * (nt:base) = nt:base version\n";
 
     @Before
     public void before() throws RepositoryException, Exception {
         testRoot = admin.getRootNode().addNode(TEST_ROOT);
-        CndImporter.registerNodeTypes(new StringReader(NODE_TYPES), admin);
     }
 
     @Test
@@ -82,7 +76,7 @@ public class ImportDuplicateUUIDsIT extends IntegrationTestBase {
         String srcName = String.format("%s-%x.txt", policy, System.nanoTime());
         String srcPath = PathUtil.append(testRoot.getPath(), srcName);
 
-        Node asset = testRoot.addNode(srcName, "test:Asset");
+        Node asset = testRoot.addNode(srcName, NodeType.NT_FOLDER);
         addFileNode(asset, "binary.txt");
 
         asset.addMixin(NodeType.MIX_REFERENCEABLE);
@@ -104,7 +98,7 @@ public class ImportDuplicateUUIDsIT extends IntegrationTestBase {
 
         ValueFactory valueFactory = parent.getSession().getValueFactory();
         Binary contentValue = valueFactory.createBinary(new ByteArrayInputStream("Hello, world!".getBytes()));
-        Node fileNode = parent.addNode(name, "nt:file");
+        Node fileNode = parent.addNode(name, NodeType.NT_FILE);
         Node resNode = fileNode.addNode("jcr:content", "nt:resource");
         resNode.setProperty("jcr:mimeType", "text/plain");
         resNode.setProperty("jcr:data", contentValue);

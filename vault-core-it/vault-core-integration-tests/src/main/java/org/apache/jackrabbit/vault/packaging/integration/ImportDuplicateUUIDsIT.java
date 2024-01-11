@@ -26,9 +26,9 @@ import java.util.Properties;
 
 import javax.jcr.Binary;
 import javax.jcr.Node;
-import javax.jcr.nodetype.NodeType;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFactory;
+import javax.jcr.nodetype.NodeType;
 
 import org.apache.jackrabbit.commons.cnd.CndImporter;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
@@ -60,8 +60,6 @@ public class ImportDuplicateUUIDsIT extends IntegrationTestBase {
 
     private static final String NODE_TYPES = "<test='test:'>\n"
             + "[test:Asset] > nt:hierarchyNode\n"
-            + "  primaryitem jcr:content\n"
-            + "  + jcr:content (nt:unstructured) = nt:unstructured\n"
             + "  + * (nt:base) = nt:base version\n";
 
     @Before
@@ -83,27 +81,23 @@ public class ImportDuplicateUUIDsIT extends IntegrationTestBase {
     private void test(IdConflictPolicy policy) throws Exception {
         String srcName = String.format("%s-%x.txt", policy, System.nanoTime());
         String srcPath = PathUtil.append(testRoot.getPath(), srcName);
-        String dstPath = srcPath + "-renamed";
 
         Node asset = testRoot.addNode(srcName, "test:Asset");
-        Node assetContent = asset.addNode("jcr:content", NodeType.NT_UNSTRUCTURED);
-        assetContent.setProperty("someprop", "somevalue");
-
         addFileNode(asset, "binary.txt");
 
-        assertNodeExists(assetContent.getPath());
         asset.addMixin(NodeType.MIX_REFERENCEABLE);
-        File pkgFile = exportContentPackage(srcPath);
         admin.save();
 
+        File pkgFile = exportContentPackage(srcPath);
+
+        String dstPath = srcPath + "-renamed";
         admin.move(srcPath, dstPath);
         assertNodeMissing(srcPath);
 
         installContentPackage(pkgFile, policy);
 
         assertNodeExists(srcPath);
-        assertNodeExists(srcPath + "/jcr:content");
-        assertProperty(assetContent.getPath() + "/someprop", "somevalue");
+        assertNodeExists(srcPath + "/binary.txt");
     }
 
     private Node addFileNode(Node parent, String name) throws Exception {

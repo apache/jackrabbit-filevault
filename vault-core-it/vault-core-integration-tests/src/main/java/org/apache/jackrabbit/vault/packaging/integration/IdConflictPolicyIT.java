@@ -47,19 +47,9 @@ import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.PathUtil;
-import org.junit.Before;
 import org.junit.Test;
 
 public class IdConflictPolicyIT extends IntegrationTestBase {
-
-    public static final String TEST_ROOT = "testroot";
-
-    private Node testRoot;
-
-    @Before
-    public void before() throws RepositoryException, Exception {
-        testRoot = admin.getRootNode().addNode(TEST_ROOT);
-    }
 
     @Test
     public void testInstallPackage_CREATE_NEW_ID() throws Exception {
@@ -83,6 +73,17 @@ public class IdConflictPolicyIT extends IntegrationTestBase {
 
     private void test(IdConflictPolicy policy, Class<?> expectedException, Class<?> expectedRootCause, boolean expectNewId,
             boolean expectRenamedNodeKept) throws Exception {
+
+        String TEST_ROOT = "testroot";
+
+        Node testRoot;
+
+        try {
+            testRoot = admin.getRootNode().getNode(TEST_ROOT);
+        } catch (RepositoryException ignored) {
+            testRoot = admin.getRootNode().addNode(TEST_ROOT);
+        }
+
         String srcName = String.format("%s-%x.txt", policy, System.nanoTime());
         String srcPath = PathUtil.append(testRoot.getPath(), srcName);
 

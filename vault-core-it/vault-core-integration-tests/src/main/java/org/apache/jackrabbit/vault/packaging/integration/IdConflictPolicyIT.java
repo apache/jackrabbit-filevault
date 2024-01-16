@@ -49,14 +49,10 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class IdConflictPolicyIT extends IntegrationTestBase {
 
     public static final String TEST_ROOT = "testroot";
-
-    private static final Logger log = LoggerFactory.getLogger(IdConflictPolicyIT.class);
 
     private Node testRoot;
 
@@ -185,7 +181,6 @@ public class IdConflictPolicyIT extends IntegrationTestBase {
             opts.setStrict(true);
             Importer importer = new Importer(opts);
 
-            log.info("importing");
             importer.run(archive, admin.getRootNode());
         }
     }

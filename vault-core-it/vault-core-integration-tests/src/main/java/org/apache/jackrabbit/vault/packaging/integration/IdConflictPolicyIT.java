@@ -48,11 +48,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImportDuplicateUUIDsIT extends IntegrationTestBase {
+public class IdConflictPolicyIT extends IntegrationTestBase {
 
     public static final String TEST_ROOT = "testroot";
 
-    private static final Logger log = LoggerFactory.getLogger(ImportDuplicateUUIDsIT.class);
+    private static final Logger log = LoggerFactory.getLogger(IdConflictPolicyIT.class);
 
     private Node testRoot;
 

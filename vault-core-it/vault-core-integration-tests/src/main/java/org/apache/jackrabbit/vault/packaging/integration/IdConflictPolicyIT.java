@@ -32,6 +32,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -111,10 +112,7 @@ public class IdConflictPolicyIT extends IntegrationTestBase {
             } else {
                 assertTrue("expected: " + expectedException + ", but got: " + ex.getClass(), expectedException.isInstance(ex));
                 if (expectedRootCause != null) {
-                    Throwable rc = ex;
-                    while (rc.getCause() != null) {
-                        rc = rc.getCause();
-                    }
+                    Throwable rc = ExceptionUtils.getRootCause(ex);
                     assertTrue("expected: " + expectedRootCause + ", but got: " + rc.getClass(), expectedRootCause.isInstance(rc));
                 }
                 // expected exception -> test done

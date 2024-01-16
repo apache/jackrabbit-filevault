@@ -17,6 +17,10 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -56,23 +60,33 @@ public class IdConflictPolicyIT extends IntegrationTestBase {
 
     private Node testRoot;
 
-
     @Before
     public void before() throws RepositoryException, Exception {
         testRoot = admin.getRootNode().addNode(TEST_ROOT);
     }
 
     @Test
-    public void testInstallPackage_LEGACY() throws Exception {
-        test(IdConflictPolicy.LEGACY);
+    public void testInstallPackage_CREATE_NEW_ID() throws Exception {
+        test(IdConflictPolicy.CREATE_NEW_ID, null, null, true, true);
     }
 
     @Test
-    public void testInstallPackage_CREATE_NEW_ID() throws Exception {
-        test(IdConflictPolicy.CREATE_NEW_ID);
+    public void testInstallPackage_FAIL() throws Exception {
+        test(IdConflictPolicy.FAIL, RepositoryException.class, null, false, false);
     }
 
-    private void test(IdConflictPolicy policy) throws Exception {
+    @Test
+    public void testInstallPackage_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
+        test(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, null, null, false, false);
+    }
+
+    @Test
+    public void testInstallPackage_LEGACY() throws Exception {
+        test(IdConflictPolicy.LEGACY, RepositoryException.class, IllegalStateException.class, false, false);
+    }
+
+    private void test(IdConflictPolicy policy, Class<?> expectedException, Class<?> expectedRootCause, boolean expectNewId,
+            boolean expectRenamedNodeKept) throws Exception {
         String srcName = String.format("%s-%x.txt", policy, System.nanoTime());
         String srcPath = PathUtil.append(testRoot.getPath(), srcName);
 
@@ -82,16 +96,49 @@ public class IdConflictPolicyIT extends IntegrationTestBase {
         asset.addMixin(NodeType.MIX_REFERENCEABLE);
         admin.save();
 
+        String id1 = asset.getIdentifier();
+
         File pkgFile = exportContentPackage(srcPath);
 
         String dstPath = srcPath + "-renamed";
         admin.move(srcPath, dstPath);
         assertNodeMissing(srcPath);
 
-        installContentPackage(pkgFile, policy);
+        try {
+            installContentPackage(pkgFile, policy);
+        } catch (Exception ex) {
+            if (expectedException == null) {
+                throw ex;
+            } else {
+                assertTrue("expected: " + expectedException + ", but got: " + ex.getClass(), expectedException.isInstance(ex));
+                if (expectedRootCause != null) {
+                    Throwable rc = ex;
+                    while (rc.getCause() != null) {
+                        rc = rc.getCause();
+                    }
+                    assertTrue("expected: " + expectedRootCause + ", but got: " + rc.getClass(), expectedRootCause.isInstance(rc));
+                }
+                // expected exception -> test done
+                return;
+            }
+        }
+
+        if (expectRenamedNodeKept) {
+            assertNodeExists(dstPath);
+        } else {
+            assertNodeMissing(dstPath);
+        }
 
         assertNodeExists(srcPath);
         assertNodeExists(srcPath + "/binary.txt");
+
+        Node asset2 = testRoot.getNode(srcName);
+        String id2 = asset2.getIdentifier();
+        if (expectNewId) {
+            assertNotEquals(id1, id2);
+        } else {
+            assertEquals(id1, id2);
+        }
     }
 
     private Node addFileNode(Node parent, String name) throws Exception {

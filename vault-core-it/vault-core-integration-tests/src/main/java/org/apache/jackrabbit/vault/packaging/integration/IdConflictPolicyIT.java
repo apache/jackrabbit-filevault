@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Properties;
 
 import javax.jcr.Binary;
@@ -149,10 +148,6 @@ public class IdConflictPolicyIT extends IntegrationTestBase {
         Node resNode = fileNode.addNode("jcr:content", "nt:resource");
         resNode.setProperty("jcr:mimeType", "text/plain");
         resNode.setProperty("jcr:data", contentValue);
-
-        Calendar lastModified = Calendar.getInstance();
-        lastModified.setTimeInMillis(lastModified.getTimeInMillis());
-        resNode.setProperty("jcr:lastModified", lastModified);
 
         return fileNode;
     }

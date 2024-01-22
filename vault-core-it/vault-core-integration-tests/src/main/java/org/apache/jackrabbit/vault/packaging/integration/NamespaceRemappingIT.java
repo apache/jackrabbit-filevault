@@ -50,7 +50,7 @@ import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests namespace aware node/property imports when namespace prefix mapping has changed in the target environment but
- * not in the source environment, but the old prefix is still registered in the source environment using a throwaway URI
+ * not in the source environment, but the old prefix is still registered in the target environment using a throwaway URI
  * for maintaining referential consistency with old content.
  */
 public class NamespaceRemappingIT extends IntegrationTestBase {

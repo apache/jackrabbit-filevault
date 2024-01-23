@@ -38,6 +38,7 @@ import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.spi.ACLManagement;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
+import org.apache.jackrabbit.vault.packaging.UncoveredAncestorHandling;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,8 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
      * todo: would be better to pass via some kind of import context
      */
     protected AccessControlHandling cugHandling = null;
+
+    protected UncoveredAncestorHandling uncoveredAncestorHandling = null;
 
     /**
      * acl management
@@ -104,6 +107,14 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
      */
     public void setCugHandling(AccessControlHandling cugHandling) {
         this.cugHandling = cugHandling;
+    }
+
+    public UncoveredAncestorHandling getUncoveredAncestorHandling() {
+        return uncoveredAncestorHandling;
+    }
+
+    public void setUncoveredAncestorHandling(UncoveredAncestorHandling uncoveredAncestorHandling) {
+        this.uncoveredAncestorHandling = uncoveredAncestorHandling;
     }
 
     /**
@@ -167,7 +178,7 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
     }
 
     protected ImportInfoImpl importDocView(InputSource source, Node parentNode, String rootNodeName, ArtifactSetImpl artifacts, boolean isStrict, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws IOException, RepositoryException {
-        DocViewImporter handler = new DocViewImporter(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, getAcHandling(), getCugHandling());
+        DocViewImporter handler = new DocViewImporter(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, getAcHandling(), getCugHandling(), getUncoveredAncestorHandling());
         String rootNodePath = parentNode.getPath();
         if (!rootNodePath.equals("/")) {
             rootNodePath += "/";

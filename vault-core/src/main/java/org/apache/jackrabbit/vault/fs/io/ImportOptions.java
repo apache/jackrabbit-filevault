@@ -30,6 +30,7 @@ import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
+import org.apache.jackrabbit.vault.packaging.UncoveredAncestorHandling;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -56,6 +57,8 @@ public class ImportOptions {
     private AccessControlHandling acHandling = null;
 
     private AccessControlHandling cugHandling = null;
+
+    private UncoveredAncestorHandling uncoveredAncestorHandling = null;
 
     private ImportMode importMode;
 
@@ -97,6 +100,7 @@ public class ImportOptions {
             autoSaveThreshold = base.autoSaveThreshold;
             acHandling = base.acHandling;
             cugHandling = base.cugHandling;
+            uncoveredAncestorHandling = base.uncoveredAncestorHandling;
             importMode = base.importMode;
             cndPattern = base.cndPattern;
             filter = base.filter;
@@ -124,6 +128,7 @@ public class ImportOptions {
         ret.autoSaveThreshold = autoSaveThreshold;
         ret.acHandling = acHandling;
         ret.cugHandling = cugHandling;
+        ret.uncoveredAncestorHandling = uncoveredAncestorHandling;
         ret.importMode = importMode;
         ret.cndPattern = cndPattern;
         ret.filter = filter;
@@ -285,6 +290,14 @@ public class ImportOptions {
      */
     public void setCugHandling(AccessControlHandling cugHandling) {
         this.cugHandling = cugHandling;
+    }
+
+    public UncoveredAncestorHandling getUncoveredAncestorHandling() {
+        return uncoveredAncestorHandling;
+    }
+
+    public void setUncoveredAncestorHandling(UncoveredAncestorHandling uncoveredAncestorHandling) {
+        this.uncoveredAncestorHandling = uncoveredAncestorHandling;
     }
 
     /**

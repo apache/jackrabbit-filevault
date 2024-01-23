@@ -463,10 +463,13 @@ public class Importer {
         }
         fileHandler.setAcHandling(opts.getAccessControlHandling());
         fileHandler.setCugHandling(opts.getCugHandling());
+        fileHandler.setUncoveredAncestorHandling(opts.getUncoveredAncestorHandling());
         genericHandler.setAcHandling(opts.getAccessControlHandling());
         genericHandler.setCugHandling(opts.getCugHandling());
+        genericHandler.setUncoveredAncestorHandling(opts.getUncoveredAncestorHandling());
         folderHandler.setAcHandling(opts.getAccessControlHandling());
         folderHandler.setCugHandling(opts.getCugHandling());
+        folderHandler.setUncoveredAncestorHandling(opts.getUncoveredAncestorHandling());
         folderHandler.setOverwritePrimaryTypesOfFolders(opts.overwritePrimaryTypesOfFolders(overwritePrimaryTypesOfFoldersByDefault));
 
         filter = opts.getFilter();

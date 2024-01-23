@@ -36,6 +36,7 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
+import org.apache.jackrabbit.vault.packaging.UncoveredAncestorHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.Nullable;
@@ -167,6 +168,21 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     @Override
     public SubPackageHandling getSubPackageHandling() {
         return SubPackageHandling.fromString(getProperty(NAME_SUB_PACKAGE_HANDLING));
+    }
+
+    @Override
+    public UncoveredAncestorHandling getUncoveredAncestorHandling() {
+        String ancestorHandling = getProperty(NAME_UNCOVERED_ANCESTOR_HANDLING);
+        if (ancestorHandling == null) {
+            return UncoveredAncestorHandling.CREATE;
+        } else {
+            try {
+                return UncoveredAncestorHandling.valueOf(ancestorHandling.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("invalid access control handling configured: {}", ancestorHandling);
+                return UncoveredAncestorHandling.CREATE;
+            }
+        }
     }
 
     /**

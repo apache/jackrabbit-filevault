@@ -82,6 +82,7 @@ import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.fs.spi.UserManagement;
 import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.JackrabbitUserManagement;
 import org.apache.jackrabbit.vault.fs.spi.impl.jcr20.JcrNamespaceHelper;
+import org.apache.jackrabbit.vault.packaging.UncoveredAncestorHandling;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.util.EffectiveNodeType;
@@ -196,6 +197,8 @@ public class DocViewImporter implements DocViewParserHandler {
      */
     private final @Nullable AccessControlHandling cugHandling;
 
+    private final @NotNull UncoveredAncestorHandling uncoveredAncestorHandling;
+
     /**
      * helper for namespace registration
      */
@@ -233,11 +236,12 @@ public class DocViewImporter implements DocViewParserHandler {
      */
     public DocViewImporter(Node parentNode, String rootNodeName,
                               ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws RepositoryException {
-        this(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, AccessControlHandling.IGNORE, null);
+        this(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, AccessControlHandling.IGNORE, null, UncoveredAncestorHandling.CREATE);
     }
 
     public DocViewImporter(Node parentNode, String rootNodeName,
-            ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, AccessControlHandling aclHandling, AccessControlHandling cugHandling) throws RepositoryException {
+            ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, AccessControlHandling aclHandling, 
+            AccessControlHandling cugHandling, UncoveredAncestorHandling uncoveredAncestorHandling) throws RepositoryException {
         this.filter = artifacts.getCoverage();
         this.wspFilter = wspFilter;
         this.rootDepth = parentNode.getDepth() + 1;
@@ -248,6 +252,7 @@ public class DocViewImporter implements DocViewParserHandler {
         this.idConflictPolicy = idConflictPolicy;
         this.aclHandling = aclHandling;
         this.cugHandling = cugHandling;
+        this.uncoveredAncestorHandling = uncoveredAncestorHandling;
         this.isSnsSupported = session.getRepository().
                 getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED).getBoolean();
     
@@ -918,23 +923,33 @@ public class DocViewImporter implements DocViewParserHandler {
         // create or update node
         boolean isNew = existingNode == null;
         if (isNew) {
-            // workaround for bug in jcr2spi if mixins are empty
-            if (!docViewNode.hasProperty(NameConstants.JCR_MIXINTYPES)) {
-                preprocessedProperties.add(new DocViewProperty2(NameConstants.JCR_MIXINTYPES, Collections.emptyList(), PropertyType.NAME));
-            }
 
-            stack.ensureCheckedOut();
-            existingNode = createNewNode(currentNode, docViewNode.cloneWithDifferentProperties(preprocessedProperties));
-            if (existingNode.getDefinition() == null) {
-                throw new RepositoryException("Child node not allowed.");
-            }
-            if (existingNode.isNodeType(JcrConstants.NT_RESOURCE)) {
-                if (!existingNode.hasProperty(JcrConstants.JCR_DATA)) {
-                    importInfo.onMissing(existingNode.getPath() + "/" + JcrConstants.JCR_DATA);
+            // TODO: distinguish between covered and uncovered nodes
+            if (isIncluded(existingNode, existingNode.getDepth() - rootDepth)) {
+                // workaround for bug in jcr2spi if mixins are empty
+                if (!docViewNode.hasProperty(NameConstants.JCR_MIXINTYPES)) {
+                    preprocessedProperties.add(new DocViewProperty2(NameConstants.JCR_MIXINTYPES, Collections.emptyList(), PropertyType.NAME));
                 }
-            } else if (isCheckedIn) {
-                // don't rely on isVersionable here, since SPI might not have this info yet
-                importInfo.registerToVersion(existingNode.getPath());
+                stack.ensureCheckedOut();
+                existingNode = createNewNode(currentNode, docViewNode.cloneWithDifferentProperties(preprocessedProperties));
+                if (existingNode.getDefinition() == null) {
+                    throw new RepositoryException("Child node not allowed.");
+                }
+                if (existingNode.isNodeType(JcrConstants.NT_RESOURCE)) {
+                    if (!existingNode.hasProperty(JcrConstants.JCR_DATA)) {
+                        importInfo.onMissing(existingNode.getPath() + "/" + JcrConstants.JCR_DATA);
+                    }
+                } else if (isCheckedIn) {
+                    // don't rely on isVersionable here, since SPI might not have this info yet
+                    importInfo.registerToVersion(existingNode.getPath());
+                }
+            } else {
+                switch (uncoveredAncestorHandling) {
+                case VALIDATE:
+                    throw new UnsupportedAncestorType("No ancestor node found at path " + path);
+                case CREATE:
+                    
+                }
             }
             importInfo.onCreated(existingNode.getPath());
 

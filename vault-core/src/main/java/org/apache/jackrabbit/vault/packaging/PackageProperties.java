@@ -147,6 +147,8 @@ public interface PackageProperties {
      */
     String NAME_SUB_PACKAGE_HANDLING = "subPackageHandling";
 
+    String NAME_UNCOVERED_ANCESTOR_HANDLING = "uncoveredAncestorHandling";
+
     /**
      * Name of the flag that defines if the package is supposed to contains/overwrite Oak index definitions.
      * @since 3.2.10
@@ -307,6 +309,13 @@ public interface PackageProperties {
      * @return the sub package handling configuration.
      */
     SubPackageHandling getSubPackageHandling();
+
+    /**
+     * 
+     * @return the handling of uncovered ancestor nodes during import (never {@code null})
+     * @since 3.8 (package version 2.16)
+     */
+    @NotNull UncoveredAncestorHandling getUncoveredAncestorHandling();
 
     /**
      * Returns the date property with the given name or {@code null} if it does not exist or if the value cannot be

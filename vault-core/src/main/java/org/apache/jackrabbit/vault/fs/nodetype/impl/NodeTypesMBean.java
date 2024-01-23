@@ -14,8 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.jackrabbit.vault.fs.nodetype.impl;
 
-@Version("2.16.0")
-package org.apache.jackrabbit.vault.packaging;
+import java.io.IOException;
 
-import org.osgi.annotation.versioning.Version;
+import javax.jcr.RepositoryException;
+
+public interface NodeTypesMBean {
+
+    String getNodeTypePropertiesFileForPaths(String... paths) throws RepositoryException, IOException;
+}

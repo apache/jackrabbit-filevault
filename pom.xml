@@ -244,11 +244,6 @@
     <profiles>
         <profile>
             <id>apache-release</id>
-            <properties>
-                <username>${user.name}</username>
-                <keyfile>${user.home}/.ssh/id_rsa</keyfile>
-                <passphrase />
-            </properties>
             <build>
                 <plugins>
                     <plugin>

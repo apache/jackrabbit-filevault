@@ -422,26 +422,26 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
 
     @Test
     public void testInstallPackage_CREATE_NEW_ID() throws Exception {
-        test(IdConflictPolicy.CREATE_NEW_ID, null, null, true, true);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, null, null, true, true);
     }
 
     @Test
     public void testInstallPackage_FAIL() throws Exception {
-        test(IdConflictPolicy.FAIL, RepositoryException.class, null, false, false);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, RepositoryException.class, null, false, false);
     }
 
     @Test
     public void testInstallPackage_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
-        test(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, null, null, false, false);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, null, null, false, false);
     }
 
     @Test
     public void testInstallPackage_LEGACY() throws Exception {
-        test(IdConflictPolicy.LEGACY, RepositoryException.class, IllegalStateException.class, false, false);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, RepositoryException.class, IllegalStateException.class, false, false);
     }
 
-    private void test(IdConflictPolicy policy, Class<?> expectedException, Class<?> expectedRootCause, boolean expectNewId,
-            boolean expectRenamedNodeKept) throws Exception {
+    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, Class<?> expectedException, Class<?> expectedRootCause,
+            boolean expectNewId, boolean expectRenamedNodeKept) throws Exception {
 
         String TEST_ROOT = "testroot";
 

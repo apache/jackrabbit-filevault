@@ -526,14 +526,13 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
     private void installContentPackage(File pkgFile, IdConflictPolicy policy)
             throws RepositoryException, IOException, ConfigurationException {
 
+        ImportOptions opts = getDefaultOptions();
+        opts.setIdConflictPolicy(policy);
+        opts.setImportMode(ImportMode.UPDATE_PROPERTIES);
+        opts.setStrict(true);
+
         try (ZipArchive archive = new ZipArchive(pkgFile);) {
             archive.open(true);
-            ImportOptions opts = getDefaultOptions();
-            opts.setIdConflictPolicy(policy);
-            opts.setFilter(archive.getMetaInf().getFilter());
-            opts.setImportMode(ImportMode.UPDATE_PROPERTIES);
-
-            opts.setStrict(true);
             Importer importer = new Importer(opts);
 
             importer.run(archive, admin.getRootNode());

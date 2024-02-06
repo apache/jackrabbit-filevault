@@ -33,13 +33,11 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyIterator;
 import javax.jcr.ReferentialIntegrityException;
 import javax.jcr.RepositoryException;
-import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -456,7 +454,7 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         String srcPath = PathUtil.append(testRoot.getPath(), srcName);
 
         Node asset = testRoot.addNode(srcName, NodeType.NT_FOLDER);
-        addFileNode(asset, "binary.txt");
+        JcrUtils.putFile(asset, "binary.txt", "text/plain", new ByteArrayInputStream("Hello, world!".getBytes()));
 
         asset.addMixin(NodeType.MIX_REFERENCEABLE);
         admin.save();
@@ -501,18 +499,6 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         } else {
             assertEquals(id1, id2);
         }
-    }
-
-    private Node addFileNode(Node parent, String name) throws Exception {
-
-        ValueFactory valueFactory = parent.getSession().getValueFactory();
-        Binary contentValue = valueFactory.createBinary(new ByteArrayInputStream("Hello, world!".getBytes()));
-        Node fileNode = parent.addNode(name, NodeType.NT_FILE);
-        Node resNode = fileNode.addNode("jcr:content", "nt:resource");
-        resNode.setProperty("jcr:mimeType", "text/plain");
-        resNode.setProperty("jcr:data", contentValue);
-
-        return fileNode;
     }
 
     private File exportContentPackage(String path) throws Exception {

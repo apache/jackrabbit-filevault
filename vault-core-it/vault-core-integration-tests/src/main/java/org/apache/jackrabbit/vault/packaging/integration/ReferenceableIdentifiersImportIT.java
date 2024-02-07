@@ -46,17 +46,15 @@ import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
-import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
-import org.apache.jackrabbit.vault.fs.io.Importer;
-import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -467,8 +465,12 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         admin.move(srcPath, dstPath);
         assertNodeMissing(srcPath);
 
-        try {
-            installContentPackage(pkgFile, policy);
+        try (ZipVaultPackage pack = new ZipVaultPackage(pkgFile, false)) {
+            ImportOptions opts = getDefaultOptions();
+            opts.setIdConflictPolicy(policy);
+            opts.setImportMode(ImportMode.UPDATE_PROPERTIES);
+            opts.setStrict(true);
+            pack.extract(admin, opts);
         } catch (Exception ex) {
             if (expectedException == null) {
                 throw ex;
@@ -520,22 +522,6 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         File pkgFile = File.createTempFile("testImportMovedResource", ".zip");
         try (VaultPackage pkg = packMgr.assemble(admin, opts, pkgFile)) {
             return pkg.getFile();
-        }
-    }
-
-    private void installContentPackage(File pkgFile, IdConflictPolicy policy)
-            throws RepositoryException, IOException, ConfigurationException {
-
-        ImportOptions opts = getDefaultOptions();
-        opts.setIdConflictPolicy(policy);
-        opts.setImportMode(ImportMode.UPDATE_PROPERTIES);
-        opts.setStrict(true);
-
-        try (ZipArchive archive = new ZipArchive(pkgFile);) {
-            archive.open(true);
-            Importer importer = new Importer(opts);
-
-            importer.run(archive, admin.getRootNode());
         }
     }
 

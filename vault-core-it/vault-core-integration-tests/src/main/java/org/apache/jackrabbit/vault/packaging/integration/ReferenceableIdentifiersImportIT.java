@@ -25,9 +25,12 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.jcr.Node;
@@ -35,25 +38,39 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyIterator;
 import javax.jcr.ReferentialIntegrityException;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
+import org.apache.jackrabbit.vault.fs.api.ImportMode;
+import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
+import org.apache.jackrabbit.vault.util.PathUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Installs a package with the filter: "/tmp/referenceable", mode="replace"
- * The package contains two referenceable nodes:
- * {@code /tmp/referenceable} and
- * {@code /tmp/referenceable/child-referenceable}.
- * Both are setting property {@code someproperty="somevalue"}.
+ * Installs a package with the filter: "/tmp/referenceable", mode="replace" The
+ * package contains two referenceable nodes: {@code /tmp/referenceable} and
+ * {@code /tmp/referenceable/child-referenceable}. Both are setting property
+ * {@code someproperty="somevalue"}.
+ * <p>
+ * Furthermore creates nodes, exports them, renames the test node, and attempts
+ * a re-import with differing policies.
+ * 
  */
 public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
-    
+
     private static final String PROPERTY_NAME = "someproperty";
     private static final String PROPERTY_VALUE = "somevalue";
     private static final String UUID_REFERENCEABLE = "352c89a4-304f-4b87-9bed-e09275597df1";
@@ -399,6 +416,113 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         duplicateNode = getNodeOrNull("/tmp/sameparentconflicts/duplicate");
         assertNull(referenceableNode); // package must not contain new conflicting nodes
         assertNull(duplicateNode);
+    }
+
+    @Test
+    public void testInstallPackage_CREATE_NEW_ID() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, null, null, true, true);
+    }
+
+    @Test
+    public void testInstallPackage_FAIL() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, RepositoryException.class, null, false, false);
+    }
+
+    @Test
+    public void testInstallPackage_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, null, null, false, false);
+    }
+
+    @Test
+    public void testInstallPackage_LEGACY() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, RepositoryException.class, IllegalStateException.class, false, false);
+    }
+
+    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, Class<?> expectedException, Class<?> expectedRootCause,
+            boolean expectNewId, boolean expectRenamedNodeKept) throws Exception {
+
+        String TEST_ROOT = "testroot";
+
+        Node testRoot = getNodeOrNull("/" + TEST_ROOT);
+        if (testRoot == null) {
+            testRoot = admin.getRootNode().addNode(TEST_ROOT);
+        }
+
+        String srcName = String.format("%s-%x.txt", policy, System.nanoTime());
+        String srcPath = PathUtil.append(testRoot.getPath(), srcName);
+
+        Node asset = testRoot.addNode(srcName, NodeType.NT_FOLDER);
+        JcrUtils.putFile(asset, "binary.txt", "text/plain", new ByteArrayInputStream("Hello, world!".getBytes()));
+
+        asset.addMixin(NodeType.MIX_REFERENCEABLE);
+        admin.save();
+
+        String id1 = asset.getIdentifier();
+
+        File pkgFile = exportContentPackage(srcPath);
+
+        String dstPath = srcPath + "-renamed";
+        admin.move(srcPath, dstPath);
+        assertNodeMissing(srcPath);
+
+        try (ZipVaultPackage pack = new ZipVaultPackage(pkgFile, false)) {
+            ImportOptions opts = getDefaultOptions();
+            opts.setIdConflictPolicy(policy);
+            opts.setImportMode(ImportMode.UPDATE_PROPERTIES);
+            opts.setStrict(true);
+            pack.extract(admin, opts);
+        } catch (Exception ex) {
+            if (expectedException == null) {
+                throw ex;
+            } else {
+                assertTrue("expected: " + expectedException + ", but got: " + ex.getClass(), expectedException.isInstance(ex));
+                if (expectedRootCause != null) {
+                    Throwable rc = ExceptionUtils.getRootCause(ex);
+                    assertTrue("expected: " + expectedRootCause + ", but got: " + rc.getClass(), expectedRootCause.isInstance(rc));
+                }
+                // expected exception -> test done
+                return;
+            }
+        }
+
+        if (expectRenamedNodeKept) {
+            assertNodeExists(dstPath);
+        } else {
+            assertNodeMissing(dstPath);
+        }
+
+        assertNodeExists(srcPath);
+        assertNodeExists(srcPath + "/binary.txt");
+
+        Node asset2 = testRoot.getNode(srcName);
+        String id2 = asset2.getIdentifier();
+        if (expectNewId) {
+            assertNotEquals(id1, id2);
+        } else {
+            assertEquals(id1, id2);
+        }
+    }
+
+    private File exportContentPackage(String path) throws Exception {
+        ExportOptions opts = new ExportOptions();
+        DefaultMetaInf inf = new DefaultMetaInf();
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+
+        PathFilterSet pfs = new PathFilterSet(path);
+        pfs.addInclude(new DefaultPathFilter(path + "/.*"));
+        filter.add(pfs);
+
+        inf.setFilter(filter);
+        Properties props = new Properties();
+        props.setProperty(PackageProperties.NAME_GROUP, "jackrabbit/test");
+        props.setProperty(PackageProperties.NAME_NAME, "test-package");
+        inf.setProperties(props);
+
+        opts.setMetaInf(inf);
+        File pkgFile = File.createTempFile("testImportMovedResource", ".zip");
+        try (VaultPackage pkg = packMgr.assemble(admin, opts, pkgFile)) {
+            return pkg.getFile();
+        }
     }
 
     private Node getNodeOrNull(String path) throws RepositoryException {

@@ -173,6 +173,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         for (String path : excludes) {
             filterSet.addExclude(new DefaultPathFilter(path));
         }
+        srcFilter.add(filterSet);
         return srcFilter;
     }
 

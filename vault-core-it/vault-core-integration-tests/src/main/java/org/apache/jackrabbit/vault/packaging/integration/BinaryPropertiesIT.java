@@ -44,11 +44,15 @@ import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.ReferenceBinary;
+import org.apache.jackrabbit.api.security.user.Authorizable;
+import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
@@ -70,13 +74,16 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
 
     private final static String SMALL_TEXT = "Lorem ipsum"; // less than 16KB data is not stored in the blob store
     private final static String SMALL_TEXT2 = "The quick brown fox";
-    private final static String BINARY_NODE_PATH = "/tmp/binaryless/node";
+
     private final static String BIG_BINARY_PROPERTY = "bigbin";
     private final static String SMALL_BINARY_PROPERTY = "smallbin";
     private final static String BIG_BINARY_MV_PROPERTY = "bigbin-mv";
     private final static String SMALL_BINARY_MV_PROPERTY = "smallbin-mv";
 
-    private final static String FILE_NODE_PATH = "/tmp/binaryless/file";
+    private String fileNodePath = "/tmp/binaryless/file";
+    private String exportFileNodePath = "/tmp/binaryless/file";
+    private String binaryNodePath = "/tmp/binaryless/node";
+    private String exportBinaryNodePath = "/tmp/binaryless/node";
 
     private final static int BIG_TEXT_LENGTH = 0x1000 * 64; // 64 KB
     private final static String BIG_TEXT;
@@ -99,6 +106,8 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
     @Parameter
     public boolean useBinaryReferences; // if true, binaries should not be part of the package (only their references)
 
+    public boolean testAuthorizables = Boolean.getBoolean("testAuthorizables");
+
     @Parameters(name = "useBinaryReferences:{0}")
     public static Object[] data() {
         return new Object[] { Boolean.TRUE, Boolean.FALSE };
@@ -113,12 +122,22 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
     public void setup() throws RepositoryException, PackageException, IOException {
         // test only works for Jackrabbit 2.0 or Oak with FileDataStore (as it relies on ReferenceBinary), this is assured though by the overwritten initRepository method
 
-        binaryNode = JcrUtils.getOrCreateByPath(BINARY_NODE_PATH, "nt:unstructured", admin);
+        if (testAuthorizables && admin instanceof JackrabbitSession) {
+            UserManager um = ((JackrabbitSession)admin).getUserManager();
+            Authorizable adminAuthorizable = um.getAuthorizable(admin.getUserID());
+            // assertNull(adminAuthorizable.getPath());
+            exportBinaryNodePath = adminAuthorizable.getPath();
+            binaryNodePath = exportBinaryNodePath + "/node";
+            exportFileNodePath = adminAuthorizable.getPath();
+            fileNodePath = exportFileNodePath + "/file";
+        }
+
+        binaryNode = JcrUtils.getOrCreateByPath(binaryNodePath, "nt:unstructured", admin);
         Property bigProperty = setBinaryProperty(binaryNode, BIG_BINARY_PROPERTY, BIG_TEXT);
         Property smallProperty = setBinaryProperty(binaryNode, SMALL_BINARY_PROPERTY, SMALL_TEXT);
         setBinaryMultivalueProperty(binaryNode, BIG_BINARY_MV_PROPERTY, BIG_TEXT, BIG_TEXT2);
         setBinaryMultivalueProperty(binaryNode, SMALL_BINARY_MV_PROPERTY, SMALL_TEXT, SMALL_TEXT2);
-        
+
         // some basic checks to make sure that reference binaries are enabled in the repository
         String referenceBigBinary = ((ReferenceBinary) bigProperty.getBinary()).getReference();
         assertNotNull(referenceBigBinary);
@@ -205,23 +224,23 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
 
     @Test
     public void exportBinary() throws RepositoryException, IOException, PackageException {
-        String nodePath = BINARY_NODE_PATH;
-        try (VaultPackage pkg = assemblePackage(nodePath)) {
+        String nodePath = binaryNodePath;
+        try (VaultPackage pkg = assemblePackage(exportBinaryNodePath)) {
             if (useBinaryReferences) {
                 // make sure that only non-reference binaries are in dedicated artifacts
-                assertNull(pkg.getArchive().getEntry("jcr_root" + BINARY_NODE_PATH + "/" + BIG_BINARY_PROPERTY + ".binary"));
-                assertNull(pkg.getArchive().getEntry("jcr_root" + BINARY_NODE_PATH + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary"));
-                assertNull(pkg.getArchive().getEntry("jcr_root" + BINARY_NODE_PATH + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ BINARY_NODE_PATH + "/" + SMALL_BINARY_PROPERTY + ".binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ BINARY_NODE_PATH + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ BINARY_NODE_PATH + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary"));
+                assertNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_PROPERTY + ".binary"));
+                assertNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary"));
+                assertNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary"));
+                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_PROPERTY + ".binary"));
+                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary"));
+                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary"));
             } else {
-                assertNotNull(pkg.getArchive().getEntry("jcr_root" + BINARY_NODE_PATH + "/" + BIG_BINARY_PROPERTY + ".binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root" + BINARY_NODE_PATH + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root" + BINARY_NODE_PATH + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ BINARY_NODE_PATH + "/" + SMALL_BINARY_PROPERTY + ".binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ BINARY_NODE_PATH + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ BINARY_NODE_PATH + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary"));
+                assertNotNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_PROPERTY + ".binary"));
+                assertNotNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary"));
+                assertNotNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary"));
+                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_PROPERTY + ".binary"));
+                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary"));
+                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary"));
             }
             clean(nodePath);
             pkg.extract(admin, getDefaultOptions());
@@ -255,12 +274,14 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
 
     @Test
     public void exportFile() throws RepositoryException, IOException, PackageException {
-        String nodePath = FILE_NODE_PATH;
-        try (VaultPackage pkg = assemblePackage(nodePath)) {
+        String nodePath = fileNodePath;
+        try (VaultPackage pkg = assemblePackage(exportFileNodePath)) {
+            Archive.Entry en = pkg.getArchive().getEntry("jcr_root" + fileNodePath);
+            assertNotNull("not found: " + "jcr_root" + fileNodePath, en);
             if (useBinaryReferences) {
-                assertTrue(pkg.getArchive().getEntry("jcr_root" + FILE_NODE_PATH).isDirectory());
+                assertTrue(en.isDirectory());
             } else {
-                assertFalse(pkg.getArchive().getEntry("jcr_root" + FILE_NODE_PATH).isDirectory());
+                assertFalse(en.isDirectory());
             }
             clean(nodePath);
             pkg.extract(admin, getDefaultOptions());
@@ -278,7 +299,7 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
      */
     @Test
     public void importTwice() throws RepositoryException, IOException, PackageException {
-        String nodePath = BINARY_NODE_PATH;
+        String nodePath = binaryNodePath;
 
         try (VaultPackage pkg = assemblePackage(nodePath)) {
             clean(nodePath);
@@ -287,12 +308,12 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
             io.setListener(listener);
             // extract
             pkg.extract(admin, io);
-            assertEquals("A", listener.getActions().get(BINARY_NODE_PATH));
+            assertEquals("A", listener.getActions().get(binaryNodePath));
             // and extract again
             listener = new TrackingListener(null);
             io.setListener(listener);
             pkg.extract(admin, io);
-            assertEquals("U", listener.getActions().get(BINARY_NODE_PATH));
+            assertEquals("U", listener.getActions().get(binaryNodePath));
         }
     }
 }

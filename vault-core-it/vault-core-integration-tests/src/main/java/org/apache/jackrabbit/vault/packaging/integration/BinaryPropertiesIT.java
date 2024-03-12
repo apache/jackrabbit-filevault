@@ -80,10 +80,8 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
     private final static String BIG_BINARY_MV_PROPERTY = "bigbin-mv";
     private final static String SMALL_BINARY_MV_PROPERTY = "smallbin-mv";
 
-    private String fileNodePath = "/tmp/binaryless/file";
-    private String exportFileNodePath = "/tmp/binaryless/file";
-    private String binaryNodePath = "/tmp/binaryless/node";
-    private String exportBinaryNodePath = "/tmp/binaryless/node";
+    private String fileNodePath, exportFileNodePath;
+    private String binaryNodePath, exportBinaryNodePath;
 
     private final static int BIG_TEXT_LENGTH = 0x1000 * 64; // 64 KB
     private final static String BIG_TEXT;
@@ -130,6 +128,11 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
             binaryNodePath = exportBinaryNodePath + "/node";
             exportFileNodePath = adminAuthorizable.getPath();
             fileNodePath = exportFileNodePath + "/file";
+        } else {
+            fileNodePath = "/tmp/binaryless/file";
+            exportFileNodePath = "/tmp/binaryless/file";
+            binaryNodePath = "/tmp/binaryless/node";
+            exportBinaryNodePath = "/tmp/binaryless/node";
         }
 
         binaryNode = JcrUtils.getOrCreateByPath(binaryNodePath, "nt:unstructured", admin);

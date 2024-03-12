@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -101,14 +103,15 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
 
     private Node binaryNode;
 
-    @Parameter
+    @Parameter(0)
     public boolean useBinaryReferences; // if true, binaries should not be part of the package (only their references)
 
-    public boolean testAuthorizables = Boolean.getBoolean("testAuthorizables");
+    @Parameter(1)
+    public boolean testAuthorizables; // if true, test below authorizable content
 
-    @Parameters(name = "useBinaryReferences:{0}")
-    public static Object[] data() {
-        return new Object[] { Boolean.TRUE, Boolean.FALSE };
+    @Parameters(name = "useBinaryReferences:{0}, testAuthorizables:{1}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] { { false, false }, { true, false }, { true, true } });
     }
 
     @BeforeClass

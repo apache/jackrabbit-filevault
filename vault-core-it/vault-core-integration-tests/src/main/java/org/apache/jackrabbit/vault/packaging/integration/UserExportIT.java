@@ -18,6 +18,8 @@ package org.apache.jackrabbit.vault.packaging.integration;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.io.InputStream;
@@ -75,7 +77,11 @@ public class UserExportIT extends IntegrationTestBase {
         assertNotNull(getTestUser());
         log.info("Test user created at path {}", test.getPath());
         byte[] serialised = export(admin, TEST_USER_PATH);
-        log.info("Test user exported");
+        File tmpFile = File.createTempFile("test", ".zip");
+        try (FileOutputStream fso = new FileOutputStream(tmpFile)) {
+            fso.write(serialised);
+        }
+        log.info("Test user exported at path {}", tmpFile.getAbsolutePath());
         clean(TEST_USER_PATH);
         assertNull(getTestUser());
         log.info("Test user removed from the repository");
@@ -109,20 +115,8 @@ public class UserExportIT extends IntegrationTestBase {
 
     private byte[] export(Session session, String authorizablePath) throws IOException, RepositoryException, ConfigurationException {
 
-        /*
-         * Serialize the authorizable node and it's deep
-         * subtree (ACL, profile, etc.) in binary-less mode.
-         * Skip auto-generated nodes and properties.
-         */
-
         PathFilterSet nodeFilters = new PathFilterSet(authorizablePath);
-        nodeFilters.addExclude(new DefaultPathFilter(".*/.tokens"));
-        nodeFilters.addExclude(new DefaultPathFilter(".*/rep:cache"));
-
         PathFilterSet propertyFilters = new PathFilterSet(authorizablePath);
-        propertyFilters.addExclude(new DefaultPathFilter("^.*/cq:lastReplicated"));
-        propertyFilters.addExclude(new DefaultPathFilter("^.*/cq:lastReplicatedBy"));
-        propertyFilters.addExclude(new DefaultPathFilter("^.*/cq:lastReplicationAction"));
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(nodeFilters, propertyFilters);
@@ -131,7 +125,7 @@ public class UserExportIT extends IntegrationTestBase {
         inf.setFilter(filter);
 
         Properties props = new Properties();
-        props.setProperty(VaultPackage.NAME_GROUP, "granite/sync");
+        props.setProperty(VaultPackage.NAME_GROUP, "jackrabbit/sync");
         props.setProperty(VaultPackage.NAME_NAME, randomUUID().toString());
         props.setProperty(VaultPackage.NAME_VERSION, "0.0.1");
         props.setProperty(PackageProperties.NAME_USE_BINARY_REFERENCES, String.valueOf(true));

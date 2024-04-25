@@ -134,8 +134,8 @@ public class UserExportIT extends IntegrationTestBase {
         ExportOptions opts = new ExportOptions();
         opts.setMetaInf(inf);
 
-        opts.setRootPath(authorizablePath);
-        opts.setMountPath(authorizablePath);
+        opts.setRootPath("/");
+        opts.setMountPath("/");
 
         opts.setCompressionLevel(Deflater.BEST_SPEED);
 

@@ -43,7 +43,7 @@ public class DirectoryArtifact extends AbstractArtifact
      * @param name the repository name for this artifact.
      */
     public DirectoryArtifact(String name) {
-        super(null, name, "", ArtifactType.DIRECTORY);
+        this(name, "");
     }
 
     /**

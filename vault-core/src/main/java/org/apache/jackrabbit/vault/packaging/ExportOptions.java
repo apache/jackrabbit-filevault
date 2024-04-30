@@ -21,6 +21,7 @@ import java.util.zip.Deflater;
 
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 
 /**
  * Holds options used for exporting.
@@ -91,7 +92,7 @@ public class ExportOptions {
 
     /**
      * Returns the root path.
-     * @return the root path.
+     * @return the root path in platform format.
      */
     public String getRootPath() {
         return rootPath;
@@ -102,7 +103,7 @@ public class ExportOptions {
      * generate packages that have a virtual root. If a root path different than '/' is set, the workspace filter
      * will be adjusted accordingly, if possible.
      *
-     * @param rootPath the root path
+     * @param rootPath the root path in platform format (compare with {@link PlatformNameFormat})
      */
     public void setRootPath(String rootPath) {
         this.rootPath = rootPath;
@@ -110,7 +111,7 @@ public class ExportOptions {
 
     /**
      * Returns the mount path
-     * @return the mount path
+     * @return the mount path in repository format
      */
     public String getMountPath() {
         return mountPath;
@@ -121,7 +122,7 @@ public class ExportOptions {
      * packages that are not "rooted" at '/'. If a mount path different than '/' is set, the workspace filter
      * will be adjusted accordingly, if possible
      *
-     * @param mountPath the mount path
+     * @param mountPath the mount path in repository format (not in platform format, i.e. not escaped)
      */
     public void setMountPath(String mountPath) {
         this.mountPath = mountPath;

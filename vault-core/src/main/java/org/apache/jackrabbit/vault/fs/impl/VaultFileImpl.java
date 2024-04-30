@@ -54,7 +54,7 @@ public class VaultFileImpl implements VaultFile {
     private final VaultFileSystem fs;
 
     /**
-     * the name of this entry
+     * the name of this entry (must be in platform format)
      */
     private final String name;
 

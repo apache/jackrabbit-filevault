@@ -46,6 +46,7 @@ import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -81,12 +82,12 @@ public class UserExportIT extends IntegrationTestBase {
         try (FileOutputStream fso = new FileOutputStream(tmpFile)) {
             fso.write(serialised);
         }
-        log.info("Test user exported at path {}", tmpFile.getAbsolutePath());
+        log.info("Test user package exported to path {}", tmpFile.getAbsolutePath());
         clean(TEST_USER_PATH);
         assertNull(getTestUser());
         log.info("Test user removed from the repository");
         importPackage(admin, new ByteArrayInputStream(serialised));
-        assertNotNull(getTestUser());
+        assertNotNull("Could not find test user after import", getTestUser());
         log.info("Test user imported");
     }
 
@@ -104,7 +105,7 @@ public class UserExportIT extends IntegrationTestBase {
         opts.setStrict(true);
         Importer importer = new Importer(opts);
         try (Archive archive = new ZipStreamArchive(is)) {
-            archive.open(false);
+            archive.open(true);
             importer.run(archive, session, "/");
             if (importer.hasErrors() && opts.isStrict(true)) {
                 throw new RuntimeException("Failed to import");
@@ -134,7 +135,7 @@ public class UserExportIT extends IntegrationTestBase {
         ExportOptions opts = new ExportOptions();
         opts.setMetaInf(inf);
 
-        opts.setRootPath(authorizablePath);
+        opts.setRootPath(PlatformNameFormat.getPlatformPath(authorizablePath));
         opts.setMountPath(authorizablePath);
 
         opts.setCompressionLevel(Deflater.BEST_SPEED);

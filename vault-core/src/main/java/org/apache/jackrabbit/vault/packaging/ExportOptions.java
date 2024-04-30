@@ -92,7 +92,7 @@ public class ExportOptions {
 
     /**
      * Returns the root path.
-     * @return the root path in platform format.
+     * @return the root path in repository format.
      */
     public String getRootPath() {
         return rootPath;
@@ -103,7 +103,7 @@ public class ExportOptions {
      * generate packages that have a virtual root. If a root path different than '/' is set, the workspace filter
      * will be adjusted accordingly, if possible.
      *
-     * @param rootPath the root path in platform format (compare with {@link PlatformNameFormat})
+     * @param rootPath the root path in repository format (not in platform format, i.e. not escaped)
      */
     public void setRootPath(String rootPath) {
         this.rootPath = rootPath;

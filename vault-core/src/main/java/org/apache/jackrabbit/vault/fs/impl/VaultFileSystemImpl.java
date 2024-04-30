@@ -29,6 +29,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.VaultFsTransaction;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.util.PathUtil;
+import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +101,7 @@ public class VaultFileSystemImpl implements VaultFileSystem {
      * Creates a new os file system that uses the given manager.
      *
      * @param rootAggregate the root artifacts node
-     * @param rootPath path of root file. used for remapping
+     * @param rootPath path of the root node in platform format (compare with {@link PlatformNameFormat})
      * @param ownMgr {@code true} if it's own manager
      * @throws IOException if an I/O error occurs
      * @throws RepositoryException if a repository error occurs.

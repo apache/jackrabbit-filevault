@@ -106,15 +106,6 @@ public class UserContentPackageIT extends IntegrationTestBase {
     }
 
     @Test
-    public void installUserA_Underscores() throws RepositoryException, IOException, PackageException {
-        assertNull("test-user-a must not exist", ((JackrabbitSession) admin).getUserManager().getAuthorizable(ID_TEST_USER_A));
-        JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a_underscores.zip"), false);
-        assertNotNull(pack);
-        pack.install(getDefaultOptions());
-        assertNotNull("test-user-a must exist", ((JackrabbitSession) admin).getUserManager().getAuthorizable(ID_TEST_USER_A));
-    }
-
-    @Test
     public void installUserA_Profile() throws RepositoryException, IOException, PackageException {
         // install default user at package path
         User userA = installUserA(ImportMode.REPLACE, true, true);

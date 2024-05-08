@@ -61,7 +61,7 @@ public class NodeStash {
      * List of potential roots where the transient temporary node will be created.
      * Note that the node is never persisted.
      */
-    private static final String[] ROOTS = {"/", "/tmp", "/var", "/etc", "/content"};
+    private static final String[] ROOTS = {"/tmp", "/var", "/etc", "/content", "/"};
 
 
     /** The property names of those protected properties which should be stashed (and later restored) */
@@ -90,7 +90,7 @@ public class NodeStash {
             for (String rootPath : ROOTS) {
                 try {
                     Node root = session.getNode(rootPath);
-                    return tmpNode = root.addNode("tmp" + System.currentTimeMillis(), JcrConstants.NT_UNSTRUCTURED);
+                    return tmpNode = root.addNode("filevault-tmp-" + System.currentTimeMillis(), JcrConstants.NT_UNSTRUCTURED);
                 } catch (RepositoryException e) {
                     log.debug("unable to create temporary stash location below {}.", rootPath);
                 }

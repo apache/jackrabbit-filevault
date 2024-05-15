@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.7.2
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.7.4
 
 Introduction
 ------------
@@ -8,6 +8,33 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+
+Changes in Jackrabbit FileVault 3.7.4
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.7.4
+This version requires Java 8
+The OSGi bundles depend on Jackrabbit 2.20.8+ (JCR Commons, SPI, SPI Commons), Oak JR API 1.22.4+, Commons IO 2.7+, Commons Collections 4.1+ and SLF4J 1.7+
+
+Bug
+
+    [JCRVLT-728] - File handle leak in JcrPackageRegistry.register(File,boolean)
+    [JCRVLT-730] - Unstable IT: VaultSyncServiceImplIT.testAddRemoveFileFromNonVltCheckoutFolder
+    [JCRVLT-746] - Exclude items are not added to WorkspaceFilter in RCP
+    [JCRVLT-751] - ExportOptions.rootPath not properly converted to platform name format
+
+Improvement
+
+    [JCRVLT-737] - IdConflictPolicy.LEGACY: Parent node not found when installing a package - improve test coverage
+    [JCRVLT-742] - Stop generating MD5, SHA1 and SHA512 with Ant
+    [JCRVLT-745] - Stashing: naming and folder location
+
+Task
+
+    [JCRVLT-738] - CugHandlingIT tests do not close resources
+    [JCRVLT-739] - some ImportIT tests do not close resources
+
 
 Changes in Jackrabbit FileVault 3.7.2
 --------------------------------------

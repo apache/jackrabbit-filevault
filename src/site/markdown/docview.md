@@ -110,7 +110,7 @@ The raw attribute value is escaped in order to preserve the special semantics:
 | `<empty string>` | `\0` | Only necessary within singleton multi-value properties to indicate an empty string item ([JCRVLT-4](https://issues.apache.org/jira/browse/JCRVLT-4)). |
 
 Please note, that this escaping only concerns the raw attribute value. If the value contains
-characters that cannot be used in XML attributes, like quotes `"`, the according [XML entities](https://www.w3.org/TR/xml/#dt-escape) need to be used.
+characters that [cannot be used in XML attributes](https://www.w3.org/TR/xml/#NT-AttValue), like `&` or `<`, the according [XML entities](https://www.w3.org/TR/xml/#dt-escape) need to be used.
 
 
 [jcr-docview]: https://s.apache.org/jcr-2.0-spec/7_Export.html#7.3%20Document%20View

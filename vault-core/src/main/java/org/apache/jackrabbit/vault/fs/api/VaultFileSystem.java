@@ -21,8 +21,12 @@ import java.io.IOException;
 
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.vault.util.PlatformNameFormat;
+
 /**
- * {@code VaultFileSystem}...
+ * The file system containing a repository export.
+ * All passed paths are supposed to be in platform format (i.e. with file name escaping applied)
+ * @see PlatformNameFormat
  */
 public interface VaultFileSystem {
 

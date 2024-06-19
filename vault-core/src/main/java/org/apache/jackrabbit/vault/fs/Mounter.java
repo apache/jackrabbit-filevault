@@ -30,6 +30,7 @@ import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.AggregateManagerImpl;
 import org.apache.jackrabbit.vault.fs.impl.VaultFileSystemImpl;
+import org.apache.jackrabbit.vault.util.PlatformNameFormat;
 
 /**
  * Utility method to mount a JCR FS.
@@ -46,7 +47,7 @@ public final class Mounter {
      * @param config vault fs config
      * @param wspFilter the workspace filter
      * @param mountpoint the address of the mountpoint
-     * @param rootPath path of root file. used for remapping
+     * @param rootPath repository path of the root node (used for remapping)
      * @param session the repository session
      * @return a Vault filesystem
      * @throws RepositoryException if an error occurs.
@@ -62,7 +63,7 @@ public final class Mounter {
                 AggregateManagerImpl.mount(
                         config, wspFilter, mountpoint, session
                 ).getRoot(),
-                rootPath,
+                PlatformNameFormat.getPlatformPath(rootPath),
                 true
         );
     }

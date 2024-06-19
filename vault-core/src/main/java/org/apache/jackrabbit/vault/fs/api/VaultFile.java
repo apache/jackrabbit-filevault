@@ -22,8 +22,12 @@ import java.util.Collection;
 
 import javax.jcr.RepositoryException;
 
+import org.apache.jackrabbit.vault.util.PlatformNameFormat;
+
 /**
- * {@code VaultFile}...
+ * Representation of a node serialization in {@link VaultFileSystem}.
+ * All paths used have the platform format, except if explicitly mentioned otherwise.
+ * @see PlatformNameFormat
  */
 public interface VaultFile extends Dumpable {
     /**
@@ -32,8 +36,16 @@ public interface VaultFile extends Dumpable {
      */
     String getPath();
 
+    /**
+     * 
+     * @return the relative path of this artifact with respect to its parent node (repository format).
+     */
     String getRepoRelPath();
 
+    /**
+     * 
+     * @return the repository path of the artifact's root (repository format).
+     */
     String getAggregatePath();
 
     /**

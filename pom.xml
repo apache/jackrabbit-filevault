@@ -296,8 +296,6 @@
                                                 <include name="target/*-source-release.zip*" />
                                             </fileset>
                                         </copy>
-                                        <!-- in check-release.sh we check against the SHA1, we need it in the Maven property, the file can be disregarded -->
-                                        <checksum file="${basedir}/target/${project.artifactId}-${project.version}-source-release.zip" algorithm="SHA1" property="checksum" />
                                         <echo file="${basedir}/target/vote.txt"><![CDATA[
 From: ${username}@apache.org
 To: dev@jackrabbit.apache.org
@@ -314,7 +312,7 @@ https://github.com/apache/jackrabbit-filevault/tree/jackrabbit-filevault-${proje
 The release notes can be found in JIRA at https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12314920&version=....
 
 The command for running automated checks against this release candidate is:
-$ sh check-release.sh filevault ${project.version} ${checksum}
+$ sh check-release.sh filevault ${project.version}
 (leveraging the script from https://dist.apache.org/repos/dist/dev/jackrabbit/check-release.sh)
 
 A staged Maven repository is available for review at:

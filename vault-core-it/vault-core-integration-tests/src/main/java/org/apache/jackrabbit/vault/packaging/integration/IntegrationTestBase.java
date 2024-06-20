@@ -180,7 +180,6 @@ public class IntegrationTestBase  {
         }
         return repositoryProvider;
     }
-
     public static void initRepository(boolean useFileStore, boolean enablePrincipalBasedAuthorization, String... cugEnabledPaths) throws RepositoryException, IOException {
         repositoryWithMetadata = getRepositoryProvider().createRepository(useFileStore, enablePrincipalBasedAuthorization, cugEnabledPaths);
         repository = repositoryWithMetadata.getRepository();

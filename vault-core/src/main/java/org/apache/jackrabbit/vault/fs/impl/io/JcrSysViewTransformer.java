@@ -76,7 +76,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
     private final String existingPath;
 
     private final Set<Name> excludedNodeNames = new HashSet<>();
-    
+
     private final @NotNull ImportMode importMode;
 
     private final NamePathResolver resolver;
@@ -187,6 +187,12 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
             // add the properties
             for (DocViewProperty2 p: ni.getProperties()) {
+                if (PropertyType.BINARY == p.getType() && p.isReferenceProperty()) {
+                    throw new InvalidSerializedDataException("On node '" + parent.getPath() + "/"
+                            + resolver.getJCRName(ni.getName()) + "': '" + resolver.getJCRName(p.getName())
+                            + "' is a reference property (not supported by sysview import)");
+                }
+
                 if (p.getStringValue().isPresent()) {
                     attrs = new AttributesImpl();
                     // use qualified name due to https://issues.apache.org/jira/browse/OAK-9586

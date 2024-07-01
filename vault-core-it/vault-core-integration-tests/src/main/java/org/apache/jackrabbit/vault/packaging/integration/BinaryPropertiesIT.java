@@ -204,7 +204,7 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
         }
         Binary binary = value.getBinary();
         try (InputStream actualInput =  binary.getStream()) {
-            assertTrue("Content not equal", IOUtils.contentEquals(expectedInput, actualInput));
+            assertTrue("Content not equal on " + path, IOUtils.contentEquals(expectedInput, actualInput));
         }
         finally {
             binary.dispose();

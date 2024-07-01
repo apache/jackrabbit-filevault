@@ -17,8 +17,10 @@
 package org.apache.jackrabbit.vault.fs.impl.io;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.ImportUUIDBehavior;
@@ -83,6 +85,13 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
     private long ignoreLevel = 0;
 
+    // keep track of stack of node names when recursing
+    private List<Name> currentSubPath = new ArrayList<>();
+
+    // holds information about binary reference properties that were excluded
+    // from sysview conversion
+    private Map<String, List<DocViewProperty2>> skippedProps = new HashMap<>();
+
     public JcrSysViewTransformer(@NotNull Node node, @NotNull ImportMode importMode, boolean keepAcPolicies) throws RepositoryException {
         this(node, null, importMode, keepAcPolicies);
     }
@@ -129,6 +138,22 @@ public class JcrSysViewTransformer implements DocViewAdapter {
             throw new InvalidSerializedDataException("Invalid sysview", e);
         }
 
+        // Apply previously skipped binary reference properties
+        for (Map.Entry<String, List<DocViewProperty2>> e : skippedProps.entrySet()) {
+            String path = e.getKey();
+            List<DocViewProperty2> props = e.getValue();
+            DocViewSAXHandler.log.trace("on '" + path + "' need to set binary reference properties: " + props);
+
+            try {
+                Node n = parent.getSession().getNode(path);
+                for (DocViewProperty2 prop : props) {
+                    prop.apply(n);
+                }
+            } catch (RepositoryException ex) {
+                throw new InvalidSerializedDataException("cannot apply reference properties to " + path, ex);
+            }
+        }
+
         // get list of created paths
         List<String> paths = new ArrayList<>();
         try {
@@ -165,6 +190,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
     @Override
     public void startNode(DocViewNode2 ni) throws RepositoryException {
+        currentSubPath.add(ni.getName());
         if (ignoreLevel > 0) {
             DocViewSAXHandler.log.trace("ignoring child node of excluded node: {}", ni.getName());
             ignoreLevel++;
@@ -187,12 +213,6 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
             // add the properties
             for (DocViewProperty2 p: ni.getProperties()) {
-                if (PropertyType.BINARY == p.getType() && p.isReferenceProperty()) {
-                    throw new InvalidSerializedDataException("On node '" + parent.getPath() + "/"
-                            + resolver.getJCRName(ni.getName()) + "': '" + resolver.getJCRName(p.getName())
-                            + "' is a reference property (not supported by sysview import)");
-                }
-
                 if (p.getStringValue().isPresent()) {
                     attrs = new AttributesImpl();
                     // use qualified name due to https://issues.apache.org/jira/browse/OAK-9586
@@ -203,11 +223,32 @@ public class JcrSysViewTransformer implements DocViewAdapter {
                     }
 
                     handler.startElement(Name.NS_SV_URI, "property", "sv:property", attrs);
-                    for (String v: p.getStringValues()) {
+
+                    // serialize binary reference properties as empty and remember them for later
+                    if (PropertyType.BINARY == p.getType() && p.isReferenceProperty()) {
+                        String path = parent.getPath();
+                        for (Name n : currentSubPath) {
+                            path += "/" + resolver.getJCRName(n);
+                        }
+                        List<DocViewProperty2> skipped = skippedProps.get(path);
+                        if (skipped == null) {
+                            skipped = new ArrayList<>();
+                            skippedProps.put(path, skipped);
+                        }
+                        skipped.add(p);
+                        DocViewSAXHandler.log.trace("On node '{}': '{}' is a reference property (not supported by sysview import)",
+                                path, resolver.getJCRName(ni.getName()), resolver.getJCRName(p.getName()));
                         handler.startElement(Name.NS_SV_URI, "value", "sv:value", DocViewSAXHandler.EMPTY_ATTRIBUTES);
-                        handler.characters(v.toCharArray(), 0, v.length());
+                        handler.characters(new char[0], 0, 0);
                         handler.endElement(Name.NS_SV_URI, "value", "sv:value");
+                    } else {
+                        for (String v: p.getStringValues()) {
+                            handler.startElement(Name.NS_SV_URI, "value", "sv:value", DocViewSAXHandler.EMPTY_ATTRIBUTES);
+                            handler.characters(v.toCharArray(), 0, v.length());
+                            handler.endElement(Name.NS_SV_URI, "value", "sv:value");
+                        }
                     }
+
                     handler.endElement(Name.NS_SV_URI, "property", "sv:property");
                 }
             }
@@ -222,6 +263,8 @@ public class JcrSysViewTransformer implements DocViewAdapter {
 
     @Override
     public void endNode() throws RepositoryException {
+        currentSubPath.remove(currentSubPath.size() - 1);
+
         if (ignoreLevel > 0) {
             ignoreLevel--;
             return;

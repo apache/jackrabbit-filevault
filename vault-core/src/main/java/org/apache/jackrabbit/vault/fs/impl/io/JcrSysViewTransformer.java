@@ -236,7 +236,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
                             skippedProps.put(path, skipped);
                         }
                         skipped.add(p);
-                        DocViewSAXHandler.log.trace("On node '{}': '{}' is a reference property (not supported by sysview import)",
+                        DocViewSAXHandler.log.trace("On node '{}': '{}' is a binary reference property (not supported by sysview import)",
                                 path, resolver.getJCRName(ni.getName()), resolver.getJCRName(p.getName()));
                         handler.startElement(Name.NS_SV_URI, "value", "sv:value", DocViewSAXHandler.EMPTY_ATTRIBUTES);
                         handler.characters(new char[0], 0, 0);

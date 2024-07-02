@@ -150,7 +150,7 @@ public class JcrSysViewTransformer implements DocViewAdapter {
                     prop.apply(n);
                 }
             } catch (RepositoryException ex) {
-                throw new InvalidSerializedDataException("cannot apply reference properties to " + path, ex);
+                throw new InvalidSerializedDataException("Cannot import binary reference properties in" + path, ex);
             }
         }
 

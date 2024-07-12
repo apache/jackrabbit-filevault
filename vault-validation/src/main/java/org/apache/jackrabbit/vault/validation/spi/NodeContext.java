@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.validation.spi;
 
 import java.nio.file.Path;
 
+import org.apache.jackrabbit.spi.Name;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -64,5 +65,19 @@ public interface NodeContext {
      */
     default int getColumn() {
         return 0;
+    }
+
+    /**
+     * Returns a readable String from the given name object.
+     * The return value's format depends on the actual underlying context.
+     * 
+     * @param name the name object
+     * @return the <a href="https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.2.5.2%20Qualified%20Form">JCR qualified name</a> 
+     * or as fallback the <a href="https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.2.5.1%20Expanded%20Form">JCR expanded name</a>
+     * from the given name object
+     * @since 3.8.0
+     */
+    default @NotNull String getJcrName(@NotNull Name name) {
+        return name.toString();
     }
 }

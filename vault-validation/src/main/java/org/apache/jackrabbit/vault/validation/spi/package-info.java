@@ -18,7 +18,7 @@
 /**
  * The FileVault validation framework SPI. Provides classes/interfaces to implement validators on FileVault packages.
  */
-@Version("1.8.0")
+@Version("1.9.0")
 package org.apache.jackrabbit.vault.validation.spi;
 
 import org.osgi.annotation.versioning.Version;

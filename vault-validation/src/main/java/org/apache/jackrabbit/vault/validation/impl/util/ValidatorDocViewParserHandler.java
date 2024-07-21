@@ -32,6 +32,7 @@ import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
 
 import org.apache.jackrabbit.commons.SimpleValueFactory;
+import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
 import org.apache.jackrabbit.vault.fs.io.DocViewParserHandler;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
@@ -43,6 +44,8 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.impl.DocumentViewParserValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ValidatorDocViewParserHandler implements DocViewParserHandler {
 
@@ -56,6 +59,11 @@ public class ValidatorDocViewParserHandler implements DocViewParserHandler {
     private NameResolver nameResolver;
 
     public static final String MESSAGE_INVALID_STRING_SERIALIZATION = "Invalid string serialization for type '%s' given in property '%s' : '%s'. This string cannot be converted to the specified type!";
+
+    /**
+     * the default logger
+     */
+    private static final Logger log = LoggerFactory.getLogger(ValidatorDocViewParserHandler.class);
 
     public ValidatorDocViewParserHandler(@NotNull ValidationMessageSeverity severity, @NotNull Map<String, DocumentViewXmlValidator> docViewValidators, @NotNull Path filePath, @NotNull Path basePath) {
         this.nodePathsAndLineNumbers = new HashMap<>();
@@ -125,9 +133,9 @@ public class ValidatorDocViewParserHandler implements DocViewParserHandler {
             try {
                 final Collection<ValidationMessage> messages;
                 if (isStart) {
-                    messages = entry.getValue().validate(docViewNode, new NodeContextImpl(nodePath, filePath, basePath, lineNumber, columnNumber), !parentDocViewNode.isPresent());
+                    messages = entry.getValue().validate(docViewNode, new NodeContextImpl(nodePath, filePath, basePath, lineNumber, columnNumber, this::getJcrName), !parentDocViewNode.isPresent());
                 } else {
-                    messages = entry.getValue().validateEnd(docViewNode, new NodeContextImpl(nodePath, filePath, basePath, lineNumber, columnNumber), !parentDocViewNode.isPresent());
+                    messages = entry.getValue().validateEnd(docViewNode, new NodeContextImpl(nodePath, filePath, basePath, lineNumber, columnNumber, this::getJcrName), !parentDocViewNode.isPresent());
                 }
                 if (messages != null && !messages.isEmpty()) {
                     violations.addAll(ValidationViolation.wrapMessages(entry.getKey(), messages, filePath, null, nodePath,
@@ -138,6 +146,14 @@ public class ValidatorDocViewParserHandler implements DocViewParserHandler {
             }
         }
     }
-    
-    
+
+    private String getJcrName(Name name) {
+        try {
+            return nameResolver.getJCRName(name);
+        } catch (NamespaceException e) {
+            log.debug("Could not get qualified name for {}, falling back to expanded name", name, e);
+            // this is just best effort, fall back to expanded name
+            return name.toString();
+        }
+    }
 }

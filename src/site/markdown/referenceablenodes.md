@@ -21,7 +21,7 @@
 
 ## Overview
 
-The JCR 2.0 specification defines [referenceable nodes][1]. Those carry a `jcr:uuid` property which uniquely identifies a node within a repository workspace. FileVault exports will contain this (protected) property `jcr:uuid` (when present) which is important to keep [referential integrity][2].
+The JCR 2.0 specification defines [referenceable nodes][1]. Those carry a `jcr:uuid` property which uniquely identifies a node within a repository workspace. FileVault exports contain this (protected) property `jcr:uuid` (when present) which is important to keep [referential integrity][2].
 The import behavior depends on the used FileVault version.
 
 ## Import behavior prior FileVault 3.5.2

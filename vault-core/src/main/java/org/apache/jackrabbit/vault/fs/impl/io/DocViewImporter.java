@@ -1002,7 +1002,7 @@ public class DocViewImporter implements DocViewParserHandler {
             updatedNode = createNewNode(parent, ni);
             stash.recover(importMode, importInfo);
             log.info("Node stashing for {} finished, existing identifier: {}, new identifier: {}, elapsed: {}, import mode: {}",
-                    node.getPath(), node.getIdentifier(), identifier.get(),
+                    updatedNode.getPath(), updatedNode.getIdentifier(), identifier.get(),
                     Duration.ofMillis(System.currentTimeMillis() - startTime), importMode);
         } else {
             // TODO: is this faster than using sysview import?

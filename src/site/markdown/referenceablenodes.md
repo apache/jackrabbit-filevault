@@ -37,7 +37,7 @@ Since version 3.5.2 ([JCRVLT-551](https://issues.apache.org/jira/browse/JCRVLT-5
 
 The import behavior of packages with can be tweaked with `ImportOptions.setIdConflictPolicy(...)` per package or the default can be overridden in the [OSGi Configuration](config.html). For further details refer to the [JavaDoc][3]. The old behavior can be achieved with `IdConflictPolicy.LEGACY`.
 
-Note that `CREATE_NEW_ID` will enforce creation of new identifiers, even when no node with conflicting ids.
+Note that `CREATE_NEW_ID` will enforce creation of new identifiers, even when no node with a conflicting id exists.
 
 [1]: https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.8%20Referenceable%20Nodes
 [2]: https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.8.2%20Referential%20Integrity

@@ -16,10 +16,12 @@
  */
 package org.apache.jackrabbit.vault.fs.impl.io;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -63,6 +65,8 @@ public class NodeStash {
      */
     private static final String[] ROOTS = {"/tmp", "/var", "/etc", "/content", "/"};
 
+    /** interval for logging progress */
+    private static final long PROGRESS_LOG_INTERVAL = TimeUnit.MINUTES.toMillis(1);
 
     /** The property names of those protected properties which should be stashed (and later restored) */
     private static final List<String> PROTECTED_PROPERTIES_TO_STASH = Arrays.asList(JcrConstants.JCR_MIXINTYPES);
@@ -121,8 +125,11 @@ public class NodeStash {
 
             int childNodeCount = 0;
             int propertyCount = 0;
+            long start = System.currentTimeMillis();
+            long lastTimeStamp = start;
 
             NodeIterator nodeIterator = parent.getNodes();
+
             while (nodeIterator.hasNext()) {
                 Node child = nodeIterator.nextNode();
                 String name = child.getName();
@@ -134,6 +141,14 @@ public class NodeStash {
                     String path = child.getPath();
                     session.move(path, tmp.getPath() + "/" + name);
                     childNodeCount += 1;
+
+                    long now = System.currentTimeMillis();
+                    if (childNodeCount > 0 && now - PROGRESS_LOG_INTERVAL > lastTimeStamp) {
+                        log.warn("Node stashing operation {}, still running after {}, nodes moved: {}", this,
+                                Duration.ofMillis(now - start), childNodeCount);
+                        lastTimeStamp = now;
+                    }
+
                     if (importInfo != null) {
                         importInfo.onStashed(path);
                     }

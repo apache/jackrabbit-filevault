@@ -18,6 +18,11 @@ package org.apache.jackrabbit.vault.fs.api;
 
 import javax.jcr.ImportUUIDBehavior;
 
+/**
+ * Defines the handling of IDs on import.
+ * <p>
+ * Note: {@code CREATE_NEW_ID} affects imports of nodes without id conflicts as well.
+ */
 public enum IdConflictPolicy {
     /** Default handling, fail in case of unresolvable conflicts. Conflicts are automatically resolved in case the conflicting UUID and all its references are inside the package filter. */
     FAIL,

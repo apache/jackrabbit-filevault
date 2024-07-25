@@ -992,8 +992,9 @@ public class DocViewImporter implements DocViewParserHandler {
         // try to set uuid via sysview import if it differs from existing one
         if (identifier.isPresent() && !node.getIdentifier().equals(identifier.get()) && !"rep:root".equals(ni.getPrimaryType().orElse(""))) {
             long startTime = System.currentTimeMillis();
+            String previousIdentifier = node.getIdentifier();
             log.info("Node stashing for {} starting, existing identifier: {}, new identifier: {}, import mode: {}",
-                    node.getPath(), node.getIdentifier(), identifier.get(), importMode);
+                    node.getPath(), previousIdentifier, identifier.get(), importMode);
             NodeStash stash = new NodeStash(session, node.getPath());
             stash.stash(importInfo);
             Node parent = node.getParent();
@@ -1001,8 +1002,8 @@ public class DocViewImporter implements DocViewParserHandler {
             node.remove();
             updatedNode = createNewNode(parent, ni);
             stash.recover(importMode, importInfo);
-            log.info("Node stashing for {} finished, existing identifier: {}, new identifier: {}, elapsed: {}, import mode: {}",
-                    updatedNode.getPath(), updatedNode.getIdentifier(), identifier.get(),
+            log.info("Node stashing for {} finished, previous identifier: {}, new identifier: {}, elapsed: {}, import mode: {}",
+                    updatedNode.getPath(), previousIdentifier, updatedNode.getIdentifier(),
                     Duration.ofMillis(System.currentTimeMillis() - startTime), importMode);
         } else {
             // TODO: is this faster than using sysview import?

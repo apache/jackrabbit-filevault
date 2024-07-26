@@ -21,7 +21,7 @@
 
 ## Overview
 
-The JCR 2.0 specification defines [referenceable nodes][1]. Those carry a `jcr:uuid` property which uniquely identifies a node within a repository workspace. Each FileVault export contains this (protected) property `jcr:uuid` as well which is important to keep [referential integrity][2].
+The JCR 2.0 specification defines [referenceable nodes][1]. Those carry a `jcr:uuid` property which uniquely identifies a node within a repository workspace. FileVault exports contain this (protected) property `jcr:uuid` (when present) which is important to keep [referential integrity][2].
 The import behavior depends on the used FileVault version.
 
 ## Import behavior prior FileVault 3.5.2
@@ -33,9 +33,11 @@ In case of conflicts among siblings the existing conflicting node is [removed][5
 
 Since version 3.5.2 ([JCRVLT-551](https://issues.apache.org/jira/browse/JCRVLT-551)) FileVault tries to use the `jcr:uuid` of the node in the package even if a same named node does already exist. In case this cannot be achieved while keeping referential integrity of old and new nodes an exception is thrown. Existing nodes with conflicting identifiers or reference properties towards conflicting identifiers are removed in advance if they are contained in the [filter rules][4] to reduce the conflict potential.
 
-### Id Conflict Policies
+### Id Handling Policies
 
-The import behavior of packages with conflicting ids can be tweaked with `ImportOptions.setIdConflictPolicy(...)` per package or the default can be overridden in the [OSGi Configuration](config.html). For further details refer to the [JavaDoc][3]. The old behavior can be achieved with `IdConflictPolicy.LEGACY`.
+The import behavior of packages with can be tweaked with `ImportOptions.setIdConflictPolicy(...)` per package or the default can be overridden in the [OSGi Configuration](config.html). For further details refer to the [JavaDoc][3]. The old behavior can be achieved with `IdConflictPolicy.LEGACY`.
+
+Note that `CREATE_NEW_ID` will enforce creation of new identifiers, even when no node with a conflicting id exists.
 
 [1]: https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.8%20Referenceable%20Nodes
 [2]: https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.8.2%20Referential%20Integrity

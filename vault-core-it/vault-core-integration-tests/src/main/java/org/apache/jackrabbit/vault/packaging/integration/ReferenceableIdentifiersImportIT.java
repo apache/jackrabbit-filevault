@@ -465,7 +465,7 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         admin.move(srcPath, dstPath);
         assertNodeMissing(srcPath);
 
-        try (ZipVaultPackage pack = new ZipVaultPackage(pkgFile, false)) {
+        try (ZipVaultPackage pack = new ZipVaultPackage(pkgFile, true)) {
             ImportOptions opts = getDefaultOptions();
             opts.setIdConflictPolicy(policy);
             opts.setImportMode(ImportMode.UPDATE_PROPERTIES);

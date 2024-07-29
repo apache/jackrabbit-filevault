@@ -127,6 +127,7 @@ public class NodeStash {
             int propertyCount = 0;
             long start = System.currentTimeMillis();
             long lastTimeStamp = start;
+            boolean shouldWarn = false;
 
             NodeIterator nodeIterator = parent.getNodes();
 
@@ -144,9 +145,10 @@ public class NodeStash {
 
                     long now = System.currentTimeMillis();
                     if (childNodeCount > 0 && now - PROGRESS_LOG_INTERVAL > lastTimeStamp) {
-                        log.warn("Node stashing operation {}, still running after {}, nodes moved: {}", this,
-                                Duration.ofMillis(now - start), childNodeCount);
+                        log.warn("Node stashing operation for node {} (last: {} into {}), still running after {}, nodes moved: {}",
+                                this.path, path, tmp.getPath(), Duration.ofMillis(now - start), childNodeCount);
                         lastTimeStamp = now;
+                        shouldWarn = true;
                     }
 
                     if (importInfo != null) {
@@ -180,8 +182,13 @@ public class NodeStash {
             }
 
             String primaryType = parent.getPrimaryNodeType().getName();
-            log.debug("Stashed node {} of type {} as {} ({} properties, {} child nodes).", path, primaryType, tmp.getPath(),
-                    propertyCount, childNodeCount);
+            String message = String.format("Stashed node %s of type %s as %s (%d child nodes, %d properties, elapsed %s).", path, primaryType,
+                    tmp.getPath(), childNodeCount, propertyCount, Duration.ofMillis(System.currentTimeMillis() - start));
+            if (shouldWarn) {
+                log.warn(message);
+            } else {
+                log.debug(message);
+            }
 
             return primaryType;
         } catch (RepositoryException e) {
@@ -198,6 +205,12 @@ public class NodeStash {
      */
     public void recover(@NotNull ImportMode importMode, @Nullable ImportInfo importInfo) throws RepositoryException {
         // move the old child nodes back (independent of importMode)
+
+        int childNodeCount = 0;
+        long start = System.currentTimeMillis();
+        long lastTimeStamp = start;
+        boolean shouldWarn = false;
+
         if (tmpNode != null) {
             Node parent = session.getNode(path);
             NodeIterator iter = tmpNode.getNodes();
@@ -212,8 +225,18 @@ public class NodeStash {
                     } else {
                         String path = child.getPath();
                         session.move(path, newPath);
+                        childNodeCount += 1;
                         if (importInfo != null) {
                             importInfo.onStashed(path);
+                        }
+
+                        long now = System.currentTimeMillis();
+                        if (childNodeCount > 0 && now - PROGRESS_LOG_INTERVAL > lastTimeStamp) {
+                            log.warn(
+                                    "Node stashing recovery operation for node {} (last: {} into {}), still running after {}, nodes recovered: {}",
+                                    this.path, path, newPath, Duration.ofMillis(now - start), childNodeCount);
+                            lastTimeStamp = now;
+                            shouldWarn = true;
                         }
                     }
                 } catch (RepositoryException e) {
@@ -239,6 +262,12 @@ public class NodeStash {
             }
 
             log.debug("Restored properties and child nodes of {} from {} (mode: {}).", path, tmpNode.getPath(), importMode);
+
+            if (shouldWarn) {
+                String message = String.format("Stashed node recovery for %s done (%d child nodes, elapsed %s).", path,
+                        childNodeCount, Duration.ofMillis(System.currentTimeMillis() - start));
+                log.warn(message);
+            }
 
             if (!hasErrors) {
                 tmpNode.remove();

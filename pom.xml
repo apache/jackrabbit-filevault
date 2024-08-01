@@ -54,7 +54,7 @@
     </modules>
 
     <properties>
-        <project.build.outputTimestamp>2023-10-31T16:10:49Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2024-08-01T07:14:26Z</project.build.outputTimestamp>
         <!-- https://docs.sonarcloud.io/enriching/test-coverage/test-coverage-parameters/#javakotlinscalajvm -->
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/vault-coverage-aggregate/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>

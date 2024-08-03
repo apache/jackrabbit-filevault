@@ -24,7 +24,8 @@ vaultPipeline('ubuntu', 11, '3', {
   vaultStageSanityCheck()
   vaultStageBuild(['Windows'], [17,21], [], 'apache_jackrabbit-filevault', 
      [
-       mainBuildArguments: '-U clean site deploy -Pjacoco-report,dependency-check -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml'
+       simpleCredentialsMap: ['NIST_NVD_API_KEY': 'NIST_NVD_API_KEY'],
+       mainBuildArguments: '-U clean site deploy -Pjacoco-report,dependency-check -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml -DnvdApiKeyEnvironmentVariable=NIST_NVD_API_KEY'
      ]
   )
   vaultStageDeploy()

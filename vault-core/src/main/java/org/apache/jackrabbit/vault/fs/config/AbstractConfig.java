@@ -18,6 +18,8 @@
 package org.apache.jackrabbit.vault.fs.config;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +30,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
@@ -87,7 +88,7 @@ abstract public class AbstractConfig {
 
     public boolean load(File configFile) throws IOException, ConfigurationException {
         if (configFile.canRead()) {
-            try (InputStream input = FileUtils.openInputStream(configFile)) {
+            try (InputStream input = new FileInputStream(configFile)) {
                 return load(input);
             }
         }
@@ -120,7 +121,7 @@ abstract public class AbstractConfig {
     }
 
     public void save(File configFile) throws IOException {
-        try (OutputStream output = FileUtils.openOutputStream(configFile)) {
+        try (OutputStream output = new FileOutputStream(configFile)) {
             save(output);
         }
     }

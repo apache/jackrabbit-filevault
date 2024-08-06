@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
@@ -86,7 +85,7 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
             }
             if (isMeta || !cacheMetaOnly) {
                 String[] names = Text.explode(name, '/');
-                byte[] data = entry.isDirectory() ? null : IOUtils.toByteArray(zin);
+                byte[] data = entry.isDirectory() ? null : zin.readAllBytes();
                 if (names.length > 0) {
                     VirtualEntry je = root;
                     for (int i=0; i<names.length; i++) {

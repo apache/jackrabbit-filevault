@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.impl;
 import static org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,7 +38,6 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
@@ -60,7 +60,6 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
-
 import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.JcrConstants;
@@ -362,7 +361,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         // update this content
         Node contentNode = packNode.getNode(JcrConstants.JCR_CONTENT);
         
-        try (InputStream in = FileUtils.openInputStream(pack.getFile())){
+        try (InputStream in = new FileInputStream(pack.getFile())){
             // stay jcr 1.0 compatible
             //noinspection deprecation
             contentNode.setProperty(JcrConstants.JCR_DATA, in);
@@ -442,7 +441,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             // update this content
             Node packNode = pack.getNode();
             Node contentNode = packNode.getNode(JcrConstants.JCR_CONTENT);
-            try (InputStream in = FileUtils.openInputStream(dst.getFile())) {
+            try (InputStream in = new FileInputStream(dst.getFile())) {
                 // stay jcr 1.0 compatible
                 //noinspection deprecation
                 contentNode.setProperty(JcrConstants.JCR_DATA, in);

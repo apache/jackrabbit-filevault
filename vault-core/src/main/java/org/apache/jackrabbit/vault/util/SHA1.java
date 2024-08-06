@@ -18,12 +18,11 @@
 package org.apache.jackrabbit.vault.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import org.apache.commons.io.FileUtils;
 
 /**
  * SHA1 abstraction
@@ -104,7 +103,7 @@ public class SHA1 {
     }
 
     public static SHA1 digest(File file) throws IOException {
-        try (InputStream input = FileUtils.openInputStream(file)) {
+        try (InputStream input = new FileInputStream(file)) {
             return digest(input);
         }
     }

@@ -41,7 +41,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.Dumpable;
@@ -358,7 +357,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
      * @throws IOException if an I/O error occurs
      */
     public void load(final InputStream in) throws IOException, ConfigurationException {
-        byte[] tmpSource = source = IOUtils.toByteArray(in);
+        byte[] tmpSource = source = in.readAllBytes();
         try (InputStream inCopy = getSource()) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);

@@ -18,6 +18,7 @@
 package org.apache.jackrabbit.vault.fs.io;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,8 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
+i.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.ExportRoot;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.util.Constants;
@@ -110,7 +110,7 @@ public class FileArchive extends AbstractArchive {
         if (file == null || !file.isFile() || !file.canRead()) {
             return null;
         }
-        return FileUtils.openInputStream(file);
+        return new FileInputStream(file);
     }
 
     /**

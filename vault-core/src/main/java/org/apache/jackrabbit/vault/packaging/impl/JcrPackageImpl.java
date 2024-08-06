@@ -17,6 +17,9 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import static org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl.ARCHIVE_PACKAGE_ROOT_PATH;
+import static org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,10 +42,9 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.NodeTypeManager;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -74,14 +76,10 @@ import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl.ARCHIVE_PACKAGE_ROOT_PATH;
-import static org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
 
 /**
  * Implements a JcrPackage
@@ -323,9 +321,9 @@ public class JcrPackageImpl implements JcrPackage {
             } else {
                 File tmpFile = File.createTempFile("vaultpack", ".zip");
                 Binary bin = getData().getBinary();
-                try (FileOutputStream out = FileUtils.openOutputStream(tmpFile); 
+                try (FileOutputStream out = new FileOutputStream(tmpFile); 
                     InputStream in = bin.getStream()) {
-                    IOUtils.copy(in, out);
+                    in.transferTo(out);
                 } finally {
                     bin.dispose();
                 }

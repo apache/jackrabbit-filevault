@@ -33,7 +33,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.ArtifactHandler;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
@@ -85,7 +84,7 @@ public abstract class AbstractVaultFsConfig implements VaultFsConfig {
      */
     public static VaultFsConfig load(InputStream in, String name)
             throws ConfigurationException, IOException {
-        byte[] source = IOUtils.toByteArray(in);
+        byte[] source = in.readAllBytes();
         Document document = parse(new ByteArrayInputStream(source));
 
         Element doc = document.getDocumentElement();

@@ -30,7 +30,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.jetbrains.annotations.NotNull;
@@ -156,7 +155,7 @@ public final class CompressionUtil {
 
     static int seemsCompressible(@NotNull Artifact artifact) {
         try (InputStream stream = artifact.getInputStream()) {
-            byte[] sample = IOUtils.toByteArray(stream, SAMPLE_LENGTH);
+            byte[] sample = stream.readNBytes(SAMPLE_LENGTH);
             return isCompressible(sample, SAMPLE_LENGTH) ? 1 : -1;
         } catch (RepositoryException | IOException e) {
             log.warn(e.getMessage(), e);

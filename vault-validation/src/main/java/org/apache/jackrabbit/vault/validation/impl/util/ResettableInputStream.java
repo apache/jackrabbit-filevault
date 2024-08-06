@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
  * It uses a temporary file for buffering the given input stream, except for the case where it is already a {@link FileInputStream}
  * in which case it uses the seeking methods of that.
  */
+// TODO: Replace by pushback inputstream?
 public class ResettableInputStream extends InputStream {
 
     private final Path tmpFile;

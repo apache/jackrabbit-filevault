@@ -18,7 +18,6 @@
 package org.apache.jackrabbit.vault.fs.io;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -53,7 +52,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stax.StAXResult;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.NormalizingSaxFilter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
@@ -93,8 +91,9 @@ public class DocViewFormat {
 
         final boolean changed = originalCrc32.getValue() != formattedCrc32.getValue();
         if (changed && !dryRun) {
-            try (OutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
-                IOUtils.copy(new ByteArrayInputStream(formatted), out);
+            try (OutputStream out = new FileOutputStream(file);
+                 InputStream in = new ByteArrayInputStream(formatted) ) {
+                in.transferTo(out);
             }
         }
         return changed;

@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 
 /**
@@ -73,7 +72,7 @@ public class FileInputSource extends VaultInputSource {
             if (lineSeparator != null) {
                 return new LineInputStream(new FileInputStream(file), lineSeparator);
             } else {
-                return FileUtils.openInputStream(file);
+                return new FileInputStream(file);
             }
         } catch (IOException e) {
             return null;

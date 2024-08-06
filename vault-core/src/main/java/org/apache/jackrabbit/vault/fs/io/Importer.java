@@ -18,6 +18,7 @@
 package org.apache.jackrabbit.vault.fs.io;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -35,7 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.jcr.Node;
@@ -44,8 +44,6 @@ import javax.jcr.Session;
 import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.version.Version;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.api.security.authorization.PrincipalSetPolicy;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
@@ -1269,8 +1267,8 @@ public class Importer {
             } else {
                 log.debug("Copying patch {} to {}", name, target.getPath());
                 try (InputStream in = archive.getInputSource(e).getByteStream();
-                     OutputStream out = FileUtils.openOutputStream(target)) {
-                    IOUtils.copy(in, out);
+                     OutputStream out = new FileOutputStream(target)) {
+                    in.transferTo(out);
                 } catch (IOException e1) {
                     log.error("Error while copying patch.", e);
                 }

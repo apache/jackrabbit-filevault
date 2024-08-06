@@ -171,7 +171,7 @@ public class PlatformExporter extends AbstractExporter {
             case STREAM:
                 try (InputStream in = a.getInputStream();
                     OutputStream out = new FileOutputStream(local)) {
-                    IOUtils.copy(in, out);
+                    in.transferTo(out);
                 }
                 break;
         }

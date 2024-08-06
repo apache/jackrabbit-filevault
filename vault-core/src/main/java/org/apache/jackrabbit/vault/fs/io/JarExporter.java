@@ -190,7 +190,7 @@ public class JarExporter extends AbstractExporter {
 
             case STREAM:
                 try (InputStream in = a.getInputStream()) {
-                    IOUtils.copy(in, jOut);
+                    in.transferTo(jOut);
                 }
                 break;
         }
@@ -206,7 +206,7 @@ public class JarExporter extends AbstractExporter {
             ZipEntry e = new ZipEntry(relPath);
             exportInfo.update(ExportInfo.Type.ADD, e.getName());
             jOut.putNextEntry(e);
-            IOUtils.copy(in, jOut);
+            in.transferTo(jOut);
             jOut.closeEntry();
         } finally {
             in.close();
@@ -227,7 +227,7 @@ public class JarExporter extends AbstractExporter {
         if (!entry.isDirectory()) {
             // copy
             try (InputStream in = zip.getInputStream(entry)) {
-                IOUtils.copy(in, jOut);
+                in.transferTo(jOut);
             }
         }
         jOut.closeEntry();

@@ -30,7 +30,6 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.AccessType;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
@@ -167,7 +166,7 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
             tmpFile.deleteOnExit();
             try (FileOutputStream out = new FileOutputStream(tmpFile);
                  InputStream in = getValue().getBinary().getStream()) {
-                IOUtils.copy(in, out);
+                in.transferTo(out);
             }
         }
     }

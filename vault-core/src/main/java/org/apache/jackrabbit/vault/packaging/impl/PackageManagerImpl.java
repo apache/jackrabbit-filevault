@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.packaging.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,8 +32,6 @@ import java.util.Set;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.Mounter;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
@@ -52,6 +51,7 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.h2.store.fs.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -104,21 +104,17 @@ public class PackageManagerImpl implements PackageManager {
     @Override
     public VaultPackage assemble(Session s, ExportOptions opts, File file)
             throws IOException, RepositoryException {
-        OutputStream out = null;
         boolean isTmp = false;
         boolean success = false;
-        try {
+        try (OutputStream out = new FileOutputStream(file)) {
             if (file == null) {
                 file = File.createTempFile("filevault", ".zip");
                 isTmp = true;
             }
-            out = FileUtils.openOutputStream(file);
             assemble(s, opts, out);
-            IOUtils.closeQuietly(out);
             success = true;
             return new ZipVaultPackage(file, isTmp);
         } finally {
-            IOUtils.closeQuietly(out);
             if (isTmp && !success) {
                 FileUtils.deleteQuietly(file);
             }
@@ -179,7 +175,7 @@ public class PackageManagerImpl implements PackageManager {
             file = File.createTempFile("filevault", ".zip");
             isTmp = true;
         }
-        try (OutputStream out = FileUtils.openOutputStream(file);){
+        try (OutputStream out = new FileOutputStream(file);){
             rewrap(opts, src, out);
             success = true;
             VaultPackage pack =  new ZipVaultPackage(file, isTmp);

@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.fs.config;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,7 +34,6 @@ import java.util.Properties;
 import javax.jcr.NamespaceException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.jackrabbit.spi.commons.privilege.ParseException;
 import org.apache.jackrabbit.spi.commons.privilege.PrivilegeDefinitionReader;
@@ -346,8 +346,9 @@ public class DefaultMetaInf implements MetaInf {
             throws IOException {
         if (config != null) {
             File file = new File(metaDir, Constants.CONFIG_XML);
-            try (OutputStream output = FileUtils.openOutputStream(file)) {
-                IOUtils.copy(config.getSource(), output);
+            try (OutputStream output = new FileOutputStream(file);
+                InputStream in = config.getSource()) {
+                in.transferTo(output);
             }
         }
     }
@@ -373,8 +374,9 @@ public class DefaultMetaInf implements MetaInf {
             throws IOException {
         if (filter != null) {
             File file = new File(metaDir, Constants.FILTER_XML);
-            try (OutputStream output = FileUtils.openOutputStream(file)) {
-                IOUtils.copy(filter.getSource(), output);
+            try (OutputStream output = new FileOutputStream(file);
+                 InputStream in = filter.getSource()) {
+                in.transferTo(output);
             }
         }
     }
@@ -382,7 +384,7 @@ public class DefaultMetaInf implements MetaInf {
     protected void loadProperties(@NotNull File metaDir) throws IOException {
         File file = new File(metaDir, Constants.PROPERTIES_XML);
         if (file.isFile()) {
-            try (InputStream input = FileUtils.openInputStream(file)) {
+            try (InputStream input = new FileInputStream(file)) {
                 Properties properties = new Properties();
                 properties.loadFromXML(input);
                 this.properties = properties;
@@ -393,7 +395,7 @@ public class DefaultMetaInf implements MetaInf {
     protected void saveProperties(@NotNull File metaDir) throws IOException {
         if (properties != null) {
             File file = new File(metaDir, Constants.PROPERTIES_XML);
-            try (OutputStream output = FileUtils.openOutputStream(file)) {
+            try (OutputStream output = new FileOutputStream(file)) {
                 properties.storeToXML(output, "Custom Vault Properties", "utf-8");
             }
         }
@@ -402,7 +404,7 @@ public class DefaultMetaInf implements MetaInf {
     protected void loadPrivileges(@NotNull File metaDir) throws IOException {
         File file = new File(metaDir, Constants.PRIVILEGES_XML);
         if (file.isFile()) {
-            try (InputStream in = FileUtils.openInputStream(file)) {
+            try (InputStream in = new FileInputStream(file)) {
                 loadPrivileges(in, file.getPath());
             }
         }

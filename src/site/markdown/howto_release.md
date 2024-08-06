@@ -102,7 +102,7 @@ Release management tasks
     From the issue list you have the option to bulk update all of the included issues. 
     Just *Transition Issues* from *Resolved* to *Closed* and you are done!
 
-1. Update the Jackrabbit web site to point to the new release in <https://svn.apache.org/repos/asf/jackrabbit/site/trunk/src/site/markdown/downloads.md> and add a news entry to <https://svn.apache.org/repos/asf/jackrabbit/site/trunk/src/site/markdown/index.md>.
+1. Update the Jackrabbit web site to point to the new release in <https://github.com/apache/jackrabbit-site/blob/main/src/site/markdown/downloads.md> and add a news entry to <https://github.com/apache/jackrabbit-site/blob/main/src/site/markdown/index.md>.
 
 1. Send the release announcement **once** the web site and download mirrors have been synced as outlined in [Creating Releases](https://jackrabbit.apache.org/jcr/creating-releases.html#part-ii-after-the-release-vote)
 

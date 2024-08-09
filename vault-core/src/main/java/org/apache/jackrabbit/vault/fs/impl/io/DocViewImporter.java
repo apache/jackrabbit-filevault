@@ -991,12 +991,12 @@ public class DocViewImporter implements DocViewParserHandler {
         Optional<String> identifier = ni.getIdentifier();
 
         boolean isUuidProtected = false;
-        if (node.hasProperty(Property.JCR_UUID)) {
-            isUuidProtected = node.getProperty(Property.JCR_UUID).getDefinition().isProtected();
-        } else if (! session.getRepository().getDescriptor(Repository.REP_NAME_DESC).contains("Oak")) {
+        if (! session.getRepository().getDescriptor(Repository.REP_NAME_DESC).contains("Oak")) {
             // workaround for non-Oak repos that may not be able to add
             // mixin:referencable *after* setting jcr:uuid
             isUuidProtected = true;
+        } else if (node.hasProperty(Property.JCR_UUID)) {
+            isUuidProtected = node.getProperty(Property.JCR_UUID).getDefinition().isProtected();
         }
 
         // try to set uuid via sysview import if it differs from existing one

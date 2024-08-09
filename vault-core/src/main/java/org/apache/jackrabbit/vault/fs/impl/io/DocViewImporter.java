@@ -990,15 +990,13 @@ public class DocViewImporter implements DocViewParserHandler {
         Node updatedNode = null;
         Optional<String> identifier = ni.getIdentifier();
 
-        String nodeUUID = null;
-        try {
-            nodeUUID = node.getUUID();
-        } catch (RepositoryException ex) {
-            // node not referenceable
+        boolean isUuidProtected = false;
+        if (node.hasProperty(Property.JCR_UUID)) {
+            isUuidProtected = node.getProperty(Property.JCR_UUID).getDefinition().isProtected();
         }
 
         // try to set uuid via sysview import if it differs from existing one
-        if (identifier.isPresent() && nodeUUID != null && !nodeUUID.equals(identifier.get())
+        if (identifier.isPresent() && isUuidProtected && !node.getIdentifier().equals(identifier.get())
                 && !"rep:root".equals(ni.getPrimaryType().orElse(""))) {
             long startTime = System.currentTimeMillis();
             String previousIdentifier = node.getIdentifier();

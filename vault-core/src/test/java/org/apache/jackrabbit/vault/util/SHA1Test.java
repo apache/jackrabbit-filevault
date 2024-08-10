@@ -17,16 +17,16 @@
 
 package org.apache.jackrabbit.vault.util;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-/**
- * {@code MD5Test}...
- */
-public class SHA1Test extends TestCase {
+public class SHA1Test {
 
     private static String testData = "Hello, World\n";
     private static String testString = "4ab299c8ad6ed14f31923dd94f8b5f5cb89dfb54";
@@ -39,12 +39,14 @@ public class SHA1Test extends TestCase {
             (byte) 0xb8, (byte) 0x9d, (byte) 0xfb, (byte) 0x54
     };
 
+    @Test
     public void testCreateInt() {
         SHA1 sha = new SHA1(testInts[0], testInts[1], testInts[2], testInts[3], testInts[4]);
         assertEquals(testString, sha.toString());
-        assertEquals(testBytes, sha.getBytes());
+        assertArrayEquals(testBytes, sha.getBytes());
     }
 
+    @Test
     public void testCreateBytes() {
         SHA1 sha = new SHA1(testBytes);
         for (int i=0; i<testInts.length; i++) {
@@ -53,6 +55,7 @@ public class SHA1Test extends TestCase {
         assertEquals(testString, sha.toString());
     }
 
+    @Test
     public void testCreateString() {
         SHA1 sha = new SHA1(testString);
         for (int i=0; i<testInts.length; i++) {
@@ -60,12 +63,14 @@ public class SHA1Test extends TestCase {
         }
     }
 
+    @Test
     public void testSmall() {
         SHA1 sha = new SHA1(0, 0, 0, 0, 0);
         assertEquals("0000000000000000000000000000000000000000", sha.toString());
     }
 
 
+    @Test
     public void testDigest() throws IOException {
         try (InputStream in = new ByteArrayInputStream(testData.getBytes())) {
             SHA1 sha1 = SHA1.digest(in);
@@ -73,11 +78,4 @@ public class SHA1Test extends TestCase {
         }
     }
 
-    private void assertEquals(byte[] expected, byte[] result) {
-        for (int i=0; i< expected.length; i++) {
-            if (expected[i] != result[i]) {
-                fail("expected: " + expected[i] + " but was:" + result[i]);
-            }
-        }
-    }
 }

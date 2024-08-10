@@ -17,18 +17,21 @@
 
 package org.apache.jackrabbit.vault.fs.api;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import javax.jcr.SimpleCredentials;
 
 import org.apache.jackrabbit.util.Text;
-
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * {@code RepAddrTest}...
  *
  */
-public class RepositoryAddressTest extends TestCase {
+public class RepositoryAddressTest {
 
+    @Test
     public void testEmpty() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("url://localhost:1234/");
         assertEquals("scheme", "url", ra.getSpecificURI().getScheme());
@@ -40,6 +43,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "url://localhost:1234/-/jcr:root", ra.toString());
     }
 
+    @Test
     public void testSpaces() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("url://localhost:1234/-/jcr:root/etc/packages/a%20b");
         assertEquals("scheme", "url", ra.getSpecificURI().getScheme());
@@ -51,6 +55,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "url://localhost:1234/-/jcr:root/etc/packages/a%20b", ra.toString());
     }
 
+    @Test
     public void testReallyEmpty() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("url://localhost:1234");
         assertEquals("scheme", "url", ra.getSpecificURI().getScheme());
@@ -62,6 +67,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "url://localhost:1234/-/jcr:root", ra.toString());
     }
 
+    @Test
     public void testWspOnly() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("url://localhost:1234/workspace");
         assertEquals("scheme", "url", ra.getSpecificURI().getScheme());
@@ -73,6 +79,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "url://localhost:1234/workspace/jcr:root", ra.toString());
     }
 
+    @Test
     public void testWspOnlyTrailingSlash() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("url://localhost:1234/workspace/");
         assertEquals("scheme", "url", ra.getSpecificURI().getScheme());
@@ -84,6 +91,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "url://localhost:1234/workspace/jcr:root", ra.toString());
     }
 
+    @Test
     public void testPrefix() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("http://localhost:1234/pfx1/pfx2/workspace");
         assertEquals("scheme", "http", ra.getSpecificURI().getScheme());
@@ -95,6 +103,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/workspace/jcr:root", ra.toString());
     }
 
+    @Test
     public void testRoot() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("http://localhost:1234/pfx1/pfx2/workspace/jcr:root");
         assertEquals("scheme", "http", ra.getSpecificURI().getScheme());
@@ -106,6 +115,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/workspace/jcr:root", ra.toString());
     }
 
+    @Test
     public void testRootTrailingSlash() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("http://localhost:1234/pfx1/pfx2/workspace/jcr:root/");
         assertEquals("scheme", "http", ra.getSpecificURI().getScheme());
@@ -117,6 +127,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/workspace/jcr:root", ra.toString());
     }
 
+    @Test
     public void testPath() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("http://localhost:1234/pfx1/pfx2/workspace/jcr:root/foo/bar");
         assertEquals("scheme", "http", ra.getSpecificURI().getScheme());
@@ -128,6 +139,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/workspace/jcr:root/foo/bar", ra.toString());
     }
 
+    @Test
     public void testPathTrailingSlash() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("http://localhost:1234/pfx1/pfx2/workspace/jcr:root/foo/bar/");
         assertEquals("scheme", "http", ra.getSpecificURI().getScheme());
@@ -139,6 +151,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/workspace/jcr:root/foo/bar", ra.toString());
     }
 
+    @Test
     public void testResolve() throws Exception {
         RepositoryAddress ra = 
                 new RepositoryAddress("http://localhost:1234/pfx1/pfx2/workspace")
@@ -152,6 +165,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/workspace/jcr:root/foo/bar", ra.toString());
     }
 
+    @Test
     public void testResolveSpecial() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("http://localhost:1234/pfx1/pfx2/workspace")
@@ -165,6 +179,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/workspace/jcr:root/foo%20bar/bar", ra.toString());
     }
 
+    @Test
     public void testResolveDefaultWsp() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("http://localhost:1234/pfx1/pfx2/-")
@@ -178,6 +193,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/-/jcr:root/foo/bar", ra.toString());
     }
 
+    @Test
     public void testResolveRel() throws Exception {
         RepositoryAddress ra = 
                 new RepositoryAddress("http://localhost:1234/pfx1/pfx2/workspace/jcr:root/foo")
@@ -191,6 +207,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/workspace/jcr:root/foo/bar", ra.toString());
     }
 
+    @Test
     public void testResolveRelSpecial() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("http://localhost:1234/pfx1/pfx2/workspace/jcr:root/foo%20bar")
@@ -204,6 +221,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/workspace/jcr:root/foo%20bar/foo%20bar", ra.toString());
     }
 
+    @Test
     public void testResolveRelDefaultWsp() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("http://localhost:1234/pfx1/pfx2/-/jcr:root/foo")
@@ -217,6 +235,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/-/jcr:root/foo/bar", ra.toString());
     }
 
+    @Test
     public void testDefaultWorkspace() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("http://localhost:1234/pfx1/pfx2/-/jcr:root/foo");
@@ -229,6 +248,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:1234/pfx1/pfx2/-/jcr:root/foo", ra.toString());
     }
 
+    @Test
     public void testRmiBWC() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("rmi://localhost:1234/crx");
@@ -241,6 +261,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "rmi://localhost:1234/crx/-/jcr:root", ra.toString());
     }
 
+    @Test
     public void testRmiBWC2() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("rmi://localhost:1234/crx/crx.default");
@@ -253,6 +274,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "rmi://localhost:1234/crx/crx.default/jcr:root", ra.toString());
     }
 
+    @Test
     public void testRmiBWC3() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("rmi://localhost:1234/crx/crx.default/foo/bar");
@@ -265,6 +287,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "rmi://localhost:1234/crx/crx.default/jcr:root/foo/bar", ra.toString());
     }
 
+    @Test
     public void testHttpConvenience1() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("http://localhost:8080/");
@@ -277,6 +300,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:8080/crx/server/-/jcr:root", ra.toString());
     }
 
+    @Test
     public void testHttpConvenience2() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("http://localhost:8080/crx");
@@ -289,6 +313,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:8080/crx/server/-/jcr:root", ra.toString());
     }
 
+    @Test
     public void testHttpConvenience3() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("http://localhost:8080/crx/server");
@@ -301,6 +326,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:8080/crx/server/-/jcr:root", ra.toString());
     }
 
+    @Test
     public void testHttpConvenience4() throws Exception {
         RepositoryAddress ra =
                 new RepositoryAddress("http://localhost:8080/-/jcr:root");
@@ -313,6 +339,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "http://localhost:8080/-/jcr:root", ra.toString());
     }
 
+    @Test
     public void testRelative() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("/");
         assertEquals("scheme", null, ra.getSpecificURI().getScheme());
@@ -324,6 +351,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "/-/jcr:root", ra.toString());
     }
 
+    @Test
     public void testRelative1() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("/wsp/");
         assertEquals("scheme", null, ra.getSpecificURI().getScheme());
@@ -335,6 +363,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "/wsp/jcr:root", ra.toString());
     }
 
+    @Test
     public void testRelative2() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("/wsp/bar");
         assertEquals("scheme", null, ra.getSpecificURI().getScheme());
@@ -346,6 +375,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "/wsp/jcr:root/bar", ra.toString());
     }
 
+    @Test
     public void testRelative3() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("/wsp/foo/bar");
         assertEquals("scheme", null, ra.getSpecificURI().getScheme());
@@ -357,6 +387,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "/wsp/jcr:root/foo/bar", ra.toString());
     }
 
+    @Test
     public void testRelative4() throws Exception {
         RepositoryAddress ra = new RepositoryAddress("/-/foo/bar");
         assertEquals("scheme", null, ra.getSpecificURI().getScheme());
@@ -368,6 +399,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("toString", "/-/jcr:root/foo/bar", ra.toString());
     }
 
+    @Test
     public void testCopyIsSame() throws Exception {
         String uri = "http://admin:admin@localhost:4502/crx/server/-/jcr:root/content/dam/my-site";
         RepositoryAddress ra = new RepositoryAddress(uri);
@@ -375,6 +407,7 @@ public class RepositoryAddressTest extends TestCase {
         assertEquals("uri", uri, ra1.getURI().toString());
     }
 
+    @Test
     public void testToStringHttpWithUserInfo() throws Exception {
         String creds = "foo:bar";
         RepositoryAddress ra = new RepositoryAddress("http://" + creds + "@localhost:8080/-/jcr:root");
@@ -383,6 +416,7 @@ public class RepositoryAddressTest extends TestCase {
         assertFalse("toString should not contain credentials [" + toString + "]", toString.contains(creds));
     }
 
+    @Test
     public void testToStringHttpWithUserInfoEscaped() throws Exception {
         String creds = "my-user:" + Text.escape("p!@#$%^&*ass");
         RepositoryAddress ra = new RepositoryAddress("http://" + creds + "@localhost:8080/-/jcr:root");
@@ -391,6 +425,7 @@ public class RepositoryAddressTest extends TestCase {
         assertFalse("toString should not contain credentials [" + toString + "]", toString.contains(creds));
     }
 
+    @Test
     public void testGetCredentials() throws Exception {
         String user = "my-user";
         String password = "p!@#$%^&*ass";

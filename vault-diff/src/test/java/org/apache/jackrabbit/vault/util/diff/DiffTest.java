@@ -16,30 +16,35 @@
  */
 package org.apache.jackrabbit.vault.util.diff;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
-
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * {@code DiffTest}...
  */
-public class DiffTest extends TestCase {
+public class DiffTest {
 
+    @Test
     public void testBaseLeft0() throws IOException {
         doTest("base.txt", "left.txt", 0, "base-left-0.txt");
     }
 
+    @Test
     public void testBaseLeft1() throws IOException {
         doTest("base.txt", "left.txt", 1, "base-left-1.txt");
     }
 
+    @Test
     public void testBaseLeft2() throws IOException {
         doTest("base.txt", "left.txt", 2, "base-left-2.txt");
     }
 
+    @Test
     public void testBaseLeft100() throws IOException {
         doTest("base.txt", "left.txt", 100, "base-left-100.txt");
     }

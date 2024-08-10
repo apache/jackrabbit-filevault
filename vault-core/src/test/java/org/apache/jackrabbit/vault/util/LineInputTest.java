@@ -17,20 +17,22 @@
 
 package org.apache.jackrabbit.vault.util;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
-
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * {@code LineOutputTest}...
  *
  */
-public class LineInputTest extends TestCase {
+public class LineInputTest {
 
+    @Test
     public void testInput0() throws Exception {
         byte[] in = new byte[]{0,0,0,0x0a,0,0,0,0x0a,0,0,0};
         byte[] u = new byte[]{0,0,0,0x0a,0,0,0,0x0a,0,0,0};
@@ -38,6 +40,7 @@ public class LineInputTest extends TestCase {
         doTest(in, u, w);
     }
 
+    @Test
     public void testInput1() throws Exception {
         byte[] in = new byte[]{0,0,0,0x0a,0,0,0,0x0a,0,0,0x0a};
         byte[] u = new byte[]{0,0,0,0x0a,0,0,0,0x0a,0,0,0x0a};
@@ -45,6 +48,7 @@ public class LineInputTest extends TestCase {
         doTest(in, u, w);
     }
 
+    @Test
     public void testInput2() throws Exception {
         byte[] in = new byte[]{0,0,0,0x0a,0x0d,0,0,0,0x0a,0x0d,0,0,0x0a,0x0d};
         byte[] u = new byte[]{0,0,0,0x0a,0,0,0,0x0a,0,0,0x0a};
@@ -52,6 +56,7 @@ public class LineInputTest extends TestCase {
         doTest(in, u, w);
     }
 
+    @Test
     public void testInput3() throws Exception {
         byte[] in = new byte[]{0,0,0,0x0a,0x0a,0,0,0,0x0d,0x0d,0,0,0x0a,0x0d};
         byte[] u = new byte[]{0,0,0,0x0a,0x0a,0,0,0,0x0a,0x0a,0,0,0x0a};
@@ -59,6 +64,7 @@ public class LineInputTest extends TestCase {
         doTest(in, u, w);
     }
 
+    @Test
     public void testInput4() throws Exception {
         byte[] in = "bla */\r\n\r\n/** bla */\r\n".getBytes();
         byte[] u = "bla */\n\n/** bla */\n".getBytes();
@@ -66,6 +72,7 @@ public class LineInputTest extends TestCase {
         doTest(in, u, w);
     }
 
+    @Test
     public void testInput5() throws Exception {
         byte[] in = "bla */\n\n\n/** bla */\n".getBytes();
         byte[] u = "bla */\n\n\n/** bla */\n".getBytes();
@@ -73,6 +80,7 @@ public class LineInputTest extends TestCase {
         doTest(in, u, w);
     }
 
+    @Test
     public void testInput6() throws Exception {
         byte[] in = "bla */\r\n\r\n\r\n\r\n/** bla */\r\n".getBytes();
         byte[] u = "bla */\n\n\n\n/** bla */\n".getBytes();
@@ -80,6 +88,7 @@ public class LineInputTest extends TestCase {
         doTest(in, u, w);
     }
 
+    @Test
     public void testLarge1() throws Exception {
         byte[] in = new byte[3*8192];
         Arrays.fill(in, (byte) 20);
@@ -94,6 +103,7 @@ public class LineInputTest extends TestCase {
         doTest(in, u, w);
     }
 
+    @Test
     public void testLarge2() throws Exception {
         byte[] in = new byte[3*8192];
         Arrays.fill(in, (byte) 20);
@@ -108,6 +118,7 @@ public class LineInputTest extends TestCase {
         doTest(in, u, w);
     }
 
+    @Test
     public void testLarge3() throws Exception {
         byte[] in = new byte[3*8192];
         Arrays.fill(in, (byte) 20);

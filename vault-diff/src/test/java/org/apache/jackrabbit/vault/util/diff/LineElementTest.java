@@ -16,13 +16,16 @@
  */
 package org.apache.jackrabbit.vault.util.diff;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * {@code LineElementTest}...
  */
-public class LineElementTest extends TestCase {
+public class LineElementTest {
 
+    @Test
     public void testLineElements() {
         String[] lines = new String[]{
                 "a\n",
@@ -34,6 +37,7 @@ public class LineElementTest extends TestCase {
         test(lines);
     }
 
+    @Test
     public void testLargeLineElements() {
         String[] lines = new String[4];
         StringBuffer buf = new StringBuffer(10001);
@@ -48,6 +52,7 @@ public class LineElementTest extends TestCase {
         test(lines);
     }
 
+    @Test
     public void testManyLineElements() {
         String[] lines = new String[1024];
         StringBuffer buf = new StringBuffer(32);

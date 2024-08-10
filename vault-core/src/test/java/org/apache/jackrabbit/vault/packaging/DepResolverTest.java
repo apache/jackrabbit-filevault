@@ -17,16 +17,19 @@
 
 package org.apache.jackrabbit.vault.packaging;
 
+import static org.junit.Assert.fail;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * {@code DepResolverTest}...
  */
-public class DepResolverTest extends TestCase {
+public class DepResolverTest {
 
     public static PackageId P1 = PackageId.fromString("foo:pack1:1.0");
     public static PackageId P2 = PackageId.fromString("foo:pack2:1.0");
@@ -40,6 +43,7 @@ public class DepResolverTest extends TestCase {
     public static Dependency D4 = Dependency.fromString("foo:pack4:1.0");
     public static Dependency D5 = Dependency.fromString("foo:pack5:1.0");
 
+    @Test
     public void testLinear() throws CyclicDependencyException {
         Map<PackageId, Dependency[]> deps = new LinkedHashMap<PackageId, Dependency[]>();
         // p1 -> p2, p3
@@ -59,6 +63,7 @@ public class DepResolverTest extends TestCase {
         assertEquals("package list", expect, result);
     }
 
+    @Test
     public void testLinear2() throws CyclicDependencyException {
         Map<PackageId, Dependency[]> deps = new LinkedHashMap<PackageId, Dependency[]>();
         // p3 -> p4, p5
@@ -78,6 +83,7 @@ public class DepResolverTest extends TestCase {
         assertEquals("package list", expect, result);
     }
 
+    @Test
     public void testMissing() throws Exception {
         Map<PackageId, Dependency[]> deps = new LinkedHashMap<PackageId, Dependency[]>();
         // p3 -> p4, p5
@@ -95,6 +101,7 @@ public class DepResolverTest extends TestCase {
         assertEquals("package list", expect, result);
     }
 
+    @Test
     public void testCircular() throws Exception {
         Map<PackageId, Dependency[]> deps = new LinkedHashMap<PackageId, Dependency[]>();
         // p1 -> p2
@@ -120,6 +127,6 @@ public class DepResolverTest extends TestCase {
         for (PackageId pid: result) {
             resStr+=pid.toString() + "\n";
         }
-        assertEquals(msg, expStr, resStr);
+        Assert.assertEquals(msg, expStr, resStr);
     }
 }

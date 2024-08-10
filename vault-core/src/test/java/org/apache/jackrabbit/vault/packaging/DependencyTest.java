@@ -17,13 +17,17 @@
 
 package org.apache.jackrabbit.vault.packaging;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * {@code DependencyTest}...
  */
-public class DependencyTest extends TestCase {
+public class DependencyTest {
 
+    @Test
     public void testFromString() {
         Dependency d = Dependency.fromString("group:name:[1.0,2.0]");
         assertEquals("group", d.getGroup());
@@ -31,6 +35,7 @@ public class DependencyTest extends TestCase {
         assertEquals("[1.0,2.0]", d.getRange().toString());
     }
 
+    @Test
     public void testFromString2() {
         Dependency d = Dependency.fromString("name");
         assertEquals("", d.getGroup());
@@ -38,6 +43,7 @@ public class DependencyTest extends TestCase {
         assertEquals(VersionRange.INFINITE, d.getRange());
     }
 
+    @Test
     public void testFromString3() {
         Dependency d = Dependency.fromString("group:name");
         assertEquals("group", d.getGroup());
@@ -45,6 +51,7 @@ public class DependencyTest extends TestCase {
         assertEquals(VersionRange.INFINITE, d.getRange());
     }
 
+    @Test
     public void testFromString4() {
         Dependency d = Dependency.fromString("foo/bar/group/name");
         assertEquals("foo/bar/group", d.getGroup());
@@ -52,6 +59,7 @@ public class DependencyTest extends TestCase {
         assertEquals(VersionRange.INFINITE, d.getRange());
     }
 
+    @Test
     public void testFromString41() {
         Dependency d = Dependency.fromString("foo/bar/group:name");
         assertEquals("foo/bar/group", d.getGroup());
@@ -59,6 +67,7 @@ public class DependencyTest extends TestCase {
         assertEquals(VersionRange.INFINITE, d.getRange());
     }
 
+    @Test
     public void testFromString5() {
         Dependency d = Dependency.fromString("foo/bar/group/name:[1.0,2.0]");
         assertEquals("foo/bar/group", d.getGroup());
@@ -66,32 +75,38 @@ public class DependencyTest extends TestCase {
         assertEquals("[1.0,2.0]", d.getRange().toString());
     }
 
+    @Test
     public void testToString() {
         Dependency d = new Dependency("group", "name", VersionRange.fromString("[1.0, 2.0]"));
         assertEquals("group:name:[1.0,2.0]", d.toString());
     }
 
+    @Test
     public void testToString2() {
         Dependency d = new Dependency("", "name", VersionRange.fromString("[1.0, 2.0]"));
         assertEquals(":name:[1.0,2.0]", d.toString());
     }
 
+    @Test
     public void testToString3() {
         Dependency d = new Dependency("", "name", null);
         assertEquals("name", d.toString());
     }
 
+    @Test
     public void testToString4() {
         Dependency d = new Dependency("group", "name", null);
         assertEquals("group:name", d.toString());
     }
 
+    @Test
     public void testToString5() {
         PackageId id = new PackageId("group", "name", Version.EMPTY);
         Dependency d = new Dependency(id);
         assertEquals("group:name", d.toString());
     }
 
+    @Test
     public void testParse() {
         Dependency[] d = Dependency.parse("name1,group2:name2,group3:name3:1.0,group4:name4:[1.0,2.0],:name5:[1.0,2.0]");
         assertEquals(5,d.length);
@@ -102,24 +117,28 @@ public class DependencyTest extends TestCase {
         assertEquals(":name5:[1.0,2.0]", d[4].toString());
     }
 
+    @Test
     public void testMatches() {
         PackageId id = PackageId.fromString("apache/jackrabbit/product:jcr-content:5.5.0-SNAPSHOT.20111116");
         Dependency d = Dependency.fromString("apache/jackrabbit/product:jcr-content:[5.5.0-SNAPSHOT,)");
         assertTrue(d.matches(id));
     }
 
+    @Test
     public void testAddDependency() {
         Dependency[] d = Dependency.parse("n1,g2:n2,g3:n3:1,g4:n4:[1,2]");
         String expected = "n1,g2:n2,g3:n3:1,g4:n4:[1,2],n5:g5:[1,2]";
         assertEquals(expected, Dependency.toString(DependencyUtil.add(d, Dependency.fromString("n5:g5:[1,2]"))));
     }
 
+    @Test
     public void testAddDependencyExisting() {
         Dependency[] d = Dependency.parse("n1,g2:n2,g3:n3:1,g4:n4:[1,2]");
         String expected = "n1,g2:n2,g3:n3:1,g4:n4:[1,2]";
         assertEquals(expected, Dependency.toString(DependencyUtil.add(d, Dependency.fromString("g3:n3"))));
     }
 
+    @Test
     public void testAddDependencyNullName() {
         Dependency[] d = Dependency.parse("n1,g2:n2,g3:n3:1,g4:n4:[1,2]");
         String expected = "n1,g2:n2,g3:n3:1,g4:n4:[1,2],g3";

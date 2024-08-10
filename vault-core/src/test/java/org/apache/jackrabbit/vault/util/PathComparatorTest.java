@@ -17,21 +17,24 @@
 
 package org.apache.jackrabbit.vault.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * {@code PathComparatorTest}...
  *
  */
-public class PathComparatorTest extends TestCase {
+public class PathComparatorTest {
 
+    @Test
     public void test() {
         doTest("/a", "/a", 0);
         doTest("/a", "/b", -1);
         doTest("/a1foo", "/a/foo", -1);
         doTest("/a/b/c1foo", "/a/b/c/foo", -1);
     }
-    
+
     private void doTest(String left, String right, int result) {
         PathComparator c = new PathComparator();
         int test = c.compare(left, right);

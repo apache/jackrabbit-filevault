@@ -16,52 +16,62 @@
  */
 package org.apache.jackrabbit.vault.util.diff;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * {@code Diff3Test}...
  */
-public class Diff3Test extends TestCase {
+public class Diff3Test {
 
     private static final String base = "a,b,c,d,e,f,g,";
 
+    @Test
     public void testModifyNothing() {
         doTest(base, base, base, base, false);
     }
-    
+
+    @Test
     public void testModify() {
         String change = "a,b,c2,d,e,f,g,";
         doTest(base, change, base, change, false);
         doTest(base, base, change, change, false);
     }
 
+    @Test
     public void testInsert() {
         String change = "a,b,c,cc,d,e,f,g,";
         doTest(base, change, base, change, false);
         doTest(base, base, change, change, false);
     }
 
+    @Test
     public void testDelete() {
         String change = "a,b,f,g,";
         doTest(base, change, base, change, false);
         doTest(base, base, change, change, false);
     }
 
+    @Test
     public void testModifySame() {
         String change = "a,b,c2,d,e,f,g,";
         doTest(base, change, change, change, false);
     }
 
+    @Test
     public void testDeleteBoth() {
         String change = "a,b,f,g,";
         doTest(base, change, change, change, false);
     }
 
+    @Test
     public void testInsertBoth() {
         String change = "a,b,c,cc,ccc,d,e,f,g,";
         doTest(base, change, change, change, false);
     }
 
+    @Test
     public void testDeleteInclusive() {
         String left = "a,b,e,f,g,";
         String right = "a,b,g,";
@@ -69,6 +79,7 @@ public class Diff3Test extends TestCase {
         doTest(base, left, right, result, true);
     }
 
+    @Test
     public void testDeleteAndInsertSame() {
         String left = "a,b,c2,e,f,g,";
         String right = "a,b,c2,g,";
@@ -76,6 +87,7 @@ public class Diff3Test extends TestCase {
         doTest(base, left, right, result, true);
     }
 
+    @Test
     public void testModifyDifferent() {
         String left  = "a,b,c1,d1,e,f,g,";
         String right = "a,b,c2,d2,e,f,g,";
@@ -83,6 +95,7 @@ public class Diff3Test extends TestCase {
         doTest(base, left, right, result, true);
     }
 
+    @Test
     public void testInsertLeftModifyRight() {
         String left  = "a,b,b1,c,d,e,f,g,";
         String right = "a,b,c2,d,e,f,g,";
@@ -90,6 +103,7 @@ public class Diff3Test extends TestCase {
         doTest(base, left, right, result, true);
     }
 
+    @Test
     public void testDeleteLeftModifyRight() {
         String left = "a,b,e,f,g,";
         String right = "a,b,c2,d2,e,f,g,";
@@ -97,6 +111,7 @@ public class Diff3Test extends TestCase {
         doTest(base, left, right, result, true);
     }
 
+    @Test
     public void testDeleteSameInsertDifferent() {
         String left = "a,b,b1,b2,g,";
         String right = "a,b,c1,g,";
@@ -104,6 +119,7 @@ public class Diff3Test extends TestCase {
         doTest(base, left, right, result, true);
     }
 
+    @Test
     public void testDeleteOverlapping() {
         String left = "a,f,g,";
         String right = "a,b,c,g,";
@@ -111,6 +127,7 @@ public class Diff3Test extends TestCase {
         doTest(base, left, right, result, true);
     }
 
+    @Test
     public void testNoLastEOL() {
         String left = "a,b,c";
         String right = "a,b,c";

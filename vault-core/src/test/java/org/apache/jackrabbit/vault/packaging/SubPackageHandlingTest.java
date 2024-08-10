@@ -17,25 +17,30 @@
 
 package org.apache.jackrabbit.vault.packaging;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * {@code SubPackageHandlingTest}...
  */
-public class SubPackageHandlingTest extends TestCase {
+public class SubPackageHandlingTest {
 
+    @Test
     public void testDefault() {
         SubPackageHandling sp = new SubPackageHandling();
         assertEquals(SubPackageHandling.Option.INSTALL, sp.getOption(PackageId.fromString("foo:bar")));
         assertEquals(SubPackageHandling.Option.INSTALL, sp.getOption(PackageId.fromString("foo:bar:1.0")));
     }
 
+    @Test
     public void testStaticDefault() {
         SubPackageHandling sp = SubPackageHandling.DEFAULT;
         assertEquals(SubPackageHandling.Option.INSTALL, sp.getOption(PackageId.fromString("foo:bar")));
         assertEquals(SubPackageHandling.Option.INSTALL, sp.getOption(PackageId.fromString("foo:bar:1.0")));
     }
 
+    @Test
     public void testMatchAll() {
         SubPackageHandling sp = new SubPackageHandling();
         sp.getEntries().add(new SubPackageHandling.Entry("*", "*", SubPackageHandling.Option.ADD));
@@ -43,6 +48,7 @@ public class SubPackageHandlingTest extends TestCase {
         assertEquals(SubPackageHandling.Option.ADD, sp.getOption(PackageId.fromString("foo:bar:1.0")));
     }
 
+    @Test
     public void testMatchAllGroup() {
         SubPackageHandling sp = new SubPackageHandling();
         sp.getEntries().add(new SubPackageHandling.Entry("foo", "*", SubPackageHandling.Option.ADD));
@@ -51,6 +57,7 @@ public class SubPackageHandlingTest extends TestCase {
         assertEquals(SubPackageHandling.Option.INSTALL, sp.getOption(PackageId.fromString("noo:bar:1.0")));
     }
 
+    @Test
     public void testMatchAllPackage() {
         SubPackageHandling sp = new SubPackageHandling();
         sp.getEntries().add(new SubPackageHandling.Entry("*", "bar", SubPackageHandling.Option.ADD));
@@ -59,6 +66,7 @@ public class SubPackageHandlingTest extends TestCase {
         assertEquals(SubPackageHandling.Option.INSTALL, sp.getOption(PackageId.fromString("foo:baz:1.0")));
     }
 
+    @Test
     public void testMatchSpecific() {
         SubPackageHandling sp = new SubPackageHandling();
         sp.getEntries().add(new SubPackageHandling.Entry("foo", "bar", SubPackageHandling.Option.ADD));
@@ -67,6 +75,7 @@ public class SubPackageHandlingTest extends TestCase {
         assertEquals(SubPackageHandling.Option.INSTALL, sp.getOption(PackageId.fromString("foo:baz:1.0")));
     }
 
+    @Test
     public void testMatchOrder() {
         SubPackageHandling sp = new SubPackageHandling();
         sp.getEntries().add(new SubPackageHandling.Entry("foo", "*", SubPackageHandling.Option.ADD));
@@ -75,6 +84,7 @@ public class SubPackageHandlingTest extends TestCase {
         assertEquals(SubPackageHandling.Option.EXTRACT, sp.getOption(PackageId.fromString("foo:bar")));
     }
 
+    @Test
     public void testParse() {
         assertEquals("", SubPackageHandling.fromString("").getString());
         assertEquals("foo:bar", SubPackageHandling.fromString("foo:bar").getString());

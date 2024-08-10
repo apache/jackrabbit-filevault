@@ -18,7 +18,7 @@ package org.apache.jackrabbit.vault.fs.api;
 
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * {@code PathMappingTest}...

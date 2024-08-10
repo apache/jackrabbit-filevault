@@ -17,16 +17,19 @@
 
 package org.apache.jackrabbit.vault.util;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * {@code MD5Test}...
  */
-public class MD5Test extends TestCase {
+public class MD5Test {
 
     private static String testData = "Hello, World";
     private static String testString = "82bb413746aee42f89dea2b59614f9ef";
@@ -39,12 +42,14 @@ public class MD5Test extends TestCase {
             (byte) 0x96, (byte) 0x14, (byte) 0xf9, (byte) 0xef
     };
 
+    @Test
     public void testCreateLong() {
         MD5 md5 = new MD5(testMSB, testLSB);
         assertEquals(testString, md5.toString());
-        assertEquals(testBytes, md5.getBytes());
+        assertArrayEquals(testBytes, md5.getBytes());
     }
 
+    @Test
     public void testCreateBytes() {
         MD5 md5 = new MD5(testBytes);
         assertEquals(testString, md5.toString());
@@ -52,30 +57,24 @@ public class MD5Test extends TestCase {
         assertEquals(testLSB, md5.getLsb());
     }
 
+    @Test
     public void testCreateString() {
         MD5 md5 = new MD5(testString);
         assertEquals(testMSB, md5.getMsb());
         assertEquals(testLSB, md5.getLsb());
     }
 
+    @Test
     public void testSmall() {
         MD5 md5 = new MD5(0, 0);
         assertEquals("00000000000000000000000000000000", md5.toString());
     }
 
-
+    @Test
     public void testDigest() throws IOException {
         try (InputStream in = new ByteArrayInputStream(testData.getBytes())) {
             MD5 md5 = MD5.digest(in);
             assertEquals(testString, md5.toString());
-        }
-    }
-
-    private void assertEquals(byte[] expected, byte[] result) {
-        for (int i=0; i< expected.length; i++) {
-            if (expected[i] != result[i]) {
-                fail("expected: " + expected[i] + " but was:" + result[i]);
-            }
         }
     }
 }

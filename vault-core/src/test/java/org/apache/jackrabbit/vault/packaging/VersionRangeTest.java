@@ -17,12 +17,17 @@
 
 package org.apache.jackrabbit.vault.packaging;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
 
 /**
  * {@code VersionRangeTest}...
  */
-public class VersionRangeTest extends TestCase {
+public class VersionRangeTest {
 
     private final Version v09 = Version.create("0.9");
     private final Version v1 = Version.create("1.0");
@@ -31,11 +36,12 @@ public class VersionRangeTest extends TestCase {
     private final Version v21 = Version.create("2.1");
     private final Version v1s = Version.create("1.0-SNAPSHOT");
 
-
+    @Test
     public void testInfinite() {
         assertTrue("Infinite range includes all versions", VersionRange.INFINITE.isInRange(v1));
     }
 
+    @Test
     public void testLowerBoundIncl() {
         VersionRange vr = new VersionRange(v1, true, null, false);
         assertTrue("[1.0,] includes 1.0", vr.isInRange(v1));
@@ -43,6 +49,7 @@ public class VersionRangeTest extends TestCase {
         assertFalse("[1.0,] excludes 0.9", vr.isInRange(v09));
     }
 
+    @Test
     public void testLowerBoundExcl() {
         VersionRange vr = new VersionRange(v1, false, null, false);
         assertFalse("(1.0,] excludes 1.0", vr.isInRange(v1));
@@ -50,6 +57,7 @@ public class VersionRangeTest extends TestCase {
         assertFalse("(1.0,] excludes 0.9", vr.isInRange(v09));
     }
 
+    @Test
     public void testUpperBoundIncl() {
         VersionRange vr = new VersionRange(null, false, v2, true);
         assertTrue("[,2.0] includes 1.0", vr.isInRange(v1));
@@ -57,6 +65,7 @@ public class VersionRangeTest extends TestCase {
         assertFalse("[,2.0] excludes 2.1", vr.isInRange(v21));
     }
 
+    @Test
     public void testUpperBoundExcl() {
         VersionRange vr = new VersionRange(null, false, v2, false);
         assertTrue("[,2.0) includes 1.0", vr.isInRange(v1));
@@ -64,6 +73,7 @@ public class VersionRangeTest extends TestCase {
         assertFalse("[,2.0) excludes 2.1", vr.isInRange(v21));
     }
 
+    @Test
     public void testRangeInclIncl() {
         VersionRange vr = new VersionRange(v1, true, v2, true);
         assertFalse("[1.0,2.0] excludes 0.9", vr.isInRange(v09));
@@ -73,6 +83,7 @@ public class VersionRangeTest extends TestCase {
         assertFalse("[1.0,2.0] excludes 2.1", vr.isInRange(v21));
     }
 
+    @Test
     public void testRangeExclIncl() {
         VersionRange vr = new VersionRange(v1, false, v2, true);
         assertFalse("(1.0,2.0] excludes 0.9", vr.isInRange(v09));
@@ -82,6 +93,7 @@ public class VersionRangeTest extends TestCase {
         assertFalse("(1.0,2.0] excludes 2.1", vr.isInRange(v21));
     }
 
+    @Test
     public void testRangeInclExcl() {
         VersionRange vr = new VersionRange(v1, true, v2, false);
         assertFalse("[1.0,2.0) excludes 0.9", vr.isInRange(v09));
@@ -91,6 +103,7 @@ public class VersionRangeTest extends TestCase {
         assertFalse("[1.0,2.0) excludes 2.1", vr.isInRange(v21));
     }
 
+    @Test
     public void testRangeExclExcl() {
         VersionRange vr = new VersionRange(v1, false, v2, false);
         assertFalse("(1.0,2.0) excludes 0.9", vr.isInRange(v09));
@@ -100,6 +113,7 @@ public class VersionRangeTest extends TestCase {
         assertFalse("(1.0,2.0) excludes 2.1", vr.isInRange(v21));
     }
 
+    @Test
     public void testRangeWithEmptyVersionParameter() {
         VersionRange vr = new VersionRange(v1, true, v2, true);
         assertFalse("[1.0,2.0] excludes empty version", vr.isInRange(Version.EMPTY));
@@ -111,6 +125,7 @@ public class VersionRangeTest extends TestCase {
      *
      * @see <a href="https://github.com/apache/maven/blob/maven-3.8.6/maven-artifact/src/test/java/org/apache/maven/artifact/versioning/VersionRangeTest.java#L657">Maven VersionRangeTest.java</a>
      */
+    @Test
     public void testRangeSnapshots() {
         VersionRange vr = VersionRange.fromString("[1.0,2.0)");
         assertFalse("[1.0,2.0) excludes 1.0-SNAPSHOT", vr.isInRange(v1s));
@@ -119,6 +134,7 @@ public class VersionRangeTest extends TestCase {
         assertTrue("[1.0-SNAPSHOT,2.0) includes 1.0-SNAPSHOT", vr.isInRange(v1s));
     }
 
+    @Test
     public void testRangeInvalid() {
         try {
             new VersionRange(v2, false, v1, false);
@@ -128,6 +144,7 @@ public class VersionRangeTest extends TestCase {
         }
     }
 
+    @Test
     public void testRangeInvalid2() {
         try {
             new VersionRange(v1, false, v1, false);
@@ -137,6 +154,7 @@ public class VersionRangeTest extends TestCase {
         }
     }
 
+    @Test
     public void testParse() {
         VersionRange vr = VersionRange.fromString("[1.0,2.0]");
         assertEquals(v1, vr.getLow());
@@ -145,6 +163,7 @@ public class VersionRangeTest extends TestCase {
         assertEquals(true, vr.isHighInclusive());
     }
 
+    @Test
     public void testParse2() {
         VersionRange vr = VersionRange.fromString("(1.0,2.0)");
         assertEquals(v1, vr.getLow());
@@ -153,6 +172,7 @@ public class VersionRangeTest extends TestCase {
         assertEquals(false, vr.isHighInclusive());
     }
 
+    @Test
     public void testParse3() {
         VersionRange vr = VersionRange.fromString("1.0");
         assertEquals(v1, vr.getLow());
@@ -160,6 +180,7 @@ public class VersionRangeTest extends TestCase {
         assertEquals(true, vr.isLowInclusive());
     }
 
+    @Test
     public void testParse4() {
         VersionRange vr = VersionRange.fromString("(1.0,]");
         assertEquals(v1, vr.getLow());
@@ -167,6 +188,7 @@ public class VersionRangeTest extends TestCase {
         assertEquals(false, vr.isLowInclusive());
     }
 
+    @Test
     public void testParse5() {
         VersionRange vr = VersionRange.fromString("[,2.0]");
         assertEquals(null, vr.getLow());
@@ -174,31 +196,37 @@ public class VersionRangeTest extends TestCase {
         assertEquals(true, vr.isHighInclusive());
     }
 
+    @Test
     public void testToString() {
         VersionRange vr = new VersionRange(v1, true, v2, true);
         assertEquals("[1.0,2.0]", vr.toString());
     }
 
+    @Test
     public void testToString2() {
         VersionRange vr = new VersionRange(v1, false, v2, false);
         assertEquals("(1.0,2.0)", vr.toString());
     }
 
+    @Test
     public void testToString3() {
         VersionRange vr = new VersionRange(v1, false, null, false);
         assertEquals("(1.0,)", vr.toString());
     }
 
+    @Test
     public void testToString4() {
         VersionRange vr = new VersionRange(v1, true, null, false);
         assertEquals("1.0", vr.toString());
     }
 
+    @Test
     public void testToString5() {
         VersionRange vr = new VersionRange(null, false, v2, true);
         assertEquals("[,2.0]", vr.toString());
     }
 
+    @Test
     public void testToString6() {
         VersionRange vr = new VersionRange(null, false, v2, false);
         assertEquals("[,2.0)", vr.toString());

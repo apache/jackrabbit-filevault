@@ -17,33 +17,40 @@
 
 package org.apache.jackrabbit.vault.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * {@code PathUtilTest}...
  */
-public class PathUtilTest extends TestCase {
+public class PathUtilTest {
 
+    @Test
     public void testRelPathEquals() {
         assertEquals(".", PathUtil.getRelativeFilePath(
                 "/libs/components",
                 "/libs/components", "/")); }
 
+    @Test
     public void testRelPathSub() {
         assertEquals("text", PathUtil.getRelativeFilePath(
                 "/libs/components",
                 "/libs/components/text", "/")); }
 
+    @Test
     public void testRelPathParent() {
         assertEquals("../..", PathUtil.getRelativeFilePath(
                 "/libs/components/text",
                 "/libs", "/")); }
 
+    @Test
     public void testRelPathSibling() {
         assertEquals("../image", PathUtil.getRelativeFilePath(
                 "/libs/components/text",
                 "/libs/components/image", "/")); }
 
+    @Test
     public void testWindowRelPath() {
         assertEquals("foo\\bar", PathUtil.getRelativeFilePath(
                 "c:\\test\\root",

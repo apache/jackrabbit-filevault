@@ -17,12 +17,13 @@
 
 package org.apache.jackrabbit.vault.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-/**
- * {@code PathUtilTest}...
- */
-public class TreeTest extends TestCase {
+import org.junit.Before;
+import org.junit.Test;
+
+public class TreeTest {
 
     private Tree<String> tree;
 
@@ -32,18 +33,21 @@ public class TreeTest extends TestCase {
             "/test/c",
             "/test/d/dd",
     };
-    @Override
-    protected void setUp() throws Exception {
+    
+    @Before
+    public void setUp() throws Exception {
         tree = new Tree<String>();
         for (String path: paths) {
             tree.put(path, path);
         }
     }
 
+    @Test
     public void testCommonRootPath() {
         assertEquals("Root Path", "/test", tree.getRootPath());
     }
 
+    @Test
     public void testIteration() {
         int i = 0;
         for (String path: tree.map().keySet()) {
@@ -52,11 +56,13 @@ public class TreeTest extends TestCase {
         assertEquals("Too many entries", paths.length, i);
     }
 
+    @Test
     public void testGetNop() {
         assertNull("/test/e should not exist", tree.getNode("/test/e"));
         testTreeOk();
     }
 
+    @Test
     public void testTreeOk() {
         assertEquals("Tree Size", paths.length, tree.map().keySet().size());
         int i=0;
@@ -65,6 +71,7 @@ public class TreeTest extends TestCase {
         }
     }
 
+    @Test
     public void testSimple() {
         Tree<String> t = new Tree<String>();
         t.put("/content/en/foo", "foo");

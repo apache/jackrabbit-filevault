@@ -95,11 +95,10 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
      * @return the resolved package info or {@code null}
      * @throws IOException
      */
-    private @Nullable PackageInfo resolvePackageInfo(@NotNull Dependency dependency) throws IOException {
+    protected @Nullable PackageInfo resolvePackageInfo(@NotNull Dependency dependency) throws IOException {
         // resolving a version range is not supported with Maven API, but only with lower level Aether API (requires Maven 3.5 or newer)
         // https://github.com/eclipse/aether-demo/blob/master/aether-demo-snippets/src/main/java/org/eclipse/aether/examples/FindAvailableVersions.java
         // therefore do an best effort resolve instead
-
         final String groupId = dependency.getGroup();
         final String artifactId = dependency.getName();
         PackageInfo info = null;

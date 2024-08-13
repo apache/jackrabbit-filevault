@@ -993,8 +993,9 @@ public class DocViewImporter implements DocViewParserHandler {
         if (identifier.isPresent() && !node.getIdentifier().equals(identifier.get()) && !"rep:root".equals(ni.getPrimaryType().orElse(""))) {
             long startTime = System.currentTimeMillis();
             String previousIdentifier = node.getIdentifier();
-            log.debug("Node stashing for {} starting, existing identifier: {}, new identifier: {}, import mode: {}",
-                    node.getPath(), previousIdentifier, identifier.get(), importMode);
+            log.debug(
+                    "Node stashing for {} starting, existing identifier: {}, new identifier: {}, ImportMode: {}, IdConflictPoliy: {}",
+                    node.getPath(), previousIdentifier, identifier.get(), importMode, idConflictPolicy);
             NodeStash stash = new NodeStash(session, node.getPath());
             stash.stash(importInfo);
             Node parent = node.getParent();
@@ -1002,9 +1003,10 @@ public class DocViewImporter implements DocViewParserHandler {
             node.remove();
             updatedNode = createNewNode(parent, ni);
             stash.recover(importMode, importInfo);
-            log.debug("Node stashing for {} finished, previous identifier: {}, new identifier: {}, elapsed: {}, import mode: {}",
+            log.debug(
+                    "Node stashing for {} finished, previous identifier: {}, new identifier: {}, elapsed: {}, ImportMode: {}, IdConflictPoliy: {}",
                     updatedNode.getPath(), previousIdentifier, updatedNode.getIdentifier(),
-                    Duration.ofMillis(System.currentTimeMillis() - startTime), importMode);
+                    Duration.ofMillis(System.currentTimeMillis() - startTime), importMode, idConflictPolicy);
         } else {
             // TODO: is this faster than using sysview import?
             // set new primary type (but never set rep:root)

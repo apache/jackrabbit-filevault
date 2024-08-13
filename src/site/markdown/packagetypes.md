@@ -54,7 +54,7 @@ Container Package
 
 Container packages act as deployment vehicle and don't contain regular nodes. Only OSGi bundles, configuration and sub packages (for use with the [OSGi Installer](https://sling.apache.org/documentation/bundles/jcr-installer-provider.html)) are allowed. In addition also sub packages below `/etc/packages/...` are supported.
 
-Containers may be nested which means they may contain itself packages of type `container`.
+Containers may be nested which means they may contain themselves packages of type `container`.
 
 
 Mixed Package

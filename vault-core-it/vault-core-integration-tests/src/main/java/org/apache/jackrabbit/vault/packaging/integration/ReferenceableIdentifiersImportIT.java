@@ -420,7 +420,7 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
 
     // constants for behavior target state to be tested
 
-    private static enum TS {
+    private static enum TARGET_STATE {
         CONFLICT_TARGET_MOVED, CONFLICT_TARGET_PRESENT, NO_CONFLICT_TARGET_GONE, NO_CONFLICT_TARGET_UNCHANGED
     };
 
@@ -438,109 +438,114 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
 
     @Test
     public void testInstallPackageTargetMoved_CREATE_NEW_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TS.CONFLICT_TARGET_MOVED, ID_NEW, RENAMED_NODE_KEPT);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.CONFLICT_TARGET_MOVED, ID_NEW,
+                RENAMED_NODE_KEPT);
     }
 
     @Test
     public void testInstallPackageTargetPresent_CREATE_NEW_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TS.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
     }
 
     @Test
     public void testInstallPackageNoConflictTargetGone_CREATE_NEW_ID() throws Exception {
         // CREATE_NEW_ID behavior is incorrect in Jackrabbit classic, see
         // https://issues.apache.org/jira/browse/OAK-1244
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TS.NO_CONFLICT_TARGET_GONE, isOak() ? ID_NEW : ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.NO_CONFLICT_TARGET_GONE,
+                isOak() ? ID_NEW : ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageNoConflictTargetUnchanged_CREATE_NEW_ID() throws Exception {
         // CREATE_NEW_ID behavior is incorrect in Jackrabbit classic, see
         // https://issues.apache.org/jira/browse/OAK-1244
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TS.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageTargetMoved_FAIL() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TS.CONFLICT_TARGET_MOVED, RepositoryException.class, null);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TARGET_STATE.CONFLICT_TARGET_MOVED, RepositoryException.class, null);
     }
 
     @Test
     public void testInstallPackageTargetPresent_FAIL() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TS.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
     }
 
     @Test
     public void testInstallPackageqNoConflictTargetGone_FAIL() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TS.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TARGET_STATE.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageqNoConflictTargetUnchanged_FAIL() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TS.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageTargetMoved_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TS.CONFLICT_TARGET_MOVED, ID_KEPT,
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.CONFLICT_TARGET_MOVED, ID_KEPT,
                 RENAMED_NODE_GONE);
     }
 
     @Test
     public void testInstallPackageTargetPresent_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TS.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW,
+                NA);
     }
 
     @Test
     public void testInstallPackageNoConflictTargetGone_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TS.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.NO_CONFLICT_TARGET_GONE, ID_KEPT,
+                NA);
     }
 
     @Test
     public void testInstallPackageNoConflictTargetUnchanged_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TS.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED,
+                ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageTargetMoved_LEGACY() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TS.CONFLICT_TARGET_MOVED, RepositoryException.class,
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.CONFLICT_TARGET_MOVED, RepositoryException.class,
                 IllegalStateException.class);
     }
 
     @Test
     public void testInstallPackageTargetPresent_LEGACY() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TS.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
     }
 
     @Test
     public void testInstallPackageNoConflict_LEGACY() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TS.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageNoConflictTargetGone_LEGACY() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TS.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageNoConflictTargetUnchanged_LEGACY() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TS.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
     }
 
     // postcondition: exception
-    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TS dstState, Class<?> expectedException,
+    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TARGET_STATE dstState, Class<?> expectedException,
             Class<?> expectedRootCause) throws Exception {
         assertIdConflictPolicyBehaviour(policy, dstState, expectedException, expectedRootCause, null, null);
     }
 
     // postcondition: no exception, check state after
-    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TS dstState, Boolean expectNewId,
+    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TARGET_STATE dstState, Boolean expectNewId,
             Boolean expectRenamedNodeKept) throws Exception {
         assertIdConflictPolicyBehaviour(policy, dstState, null, null, expectNewId, expectRenamedNodeKept);
     }
 
-    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TS dstState, Class<?> expectedException, Class<?> expectedRootCause,
-            Boolean expectNewId, Boolean expectRenamedNodeKept) throws Exception {
+    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TARGET_STATE dstState, Class<?> expectedException,
+            Class<?> expectedRootCause, Boolean expectNewId, Boolean expectRenamedNodeKept) throws Exception {
 
         // create initial state and export
 

@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -194,6 +195,12 @@ public class VersionRangeTest {
         assertEquals(null, vr.getLow());
         assertEquals(v2, vr.getHigh());
         assertEquals(true, vr.isHighInclusive());
+    }
+
+    @Test
+    public void testParseEmptyString() {
+        VersionRange vr = VersionRange.fromString("");
+        assertSame(VersionRange.INFINITE, vr); // always return same instance
     }
 
     @Test

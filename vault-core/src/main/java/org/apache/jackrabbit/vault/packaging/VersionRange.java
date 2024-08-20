@@ -228,7 +228,7 @@ public class VersionRange {
             return new VersionRange(vLow, linc, vHigh, hinc);
         } else if (str.length() == 0) {
             // infinite range
-            return new VersionRange(null, false, null, false);
+            return VersionRange.INFINITE;
         } else {
             // simple range where given version is minimum
             return new VersionRange(Version.create(str), true, null, false);

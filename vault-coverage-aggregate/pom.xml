@@ -113,6 +113,10 @@
                                 <!-- shaded 3rd party classes -->
                                 <include>org/apache/jackrabbit/vault/**</include>
                             </includes>
+                            <!-- only consider merged data files (consisting of both IT and UT) -->
+                            <dataFileIncludes>
+                               <dataFileInclude>**/jacoco.exec</dataFileInclude> 
+                            </dataFileIncludes>
                         </configuration>
                     </execution>
                 </executions>

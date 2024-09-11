@@ -55,7 +55,7 @@
 
     <properties>
         <project.build.outputTimestamp>2024-08-01T07:16:26Z</project.build.outputTimestamp>
-        <!-- https://docs.sonarcloud.io/enriching/test-coverage/test-coverage-parameters/#javakotlinscalajvm -->
+        <!-- this project uses cross-module reports with one aggregate, https://docs.sonarsource.com/sonarcloud/enriching/test-coverage/java-test-coverage/#add-coverage-in-a-multi-module-maven-project -->
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/vault-coverage-aggregate/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 

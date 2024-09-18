@@ -418,28 +418,136 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         assertNull(duplicateNode);
     }
 
+    // constants for behavior target state to be tested
+
+    private static enum TARGET_STATE {
+        CONFLICT_TARGET_MOVED, CONFLICT_TARGET_PRESENT, NO_CONFLICT_TARGET_GONE, NO_CONFLICT_TARGET_UNCHANGED
+    };
+
+    // make boolean expectations readable
+
+    private static Boolean ID_NEW = true;
+    private static Boolean ID_KEPT = false;
+
+    private static Boolean RENAMED_NODE_KEPT = true;
+    private static Boolean RENAMED_NODE_GONE = false;
+
+    private static Boolean NA = null; // "not applicable"
+
+    // tests for the various combinations of IdConflictPolicy and target state
+
     @Test
-    public void testInstallPackage_CREATE_NEW_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, null, null, true, true);
+    public void testInstallPackageTargetMoved_CREATE_NEW_ID() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.CONFLICT_TARGET_MOVED, ID_NEW,
+                RENAMED_NODE_KEPT);
     }
 
     @Test
-    public void testInstallPackage_FAIL() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, RepositoryException.class, null, false, false);
+    public void testInstallPackageTargetPresent_CREATE_NEW_ID() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
     }
 
     @Test
-    public void testInstallPackage_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, null, null, false, false);
+    public void testInstallPackageNoConflictTargetGone_CREATE_NEW_ID() throws Exception {
+        // CREATE_NEW_ID behavior is incorrect in Jackrabbit classic, see
+        // https://issues.apache.org/jira/browse/OAK-1244
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.NO_CONFLICT_TARGET_GONE,
+                isOak() ? ID_NEW : ID_KEPT, NA);
     }
 
     @Test
-    public void testInstallPackage_LEGACY() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, RepositoryException.class, IllegalStateException.class, false, false);
+    public void testInstallPackageNoConflictTargetUnchanged_CREATE_NEW_ID() throws Exception {
+        // CREATE_NEW_ID behavior is incorrect in Jackrabbit classic, see
+        // https://issues.apache.org/jira/browse/OAK-1244
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
     }
 
-    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, Class<?> expectedException, Class<?> expectedRootCause,
-            boolean expectNewId, boolean expectRenamedNodeKept) throws Exception {
+    @Test
+    public void testInstallPackageTargetMoved_FAIL() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TARGET_STATE.CONFLICT_TARGET_MOVED, RepositoryException.class, null);
+    }
+
+    @Test
+    public void testInstallPackageTargetPresent_FAIL() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
+    }
+
+    @Test
+    public void testInstallPackageqNoConflictTargetGone_FAIL() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TARGET_STATE.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
+    }
+
+    @Test
+    public void testInstallPackageqNoConflictTargetUnchanged_FAIL() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
+    }
+
+    @Test
+    public void testInstallPackageTargetMoved_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.CONFLICT_TARGET_MOVED, ID_KEPT,
+                RENAMED_NODE_GONE);
+    }
+
+    @Test
+    public void testInstallPackageTargetPresent_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW,
+                NA);
+    }
+
+    @Test
+    public void testInstallPackageNoConflictTargetGone_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.NO_CONFLICT_TARGET_GONE, ID_KEPT,
+                NA);
+    }
+
+    @Test
+    public void testInstallPackageNoConflictTargetUnchanged_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED,
+                ID_KEPT, NA);
+    }
+
+    @Test
+    public void testInstallPackageTargetMoved_LEGACY() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.CONFLICT_TARGET_MOVED, RepositoryException.class,
+                IllegalStateException.class);
+    }
+
+    @Test
+    public void testInstallPackageTargetPresent_LEGACY() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
+    }
+
+    @Test
+    public void testInstallPackageNoConflict_LEGACY() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
+    }
+
+    @Test
+    public void testInstallPackageNoConflictTargetGone_LEGACY() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
+    }
+
+    @Test
+    public void testInstallPackageNoConflictTargetUnchanged_LEGACY() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
+    }
+
+    // postcondition: exception
+    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TARGET_STATE dstState, Class<?> expectedException,
+            Class<?> expectedRootCause) throws Exception {
+        assertIdConflictPolicyBehaviour(policy, dstState, expectedException, expectedRootCause, null, null);
+    }
+
+    // postcondition: no exception, check state after
+    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TARGET_STATE dstState, Boolean expectNewId,
+            Boolean expectRenamedNodeKept) throws Exception {
+        assertIdConflictPolicyBehaviour(policy, dstState, null, null, expectNewId, expectRenamedNodeKept);
+    }
+
+    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TARGET_STATE dstState, Class<?> expectedException,
+            Class<?> expectedRootCause, Boolean expectNewId, Boolean expectRenamedNodeKept) throws Exception {
+
+        // create initial state and export
 
         String TEST_ROOT = "testroot";
 
@@ -461,9 +569,46 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
 
         File pkgFile = exportContentPackage(srcPath);
 
-        String dstPath = srcPath + "-renamed";
-        admin.move(srcPath, dstPath);
-        assertNodeMissing(srcPath);
+        // modify existing state as requested
+
+        String dstPath = null;
+
+        switch (dstState) {
+
+            case CONFLICT_TARGET_MOVED:
+                dstPath = srcPath + "-renamed";
+                admin.move(srcPath, dstPath);
+                admin.save();
+                assertNodeMissing(srcPath);
+                break;
+
+            case CONFLICT_TARGET_PRESENT:
+                admin.removeItem(srcPath);
+                admin.save();
+                assertNodeMissing(srcPath);
+                // same place, new ID
+                Node newAsset = testRoot.addNode(srcName, NodeType.NT_FOLDER);
+                JcrUtils.putFile(newAsset, "binary.txt", "text/plain", new ByteArrayInputStream("Hello, new world!".getBytes()));
+                newAsset.addMixin(NodeType.MIX_REFERENCEABLE);
+                admin.save();
+                assertNodeExists(srcPath);
+                assertNotEquals(id1, newAsset.getIdentifier());
+                break;
+
+            case NO_CONFLICT_TARGET_GONE:
+                admin.removeItem(srcPath);
+                admin.save();
+                assertNodeMissing(srcPath);
+                break;
+
+            case NO_CONFLICT_TARGET_UNCHANGED:
+                break;
+
+            default:
+                fail();
+        }
+
+        // re-import and check post-conditions
 
         try (ZipVaultPackage pack = new ZipVaultPackage(pkgFile, true)) {
             ImportOptions opts = getDefaultOptions();
@@ -471,6 +616,9 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
             opts.setImportMode(ImportMode.UPDATE_PROPERTIES);
             opts.setStrict(true);
             pack.extract(admin, opts);
+            if (expectedException != null) {
+                fail("expected: " + expectedException + ", but no exception was thrown");
+            }
         } catch (Exception ex) {
             if (expectedException == null) {
                 throw ex;
@@ -485,10 +633,12 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
             }
         }
 
-        if (expectRenamedNodeKept) {
-            assertNodeExists(dstPath);
-        } else {
-            assertNodeMissing(dstPath);
+        if (expectRenamedNodeKept != null) {
+            if (expectRenamedNodeKept) {
+                assertNodeExists(dstPath);
+            } else {
+                assertNodeMissing(dstPath);
+            }
         }
 
         assertNodeExists(srcPath);

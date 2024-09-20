@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.8.0-SNAPSHOT
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.8.2
 
 Introduction
 ------------
@@ -8,6 +8,24 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 3.8.2
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.8.2
+This version requires Java 8 or above
+The OSGi bundles depend on Jackrabbit 2.20.8+ (JCR Commons, SPI, SPI Commons), Oak JR API 1.22.4+, Commons IO 2.7+, Commons Collections 4.1+ and SLF4J 1.7+
+
+Bug
+    [JCRVLT-778] - VersionRange.fromString("") does not return VersionRange.INFINITE
+    [JCRVLT-783] - site.xml no longer deployed in FileVault 3.8.0
+
+Improvement
+    [JCRVLT-768] - vlt: when DEBUG logging stashing ops, add the IdConflictPolicy as well
+    [JCRVLT-772] - Remove JUnit 3
+    [JCRVLT-774] - Allow overwriting of AbstractDependencyResolver.resolvePackageInfo(Dependency)
+    [JCRVLT-776] - improve test coverage for IdConflictPolicy
+
 
 Changes in Jackrabbit FileVault 3.8.0
 --------------------------------------

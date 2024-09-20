@@ -66,7 +66,7 @@ Example:
 | lastModifiedBy | A user name indicating who last modified this package | no | empty
 | buildCount | An integer indicating how often this package has been built | no | empty
 | dependencies | Comma-separated list of dependencies. Each dependency has the format `<group>:<name>:<version or versionrange>`. See [Dependencies][api.Dependency]. | no | empty
-| dependencies-locations | Optional comma-separated list of dependencies' locations. Each item has the format `<package-id>=<uri>`. Currently [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) is using a URI scheme for Maven coordinates like `maven:<groupId>:<artifactId>:<version>[[:<classifier>]:packaging]`. | no | empty
+| dependencies-locations | Optional comma-separated list of dependencies' locations. Each item has the format `<package-id>=<uri>`. Currently [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) is using a URI scheme for Maven coordinates like `maven:<groupId>:<artifactId>:<version>[:packaging[:<classifier>]]`. | no | empty
 | created | A date string in the format `±YYYY-MM-DDThh:mm:ss.SSSTZD` specifying when the package has been created initially (see also [ISO8601][api.ISO8601]) | no | empty
 | createdBy | A user name indicating who initially created this package | no | empty
 | generator | Information about the generator of the package | no | for packages created by filevault: `org.apache.jackrabbit.vault:version`

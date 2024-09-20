@@ -27,8 +27,10 @@ public class AbstractDependencyResolverTest {
 
     @Test
     public void testUriToMavenCoordinates() throws URISyntaxException {
-        Assert.assertEquals(new MavenCoordinates("group1", "name1", null), MavenCoordinates.parse(new URI("maven", "group1:name1", null)));
+        Assert.assertEquals(new MavenCoordinates("group1", "name1", "1.0.0"), MavenCoordinates.parse(new URI("maven", "group1:name1:1.0.0", null)));
         Assert.assertEquals(new MavenCoordinates("group1", "name1", "1.0.0", "test", "myclassifier"), MavenCoordinates.parse(new URI("maven", "group1:name1:1.0.0:test:myclassifier", null)));
+        Assert.assertThrows(IllegalArgumentException.class, () -> MavenCoordinates.parse(new URI("maven", "group:name", null)));
+        Assert.assertNull(MavenCoordinates.parse(new URI("http://example.com")));
     }
 
 }

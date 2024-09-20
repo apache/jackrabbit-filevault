@@ -35,10 +35,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract resolver supporting Maven repository dependency location URIs (starting with {@code maven:}).
+ * Abstract package dependency resolver supporting Maven repository dependency location URIs (starting with {@code maven:}).
  * All package dependencies are mapped to Maven coordinates by this class and then resolved via {@link #resolvePackageInfo(MavenCoordinates)}.
- * It comes with a cache so that the same package dependency is not resolved more than once.
+ * The resolver comes with a cache so that the same package dependency is not resolved more than once.
  * This class is not thread-safe.
+ * @see PackageInfo
  */
 public abstract class AbstractDependencyResolver implements DependencyResolver {
 
@@ -49,6 +50,10 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
 
     public static final String MAVEN_REPOSITORY_SCHEME = "maven";
     private final Collection<PackageInfo> packageInfoCache;
+
+    protected AbstractDependencyResolver() {
+        this.packageInfoCache = new LinkedList<>();
+    }
 
     protected AbstractDependencyResolver(@NotNull Collection<PackageInfo> packageInfoCache) {
         this.packageInfoCache = new LinkedList<>(packageInfoCache);
@@ -90,8 +95,16 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
     }
 
     /**
-     * Use some heuristics to map the package dependency to Maven coordinates and try to resolve them then via {@link #resolvePackageInfo(MavenCoordinates)}.
-     * @param dependency
+     * Uses some heuristics to map the package dependency to Maven coordinates.
+     * It tries to resolve the package version ranges in the following order:
+     * <ol>
+     * <li>trying lower bound version</li>
+     * <li>trying higher bound version</li>
+     * <li>trying LATEST version</li>
+     * </ol>
+     * Each one is triggering {@link #resolvePackageInfo(MavenCoordinates)}.
+     * It doesn't leverage any Maven API for version range resolution, therefore this method should be overwritten if there are better ways to resolve version ranges.
+     * @param dependency the dependency from which to retrieve the package info
      * @return the resolved package info or {@code null}
      * @throws IOException
      */
@@ -117,22 +130,29 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
         return info;
     }
 
-    public abstract @Nullable PackageInfo resolvePackageInfo(MavenCoordinates mavenCoordinates) throws IOException;
+    /**
+     * Resolves the main meta information of a package dependency given via Maven coordinates.
+     * @param mavenCoordinates the coordinates of the package dependency
+     * @return the resolved package info or {@code null}
+     * @throws IOException
+     */
+    public abstract @Nullable PackageInfo resolvePackageInfo(@NotNull MavenCoordinates mavenCoordinates) throws IOException;
 
+    /** Encapsulates Maven coordinates groupId, artifactId, version, packaging (default {@code zip}), classifier (optional) */
     public static final class MavenCoordinates {
         @NotNull private final String groupId;
         @NotNull private final String artifactId;
-        @Nullable private final String version;
+        @NotNull private final String version;
         @NotNull private final String packaging;
         @Nullable private final String classifier;
 
         private static final String DEFAULT_PACKAGING = "zip";
 
-        public MavenCoordinates(@NotNull String groupId, @NotNull String artifactId, String version) {
+        public MavenCoordinates(@NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
             this(groupId, artifactId, version, DEFAULT_PACKAGING, null);
         }
 
-        public MavenCoordinates(@NotNull String groupId, @NotNull String artifactId, String version,@NotNull String packaging, String classifier) {
+        public MavenCoordinates(@NotNull String groupId, @NotNull String artifactId, @NotNull String version, @NotNull String packaging, String classifier) {
             super();
             this.groupId = groupId;
             this.artifactId = artifactId;
@@ -141,6 +161,10 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
             this.classifier = classifier;
         }
 
+        /** Parses a Maven URI of the format {@code maven:<groupId>:<artifactId>:<version>[:<packaging>[:<classifier]]} and returns the extracted Maven coordinates.
+         * @param uri
+         * @return the Maven coordinates or {@code null} if the URI is not a Maven URI
+         */
         public static @Nullable MavenCoordinates parse(URI uri) {
             if (!MAVEN_REPOSITORY_SCHEME.equals(uri.getScheme())) {
                 return null;
@@ -151,15 +175,13 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
             // support groupId, artifactId, packaging and classifier (format like https://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html#artifact)
             // extract group id and artifact id
             String[] parts = uri.getSchemeSpecificPart().split(":");
-            if (parts.length < 2) {
-                throw new IllegalArgumentException("At least group id and artifact id need to be given separated by ':'");
+            if (parts.length < 3) {
+                throw new IllegalArgumentException("At least group id, artifact id and version need to be given separated by ':'");
             }
             String groupId = parts[0];
             String artifactId = parts[1];
-            String version = null;
-            if (parts.length > 2) {
-                version = parts[2];
-            }
+            String version = parts[2];
+            
             String packaging = DEFAULT_PACKAGING;
             if (parts.length > 3) {
                 packaging = parts[3];

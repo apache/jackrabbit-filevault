@@ -228,25 +228,41 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
         return packMgr.assemble(admin, opts, tmpFile);
     }
 
+    private void getArchiveContents(List<String> list, String path, Archive.Entry entry) {
+        String fullname = path + entry.getName();
+        list.add(fullname);
+        for (Archive.Entry en : entry.getChildren()) {
+            getArchiveContents(list, fullname + "/", en);
+        }
+    }
+
+    private void checkExistingMember(Archive archive, String member, List<String> existing) throws IOException {
+        String message = "Member '" + member + "' missing (present are: " + existing + ")";
+        assertNotNull(message, archive.getEntry(member));
+    }
+
     @Test
     public void exportBinary() throws RepositoryException, IOException, PackageException {
         String nodePath = binaryNodePath;
         try (VaultPackage pkg = assemblePackage(exportBinaryNodePath)) {
+            List<String> present = new ArrayList<>();
+            getArchiveContents(present, "[root]", pkg.getArchive().getRoot());
+
             if (useBinaryReferences) {
                 // make sure that only non-reference binaries are in dedicated artifacts
                 assertNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_PROPERTY + ".binary"));
                 assertNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary"));
                 assertNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_PROPERTY + ".binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary"));
+                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_PROPERTY + ".binary", present);
+                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary", present);
+                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary", present);
             } else {
-                assertNotNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_PROPERTY + ".binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_PROPERTY + ".binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary"));
-                assertNotNull(pkg.getArchive().getEntry("jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary"));
+                checkExistingMember(pkg.getArchive(), "jcr_root" + binaryNodePath + "/" + BIG_BINARY_PROPERTY + ".binary", present);
+                checkExistingMember(pkg.getArchive(), "jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary", present);
+                checkExistingMember(pkg.getArchive(), "jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary", present);
+                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_PROPERTY + ".binary", present);
+                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary", present);
+                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary", present);
             }
             clean(nodePath);
             pkg.extract(admin, getDefaultOptions());

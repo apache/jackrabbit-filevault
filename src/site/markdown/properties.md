@@ -78,7 +78,7 @@ Example:
 | requiresRestart | If set to `true` indicates that the system should be restarted after this package has been installed | no | `false`
 | noIntermediateSaves | If set to `true` indicates no intermediate saves should be performed while installing this package | no | `false`
 | subPackageHandling | see [SubPackageHandling][api.SubPackageHandling] | no | `*;install`
-| useBinaryReferences | If set to `true` indicates that [binary references](docview.html#Binary_Properties) should be used instead of the regular binaries. This also leads to using another default Vault FS [configuration](configuration.html). | no | `false`
+| useBinaryReferences | If set to `true` indicates that [binary references](docview.html#Binary_Properties) should be used instead of the regular binaries. This also leads to using another default Vault FS [configuration](config.html). | no | `false`
 | packageType | Possible values: `application`, `content`, `container` or `mixed`. Further details at [Package Types](packagetypes.html). | no | ?
 | installhook.\<name\>.class | The FQN of the class which acts as an [install hook](installhooks.html). The `<name>` can be an arbitrary string (but must not contain a dot). | no | n/a
 | packageFormatVersion | The version of this package as integer value. Versions newer than 2 are not yet supported during installation. | no | 2

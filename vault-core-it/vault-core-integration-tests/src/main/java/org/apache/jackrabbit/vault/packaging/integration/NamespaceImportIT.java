@@ -19,12 +19,14 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.UUID;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
@@ -35,6 +37,7 @@ import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
 import org.apache.jackrabbit.api.JackrabbitRepository;
+import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
@@ -206,6 +209,19 @@ public class NamespaceImportIT extends IntegrationTestBase {
         finally {
             secondSession.logout();
         }
+    }
+
+    @Test
+    public void importRemappedNamespace() throws IOException, PackageException, RepositoryException {
+        // repro test for OAK-10544
+        admin.getWorkspace().getNamespaceRegistry().registerNamespace("correct", "bar:");
+        admin.getWorkspace().getNamespaceRegistry().registerNamespace("ns2", "bad:");
+        Node test = JcrUtils.getOrCreateByPath("/tmp/remappedprefix", "nt:unstructured", admin);
+        test.setProperty("ns2:prop", "old");
+        admin.save();
+        extractVaultPackageStrict("/test-packages/remappedprefix.zip");
+        Node test2 = admin.getNode("/tmp/remappedprefix");
+        assertEquals("new", test2.getProperty("{correct:}prop").getString());
     }
 
     /** Simple Oak repository wrapper */

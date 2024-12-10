@@ -31,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
 public interface DocViewParserHandler {
     /**
      * Called for each element in the docview xml representing a node
-     * @param nodePath the absolute node path of the node
+     * @param nodePath the absolute node path of the node, the last part of the path is the JCR qualified name of the {@code docViewNode}'s name.
      * @param docViewNode the deserialized node (incl. its properties)
      * @param parentDocViewNode the parent deserialized node (only present if {@code docViewNode} is not the root node in the docview xml)
      * @param line the current line number in the docview xml

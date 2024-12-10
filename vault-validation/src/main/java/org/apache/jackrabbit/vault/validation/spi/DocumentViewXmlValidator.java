@@ -81,7 +81,7 @@ public interface DocumentViewXmlValidator extends Validator {
      * Child nodes have not yet been deserialized at this point in time but only the node itself and its direct properties.
      * 
      * @param node the node which should be validated
-     * @param nodeContext the information about the node context (like path)
+     * @param nodeContext the information about the node context (like path) of the node given in {@code node}. The last part of the context's JCR path is the JCR qualified name of the {@code node}'s name.
      * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
      * @return validation messages or {@code null}
      * @since 3.6.0
@@ -113,7 +113,7 @@ public interface DocumentViewXmlValidator extends Validator {
      * Called for the end of each new deserialized JCR document view node (after all child nodes have been processed).
      * 
      * @param node the node which should be validated
-     * @param nodeContext the information about the node context (like path)
+     * @param nodeContext the information about the node context (like path) of the node given in {@code node}. The last part of the context's JCR path is the JCR qualified name of the {@code node}'s name.
      * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
      * @return validation messages or {@code null}
      * @since 3.6.0

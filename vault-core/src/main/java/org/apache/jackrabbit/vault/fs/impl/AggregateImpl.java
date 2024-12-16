@@ -714,6 +714,9 @@ public class AggregateImpl implements Aggregate {
         while (nIter.hasNext()) {
             Node n = nIter.nextNode();
             String path = n.getPath();
+            if (log.isTraceEnabled()) {
+                log.trace("checking " + path);
+            }
             PathFilterSet coverSet = filter.getCoveringFilterSet(path);
             boolean isAncestor = filter.isAncestor(path);
             boolean isIncluded = filter.contains(path);

@@ -430,7 +430,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
                 propFilters.setImportMode(importMode);
                 bothFilters.setImportMode(importMode);
             } catch (IllegalArgumentException e) {
-                throw new ConfigurationException("Invalid value given for attribute 'mode'", e);
+                throw new ConfigurationException("Invalid value given for attribute 'mode': '" + mode + "'", e);
             }
         }
         String type = elem.getAttribute("type");

@@ -17,7 +17,7 @@
 
 Import Mode
 ===========
-The import mode defines how imported content affects existing content in the repository. It is controlled by the [ImportMode][api.ImportMode] set in the [Workspace Filter](filter.html) and defaults to `REPLACE`. 
+The import mode defines how imported content affects existing content in the repository. It is controlled by the [ImportMode][api.ImportMode] set in the [Workspace Filter](filter.html) and defaults to `replace`. The import mode is supposed to be given in **lowercase letters** (in contrast to the actual enum values outlined in the javadoc).
 
 Details on how node ids are treated during import are outlined at [Referenceable Nodes](referenceablenodes.html)
 
@@ -25,7 +25,7 @@ Details on how node ids are treated during import are outlined at [Referenceable
 
 Regular content
 ----------------
-The import mode handling is inconsistent and has many edge cases for the mode `MERGE` and `UPDATE`. Therefore FileVault 3.5.0 introduces the new modes `MERGE_PROPERTIES` and `UPDATE_PROPERTIES` (in [JCRVLT-255][JCRVLT-255]) which behave much more predicatable. The details are outlined at the [JavaDoc][api.ImportMode].
+The import mode handling is inconsistent and has many edge cases for the mode `merge` and `update`. Therefore FileVault 3.5.0 introduces the new modes `merge_properties` and `update_properties` (in [JCRVLT-255][JCRVLT-255]) which behave much more predictable. The details are outlined at the [JavaDoc][api.ImportMode].
 
 Access control list
 ----------------------------------------------------
@@ -36,7 +36,7 @@ Authorizables
 ----------------------------------------------------
 If an authorizable with the same name already exists, the active `ImportMode` controls how the existing authorizables are affected:
 
-**`ImportMode.REPLACE`**
+**`replace`**
 : Replaces the authorizable node completely with the content in the package. The importer effectively deletes and re-creates the authorizable at the path specified in the package (internally the content is imported using the content handler with `IMPORT_UUID_COLLISION_REMOVE_EXISTING`). Note that any sub-nodes of the authorizable are treated like normal content and obey the normal filter rules. so the following filter should only replace the users's node, but not its sub nodes:
 
 ````
@@ -46,11 +46,11 @@ If an authorizable with the same name already exists, the active `ImportMode` co
 ````
 
 
-**`ImportMode.UPDATE`,`ImportMode.UPDATE_PROPERTIES`**
+**`update`,`update_properties`**
 : Replaces the authorizable node completely with the content in the package **in place**. The importer effectively deletes and re-creates the authorizable at the path specified in the package (internally the content is imported using the content handler with `IMPORT_UUID_COLLISION_REPLACE_EXISTING`). Note that any sub-nodes of the authorizable are treated like normal content and obey the normal filter rules. However, if the authorizable existed at a different path as specified in the repository, the importer keeps track of the remapping and calculates the filters accordingly.
 
 
-**`ImportMode.MERGE`,`ImportMode.MERGE_PROPERTIES`**
+**`merge`,`merge_properties`**
 : Has no effect if the authorizable already existed except for group memberships (see below). Note that any sub-nodes of the authorizable are treated like normal content and obey the normal filter rules. However, if the authorizable existed at a different path as specified in the repository, the importer keeps track of the remapping and calculates the filters accordingly.
 
 ### Merging Group Members

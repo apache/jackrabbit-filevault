@@ -17,6 +17,8 @@
 
 package org.apache.jackrabbit.vault.fs.io;
 
+import java.util.Locale;
+
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.ConstraintViolationException;
@@ -169,7 +171,7 @@ public class AutoSave {
         // TODO: how can session be null here?
         if (session != null) {
             if (debugFailEach > 0 && debugSaveCount > 0 && debugSaveCount%debugFailEach == 0) {
-                String msg = String.format("Debugging provoked failure after %s saves.", debugSaveCount);
+                String msg = String.format(Locale.ENGLISH, "Debugging provoked failure after %s saves.", debugSaveCount);
                 log.error(msg);
                 throw new RepositoryException(msg);
             }

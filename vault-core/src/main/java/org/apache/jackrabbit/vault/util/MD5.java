@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 
 /**
  * {@code MD5}...
@@ -97,7 +98,7 @@ public class MD5 {
     }
 
     public String toString() {
-        return String.format("%016x%016x", msb, lsb);
+        return String.format(Locale.ROOT, "%016x%016x", msb, lsb);
     }
 
     public int hashCode() {

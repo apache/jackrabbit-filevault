@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
@@ -113,7 +114,7 @@ public final class CompressionUtil {
              */
             String contentType = artifact.getContentType();
             if (contentType != null) {
-                contentType = contentType.toLowerCase();
+                contentType = contentType.toLowerCase(Locale.ROOT);
                 if (isCompressibleContentType(contentType)) {
                     return 1;
                 }

@@ -18,6 +18,7 @@
 package org.apache.jackrabbit.vault.util;
 
 import java.util.Comparator;
+import java.util.Locale;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -32,8 +33,8 @@ public class NodeNameComparator implements Comparator<Node> {
     public int compare(Node o1, Node o2) {
         try {
             // sort namespaced first
-            String n1 = o1.getName().toLowerCase();
-            String n2 = o2.getName().toLowerCase();
+            String n1 = o1.getName().toLowerCase(Locale.ROOT);
+            String n2 = o2.getName().toLowerCase(Locale.ROOT);
             int i1 = n1.indexOf(':');
             int i2 = n2.indexOf(':');
             if (i1 >=0 && i2 < 0) {

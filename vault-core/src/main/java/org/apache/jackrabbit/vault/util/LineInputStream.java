@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provides an input stream wrapper that detects line feed sequences and 
@@ -31,7 +32,7 @@ public class LineInputStream extends InputStream {
 
     public static final byte[] LS_WINDOWS = new byte[]{0x0d, 0x0a};
 
-    public static final byte[] LS_NATIVE = System.getProperty("line.separator").getBytes();
+    public static final byte[] LS_NATIVE = System.getProperty("line.separator").getBytes(StandardCharsets.US_ASCII);
 
     private byte[] buffer = new byte[8192];
 

@@ -21,10 +21,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeSet;
 
 import javax.jcr.Binary;
@@ -618,7 +621,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         def.set(JcrPackageDefinition.PN_GROUP, pid.getGroup(), false);
         def.set(JcrPackageDefinition.PN_VERSION, pid.getVersionString(), false);
         def.touch(null, false);
-        content.setProperty(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance());
+        content.setProperty(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
         content.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
         content.setProperty(JcrConstants.JCR_DATA, binary);
         def.unwrap(archive, false);

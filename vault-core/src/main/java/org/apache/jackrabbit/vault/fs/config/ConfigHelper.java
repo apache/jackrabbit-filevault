@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.fs.config;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -125,7 +126,7 @@ public class ConfigHelper {
     }
 
     public static String getMethodName(String prefix, String name) {
-        return prefix + name.substring(0, 1).toUpperCase() + name.substring(1);
+        return prefix + name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
     }
 
     public static Method getMethod(Object obj, String name, Class ... params) {

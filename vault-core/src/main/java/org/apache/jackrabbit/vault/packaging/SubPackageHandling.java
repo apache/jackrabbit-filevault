@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.jackrabbit.util.Text;
 
@@ -146,7 +147,7 @@ public class SubPackageHandling {
                 Option opt = Option.INSTALL;
                 if (opts.length > 1) {
                     try {
-                        opt = Option.valueOf(opts[1].toUpperCase());
+                        opt = Option.valueOf(opts[1].toUpperCase(Locale.ROOT));
                     } catch (IllegalArgumentException e) {
                         // ignore
                     }
@@ -197,7 +198,7 @@ public class SubPackageHandling {
             }
             sb.append(e.getGroupName()).append(":").append(e.getPackageName());
             if (e.option != Option.INSTALL) {
-                sb.append(';').append(e.option.toString().toLowerCase());
+                sb.append(';').append(e.option.toString().toLowerCase(Locale.ROOT));
             }
         }
         return sb.toString();

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.jcr.Credentials;
@@ -254,7 +255,7 @@ public class VltContext {
                     for (String root: defaultFilterRoots) {
                         filter.add(new PathFilterSet(root));
                     }
-                    stdout.printf("Created default filter:%n%s", filter.getSourceAsString());
+                    stdout.printf(Locale.ENGLISH, "Created default filter:%n%s", filter.getSourceAsString());
                 }
                 if (filter == null && defaultFilter != null) {
                     filter = new DefaultWorkspaceFilter();
@@ -364,9 +365,9 @@ public class VltContext {
         if (!quiet && (verbose || action != FileAction.VOID)) {
             path = getCwdRelativePath(path);
             if (action == FileAction.ADDED && contentType != null) {
-                stdout.printf("%s %s (%s)%n", action.letter, path, contentType);
+                stdout.printf(Locale.ENGLISH, "%s %s (%s)%n", action.letter, path, contentType);
             } else {
-                stdout.printf("%s %s%n", action.letter, path);
+                stdout.printf(Locale.ENGLISH, "%s %s%n", action.letter, path);
             }
             stdout.flush();
         }
@@ -380,7 +381,7 @@ public class VltContext {
     public void printMessage(VltFile file, String msg) {
         if (!quiet) {
             String path = getCwdRelativePath(file.getPath());
-            stdout.printf("%s %s%n", path, msg);
+            stdout.printf(Locale.ENGLISH, "%s %s%n", path, msg);
             stdout.flush();
         }
     }
@@ -388,7 +389,7 @@ public class VltContext {
     public void printMessage(String msg, VltFile file) {
         if (!quiet) {
             String path = getCwdRelativePath(file.getPath());
-            stdout.printf("%s %s%n", msg, path);
+            stdout.printf(Locale.ENGLISH, "%s %s%n", msg, path);
             stdout.flush();
         }
     }
@@ -409,9 +410,9 @@ public class VltContext {
         }
         if (verbose || state != VltFile.State.CLEAN) {
             if (state == VltFile.State.ADDED && file.getContentType() != null) {
-                stdout.printf("%s %s (%s)%n", state.letter, path, file.getContentType());
+                stdout.printf(Locale.ENGLISH, "%s %s (%s)%n", state.letter, path, file.getContentType());
             } else {
-                stdout.printf("%s %s%n", state.letter, path);
+                stdout.printf(Locale.ENGLISH, "%s %s%n", state.letter, path);
             }
             stdout.flush();
         }
@@ -425,7 +426,7 @@ public class VltContext {
             return;
         }
         if (verbose || state != VltFile.State.CLEAN || action != FileAction.VOID) {
-            stdout.printf("%s%s %s%n", state.letter, action.letter, path);
+            stdout.printf(Locale.ENGLISH, "%s%s %s%n", state.letter, action.letter, path);
             stdout.flush();
         }
     }

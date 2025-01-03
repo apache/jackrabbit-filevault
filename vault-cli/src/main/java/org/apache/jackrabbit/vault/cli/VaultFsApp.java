@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.jcr.Credentials;
@@ -794,7 +795,7 @@ public class VaultFsApp extends AbstractApplication {
                 try {
                     SimpleCredentials simpleCredentials = (SimpleCredentials) creds;
                     if (simpleCredentials.getPassword().length == 0) {
-                        System.out.printf("Please enter password for user %s connecting to %s: ",
+                        System.out.printf(Locale.ENGLISH, "Please enter password for user %s connecting to %s: ",
                                 simpleCredentials.getUserID(), mountpoint);
                         String password = new jline.ConsoleReader().readLine('*');
                         creds = new SimpleCredentials(simpleCredentials.getUserID(), password.toCharArray());

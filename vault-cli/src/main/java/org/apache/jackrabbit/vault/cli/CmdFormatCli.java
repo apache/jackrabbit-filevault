@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.apache.commons.cli2.CommandLine;
@@ -79,15 +80,15 @@ public class CmdFormatCli extends AbstractVaultCommand {
         for (File file: localFiles) {
             if (file.isDirectory()) {
                 if (verbose) {
-                    System.out.printf("traversing: %s%n", file);
+                    System.out.printf(Locale.ENGLISH, "traversing: %s%n", file);
                     for (Pattern p: parsedPatterns) {
-                        System.out.printf("scanning for files matching: %s%n", p);
+                        System.out.printf(Locale.ENGLISH, "scanning for files matching: %s%n", p);
                     }
                 }
                 formattedFiles.addAll(format.format(file, parsedPatterns, checkOnly));
             } else {
                 if (verbose) {
-                    System.out.printf("processing: %s%n", file);
+                    System.out.printf(Locale.ENGLISH, "processing: %s%n", file);
                 }
                 if (format.format(file, checkOnly)) {
                     formattedFiles.add(file.getPath());

@@ -22,6 +22,7 @@ import java.io.PrintStream;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
@@ -48,13 +49,13 @@ public class Info extends BaseAction {
         PrintStream out = dir.getContext().getStdout();
 
         VltEntry e = file.getEntry();
-        out.printf("  Path: %s%n", dir.getContext().getCwdRelativePath(file.getPath()));
-        out.printf("Status: %s%n", file.getStatus().name().toLowerCase());
+        out.printf(Locale.ENGLISH, "  Path: %s%n", dir.getContext().getCwdRelativePath(file.getPath()));
+        out.printf(Locale.ENGLISH, "Status: %s%n", file.getStatus().name().toLowerCase(Locale.ROOT));
         if (e != null) {
             RepositoryAddress root = dir.getContext().getMountpoint();
             RepositoryAddress addr = root.resolve(e.getAggregatePath());
             addr = addr.resolve(e.getRepoRelPath());
-            out.printf("   URL: %s%n", addr.toString());
+            out.printf(Locale.ENGLISH, "   URL: %s%n", addr.toString());
             print(out, "  Work", e.work());
             print(out, "  Base", e.base());
             print(out, "  Mine", e.mine());
@@ -63,13 +64,13 @@ public class Info extends BaseAction {
         out.println();
     }
 
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss", Locale.ROOT);
 
     private static void print(PrintStream out, String name, VltEntryInfo info) {
         if (info == null) {
             return;
         }
-        out.printf("%s: %s, %s, %d, %s%n",
+        out.printf(Locale.ENGLISH, "%s: %s, %s, %d, %s%n",
                 name,
                 DATE_FMT.format(Instant.ofEpochMilli(info.getDate())),
                 info.getContentType(),

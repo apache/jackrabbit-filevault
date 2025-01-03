@@ -17,7 +17,10 @@
 
 package org.apache.jackrabbit.vault.util;
 
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 
@@ -29,7 +32,7 @@ public class DefaultProgressListener implements ProgressTrackerListener {
     private final PrintWriter out;
 
     public DefaultProgressListener() {
-        this(new PrintWriter(System.out));
+        this(new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.US_ASCII)));
     }
 
     public DefaultProgressListener(PrintWriter out) {
@@ -41,7 +44,7 @@ public class DefaultProgressListener implements ProgressTrackerListener {
         if (mode == Mode.PATHS) {
             name = path.substring(path.lastIndexOf('/') + 1);
         }
-        out.printf("%s %s%n", action, name);
+        out.printf(Locale.ENGLISH, "%s %s%n", action, name);
         out.flush();
     }
 
@@ -50,7 +53,7 @@ public class DefaultProgressListener implements ProgressTrackerListener {
         if (mode == Mode.PATHS) {
             name = path.substring(path.lastIndexOf('/') + 1);
         }
-        out.printf("E %s (%s)%n", name, e.toString());
+        out.printf(Locale.ENGLISH, "E %s (%s)%n", name, e.toString());
         out.flush();
     }
 

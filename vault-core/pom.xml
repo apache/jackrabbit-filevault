@@ -133,6 +133,20 @@
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-resolver-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>de.thetaphi</groupId>
+                <artifactId>forbiddenapis</artifactId>
+                <configuration>
+                    <excludes>
+                        <!-- excluded embedded 3rd party libraries -->
+                        <exclude>com/ctc/wstx/**/*.class</exclude>
+                        <exclude>org/apache/jackrabbit/jcr2spi/**/*.class</exclude>
+                        <exclude>org/codehaus/stax/**/*.class</exclude>
+                        <exclude>org/codehaus/stax2/**/*.class</exclude>
+                        <exclude>org/h2/**/*.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

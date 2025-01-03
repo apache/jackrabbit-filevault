@@ -20,7 +20,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.LocalDate;
+import java.time.Instant;
+import java.time.temporal.ChronoField;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -80,7 +81,7 @@ public abstract class AbstractApplication {
     }
     
     public String getCopyrightLine() {
-        return "copyright 2013-" + LocalDate.now().getYear() +" by Apache Software Foundation. See LICENSE.txt for more information.";
+        return "copyright 2013-" + Instant.now().get(ChronoField.YEAR) +" by Apache Software Foundation. See LICENSE.txt for more information.";
     }
     
     public String getVersionString() {

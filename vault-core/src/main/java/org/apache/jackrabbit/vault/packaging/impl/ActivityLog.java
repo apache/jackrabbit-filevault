@@ -17,6 +17,8 @@
 package org.apache.jackrabbit.vault.packaging.impl;
 
 
+import java.util.Locale;
+
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEventListener;
@@ -50,9 +52,9 @@ public class ActivityLog implements PackageEventListener {
     public void onPackageEvent(@NotNull PackageEvent event) {
         String msg;
         if (event.getRelatedIds() != null) {
-            msg = String.format("%s: %s (%s)", event.getId(), event.getType(), PackageId.toString(event.getRelatedIds()));
+            msg = String.format(Locale.ENGLISH, "%s: %s (%s)", event.getId(), event.getType(), PackageId.toString(event.getRelatedIds()));
         } else {
-            msg = String.format("%s: %s", event.getId(), event.getType());
+            msg = String.format(Locale.ENGLISH, "%s: %s", event.getId(), event.getType());
         }
 
         if (log.isTraceEnabled()) {
@@ -60,7 +62,7 @@ public class ActivityLog implements PackageEventListener {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             for (int i=1; i<stackTrace.length; i++) {
                 StackTraceElement s = stackTrace[i];
-                msg += String.format("\n\tat %s.%s(%s:%d)", s.getClassName(), s.getMethodName(), s.getFileName(), s.getLineNumber());
+                msg += String.format(Locale.ENGLISH, "\n\tat %s.%s(%s:%d)", s.getClassName(), s.getMethodName(), s.getFileName(), s.getLineNumber());
             }
         }
         log.info("{}", msg);

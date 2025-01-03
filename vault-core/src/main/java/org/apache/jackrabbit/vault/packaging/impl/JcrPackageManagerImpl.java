@@ -23,13 +23,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
@@ -332,7 +335,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     public void assemble(Node packNode, JcrPackageDefinition definition,
                          ProgressTrackerListener listener)
             throws PackageException, RepositoryException, IOException {
-        Calendar now = Calendar.getInstance();
+        Calendar now = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
         JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) definition;
         validateSubPackages(def);
         def.sealForAssembly(now);
@@ -409,7 +412,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             throws IOException, RepositoryException, PackageException {
         JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) definition;
         validateSubPackages(def);
-        Calendar now = Calendar.getInstance();
+        Calendar now = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
         def.sealForAssembly(now);
 
         ExportOptions opts = new ExportOptions();
@@ -428,7 +431,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             throws PackageException, RepositoryException, IOException {
         VaultPackage src = ((JcrPackageImpl) pack).getPackage(true);
 
-        Calendar now = Calendar.getInstance();
+        Calendar now = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
         pack.verifyId(true, false);
         JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) pack.getDefinition();
         def.sealForRewrap(now);

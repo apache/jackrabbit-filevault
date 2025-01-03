@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -137,7 +138,7 @@ public class DefaultPackageInfo implements PackageInfo {
             }
             String type = mf.getMainAttributes().getValue(PackageProperties.MF_KEY_PACKAGE_TYPE);
             if (type != null) {
-                packageType = PackageType.valueOf(type.toUpperCase());
+                packageType = PackageType.valueOf(type.toUpperCase(Locale.ROOT));
             }
         } else if (PROPERTIES_FILE.equals(file)) {
             Properties props = new Properties();

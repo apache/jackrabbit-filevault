@@ -37,17 +37,17 @@ public class ConfigHelper {
      */
     private static final Logger log = LoggerFactory.getLogger(ConfigHelper.class);
 
-    private Map defaultPackages = new HashMap();
+    private Map<String, String> defaultPackages = new HashMap<>();
 
-    private Map defaultClasses = new HashMap();
+    private Map<String, String> defaultClasses = new HashMap<>();
 
-    private Map<String, String> mappings = new HashMap<String, String>();
+    private Map<String, String> mappings = new HashMap<>();
 
-    public Map getDefaultPackages() {
+    public Map<String, String> getDefaultPackages() {
         return defaultPackages;
     }
 
-    public Map getDefaultClasses() {
+    public Map<String, String> getDefaultClasses() {
         return defaultClasses;
     }
 
@@ -56,11 +56,11 @@ public class ConfigHelper {
     }
 
     public String getDefaultPackage(String name) {
-        return (String) defaultPackages.get(name);
+        return defaultPackages.get(name);
     }
 
     public String getDefaultClass(String name) {
-        return (String) defaultClasses.get(name);
+        return defaultClasses.get(name);
     }
 
     public Object create(Element elem)
@@ -68,7 +68,7 @@ public class ConfigHelper {
 
         String className = elem.getAttribute("class");
         if (className == null || className.equals("")) {
-            className = (String) defaultClasses.get(elem.getNodeName());
+            className = defaultClasses.get(elem.getNodeName());
         }
         if (className == null || className.equals("")) {
             // create string object
@@ -82,7 +82,7 @@ public class ConfigHelper {
         }
 
         // try to get class without prepending package
-        Class clazz = null;
+        Class<?> clazz = null;
         try {
             clazz = getClass().getClassLoader().loadClass(className);
         } catch (ClassNotFoundException e) {
@@ -91,7 +91,7 @@ public class ConfigHelper {
         if (clazz == null) {
             // check for default package
             if (className.indexOf('.') < 0) {
-                String pack = (String) defaultPackages.get(elem.getNodeName());
+                String pack = defaultPackages.get(elem.getNodeName());
                 if (pack == null) {
                     throw new ConfigurationException("Default package for class attribute of " + elem.getNodeName() + " missing.");
                 }
@@ -112,15 +112,11 @@ public class ConfigHelper {
         }
         try {
             if (field == null) {
-                return clazz.newInstance();
+                return clazz.getDeclaredConstructor().newInstance();
             } else {
                 return clazz.getField(field).get(null);
             }
-        } catch (InstantiationException e) {
-            throw new ConfigurationException("Error while creating instance for " + elem.getNodeName(), e);
-        } catch (NoSuchFieldException e) {
-            throw new ConfigurationException("Error while creating instance for " + elem.getNodeName(), e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException|IllegalAccessException|NoSuchFieldException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             throw new ConfigurationException("Error while creating instance for " + elem.getNodeName(), e);
         }
     }
@@ -129,11 +125,11 @@ public class ConfigHelper {
         return prefix + name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
     }
 
-    public static Method getMethod(Object obj, String name, Class ... params) {
+    public static Method getMethod(Object obj, String name, Class<?> ... params) {
         Method[] ms = obj.getClass().getMethods();
         for (Method m : ms) {
             if (m.getName().equals(name)) {
-                Class[] pt = m.getParameterTypes();
+                Class<?>[] pt = m.getParameterTypes();
                 if (pt.length == params.length) {
                     for (int j = 0; j < params.length; j++) {
                         if (!params[j].isAssignableFrom(pt[j])) {
@@ -199,9 +195,7 @@ public class ConfigHelper {
         } catch (NoSuchMethodException e) {
             log.trace("{} has no field {} or type " + T, obj, name);
             return null;
-        } catch (IllegalAccessException e) {
-            throw new ConfigurationException("Unable to get list " + name + " of " + obj);
-        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException|InvocationTargetException e) {
             throw new ConfigurationException("Unable to get list " + name + " of " + obj);
         }
     }

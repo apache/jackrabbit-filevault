@@ -16,6 +16,8 @@
  */
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -28,17 +30,17 @@ import java.util.zip.Deflater;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.security.AccessControlEntry;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
-import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -48,10 +50,7 @@ import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class ACEsAtRootIT extends IntegrationTestBase {
 
@@ -82,8 +81,8 @@ public class ACEsAtRootIT extends IntegrationTestBase {
         AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:read"}, true);
 
         // Check the number of ACEs at the root
-
-        assertEquals(2, AccessControlUtils.getAccessControlList(admin, "/").getAccessControlEntries().length);
+        AccessControlEntry[] originalAces = AccessControlUtils.getAccessControlList(admin, "/").getAccessControlEntries();
+        assertEquals(2, originalAces.length);
         assertEquals(1, AccessControlUtils.getAccessControlList(admin, null).getAccessControlEntries().length);
 
         // Export with the user session
@@ -130,7 +129,6 @@ public class ACEsAtRootIT extends IntegrationTestBase {
 
         // Import with admin session
 
-        clean(userPath);
 
         ImportOptions importOptions = new ImportOptions();
 //        importOptions.setImportMode(ImportMode.UPDATE);
@@ -154,12 +152,22 @@ public class ACEsAtRootIT extends IntegrationTestBase {
         // Check the number of ACEs at the root, the count should not have changed.
 
         assertNodeExists(userPath);
-        assertEquals(2, AccessControlUtils.getAccessControlList(admin, "/").getAccessControlEntries().length);
+        AccessControlEntry[] actualAces = AccessControlUtils.getAccessControlList(admin, "/").getAccessControlEntries();
+        assertEquals("Expected two ACEs: " + toString(originalAces) + " at / but found: " + toString(actualAces), 2, actualAces.length);
         assertEquals(1, AccessControlUtils.getAccessControlList(admin, null).getAccessControlEntries().length);
 
+        // removing the user's node also removes the bound ACEs at the root in later Oak versions
+        clean(userPath);
         tmpFile.delete();
 
     }
 
+    static String toString(AccessControlEntry[] aces) {
+        StringBuilder sb = new StringBuilder();
+        for (AccessControlEntry ace : aces) {
+            sb.append("ACE for principal ").append(ace.getPrincipal().getName()).append(" with privileges ").append(StringUtils.join(ace.getPrivileges(), ",")).append("\n");
+        }
+        return sb.toString();
+    }
 }
 

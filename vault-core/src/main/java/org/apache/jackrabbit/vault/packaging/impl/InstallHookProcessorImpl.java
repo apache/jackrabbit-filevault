@@ -276,7 +276,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             }
             // create instance
             try {
-                hook = (InstallHook) clazz.newInstance();
+                hook = (InstallHook) clazz.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 throw new PackageException("hook's main class " + mainClassName + " could not be instantiated.", e);
             }

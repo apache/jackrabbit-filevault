@@ -76,7 +76,7 @@ public class Registry {
     public Aggregator createAggregator(String type) {
         if (aggregators.containsKey(type)) {
             try {
-                return aggregators.get(type).newInstance();
+                return aggregators.get(type).getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 throw new IllegalArgumentException("Unable to create aggregator of type: " + type, e);
             }
@@ -87,7 +87,7 @@ public class Registry {
     public ArtifactHandler createHandler(String type) {
         if (handlers.containsKey(type)) {
             try {
-                return handlers.get(type).newInstance();
+                return handlers.get(type).getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 throw new IllegalArgumentException("Unable to create handler of type: " + type, e);
             }

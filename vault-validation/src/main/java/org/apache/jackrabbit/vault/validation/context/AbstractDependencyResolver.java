@@ -76,7 +76,12 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
             if (packageInfo == null) {
                 for (Map.Entry<PackageId, URI> dependencyLocation : dependencyLocations.entrySet()) {
                     if (dependency.matches(dependencyLocation.getKey())) {
-                        packageInfo = resolvePackageInfo(MavenCoordinates.parse(dependencyLocation.getValue()));
+                        MavenCoordinates coords = MavenCoordinates.parse(dependencyLocation.getValue());
+                        if (coords != null) {
+                            packageInfo = resolvePackageInfo(coords);
+                        } else {
+                            log.warn("Could not resolve Maven coordinates for dependency location URI: {}", dependencyLocation.getValue());
+                        }
                     }
                 }
             }

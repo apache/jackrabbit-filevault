@@ -75,6 +75,7 @@ public class CmdExport extends AbstractJcrFsCommand {
             if (verbose) {
                 exporter.setVerbose(new DefaultProgressListener());
             }
+            exporter.setNoMetaInf(true);
             exporter.export(vaultFile);
             VaultFsApp.log.info("Exporting done.");
         } finally {

@@ -550,7 +550,6 @@ public class UserContentPackageIT extends IntegrationTestBase {
 		PathFilterSet pathFilterSet = new PathFilterSet(path);
 		try {
 		    pathFilterSet.addInclude(new DefaultPathFilter("/\\Q" + path.substring(1) + "\\E"));
-		    pathFilterSet.addExclude(new DefaultPathFilter(".*rep:policy"));
 		    pathFilterSet.addInclude(new DefaultPathFilter(".*/rep:policy"));
 		} catch (ConfigurationException e) {
 		    throw new RuntimeException(e);

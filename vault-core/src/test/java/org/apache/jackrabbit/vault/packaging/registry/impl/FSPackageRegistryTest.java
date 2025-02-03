@@ -117,6 +117,8 @@ public class FSPackageRegistryTest {
     public void testCacheInitializedAfterOSGiActivateLocaleTr() throws IOException {
         Locale defaultLocale = Locale.getDefault();
         try {
+            // see JCRVLT-788; this verifies that switching to a locale where
+            // uppercase("i") != 'I' does not cause failures
             Locale.setDefault(new Locale("tr", "TR"));
             testCacheInitializedAfterOSGiActivate();
         }

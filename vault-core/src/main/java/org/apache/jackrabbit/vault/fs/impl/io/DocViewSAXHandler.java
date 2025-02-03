@@ -216,6 +216,11 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     @Override
     public void characters(char ch[], int start, int length) throws SAXException {
         // can be ignored in docview
+        // but passed to handler for validation purposes
+        String value = new String(ch, start, length).trim();
+        if (!value.isEmpty()) {
+            handler.afterCharacterData(value, currentPath, locator.getLineNumber(), locator.getColumnNumber());
+        }
     }
 
     @Override

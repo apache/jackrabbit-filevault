@@ -75,7 +75,7 @@ public class DocumentViewParserValidatorTest {
 
     @Before
     public void setUp() throws ParserConfigurationException, SAXException, IOException {
-        validator = new DocumentViewParserValidator(ValidationMessageSeverity.ERROR, false);
+        validator = new DocumentViewParserValidator(ValidationMessageSeverity.ERROR, false, ValidationMessageSeverity.ERROR);
         nodePathsAndLineNumbers = new HashMap<>();
         validator.setDocumentViewXmlValidators(Collections.singletonMap("docviewid", docViewXmlValidator));
     }
@@ -188,7 +188,7 @@ public class DocumentViewParserValidatorTest {
                             filePath, Paths.get(""), nodePath, 19, 36, new DocViewParser.XmlParseException(message, nodePath, 19, 36)
             ));
         }
-        validator = new DocumentViewParserValidator(ValidationMessageSeverity.ERROR, true);
+        validator = new DocumentViewParserValidator(ValidationMessageSeverity.ERROR, true, ValidationMessageSeverity.ERROR);
         try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/_cq_content.xml")) {
             Collection<ValidationMessage> messages = validator.validateJcrData(input, filePath, Paths.get(""), nodePathsAndLineNumbers);
             // filter
@@ -321,6 +321,20 @@ public class DocumentViewParserValidatorTest {
                             ValidationMessageSeverity.ERROR,
                             String.format(ValidatorDocViewParserHandler.MESSAGE_INVALID_STRING_SERIALIZATION, "Date", "attribute1", "somedate"),
                             Paths.get("apps/invalid/inconvertibletypes.xml"), Paths.get(""), "/apps/invalid/inconvertibletypes/somepath", 28, 6, null) 
+                   );
+        }
+    }
+
+    @Test
+    public void testDocViewWithUnusedCharacterData() throws ParserConfigurationException, SAXException, URISyntaxException, IOException {
+        try (InputStream input = this.getClass().getResourceAsStream("/simple-package/jcr_root/apps/invalid/unusedcharacterdata.xml")) {
+            Collection<ValidationMessage> messages = validator.validateJcrData(input, Paths.get("apps", "invalid","unusedcharacterdata.xml"), Paths.get(""), nodePathsAndLineNumbers);
+
+           ValidationExecutorTest.assertViolation(messages,
+                    new ValidationViolation(DocumentViewParserValidatorFactory.ID,
+                            ValidationMessageSeverity.ERROR,
+                            String.format(ValidatorDocViewParserHandler.MESSAGE_UNUSED_CHARACTER_DATA, "This is some character data"),
+                            Paths.get("apps/invalid/unusedcharacterdata.xml"), Paths.get(""), "/apps/invalid/unusedcharacterdata/somepath", 21, 78, null)
                    );
         }
     }

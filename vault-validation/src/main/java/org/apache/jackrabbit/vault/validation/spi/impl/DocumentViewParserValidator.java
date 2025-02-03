@@ -47,8 +47,9 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
     private final Map<String, DocumentViewXmlValidator> docViewValidators;
     private final DocViewParser docViewParser;
     private final @NotNull ValidationMessageSeverity severity;
+    private final @NotNull ValidationMessageSeverity severityForUnusedCharacterData;
     
-    public DocumentViewParserValidator(@NotNull ValidationMessageSeverity severity, boolean allowUndeclaredPrefixInFileName) {
+    public DocumentViewParserValidator(@NotNull ValidationMessageSeverity severity, boolean allowUndeclaredPrefixInFileName, final @NotNull ValidationMessageSeverity severityForUnusedCharacterData) {
         super();
         this.docViewValidators = new HashMap<>();
         if (allowUndeclaredPrefixInFileName) {
@@ -68,6 +69,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
             this.docViewParser = new DocViewParser();
         }
         this.severity = severity;
+        this.severityForUnusedCharacterData = severityForUnusedCharacterData;
     }
 
     public void setDocumentViewXmlValidators(Map<String, DocumentViewXmlValidator> documentViewXmlValidators) {
@@ -110,7 +112,7 @@ public class DocumentViewParserValidator implements GenericJcrDataValidator {
             Map<String, Integer> nodePathsAndLineNumbers) throws IOException {
         List<ValidationMessage> enrichedMessages = new LinkedList<>();
         enrichedMessages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, "Detected DocView..."));
-        ValidatorDocViewParserHandler handler = new ValidatorDocViewParserHandler(severity, docViewValidators, filePath, basePath);
+        ValidatorDocViewParserHandler handler = new ValidatorDocViewParserHandler(severity, severityForUnusedCharacterData, docViewValidators, filePath, basePath);
         try {
             docViewParser.parse(rootNodePath, new InputSource(new CloseShieldInputStream(input)), handler);
             enrichedMessages.addAll(ValidationViolation.wrapMessages(null, handler.getViolations(), filePath, basePath, rootNodePath, 0, 0));

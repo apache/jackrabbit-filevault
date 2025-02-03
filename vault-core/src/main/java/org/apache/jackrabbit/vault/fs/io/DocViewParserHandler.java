@@ -67,14 +67,14 @@ public interface DocViewParserHandler {
      * @param prefix the namespace prefix
      * @param uri the namespace uri
      */
-    default void startPrefixMapping(String prefix, String uri) {};
+    default void startPrefixMapping(@NotNull String prefix, @NotNull String uri) {};
 
     /**
      * Called when a namespace mapping end in the docview xml.
      * Rather use {@link #setNameResolver(NameResolver)} instead if you just need to resolve JCR names.
      * @param prefix the namespace prefix
      */
-    default void endPrefixMapping(String prefix) {};
+    default void endPrefixMapping(@NotNull String prefix) {};
 
     /**
      * Called before the first {@link DocViewParserHandler#startDocViewNode(String, DocViewNode2, Optional, int, int)} is called.
@@ -82,5 +82,16 @@ public interface DocViewParserHandler {
      * Can be used instead of overwriting {@link #startPrefixMapping(String, String)} and {@link #endPrefixMapping(String)}.
      * @param nameResolver the resolver aware of all namespaces and their prefixes defined in the underlying XML document.
      */
-    default void setNameResolver(NameResolver nameResolver) {};
+    default void setNameResolver(@NotNull NameResolver nameResolver) {}
+
+    /** 
+     * Called when non-whitespace character data is encountered in the underlying XML document.
+     * For DocView XML files character data is not considered, i.e. this method is only called for superfluous data.
+     * 
+     * @param value the character data
+     * @param nodePath the absolute node path of the node in which the character data was found
+     * @param line 
+     * @param column 
+     */
+    default void afterCharacterData(@NotNull String value, @NotNull String nodePath, int line, int column) {}
 }

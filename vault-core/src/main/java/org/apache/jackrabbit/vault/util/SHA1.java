@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 
 import org.apache.commons.io.FileUtils;
 
@@ -110,7 +111,7 @@ public class SHA1 {
     }
 
     public String toString() {
-        return String.format("%08x%08x%08x%08x%08x", w0, w1, w2, w3, w4);
+        return String.format(Locale.ROOT, "%08x%08x%08x%08x%08x", w0, w1, w2, w3, w4);
     }
 
     public int hashCode() {

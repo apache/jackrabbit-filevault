@@ -18,6 +18,7 @@ package org.apache.jackrabbit.vault.validation.spi.impl;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -46,7 +47,7 @@ public final class OverlappingFilterValidatorFactory implements ValidatorFactory
             final ValidationMessageSeverity severityForOverlappingSingleNodePatterns;
             if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_OVERLAPPING_SINGLE_NODE_PATTERNS)) {
                 String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_OVERLAPPING_SINGLE_NODE_PATTERNS);
-                severityForOverlappingSingleNodePatterns = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+                severityForOverlappingSingleNodePatterns = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
             } else {
                 severityForOverlappingSingleNodePatterns = ValidationMessageSeverity.WARN;
             }

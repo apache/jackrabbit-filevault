@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -99,7 +101,7 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
             String file = System.getProperty(PARAM_JCR_REMOTING_SPILOG);
             if (file != null) {
                 WriterLogWriterProvider provider = new WriterLogWriterProvider(
-                        new OutputStreamWriter(FileUtils.openOutputStream(new File(file)))
+                        new OutputStreamWriter(FileUtils.openOutputStream(new File(file)), StandardCharsets.UTF_8)
                 );
                 parameters.put(
                         Jcr2spiRepositoryFactory.PARAM_LOG_WRITER_PROVIDER,
@@ -114,7 +116,7 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
             if (connectionOptions != null) {
                 parameters.putAll(connectionOptions.toServiceFactoryParameters());
             }
-            System.out.printf("Connecting via JCR remoting to %s%n", address.getSpecificURI().toString());
+            System.out.printf(Locale.ENGLISH, "Connecting via JCR remoting to %s%n", address.getSpecificURI().toString());
             return new RepositoryFactoryImpl().getRepository(parameters);
         } catch (IOException e) {
             throw new RepositoryException(e);

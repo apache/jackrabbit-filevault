@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -29,8 +30,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.PathNotFoundException;
@@ -45,6 +48,7 @@ import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.cnd.ParseException;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
+import org.apache.jackrabbit.spi.commons.conversion.MalformedPathException;
 import org.apache.jackrabbit.spi.commons.conversion.NameParser;
 import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
@@ -76,7 +80,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
     static final String MESSAGE_MISSING_PRIMARY_TYPE = "Mandatory jcr:primaryType missing on node '%s'";
 
     static final Value DUMMY_BINARY_VALUE = new BinaryValue("dummy binary");
-    static final Value DUMMY_DATE_VALUE = new DateValue(Calendar.getInstance());
+    static final Value DUMMY_DATE_VALUE = new DateValue(Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
     static final Value DUMMY_STRING_VALUE = new StringValue("dummy string");
 
     private final WorkspaceFilter filter;
@@ -121,10 +125,10 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
         try (InputStreamReader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
             ntManagerProvider.registerNodeTypes(reader);
             return Collections.singleton(
-                    new ValidationMessage(ValidationMessageSeverity.INFO, String.format(MESSAGE_REGISTERED_CND_IN_PACKAGE, filePath)));
+                    new ValidationMessage(ValidationMessageSeverity.INFO, String.format(Locale.ENGLISH, MESSAGE_REGISTERED_CND_IN_PACKAGE, filePath)));
         } catch (RepositoryException | ParseException e) {
             return Collections.singleton(
-                    new ValidationMessage(defaultSeverity, String.format(MESSAGE_INVALID_CND_IN_PACKAGE, filePath, e.getMessage()), filePath, basePath, 0, 0, e));
+                    new ValidationMessage(defaultSeverity, String.format(Locale.ENGLISH, MESSAGE_INVALID_CND_IN_PACKAGE, filePath, e.getMessage()), filePath, basePath, 0, 0, e));
         }
     }
 
@@ -146,7 +150,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
             // if other properties are set this node is not only used for ordering purposes
             if (filter.contains(nodeContext.getNodePath()) && !node.getProperties().isEmpty()) {
                 return Collections.singleton(
-                        new ValidationMessage(defaultSeverity, String.format(MESSAGE_MISSING_PRIMARY_TYPE, nodeContext.getNodePath())));
+                        new ValidationMessage(defaultSeverity, String.format(Locale.ENGLISH, MESSAGE_MISSING_PRIMARY_TYPE, nodeContext.getNodePath())));
             } else {
                 // order node only or outside filter
                 return null;
@@ -160,7 +164,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
                 messages.addAll(addProperty(nodeContext, property.getName().toString(), property.isMultiValue(), docViewPropertyValueFactory.getValues(property)));
             } catch (ValueFormatException e) {
                 messages.add(new ValidationMessage(defaultSeverity,
-                        String.format(MESSAGE_INVALID_PROPERTY_VALUE, property.getName(), e.getLocalizedMessage())));
+                        String.format(Locale.ENGLISH, MESSAGE_INVALID_PROPERTY_VALUE, property.getName(), e.getLocalizedMessage())));
             }
         }
 
@@ -182,7 +186,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
             // log each unknown node type/namespace only once!
             if (!loggedUnknownNodeTypeMessages.contains(e.getMessage())) {
                 messages.add(new ValidationMessage(severityForUnknownNodeTypes,
-                        String.format(MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE, e.getMessage()), nodeContext, e));
+                        String.format(Locale.ENGLISH, MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE, e.getMessage()), nodeContext, e));
                 loggedUnknownNodeTypeMessages.add(e.getMessage());
             }
         } catch (RepositoryException e) {
@@ -215,7 +219,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
                 if (!loggedUnknownNodeTypeMessages.contains(e.getMessage())) {
                     loggedUnknownNodeTypeMessages.add(e.getMessage());
                     return Collections.singleton(new ValidationMessage(severityForUnknownNodeTypes,
-                            String.format(MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE, e.getMessage(), nodeContext)));
+                            String.format(Locale.ENGLISH, MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE, e.getMessage(), nodeContext)));
                 }
             } catch (RepositoryException e) {
                 throw new IllegalStateException(
@@ -262,7 +266,7 @@ public class NodeTypeValidator implements DocumentViewXmlValidator, JcrPathValid
                 // log each unknown node type/namespace only once!
                 if (!loggedUnknownNodeTypeMessages.contains(e.getMessage())) {
                     messages.add(new ValidationMessage(severityForUnknownNodeTypes,
-                            String.format(MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE, e.getMessage()), nodeContext, e));
+                            String.format(Locale.ENGLISH, MESSAGE_UNKNOWN_NODE_TYPE_OR_NAMESPACE, e.getMessage()), nodeContext, e));
                     loggedUnknownNodeTypeMessages.add(e.getMessage());
                 }
                 if (e instanceof NamespaceExceptionInNodeName) {

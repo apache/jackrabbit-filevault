@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.fs.api;
 
 import java.io.PrintWriter;
 import java.util.LinkedList;
+import java.util.Locale;
 
 /**
  * {@code DumpHandler}...
@@ -46,7 +47,7 @@ public class DumpContext {
     }
 
     public void printf(boolean isLast, String format, Object ... args) {
-        println(isLast, String.format(format, args));
+        println(isLast, String.format(Locale.ENGLISH, format, args));
     }
     
     public void indent(boolean isLast) {

@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -68,8 +69,8 @@ public class JcrWorkspaceFilter  {
             PathFilterSet set = new PathFilterSet(root);
             PathFilterSet propertySet = new PathFilterSet(root);
             if (mode.length() > 0) {
-                set.setImportMode(ImportMode.valueOf(mode.toUpperCase()));
-                propertySet.setImportMode(ImportMode.valueOf(mode.toUpperCase()));
+                set.setImportMode(ImportMode.valueOf(mode.toUpperCase(Locale.ROOT)));
+                propertySet.setImportMode(ImportMode.valueOf(mode.toUpperCase(Locale.ROOT)));
             }
             
             if (filter.hasProperty(JcrPackageDefinitionImpl.PN_RULES)) {
@@ -181,7 +182,7 @@ public class JcrWorkspaceFilter  {
         for (PathFilterSet set: pathFilterSets) {
             Node setNode = filterNode.addNode("f" + no);
             setNode.setProperty(JcrPackageDefinitionImpl.PN_ROOT, set.getRoot());
-            setNode.setProperty(JcrPackageDefinitionImpl.PN_MODE, set.getImportMode().name().toLowerCase());
+            setNode.setProperty(JcrPackageDefinitionImpl.PN_MODE, set.getImportMode().name().toLowerCase(Locale.ROOT));
             
             saveRules(setNode, set.getEntries(), JcrPackageDefinitionImpl.PN_RULES);
             // find property filter for same root

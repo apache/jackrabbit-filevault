@@ -22,11 +22,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -223,7 +226,7 @@ public abstract class AbstractExporter implements AutoCloseable {
         mgr.startTracking(tracker == null ? null : tracker.getListener());
         if (!noMetaInf) {
             // update properties
-            setProperty(MetaInf.CREATED, Calendar.getInstance());
+            setProperty(MetaInf.CREATED, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
             setProperty(MetaInf.CREATED_BY, mgr.getUserId());
             setProperty(MetaInf.GENERATOR, generator);
             setProperty(MetaInf.PACKAGE_FORMAT_VERSION, String.valueOf(MetaInf.FORMAT_VERSION_2));
@@ -241,7 +244,7 @@ public abstract class AbstractExporter implements AutoCloseable {
 
             // check for package type
             if (!properties.containsKey(NAME_PACKAGE_TYPE)) {
-                properties.setProperty(NAME_PACKAGE_TYPE, detectPackageType(filter).name().toLowerCase());
+                properties.setProperty(NAME_PACKAGE_TYPE, detectPackageType(filter).name().toLowerCase(Locale.ROOT));
             }
 
             // write Manifest

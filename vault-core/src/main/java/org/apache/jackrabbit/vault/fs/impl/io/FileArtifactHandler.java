@@ -19,8 +19,11 @@ package org.apache.jackrabbit.vault.fs.impl.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
@@ -341,7 +344,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
 
             // always update last modified if binary was modified (bug #22969)
             if (!content.hasProperty(JcrConstants.JCR_LASTMODIFIED) || modified) {
-                Calendar lastMod = Calendar.getInstance();
+                Calendar lastMod = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
                 content.setProperty(JcrConstants.JCR_LASTMODIFIED, lastMod);
                 modified = true;
             }

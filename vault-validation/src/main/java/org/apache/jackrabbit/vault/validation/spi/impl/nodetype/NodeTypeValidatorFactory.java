@@ -21,6 +21,7 @@ import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.jcr.RepositoryException;
@@ -81,7 +82,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
         final @NotNull ValidationMessageSeverity severityForUnknownNodetypes;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNKNOWN_NODETYPES)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNKNOWN_NODETYPES);
-            severityForUnknownNodetypes = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            severityForUnknownNodetypes = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
         } else {
             severityForUnknownNodetypes = DEFAULT_SEVERITY_FOR_UNKNOWN_NODETYPE;
         }
@@ -89,7 +90,7 @@ public class NodeTypeValidatorFactory implements ValidatorFactory {
         final @NotNull ValidationMessageSeverity severityForDefaultNodeTypeViolations;
         if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_DEFAULT_NODE_TYPE_VIOLATIONS)) {
             String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_DEFAULT_NODE_TYPE_VIOLATIONS);
-            severityForDefaultNodeTypeViolations = ValidationMessageSeverity.valueOf(optionValue.toUpperCase());
+            severityForDefaultNodeTypeViolations = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
         } else {
             severityForDefaultNodeTypeViolations = DEFAULT_SEVERITY_FOR_DEFAULT_NODE_TYPE_VIOLATIONS;
         }

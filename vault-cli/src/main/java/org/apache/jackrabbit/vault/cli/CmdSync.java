@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.cli2.Argument;
 import org.apache.commons.cli2.CommandLine;
@@ -116,7 +117,7 @@ public class CmdSync extends AbstractVaultCommand {
                     if (list.size() > 0) {
                         String cmd = list.get(0).toString();
                         try {
-                            list.set(0, Sync.Command.valueOf(cmd.toUpperCase()));
+                            list.set(0, Sync.Command.valueOf(cmd.toUpperCase(Locale.ROOT)));
                         } catch (IllegalArgumentException e) {
                             throw new InvalidArgumentException("Invalid command: " + cmd);
                         }

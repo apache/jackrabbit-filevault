@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
@@ -110,6 +111,20 @@ public class FSPackageRegistryTest {
         FSPackageRegistry registry = createRegistryWithDefaultConstructor(registryHomeDir);
         assertTrue(registry.contains(TEST_PACKAGE_ID));
         assertEquals(Collections.singleton(TEST_PACKAGE_ID), registry.packages());
+    }
+
+    @Test
+    public void testCacheInitializedAfterOSGiActivateLocaleTr() throws IOException {
+        Locale defaultLocale = Locale.getDefault();
+        try {
+            // see JCRVLT-788; this verifies that switching to a locale where
+            // uppercase("i") != 'I' does not cause failures
+            Locale.setDefault(new Locale("tr", "TR"));
+            testCacheInitializedAfterOSGiActivate();
+        }
+        finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     private FSPackageRegistry createRegistryWithDefaultConstructor(Path homePath) throws IOException {

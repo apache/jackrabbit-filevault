@@ -711,7 +711,7 @@ public class AggregateImpl implements Aggregate {
             }
         }
 
-        Set<String> cni = filter.getChildNamesBelowParent(node.getPath());
+        Set<String> cni = filter.getFirstChildNameOfRootBelowPath(node.getPath());
         log.info("cnofi for {} -> {}", node.getPath(), cni);
 
         NodeIterator nIter;

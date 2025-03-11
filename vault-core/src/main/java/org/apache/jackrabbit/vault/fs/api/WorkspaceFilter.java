@@ -18,8 +18,6 @@
 package org.apache.jackrabbit.vault.fs.api;
 
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -105,9 +103,17 @@ public interface WorkspaceFilter extends Dumpable {
      */
     boolean isAncestor(@NotNull String path);
 
-    default @Nullable Set<String> getChildNamesBelowParent(String path) {
+    /**
+     * Matches the given path with the filter's root. If it is an ancestor, returns the name of the first
+     * path segment of the remaining filter root "below" path.
+     * 
+     * @param path Path to check
+     * @return first path segment of non-matched path, or {@code null} when path not ancestor
+     * (or the filter implementation does not implement this method).
+     */
+    default @Nullable Set<String> getFirstChildNameOfRootBelowPath(@NotNull String path) {
         return null;
-    };
+    }
 
     /**
      * Checks if the given node path is globally ignored.

@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.sync.impl;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
@@ -62,7 +63,7 @@ public class XmlAnalyzer {
         SerializationType type = SerializationType.UNKOWN;
         if (r == null) {
             if (source.getEncoding() == null) {
-                r = new InputStreamReader(source.getByteStream());
+                r = new InputStreamReader(source.getByteStream(), StandardCharsets.UTF_8);
             } else {
                 r = new InputStreamReader(source.getByteStream(), source.getEncoding());
             }

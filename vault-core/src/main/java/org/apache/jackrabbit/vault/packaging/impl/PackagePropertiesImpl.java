@@ -27,9 +27,11 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
@@ -37,7 +39,6 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
-import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     private static final Logger log = LoggerFactory.getLogger(PackagePropertiesImpl.class);
 
     /** supports parsing dates given out via {@code SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")} */
-    private static final DateTimeFormatter DATE_TIME_FORMATTER_LEGACY = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER_LEGACY = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.ENGLISH);
     /** supports parsing dates given out via {@code SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")}" */
     private static final DateTimeFormatter DATE_TIME_FORMATTER_ISO_8601 = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
@@ -153,7 +154,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
             return AccessControlHandling.IGNORE;
         } else {
             try {
-                return AccessControlHandling.valueOf(ac.toUpperCase());
+                return AccessControlHandling.valueOf(ac.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException e) {
                 log.warn("invalid access control handling configured: {}", ac);
                 return AccessControlHandling.IGNORE;
@@ -278,7 +279,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
         final String pt = getProperty(NAME_PACKAGE_TYPE);
         if (pt != null) {
             try {
-                return PackageType.valueOf(pt.toUpperCase());
+                return PackageType.valueOf(pt.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException e) {
                 log.warn("Invalid package type configured: {}", pt);
             }

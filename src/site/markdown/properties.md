@@ -72,7 +72,7 @@ Example:
 | generator | Information about the generator of the package | no | for packages created by filevault: `org.apache.jackrabbit.vault:version`
 | lastWrapped | A date string in the format `±YYYY-MM-DDThh:mm:ss.SSSTZD` specifying when the package has been last wrapped (i.e. rebuilt) (see also [ISO8601][api.ISO8601]) | no | empty
 | lastWrappedBy | A user name indicating who last modified this package | no | empty
-| acHandling | See [AccessControlHandling][api.AccessControlHandling]. | no | ignore
+| acHandling | See [AccessControlHandling][api.AccessControlHandling]. Values must be given in lowercase letters. | no | ignore
 | cndPattern | A [Java regular expression pattern](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) which specifies where to look for CND files within the given package (in addition to all `*.cnd` files below `META-INF/vault`) | no | `^/(apps|libs)/([^/]+/){1,2}nodetypes/.+\\.cnd$`
 | requiresRoot | If set to `true` indicates that only admin sessions can install this package | no | `false`
 | requiresRestart | If set to `true` indicates that the system should be restarted after this package has been installed | no | `false`
@@ -86,6 +86,8 @@ Example:
 | groupId | The Maven groupId of the underlying Maven module from which this package was built. Only set if built via the [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) | no | n/a
 | artifactId | The Maven artifactId of the underlying Maven module from which this package was built. Only set if built via the [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) | no | n/a
 | vault.feature.stashPrincipalPolicies | If set to `true` will always restore existing principal policies after installing a package with `AccessControlHandling` being set to anything but `CLEAR` or `OVERWRITE`. Only evaluated since 3.8.10 ([JCRVLT-683](https://issues.apache.org/jira/browse/JCRVLT-683)). | no | The system property `vault.feature.stashPrincipalPolicies` is used as default. This is described with its default value at [Configuration](config.html).
+
+All values of enum types (`acHandling`, `packageType`) are always in lowercase letters.
 
 Manifest File
 ---------------

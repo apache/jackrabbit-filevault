@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.cli;
 import java.io.File;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import org.apache.commons.cli2.Argument;
 import org.apache.commons.cli2.CommandLine;
@@ -44,7 +45,7 @@ import org.apache.jackrabbit.vault.vlt.VltContext;
  */
 public class CmdExportCli extends AbstractVaultCommand {
 
-    static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH);
 
     private Option optType;
     private Option optPrune;
@@ -111,6 +112,7 @@ public class CmdExportCli extends AbstractVaultCommand {
             if (verbose) {
                 exporter.setVerbose(new DefaultProgressListener());
             }
+            exporter.setNoMetaInf(true);
             exporter.export(vaultFile);
             VaultFsApp.log.info("Exporting done.");
         } finally {

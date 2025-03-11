@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -207,7 +208,7 @@ public class FSInstallState {
             if (doc.hasAttribute(ATTR_SIZE)) {
                 size = Long.valueOf(doc.getAttribute(ATTR_SIZE));
             }
-            FSPackageStatus status = FSPackageStatus.valueOf(doc.getAttribute(ATTR_PACKAGE_STATUS).toUpperCase());
+            FSPackageStatus status = FSPackageStatus.valueOf(doc.getAttribute(ATTR_PACKAGE_STATUS).toUpperCase(Locale.ROOT));
             NodeList nl = doc.getChildNodes();
             Set<Dependency> dependencies = new HashSet<>();
             Map<PackageId, SubPackageHandling.Option> subPackages = new HashMap<>();
@@ -339,7 +340,7 @@ public class FSInstallState {
             }
             writer.writeAttribute(ATTR_FILE_PATH, filePath.toString());
             writer.writeAttribute(ATTR_EXTERNAL, Boolean.toString(external));
-            writer.writeAttribute(ATTR_PACKAGE_STATUS, status.name().toLowerCase());
+            writer.writeAttribute(ATTR_PACKAGE_STATUS, status.name().toLowerCase(Locale.ROOT));
 
             if (filter != null && !filter.getFilterSets().isEmpty()) {
                 writer.writeStartElement(TAG_WORKSPACEFILTER);

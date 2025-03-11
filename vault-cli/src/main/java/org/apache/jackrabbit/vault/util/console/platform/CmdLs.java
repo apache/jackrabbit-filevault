@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.Option;
@@ -40,7 +41,7 @@ import org.apache.jackrabbit.vault.util.console.util.Table;
  */
 public class CmdLs extends AbstractConsoleCommand {
 
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy MMM dd HH:mm");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy MMM dd HH:mm", Locale.ENGLISH);
 
     // format flags
     private static int F_FLAG_TIME = 0x01;

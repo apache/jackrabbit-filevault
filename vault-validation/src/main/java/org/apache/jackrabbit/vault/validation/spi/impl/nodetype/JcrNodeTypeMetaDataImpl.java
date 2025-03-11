@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -57,8 +58,8 @@ import org.apache.jackrabbit.spi.commons.name.PathFactoryImpl;
 import org.apache.jackrabbit.spi.commons.nodetype.constraint.ValueConstraint;
 import org.apache.jackrabbit.spi.commons.value.QValueFactoryImpl;
 import org.apache.jackrabbit.spi.commons.value.ValueFormat;
-import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.util.Text;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -198,11 +199,11 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
         } catch (NamespaceException e) {
             if (type == NameType.NODE_NAME) {
                 throw new NamespaceExceptionInNodeName(
-                        String.format(EXCEPTION_MESSAGE_INVALID_NAME, type.getLabel(), name, e.getLocalizedMessage()), e);
+                        String.format(Locale.ENGLISH, EXCEPTION_MESSAGE_INVALID_NAME, type.getLabel(), name, e.getLocalizedMessage()), e);
             }
-            throw new NamespaceException(String.format(EXCEPTION_MESSAGE_INVALID_NAME, type.getLabel(), name, e.getLocalizedMessage()), e);
+            throw new NamespaceException(String.format(Locale.ENGLISH, EXCEPTION_MESSAGE_INVALID_NAME, type.getLabel(), name, e.getLocalizedMessage()), e);
         } catch (IllegalNameException e) {
-            throw new IllegalNameException(String.format(EXCEPTION_MESSAGE_INVALID_NAME, type.getLabel(), name, e.getLocalizedMessage()),
+            throw new IllegalNameException(String.format(Locale.ENGLISH, EXCEPTION_MESSAGE_INVALID_NAME, type.getLabel(), name, e.getLocalizedMessage()),
                     e);
         }
     }
@@ -366,7 +367,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                         itemDefinitionProvider);
                 if (constraintViolation.isPresent()) {
                     messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
-                            String.format(
+                            String.format(Locale.ENGLISH, 
                                     MESSAGE_CHILD_NODE_NOT_ALLOWED,
                                     namePathResolver.getJCRName(childNode.name), namePathResolver.getJCRName(childNode.primaryNodeType),
                                     getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType),
@@ -396,12 +397,12 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                 try {
                     if (filter.contains(namePathResolver.getJCRPath(pathBuilder.getPath()))) {
                         messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
-                                String.format(MESSAGE_MANDATORY_CHILD_NODE_MISSING,
+                                String.format(Locale.ENGLISH, MESSAGE_MANDATORY_CHILD_NODE_MISSING,
                                 getNodeDefinitionLabel(namePathResolver, mandatoryNodeType),
                                 getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType)), context));
                     } else {
                         // if mandatory child nodes are missing outside filter rules, this is not an issue
-                        messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, String.format(MESSAGE_MANDATORY_UNCONTAINED_CHILD_NODE_MISSING,
+                        messages.add(new ValidationMessage(ValidationMessageSeverity.DEBUG, String.format(Locale.ENGLISH, MESSAGE_MANDATORY_UNCONTAINED_CHILD_NODE_MISSING,
                                 getNodeDefinitionLabel(namePathResolver, mandatoryNodeType),
                                 getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType)), context));
                     }
@@ -418,9 +419,9 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
         String label;
         String types = joinAsQualifiedJcrName(nameResolver, nodeType.getMergedNodeTypes());
         if (isImplicit) 
-            label = String.format("potential default types [%s]", types);
+            label = String.format(Locale.ENGLISH, "potential default types [%s]", types);
         else {
-            label =  String.format("types [%s]", types);
+            label =  String.format(Locale.ENGLISH, "types [%s]", types);
         }
         return label;
     }
@@ -516,7 +517,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
             try {
                 if (!propertyTypesByName.containsKey(mandatoryPropertyDefinition.getName())) {
                     messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
-                            String.format(MESSAGE_MANDATORY_PROPERTY_MISSING,
+                            String.format(Locale.ENGLISH, MESSAGE_MANDATORY_PROPERTY_MISSING,
                                     nameResolver.getJCRName(mandatoryPropertyDefinition.getName()),
                                     getEffectiveNodeTypeLabel(nameResolver, effectiveNodeType)), context));
                 } else {
@@ -525,7 +526,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                     if (mandatoryPropertyDefinition.getRequiredType() != actualPropertyType) {
                         // check type
                         messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
-                                String.format(MESSAGE_MANDATORY_PROPERTY_WITH_WRONG_TYPE,
+                                String.format(Locale.ENGLISH, MESSAGE_MANDATORY_PROPERTY_WITH_WRONG_TYPE,
                                         nameResolver.getJCRName(mandatoryPropertyDefinition.getName()),
                                         PropertyType.nameFromValue(actualPropertyType),
                                         PropertyType.nameFromValue(mandatoryPropertyDefinition.getRequiredType()),
@@ -571,7 +572,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                 isMultiValue);
         if (constraintViolation.isPresent()) {
             messages.add(new ValidationMessage(isImplicit ? severityForDefaultNodeTypeViolations : severity,
-                    String.format(
+                    String.format(Locale.ENGLISH, 
                             MESSAGE_PROPERTY_NOT_ALLOWED,
                             namePathResolver.getJCRName(qName), PropertyType.nameFromValue(values[0].getType()),
                             getEffectiveNodeTypeLabel(namePathResolver, effectiveNodeType),
@@ -604,7 +605,7 @@ public class JcrNodeTypeMetaDataImpl implements JcrNodeTypeMetaData {
                 QValue qValue = ValueFormat.getQValue(value, namePathResolver, QVALUE_FACTORY);
                 ValueConstraint.checkValueConstraints(applicablePropertyDefinition, new QValue[] { qValue });
             } catch (ConstraintViolationException e) {
-                return Optional.of(String.format(CONSTRAINT_PROPERTY_VALUE, e.getLocalizedMessage()));
+                return Optional.of(String.format(Locale.ENGLISH, CONSTRAINT_PROPERTY_VALUE, e.getLocalizedMessage()));
             }
         }
         return Optional.empty();

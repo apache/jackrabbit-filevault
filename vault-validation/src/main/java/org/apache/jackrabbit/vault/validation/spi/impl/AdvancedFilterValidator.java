@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -151,7 +152,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
             }
         }
         if (orphanEntries.length() > 0) {
-            return Collections.singleton(new ValidationMessage(severityForOrphanedFilterEntries, String.format(MESSAGE_ORPHANED_FILTER_ENTRIES, orphanEntries.toString())));
+            return Collections.singleton(new ValidationMessage(severityForOrphanedFilterEntries, String.format(Locale.ENGLISH, MESSAGE_ORPHANED_FILTER_ENTRIES, orphanEntries.toString())));
         } else {
             return null;
         }
@@ -200,9 +201,9 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
             if (!isContained) {
                 String msg;
                 if (coveringPackageId == null) {
-                    msg = String.format(MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, root);
+                    msg = String.format(Locale.ENGLISH, MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, root);
                 } else {
-                    msg = String.format(MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED, root, coveringPackageId);
+                    msg = String.format(Locale.ENGLISH, MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED, root, coveringPackageId);
                 }
                 messages.add(new ValidationMessage(severityForUndefinedFilterRootAncestors, msg));
             }
@@ -216,7 +217,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
             // check for validity of root path
             if (checkRoots && !pathFilterSet.getRoot().startsWith("/")) {
                 messages.add(new ValidationMessage(defaultSeverity,
-                        String.format(MESSAGE_ROOT_PATH_NOT_ABSOLUTE, pathFilterSet.getRoot())));
+                        String.format(Locale.ENGLISH, MESSAGE_ROOT_PATH_NOT_ABSOLUTE, pathFilterSet.getRoot())));
             }
             for (Entry<PathFilter> pathFilterEntry : pathFilterSet.getEntries()) {
                 if (!(pathFilterEntry.getFilter() instanceof DefaultPathFilter)) {
@@ -227,7 +228,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
                 defaultPathFilter.getPattern();
                 if (!isRegexValidForRootPath(defaultPathFilter.getPattern(), pathFilterSet.getRoot())) {
                     messages.add(new ValidationMessage(defaultSeverity,
-                            String.format(MESSAGE_INVALID_PATTERN, defaultPathFilter.getPattern(), pathFilterSet.getRoot())));
+                            String.format(Locale.ENGLISH, MESSAGE_INVALID_PATTERN, defaultPathFilter.getPattern(), pathFilterSet.getRoot())));
                 }
             }
         }
@@ -247,16 +248,16 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
                 if (validRoots.contains(nodePath)) {
                     return Collections.singleton(
                             new ValidationMessage(severityForUncoveredAncestorNode,
-                                    String.format(MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT, nodePath)));
+                                    String.format(Locale.ENGLISH, MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT, nodePath)));
                 } else {
                     // is this a folder only, then you cannot delete it!
                     return Collections.singleton(
                                 new ValidationMessage(severityForUncoveredAncestorNode,
-                                        String.format(MESSAGE_ANCESTOR_NODE_NOT_COVERED, nodePath)));
+                                        String.format(Locale.ENGLISH, MESSAGE_ANCESTOR_NODE_NOT_COVERED, nodePath)));
                 }
             } else {
                 return Collections
-                        .singleton(new ValidationMessage(defaultSeverity, String.format(MESSAGE_NODE_NOT_CONTAINED, nodePath)));
+                        .singleton(new ValidationMessage(defaultSeverity, String.format(Locale.ENGLISH, MESSAGE_NODE_NOT_CONTAINED, nodePath)));
             }
         } else {
             // is it a cleanup filter?
@@ -264,7 +265,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
             if (pathFilterSet != null) {
                 if (PathFilterSet.TYPE_CLEANUP.equals(pathFilterSet.getType())) {
                     return Collections
-                            .singleton(new ValidationMessage(defaultSeverity, String.format(MESSAGE_NODE_BELOW_CLEANUP_FILTER, nodePath)));
+                            .singleton(new ValidationMessage(defaultSeverity, String.format(Locale.ENGLISH, MESSAGE_NODE_BELOW_CLEANUP_FILTER, nodePath)));
                 }
             }
         }
@@ -272,7 +273,7 @@ public final class AdvancedFilterValidator implements GenericMetaInfDataValidato
         String danglingNodePath = getDanglingAncestorNodePath(nodePath, filter);
         if (danglingNodePath != null) {
             return Collections.singleton(
-                    new ValidationMessage(severityForUncoveredAncestorNode,  String.format(MESSAGE_ANCESTOR_NODE_NOT_COVERED, danglingNodePath)));
+                    new ValidationMessage(severityForUncoveredAncestorNode,  String.format(Locale.ENGLISH, MESSAGE_ANCESTOR_NODE_NOT_COVERED, danglingNodePath)));
         }
         return null;
     }

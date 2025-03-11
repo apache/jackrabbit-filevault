@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -55,17 +56,19 @@ public class ValidatorDocViewParserHandler implements DocViewParserHandler {
     private final Map<String, DocumentViewXmlValidator> validators;
     private final @NotNull List<ValidationViolation> violations;
     private final @NotNull ValidationMessageSeverity severity;
+    private final @NotNull ValidationMessageSeverity severityForUnusedCharacterData;
     private final ValueFactory valueFactory;
     private NameResolver nameResolver;
 
     public static final String MESSAGE_INVALID_STRING_SERIALIZATION = "Invalid string serialization for type '%s' given in property '%s' : '%s'. This string cannot be converted to the specified type!";
+    public static final String MESSAGE_UNUSED_CHARACTER_DATA = "Encountered character data inside DocView XML which is never used: %s";
 
     /**
      * the default logger
      */
     private static final Logger log = LoggerFactory.getLogger(ValidatorDocViewParserHandler.class);
 
-    public ValidatorDocViewParserHandler(@NotNull ValidationMessageSeverity severity, @NotNull Map<String, DocumentViewXmlValidator> docViewValidators, @NotNull Path filePath, @NotNull Path basePath) {
+    public ValidatorDocViewParserHandler(@NotNull ValidationMessageSeverity severity, @NotNull ValidationMessageSeverity severityForUnusedCharacterData, @NotNull Map<String, DocumentViewXmlValidator> docViewValidators, @NotNull Path filePath, @NotNull Path basePath) {
         this.nodePathsAndLineNumbers = new HashMap<>();
         this.filePath = filePath;
         this.basePath = basePath;
@@ -73,10 +76,11 @@ public class ValidatorDocViewParserHandler implements DocViewParserHandler {
         violations = new LinkedList<>();
         this.valueFactory = new SimpleValueFactory();
         this.severity = severity;
+        this.severityForUnusedCharacterData = severityForUnusedCharacterData;
     }
 
     @Override
-    public void setNameResolver(NameResolver nameResolver) {
+    public void setNameResolver(@NotNull NameResolver nameResolver) {
         this.nameResolver = nameResolver;
     }
 
@@ -97,6 +101,13 @@ public class ValidatorDocViewParserHandler implements DocViewParserHandler {
         callValidators(false, nodePath, docViewNode, parentDocViewNode, lineNumber, columnNumber);
     }
 
+    @Override
+    public void afterCharacterData(@NotNull String value, @NotNull String nodePath, int lineNumber, int columnNumber) {
+        violations.add(new ValidationViolation(DocumentViewParserValidatorFactory.ID, severityForUnusedCharacterData,
+                String.format(Locale.ENGLISH, MESSAGE_UNUSED_CHARACTER_DATA, value), filePath, basePath,
+                nodePath, lineNumber, columnNumber, null));
+    }
+
     /** @return a Map of absolute node paths (i.e. starting with "/") with "/" as path delimiter and the line number in which they were found in the docview file */
     public @NotNull Map<String, Integer> getNodePaths() {
         return nodePathsAndLineNumbers;
@@ -115,9 +126,9 @@ public class ValidatorDocViewParserHandler implements DocViewParserHandler {
                     } catch (ValueFormatException e) {
                         String message;
                         try {
-                            message = String.format(MESSAGE_INVALID_STRING_SERIALIZATION, PropertyType.nameFromValue(property.getType()), nameResolver.getJCRName(property.getName()), value);
+                            message = String.format(Locale.ENGLISH, MESSAGE_INVALID_STRING_SERIALIZATION, PropertyType.nameFromValue(property.getType()), nameResolver.getJCRName(property.getName()), value);
                         } catch (NamespaceException e1) {
-                            message = String.format(MESSAGE_INVALID_STRING_SERIALIZATION, PropertyType.nameFromValue(property.getType()), property.getName(), value);
+                            message = String.format(Locale.ENGLISH, MESSAGE_INVALID_STRING_SERIALIZATION, PropertyType.nameFromValue(property.getType()), property.getName(), value);
                         }
                         violations.add(new ValidationViolation(DocumentViewParserValidatorFactory.ID, severity, message, filePath, basePath, nodePath, lineNumber, columnNumber, null));
                     }

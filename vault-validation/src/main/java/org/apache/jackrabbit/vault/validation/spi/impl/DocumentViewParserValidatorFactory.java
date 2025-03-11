@@ -16,7 +16,10 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
+import java.util.Locale;
+
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
+import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
@@ -30,6 +33,10 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
 
     public static final String OPTION_ALLOW_UNDECLARED_PREFIX_IN_FILE_NAME = "allowUndeclaredPrefixInFileName";
 
+    public static final String OPTION_SEVERITY_FOR_UNUSED_CHARACTER_DATA = "severityForUnusedCharacterData";
+    static final @NotNull ValidationMessageSeverity DEFAULT_SEVERITY_FOR_UNUSED_CHARACTER_DATA = ValidationMessageSeverity.ERROR;
+    
+
     @Override
     public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         final boolean allowUndeclaredPrefixInFileName;
@@ -38,7 +45,14 @@ public class DocumentViewParserValidatorFactory implements ValidatorFactory {
         } else {
             allowUndeclaredPrefixInFileName = true;
         }
-        return new DocumentViewParserValidator(settings.getDefaultSeverity(), allowUndeclaredPrefixInFileName);
+        final @NotNull ValidationMessageSeverity severityForUnusedCharacterData;
+        if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_UNUSED_CHARACTER_DATA)) {
+            String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_UNUSED_CHARACTER_DATA);
+            severityForUnusedCharacterData = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
+        } else {
+            severityForUnusedCharacterData = DEFAULT_SEVERITY_FOR_UNUSED_CHARACTER_DATA;
+        }
+        return new DocumentViewParserValidator(settings.getDefaultSeverity(), allowUndeclaredPrefixInFileName, severityForUnusedCharacterData);
     }
 
     @Override

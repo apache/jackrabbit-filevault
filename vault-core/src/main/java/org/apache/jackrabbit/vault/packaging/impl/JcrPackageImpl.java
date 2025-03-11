@@ -17,6 +17,9 @@
 
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import static org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl.ARCHIVE_PACKAGE_ROOT_PATH;
+import static org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -43,6 +47,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -74,14 +79,10 @@ import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl.ARCHIVE_PACKAGE_ROOT_PATH;
-import static org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
 
 /**
  * Implements a JcrPackage
@@ -500,7 +501,7 @@ public class JcrPackageImpl implements JcrPackage {
                 if (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.EXTRACT) {
                     PackageId newerPackageId = newerPackageIdPerSubPackage.get(id);
                     if (newerPackageId != null) {
-                        msg = String.format("Skipping installation of subpackage '%s' due to newer installed version: '%s'", id, newerPackageId);
+                        msg = String.format(Locale.ENGLISH, "Skipping installation of subpackage '%s' due to newer installed version: '%s'", id, newerPackageId);
                         skip = true;
                     }
                 }
@@ -781,7 +782,7 @@ public class JcrPackageImpl implements JcrPackage {
             // if the package is not installed at all, abort for required and strict handling
             if ((opts.getDependencyHandling() == DependencyHandling.STRICT && unresolved.size() > 0)
                     || (opts.getDependencyHandling() == DependencyHandling.REQUIRED && unresolved.size() > uninstalled.size())) {
-                String msg = String.format("Refusing to install package %s: required dependencies missing: %s", def.getId(), unresolved);
+                String msg = String.format(Locale.ENGLISH, "Refusing to install package %s: required dependencies missing: %s", def.getId(), unresolved);
                 log.error(msg);
                 throw new DependencyException(msg);
             }
@@ -795,7 +796,7 @@ public class JcrPackageImpl implements JcrPackage {
                     if (opts.getDependencyHandling() == DependencyHandling.BEST_EFFORT) {
                         continue;
                     }
-                    String msg = String.format("Unable to install package %s. dependency has as cycling reference to %s", def.getId(), packageId);
+                    String msg = String.format(Locale.ENGLISH, "Unable to install package %s. dependency has as cycling reference to %s", def.getId(), packageId);
                     log.error(msg);
                     throw new CyclicDependencyException(msg);
                 }
@@ -803,7 +804,7 @@ public class JcrPackageImpl implements JcrPackage {
                     JcrPackage jcrPackage = ((JcrRegisteredPackage)pack).getJcrPackage();
                     ((JcrPackageImpl)jcrPackage).extract(processed, opts, createSnapshot, replaceSnapshot);
                 } else {
-                    String msg = String.format("Unable to install package %s. dependency not found in JcrPackageRegistry %s", def.getId(), packageId);
+                    String msg = String.format(Locale.ENGLISH, "Unable to install package %s. dependency not found in JcrPackageRegistry %s", def.getId(), packageId);
                     log.error(msg);
                     throw new DependencyException(msg);
                 }
@@ -827,7 +828,7 @@ public class JcrPackageImpl implements JcrPackage {
         }
         PackageId[] usage = mgr.usage(getDefinition().getId());
         if (usage.length > 0 && opts.getDependencyHandling() == DependencyHandling.STRICT) {
-            String msg = String.format("Refusing to uninstall package %s. it is still used by: %s", def.getId(), Arrays.toString(usage));
+            String msg = String.format(Locale.ENGLISH, "Refusing to uninstall package %s. it is still used by: %s", def.getId(), Arrays.toString(usage));
             log.error(msg);
             throw new DependencyException(msg);
         }

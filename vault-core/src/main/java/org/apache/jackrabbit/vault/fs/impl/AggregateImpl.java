@@ -749,11 +749,11 @@ public class AggregateImpl implements Aggregate {
         while (nIter.hasNext()) {
             Node n = nIter.nextNode();
             String path = n.getPath();
-            log.info("checking {}", path);
+            log.trace("checking {}", path);
 
             PathFilterSet coverSet = filter.getCoveringFilterSet(path);
             boolean isAncestor = filter.isAncestor(path);
-            log.debug("coverSet for {} is {}, isAncestor: {}", path, coverSet, isAncestor);
+            log.trace("coverSet for {} is {}, isAncestor: {}", path, coverSet, isAncestor);
 
             if (coverSet == null && !isAncestor) {
                 continue;

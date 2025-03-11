@@ -104,14 +104,15 @@ public interface WorkspaceFilter extends Dumpable {
     boolean isAncestor(@NotNull String path);
 
     /**
-     * Matches the given path with the filter's root. If it is an ancestor, returns the name of the first
-     * path segment of the remaining filter root "below" path.
+     * Matches the given path with all filter roots. For each, if it is an ancestor,
+     * add the name of the first path segment of the remaining filter root "below" path
+     * to the result set.
      *
      * @param path Path to check
-     * @return first path segment of non-matched path, or {@code null} when path not ancestor
-     * (or the filter implementation does not implement this method).
+     * @return first path segments of non-matched paths, or {@code null} when result set
+     * cam not be computed.
      */
-    default @Nullable Set<String> getFirstChildNameOfRootBelowPath(@NotNull String path) {
+    default @Nullable Set<String> getFirstChildNamesOfRootsBelowPath(@NotNull String path) {
         return null;
     }
 

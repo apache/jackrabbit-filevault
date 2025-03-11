@@ -292,13 +292,13 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     /**
      * {@inheritDoc}
      */
-    public @Nullable Set<String> getFirstChildNameOfRootBelowPath(String path) {
+    public @Nullable Set<String> getFirstChildNamesOfRootsBelowPath(String path) {
         Set<String> result = new HashSet<>();
         for (PathFilterSet set: nodesFilterSets) {
             String childName = set.getChildNameBelowFilterRoot(path);
-            log.info("filter set root: " + set.getRoot() + ", path: " + path + " -> " + childName);
+            log.debug("filter set root: {}, path: {} -> {}", set.getRoot(), path, childName);
             if (childName == null) {
-                // we don't know
+                // we don't know, so we can't compute the set (early exit)
                 return null;
             }
             result.add(childName);

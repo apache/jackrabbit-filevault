@@ -717,20 +717,25 @@ public class AggregateImpl implements Aggregate {
         NodeIterator nIter = null;
 
         if (childNamesOfInterest != null) {
-            // if filter can provide names of relevant child names, use them
+            // if filters can provide names of relevant child names, try to use them
 
-            Set<Node> children = new HashSet<>();
-            for (String name : childNamesOfInterest) {
-                try {
-                    children.add(node.getNode(name));
-                } catch (PathNotFoundException ignored) {
-                    // go on
-                    log.debug("Node not found in {}: {}, skipping...", node.getPath(), name);
+            try {
+                Set<Node> children = new HashSet<>();
+
+                for (String name : childNamesOfInterest) {
+                    try {
+                        children.add(node.getNode(name));
+                    } catch (PathNotFoundException ignored) {
+                        // go on
+                        log.debug("Node not found in {}: {}, skipping...", node.getPath(), name);
+                    }
                 }
-                // TODO more exception handling
+
+                log.debug("iterating over filter-supplied children: {}", children);
+                nIter = new NodeIteratorAdapter(children);
+            } catch (Exception ex) {
+                log.debug("Exception while retrieving child nodes, falling back to simple iteration.", ex);
             }
-            log.debug("iterating over: {}", children);
-            nIter = new NodeIteratorAdapter(children);
         }
 
         // fallback to classic child node iteration

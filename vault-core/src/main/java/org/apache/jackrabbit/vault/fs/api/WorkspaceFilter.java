@@ -112,7 +112,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @return first path segments of non-matched paths, or {@code null} when result set
      * cam not be computed.
      */
-    default @Nullable Set<String> getFirstChildNamesOfRootsBelowPath(@NotNull String path) {
+    default @Nullable Set<String> getDirectChildNamesTowardsFilterRoots(@NotNull String path) {
         return null;
     }
 

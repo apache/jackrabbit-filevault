@@ -711,7 +711,7 @@ public class AggregateImpl implements Aggregate {
             }
         }
 
-        Set<String> childNamesOfInterest = filter.getFirstChildNamesOfRootsBelowPath(node.getPath());
+        Set<String> childNamesOfInterest = filter.getDirectChildNamesTowardsFilterRoots(node.getPath());
         log.debug("childNamesOfInterest for {} -> {}", node.getPath(), childNamesOfInterest);
 
         NodeIterator nIter = null;

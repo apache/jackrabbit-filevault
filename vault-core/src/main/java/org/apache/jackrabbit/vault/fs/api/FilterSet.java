@@ -40,6 +40,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class FilterSet<E extends Filter> implements Dumpable {
 
+    private static final Logger log = LoggerFactory.getLogger(FilterSet.class);
+
     /**
      * root path of this definition
      */
@@ -240,19 +242,24 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         return path.equals(root) || path.startsWith(rootPattern);
     }
 
-    private static final Logger log = LoggerFactory.getLogger(FilterSet.class);
-
     /**
      * Checks if the given item is an ancestor of the filter's root path.
      * @param path path of the item to check
      * @return {@code true} if the given item is an ancestor
      */
     public boolean isAncestor(@NotNull String path) {
-        boolean isA = path.equals(root) || path.equals("/") || root.startsWith(path + "/");
-        log.info("isAncestor(root= " + root + ", path=" + path + ")  -> " + isA);
-        return isA;
+        boolean isAncestor = path.equals(root) || path.equals("/") || root.startsWith(path + "/");
+        log.debug("isAncestor(root={}, path={}) -> {}", root, path, isAncestor);
+        return isAncestor;
     }
 
+    /**
+     * Matches the given path with this filter's root. If it is an ancestor, returns the name of the first
+     * path segment of the remaining filter root "below" path.
+     *
+     * @param path Path to check
+     * @return first path segment of non-matched path, or {@code null} when path not ancestor
+     */
     public @Nullable String getChildNameBelowFilterRoot(@NotNull String path) {
         String result = null;
 
@@ -262,7 +269,6 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         if (rootMatch.startsWith(pathMatch)) {
             // get filter root after matching path (will exclude leading "/"
             String rel = rootMatch.substring(pathMatch.length());
-            // log.info("getChildNameBelowRoot remainder (root= " + rootMatch + ", path=" + pathMatch + ") -> " + rel);
 
             // truncate before first "/"
             int slashPos = rel.indexOf('/');
@@ -273,8 +279,8 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
             result = rel.isEmpty() ? null : rel;
         }
 
-        // System.out.println("getChildNameBelowRoot(root= " + root + ", path=" + path + ") -> " + result);
-        log.info("getChildNameBelowRoot(root= " + rootMatch + ", path=" + pathMatch + ") -> " + result);
+        log.debug("getChildNameBelowRoot(root={}, path={}) -> {}", rootMatch, pathMatch, result);
+
         return result;
     }
 
@@ -324,6 +330,9 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         return stringWriter.toString();
     }
 
+    private static String appendSlashIfNeeded(String path) {
+        return path.endsWith("/") ? path : path + "/";
+    }
 
     /**
      * Holds a filter entry
@@ -410,9 +419,5 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
             dump(new DumpContext(new PrintWriter(stringWriter)), true);
             return stringWriter.toString();
         }
-    }
-
-    private static String appendSlashIfNeeded(String path) {
-        return path.endsWith("/") ? path : path + "/";
     }
 }

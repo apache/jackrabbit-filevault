@@ -260,7 +260,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @param path Path to check
      * @return first path segment of non-matched path, or {@code null} when path not ancestor
      */
-    public @Nullable String getChildNameBelowFilterRoot(@NotNull String path) {
+    public @Nullable String getDirectChildNameTowardsFilterRoot(@NotNull String path) {
         String result = null;
 
         String rootMatch = appendSlashIfNeeded(root);

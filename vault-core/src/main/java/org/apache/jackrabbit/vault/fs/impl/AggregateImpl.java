@@ -711,12 +711,10 @@ public class AggregateImpl implements Aggregate {
             }
         }
 
-        Set<String> cni = filter.getFirstChildNamesOfRootsBelowPath(node.getPath());
-        log.info("cnofi for {} -> {}", node.getPath(), cni);
+        Set<String> childNamesOfInterest = filter.getFirstChildNamesOfRootsBelowPath(node.getPath());
+        log.debug("childNamesOfInterest for {} -> {}", node.getPath(), childNamesOfInterest);
 
-        NodeIterator nIter;
-
-        Set<String> childNamesOfInterest = cni;
+        NodeIterator nIter = null;
 
         if (childNamesOfInterest != null) {
             // if filter can provide names of relevant child names, use them
@@ -727,17 +725,17 @@ public class AggregateImpl implements Aggregate {
                     children.add(node.getNode(name));
                 } catch (PathNotFoundException ignored) {
                     // go on
-                    log.info("not found in {}: {}, skipping...", node.getPath(), name);
+                    log.debug("Node not found in {}: {}, skipping...", node.getPath(), name);
                 }
                 // TODO more exception handling
             }
-            log.info("iterating over: {}", children);
+            log.debug("iterating over: {}", children);
             nIter = new NodeIteratorAdapter(children);
         }
-        else {
-            // otherwise iterate through all
 
-            log.info("iterating over: {}", node.getPath());
+        // fallback to classic child node iteration
+        if (nIter == null) {
+            log.debug("iterating over all child nodes of: {}", node.getPath());
             nIter = node.getNodes();
         }
 
@@ -746,20 +744,14 @@ public class AggregateImpl implements Aggregate {
         while (nIter.hasNext()) {
             Node n = nIter.nextNode();
             String path = n.getPath();
-            String name = n.getName();
             log.info("checking {}", path);
 
             PathFilterSet coverSet = filter.getCoveringFilterSet(path);
             boolean isAncestor = filter.isAncestor(path);
-            log.info("coverSet for {} is {}, isAncestor: {}", path, coverSet, isAncestor);
+            log.debug("coverSet for {} is {}, isAncestor: {}", path, coverSet, isAncestor);
 
             if (coverSet == null && !isAncestor) {
                 continue;
-            }
-
-            log.info("matching: {} in {}?", path, cni);
-            if (cni != null && !cni.contains(name)) {
-                log.error("{} not in {}?", path, cni);
             }
 
             boolean isIncluded = filter.contains(path);

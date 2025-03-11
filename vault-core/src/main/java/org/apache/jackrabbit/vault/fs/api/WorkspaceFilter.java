@@ -18,7 +18,10 @@
 package org.apache.jackrabbit.vault.fs.api;
 
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -101,6 +104,10 @@ public interface WorkspaceFilter extends Dumpable {
      * @return {@code true} if the given item is an ancestor
      */
     boolean isAncestor(@NotNull String path);
+
+    default @Nullable Set<String> getChildNamesBelowParent(String path) {
+        return null;
+    };
 
     /**
      * Checks if the given node path is globally ignored.

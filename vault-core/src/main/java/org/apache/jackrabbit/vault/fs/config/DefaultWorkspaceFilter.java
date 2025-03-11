@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,6 +59,7 @@ import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -285,6 +287,23 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
         }
         return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public @Nullable Set<String> getChildNamesBelowParent(String path) {
+        Set<String> result = new HashSet<>();
+        for (PathFilterSet set: nodesFilterSets) {
+            String childName = set.getChildNameBelowFilterRoot(path);
+            log.info("filter set root: " + set.getRoot() + ", path: " + path + " -> " + childName);
+            if (childName == null) {
+                // we don't know
+                return null;
+            }
+            result.add(childName);
+        }
+        return result;
     }
 
     /**

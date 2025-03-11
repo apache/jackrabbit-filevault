@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
@@ -37,6 +38,7 @@ import javax.jcr.Value;
 
 import org.apache.jackrabbit.api.ReferenceBinary;
 import org.apache.jackrabbit.commons.iterator.NodeIterable;
+import org.apache.jackrabbit.commons.iterator.NodeIteratorAdapter;
 import org.apache.jackrabbit.commons.iterator.PropertyIterable;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
@@ -51,6 +53,7 @@ import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.io.AggregateWalkListener;
+import org.apache.jackrabbit.vault.util.LineOutputStream;
 import org.apache.jackrabbit.vault.util.NodeNameComparator;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.slf4j.Logger;
@@ -708,21 +711,60 @@ public class AggregateImpl implements Aggregate {
                 include(node, p, path);
             }
         }
+
+        Set<String> cni = filter.getChildNamesBelowParent(node.getPath());
+        log.info("cnofi for {} -> {}", node.getPath(), cni);
+
+        NodeIterator nIter;
+
+        Set<String> childNamesOfInterest = cni;
+
+        if (childNamesOfInterest != null) {
+            // if filter can provide names of relevant child names, use them
+
+            Set<Node> children = new HashSet<>();
+            for (String name : childNamesOfInterest) {
+                try {
+                    children.add(node.getNode(name));
+                } catch (PathNotFoundException ignored) {
+                    // go on
+                    log.info("not found in {}: {}, skipping...", node.getPath(), name);
+                }
+                // TODO more exception handling
+            }
+            log.info("iterating over: {}", children);
+            nIter = new NodeIteratorAdapter(children);
+        }
+        else {
+            // otherwise iterate through all
+
+            log.info("iterating over: {}", node.getPath());
+            nIter = node.getNodes();
+        }
+
         // include "our" nodes to the include set and delegate the others to the
         // respective aggregator building sub aggregates
-        NodeIterator nIter = node.getNodes();
         while (nIter.hasNext()) {
             Node n = nIter.nextNode();
             String path = n.getPath();
-            if (log.isTraceEnabled()) {
-                log.trace("checking " + path);
-            }
+            String name = n.getName();
+            log.info("checking {}", path);
+
             PathFilterSet coverSet = filter.getCoveringFilterSet(path);
             boolean isAncestor = filter.isAncestor(path);
-            boolean isIncluded = filter.contains(path);
+            log.info("coverSet for {} is {}, isAncestor: {}", path, coverSet, isAncestor);
+
             if (coverSet == null && !isAncestor) {
                 continue;
             }
+
+            log.info("matching: {} in {}?", path, cni);
+            if (cni != null && !cni.contains(name)) {
+                log.error("{} not in {}?", path, cni);
+            }
+
+            boolean isIncluded = filter.contains(path);
+
             // check if another aggregator can handle this node
             Aggregator a = mgr.getAggregator(n, path);
             // - if the aggregator is null

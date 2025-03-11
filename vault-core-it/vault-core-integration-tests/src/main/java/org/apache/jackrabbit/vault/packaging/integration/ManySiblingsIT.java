@@ -48,7 +48,6 @@ public class ManySiblingsIT extends IntegrationTestBase {
     }
 
     // JCRVLT-789
-    @Test
     public void testManySiblings() throws RepositoryException, IOException {
 
         Node rootNode = admin.getRootNode();

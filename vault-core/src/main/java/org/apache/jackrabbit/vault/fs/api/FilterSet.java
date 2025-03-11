@@ -24,8 +24,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The item filter set holds a set of item filters each attributed as include
@@ -238,13 +241,42 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         return path.equals(root) || path.startsWith(rootPattern);
     }
 
+    private static final Logger log = LoggerFactory.getLogger(FilterSet.class);
+
     /**
-     * Checks if the given item is an ancestor of the root node.
+     * Checks if the given item is an ancestor of the filter's root path.
      * @param path path of the item to check
      * @return {@code true} if the given item is an ancestor
      */
     public boolean isAncestor(@NotNull String path) {
-        return path.equals(root) || root.startsWith(path + "/") || "/".equals(path);
+        boolean isA = path.equals(root) || path.equals("/") || root.startsWith(path + "/");
+        log.info("isAncestor(root= " + root + ", path=" + path + ")  -> " + isA);
+        return isA;
+    }
+
+    public @Nullable String getChildNameBelowFilterRoot(@NotNull String path) {
+        String result = null;
+
+        String rootMatch = appendSlashIfNeeded(root);
+        String pathMatch = appendSlashIfNeeded(path);
+
+        if (rootMatch.startsWith(pathMatch)) {
+            // get filter root after matching path (will exclude leading "/"
+            String rel = rootMatch.substring(pathMatch.length());
+            // log.info("getChildNameBelowRoot remainder (root= " + rootMatch + ", path=" + pathMatch + ") -> " + rel);
+
+            // truncate before first "/"
+            int slashPos = rel.indexOf('/');
+            if (slashPos >= 0) {
+                rel = rel.substring(0, slashPos);
+            }
+
+            result = rel.isEmpty() ? null : rel;
+        }
+
+        // System.out.println("getChildNameBelowRoot(root= " + root + ", path=" + path + ") -> " + result);
+        log.info("getChildNameBelowRoot(root= " + rootMatch + ", path=" + pathMatch + ") -> " + result);
+        return result;
     }
 
     /**
@@ -379,6 +411,9 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
             dump(new DumpContext(new PrintWriter(stringWriter)), true);
             return stringWriter.toString();
         }
+    }
 
+    private static String appendSlashIfNeeded(String path) {
+        return path.endsWith("/") ? path : path + "/";
     }
 }

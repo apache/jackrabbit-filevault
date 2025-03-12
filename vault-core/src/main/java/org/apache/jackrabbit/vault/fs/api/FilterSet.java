@@ -279,7 +279,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
             result = rel.isEmpty() ? null : rel;
         }
 
-        log.debug("getChildNameBelowRoot(root={}, path={}) -> {}", rootMatch, pathMatch, result);
+        log.debug("getDirectChildNameTowardsFilterRoot(root={}, path={}) -> {}", rootMatch, pathMatch, result);
 
         return result;
     }

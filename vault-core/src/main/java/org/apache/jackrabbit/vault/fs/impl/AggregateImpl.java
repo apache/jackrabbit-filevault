@@ -711,38 +711,8 @@ public class AggregateImpl implements Aggregate {
             }
         }
 
-        Set<String> childNamesOfInterest = filter.getDirectChildNamesTowardsFilterRoots(node.getPath());
-        log.debug("childNamesOfInterest for {} -> {}", node.getPath(), childNamesOfInterest);
-
-        NodeIterator nIter = null;
-
-        if (childNamesOfInterest != null) {
-            // if filters can provide names of relevant child names, try to use them
-
-            try {
-                Set<Node> children = new HashSet<>();
-
-                for (String name : childNamesOfInterest) {
-                    try {
-                        children.add(node.getNode(name));
-                    } catch (PathNotFoundException ignored) {
-                        // go on
-                        log.debug("Node not found in {}: {}, skipping...", node.getPath(), name);
-                    }
-                }
-
-                log.debug("iterating over filter-supplied children: {}", children);
-                nIter = new NodeIteratorAdapter(children);
-            } catch (Exception ex) {
-                log.debug("Exception while retrieving child nodes, falling back to simple iteration.", ex);
-            }
-        }
-
-        // fallback to classic child node iteration
-        if (nIter == null) {
-            log.debug("iterating over all child nodes of: {}", node.getPath());
-            nIter = node.getNodes();
-        }
+        // get a node iterator suitable for the current node and the applicable filters
+        NodeIterator nIter = getNodeIteratorFor(node, filter);
 
         // include "our" nodes to the include set and delegate the others to the
         // respective aggregator building sub aggregates
@@ -809,4 +779,41 @@ public class AggregateImpl implements Aggregate {
         }
     }
 
+    private static NodeIterator getNodeIteratorFor(Node node, WorkspaceFilter filter) throws RepositoryException {
+
+        Set<String> childNamesOfInterest = filter.getDirectChildNamesTowardsFilterRoots(node.getPath());
+        log.debug("childNamesOfInterest for {} -> {}", node.getPath(), childNamesOfInterest);
+
+        NodeIterator nIter = null;
+
+        if (childNamesOfInterest != null) {
+            // if filters can provide names of relevant child names, try to use them
+
+            try {
+                Set<Node> children = new HashSet<>();
+
+                for (String name : childNamesOfInterest) {
+                    try {
+                        children.add(node.getNode(name));
+                    } catch (PathNotFoundException ignored) {
+                        // go on
+                        log.debug("Node not found in {}: {}, skipping...", node.getPath(), name);
+                    }
+                }
+
+                log.debug("iterating over filter-supplied children: {}", children);
+                nIter = new NodeIteratorAdapter(children);
+            } catch (Exception ex) {
+                log.debug("Exception while retrieving child nodes, falling back to simple iteration.", ex);
+            }
+        }
+
+        // otherwise (unknown or exception while getting nodes) fallback to classic child node iteration
+        if (nIter == null) {
+            log.debug("iterating over all child nodes of: {}", node.getPath());
+            nIter = node.getNodes();
+        }
+
+        return nIter;
+    }
 }

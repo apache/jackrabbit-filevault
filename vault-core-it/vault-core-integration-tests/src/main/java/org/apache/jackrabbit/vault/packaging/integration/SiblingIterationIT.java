@@ -92,6 +92,16 @@ public class SiblingIterationIT extends IntegrationTestBase {
         internalTestSiblingIteration(filter, false);
     }
 
+    @Test
+    // two filters, root below test resource, one unrelated
+    public void testOneMatchingOneNonDeeperMatchingFilter() throws RepositoryException, IOException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/" + ROOT + "/" + DO_FIND_ME));
+        filter.add(new PathFilterSet("/" + ROOT + "xyz" + DO_FIND_ME + "/" + "something-else"));
+
+        internalTestSiblingIteration(filter, false);
+    }
+
     private void internalTestSiblingIteration(WorkspaceFilter filter, boolean expectIterated) throws RepositoryException, IOException {
 
         ExportOptions opts = new ExportOptions();

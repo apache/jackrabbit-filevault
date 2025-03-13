@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
 
 import org.apache.jackrabbit.oak.commons.junit.LogCustomizer;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.AggregateImpl;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.event.Level;
 
@@ -42,26 +41,37 @@ import static org.junit.Assert.assertTrue;
 
 public class ManySiblingsIT extends IntegrationTestBase {
 
-    @BeforeClass
-    public static void initRepository() throws RepositoryException, IOException {
-        initRepository(true, false); // always use BlobStore with Oak
+    // constants for test resource layout
+    private static String ROOT = "testroot-manysiblings";
+    private static String FIND_ME = "do-find-me";
+    private static String DO_NOT_FIND_ME = "do-not-find-me";
+
+    // single filter with root on test resource
+    @Test
+    public void testManySiblingsSingleMatchingFilter() throws RepositoryException, IOException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/" + ROOT + "/" + FIND_ME));
+
+        internalTestManySiblings(filter);
+    }
+
+    // two filters, one with root on test resource, one on different root
+    // @Test
+    public void testManySiblingsOneMatchingOneNonMatchFilter() throws RepositoryException, IOException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/" + ROOT + "/" + FIND_ME));
+        filter.add(new PathFilterSet("/" + ROOT + "2/" + FIND_ME));
+        internalTestManySiblings(filter);
     }
 
     // JCRVLT-789
-    @Test
-    public void testManySiblings() throws RepositoryException, IOException {
+    private void internalTestManySiblings(WorkspaceFilter filter) throws RepositoryException, IOException {
 
         Node rootNode = admin.getRootNode();
-        Node testNode = rootNode.addNode("testroot", NodeType.NT_FOLDER);
+        Node testNode = rootNode.addNode(ROOT, NodeType.NT_FOLDER);
 
-        int count = 10;
-
-        String format = "many-%04d";
-        String found = String.format(format, 3);
-        String notFound = String.format(format, 5);
-
-        for (int i = 0; i < count; i++) {
-            Node f = testNode.addNode(String.format(format, i), NodeType.NT_FILE);
+        for (String name : new String[]{FIND_ME, DO_NOT_FIND_ME}) {
+            Node f = testNode.addNode(name, NodeType.NT_FILE);
             Node c = f.addNode("jcr:content", NodeType.NT_RESOURCE);
             c.setProperty("jcr:data", "");
         }
@@ -70,8 +80,6 @@ public class ManySiblingsIT extends IntegrationTestBase {
 
         ExportOptions opts = new ExportOptions();
         DefaultMetaInf inf = new DefaultMetaInf();
-        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
-        filter.add(new PathFilterSet("/testroot/" + found));
         inf.setFilter(filter);
         Properties props = new Properties();
         props.setProperty(VaultPackage.NAME_GROUP, "jackrabbit/test");
@@ -87,15 +95,15 @@ public class ManySiblingsIT extends IntegrationTestBase {
             clog.starting();
             try (VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile)) {
 
-                assertNotNull(pkg.getArchive().getEntry("jcr_root" + "/testroot/" + found));
-                assertNull(pkg.getArchive().getEntry("jcr_root" + "/testroot/" + notFound));
+                assertNotNull(pkg.getArchive().getEntry("jcr_root" + "/" + ROOT + "/" + FIND_ME));
+                assertNull(pkg.getArchive().getEntry("jcr_root" + "/" + ROOT + "/" + DO_NOT_FIND_ME));
 
                 // check that we did not descend into notFound
                 String entries = clog.getLogs().toString();
-                assertTrue("trace should contain entry for '" + found + "' got: " + entries,
-                        entries.contains("/testroot/" + found));
-                assertFalse("trace should not contain entry for '" + notFound + "', got: " + entries,
-                        entries.contains("/testroot/" + notFound));
+                assertTrue("trace should contain entry for '" + FIND_ME + "' got: " + entries,
+                        entries.contains("/" + ROOT + "/" + FIND_ME));
+                assertFalse("trace should not contain entry for '" + DO_NOT_FIND_ME + "', got: " + entries,
+                        entries.contains("/" + ROOT + "/" + DO_NOT_FIND_ME));
             }
         } finally {
             clog.finished();

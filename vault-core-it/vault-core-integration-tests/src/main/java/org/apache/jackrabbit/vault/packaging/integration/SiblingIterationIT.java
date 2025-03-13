@@ -24,6 +24,8 @@ import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.AggregateImpl;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.event.Level;
 
@@ -39,44 +41,59 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class ManySiblingsIT extends IntegrationTestBase {
+/**
+ * Tests checking whether siblings
+ */
+public class SiblingIterationIT extends IntegrationTestBase {
 
     // constants for test resource layout
-    private static String ROOT = "testroot-manysiblings";
-    private static String FIND_ME = "do-find-me";
-    private static String DO_NOT_FIND_ME = "do-not-find-me";
+    private static final String ROOT = "testroot-sibling-iteration";
+    private static final String DO_FIND_ME = "do-find-me";
+    private static final String DO_NOT_FIND_ME = "do-not-find-me";
 
-    // single filter with root on test resource
-    @Test
-    public void testManySiblingsSingleMatchingFilter() throws RepositoryException, IOException {
-        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
-        filter.add(new PathFilterSet("/" + ROOT + "/" + FIND_ME));
-
-        internalTestManySiblings(filter);
-    }
-
-    // two filters, one with root on test resource, one on different root
-    // @Test
-    public void testManySiblingsOneMatchingOneNonMatchFilter() throws RepositoryException, IOException {
-        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
-        filter.add(new PathFilterSet("/" + ROOT + "/" + FIND_ME));
-        filter.add(new PathFilterSet("/" + ROOT + "2/" + FIND_ME));
-        internalTestManySiblings(filter);
-    }
-
-    // JCRVLT-789
-    private void internalTestManySiblings(WorkspaceFilter filter) throws RepositoryException, IOException {
-
+    @Before
+    public void createTestResources() throws RepositoryException {
         Node rootNode = admin.getRootNode();
         Node testNode = rootNode.addNode(ROOT, NodeType.NT_FOLDER);
 
-        for (String name : new String[]{FIND_ME, DO_NOT_FIND_ME}) {
+        for (String name : new String[] {DO_FIND_ME, DO_NOT_FIND_ME}) {
             Node f = testNode.addNode(name, NodeType.NT_FILE);
             Node c = f.addNode("jcr:content", NodeType.NT_RESOURCE);
             c.setProperty("jcr:data", "");
         }
 
         admin.save();
+    }
+
+    @After
+    public void deleteTestResources() throws RepositoryException {
+        Node rootNode = admin.getRootNode().getNode(ROOT);
+        rootNode.remove();
+        admin.save();
+    }
+
+    @Test
+    // single filter with root below test resource
+    public void testSingleMatchingFilterBelow() throws RepositoryException, IOException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/" + ROOT + "/" + DO_FIND_ME));
+
+        // check that we did not iterate
+        internalTestSiblingIteration(filter, false);
+    }
+
+    @Test
+    // two filters, root below test resource, one unrelated
+    public void testOneMatchingOneNonMatchFilter() throws RepositoryException, IOException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(new PathFilterSet("/" + ROOT + "/" + DO_FIND_ME));
+        filter.add(new PathFilterSet("/" + ROOT + "xyz"));
+
+        // TODO, for now confirm sub-optimal behaviour
+        internalTestSiblingIteration(filter, true);
+    }
+
+    private void internalTestSiblingIteration(WorkspaceFilter filter, boolean expectIterated) throws RepositoryException, IOException {
 
         ExportOptions opts = new ExportOptions();
         DefaultMetaInf inf = new DefaultMetaInf();
@@ -90,23 +107,34 @@ public class ManySiblingsIT extends IntegrationTestBase {
         LogCustomizer clog = LogCustomizer.forLogger(AggregateImpl.class).enable(Level.TRACE).
                contains("checking ").create();
 
+        File tmpFile = File.createTempFile("vaulttest-sibling-iteration", "zip");
+
         try {
-            File tmpFile = File.createTempFile("vaulttest-many", "zip");
             clog.starting();
             try (VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile)) {
 
-                assertNotNull(pkg.getArchive().getEntry("jcr_root" + "/" + ROOT + "/" + FIND_ME));
+                assertNotNull(DO_FIND_ME + " should be part of the package", pkg.getArchive().getEntry("jcr_root" + "/" + ROOT + "/" + DO_FIND_ME));
                 assertNull(pkg.getArchive().getEntry("jcr_root" + "/" + ROOT + "/" + DO_NOT_FIND_ME));
 
-                // check that we did not descend into notFound
                 String entries = clog.getLogs().toString();
-                assertTrue("trace should contain entry for '" + FIND_ME + "' got: " + entries,
-                        entries.contains("/" + ROOT + "/" + FIND_ME));
-                assertFalse("trace should not contain entry for '" + DO_NOT_FIND_ME + "', got: " + entries,
-                        entries.contains("/" + ROOT + "/" + DO_NOT_FIND_ME));
+
+                // independent of filers: one included, one not
+                assertTrue("trace should contain entry for '" + DO_FIND_ME + "' got: " + entries,
+                        entries.contains("/" + ROOT + "/" + DO_FIND_ME));
+                assertNull(pkg.getArchive().getEntry("jcr_root" + "/" + ROOT + "/" + DO_NOT_FIND_ME));
+
+                // dependent on filters: verify expected iteration
+                if (!expectIterated) {
+                    assertFalse("trace should not contain entry for '" + DO_NOT_FIND_ME + "', got: " + entries,
+                            entries.contains("/" + ROOT + "/" + DO_NOT_FIND_ME));
+                } else {
+                    assertTrue("trace should contain entry for '" + DO_NOT_FIND_ME + "', got: " + entries,
+                            entries.contains("/" + ROOT + "/" + DO_NOT_FIND_ME));
+                }
             }
         } finally {
             clog.finished();
+            tmpFile.delete();
         }
     }
 }

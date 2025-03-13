@@ -84,13 +84,12 @@ public class SiblingIterationIT extends IntegrationTestBase {
 
     @Test
     // two filters, root below test resource, one unrelated
-    public void testOneMatchingOneNonMatchFilter() throws RepositoryException, IOException {
+    public void testOneMatchingOneNonMatchingFilter() throws RepositoryException, IOException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/" + ROOT + "/" + DO_FIND_ME));
         filter.add(new PathFilterSet("/" + ROOT + "xyz"));
 
-        // TODO, for now confirm sub-optimal behaviour
-        internalTestSiblingIteration(filter, true);
+        internalTestSiblingIteration(filter, false);
     }
 
     private void internalTestSiblingIteration(WorkspaceFilter filter, boolean expectIterated) throws RepositoryException, IOException {

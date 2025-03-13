@@ -104,7 +104,8 @@ public interface WorkspaceFilter extends Dumpable {
     boolean isAncestor(@NotNull String path);
 
     /**
-     * Matches the given path with all filter roots. For each, if it is an ancestor,
+     * Matches the given path with all filter roots. For each, if it is an ancestor
+     * <em>or</em> if it is unrelated to the path (neither ancestor, self or descendant),
      * add the name of the first path segment of the remaining filter root "below" path
      * to the result set.
      * <p>

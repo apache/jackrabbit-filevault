@@ -232,7 +232,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     }
 
     /**
-     * Checks if the given item is covered by this filter set. I.e. if the node
+     * Checks if the given path is covered by this filter set. I.e. if the node
      * addressed by the {@code root} path is an ancestor of the given item.
      *
      * @param path path of the item
@@ -243,7 +243,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     }
 
     /**
-     * Checks if the given item is an ancestor of the filter's root path.
+     * Checks if the given path is an ancestor of the filter's root path.
      * @param path path of the item to check
      * @return {@code true} if the given item is an ancestor
      */
@@ -255,7 +255,8 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
 
     /**
      * Matches the given path with this filter's root. If it is an ancestor, returns the name of the first
-     * path segment of the remaining filter root "below" path.
+     * path segment of the remaining filter root "below" path. If it's unrelated, return an empty string
+     * (indicating that no child node will ever math). Otherwise return {@code null).}
      *
      * @param path Path to check
      * @return first path segment of non-matched path, or {@code null} when path not ancestor
@@ -267,7 +268,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         String pathMatch = appendSlashIfNeeded(path);
 
         if (rootMatch.equals(pathMatch)) {
-            // examples:
+            // examples
             // path "/x/y", root "/x/y" -> "" -> null
 
             result =  null;
@@ -286,8 +287,18 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
             }
 
             result = rel;
+        } else if (pathMatch.startsWith(rootMatch)) {
+            // examples
+            // path "/x/y/z", root "/x/y" -> null
+
+            return null;
+        } else if (!pathMatch.startsWith(rootMatch) && !rootMatch.startsWith(pathMatch)) {
+            // unrelated paths, example:
+            // path "/x/y/z", root "/a/b" -> ""
+            result = "";
         } else {
-            // otherwise
+            // otherwise, should really not get here
+            log.error("should not get here: getDirectChildNameTowardsFilterRoot(root={}, path={}) -> null", rootMatch, pathMatch);
             result = null;
         }
 

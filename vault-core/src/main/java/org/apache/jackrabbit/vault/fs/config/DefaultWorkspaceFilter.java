@@ -300,8 +300,9 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             if (childName == null) {
                 // we don't know, so we can't compute the set (early exit)
                 return null;
+            } else if (!childName.isEmpty()) {
+                result.add(childName);
             }
-            result.add(childName);
         }
         return result;
     }

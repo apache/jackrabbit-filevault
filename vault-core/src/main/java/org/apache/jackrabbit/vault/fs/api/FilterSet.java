@@ -261,12 +261,17 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
      * @return first path segment of non-matched path, or {@code null} when path not ancestor
      */
     public @Nullable String getDirectChildNameTowardsFilterRoot(@NotNull String path) {
-        String result = null;
+        String result;
 
         String rootMatch = appendSlashIfNeeded(root);
         String pathMatch = appendSlashIfNeeded(path);
 
         if (rootMatch.startsWith(pathMatch)) {
+            // examples:
+            // path "/x/y", root "/x/y" -> "" -> null
+            // path "/x/y", root "/x/y/z" -> "z"
+            // path "/x/y", root "/x/y/z/foo" -> "z"
+
             // get filter root after matching path (will exclude leading "/"
             String rel = rootMatch.substring(pathMatch.length());
 
@@ -277,6 +282,9 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
             }
 
             result = rel.isEmpty() ? null : rel;
+        } else {
+            // otherwise
+            result = null;
         }
 
         log.debug("getDirectChildNameTowardsFilterRoot(root={}, path={}) -> {}", rootMatch, pathMatch, result);

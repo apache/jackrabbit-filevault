@@ -266,9 +266,13 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         String rootMatch = appendSlashIfNeeded(root);
         String pathMatch = appendSlashIfNeeded(path);
 
-        if (rootMatch.startsWith(pathMatch)) {
+        if (rootMatch.equals(pathMatch)) {
             // examples:
             // path "/x/y", root "/x/y" -> "" -> null
+
+            result =  null;
+        } else if (rootMatch.startsWith(pathMatch)) {
+            // examples:
             // path "/x/y", root "/x/y/z" -> "z"
             // path "/x/y", root "/x/y/z/foo" -> "z"
 
@@ -281,7 +285,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
                 rel = rel.substring(0, slashPos);
             }
 
-            result = rel.isEmpty() ? null : rel;
+            result = rel;
         } else {
             // otherwise
             result = null;

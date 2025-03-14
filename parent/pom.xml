@@ -281,7 +281,57 @@ Bundle-Category: jackrabbit
                         </execution>
                     </executions>
                 </plugin>
-            </plugins>
+                <plugin>
+                  <groupId>com.diffplug.spotless</groupId>
+                  <artifactId>spotless-maven-plugin</artifactId>
+                  <version>2.44.5</version>
+                  <configuration>
+                    <java>
+                      <!-- orders of used formatters are important MPOM-376 -->
+                      <!-- eg. palantir override importOrder, so should be first -->
+                      <palantirJavaFormat>
+                          <version>2.58.0</version>
+                      </palantirJavaFormat>
+                      <removeUnusedImports />
+                      <importOrder>
+                        <file>config/maven-eclipse-importorder.txt</file>
+                      </importOrder>
+                      <licenseHeader>
+                        <file>config/maven-header-plain.txt</file>
+                      </licenseHeader>
+                    </java>
+                    <!-- accept all endings to support validations on top of source archives -->
+                    <lineEndings>PRESERVE</lineEndings>
+                    <pom>
+                      <sortPom>
+                        <expandEmptyElements>false</expandEmptyElements>
+                        <!-- https://issues.apache.org/jira/browse/MRELEASE-1111 -->
+                        <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                        <quiet>true</quiet>
+                      </sortPom>
+                    </pom>
+                    <upToDateChecking>
+                      <enabled>true</enabled>
+                    </upToDateChecking>
+                  </configuration>
+                  <dependencies>
+                    <dependency>
+                      <groupId>org.apache.maven.shared</groupId>
+                      <artifactId>maven-shared-resources</artifactId>
+                      <version>6</version>
+                    </dependency>
+                  </dependencies>
+                  <executions>
+                    <execution>
+                      <id>spotless-format</id>
+                      <goals>
+                        <goal>${spotless.action}</goal>
+                      </goals>
+                      <phase>process-sources</phase>
+                    </execution>
+                  </executions>
+                </plugin>
+              </plugins>
         </pluginManagement>
         <plugins>
             <plugin>
@@ -327,6 +377,10 @@ Bundle-Category: jackrabbit
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+              </plugin>
             <!-- deploy site.xml as being used in downstream dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -690,6 +744,28 @@ Bundle-Category: jackrabbit
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+          <id>format-check</id>
+          <activation>
+            <property>
+              <name>env.CI</name>
+            </property>
+          </activation>
+          <properties>
+            <spotless.action>check</spotless.action>
+          </properties>
+        </profile>
+        <profile>
+          <id>format</id>
+          <activation>
+            <property>
+              <name>!env.CI</name>
+            </property>
+          </activation>
+          <properties>
+            <spotless.action>check</spotless.action>
+          </properties>
         </profile>
     </profiles>
 

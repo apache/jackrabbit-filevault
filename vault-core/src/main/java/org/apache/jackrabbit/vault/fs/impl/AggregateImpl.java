@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
@@ -37,6 +38,7 @@ import javax.jcr.Value;
 
 import org.apache.jackrabbit.api.ReferenceBinary;
 import org.apache.jackrabbit.commons.iterator.NodeIterable;
+import org.apache.jackrabbit.commons.iterator.NodeIteratorAdapter;
 import org.apache.jackrabbit.commons.iterator.PropertyIterable;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
@@ -708,18 +710,27 @@ public class AggregateImpl implements Aggregate {
                 include(node, p, path);
             }
         }
+
+        // get a node iterator suitable for the current node and the applicable filters
+        NodeIterator nIter = getNodeIteratorFor(node, filter);
+
         // include "our" nodes to the include set and delegate the others to the
         // respective aggregator building sub aggregates
-        NodeIterator nIter = node.getNodes();
         while (nIter.hasNext()) {
             Node n = nIter.nextNode();
             String path = n.getPath();
+            log.trace("checking {}", path);
+
             PathFilterSet coverSet = filter.getCoveringFilterSet(path);
             boolean isAncestor = filter.isAncestor(path);
-            boolean isIncluded = filter.contains(path);
+            log.trace("coverSet for {} is {}, isAncestor: {}", path, coverSet, isAncestor);
+
             if (coverSet == null && !isAncestor) {
                 continue;
             }
+
+            boolean isIncluded = filter.contains(path);
+
             // check if another aggregator can handle this node
             Aggregator a = mgr.getAggregator(n, path);
             // - if the aggregator is null
@@ -768,4 +779,41 @@ public class AggregateImpl implements Aggregate {
         }
     }
 
+    private static NodeIterator getNodeIteratorFor(Node node, WorkspaceFilter filter) throws RepositoryException {
+
+        Set<String> childNamesOfInterest = filter.getDirectChildNamesTowardsFilterRoots(node.getPath());
+        log.debug("childNamesOfInterest for {} -> {}", node.getPath(), childNamesOfInterest);
+
+        NodeIterator nIter = null;
+
+        if (childNamesOfInterest != null) {
+            // if filters can provide names of relevant child names, try to use them
+
+            try {
+                Set<Node> children = new HashSet<>();
+
+                for (String name : childNamesOfInterest) {
+                    try {
+                        children.add(node.getNode(name));
+                    } catch (PathNotFoundException ignored) {
+                        // go on
+                        log.debug("Node not found in {}: {}, skipping...", node.getPath(), name);
+                    }
+                }
+
+                log.debug("iterating over filter-supplied children: {}", children);
+                nIter = new NodeIteratorAdapter(children);
+            } catch (Exception ex) {
+                log.debug("Exception while retrieving child nodes, falling back to simple iteration.", ex);
+            }
+        }
+
+        // otherwise (unknown or exception while getting nodes) fallback to classic child node iteration
+        if (nIter == null) {
+            log.debug("iterating over all child nodes of: {}", node.getPath());
+            nIter = node.getNodes();
+        }
+
+        return nIter;
+    }
 }

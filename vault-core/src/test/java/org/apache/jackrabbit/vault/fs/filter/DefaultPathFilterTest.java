@@ -20,8 +20,11 @@ package org.apache.jackrabbit.vault.fs.filter;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.jackrabbit.vault.fs.api.FilterSet;
+import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.junit.Test;
 
@@ -85,6 +88,30 @@ public class DefaultPathFilterTest {
     @Test(expected = ConfigurationException.class)
     public void testInvalidPattern() throws ConfigurationException {
         new DefaultPathFilter("[");
+    }
+
+
+    @Test
+    public void testFilterSetGetDirectChildNameTowardsFilterRoot() {
+        FilterSet fs = new PathFilterSet("/a/b/c/d");
+
+        assertEquals("root path below path, expects last segment of filter root", "d", fs.getDirectChildNameTowardsFilterRoot("/a/b/c"));
+        assertEquals("root path below path, expects last segment of filter root", "d", fs.getDirectChildNameTowardsFilterRoot("/a/b/c/"));
+
+        assertEquals("root path below path, expects last segment of filter root", "c", fs.getDirectChildNameTowardsFilterRoot("/a/b"));
+        assertEquals("root path below path, expects last segment of filter root", "c", fs.getDirectChildNameTowardsFilterRoot("/a/b/"));
+
+        assertNull("path and root same, expects null", fs.getDirectChildNameTowardsFilterRoot("/a/b/c/d/"));
+        assertNull("path and root same, expects null", fs.getDirectChildNameTowardsFilterRoot("/a/b/c/d/"));
+
+        assertNull("path and root same, expects null", fs.getDirectChildNameTowardsFilterRoot("/a/b/c/d/"));
+        assertNull("path and root same, expects null", fs.getDirectChildNameTowardsFilterRoot("/a/b/c/d/"));
+
+        assertNull("root path above path, expects null", fs.getDirectChildNameTowardsFilterRoot("/a/b/c/d/e"));
+        assertNull("root path above path, expects null", fs.getDirectChildNameTowardsFilterRoot("/a/b/c/d/e/"));
+
+        assertEquals("unrelated root path, expects empty string", "", fs.getDirectChildNameTowardsFilterRoot("/foo/bar"));
+        assertEquals("unrelated root path, expects empty string", "", fs.getDirectChildNameTowardsFilterRoot("/foo/bar/"));
     }
 
     private void test(String pattern, String path, boolean result) throws ConfigurationException {

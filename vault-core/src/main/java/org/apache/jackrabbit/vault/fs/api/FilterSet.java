@@ -26,6 +26,8 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The item filter set holds a set of item filters each attributed as include
@@ -37,6 +39,8 @@ import org.jetbrains.annotations.Nullable;
  * always excluded.
  */
 public abstract class FilterSet<E extends Filter> implements Dumpable {
+
+    private static final Logger log = LoggerFactory.getLogger(FilterSet.class);
 
     /**
      * root path of this definition
@@ -228,7 +232,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     }
 
     /**
-     * Checks if the given item is covered by this filter set. I.e. if the node
+     * Checks if the given path is covered by this filter set. I.e. if the node
      * addressed by the {@code root} path is an ancestor of the given item.
      *
      * @param path path of the item
@@ -239,12 +243,68 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
     }
 
     /**
-     * Checks if the given item is an ancestor of the root node.
+     * Checks if the given path is an ancestor of the filter's root path.
      * @param path path of the item to check
      * @return {@code true} if the given item is an ancestor
      */
     public boolean isAncestor(@NotNull String path) {
-        return path.equals(root) || root.startsWith(path + "/") || "/".equals(path);
+        boolean isAncestor = path.equals(root) || path.equals("/") || root.startsWith(path + "/");
+        log.debug("isAncestor(root={}, path={}) -> {}", root, path, isAncestor);
+        return isAncestor;
+    }
+
+    /**
+     * Matches the given path with this filter's root. If it is an ancestor, returns the name of the first
+     * path segment of the remaining filter root "below" path. If it's unrelated, return an empty string
+     * (indicating that no child node will ever math). Otherwise return {@code null).}
+     *
+     * @param path Path to check
+     * @return first path segment of non-matched path, or {@code null} when path not ancestor
+     */
+    public @Nullable String getDirectChildNameTowardsFilterRoot(@NotNull String path) {
+        String result;
+
+        String rootMatch = appendSlashIfNeeded(root);
+        String pathMatch = appendSlashIfNeeded(path);
+
+        if (rootMatch.equals(pathMatch)) {
+            // examples
+            // path "/x/y", root "/x/y" -> "" -> null
+
+            result =  null;
+        } else if (rootMatch.startsWith(pathMatch)) {
+            // examples:
+            // path "/x/y", root "/x/y/z" -> "z"
+            // path "/x/y", root "/x/y/z/foo" -> "z"
+
+            // get filter root after matching path (will exclude leading "/"
+            String rel = rootMatch.substring(pathMatch.length());
+
+            // truncate before first "/"
+            int slashPos = rel.indexOf('/');
+            if (slashPos >= 0) {
+                rel = rel.substring(0, slashPos);
+            }
+
+            result = rel;
+        } else if (pathMatch.startsWith(rootMatch)) {
+            // examples
+            // path "/x/y/z", root "/x/y" -> null
+
+            return null;
+        } else if (!pathMatch.startsWith(rootMatch) && !rootMatch.startsWith(pathMatch)) {
+            // unrelated paths, example:
+            // path "/x/y/z", root "/a/b" -> ""
+            result = "";
+        } else {
+            // otherwise, should really not get here
+            log.error("should not get here: getDirectChildNameTowardsFilterRoot(root={}, path={}) -> null", rootMatch, pathMatch);
+            result = null;
+        }
+
+        log.debug("getDirectChildNameTowardsFilterRoot(root={}, path={}) -> {}", rootMatch, pathMatch, result);
+
+        return result;
     }
 
     /**
@@ -293,6 +353,9 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
         return stringWriter.toString();
     }
 
+    private static String appendSlashIfNeeded(String path) {
+        return path.endsWith("/") ? path : path + "/";
+    }
 
     /**
      * Holds a filter entry
@@ -379,6 +442,5 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
             dump(new DumpContext(new PrintWriter(stringWriter)), true);
             return stringWriter.toString();
         }
-
     }
 }

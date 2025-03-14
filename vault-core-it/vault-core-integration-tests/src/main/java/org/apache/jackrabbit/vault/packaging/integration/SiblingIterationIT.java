@@ -42,7 +42,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests checking whether siblings
+ * Tests checking whether siblings are traversed when not needed.
  */
 public class SiblingIterationIT extends IntegrationTestBase {
 

@@ -20,12 +20,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.FilterSet;
@@ -257,6 +261,54 @@ public class WorkspaceFilterTest {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         try (InputStream input = getClass().getResourceAsStream("workspacefilters/invalid-pattern.xml")) {
             filter.load(input);
+        }
+    }
+
+    @Test
+    public void testGetDirectChildNamesTowardsFilterRoots() {
+        // empty filter
+        DefaultWorkspaceFilter emptyFilter = new DefaultWorkspaceFilter();
+        assertSetsEquals(Collections.emptySet(), emptyFilter.getDirectChildNamesTowardsFilterRoots("/x"));
+
+        // one PathFilterSet in filter
+        DefaultWorkspaceFilter trivialFilter = new DefaultWorkspaceFilter();
+        trivialFilter.add(new PathFilterSet("/a/b"));
+
+        assertSetsEquals(Collections.singleton("b"), trivialFilter.getDirectChildNamesTowardsFilterRoots("/a"));
+        assertSetsEquals(Collections.singleton("b"), trivialFilter.getDirectChildNamesTowardsFilterRoots("/a/"));
+
+        assertNull(trivialFilter.getDirectChildNamesTowardsFilterRoots("/a/b"));
+        assertNull(trivialFilter.getDirectChildNamesTowardsFilterRoots("/a/b/"));
+        assertNull(trivialFilter.getDirectChildNamesTowardsFilterRoots("/a/b/c"));
+        assertNull(trivialFilter.getDirectChildNamesTowardsFilterRoots("/a/b/c/"));
+        assertNull(trivialFilter.getDirectChildNamesTowardsFilterRoots("/a/b"));
+        assertNull(trivialFilter.getDirectChildNamesTowardsFilterRoots("/a/b/"));
+        assertNull(trivialFilter.getCoveringFilterSet("/unrelated"));
+        assertNull(trivialFilter.getCoveringFilterSet("/unrelated/"));
+
+        // two PathFilterSets in filter
+        DefaultWorkspaceFilter moreComplexFilter = new DefaultWorkspaceFilter();
+        moreComplexFilter.add(new PathFilterSet("/a/b"));
+        moreComplexFilter.add(new PathFilterSet("/c/d"));
+
+        assertSetsEquals(Collections.singleton("b"), moreComplexFilter.getDirectChildNamesTowardsFilterRoots("/a"));
+        assertSetsEquals(Collections.singleton("b"), moreComplexFilter.getDirectChildNamesTowardsFilterRoots("/a/"));
+        assertSetsEquals(Collections.singleton("d"), moreComplexFilter.getDirectChildNamesTowardsFilterRoots("/c"));
+        assertSetsEquals(Collections.singleton("d"), moreComplexFilter.getDirectChildNamesTowardsFilterRoots("/c/"));
+    }
+
+    private static void assertSetsEquals(Set<?> expected, Set<?> actual) {
+        if (expected != actual) {
+            assertNotNull("A null set only compares true when the other set is null as well", expected);
+            assertNotNull("A null set only compares true when the other set is null as well", actual);
+
+            Set<?> diff1 = new HashSet<>(expected);
+            diff1.removeAll(actual);
+            assertTrue("Sets differ: " + diff1 + " missing", diff1.isEmpty());
+
+            Set<?> diff2 = new HashSet<>(actual);
+            diff2.removeAll(expected);
+            assertTrue("Sets differ: " + diff2 + " unexpected", diff2.isEmpty());
         }
     }
 }

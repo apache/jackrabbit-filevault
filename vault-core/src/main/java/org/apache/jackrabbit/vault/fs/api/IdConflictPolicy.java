@@ -29,7 +29,12 @@ public enum IdConflictPolicy {
     /** Create a new ID for the imported node (for all referenceable nodes), this may break existing references in the package. This fails if a referenced node is overwritten by a node with a different id */
     CREATE_NEW_ID,
     /** Remove the node with the conflicting id along with its references (even if outside the filters). This goes beyond {@link ImportUUIDBehavior#IMPORT_UUID_COLLISION_REMOVE_EXISTING}, as it also does not only resolve UUID collisions but also replacements of referenceable nodes with different ids.
-     * Use with care, as this may remove references outside the filter. */
+     * <p>
+     * Use with care, as this may remove references outside the filter.
+     * <p>
+     * <em>Note:</em> if the node with the conflicting id happens to be a mandatory child node,
+     * that operation may fail with a {@link javax.jcr.nodetype.ConstraintViolationException}.
+     */
     FORCE_REMOVE_CONFLICTING_ID,
     /** Assign the newly imported conflicting node a new id in case the conflicting existing node does not have the same parent (i.e. is no sibling).
      * If the newly imported node is a sibling of the existing conflicting one either remove the existing node with the conflicting id but keep its references (in case the conflicting one is contained in the filter) 

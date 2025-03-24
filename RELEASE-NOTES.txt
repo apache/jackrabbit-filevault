@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.8.2
+Release Notes -- Apache Jackrabbit FileVault -- Version 3.8.4
 
 Introduction
 ------------
@@ -8,6 +8,29 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+
+Changes in Jackrabbit FileVault 3.8.4
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 3.8.4
+This version requires Java 8 or above
+The OSGi bundles depend on Jackrabbit 2.20.8+ (JCR Commons, SPI, SPI Commons), Oak JR API 1.22.4+, Commons IO 2.7+, Commons Collections 4.1+ and SLF4J 1.7+
+
+Bug
+
+    [JCRVLT-702] - PackagePropertiesImpl.getPackageType potential locale issue
+    [JCRVLT-788] - improve exception message for invalid import modes
+    [JCRVLT-792] - NPE when using CLI export command
+
+Improvement
+
+    [JCRVLT-753] - FORCE_REMOVE_CONFLICTING_ID Strategy Causing Constraint Violation Exception in AEM Replication
+    [JCRVLT-784] - BinaryPropertiesIT.exportBinary: improve diagnostics when entry is missing
+    [JCRVLT-785] - Remove License and Notice from Git Repo
+    [JCRVLT-789] - AggregateImpl might be able to avoid iterating over sibling nodes
+    [JCRVLT-794] - jackrabbit-docviewparser validator: Fail for unused character data
+
 
 Changes in Jackrabbit FileVault 3.8.2
 --------------------------------------

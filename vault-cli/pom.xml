@@ -37,6 +37,10 @@
         Provides a simple shell-like console that access the file vault.
     </description>
 
+    <properties>
+        <!-- embed the newest JR2 versions -->
+        <jackrabbit.min.version>2.20.16</jackrabbit.min.version>
+    </properties>
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
     <!-- ====================================================================== -->

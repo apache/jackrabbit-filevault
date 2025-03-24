@@ -53,7 +53,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
         <jackrabbit.min.version>2.20.8</jackrabbit.min.version>
         <!-- for embedded dependencies the newest version should be used -->
-        <jackrabbit.max.version>2.20.10</jackrabbit.max.version>
+        <jackrabbit.max.version>2.20.16</jackrabbit.max.version>
         <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
         <oak.min.version>1.22.4</oak.min.version>
         <!-- for embedded dependencies the newest version should be used -->

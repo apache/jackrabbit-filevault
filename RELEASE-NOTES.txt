@@ -30,6 +30,8 @@ Improvement
     [JCRVLT-785] - Remove License and Notice from Git Repo
     [JCRVLT-789] - AggregateImpl might be able to avoid iterating over sibling nodes
     [JCRVLT-794] - jackrabbit-docviewparser validator: Fail for unused character data
+    [JCRVLT-797] - Update embedded Apache HTTP Client to 4.5.14
+    [JCRVLT-798] - Update embedded JR2 dependencies to 2.20.16
 
 
 Changes in Jackrabbit FileVault 3.8.2

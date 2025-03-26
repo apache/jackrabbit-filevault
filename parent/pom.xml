@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>33</version>
+        <version>34</version>
         <relativePath />
     </parent>
 
@@ -68,8 +68,6 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <sling.url>http://localhost:4502</sling.url>
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
         <project.build.outputTimestamp>2025-03-25T09:33:00Z</project.build.outputTimestamp>
-        <!-- update due to https://issues.apache.org/jira/browse/MASFRES-69 -->
-        <version.apache-resource-bundles>1.7</version.apache-resource-bundles>
     </properties>
 
     <!-- ====================================================================== -->
@@ -258,7 +256,6 @@ Bundle-Category: jackrabbit
                     <configuration>
                         <skip>true</skip><!-- skip for all modules where not explicitly enabled -->
                         <skipDeploy>true</skipDeploy><!-- always deploy via maven-scm-publish-plugin -->
-                        <relativizeDecorationLinks>false</relativizeDecorationLinks><!-- leave absolute URLs untouched: https://maven.apache.org/plugins/maven-site-plugin/site-mojo.html#relativizeDecorationLinks -->
                     </configuration>
                 </plugin>
                 <plugin>

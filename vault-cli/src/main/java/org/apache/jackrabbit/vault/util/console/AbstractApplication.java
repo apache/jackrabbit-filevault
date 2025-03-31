@@ -82,7 +82,7 @@ public abstract class AbstractApplication {
     }
     
     public String getCopyrightLine() {
-        return "copyright 2013-" + Instant.now().atOffset(ZoneOffset.UTC).get(ChronoField.YEAR) +" by Apache Software Foundation. See LICENSE.txt for more information.";
+        return "copyright 2013 by Apache Software Foundation. See LICENSE.txt for more information.";
     }
     
     public String getVersionString() {

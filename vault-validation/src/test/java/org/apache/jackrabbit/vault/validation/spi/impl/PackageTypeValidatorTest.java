@@ -101,7 +101,7 @@ public class PackageTypeValidatorTest {
     }
 
     @Test
-    public void testContentPackageType() {
+    public void testContentPackageType() throws IOException, ConfigurationException {
         validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_IMMUTABLE_ROOT_NODE_NAMES, null);
         ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/apps/some/node", Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "'apps' or 'libs'")));
         ValidationExecutorTest.assertViolation(validator.validate(new NodeContextImpl("/apps", Paths.get(""), Paths.get(""))), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_APP_CONTENT, PackageType.CONTENT, "'apps' or 'libs'")));
@@ -118,6 +118,14 @@ public class PackageTypeValidatorTest {
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.CONTENT);
         MatcherAssert.assertThat(validator.validate(properties), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         Mockito.when(parentContainerProperties.getPackageType()).thenReturn(PackageType.CONTENT);
+
+        // with filters outside mutable areas
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        try (InputStream input = this.getClass().getResourceAsStream("/filter-with-mutable-and-immutable-roots.xml")) {
+            filter.load(input);
+        }
+        ValidationExecutorTest.assertViolation(validator.validate(filter), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_FILTER_CONTAINS_IMMUTABLE_ROOTS, PackageType.CONTENT, "/apps/test")));
+
         // validate sub packages of type Content
         PackageTypeValidator subPackageValidator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, false, PackageType.CONTENT, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_IMMUTABLE_ROOT_NODE_NAMES, parentContainerContext);
         MatcherAssert.assertThat(subPackageValidator.validate(properties), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
@@ -146,7 +154,7 @@ public class PackageTypeValidatorTest {
     }
 
     @Test
-    public void testContainerPackageType() {
+    public void testContainerPackageType() throws IOException, ConfigurationException {
         // regular nodes not allowed!
         validator = new PackageTypeValidator(filter, ValidationMessageSeverity.ERROR, ValidationMessageSeverity.WARN, ValidationMessageSeverity.INFO, false, false, false, false, PackageType.CONTAINER, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX, PackageTypeValidatorFactory.DEFAULT_IMMUTABLE_ROOT_NODE_NAMES, null);
         MatcherAssert.assertThat(validator.validate(new NodeContextImpl("/apps/some/node", Paths.get("some", "file1"), Paths.get("base"))), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
@@ -175,6 +183,13 @@ public class PackageTypeValidatorTest {
         MatcherAssert.assertThat(validator.validate(properties), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
 
         Mockito.when(parentContainerProperties.getPackageType()).thenReturn(PackageType.CONTAINER);
+
+        // with filters outside mutable areas
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        try (InputStream input = this.getClass().getResourceAsStream("/filter-with-mutable-and-immutable-roots.xml")) {
+            filter.load(input);
+        }
+        ValidationExecutorTest.assertViolation(validator.validate(filter), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_FILTER_CONTAINS_MUTABLE_ROOTS_OUTSIDE_PACKAGES, PackageType.CONTAINER, "/content/test")));
 
         // validate sub packages of type Mixed
         Mockito.when(properties.getPackageType()).thenReturn(PackageType.MIXED);
@@ -251,18 +266,25 @@ public class PackageTypeValidatorTest {
         Mockito.when(properties.getExternalHooks()).thenReturn(hooks);
         ValidationExecutorTest.assertViolation(validator.validate(properties), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_PACKAGE_HOOKS, PackageType.APPLICATION, hooks)));
         ValidationExecutorTest.assertViolation(validator.validateMetaInfPath(Paths.get("vault", "hooks", "myhook.jar"), Paths.get(""), false), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_PACKAGE_HOOKS, PackageType.APPLICATION, Paths.get("vault", "hooks", "myhook.jar"))));
-        
+
         // with regular filter
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         try (InputStream input = this.getClass().getResourceAsStream("/simple-filter.xml")) {
             filter.load(input);
         }
         MatcherAssert.assertThat(validator.validate(filter), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+
         // with filters with include/exclude
         try (InputStream input = this.getClass().getResourceAsStream("/filter.xml")) {
             filter.load(input);
         }
         ValidationExecutorTest.assertViolation(validator.validate(filter), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES, PackageType.APPLICATION)));
+
+        // with filters outside immutable areas
+        try (InputStream input = this.getClass().getResourceAsStream("/filter-with-mutable-and-immutable-roots.xml")) {
+            filter.load(input);
+        }
+        ValidationExecutorTest.assertViolation(validator.validate(filter), new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(PackageTypeValidator.MESSAGE_FILTER_CONTAINS_MUTABLE_ROOTS, PackageType.APPLICATION, "/content/test")));
 
         // validate sling:OsgiConfig node
         NodeContext context = new NodeContextImpl("/apps/config/someconfigpid", Paths.get("apps", "config", "someconfigpid.xml"), Paths.get(""));

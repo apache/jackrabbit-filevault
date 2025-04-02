@@ -52,7 +52,10 @@ import org.jetbrains.annotations.Nullable;
 public final class PackageTypeValidator implements NodePathValidator, DocumentViewXmlValidator, FilterValidator, PropertiesValidator, MetaInfPathValidator {
 
     private static final String NODETYPE_SLING_OSGI_CONFIG = "sling:OsgiConfig";
-	protected static final String MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES = "Package of type '%s' is not supposed to contain includes/excludes below any of its filters!";
+    protected static final String MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES = "Package of type '%s' is not supposed to contain includes/excludes below any of its filters!";
+    protected static final String MESSAGE_FILTER_CONTAINS_MUTABLE_ROOTS = "Package of type '%s' is not supposed to contain mutable filter root paths but has filter root '%s'!";
+    protected static final String MESSAGE_FILTER_CONTAINS_MUTABLE_ROOTS_OUTSIDE_PACKAGES = "Package of type '%s' is not supposed to contain mutable filter root paths except for subpackages below in \"/etc/packages/\" but has filter root '%s'!";
+    protected static final String MESSAGE_FILTER_CONTAINS_IMMUTABLE_ROOTS = "Package of type '%s' is not supposed to contain immutable filter root paths but has filter root '%s'!";
     protected static final String MESSAGE_UNSUPPORTED_SUB_PACKAGE_OF_TYPE = "Package of type '%s' must only contain sub packages of type '%s' but found subpackage of type '%s'!";
     protected static final String MESSAGE_UNSUPPORTED_SUB_PACKAGE = "Package of type '%s' is not supposed to contain any subpackages!";
     protected static final String MESSAGE_DEPENDENCY = "Package of type '%s' must not have package dependencies but found dependencies '%s'!";
@@ -185,20 +188,35 @@ public final class PackageTypeValidator implements NodePathValidator, DocumentVi
 
     @Override
     public Collection<ValidationMessage> validate(@NotNull WorkspaceFilter filter) {
+        Collection<ValidationMessage> messages = new LinkedList<>();
         switch (type) {
         case APPLICATION:
             if (!allowComplexFilterRulesInApplicationPackages && hasIncludesOrExcludes(filter)) {
-                return Collections.singleton(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES, type)));
+                messages.add(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_FILTER_HAS_INCLUDE_EXCLUDES, type)));
             }
+            getConflictingFilterRoots(filter, false).forEach(
+                    root -> messages.add(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_FILTER_CONTAINS_MUTABLE_ROOTS, type, root))));
             break;
         case CONTENT:
+            getConflictingFilterRoots(filter, true).forEach(
+                    root -> messages.add(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_FILTER_CONTAINS_IMMUTABLE_ROOTS, type, root))));
+            break;
         case CONTAINER:
+            getConflictingFilterRoots(filter, false).stream().filter(p -> !p.startsWith("/etc/packages/")).forEach(
+                    root -> messages.add(new ValidationMessage(severity, String.format(Locale.ENGLISH, MESSAGE_FILTER_CONTAINS_MUTABLE_ROOTS_OUTSIDE_PACKAGES, type, root))));
+            break;
         case MIXED:
             break;
         }
-        return null;
+        return messages;
     }
 
+    Collection<String> getConflictingFilterRoots(WorkspaceFilter filter, boolean isMutable) {
+        return filter.getFilterSets().stream().map(PathFilterSet::getRoot).filter(
+                root -> isImmutableContent(root) == isMutable).collect(Collectors.toList());
+        
+    }
+ 
     @Override
     public Collection<ValidationMessage> validate(@NotNull PackageProperties properties) {
         PackageType packageType = properties.getPackageType();

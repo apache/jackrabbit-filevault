@@ -16,3 +16,5 @@ github:
     - FELIX
   dependabot_alerts:  true
   dependabot_updates: false
+  protected_branches:
+    master: {}

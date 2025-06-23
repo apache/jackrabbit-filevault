@@ -1,5 +1,5 @@
 [![ASF Jira](https://img.shields.io/badge/ASF%20JIRA-JCRVLT-orange)](https://issues.apache.org/jira/projects/JCRVLT/summary)
-![GitHub](https://img.shields.io/github/license/apache/jackrabbit-filevault)
+[![License](https://img.shields.io/badge/License-ASF%202.0-red.svg)](https://opensource.org/license/apache-2-0)
 [![Maven Central](https://img.shields.io/maven-central/v/org.apache.jackrabbit.vault/vault-cli.svg?label=Maven%20Central)](https://search.maven.org/artifact//org.apache.jackrabbit.vault/vault-cli)
 [![Build Status](https://ci-builds.apache.org/buildStatus/icon?job=Jackrabbit%2Ffilevault%2Fmaster)](https://ci-builds.apache.org/job/Jackrabbit/job/filevault/job/master/)
 [![SonarCloud Status](https://sonarcloud.io/api/project_badges/measure?project=apache_jackrabbit-filevault&metric=alert_status)](https://sonarcloud.io/summary/overall?id=apache_jackrabbit-filevault)

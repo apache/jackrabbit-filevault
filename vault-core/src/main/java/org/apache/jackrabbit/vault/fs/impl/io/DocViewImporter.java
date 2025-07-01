@@ -1277,7 +1277,7 @@ public class DocViewImporter implements DocViewParserHandler {
         // add properties
         for (DocViewProperty2 prop : ni.getProperties()) {
             String name = npResolver.getJCRName(prop.getName());
-            if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(name)) && wspFilter.includesProperty(node.getPath() + "/" + npResolver.getJCRName(prop.getName()))) {
+            if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(name)) && wspFilter.includesProperty(node.getPath() + "/" + name)) {
                 // check if property is allowed
                 try {
                     modified |= prop.apply(node);

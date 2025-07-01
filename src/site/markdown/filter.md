@@ -31,7 +31,7 @@ The `filter.xml` consists of a set of `filter` elements, each with a mandatory `
 
 Example:
 
-    <workspaceFilter xmlns="http://jackrabbit.apache.org/filevault/workspacefilter/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jackrabbit.apache.org/filevault/workspacefilter/1.0 https://jackrabbit.apache.org/filevault/xsd/workspacefilter-1.0.xsd" version="1.0">
+    <workspaceFilter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://jackrabbit.apache.org/filevault/xsd/workspacefilter-1.0.xsd" version="1.0">
         <filter root="/apps/project1" />
         <filter root="/etc/project1">
             <exclude pattern=".*\.gif" />
@@ -90,8 +90,21 @@ Since FileVault 3.1.28 ([JCRVLT-120](https://issues.apache.org/jira/browse/JCRVL
     </filter>
 
 Then the `pattern` is matched against property paths instead of node paths.
-If the attribute `matchProperties` is not set all properties below the given node paths are included/excluded. Otherwise the excluded properties are not contained in the exported package and during import not touched in the repository.
+If the attribute `matchProperties` is not set or `false` all properties directly below the given node paths are included/excluded, otherwise the pattern is compared with the full property path (in case properties are written/read) allowing to include/exclude only specific properties below an included node.
 
+### XML Schema
+
+One can leverage the [XML schema][xml.schema] provided at <https://jackrabbit.apache.org/filevault/xsd/workspacefilter-1.0.xsd> to validate a `filter.xml` of a content package. This schema also provides some documentation on the elements and attributes, so in most IDEs some help is exposed on hovering those.
+
+Referencing the XML schema from within the `filter.xml` works like this
+
+```
+<workspaceFilter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://jackrabbit.apache.org/filevault/xsd/workspacefilter-1.0.xsd" version="1.0">
+```
+
+
+
+*Note that the XML schema is not bound to a namespace, so make sure to reference it via `xsi:noNamespaceSchemaLocation` only.*
 
 Usage for Export
 ----------------
@@ -187,5 +200,6 @@ Content Package Serialized Content
 
 [api.WorkspaceFilter]: apidocs/org/apache/jackrabbit/vault/fs/api/WorkspaceFilter.html
 [api.ImportMode]: apidocs/org/apache/jackrabbit/vault/fs/api/ImportMode.html
-[api.Pattern]: https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html
+[api.Pattern]: https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html
 [jcr.path-standard-form]: https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.4.3.1%20Standard%20Form
+[xml.schema]: https://www.w3.org/TR/xmlschema-1/

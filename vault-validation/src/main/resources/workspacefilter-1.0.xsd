@@ -14,21 +14,39 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema" >
   <xs:complexType name="includeExcludeType">
     <xs:simpleContent>
       <xs:extension base="xs:string">
-        <xs:attribute type="xs:string" name="pattern" use="required"/>
-        <xs:attribute type="xs:boolean" name="matchProperties" />
+        <xs:attribute type="xs:string" name="pattern" use="required">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">The pattern is matched against the absolute (nearest) node path which is imported/exported. Only it "matchProperties" is set to "true", the pattern is matched against the property path. It supports the syntax of <a href="https://docs.oracle.com/javase/tutorial/essential/regex/">Java Regular Expressions</a></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:boolean" name="matchProperties">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">If not set or "false" all properties below a node whose path is matching the "pattern" are included or excluded, if set to "true" the pattern is matched against the property path.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
     <xs:simpleType name="type">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">
+                The type of the filter. If set to "cleanup", the filter is used to cleanup content in the target repository and there is no check if the package contains content for the given root path. Every other value is currently ignored.
+            </xs:documentation>
+        </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:pattern value="(|cleanup)"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="mode">
+        <xs:annotation>
+      <xs:documentation xml:lang="en">
+           The mode determines how existing content in the target repository is handled when importing content. The default value is "replace".
+      </xs:documentation>
+    </xs:annotation>
         <xs:restriction base="xs:string">
           <xs:enumeration value="replace"/>
           <xs:enumeration value="merge"/>
@@ -38,21 +56,40 @@
         </xs:restriction>
     </xs:simpleType>
   <xs:element name="workspaceFilter">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+           A workspace filter is used to define which content from a JCR repository should be included or excluded when exporting or importing content.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence minOccurs="0" maxOccurs="unbounded">
         <xs:element name="filter">
+          <xs:annotation>
+              <xs:documentation xml:lang="en">
+                   Each filter defines a root node and optionally a set of rules consisting of include or exclude patterns. The first rule determines if by default everything is excluded (for an include or no rules) or included (for an exclude). 
+                   The last matching rule of a filter determines the outcome. If multiple filter roots are overlapping, the first matching filter root is used.
+              </xs:documentation>
+            </xs:annotation>
           <xs:complexType>
             <xs:choice maxOccurs="unbounded" minOccurs="0">
               <xs:element type="includeExcludeType" name="exclude"/>
               <xs:element type="includeExcludeType" name="include"/>
             </xs:choice>
-            <xs:attribute type="xs:string" name="root" use="required"/>
+            <xs:attribute type="xs:string" name="root" use="required">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">The root node path of the filter. Must be an absolute path not containing any wildcards. Whether child nodes/properties are imported/exported is determined through "exclude" and "include" rules.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="type" type="type"/>
             <xs:attribute name="mode" type="mode"/>
           </xs:complexType>
         </xs:element>
       </xs:sequence>
-      <xs:attribute type="xs:float" name="version"/>
+      <xs:attribute type="xs:float" name="version">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">The version of the workspace filter schema. The current version is "1.0". No other version is supported.</xs:documentation>
+            </xs:annotation>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
 </xs:schema>

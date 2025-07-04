@@ -239,9 +239,9 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     @Override
     public Calendar getDateProperty(String name) {
         Calendar result = null;
-        try {
-            String p = getProperty(name);
-            if (p != null) {
+        String p = getProperty(name);
+        if (p != null) {
+            try {
                 ZonedDateTime zonedDateTime;
                 try {
                     zonedDateTime = ZonedDateTime.parse(p, DATE_TIME_FORMATTER_ISO_8601);
@@ -250,9 +250,10 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
                     zonedDateTime = ZonedDateTime.parse(p, DATE_TIME_FORMATTER_LEGACY);
                 }
                 result = GregorianCalendar.from(zonedDateTime);
+            } catch (DateTimeParseException|IllegalArgumentException e) {
+                log.warn("Error while parsing date property {}: {}, falling back to null!", p, e.getMessage());
+                log.debug("Exception while parsing date property {}", p, e);
             }
-        } catch (Exception e) {
-            log.error("Error while converting date property", e);
         }
         return result;
     }

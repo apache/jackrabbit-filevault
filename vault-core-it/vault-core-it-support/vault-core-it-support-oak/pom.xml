@@ -33,6 +33,21 @@
     <name>Apache Jackrabbit FileVault Core IT Support Classes for Oak Repositories</name>
     <description>Provides repository provider for Oak</description>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <annotationProcessors>
+                            <!-- generate META-INF/services-->
+                            <annotationProcessor>org.kohsuke.metainf_services.AnnotationProcessorImpl</annotationProcessor>
+                        </annotationProcessors>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
     <!-- ====================================================================== -->
     <!-- D E P E N D E N C I E S                                                -->
     <!-- ====================================================================== -->

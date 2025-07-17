@@ -620,6 +620,41 @@ Bundle-Category: jackrabbit
                                 <argLine>@{jacoco.command} -Djacoco.command=@{jacoco.command}</argLine>
                             </configuration>
                         </plugin>
+                        <!-- generates aggregate (cross-module) coverage reports, https://github.com/olamy/jacoco-aggregator-maven-plugin
+                            only enable this plugin (without inheritance) in the root module, as this is an aggregator plugin
+                         -->
+                        <plugin>
+                            <groupId>io.github.olamy.maven.plugins</groupId>
+                            <artifactId>jacoco-aggregator-maven-plugin</artifactId>
+                            <version>1.0.3</version>
+                            <configuration>
+                                <includes>
+                                    <!-- exclude shaded 3rd party classes -->
+                                    <include>org/apache/jackrabbit/vault/**</include>
+                                </includes>
+                                <excludes>
+                                    <!-- exclude ITs -->
+                                    <exclude>org/apache/jackrabbit/vault/**/*IT.class</exclude>
+                                    <exclude>org/apache/jackrabbit/vault/**/IT*.class</exclude>
+                                    <exclude>org/apache/jackrabbit/vault/it/**</exclude>
+                                    <exclude>org/apache/jackrabbit/vault/integration/support/**</exclude>
+                                </excludes>
+                                <!-- only consider merged data files (consisting of both IT and UT) -->
+                                <dataFileIncludes>
+                                   <dataFileInclude>**/jacoco.exec</dataFileInclude> 
+                                </dataFileIncludes>
+                            </configuration>
+                            <executions>
+                                <!-- -->
+                                <execution>
+                                    <id>aggregate</id>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>report-aggregate-all</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
                     </plugins>
                 </pluginManagement>
                 <plugins>
@@ -668,6 +703,7 @@ Bundle-Category: jackrabbit
                                     </fileSets>
                                 </configuration>
                             </execution>
+                            <!-- this report is not used for SonarQube, but just the aggregate one. This is just for local development purposes -->
                             <execution>
                                 <id>report-merged</id>
                                 <phase>verify</phase>

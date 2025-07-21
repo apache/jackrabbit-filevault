@@ -51,6 +51,9 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class EffectiveNodeType {
 
+    List<PropertyDefinition> propertyDefinitions;
+    List<NodeDefinition> nodeDefinitions;
+
     public static @NotNull EffectiveNodeType ofNode(@NotNull Node node) throws RepositoryException {
         return ofPrimaryTypeAndMixins(node.getPrimaryNodeType(), node.getMixinNodeTypes());
     }
@@ -68,6 +71,8 @@ public final class EffectiveNodeType {
 
     private EffectiveNodeType(@NotNull List<NodeType> nodeTypes) {
         this.nodeTypes = nodeTypes;
+        propertyDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getPropertyDefinitions())).collect(Collectors.toList());
+        nodeDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getChildNodeDefinitions())).collect(Collectors.toList());
     }
 
     @Override
@@ -108,7 +113,6 @@ public final class EffectiveNodeType {
     }
 
     public Optional<PropertyDefinition> getApplicablePropertyDefinition(Predicate<PropertyDefinition> predicate, @NotNull String name) {
-        List<PropertyDefinition> propertyDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getPropertyDefinitions())).collect(Collectors.toList());
         // first named then unnamed
         Optional<PropertyDefinition> namedPropertyDef = EffectiveNodeType.<PropertyDefinition>getApplicableItemDefinition(propertyDefinitions, predicate, name);
         if (!namedPropertyDef.isPresent()) {
@@ -131,7 +135,6 @@ public final class EffectiveNodeType {
     }
 
     public Optional<NodeDefinition> getApplicableChildNodeDefinition(@NotNull Predicate<NodeDefinition> predicate, @NotNull String name) {
-        List<NodeDefinition> nodeDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getChildNodeDefinitions())).collect(Collectors.toList());
         // first named then unnamed
         Optional<NodeDefinition> namedNodeDef = EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions, predicate, name);
         if (!namedNodeDef.isPresent()) {

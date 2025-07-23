@@ -106,6 +106,11 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     private ImportMode importMode;
 
     /**
+     * skip filter checks when importing content
+     */
+    private boolean skipFilterChecksOnImport = false;
+
+    /**
      * Add a #PathFilterSet for nodes items.
      * @param set the set of filters to add.
      */
@@ -232,6 +237,10 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         this.importMode = importMode;
     }
 
+    public void setSkipFilterChecksOnImport(boolean skipFilterChecksOnImport) {
+        this.skipFilterChecksOnImport = skipFilterChecksOnImport;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -264,6 +273,11 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
     @Override
     public boolean includesProperty(String propertyPath) {
+        if (skipFilterChecksOnImport) {
+            // skip the filter checks if requested; assume that the package only includes content
+            // which matches the filters.
+            return true;
+        }
         if (!covers(propertyPath)) {
             // include all properties that are not covered by any filter. this is to ensure that the ancestor paths
             // have at least jcr:primary type.

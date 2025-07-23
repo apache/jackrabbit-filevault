@@ -445,4 +445,31 @@ public class ImportIT extends IntegrationTestBase {
         assertPropertyExists("/testroot/tika/config.xml/jcr:content/jcr:data");
         assertProperty("/testroot/tika/config.xml/jcr:content/jcr:mimeType", "text/xml");
     }
+
+    @Test
+    public void testSkipFilterChecksOnImport_disabled() throws Exception {
+        ImportOptions opts = getDefaultOptions();
+        Importer importer = new Importer(opts);
+        try (Archive archive = getFileArchive("/test-packages/tmp-content-outside-filters.zip")) {
+            archive.open(true);
+            importer.run(archive, admin.getRootNode());
+            admin.save();
+        }
+        assertNodeExists("/tmp/foo");
+        assertPropertyMissing("/tmp/foo/bar/tobi/excludeddProp");
+    }
+
+    @Test
+    public void testSkipFilterChecksOnImport_enabled() throws Exception {
+        ImportOptions opts = getDefaultOptions();
+        opts.setSkipFilterChecksOnImport(true);
+        Importer importer = new Importer(opts);
+        try (Archive archive = getFileArchive("/test-packages/tmp-content-outside-filters.zip")) {
+            archive.open(true);
+            importer.run(archive, admin.getRootNode());
+            admin.save();
+        }
+        assertNodeExists("/tmp/foo");
+        assertPropertyExists("/tmp/foo/bar/tobi/excludedProp");
+    }
 }

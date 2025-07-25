@@ -472,4 +472,28 @@ public class ImportIT extends IntegrationTestBase {
         assertNodeExists("/tmp/foo");
         assertPropertyExists("/tmp/foo/bar/tobi/excludedProp");
     }
+
+    @Test
+    public void testSkipFilterChecksOnImport_enabled_mergeWithExisting() throws Exception {
+        ImportOptions opts = getDefaultOptions();
+        opts.setSkipFilterChecksOnImport(true);
+        Node tmp= admin.getRootNode().addNode("tmp");
+        Node tobi = tmp.addNode("foo").addNode("bar").addNode("tobi");
+        tobi.setProperty("excludedProp", "existingvalue");
+        tobi.setProperty("excludedProp-foo", "should-survive");
+        admin.save();
+        Importer importer = new Importer(opts);
+        try (Archive archive = getFileArchive("/test-packages/tmp-content-outside-filters.zip")) {
+            archive.open(true);
+            importer.run(archive, admin.getRootNode());
+            admin.save();
+        }
+        assertNodeExists("/tmp/foo");
+        assertPropertyExists("/tmp/foo/bar/tobi/excludedProp");
+        // import has overwritten existing property
+        assertProperty("/tmp/foo/bar/tobi/excludedProp", "excluded property");
+        // but an existing property which is not overwritten by content in the package remains available
+        assertProperty("/tmp/foo/bar/tobi/excludedProp-foo", "should-survive");
+    }
+    
 }

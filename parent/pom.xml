@@ -51,13 +51,13 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <revision>4.0.0-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
-        <jackrabbit.min.version>2.20.8</jackrabbit.min.version>
+        <jackrabbit.min.version>2.20.17</jackrabbit.min.version>
         <!-- for embedded dependencies the newest version should be used -->
-        <jackrabbit.max.version>2.20.16</jackrabbit.max.version>
+        <jackrabbit.max.version>2.22.1</jackrabbit.max.version>
         <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
         <oak.min.version>1.22.4</oak.min.version>
         <!-- for embedded dependencies the newest version should be used -->
-        <oak.max.version>1.72.0</oak.max.version>
+        <oak.max.version>1.82.0</oak.max.version>
         <slf4j.version>1.7.25</slf4j.version>
         <commons-io.version>2.7</commons-io.version>
         <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->

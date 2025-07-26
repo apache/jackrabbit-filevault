@@ -67,7 +67,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <maven.compiler.release>11</maven.compiler.release>
         <sling.url>http://localhost:4502</sling.url>
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
-        <project.build.outputTimestamp>2025-07-26T13:19:25Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-03-25T09:33:00Z</project.build.outputTimestamp>
     </properties>
 
     <!-- ====================================================================== -->

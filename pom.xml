@@ -54,7 +54,7 @@
     </modules>
 
     <properties>
-        <project.build.outputTimestamp>2025-03-25T09:33:00Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-07-28T08:09:15Z</project.build.outputTimestamp>
         <!-- this project uses cross-module reports with one aggregate, https://docs.sonarsource.com/sonarcloud/enriching/test-coverage/java-test-coverage/#add-coverage-in-a-multi-module-maven-project -->
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>

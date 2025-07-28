@@ -48,16 +48,16 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
     <properties>
         <!-- CI-friendly version, https://maven.apache.org/maven-ci-friendly.html -->
-        <revision>4.0.0-SNAPSHOT</revision>
+        <revision>4.0.1-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
-        <jackrabbit.min.version>2.20.8</jackrabbit.min.version>
+        <jackrabbit.min.version>2.20.17</jackrabbit.min.version>
         <!-- for embedded dependencies the newest version should be used -->
-        <jackrabbit.max.version>2.20.16</jackrabbit.max.version>
+        <jackrabbit.max.version>2.22.1</jackrabbit.max.version>
         <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
         <oak.min.version>1.22.4</oak.min.version>
         <!-- for embedded dependencies the newest version should be used -->
-        <oak.max.version>1.72.0</oak.max.version>
+        <oak.max.version>1.82.0</oak.max.version>
         <slf4j.version>1.7.25</slf4j.version>
         <commons-io.version>2.7</commons-io.version>
         <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
@@ -67,7 +67,9 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <maven.compiler.release>11</maven.compiler.release>
         <sling.url>http://localhost:4502</sling.url>
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
-        <project.build.outputTimestamp>2025-03-25T09:33:00Z</project.build.outputTimestamp>
+        <!-- downgrade to m-release-p 3.1.0 due to https://github.com/apache/maven-release/issues/1380 -->
+        <version.maven-release-plugin>3.1.0</version.maven-release-plugin>
+        <project.build.outputTimestamp>2025-07-28T08:09:15Z</project.build.outputTimestamp>
     </properties>
 
     <!-- ====================================================================== -->

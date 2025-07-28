@@ -34,8 +34,6 @@
     <description>The bndrun files referencing a repository index (containing all bundles with their metadata) for resolving all FileVault bundles with dependent bundles in their maximum supported version</description>
 
     <properties>
-        <jackrabbit.version>2.20.10</jackrabbit.version>
-        <oak.version>1.52.0</oak.version>
         <jackson.version>2.13.4</jackson.version>
     </properties>
 
@@ -161,25 +159,25 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-jackrabbit-api</artifactId>
-            <version>${oak.version}</version>
+            <version>${oak.max.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-webdav</artifactId>
-            <version>${jackrabbit.version}</version>
+            <version>${jackrabbit.max.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-jcr-commons</artifactId>
-            <version>${jackrabbit.version}</version>
+            <version>${jackrabbit.max.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-spi-commons</artifactId>
-            <version>${jackrabbit.version}</version>
+            <version>${jackrabbit.max.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

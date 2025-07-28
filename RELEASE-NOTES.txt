@@ -29,6 +29,7 @@ Improvement
     [JCRVLT-805] - DocViewImporter: remove redundant name calculation
     [JCRVLT-808] - Improve multi-module code coverage
     [JCRVLT-809] - DocViewImporter: logIgnoredProtectedProperties can slow down package import
+    [JCRVLT-812] - release:prepare does not longer adjust version
 
 
 Changes in Jackrabbit FileVault 3.8.4

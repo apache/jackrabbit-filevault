@@ -72,6 +72,7 @@ import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo.Info;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo.Type;
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
@@ -226,6 +227,11 @@ public class DocViewImporter implements DocViewParserHandler {
     private final boolean isSnsSupported;
 
     /**
+     * set true if filter checks can be skipped on import
+     */
+    private boolean skipFilterChecksOnImport = false;
+
+    /**
      * Creates a new importer that will imports the
      * items below the given root.
      *
@@ -270,9 +276,13 @@ public class DocViewImporter implements DocViewParserHandler {
         for (Artifact a : artifacts.values(ArtifactType.HINT)) {
             hints.add(rootPath + a.getRelativePath());
         }
-        
+
         stack = new StackElement(parentNode, parentNode.isNew());
         npResolver = new DefaultNamePathResolver(parentNode.getSession());
+
+        if (wspFilter instanceof DefaultWorkspaceFilter) {
+            skipFilterChecksOnImport = ((DefaultWorkspaceFilter) wspFilter).getSkipFilterChecksOnImport();
+        }
     }
 
     /**
@@ -1277,7 +1287,8 @@ public class DocViewImporter implements DocViewParserHandler {
         // add properties
         for (DocViewProperty2 prop : ni.getProperties()) {
             String name = npResolver.getJCRName(prop.getName());
-            if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(name)) && wspFilter.includesProperty(node.getPath() + "/" + name)) {
+            final boolean allowedByFilter = (skipFilterChecksOnImport | wspFilter.includesProperty(node.getPath() + "/" + name));
+            if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(name)) && allowedByFilter) {
                 // check if property is allowed
                 try {
                     modified |= prop.apply(node);

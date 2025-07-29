@@ -241,6 +241,10 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         this.skipFilterChecksOnImport = skipFilterChecksOnImport;
     }
 
+    public boolean getSkipFilterChecksOnImport() {
+        return this.skipFilterChecksOnImport;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -273,11 +277,6 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
     @Override
     public boolean includesProperty(String propertyPath) {
-        if (skipFilterChecksOnImport) {
-            // skip the filter checks if requested; assume that the package only includes content
-            // which matches the filters.
-            return true;
-        }
         if (!covers(propertyPath)) {
             // include all properties that are not covered by any filter. this is to ensure that the ancestor paths
             // have at least jcr:primary type.

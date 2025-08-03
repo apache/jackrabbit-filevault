@@ -1024,7 +1024,8 @@ public class DocViewImporter implements DocViewParserHandler {
             // TODO: is this faster than using sysview import?
             // set new primary type (but never set rep:root)
             String newPrimaryType = ni.getPrimaryType().orElseThrow(() -> new IllegalStateException("Mandatory property 'jcr:primaryType' missing from " + ni));
-            if (importMode == ImportMode.REPLACE && !"rep:root".equals(newPrimaryType) && wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_PRIMARYTYPE))) {
+            final boolean allowedByFilter = (skipFilterChecksOnImport || wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_PRIMARYTYPE)));
+            if (importMode == ImportMode.REPLACE && !"rep:root".equals(newPrimaryType) && allowedByFilter) {
                 String currentPrimaryType = node.getPrimaryNodeType().getName();
                 if (!currentPrimaryType.equals(newPrimaryType)) {
                     vs.ensureCheckedOut();
@@ -1167,7 +1168,8 @@ public class DocViewImporter implements DocViewParserHandler {
             // add the protected properties
             for (DocViewProperty2 p : ni.getProperties()) {
                 String qualifiedPropertyName = npResolver.getJCRName(p.getName());
-                if (p.getStringValue().isPresent() && PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES.contains(p.getName()) && wspFilter.includesProperty(nodePath + "/" + qualifiedPropertyName)) {
+                final boolean allowedByFilter = (skipFilterChecksOnImport || wspFilter.includesProperty(nodePath + "/" + qualifiedPropertyName));
+                if (p.getStringValue().isPresent() && PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES.contains(p.getName()) && allowedByFilter) {
                     attrs = new AttributesImpl();
                     attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", ATTRIBUTE_TYPE_CDATA, qualifiedPropertyName);
                     attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", ATTRIBUTE_TYPE_CDATA, PropertyType.nameFromValue(p.getType()));
@@ -1287,7 +1289,7 @@ public class DocViewImporter implements DocViewParserHandler {
         // add properties
         for (DocViewProperty2 prop : ni.getProperties()) {
             String name = npResolver.getJCRName(prop.getName());
-            final boolean allowedByFilter = (skipFilterChecksOnImport | wspFilter.includesProperty(node.getPath() + "/" + name));
+            final boolean allowedByFilter = (skipFilterChecksOnImport || wspFilter.includesProperty(node.getPath() + "/" + name));
             if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(name)) && allowedByFilter) {
                 // check if property is allowed
                 try {

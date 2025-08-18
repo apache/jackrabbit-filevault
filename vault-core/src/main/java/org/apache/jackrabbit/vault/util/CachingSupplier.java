@@ -27,17 +27,17 @@ import org.jetbrains.annotations.Nullable;
  * @param <T>
  */
 
-public class Lazy<T> {
+public class CachingSupplier<T> {
 
     T resolvedValue = null;
     Supplier<T> resolver;
     
-    private Lazy (Supplier<T> supplier) {
+    private CachingSupplier (Supplier<T> supplier) {
         resolver = supplier;
     }
     
-    public static<T> Lazy<T> of(@NotNull Supplier<T> supplier) {
-        return new Lazy<T>(supplier);
+    public static<T> CachingSupplier<T> of(@NotNull Supplier<T> supplier) {
+        return new CachingSupplier<T>(supplier);
     }
 
     /**

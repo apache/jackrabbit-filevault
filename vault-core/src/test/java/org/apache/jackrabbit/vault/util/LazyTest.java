@@ -31,7 +31,7 @@ public class LazyTest {
     @Test
     public void testLazyResolution() {
         Supplier<String> s = spyLambda(() -> "test");
-        Lazy<String> lazy = Lazy.of(s);
+        CachingSupplier<String> lazy = CachingSupplier.of(s);
         verify(s, times(0)).get();
         assertEquals("test",lazy.get());
         // ensure that it was resolved just once
@@ -42,7 +42,7 @@ public class LazyTest {
     @Test
     public void testLazyResolutionWithNull() {
         Supplier<Object> s = spyLambda(() -> null);
-        Lazy<Object> lazy = Lazy.of(s);
+        CachingSupplier<Object> lazy = CachingSupplier.of(s);
         assertEquals(null,lazy.get());
         assertEquals(null,lazy.get());
         // resolution is done twice, as null is returned

@@ -51,8 +51,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class EffectiveNodeType {
 
-    Lazy<List<PropertyDefinition>> propertyDefinitions;
-    Lazy<List<NodeDefinition>> nodeDefinitions;
+    CachingSupplier<List<PropertyDefinition>> propertyDefinitions;
+    CachingSupplier<List<NodeDefinition>> nodeDefinitions;
 
     public static @NotNull EffectiveNodeType ofNode(@NotNull Node node) throws RepositoryException {
         return ofPrimaryTypeAndMixins(node.getPrimaryNodeType(), node.getMixinNodeTypes());
@@ -71,8 +71,8 @@ public final class EffectiveNodeType {
 
     private EffectiveNodeType(@NotNull List<NodeType> nodeTypes) {
         this.nodeTypes = nodeTypes;
-        propertyDefinitions = Lazy.of(() -> nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getPropertyDefinitions())).collect(Collectors.toList()));
-        nodeDefinitions = Lazy.of(() -> nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getChildNodeDefinitions())).collect(Collectors.toList()));
+        propertyDefinitions = CachingSupplier.of(() -> nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getPropertyDefinitions())).collect(Collectors.toList()));
+        nodeDefinitions = CachingSupplier.of(() -> nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getChildNodeDefinitions())).collect(Collectors.toList()));
     }
 
     @Override

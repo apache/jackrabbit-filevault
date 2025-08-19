@@ -39,7 +39,7 @@
 
     <properties>
         <!-- embed the newest JR2 versions -->
-        <jackrabbit.min.version>2.20.16</jackrabbit.min.version>
+        <jackrabbit.min.version>${jackrabbit.max.version}</jackrabbit.min.version>
     </properties>
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
@@ -187,6 +187,12 @@
                 <artifactId>httpclient</artifactId>
                 <version>4.5.14</version>
             </dependency>
+            <!-- minimum SLF4J API supported by non vulnerable logback 1.5-->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>2.0.17</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -262,7 +268,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.10</version>
+            <version>1.5.18</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

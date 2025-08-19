@@ -52,10 +52,13 @@
                     <artifactId>dependency-check-maven</artifactId>
                     <configuration>
                         <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
-                        <!-- only check embedded dependencies, therefore exclude all external dependencies with vulnerabilities (provided by the container) -->
+                        <!-- only check embedded dependencies, therefore exclude all external dependencies (provided by the container) -->
                         <excludes>
                             <exclude>*:commons-io</exclude>
                             <exclude>*:guava</exclude>
+                            <exclude>org.apache.jackrabbit</exclude>
+                            <exclude>org.apache.jackrabbit.vault</exclude>
+                            <exclude>org.osgi</exclude>
                         </excludes>
                     </configuration>
                 </plugin>

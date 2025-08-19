@@ -62,6 +62,8 @@
                             <exclude>*:commons-io</exclude>
                             <exclude>*:httpclient</exclude>
                             <exclude>*:guava</exclude>
+                            <exclude>org.apache.commons</exclude>
+                            <exclude>org.apache.johnzon</exclude>
                         </excludes>
                     </configuration>
                 </plugin>

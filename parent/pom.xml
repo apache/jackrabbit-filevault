@@ -276,7 +276,8 @@ Bundle-Category: jackrabbit
                                 <goal>check</goal>
                             </goals>
                             <configuration>
-                                <failBuildOnCVSS>11</failBuildOnCVSS>
+                                <!-- fail for CVSS above LOW (https://nvd.nist.gov/vuln-metrics/cvss) -->
+                                <failBuildOnCVSS>4</failBuildOnCVSS>
                                 <!-- use the mirror provided by https://github.com/dependency-check/DependencyCheck_Builder which is updated daily -->
                                 <!-- compare with https://jeremylong.github.io/DependencyCheck/data/mirrornvd.html -->
                                 <nvdDatafeedUrl>https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/</nvdDatafeedUrl>

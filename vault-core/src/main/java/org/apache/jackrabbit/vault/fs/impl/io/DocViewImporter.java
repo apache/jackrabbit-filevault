@@ -447,6 +447,7 @@ public class DocViewImporter implements DocViewParserHandler {
             }
         } else {
             NodeIterator iter = node.getNodes();
+            EffectiveNodeType entParent = null; // initialize once when required
             while (iter.hasNext()) {
                 numChildren++;
                 Node child = iter.nextNode();
@@ -467,15 +468,18 @@ public class DocViewImporter implements DocViewParserHandler {
                     } else {
                         if (wspFilter.getImportMode(path) == ImportMode.REPLACE) {
                             boolean shouldRemoveChild = true;
+                            NodeDefinition childDefinition = child.getDefinition();
                             // check if child is not protected
-                            if (child.getDefinition().isProtected()) {
+                            if (childDefinition.isProtected()) {
                                 log.warn("Refuse to delete protected child node: {}", path);
                                 shouldRemoveChild = false;
                                 // check if child is mandatory (and not residual, https://s.apache.org/jcr-2.0-spec/2.0/3_Repository_Model.html#3.7.2.4%20Mandatory)
-                            } else if (child.getDefinition().isMandatory() && !child.getDefinition().getName().equals("*")) {
+                            } else if (childDefinition.isMandatory() && !childDefinition.getName().equals("*")) {
                                 // get relevant child node definition from parent's effective node type
-                                EffectiveNodeType ent = EffectiveNodeType.ofNode(child.getParent());
-                                Optional<NodeDefinition> childNodeDefinition = ent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
+                                if (entParent == null) {
+                                    entParent = EffectiveNodeType.ofNode(node);
+                                }
+                                Optional<NodeDefinition> childNodeDefinition = entParent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
                                 if (!childNodeDefinition.isPresent()) {
                                     // this should never happen as then child.getDefinition().isMandatory() would have returned false in the first place...
                                     throw new IllegalStateException("Could not find applicable child node definition for mandatory child node " + child.getPath());

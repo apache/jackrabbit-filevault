@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 
-public class LazyTest {
+public class CachingSupplierTest {
 
     @Test
     public void testLazyResolution() {

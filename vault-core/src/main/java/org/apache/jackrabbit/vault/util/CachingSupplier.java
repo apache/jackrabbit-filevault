@@ -16,24 +16,23 @@
  */
 package org.apache.jackrabbit.vault.util;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
-A supplier wrapper which caches the supplied values.
+A supplier wrapper which caches the supplied values. This class is not threadsafe!
  * @param <T>
  */
 
-public class CachingSupplier<T> {
+public class CachingSupplier<T> implements Supplier<T>{
 
     T resolvedValue = null;
-    Supplier<T> resolver;
+    Supplier<T> delegate;
     
     private CachingSupplier (Supplier<T> supplier) {
-        resolver = supplier;
+        delegate = supplier;
     }
     
     public static<T> CachingSupplier<T> of(@NotNull Supplier<T> supplier) {
@@ -41,13 +40,12 @@ public class CachingSupplier<T> {
     }
 
     /**
-     * Resolve the value if necessary and return it; if the resolved value is non-null, it
-     * won't be resolved twice, but just reused.
+     * Uses the cached value from previous get() calls instead of contacting the underlying delegate
      * @return the resolved value (can be null);
      */
     public @Nullable T get() {
         if (resolvedValue == null) {
-            resolvedValue = resolver.get();
+            resolvedValue = delegate.get();
         }
         return resolvedValue;
     }

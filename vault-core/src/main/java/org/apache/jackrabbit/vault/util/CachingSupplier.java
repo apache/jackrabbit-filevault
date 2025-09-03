@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A simple utility to resolve values lazy
+A supplier wrapper which caches the supplied values.
  * @param <T>
  */
 

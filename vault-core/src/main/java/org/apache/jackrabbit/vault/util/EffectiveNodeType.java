@@ -51,8 +51,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class EffectiveNodeType {
 
-    List<PropertyDefinition> propertyDefinitions;
-    List<NodeDefinition> nodeDefinitions;
+    CachingSupplier<List<PropertyDefinition>> propertyDefinitions;
+    CachingSupplier<List<NodeDefinition>> nodeDefinitions;
 
     public static @NotNull EffectiveNodeType ofNode(@NotNull Node node) throws RepositoryException {
         return ofPrimaryTypeAndMixins(node.getPrimaryNodeType(), node.getMixinNodeTypes());
@@ -71,8 +71,8 @@ public final class EffectiveNodeType {
 
     private EffectiveNodeType(@NotNull List<NodeType> nodeTypes) {
         this.nodeTypes = nodeTypes;
-        propertyDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getPropertyDefinitions())).collect(Collectors.toList());
-        nodeDefinitions = nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getChildNodeDefinitions())).collect(Collectors.toList());
+        propertyDefinitions = CachingSupplier.of(() -> nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getPropertyDefinitions())).collect(Collectors.toList()));
+        nodeDefinitions = CachingSupplier.of(() -> nodeTypes.stream().flatMap(nt -> Arrays.stream(nt.getChildNodeDefinitions())).collect(Collectors.toList()));
     }
 
     @Override
@@ -114,10 +114,10 @@ public final class EffectiveNodeType {
 
     public Optional<PropertyDefinition> getApplicablePropertyDefinition(Predicate<PropertyDefinition> predicate, @NotNull String name) {
         // first named then unnamed
-        Optional<PropertyDefinition> namedPropertyDef = EffectiveNodeType.<PropertyDefinition>getApplicableItemDefinition(propertyDefinitions, predicate, name);
+        Optional<PropertyDefinition> namedPropertyDef = EffectiveNodeType.<PropertyDefinition>getApplicableItemDefinition(propertyDefinitions.get(), predicate, name);
         if (!namedPropertyDef.isPresent()) {
             // then unnamed
-            return EffectiveNodeType.<PropertyDefinition>getApplicableItemDefinition(propertyDefinitions, predicate, null);
+            return EffectiveNodeType.<PropertyDefinition>getApplicableItemDefinition(propertyDefinitions.get(), predicate, null);
         } else {
             return namedPropertyDef;
         }
@@ -136,10 +136,10 @@ public final class EffectiveNodeType {
 
     public Optional<NodeDefinition> getApplicableChildNodeDefinition(@NotNull Predicate<NodeDefinition> predicate, @NotNull String name) {
         // first named then unnamed
-        Optional<NodeDefinition> namedNodeDef = EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions, predicate, name);
+        Optional<NodeDefinition> namedNodeDef = EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions.get(), predicate, name);
         if (!namedNodeDef.isPresent()) {
             // then unnamed
-            return EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions, predicate, null);
+            return EffectiveNodeType.<NodeDefinition>getApplicableItemDefinition(nodeDefinitions.get(), predicate, null);
         } else {
             return namedNodeDef;
         }

@@ -59,7 +59,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <!-- for embedded dependencies the newest version should be used -->
         <oak.max.version>1.82.0</oak.max.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <commons-io.version>2.7</commons-io.version>
+        <commons-io.version>2.14.0</commons-io.version>
         <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
         <bnd.version>6.4.0</bnd.version>
         <minimalMavenBuildVersion>3.6.1</minimalMavenBuildVersion><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
@@ -553,7 +553,7 @@ Bundle-Category: jackrabbit
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.6</version>
+                <version>3.18.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -573,7 +573,7 @@ Bundle-Category: jackrabbit
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>4.5.8</version>
+                <version>4.5.13</version>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>

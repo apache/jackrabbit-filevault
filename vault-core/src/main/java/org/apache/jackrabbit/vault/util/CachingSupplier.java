@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 /**
 A supplier wrapper which caches the supplied values. This class is not threadsafe!
  * @param <T>
+ * @since FileVault 4.0.2
  */
 
 public class CachingSupplier<T> implements Supplier<T>{

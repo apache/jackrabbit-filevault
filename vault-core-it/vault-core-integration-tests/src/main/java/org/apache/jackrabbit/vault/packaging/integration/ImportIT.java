@@ -450,7 +450,7 @@ public class ImportIT extends IntegrationTestBase {
     public void testSkipFilterChecksOnImport_disabled() throws Exception {
         ImportOptions opts = getDefaultOptions();
         Importer importer = new Importer(opts);
-        try (Archive archive = getFileArchive("/test-packages/tmp-content-outside-filters.zip")) {
+        try (Archive archive = getFileArchive("/test-packages/outside-filters.zip")) {
             archive.open(true);
             importer.run(archive, admin.getRootNode());
             admin.save();
@@ -464,7 +464,7 @@ public class ImportIT extends IntegrationTestBase {
         ImportOptions opts = getDefaultOptions();
         opts.setSkipFilterChecksOnImport(true);
         Importer importer = new Importer(opts);
-        try (Archive archive = getFileArchive("/test-packages/tmp-content-outside-filters.zip")) {
+        try (Archive archive = getFileArchive("/test-packages/outside-filters.zip")) {
             archive.open(true);
             importer.run(archive, admin.getRootNode());
             admin.save();
@@ -483,7 +483,7 @@ public class ImportIT extends IntegrationTestBase {
         tobi.setProperty("excludedProp-foo", "should-survive");
         admin.save();
         Importer importer = new Importer(opts);
-        try (Archive archive = getFileArchive("/test-packages/tmp-content-outside-filters.zip")) {
+        try (Archive archive = getFileArchive("/test-packages/outside-filters.zip")) {
             archive.open(true);
             importer.run(archive, admin.getRootNode());
             admin.save();

@@ -22,6 +22,7 @@ import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.builder.CommandBuilder;
 import org.apache.commons.cli2.option.Command;
 import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
+import org.jline.reader.History;
 
 /**
  */
@@ -31,7 +32,7 @@ public class CmdHistory extends AbstractConsoleCommand {
             throws Exception {
 
         // print the history
-        Iterator iter = ctx.getConsole().getReader().getHistory().getHistoryList().iterator();
+        Iterator<History.Entry> iter = ctx.getConsole().getReader().getHistory().iterator();
         int i=1;
         while (iter.hasNext()) {
             System.out.println("  " + i + "  " + iter.next());

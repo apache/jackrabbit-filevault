@@ -63,6 +63,7 @@ import org.apache.jackrabbit.vault.vlt.CredentialsStore;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.VltDirectory;
 import org.apache.jackrabbit.vault.vlt.meta.MetaDirectory;
+import org.jline.reader.LineReaderBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -792,16 +793,13 @@ public class VaultFsApp extends AbstractApplication {
         public Credentials getCredentials(RepositoryAddress mountpoint) {
             Credentials creds = base.getCredentials(mountpoint);
             if (creds instanceof SimpleCredentials) {
-                try {
-                    SimpleCredentials simpleCredentials = (SimpleCredentials) creds;
-                    if (simpleCredentials.getPassword().length == 0) {
-                        System.out.printf(Locale.ENGLISH, "Please enter password for user %s connecting to %s: ",
-                                simpleCredentials.getUserID(), mountpoint);
-                        String password = new jline.ConsoleReader().readLine('*');
-                        creds = new SimpleCredentials(simpleCredentials.getUserID(), password.toCharArray());
-                    }
-                } catch (IOException e) {
-                    log.error("Error while opening console for reading password" + e);
+                SimpleCredentials simpleCredentials = (SimpleCredentials) creds;
+                if (simpleCredentials.getPassword().length == 0) {
+                    System.out.printf(Locale.ENGLISH, "Please enter password for user %s connecting to %s: ",
+                            simpleCredentials.getUserID(), mountpoint);
+                    // ensure JLine is initialized
+                    String password = LineReaderBuilder.builder().build().readLine('*');
+                    creds = new SimpleCredentials(simpleCredentials.getUserID(), password.toCharArray());
                 }
             }
             return creds;

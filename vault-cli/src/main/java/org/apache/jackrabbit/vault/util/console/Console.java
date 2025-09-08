@@ -20,21 +20,22 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.jackrabbit.vault.util.console.util.Table;
+import org.jline.reader.History;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.history.DefaultHistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jline.Completor;
-import jline.ConsoleReader;
-import jline.History;
-import jline.SimpleCompletor;
 
 /**
  * {@code Console}...
  */
 public class Console {
+
+    static final String VARIABLE_CONTEXT_NAME = "CONTEXT";
 
     /**
      * the default logger
@@ -43,11 +44,11 @@ public class Console {
 
     private ConsoleExecutionContext currentCtx;
 
-    private final Map contexts = new HashMap();
+    private final Map<String, ConsoleExecutionContext> contexts = new HashMap<>();
 
     private final AbstractApplication app;
 
-    private ConsoleReader reader;
+    private LineReader reader;
 
     /**
      * indicates console is running
@@ -65,7 +66,7 @@ public class Console {
         }
         contexts.put(ctx.getName(), ctx);
         ctx.attach(this);
-        currentCtx = ctx;
+        switchContext(ctx.getName());
     }
 
     public void removeContext(ConsoleExecutionContext ctx) {
@@ -79,19 +80,9 @@ public class Console {
         switchContext(ctx.getName());
     }
 
-    private void setCompletor() {
-        // always remove existing
-        Iterator iter = reader.getCompletors().iterator();
-        while (iter.hasNext()) {
-            reader.removeCompletor((Completor) iter.next());
-            iter = reader.getCompletors().iterator();
-        }
-        Set triggers = currentCtx.getCommandsGroup().getTriggers();
-        reader.addCompletor(new SimpleCompletor((String[]) triggers.toArray(new String[triggers.size()])));
-    }
-
     public void switchContext(String name) {
-        if (name == null) {
+        if (name == null) { 
+            // lists all contexts
             Iterator iter = contexts.keySet().iterator();
             Table t = new Table(2);
             while (iter.hasNext()) {
@@ -111,8 +102,10 @@ public class Console {
             if (!contexts.containsKey(name)) {
                 throw new ExecutionException("No such context: " + name);
             }
-            currentCtx = (ConsoleExecutionContext) contexts.get(name);
-            setCompletor();
+            currentCtx = contexts.get(name);
+            if (reader != null) {
+                reader.setVariable(VARIABLE_CONTEXT_NAME, name);
+            }
             log.info("Switched to context '{}'", name);
         }
     }
@@ -124,25 +117,19 @@ public class Console {
         return app;
     }
 
-    protected void initJLine() {
-        History history = new History();
-        /*
-        try {
-            history = new History(new File(".consolehistory"));
-        } catch (IOException e) {
-            log.warn("Cannot read or write file for storing command line history: " + e.getMessage() + "");
-            history = new History();
-        }
-        */
-        reader.setHistory(history);
-        reader.setUseHistory(true);
-        setCompletor();
+    protected LineReader createJLineReader() {
+        History history = new DefaultHistory();
+        return LineReaderBuilder.builder()
+            .history(history)
+            .completer(new ContextAwareCompleter(contexts))
+            // set current context
+            .variable(VARIABLE_CONTEXT_NAME, currentCtx.getName())
+            .build();
     }
 
     public void run() throws IOException {
 
-        reader = new ConsoleReader();
-        initJLine();
+        reader = createJLineReader();
         // setup and start
         setup();
 
@@ -159,13 +146,13 @@ public class Console {
                             // re-execute event from history
                             String oldLine;
                             try {
-                                int historyIndex = Integer.valueOf(line.substring(1).trim()).intValue();
-                                oldLine = (String) reader.getHistory().getHistoryList().get(historyIndex - 1);
+                                int historyIndex = Integer.parseInt(line.substring(1).trim());
+                                oldLine = reader.getHistory().get(historyIndex - 1);
                             } catch (Exception e) {
                                 System.out.println("  " + line + ": event not found");
                                 continue;
                             }
-                            reader.getHistory().addToHistory(oldLine);
+                            reader.getHistory().add(oldLine);
                             System.out.println("Executing '" + oldLine + "'");
                             line = oldLine;
                         }
@@ -182,7 +169,7 @@ public class Console {
         close();
     }
 
-    public ConsoleReader getReader() {
+    public LineReader getReader() {
         return reader;
     }
 

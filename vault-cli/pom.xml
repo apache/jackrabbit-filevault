@@ -239,9 +239,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>jline</groupId>
+            <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>1.0</version>
+            <version>3.30.6</version>
             <scope>compile</scope>
         </dependency>
 

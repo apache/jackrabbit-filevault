@@ -1079,7 +1079,7 @@ public class DocViewImporter implements DocViewParserHandler {
                 }
             }
             EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
-            Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(effectiveNodeType, node.getPath(), ni.getProperties(), PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES);
+            Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(ni.getProperties(), effectiveNodeType, node.getPath(), PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES);
             
             // add/modify properties contained in package
             if (setUnprotectedProperties(effectiveNodeType, node, ni,unprotectedProperties, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
@@ -1181,7 +1181,7 @@ public class DocViewImporter implements DocViewParserHandler {
             Node node = getNodeByIdOrName(parentNode, ni, importUuidBehavior == ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
             EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
 
-            Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(effectiveNodeType, node.getPath(), ni.getProperties(), PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES);
+            Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(ni.getProperties(), effectiveNodeType, node.getPath(), PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES);
             setUnprotectedProperties(effectiveNodeType, node, ni, unprotectedProperties, true, null);
             // remove mix referenceable if it was temporarily added
             if (addMixRef) {
@@ -1210,8 +1210,18 @@ public class DocViewImporter implements DocViewParserHandler {
         }
     }
 
-    // filter out all protected properties and log for a subset of them
-    private Collection<DocViewProperty2> removeProtectedProperties(EffectiveNodeType effectiveNodeType, String nodePath, Collection<DocViewProperty2> properties, Set<Name> importedProtectedProperties) {
+    /**
+     *  filter the provided properties for non-protected properties, and all protected are removed.
+     *  Any removed protected property is logged unless its name is contained in the importedProtectedProperties parameter.
+     *  
+     * @param properties all properties
+     * @param effectiveNodeType the effective nodetype of the node to which the properties are supposed to be added
+     * @param nodePath the path of the node
+     * @param importedProtectedProperties a list of names of protected properties, which are not supposed to logged
+     * @return a non-null collection of non-protected properties
+     */
+    private @NotNull Collection<DocViewProperty2> removeProtectedProperties(@NotNull Collection<DocViewProperty2> properties, @NotNull EffectiveNodeType effectiveNodeType,
+            @NotNull String nodePath, @NotNull Set<Name> importedProtectedProperties) {
         return properties.stream()
                 .filter(p -> {
                     try {

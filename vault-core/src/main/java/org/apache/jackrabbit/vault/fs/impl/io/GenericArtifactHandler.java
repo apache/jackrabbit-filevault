@@ -85,7 +85,7 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
                     }
                 }
             }
-            info.merge(importDocView(source, parent, name, artifacts, options.isStrict(isStrictByDefault), wspFilter, options.getIdConflictPolicy()));
+            info.merge(importDocView(source, parent, name, artifacts, options.isStrict(isStrictByDefault), wspFilter, options.getIdConflictPolicy(), options.getSkipFilterChecksOnImport()));
         }
         return info;
     }

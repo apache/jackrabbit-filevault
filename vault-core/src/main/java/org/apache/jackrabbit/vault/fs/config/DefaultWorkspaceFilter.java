@@ -106,11 +106,6 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     private ImportMode importMode;
 
     /**
-     * skip filter checks when importing content
-     */
-    private boolean skipFilterChecksOnImport = false;
-
-    /**
      * Add a #PathFilterSet for nodes items.
      * @param set the set of filters to add.
      */
@@ -235,14 +230,6 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
     public void setImportMode(ImportMode importMode) {
         this.importMode = importMode;
-    }
-
-    public void setSkipFilterChecksOnImport(boolean skipFilterChecksOnImport) {
-        this.skipFilterChecksOnImport = skipFilterChecksOnImport;
-    }
-
-    public boolean getSkipFilterChecksOnImport() {
-        return this.skipFilterChecksOnImport;
     }
 
     /**

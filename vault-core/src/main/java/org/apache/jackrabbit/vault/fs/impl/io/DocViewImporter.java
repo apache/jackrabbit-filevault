@@ -242,12 +242,12 @@ public class DocViewImporter implements DocViewParserHandler {
      * @throws RepositoryException if an error occurs.
      */
     public DocViewImporter(Node parentNode, String rootNodeName,
-                              ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws RepositoryException {
-        this(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, AccessControlHandling.IGNORE, null);
+                              ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, boolean skipFilterChecksOnImport) throws RepositoryException {
+        this(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, AccessControlHandling.IGNORE, null, skipFilterChecksOnImport);
     }
 
     public DocViewImporter(Node parentNode, String rootNodeName,
-            ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, AccessControlHandling aclHandling, AccessControlHandling cugHandling) throws RepositoryException {
+            ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, AccessControlHandling aclHandling, AccessControlHandling cugHandling, boolean skipFilterChecksOnImport) throws RepositoryException {
         this.filter = artifacts.getCoverage();
         this.wspFilter = wspFilter;
         this.rootDepth = parentNode.getDepth() + 1;
@@ -280,9 +280,7 @@ public class DocViewImporter implements DocViewParserHandler {
         stack = new StackElement(parentNode, parentNode.isNew());
         npResolver = new DefaultNamePathResolver(parentNode.getSession());
 
-        if (wspFilter instanceof DefaultWorkspaceFilter) {
-            skipFilterChecksOnImport = ((DefaultWorkspaceFilter) wspFilter).getSkipFilterChecksOnImport();
-        }
+        this.skipFilterChecksOnImport = skipFilterChecksOnImport;
     }
 
     /**

@@ -494,11 +494,6 @@ public class Importer {
                 log.warn("Unable to override import mode, incompatible filter: {}", filter.getClass().getName());
             }
         }
-        if (filter instanceof DefaultWorkspaceFilter) {
-            ((DefaultWorkspaceFilter) filter).setSkipFilterChecksOnImport(opts.getskipFilterChecksOnImport());
-        } else {
-            log.warn("Unable to overwrite 'skipFilterChecksOnImport', incompatible filter: {}", filter.getClass().getName());
-        }
         // build filter tree
         for (PathFilterSet set: filter.getFilterSets()) {
             filterTree.put(set.getRoot(), set);

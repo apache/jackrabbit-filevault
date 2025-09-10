@@ -162,12 +162,12 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
         ctx.println(isLast, getClass().getSimpleName());
     }
 
-    protected ImportInfoImpl importDocView(InputSource source, Node parentNode, String rootNodeName, ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws IOException, RepositoryException {
-        return importDocView(source, parentNode, rootNodeName, artifacts, true, wspFilter, idConflictPolicy);
+    protected ImportInfoImpl importDocView(InputSource source, Node parentNode, String rootNodeName, ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, boolean skipFilterChecksOnImport) throws IOException, RepositoryException {
+        return importDocView(source, parentNode, rootNodeName, artifacts, true, wspFilter, idConflictPolicy, skipFilterChecksOnImport);
     }
 
-    protected ImportInfoImpl importDocView(InputSource source, Node parentNode, String rootNodeName, ArtifactSetImpl artifacts, boolean isStrict, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws IOException, RepositoryException {
-        DocViewImporter handler = new DocViewImporter(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, getAcHandling(), getCugHandling());
+    protected ImportInfoImpl importDocView(InputSource source, Node parentNode, String rootNodeName, ArtifactSetImpl artifacts, boolean isStrict, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, boolean skipFilterChecksOnImport) throws IOException, RepositoryException {
+        DocViewImporter handler = new DocViewImporter(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, getAcHandling(), getCugHandling(), skipFilterChecksOnImport);
         String rootNodePath = parentNode.getPath();
         if (!rootNodePath.equals("/")) {
             rootNodePath += "/";

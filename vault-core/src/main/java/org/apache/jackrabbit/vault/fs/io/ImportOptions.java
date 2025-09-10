@@ -486,7 +486,7 @@ public class ImportOptions {
 
     /**
      * Allows to skip filter checks when importing packages; you can set this
-     * to {{code true}} if you are sure that there this package contains no content
+     * to {{code true}} if you are sure that this package contains no content
      * which would be rejected by filters.
      * This only affects checks against items in the package, but not existing items in
      * the repository.

@@ -20,14 +20,11 @@ package org.apache.jackrabbit.vault.cli;
 import java.io.File;
 import java.util.List;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.actions.Add;
 
@@ -39,19 +36,40 @@ public class CmdAdd extends AbstractVaultCommand {
 
     private Option optForce;
     private Option optNonRecursive;
-    private Argument argLocalPath;
+    private Option optLocalPath;
+    private Options options;
 
-    @SuppressWarnings("unchecked")
+    public CmdAdd() {
+        options = new Options();
+        options.addOption(OPT_VERBOSE);
+        options.addOption(OPT_QUIET);
+        optNonRecursive = Option.builder("N")
+                .longOpt("non-recursive")
+                .desc("operate on single directory")
+                .build();
+        options.addOption(optNonRecursive);
+        optForce = Option.builder()
+                .longOpt("force")
+                .desc("force operation to run")
+                .build();
+        options.addOption(optForce);
+        optLocalPath = Option.builder()
+                .argName("file")
+                .desc("local file or directory to add")
+                .hasArg()
+                .required()
+                .build();
+        options.addOption(optLocalPath);
+    }
+
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
-        List<String> localPaths = cl.getValues(argLocalPath);
-        List<File> localFiles = app.getPlatformFiles(localPaths, false);
+        String localPath = cl.getOptionValue(optLocalPath.getOpt());
+        File localFile = app.getPlatformFile(localPath, false);
         File localDir = app.getPlatformFile("", true);
-
         VltContext vCtx = app.createVaultContext(localDir);
-        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
-        vCtx.setQuiet(cl.hasOption(OPT_QUIET));
-
-        Add a = new Add(localDir, localFiles, cl.hasOption(optNonRecursive), cl.hasOption(optForce));
+        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE.getOpt()));
+        vCtx.setQuiet(cl.hasOption(OPT_QUIET.getOpt()));
+        Add a = new Add(localDir, List.of(localFile), cl.hasOption(optNonRecursive.getOpt()), cl.hasOption(optForce.getOpt()));
         vCtx.execute(a);
     }
 
@@ -70,31 +88,12 @@ public class CmdAdd extends AbstractVaultCommand {
                "them for addition to repository. They will be added in next commit.";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("add")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(OPT_VERBOSE)
-                        .withOption(OPT_QUIET)
-                        .withOption(optNonRecursive = new DefaultOptionBuilder()
-                                .withShortName("N")
-                                .withLongName("non-recursive")
-                                .withDescription("operate on single directory")
-                                .create())
-                        .withOption(optForce = new DefaultOptionBuilder()
-                                .withLongName("force")
-                                .withDescription("force operation to run")
-                                .create())
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("file")
-                                .withDescription("local file or directory to add")
-                                .withMinimum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public Options getOptions() {
+        return options;
+    }
+
+    public void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("add", options);
     }
 }

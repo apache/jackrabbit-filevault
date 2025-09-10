@@ -16,12 +16,10 @@
  */
 package org.apache.jackrabbit.vault.util.console.commands;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
 /**
@@ -30,6 +28,17 @@ import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 public class CmdHelp extends AbstractCommand {
 
     private Option argCommand;
+    private Options options;
+
+    public CmdHelp() {
+        options = new Options();
+        argCommand = Option.builder()
+                .argName("command")
+                .hasArg()
+                .desc("prints the help for the given command")
+                .build();
+        options.addOption(argCommand);
+    }
 
     protected void doExecute(ExecutionContext ctx, CommandLine cl) throws Exception {
         String cmd = (String) cl.getValue(argCommand);
@@ -40,21 +49,6 @@ public class CmdHelp extends AbstractCommand {
         return "print this help.  Type 'help <subcommand>' for help on a specific subcommand.";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("help")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(argCommand = new ArgumentBuilder()
-                                .withName("command")
-                                .withDescription("prints the help for the given command")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
-    }
+    public Options getOptions() { return options; }
+    public void printHelp() { new HelpFormatter().printHelp("help", options); }
 }

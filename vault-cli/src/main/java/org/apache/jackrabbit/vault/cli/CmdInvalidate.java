@@ -17,12 +17,9 @@
 
 package org.apache.jackrabbit.vault.cli;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
@@ -33,8 +30,9 @@ import org.apache.jackrabbit.vault.util.console.ExecutionException;
  */
 public class CmdInvalidate extends AbstractJcrFsCommand {
 
-    protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        String jcrPath = (String) cl.getValue(argJcrPath);
+     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
+        String[] args = cl.getArgs();
+        String jcrPath = (args != null && args.length > 0) ? args[0] : null;
 
         ConsoleFile wo = ctx.getFile(jcrPath, true);
         if (wo instanceof VaultFsCFile) {
@@ -58,25 +56,12 @@ public class CmdInvalidate extends AbstractJcrFsCommand {
 
     }
 
-    private Argument argJcrPath;
+    private Options options;
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("invalidate")
-                .withName("inv")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public CmdInvalidate() {
+        options = new Options();
     }
 
+    public Options getOptions() { return options; }
+    public void printHelp() { new HelpFormatter().printHelp("invalidate", options); }
 }

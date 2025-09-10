@@ -16,13 +16,10 @@
  */
 package org.apache.jackrabbit.vault.util.console.commands;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
-import org.apache.commons.cli2.validation.FileValidator;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.util.console.AbstractApplication;
 import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 
@@ -32,9 +29,20 @@ import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 public class CmdLoad extends AbstractConsoleCommand {
 
     private Option argFile;
+    private Options options;
+
+    public CmdLoad() {
+        options = new Options();
+        argFile = Option.builder()
+                .argName("file")
+                .hasArg()
+                .desc("specifies the config file. default is \"" + AbstractApplication.DEFAULT_CONF_FILENAME + "\"")
+                .build();
+        options.addOption(argFile);
+    }
 
     protected void doExecute(ConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        String file = (String) cl.getValue(argFile);
+        String file = cl.getOptionValue(argFile.getOpt());
         ctx.getApplication().loadConfig(file);
     }
 
@@ -42,22 +50,6 @@ public class CmdLoad extends AbstractConsoleCommand {
         return "load a console configuration";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("load")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(argFile = new ArgumentBuilder()
-                                .withName("file")
-                                .withDescription("specifies the config file. default is \"" + AbstractApplication.DEFAULT_CONF_FILENAME + "\"")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .withValidator(FileValidator.getExistingFileInstance())
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
-    }
+    public Options getOptions() { return options; }
+    public void printHelp() { new HelpFormatter().printHelp("load", options); }
 }

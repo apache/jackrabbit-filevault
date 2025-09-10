@@ -16,11 +16,8 @@
  */
 package org.apache.jackrabbit.vault.cli.extended;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
 /**
@@ -59,45 +56,7 @@ public class XJcrLog extends ExtendedOption {
     }
 
     public Option getCommand() {
-        return new CommandBuilder()
-                .withName("Xjcrlog")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(new CommandBuilder()
-                                .withName("sysout")
-                                .withDescription("enable logging to the stdout")
-                                .create())
-                        .withOption(new ArgumentBuilder()
-                                .withName("file=<file>")
-                                .withDescription("log to the specified file")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withOption(new CommandBuilder()
-                                .withName("return")
-                                .withDescription("enable logging of return values")
-                                .create())
-                        .withOption(new CommandBuilder()
-                                .withName("caller")
-                                .withDescription("enable logging of the caller")
-                                .create())
-                        .withOption(new CommandBuilder()
-                                .withName("exception")
-                                .withDescription("enable logging of exceptions")
-                                .create())
-                        .withOption(new CommandBuilder()
-                                .withName("stream")
-                                .withDescription("enable logging of streams")
-                                .create())
-                        /*
-                        .withOption(new CommandBuilder()
-                                .withName("cast")
-                                .withDescription("cast to real API")
-                                .create())
-                        */
-                        .create()
-                )
-                .create();
+        // return a commons-cli Option produced by ExtendedOption
+        return getOption();
     }
 }

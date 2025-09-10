@@ -16,32 +16,31 @@
  */
 package org.apache.jackrabbit.vault.util.console;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 
 /**
  * Command Line Command
  */
+// Note: switched from commons-cli2 to commons-cli (1.x)
 public interface CliCommand {
 
     /**
      * verbose option that can be globally used
      */
-    Option OPT_VERBOSE = new DefaultOptionBuilder()
-            .withShortName("v")
-            .withLongName("verbose")
-            .withDescription("verbose output")
-            .create();
+    Option OPT_VERBOSE = Option.builder("v")
+            .longOpt("verbose")
+            .desc("verbose output")
+            .build();
 
     /**
      * quiet option that can be globally used
      */
-    Option OPT_QUIET = new DefaultOptionBuilder()
-            .withShortName("q")
-            .withLongName("quiet")
-            .withDescription("print as little as possible")
-            .create();
+    Option OPT_QUIET = Option.builder("q")
+            .longOpt("quiet")
+            .desc("print as little as possible")
+            .build();
 
     boolean execute(ExecutionContext ctx, CommandLine cl) throws Exception;
 
@@ -55,6 +54,11 @@ public interface CliCommand {
 
     boolean hasName(String name);
 
-    Option getCommand();
-    
+    /**
+     * Returns the Commons CLI Options that describe the command.
+     */
+    Options getOptions();
+
+    void printHelp();
+
 }

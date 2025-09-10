@@ -23,15 +23,10 @@ import java.io.InputStream;
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Session;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.io.Archive;
@@ -46,60 +41,79 @@ import org.apache.jackrabbit.vault.vlt.VltContext;
  *
  */
 public class CmdImportCli extends AbstractVaultCommand {
-
     private Option optSync;
-    private Argument argLocalPath;
-    private Argument argJcrPath;
-    private Argument argMountpoint;
     private Option optSysView;
+    private Option optLocalPath;
+    private Option optJcrPath;
+    private Option optMountpoint;
+    private Options options;
+
+    public CmdImportCli() {
+        options = new Options();
+        options.addOption(OPT_VERBOSE);
+        optSync = Option.builder()
+                .longOpt("sync")
+                .desc("automatically put imported files under vault control")
+                .build();
+        options.addOption(optSync);
+        optSysView = Option.builder()
+                .longOpt("sysview")
+                .desc("import as sysview xml")
+                .build();
+        options.addOption(optSysView);
+        optLocalPath = Option.builder()
+                .argName("local-path")
+                .desc("the local path")
+                .hasArg()
+                .required()
+                .build();
+        options.addOption(optLocalPath);
+        optJcrPath = Option.builder()
+                .argName("jcr-path")
+                .desc("the jcr path")
+                .hasArg()
+                .build();
+        options.addOption(optJcrPath);
+        optMountpoint = Option.builder()
+                .argName("mountpoint")
+                .desc("the mountpoint URI")
+                .hasArg()
+                .required()
+                .build();
+        options.addOption(optMountpoint);
+    }
 
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
-        String localPath = (String) cl.getValue(argLocalPath);
-        String jcrPath = (String) cl.getValue(argJcrPath);
-
-        boolean verbose = cl.hasOption(OPT_VERBOSE);
-        /*
-        List excludeList = cl.getValues(optExclude);
-        String[] excludes = Constants.EMPTY_STRING_ARRAY;
-        if (excludeList != null && excludeList.size() > 0) {
-            excludes = (String[]) excludeList.toArray(new String[excludeList.size()]);
-        }
-        */
-        String root = (String) cl.getValue(argMountpoint);
+        String localPath = cl.getOptionValue(optLocalPath.getOpt());
+        String jcrPath = cl.getOptionValue(optJcrPath.getOpt());
+        String root = cl.getOptionValue(optMountpoint.getOpt());
+        boolean verbose = cl.hasOption(OPT_VERBOSE.getOpt());
         RepositoryAddress addr = new RepositoryAddress(root);
-
         if (jcrPath == null) {
             jcrPath = "/";
         }
         File localFile = app.getPlatformFile(localPath, false);
-
         VltContext vCtx = app.createVaultContext(localFile);
-        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
-
-
-        if (cl.hasOption(optSysView)) {
+        vCtx.setVerbose(verbose);
+        if (cl.hasOption(optSysView.getOpt())) {
             if (!localFile.isFile()) {
                 VaultFsApp.log.error("--sysview specified but local path does not point to a file.");
                 return;
             }
-            // todo: move to another location
-            try (InputStream ins = FileUtils.openInputStream(localFile)) {
+            try (InputStream ins = org.apache.commons.io.FileUtils.openInputStream(localFile)) {
                 Session session = vCtx.getFileSystem(addr).getAggregateManager().getSession();
                 session.getWorkspace().importXML(jcrPath, ins, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
                 return;
             }
         }
-
-
         VaultFile vaultFile = vCtx.getFileSystem(addr).getFile(jcrPath);
-
         VaultFsApp.log.info("Importing {} to {}", localFile.getCanonicalPath(), vaultFile.getPath());
         Archive archive = null;
         try {
             if (localFile.isFile()) {
                 archive = new ZipArchive(localFile);
             } else {
-                if (cl.hasOption(optSync)) {
+                if (cl.hasOption(optSync.getOpt())) {
                     VaultFsApp.log.warn("--sync is not supported yet");
                 }
                 archive = new FileArchive(localFile);
@@ -119,69 +133,16 @@ public class CmdImportCli extends AbstractVaultCommand {
         VaultFsApp.log.info("Importing done.");
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public String getName() {
-        return "import";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public String getShortDescription() {
         return "Import a Vault filesystem";
     }
 
-
-    public String getLongDescription() {
-        return "Import the local filesystem (starting at <local-path> to the " +
-                "vault filesystem at <uri>. A <jcr-path> can be specified as " +
-                "import root. If --sync is specified, the imported files are " +
-                "automatically put under vault control.\n\n" +
-                "Example:\n" +
-                "  vlt import http://localhost:4502/crx . /";
+    public Options getOptions() {
+        return options;
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("import")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(OPT_VERBOSE)
-                        .withOption(optSync = new DefaultOptionBuilder()
-                                .withShortName("s")
-                                .withLongName("sync")
-                                .withDescription("put local files under vault control.")
-                                .create())
-                        .withOption(optSysView = new DefaultOptionBuilder()
-                                .withLongName("sysview")
-                                .withDescription("specifies that the indicated local file has the sysview format")
-                                .create())
-                        .withOption(argMountpoint = new ArgumentBuilder()
-                                .withName("uri")
-                                .withDescription("mountpoint uri")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("local-path")
-                                .withDescription("the local path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("import", options);
     }
-
 }

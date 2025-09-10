@@ -18,19 +18,11 @@
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
-import org.apache.commons.cli2.validation.InvalidArgumentException;
-import org.apache.commons.cli2.validation.Validator;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 import org.apache.jackrabbit.vault.vlt.VltContext;
@@ -44,9 +36,11 @@ public class CmdSync extends AbstractVaultCommand {
 
     private Option optForce;
 
-    private Argument argCommand;
+    private Option argCommand;
 
-    private Argument argLocalPath;
+    private Option argLocalPath;
+
+    private Options options;
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl)
             throws Exception {
@@ -54,22 +48,28 @@ public class CmdSync extends AbstractVaultCommand {
     }
 
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
-        Sync.Command cmd = (Sync.Command) cl.getValue(argCommand);
+        String cmdStr = cl.getOptionValue("command");
+        Sync.Command cmd = null;
+        if (cmdStr != null) {
+            try {
+                cmd = Sync.Command.valueOf(cmdStr.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                throw new ExecutionException("Invalid command: " + cmdStr);
+            }
+        }
         if (cmd == null) {
             cmd = Sync.Command.INIT;
         }
-        String root = (String) cl.getValue(optUri);
-        RepositoryAddress addr = root == null
-                ? null
-                : new RepositoryAddress(root);
+        String root = cl.getOptionValue("uri");
+        RepositoryAddress addr = root == null ? null : new RepositoryAddress(root);
 
-        String localPath = (String) cl.getValue(argLocalPath);
+        String localPath = cl.getOptionValue("localPath");
         File localFile = app.getPlatformFile(localPath == null ? "." : localPath, false).getCanonicalFile();
         VltContext vCtx = app.createVaultContext(localFile);
-        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
-        vCtx.setQuiet(cl.hasOption(OPT_QUIET));
+        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE.getOpt()));
+        vCtx.setQuiet(cl.hasOption(OPT_QUIET.getOpt()));
         Sync sc = new Sync(cmd, addr, localFile);
-        sc.setForce(cl.hasOption(optForce));
+        sc.setForce(cl.hasOption(optForce.getOpt()));
         vCtx.execute(sc);
     }
 
@@ -106,55 +106,36 @@ public class CmdSync extends AbstractVaultCommand {
                 "  vlt sync register";
     }
 
-    protected Command createCommand() {
-        argCommand = new ArgumentBuilder()
-            .withName("command")
-            .withDescription("Sync Command")
-            .withMinimum(0)
-            .withMaximum(1)
-            .withValidator(new Validator() {
-                public void validate(List list) throws InvalidArgumentException {
-                    if (list.size() > 0) {
-                        String cmd = list.get(0).toString();
-                        try {
-                            list.set(0, Sync.Command.valueOf(cmd.toUpperCase(Locale.ROOT)));
-                        } catch (IllegalArgumentException e) {
-                            throw new InvalidArgumentException("Invalid command: " + cmd);
-                        }
-                    }
-                }
-            })
-            .create();
-        argLocalPath = new ArgumentBuilder()
-            .withName("localPath")
-            .withDescription("local path (optional)")
-            .withMinimum(0)
-            .withMaximum(1)
-            .create();
-        return new CommandBuilder()
-                .withName("sync")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(OPT_VERBOSE)
-                        .withOption(optForce = new DefaultOptionBuilder()
-                                .withLongName("force")
-                                .withDescription("force certain commands to execute.")
-                                .create())
-                        .withOption(optUri = new DefaultOptionBuilder()
-                            .withShortName("u")
-                            .withLongName("uri")
-                            .withDescription("Specifies the URI of the sync host.")
-                            .withArgument(new ArgumentBuilder()
-                                    .withName("uri")
-                                    .withMaximum(1)
-                                    .withMinimum(1)
-                                    .create())
-                            .create())
-                        .withOption(argCommand)
-                        .withOption(argLocalPath)
-                        .create()
-                )
-                .create();
+    public CmdSync() {
+        options = new Options();
+        options.addOption(OPT_VERBOSE);
+        optForce = Option.builder()
+                .longOpt("force")
+                .desc("force certain commands to execute.")
+                .build();
+        options.addOption(optForce);
+        optUri = Option.builder("u")
+                .longOpt("uri")
+                .desc("Specifies the URI of the sync host.")
+                .hasArg()
+                .argName("uri")
+                .build();
+        options.addOption(optUri);
+        argCommand = Option.builder()
+                .argName("command")
+                .desc("Sync Command")
+                .hasArg()
+                .build();
+        options.addOption(argCommand);
+        argLocalPath = Option.builder()
+                .argName("localPath")
+                .desc("local path (optional)")
+                .hasArg()
+                .build();
+        options.addOption(argLocalPath);
+    }
+
+    public Options getOptions() {
+        return options;
     }
 }

@@ -16,25 +16,33 @@
  */
 package org.apache.jackrabbit.vault.util.console.examples;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 import org.apache.jackrabbit.vault.util.console.commands.AbstractCommand;
 
 /**
- * {@code CmdExit}...
+ * {@code CmdHello}...
  */
 public class CmdHello extends AbstractCommand {
 
     private Option argName;
+    private Options options;
+
+    public CmdHello() {
+        options = new Options();
+        argName = Option.builder()
+                .argName("name")
+                .desc("print this name. default is 'world'")
+                .hasArg()
+                .build();
+        options.addOption(argName);
+    }
 
     protected void doExecute(ExecutionContext ctx, CommandLine cl)
             throws Exception {
-        String name = (String) cl.getValue(argName);
+        String name = cl.getOptionValue("name");
         if (name == null) {
             System.out.println("Hello, world.");
         } else {
@@ -46,21 +54,8 @@ public class CmdHello extends AbstractCommand {
         return "print hello";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("hello")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(argName = new ArgumentBuilder()
-                                .withName("name")
-                                .withDescription("print this name. default is 'world'")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public Options getOptions() {
+        return options;
     }
+
 }

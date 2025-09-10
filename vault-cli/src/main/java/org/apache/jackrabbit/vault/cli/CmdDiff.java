@@ -18,16 +18,13 @@
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.actions.Diff;
 
@@ -38,17 +35,22 @@ import org.apache.jackrabbit.vault.vlt.actions.Diff;
 public class CmdDiff extends AbstractVaultCommand {
 
     private Option optNonRecursive;
-    private Argument argLocalPath;
+    private Option argLocalPath;
+    private Options options;
 
     @SuppressWarnings("unchecked")
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
-        List<String> localPaths = cl.getValues(argLocalPath);
-        List<File> localFiles = app.getPlatformFiles(localPaths, false);
+        String[] localPaths = cl.getOptionValues("file");
+        List<String> localPathList = new ArrayList<String>();
+        if (localPaths != null) {
+            localPathList = Arrays.asList(localPaths);
+        }
+        List<File> localFiles = app.getPlatformFiles(localPathList, false);
         File localDir = app.getPlatformFile("", true);
 
         VltContext vCtx = app.createVaultContext(localDir);
-        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
-        Diff a = new Diff(localDir, localFiles, cl.hasOption(optNonRecursive));
+        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE.getOpt()));
+        Diff a = new Diff(localDir, localFiles, cl.hasOption(optNonRecursive.getOpt()));
         vCtx.execute(a);
     }
 
@@ -59,26 +61,23 @@ public class CmdDiff extends AbstractVaultCommand {
         return "Display the differences between two paths.";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("diff")
-                .withName("di")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optNonRecursive = new DefaultOptionBuilder()
-                                .withShortName("N")
-                                .withLongName("non-recursive")
-                                .withDescription("operate on single directory")
-                                .create())
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("file")
-                                .withDescription("file or directory to display the diffs from")
-                                .withMinimum(0)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public CmdDiff() {
+        options = new Options();
+        optNonRecursive = Option.builder("N")
+                .longOpt("non-recursive")
+                .desc("operate on single directory")
+                .build();
+        options.addOption(optNonRecursive);
+        argLocalPath = Option.builder()
+                .argName("file")
+                .desc("file or directory to display the diffs from")
+                .hasArgs()
+                .build();
+        options.addOption(argLocalPath);
+        options.addOption(OPT_VERBOSE);
+    }
+
+    public Options getOptions() {
+        return options;
     }
 }

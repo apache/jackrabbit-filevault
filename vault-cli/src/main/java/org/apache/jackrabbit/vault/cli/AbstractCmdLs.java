@@ -22,9 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 import org.apache.jackrabbit.vault.util.console.util.Table;
 
@@ -36,16 +35,10 @@ abstract public class AbstractCmdLs extends AbstractJcrFsCommand {
 
     protected static final int F_MASK = 0x0f;
 
-    protected final Option argPath = new ArgumentBuilder()
-                                        .withName("path")
-                                        .withDescription("the path to list")
-                                        .withMinimum(0)
-                                        .withMaximum(1)
-                                        .create();
-
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
         int fmtFlag = getFormatFlags(ctx, cl);
-        String path = (String) cl.getValue(argPath);
+        String[] args = cl.getArgs();
+        String path = (args != null && args.length > 0) ? args[0] : null;
         ConsoleFile file = ctx.getFile(path, true);
         ls(file, fmtFlag, 0);
     }

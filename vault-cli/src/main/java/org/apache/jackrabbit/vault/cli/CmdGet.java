@@ -23,14 +23,10 @@ import java.io.IOException;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
@@ -41,10 +37,36 @@ import org.apache.jackrabbit.vault.util.console.ExecutionException;
  */
 public class CmdGet extends AbstractJcrFsCommand {
 
+    private Option optForce;
+    private Option optJcrPath;
+    private Option optLocalPath;
+    private Options options;
+
+    public CmdGet() {
+        options = new Options();
+        optForce = Option.builder("f")
+                .desc("force overwrite if local file already exists")
+                .build();
+        options.addOption(optForce);
+        optJcrPath = Option.builder()
+                .argName("jcr-path")
+                .hasArg()
+                .required()
+                .desc("the jcr path")
+                .build();
+        options.addOption(optJcrPath);
+        optLocalPath = Option.builder()
+                .argName("local-path")
+                .hasArg()
+                .desc("the local path")
+                .build();
+        options.addOption(optLocalPath);
+    }
+
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        boolean forced = cl.hasOption(optForce);
-        String jcrPath = (String) cl.getValue(argJcrPath);
-        String name = (String) cl.getValue(argLocalPath);
+        boolean forced = cl.hasOption(optForce.getOpt());
+        String jcrPath = cl.getOptionValue(optJcrPath.getOpt());
+        String name = cl.getOptionValue(optLocalPath.getOpt());
 
         ConsoleFile wo = ctx.getFile(jcrPath, true);
         if (wo instanceof VaultFsCFile) {
@@ -93,37 +115,8 @@ public class CmdGet extends AbstractJcrFsCommand {
 
     }
 
-    private Option optForce;
-    private Argument argJcrPath;
-    private Argument argLocalPath;
+    public Options getOptions() { return options; }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("get")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optForce = new DefaultOptionBuilder()
-                                .withShortName("f")
-                                .withDescription("force overwrite if local file already exists")
-                                .create())
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcrl-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("local-path")
-                                .withDescription("the local path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
-    }
+    public void printHelp() { new HelpFormatter().printHelp("get", options); }
 
 }

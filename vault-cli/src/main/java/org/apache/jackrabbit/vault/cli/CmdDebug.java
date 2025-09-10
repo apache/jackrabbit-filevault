@@ -24,12 +24,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
@@ -44,17 +44,34 @@ import org.apache.jackrabbit.vault.util.console.platform.PlatformFile;
  */
 public class CmdDebug extends AbstractJcrFsCommand {
 
-    private Argument argCommand;
-    private Argument argArgs;
+    private Option optCommand;
+    private Option optArgs;
+    private Options options;
+
+    public CmdDebug() {
+        options = new Options();
+        optCommand = Option.builder()
+                .argName("command")
+                .desc("the debug command")
+                .hasArg()
+                .build();
+        options.addOption(optCommand);
+        optArgs = Option.builder()
+                .argName("args")
+                .desc("arguments for the debug command")
+                .hasArgs()
+                .build();
+        options.addOption(optArgs);
+    }
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        String cmd = (String) cl.getValue(argCommand);
-        List args = cl.getValues(argArgs);
-        if (cmd.equals("getRelated")) {
-            if (args.size()<1) {
+        String command = cl.getOptionValue("command");
+        String[] args = cl.getOptionValues("args");
+        if (command.equals("getRelated")) {
+            if (args.length<1) {
                 throw new ExecutionException("getRelated. needs path argument.");
             }
-            String path = (String) args.get(0);
+            String path = args[0];
             ConsoleFile wo = ctx.getFile(path, true);
             if (wo instanceof VaultFsCFile) {
                 VaultFile file = (VaultFile) wo.unwrap();
@@ -71,11 +88,11 @@ public class CmdDebug extends AbstractJcrFsCommand {
             }
 
         }
-        if (cmd.equals("test")) {
-            if (args.size()<1) {
+        if (command.equals("test")) {
+            if (args.length<1) {
                 throw new ExecutionException("test. needs path argument.");
             }
-            String path = (String) args.get(0);
+            String path = args[0];
             ConsoleFile wo = ctx.getFile(path, true);
             if (wo instanceof PlatformFile) {
                 File file = (File) wo.unwrap();
@@ -112,28 +129,5 @@ public class CmdDebug extends AbstractJcrFsCommand {
                 "Sub commands:\n" +
                 "  getRelated <jcr-path>\n"+
                 "  test <repo-path>";
-    }
-
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("debug")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(argCommand = new ArgumentBuilder()
-                                .withName("cmd")
-                                .withDescription("the sub command")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .withOption(argArgs = new ArgumentBuilder()
-                                .withName("args")
-                                .withDescription("command arguments")
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
     }
 }

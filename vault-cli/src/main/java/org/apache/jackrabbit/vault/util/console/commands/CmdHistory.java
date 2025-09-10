@@ -18,14 +18,22 @@ package org.apache.jackrabbit.vault.util.console.commands;
 
 import java.util.Iterator;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 
 /**
  */
 public class CmdHistory extends AbstractConsoleCommand {
+
+    private Options options;
+
+    public CmdHistory() {
+        options = new Options();
+    }
 
     protected void doExecute(ConsoleExecutionContext ctx, CommandLine cl)
             throws Exception {
@@ -49,11 +57,7 @@ public class CmdHistory extends AbstractConsoleCommand {
                 "of the command in the history.\n";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("history")
-                .withDescription(getShortDescription())
-                .create();
-    }
+    public Options getOptions() { return options; }
+    public void printHelp() { new HelpFormatter().printHelp("history", options); }
 
 }

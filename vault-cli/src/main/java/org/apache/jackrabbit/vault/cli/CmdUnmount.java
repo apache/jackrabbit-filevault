@@ -18,15 +18,21 @@
 package org.apache.jackrabbit.vault.cli;
 
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
 
 /**
  * Implements the 'unmount' command.
  *
  */
 public class CmdUnmount extends AbstractJcrFsCommand {
+
+    private Options options;
+
+    public CmdUnmount() {
+        options = new Options();
+    }
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
         ctx.getVaultFsApp().unmount();
@@ -38,12 +44,7 @@ public class CmdUnmount extends AbstractJcrFsCommand {
     public String getShortDescription() {
         return "Unmount the Vault filesystem";
     }
-
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("unmount")
-                .withDescription(getShortDescription())
-                .create();
-    }
+    public Options getOptions() { return options; }
+    public void printHelp() { new HelpFormatter().printHelp("unmount", options); }
 
 }

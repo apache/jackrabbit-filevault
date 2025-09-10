@@ -16,15 +16,12 @@
  */
 package org.apache.jackrabbit.vault.cli.extended;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
 /**
- * {@code XJcrLog}...
+ * {@code XDavEx}...
  */
 public class XDavEx extends ExtendedOption {
 
@@ -60,37 +57,6 @@ public class XDavEx extends ExtendedOption {
     }
 
     public Option getCommand() {
-        return new CommandBuilder()
-                .withName("Xdavex")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(new ArgumentBuilder()
-                                .withName("itemcache=<size>")
-                                .withDescription("size of the item cache in 1024. default 128")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withOption(new ArgumentBuilder()
-                                .withName("spilog=<file>")
-                                .withDescription("enable spi log and write to file")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withOption(new ArgumentBuilder()
-                                .withName("depth=<n>")
-                                .withDescription("retrieval depth. default 4")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withOption(new ArgumentBuilder()
-                                .withName("referer=<header>")
-                                .withDescription("HTTP Referer header to use for the requests. default is http://localhost/")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .create()
-                )
-                .create();
+        return getOption();
     }
 }

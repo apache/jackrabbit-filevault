@@ -23,12 +23,10 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.PropertyDefinition;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 import org.apache.jackrabbit.vault.util.console.util.Table;
@@ -48,39 +46,34 @@ public class CmdLsRepo extends AbstractCmdLs {
     private Option optNodeType;
 
     private Option optUUID;
+    private Options options;
 
+    public CmdLsRepo() {
+        options = new Options();
+        optNodeType = Option.builder("n")
+                .desc("display the node type of the nodes")
+                .build();
+        options.addOption(optNodeType);
+        optUUID = Option.builder("u")
+                .desc("display the uuid of the referenceable nodes")
+                .build();
+        options.addOption(optUUID);
+        optLong = Option.builder("l")
+                .desc("combines the flags 'n' and 'u'")
+                .build();
+        options.addOption(optLong);
+    }
 
     protected int getFormatFlags(VaultFsConsoleExecutionContext ctx, CommandLine cl) {
         int fmtFlag = 0;
-        fmtFlag |= cl.hasOption(optNodeType) ? F_FLAG_NT : 0;
-        fmtFlag |= cl.hasOption(optUUID) ? F_FLAG_UUID : 0;
-        fmtFlag |= cl.hasOption(optLong) ? F_FLAG_LONG : 0;
+        fmtFlag |= cl.hasOption(optNodeType.getOpt()) ? F_FLAG_NT : 0;
+        fmtFlag |= cl.hasOption(optUUID.getOpt()) ? F_FLAG_UUID : 0;
+        fmtFlag |= cl.hasOption(optLong.getOpt()) ? F_FLAG_LONG : 0;
         return fmtFlag;
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("ls")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optNodeType = new DefaultOptionBuilder()
-                                .withShortName("n")
-                                .withDescription("display the node type of the nodes")
-                                .create())
-                        .withOption(optUUID = new DefaultOptionBuilder()
-                                .withShortName("u")
-                                .withDescription("display the uuid of the referenceable nodes")
-                                .create())
-                        .withOption(optLong = new DefaultOptionBuilder()
-                                .withShortName("l")
-                                .withDescription("combines the flags 'n' and 'u'")
-                                .create())
-                        .withOption(argPath)
-                        .create())
-                .create();
-    }
-
+    public Options getOptions() { return options; }
+    public void printHelp() { new HelpFormatter().printHelp("ls", options); }
 
     protected void formatFile(ConsoleFile file, Table.Row row, int flags) {
         Object item = file.unwrap();

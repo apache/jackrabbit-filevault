@@ -17,14 +17,10 @@
 
 package org.apache.jackrabbit.vault.cli;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.util.console.util.Table;
 
 /**
@@ -32,11 +28,42 @@ import org.apache.jackrabbit.vault.util.console.util.Table;
  *
  */
 public class CmdMount extends AbstractJcrFsCommand {
+    private Option optForce;
+    private Option optConfigFile;
+    private Option optFilterFile;
+    private Option optPath;
+    private Options options;
+
+    public CmdMount() {
+        options = new Options();
+        optForce = Option.builder("f")
+                .longOpt("force")
+                .desc("force remount if already mounted")
+                .build();
+        options.addOption(optForce);
+        optConfigFile = Option.builder()
+                .longOpt("file")
+                .desc("config.xml for jcrfs")
+                .hasArg()
+                .build();
+        options.addOption(optConfigFile);
+        optFilterFile = Option.builder()
+                .longOpt("filter")
+                .desc("filter.xml for jcrfs")
+                .hasArg()
+                .build();
+        options.addOption(optFilterFile);
+        optPath = Option.builder()
+                .argName("root")
+                .desc("the repository path that forms the mount root")
+                .hasArg()
+                .build();
+        options.addOption(optPath);
+    }
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        String path = (String) cl.getValue(argPath);
+        String path = cl.getOptionValue(optPath.getOpt());
         if (path == null) {
-            // display mount information
             if (!ctx.getVaultFsApp().isMounted()) {
                 VaultFsApp.log.info("Not mounted.");
             } else {
@@ -54,81 +81,23 @@ public class CmdMount extends AbstractJcrFsCommand {
                         null,
                         null,
                         path,
-                        (String) cl.getValue(optConfigFile),
-                        (String) cl.getValue(optFilterFile),
-                        cl.hasOption(optForce));
+                        cl.getOptionValue(optConfigFile.getOpt()),
+                        cl.getOptionValue(optFilterFile.getOpt()),
+                        cl.hasOption(optForce.getOpt()));
             }
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public String getShortDescription() {
         return "Mount a Vault filesystem.";
     }
 
-    private Option optForce;
-    private Option optConfigFile;
-    private Option optFilterFile;
-    private Argument argPath;
-
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("mount")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optForce = new DefaultOptionBuilder()
-                                .withShortName("f")
-                                .withLongName("force")
-                                .withDescription("force remount if already mounted")
-                                .create())
-                        .withOption(optConfigFile = new DefaultOptionBuilder()
-                                .withLongName("file")
-                                .withDescription("config.xml for jcrfs")
-                                .withArgument(new ArgumentBuilder()
-                                        .withName("file")
-                                        .withMinimum(0)
-                                        .withMaximum(1)
-                                        .create())
-                                .create())
-                        .withOption(optFilterFile = new DefaultOptionBuilder()
-                                .withLongName("filter")
-                                .withDescription("filter.xml for jcrfs")
-                                .withArgument(new ArgumentBuilder()
-                                        .withName("filter")
-                                        .withMinimum(0)
-                                        .withMaximum(1)
-                                        .create())
-                                .create())
-                        .withOption(argPath = new ArgumentBuilder()
-                                .withName("root")
-                                .withDescription("the repository path that forms the mount root")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public Options getOptions() {
+        return options;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public String getHelp() {
-        return "Synopsis:\n" +
-               "    mount [option] <path>\n"+
-               "\n" +
-               "Description:\n" +
-               "    Mounts a Vault filesystem. If <path> is omitted it lists\n" +
-                "   the current mountpoint.\n"+
-                "\n" +
-               "Options:\n"+
-               "    -c <user:pwd>  credentials for mount.\n" +
-               "    -w <workspace> workspace for mount\n" +
-               "    -u             force remount if already mounted.\n" +
-               "    -f <file>      config.xml.\n";
+    public void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("mount", options);
     }
 }

@@ -19,14 +19,9 @@ package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
@@ -46,9 +41,10 @@ public class CmdCheckoutCli extends AbstractVaultCommand {
 
     private Option optForce;
     private Option optFilter;
-    private Argument argLocalPath;
-    private Argument argJcrPath;
-    private Argument argMountpoint;
+    private Option argLocalPath;
+    private Option argJcrPath;
+    private Option argMountpoint;
+    private Options options;
 
     @Override
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl)
@@ -57,16 +53,16 @@ public class CmdCheckoutCli extends AbstractVaultCommand {
     }
 
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
-        String jcrPath = (String) cl.getValue(argJcrPath);
-        String localPath = (String) cl.getValue(argLocalPath);
-        String root = (String) cl.getValue(argMountpoint);
+        String jcrPath = cl.getOptionValue("jcrPath");
+        String localPath = cl.getOptionValue("localPath");
+        String root = cl.getOptionValue("uri");
         RepositoryAddress addr = new RepositoryAddress(root);
 
         // shift arguments
         if (localPath == null) {
             localPath = jcrPath;
             jcrPath = null;
-        } 
+        }
         if (jcrPath == null) {
             jcrPath = addr.getPath();
             addr = addr.resolve("/");
@@ -85,11 +81,11 @@ public class CmdCheckoutCli extends AbstractVaultCommand {
             localFile.mkdir();
         }
         VltContext vCtx = app.createVaultContext(localFile);
-        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
-        vCtx.setQuiet(cl.hasOption(OPT_QUIET));
-        vCtx.setDefaultFilter((String) cl.getValue(optFilter));
+        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE.getOpt()));
+        vCtx.setQuiet(cl.hasOption(OPT_QUIET.getOpt()));
+        vCtx.setDefaultFilter(cl.getOptionValue("file"));
         Checkout c = new Checkout(addr, jcrPath, localFile);
-        c.setForce(cl.hasOption(optForce));
+        c.setForce(cl.hasOption("force"));
         vCtx.execute(c);
     }
 
@@ -119,52 +115,43 @@ public class CmdCheckoutCli extends AbstractVaultCommand {
                 "  vlt --credentials admin:admin co http://localhost:8080/crx\n";
     }
 
-    protected Command createCommand() {
-        argMountpoint = new ArgumentBuilder()
-            .withName("uri")
-            .withDescription("mountpoint uri")
-            .withMinimum(1)
-            .withMaximum(1)
-            .create();
-        argJcrPath = new ArgumentBuilder()
-            .withName("jcrPath")
-            .withDescription("remote path (optional)")
-            .withMinimum(0)
-            .withMaximum(1)
-            .create();
-        argLocalPath = new ArgumentBuilder()
-            .withName("localPath")
-            .withDescription("local path (optional)")
-            .withMinimum(0)
-            .withMaximum(1)
-            .create();
-        return new CommandBuilder()
-                .withName("checkout")
-                .withName("co")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optForce = new DefaultOptionBuilder()
-                                .withLongName("force")
-                                .withDescription("force checkout to overwrite local files if they already exist.")
-                                .create())
-                        .withOption(OPT_VERBOSE)
-                        .withOption(OPT_QUIET)
-                        .withOption(optFilter = new DefaultOptionBuilder()
-                                .withShortName("f")
-                                .withLongName("filter")
-                                .withDescription("specifies auto filters if none defined.")
-                                .withArgument(new ArgumentBuilder()
-                                        .withName("file")
-                                        .withMaximum(1)
-                                        .withMinimum(1)
-                                        .create())
-                                .create())
-                        .withOption(argMountpoint)
-                        .withOption(argJcrPath)
-                        .withOption(argLocalPath)
-                        .create()
-                )
-                .create();
+    public CmdCheckoutCli() {
+        options = new Options();
+        options.addOption(OPT_VERBOSE);
+        options.addOption(OPT_QUIET);
+        optForce = Option.builder()
+                .longOpt("force")
+                .desc("force checkout to overwrite local files if they already exist.")
+                .build();
+        options.addOption(optForce);
+        optFilter = Option.builder("f")
+                .longOpt("filter")
+                .desc("specifies auto filters if none defined.")
+                .hasArg()
+                .argName("file")
+                .build();
+        options.addOption(optFilter);
+        argMountpoint = Option.builder()
+                .argName("uri")
+                .desc("mountpoint uri")
+                .hasArg()
+                .build();
+        options.addOption(argMountpoint);
+        argJcrPath = Option.builder()
+                .argName("jcrPath")
+                .desc("remote path (optional)")
+                .hasArg()
+                .build();
+        options.addOption(argJcrPath);
+        argLocalPath = Option.builder()
+                .argName("localPath")
+                .desc("local path (optional)")
+                .hasArg()
+                .build();
+        options.addOption(argLocalPath);
+    }
+
+    public Options getOptions() {
+        return options;
     }
 }

@@ -16,7 +16,7 @@
  */
 package org.apache.jackrabbit.vault.util.console.commands;
 
-import org.apache.commons.cli2.CommandLine;
+import org.apache.commons.cli.CommandLine;
 import org.apache.jackrabbit.vault.util.console.ConsoleCommand;
 import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
@@ -28,12 +28,8 @@ public abstract class AbstractConsoleCommand extends AbstractCommand implements 
 
     public boolean execute(ConsoleExecutionContext ctx, CommandLine cl)
             throws Exception {
-        if (cl.hasOption(getCommand())) {
-            doExecute(ctx, cl);
-            return true;
-        } else {
-            return false;
-        }
+        doExecute(ctx, cl);
+        return true;
     }
 
     protected void doExecute(ExecutionContext ctx, CommandLine cl) throws Exception {

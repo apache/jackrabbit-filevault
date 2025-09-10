@@ -17,14 +17,9 @@
 
 package org.apache.jackrabbit.vault.cli;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
@@ -39,31 +34,34 @@ import org.apache.jackrabbit.vault.util.RepositoryCopier;
 public class CmdRcp extends AbstractVaultCommand {
 
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
-        boolean quiet = cl.hasOption(OPT_QUIET);
-        RepositoryAddress src = new RepositoryAddress((String) cl.getValue(srcAddr));
-        RepositoryAddress dst = new RepositoryAddress((String) cl.getValue(dstAddr));
-        boolean recursive = cl.hasOption(optRecursive);
+        boolean quiet = cl.hasOption(OPT_QUIET.getOpt());
+        RepositoryAddress src = new RepositoryAddress(cl.getOptionValue("src"));
+        RepositoryAddress dst = new RepositoryAddress(cl.getOptionValue("dst"));
+        boolean recursive = cl.hasOption("r");
         RepositoryCopier rcp = new RepositoryCopier();
         if (!quiet) {
             rcp.setTracker(new DefaultProgressListener());
         }
-        if (cl.hasOption(optSize)) {
-            rcp.setBatchSize(Integer.parseInt(cl.getValue(optSize).toString()));
+        if (cl.hasOption("b")) {
+            rcp.setBatchSize(Integer.parseInt(cl.getOptionValue("b")));
         }
-        if (cl.hasOption(optThrottle)) {
-            rcp.setThrottle(Integer.parseInt(cl.getValue(optThrottle).toString()));
+        if (cl.hasOption("t")) {
+            rcp.setThrottle(Integer.parseInt(cl.getOptionValue("t")));
         }
-        if (cl.hasOption(optResumeFrom)) {
-            rcp.setResumeFrom(cl.getValue(optResumeFrom).toString());
+        if (cl.hasOption("R")) {
+            rcp.setResumeFrom(cl.getOptionValue("R"));
         }
-        rcp.setUpdate(cl.hasOption(optUpdate));
-        rcp.setOnlyNewer(cl.hasOption(optNewer));
-        rcp.setNoOrdering(cl.hasOption(optNoOrdering));
+        rcp.setUpdate(cl.hasOption("u"));
+        rcp.setOnlyNewer(cl.hasOption("n"));
+        rcp.setNoOrdering(cl.hasOption("no-ordering"));
         rcp.setCredentialsProvider(app.getCredentialsStore());
         DefaultWorkspaceFilter srcFilter = new DefaultWorkspaceFilter();
         PathFilterSet excludes = new PathFilterSet("/");
-        for (Object e: cl.getValues(optExclude)) {
-            excludes.addExclude(new DefaultPathFilter(e.toString()));
+        String[] excl = cl.getOptionValues("e");
+        if (excl != null) {
+            for (String e: excl) {
+                excludes.addExclude(new DefaultPathFilter(e));
+            }
         }
         srcFilter.add(excludes);
         rcp.setSourceFilter(srcFilter);
@@ -90,8 +88,7 @@ public class CmdRcp extends AbstractVaultCommand {
                 "  vlt rcp -e \".*\\.txt\" -r http://localhost:4502/crx/-/jcr:root/content http://admin:admin@localhost:4503/crx/-/jcr:root/content_copy\n";
     }
 
-    private Argument srcAddr;
-    private Argument dstAddr;
+    // argument/options
     private Option optRecursive;
     private Option optSize;
     private Option optExclude;
@@ -100,88 +97,75 @@ public class CmdRcp extends AbstractVaultCommand {
     private Option optUpdate;
     private Option optNewer;
     private Option optNoOrdering;
+    private Option srcAddr;
+    private Option dstAddr;
+    private Options options;
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("rcp")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(OPT_QUIET)
-                        .withOption(optRecursive = new DefaultOptionBuilder()
-                                .withShortName("r")
-                                .withLongName("recursive")
-                                .withDescription("descend recursively")
-                                .create())
-                        .withOption(optSize = new DefaultOptionBuilder()
-                                .withShortName("b")
-                                .withLongName("batchSize")
-                                .withDescription("number of nodes until intermediate save")
-                                .withArgument(new ArgumentBuilder()
-                                        .withName("size")
-                                        .withMinimum(0)
-                                        .withMaximum(1)
-                                        .create())
-                                .create())
-                        .withOption(optThrottle = new DefaultOptionBuilder()
-                                .withShortName("t")
-                                .withLongName("throttle")
-                                .withDescription("number of seconds to wait after an intermediate save")
-                                .withArgument(new ArgumentBuilder()
-                                        .withName("seconds")
-                                        .withMinimum(0)
-                                        .withMaximum(1)
-                                        .create())
-                                .create())
-                        .withOption(optResumeFrom = new DefaultOptionBuilder()
-                                .withShortName("R")
-                                .withLongName("resume")
-                                .withDescription("source path to resume operation after a restart")
-                                .withArgument(new ArgumentBuilder()
-                                        .withName("path")
-                                        .withMinimum(0)
-                                        .withMaximum(1)
-                                        .create())
-                                .create())
-                        .withOption(optUpdate = new DefaultOptionBuilder()
-                                .withShortName("u")
-                                .withLongName("update")
-                                .withDescription("overwrite/delete existing nodes.")
-                                .create())
-                        .withOption(optNewer = new DefaultOptionBuilder()
-                                .withShortName("n")
-                                .withLongName("newer")
-                                .withDescription("respect lastModified properties for update.")
-                                .create())
-                        .withOption(optExclude = new DefaultOptionBuilder()
-                                .withShortName("e")
-                                .withLongName("exclude")
-                                .withDescription("regexp of excluded source paths.")
-                                .withArgument(new ArgumentBuilder()
-                                        .withMinimum(0)
-                                        .create())
-                                .create())
-                        .withOption(optNoOrdering = new DefaultOptionBuilder()
-                                .withLongName("no-ordering")
-                                .withDescription("disable node ordering for updated content")
-                                .create())
-                        .withOption(srcAddr = new ArgumentBuilder()
-                                .withName("src")
-                                .withDescription("the repository address of the source tree")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .withOption(dstAddr = new ArgumentBuilder()
-                                .withName("dst")
-                                .withDescription("the repository address of the destination node")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public CmdRcp() {
+        options = new Options();
+        options.addOption(OPT_QUIET);
+        optRecursive = Option.builder("r")
+                .longOpt("recursive")
+                .desc("descend recursively")
+                .build();
+        options.addOption(optRecursive);
+        optSize = Option.builder("b")
+                .longOpt("batchSize")
+                .desc("number of nodes until intermediate save")
+                .hasArg()
+                .argName("size")
+                .build();
+        options.addOption(optSize);
+        optThrottle = Option.builder("t")
+                .longOpt("throttle")
+                .desc("number of seconds to wait after an intermediate save")
+                .hasArg()
+                .argName("seconds")
+                .build();
+        options.addOption(optThrottle);
+        optResumeFrom = Option.builder("R")
+                .longOpt("resume")
+                .desc("source path to resume operation after a restart")
+                .hasArg()
+                .argName("path")
+                .build();
+        options.addOption(optResumeFrom);
+        optUpdate = Option.builder("u")
+                .longOpt("update")
+                .desc("overwrite/delete existing nodes.")
+                .build();
+        options.addOption(optUpdate);
+        optNewer = Option.builder("n")
+                .longOpt("newer")
+                .desc("respect lastModified properties for update.")
+                .build();
+        options.addOption(optNewer);
+        optExclude = Option.builder("e")
+                .longOpt("exclude")
+                .desc("regexp of excluded source paths.")
+                .hasArgs()
+                .build();
+        options.addOption(optExclude);
+        optNoOrdering = Option.builder()
+                .longOpt("no-ordering")
+                .desc("disable node ordering for updated content")
+                .build();
+        options.addOption(optNoOrdering);
+        srcAddr = Option.builder()
+                .argName("src")
+                .desc("the repository address of the source tree")
+                .hasArg()
+                .build();
+        options.addOption(srcAddr);
+        dstAddr = Option.builder()
+                .argName("dst")
+                .desc("the repository address of the destination node")
+                .hasArg()
+                .build();
+        options.addOption(dstAddr);
     }
 
+    public Options getOptions() {
+        return options;
+    }
 }

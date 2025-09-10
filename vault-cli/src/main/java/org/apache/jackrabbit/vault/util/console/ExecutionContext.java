@@ -17,19 +17,18 @@
 package org.apache.jackrabbit.vault.util.console;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.DisplaySetting;
-import org.apache.commons.cli2.Group;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.commandline.Parser;
-import org.apache.commons.cli2.util.HelpFormatter;
-import org.apache.jackrabbit.vault.util.console.util.CliHelpFormatter;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.jackrabbit.vault.util.console.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 /**
  * {@code Console}...
@@ -48,15 +47,25 @@ public class ExecutionContext {
      */
     protected final ArrayList commands = new ArrayList();
 
-    private Group grpCommands;
-
     public ExecutionContext(AbstractApplication app) {
         this.app = app;
     }
 
     public void printHelp(String cmd) {
-        CliCommand cc = cmd == null ? null : getCommand(cmd);
-        getCmdHelpFormatter(cc).print();
+        if (cmd == null) {
+            System.out.println("Available commands:");
+            for (Object o : commands) {
+                CliCommand c = (CliCommand) o;
+                System.out.printf("  %s - %s\n", c.getName(), c.getShortDescription());
+            }
+        } else {
+            CliCommand c = getCommand(cmd);
+            if (c != null) {
+                c.printHelp();
+            } else {
+                System.out.println("Unknown command: " + cmd);
+            }
+        }
     }
 
     public AbstractApplication getApplication() {
@@ -64,37 +73,11 @@ public class ExecutionContext {
     }
 
     protected HelpFormatter getCmdHelpFormatter(CliCommand cmd) {
-        CliHelpFormatter hf = CliHelpFormatter.create();
-        if (cmd != null) {
-            hf.setCmd(cmd);
-            hf.getLineUsageSettings().add(DisplaySetting.DISPLAY_ARGUMENT_BRACKETED);
-        } else {
-            hf.setGroup(getCommandsGroup());
-            hf.setShowUsage(false);
-            hf.getDisplaySettings().remove(DisplaySetting.DISPLAY_PARENT_CHILDREN);
-        }
-        return hf;
+        return new HelpFormatter();
     }
 
-    public Group getCommandsGroup() {
-        if (grpCommands == null) {
-            try {
-                GroupBuilder gbuilder = new GroupBuilder()
-                        .withName("Commands:")
-                        .withMinimum(0)
-                        .withMaximum(1);
-                Iterator iter = commands.iterator();
-                while (iter.hasNext()) {
-                    CliCommand c = (CliCommand) iter.next();
-                    gbuilder.withOption(c.getCommand());
-                }
-                grpCommands = gbuilder.create();
-            } catch (Exception e) {
-                log.error("Error while building command group.", e);
-                throw new ExecutionException("Error while building command gorup.", e);
-            }
-        }
-        return grpCommands;
+    public List getCommandsGroup() {
+        return commands;
     }
 
     public void installCommand(CliCommand c) {
@@ -115,55 +98,29 @@ public class ExecutionContext {
     public boolean execute(String line) {
         return execute(Text.parseLine(line));
     }
-    
+
     public boolean execute(String[] args) {
-        Parser parser = new Parser();
-        parser.setHelpFormatter(getCmdHelpFormatter(null));
-        parser.setGroup(getCommandsGroup());
-        CommandLine cl = parser.parseAndHelp(args);
-        return cl != null && execute(cl);
-    }
-
-    public boolean execute(CommandLine cl) {
-        Iterator iter = commands.iterator();
-        while (iter.hasNext()) {
-            CliCommand c = (CliCommand) iter.next();
-            try {
-                if (doExecute(c, cl)) {
-                    return true;
-                }
-            } catch (ExecutionException e) {
-                if (e.getCause() == null || e.getCause() == e) {
-                    log.error("{}: {}", c.getName(), e.getMessage(), e);
-                } else {
-                    StringBuffer buf = new StringBuffer();
-                    addCause(buf, e.getCause(), null);
-                    log.error("{}: {}", c.getName(), buf.toString(), e);
-
-                }
-            } catch (Throwable e) {
-                StringBuffer buf = new StringBuffer();
-                addCause(buf, e, null);
-                log.error("{}: {}", c.getName(), buf.toString(), e);
-                return true;
-            }
+        if (args == null || args.length == 0) {
+            return false;
         }
-        return false;
-    }
-
-    private static void addCause(StringBuffer buf, Throwable e, StringBuffer indent) {
-        if (indent == null) {
-            indent = new StringBuffer();
+        String cmdName = args[0];
+        CliCommand cmd = getCommand(cmdName);
+        if (cmd == null) {
+            log.error("Unknown command: {}", cmdName);
+            return false;
         }
-        buf.append(e.getClass().getName()).append(": ").append(e.getMessage());
-        Throwable t = e.getCause();
-        if (e instanceof SAXException) {
-            t = ((SAXException) e).getException();
-        }
-        if (t != null && t != e) {
-            buf.append("\n").append(indent).append("caused by: ");
-            indent.append("  ");
-            addCause(buf, t, indent);
+        String[] subArgs = args.length > 1 ? Arrays.copyOfRange(args, 1, args.length) : new String[0];
+        DefaultParser parser = new DefaultParser();
+        try {
+            CommandLine cl = parser.parse(cmd.getOptions(), subArgs, true);
+            return doExecute(cmd, cl);
+        } catch (ParseException e) {
+            log.error("Error parsing command options: {}", e.getMessage());
+            cmd.printHelp();
+            return true;
+        } catch (Exception e) {
+            log.error("Error executing command {}: {}", cmdName, e.getMessage(), e);
+            return true;
         }
     }
 

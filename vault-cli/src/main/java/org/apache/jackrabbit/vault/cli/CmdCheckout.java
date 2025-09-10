@@ -19,17 +19,14 @@ package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
-import org.apache.jackrabbit.util.Text;
+import org.apache.jackrabbit.vault.util.console.CliCommand;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.actions.Checkout;
@@ -46,15 +43,25 @@ import org.apache.jackrabbit.vault.vlt.actions.Checkout;
 public class CmdCheckout extends AbstractJcrFsCommand {
 
     private Option optForce;
-    //private Option optExclude;
-    private Argument argLocalPath;
-    private Argument argJcrPath;
+    private Options options;
+
+    public CmdCheckout() {
+        options = new Options();
+        optForce = Option.builder()
+                .longOpt("force")
+                .desc("force checkout to overwrite local files if they already exist.")
+                .build();
+        options.addOption(optForce);
+        options.addOption(CliCommand.OPT_VERBOSE);
+        options.addOption(CliCommand.OPT_QUIET);
+    }
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl)
             throws Exception {
         // overwrite this, since it takes the mounted vault fs into account
-        String jcrPath = (String) cl.getValue(argJcrPath);
-        String localPath = (String) cl.getValue(argLocalPath);
+        String[] args = cl.getArgs();
+        String jcrPath = args != null && args.length > 0 ? args[0] : null;
+        String localPath = args != null && args.length > 1 ? args[1] : null;
 
         VaultFile remoteFile = ctx.getVaultFsApp().getVaultFile(jcrPath, true);
         RepositoryAddress addr = remoteFile.getAggregate().getManager().getMountpoint();
@@ -75,10 +82,10 @@ public class CmdCheckout extends AbstractJcrFsCommand {
         }
 
         VltContext vCtx = ctx.getVaultFsApp().createVaultContext(localFile);
-        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
-        vCtx.setQuiet(cl.hasOption(OPT_QUIET));
+        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE.getOpt()));
+        vCtx.setQuiet(cl.hasOption(OPT_QUIET.getOpt()));
         Checkout c = new Checkout(addr, jcrPath, localFile);
-        c.setForce(cl.hasOption(optForce));
+        c.setForce(cl.hasOption(optForce.getOpt()));
         vCtx.execute(c);
     }
 
@@ -94,35 +101,6 @@ public class CmdCheckout extends AbstractJcrFsCommand {
                 "local filesystem at <local-path>.";
     }
 
-    protected Command createCommand() {
-        argJcrPath = new ArgumentBuilder()
-            .withName("jcrPath")
-            .withDescription("remote path")
-            .withMinimum(1)
-            .withMaximum(1)
-            .create();
-        argLocalPath = new ArgumentBuilder()
-            .withName("localPath")
-            .withDescription("local path (optional)")
-            .withMinimum(0)
-            .withMaximum(1)
-            .create();
-        return new CommandBuilder()
-                .withName("checkout")
-                .withName("co")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optForce = new DefaultOptionBuilder()
-                                .withLongName("force")
-                                .withDescription("force checkout to overwrite local files if they already exist.")
-                                .create())
-                        .withOption(OPT_VERBOSE)
-                        .withOption(OPT_QUIET)
-                        .withOption(argJcrPath)
-                        .withOption(argLocalPath)
-                        .create()
-                )
-                .create();
-    }
+    public Options getOptions() { return options; }
+    public void printHelp() { new HelpFormatter().printHelp("checkout|co [options] <jcrPath> [localPath]", options); }
 }

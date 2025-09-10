@@ -19,15 +19,10 @@ package org.apache.jackrabbit.vault.cli;
 
 import java.io.IOException;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
-import org.apache.commons.cli2.validation.NumberValidator;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 
 /**
@@ -35,12 +30,32 @@ import org.apache.jackrabbit.vault.util.console.ConsoleFile;
  *
  */
 public class CmdTree extends AbstractJcrFsCommand {
+    private Option optRecursive;
+    private Option optPath;
+    private Options options;
+
+    public CmdTree() {
+        options = new Options();
+        optRecursive = Option.builder("r")
+                .longOpt("recursive")
+                .desc("depth to recurse")
+                .hasArg()
+                .build();
+        options.addOption(optRecursive);
+        optPath = Option.builder()
+                .argName("path")
+                .desc("the path to display")
+                .hasArg()
+                .required()
+                .build();
+        options.addOption(optPath);
+    }
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        String path = (String) cl.getValue(argPath);
+        String path = cl.getOptionValue(optPath.getOpt());
         int depth = Integer.MAX_VALUE;
-        if (cl.hasOption(optRecursive)) {
-            depth = ((Long) cl.getValue(optRecursive)).intValue();
+        if (cl.hasOption(optRecursive.getOpt())) {
+            depth = Integer.parseInt(cl.getOptionValue(optRecursive.getOpt()));
         }
         ConsoleFile file = ctx.getFile(path, true);
         tree(file, depth, "");
@@ -50,7 +65,16 @@ public class CmdTree extends AbstractJcrFsCommand {
      * {@inheritDoc}
      */
     public String getShortDescription() {
-        return "Provide a tree-dump of files";
+        return "Display the tree structure of a path.";
+    }
+
+    public Options getOptions() {
+        return options;
+    }
+
+    public void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("tree", options);
     }
 
     /**
@@ -71,36 +95,6 @@ public class CmdTree extends AbstractJcrFsCommand {
                 }
             }
         }
-    }
-
-    private Option optRecursive;
-    private Argument argPath;
-
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("tree")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optRecursive = new DefaultOptionBuilder()
-                                .withShortName("r")
-                                .withDescription("limit depth")
-                                .withArgument(new ArgumentBuilder()
-                                        .withName("depth")
-                                        .withDescription("limit tree to <depth>")
-                                        .withMinimum(1)
-                                        .withMaximum(1)
-                                        .withValidator(NumberValidator.getIntegerInstance())
-                                        .create())
-                                .create())
-                        .withOption(argPath = new ArgumentBuilder()
-                                        .withName("path")
-                                        .withDescription("the path of the tree")
-                                        .withMinimum(0)
-                                        .withMaximum(1)
-                                        .create())
-                        .create())
-                .create();
     }
 
 }

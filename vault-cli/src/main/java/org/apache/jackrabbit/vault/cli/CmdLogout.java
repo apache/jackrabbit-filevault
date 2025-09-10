@@ -17,15 +17,21 @@
 
 package org.apache.jackrabbit.vault.cli;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
 
 /**
  * Implements the 'unmount' command.
  *
  */
 public class CmdLogout extends AbstractJcrFsCommand {
+
+    private Options options;
+
+    public CmdLogout() {
+        options = new Options();
+    }
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
         ctx.getVaultFsApp().logout();
@@ -38,11 +44,7 @@ public class CmdLogout extends AbstractJcrFsCommand {
         return "Logout from the repository.";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("logout")
-                .withDescription(getShortDescription())
-                .create();
-    }
+    public Options getOptions() { return options; }
+    public void printHelp() { new HelpFormatter().printHelp("logout", options); }
 
 }

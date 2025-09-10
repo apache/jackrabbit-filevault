@@ -16,15 +16,16 @@
  */
 package org.apache.jackrabbit.vault.util.console.commands;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 
 /**
- * {@code CmdEnv}...
+ * {@code CmdPwd}...
  */
 public class CmdPwd extends AbstractConsoleCommand {
+
+    private Options options = new Options();
 
     protected void doExecute(ConsoleExecutionContext ctx, CommandLine cl) throws Exception {
         System.out.println(ctx.getCurrentFile().getPath());
@@ -34,11 +35,8 @@ public class CmdPwd extends AbstractConsoleCommand {
         return "print the current work path";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("pwd")
-                .withDescription(getShortDescription())
-                .create();
+    public Options getOptions() {
+        return options;
     }
 
 }

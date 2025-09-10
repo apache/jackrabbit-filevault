@@ -16,9 +16,8 @@
  */
 package org.apache.jackrabbit.vault.cli.extended;
 
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.console.CliCommand;
 
@@ -29,16 +28,11 @@ abstract public class ExtendedOption implements CliCommand {
 
     abstract public String getSystemPrefix();
 
-    private final Option option = new DefaultOptionBuilder()
-                .withShortName(getName())
-                .withDescription(getShortDescription())
-                .withArgument(new ArgumentBuilder()
-                        .withInitialSeparator(':')
-                        .withSubsequentSeparator((char)0)
-                        .withMaximum(1)
-                        .create()
-                )
-                .create();
+    private final Option option = Option.builder(getName())
+            .desc(getShortDescription())
+            .hasArg()
+            .argName("value")
+            .build();
     
     public void process(String args) {
         // currently just split the args
@@ -50,7 +44,5 @@ abstract public class ExtendedOption implements CliCommand {
         }
     }
 
-    public Option getOption() {
-        return option;
-    }
+    public Option getOption() { return option; }
 }

@@ -19,12 +19,9 @@ package org.apache.jackrabbit.vault.cli;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.util.console.ConsoleFile;
@@ -43,28 +40,26 @@ public class CmdLsAggregate extends AbstractCmdLs {
     private static final int F_FLAG_TYPE = 0x01;
 
     private Option optType;
+    private Options options;
 
     protected int getFormatFlags(VaultFsConsoleExecutionContext ctx, CommandLine cl) {
         int fmtFlag = 0;
-        fmtFlag |= cl.hasOption(optType) ? F_FLAG_TYPE : 0;
+        fmtFlag |= cl.hasOption("t") ? F_FLAG_TYPE : 0;
         return fmtFlag;
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("ls")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optType = new DefaultOptionBuilder()
-                                .withShortName("t")
-                                .withDescription("display the artfiact type")
-                                .create())
-                        .withOption(argPath)
-                        .create())
-                .create();
+    public CmdLsAggregate() {
+        options = new Options();
+        optType = Option.builder("t")
+                .desc("display the artifact type")
+                .build();
+        options.addOption(optType);
+        // argPath handled by AbstractCmdLs via args
     }
 
+    public Options getOptions() {
+        return options;
+    }
 
     protected void formatFile(ConsoleFile file, Table.Row row, int flags) {
         try {

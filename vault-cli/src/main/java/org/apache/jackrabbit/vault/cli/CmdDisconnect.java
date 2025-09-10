@@ -17,13 +17,11 @@
 
 package org.apache.jackrabbit.vault.cli;
 
-
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
 
 /**
- * Implements the 'diconnect' command.
+ * Implements the 'disconnect' command.
  *
  */
 public class CmdDisconnect extends AbstractJcrFsCommand {
@@ -46,11 +44,10 @@ public class CmdDisconnect extends AbstractJcrFsCommand {
         return "Disconnect from a repository";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("disconnect")
-                .withDescription(getShortDescription())
-                .create();
+    private Options options = new Options();
+
+    public Options getOptions() {
+        return options;
     }
 
 }

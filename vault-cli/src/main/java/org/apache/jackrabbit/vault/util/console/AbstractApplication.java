@@ -25,19 +25,14 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Arrays;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.DisplaySetting;
-import org.apache.commons.cli2.Group;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.OptionException;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.commandline.Parser;
-import org.apache.commons.cli2.option.Command;
-import org.apache.commons.cli2.util.HelpFormatter;
-import org.apache.jackrabbit.vault.util.console.util.CliHelpFormatter;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.jackrabbit.vault.util.console.util.PomProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +67,7 @@ public abstract class AbstractApplication {
     private Option optLogLevel;
     private Option optVersion;
     private Option optHelp;
+    private Options applicationOptions;
 
     public String getVersion() {
         return getPomProperties().getVersion();
@@ -117,105 +113,36 @@ public abstract class AbstractApplication {
     }
 
     protected HelpFormatter getAppHelpFormatter() {
-        CliHelpFormatter hf = CliHelpFormatter.create();
-        StringBuffer sep = new StringBuffer(hf.getPageWidth());
-        while (sep.length() < hf.getPageWidth()) {
-            sep.append("-");
-        }
-        hf.setHeader(getVersionString());
-        hf.setDivider(sep.toString());
-        hf.setShellCommand("  " + getShellCommand() + " [options] <command> [arg1 [arg2 [arg3] ..]]");
-        hf.setGroup(getApplicationCLGroup());
-        hf.setSkipToplevel(true);
-        hf.getFullUsageSettings().removeAll(DisplaySetting.ALL);
-
-        hf.getDisplaySettings().remove(DisplaySetting.DISPLAY_GROUP_ARGUMENT);
-        hf.getDisplaySettings().remove(DisplaySetting.DISPLAY_PARENT_CHILDREN);
-        hf.getDisplaySettings().add(DisplaySetting.DISPLAY_OPTIONAL);
-
-        hf.getLineUsageSettings().add(DisplaySetting.DISPLAY_PROPERTY_OPTION);
-        hf.getLineUsageSettings().add(DisplaySetting.DISPLAY_PARENT_ARGUMENT);
-        hf.getLineUsageSettings().add(DisplaySetting.DISPLAY_ARGUMENT_BRACKETED);
-        return hf;
+        return new HelpFormatter();
     }
 
-    public Group getApplicationCLGroup() {
-        return new GroupBuilder()
-                .withName("")
-                .withOption(addApplicationOptions(new GroupBuilder()).create())
-                .withOption(getDefaultContext().getCommandsGroup())
-                .withMinimum(0)
-                .create();
-    }
+    public Options getApplicationOptions() {
+        if (applicationOptions == null) {
+            applicationOptions = new Options();
+            optVersion = Option.builder()
+                    .longOpt("version")
+                    .desc("print the version information and exit")
+                    .build();
+            optHelp = Option.builder("h")
+                    .longOpt("help")
+                    .hasArg()
+                    .argName("command")
+                    .desc("print this help")
+                    .build();
+            optLogLevel = Option.builder()
+                    .longOpt("log-level")
+                    .hasArg()
+                    .argName("level")
+                    .desc("the logback log level")
+                    .build();
 
-    public GroupBuilder addApplicationOptions(GroupBuilder gbuilder) {
-        final DefaultOptionBuilder obuilder = new DefaultOptionBuilder();
-        final ArgumentBuilder abuilder = new ArgumentBuilder();
-        /*
-        optPropertyFile =
-                obuilder
-                        .withShortName("F")
-                        .withLongName("console-settings")
-                        .withDescription(
-                                "The console settings property file. " +
-                                        "This is only required for interactive mode.")
-                        .withArgument(abuilder
-                                .withDescription("defaults to ...")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create();
-        optInteractive =
-                obuilder
-                        .withShortName("i")
-                        .withLongName("interactive")
-                        .withDescription("runs this application in an interactive mode.")
-                        .create();
-        */
-        optVersion =
-                obuilder
-                        .withLongName("version")
-                        .withDescription("print the version information and exit")
-                        .create();
-        optHelp =
-                obuilder
-                        .withShortName("h")
-                        .withLongName("help")
-                        .withDescription("print this help")
-                        .withArgument(abuilder
-                                .withName("command")
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create();
-
-        optLogLevel =
-                obuilder
-                        .withLongName("log-level")
-                        .withDescription("the logback log level")
-                        .withArgument(abuilder
-                                .withName("level")
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create();
-
-        gbuilder
-                .withName("Global options:")
-                //.withOption(optPropertyFile)
-                .withOption(CliCommand.OPT_VERBOSE)
-                .withOption(CliCommand.OPT_QUIET)
-                .withOption(optVersion)
-                .withOption(optLogLevel)
-                .withOption(optHelp)
-                .withMinimum(0);
-        /*
-        if (getConsole() != null) {
-            gbuilder.withOption(optInteractive);
+            applicationOptions.addOption(CliCommand.OPT_VERBOSE);
+            applicationOptions.addOption(CliCommand.OPT_QUIET);
+            applicationOptions.addOption(optVersion);
+            applicationOptions.addOption(optLogLevel);
+            applicationOptions.addOption(optHelp);
         }
-        */
-        return gbuilder;
+        return applicationOptions;
     }
 
     protected void init() {
@@ -226,28 +153,38 @@ public abstract class AbstractApplication {
     protected void run(String[] args) {
         // setup and start
         init();
-
-        Parser parser = new Parser();
-        parser.setGroup(getApplicationCLGroup());
-        parser.setHelpOption(optHelp);
+        DefaultParser parser = new DefaultParser();
         try {
-            CommandLine cl = parser.parse(args);
+            CommandLine cl = parser.parse(getApplicationOptions(), args, true);
             String logLevel = getEnv().getProperty(KEY_LOGLEVEL);
-            if (cl.hasOption(optLogLevel)) {
-                logLevel = (String) cl.getValue(optLogLevel);
+            if (cl.hasOption(optLogLevel.getOpt())) {
+                logLevel = cl.getOptionValue(optLogLevel.getOpt());
             }
             if (logLevel != null) {
                 LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-                // overwrite level of configuration file
-                ch.qos.logback.classic.Logger rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME);
+                ch.qos.logback.classic.Logger rootLogger = context.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
                 rootLogger.setLevel(Level.toLevel(logLevel));
             }
+            if (cl.hasOption(optVersion.getOpt())) {
+                printVersion();
+                return;
+            }
+            if (cl.hasOption(optHelp.getOpt())) {
+                String cmd = cl.getOptionValue(optHelp.getOpt());
+                printHelp(cmd);
+                return;
+            }
             prepare(cl);
-            execute(cl);
-        } catch (OptionException e) {
+            String[] remaining = cl.getArgs();
+            if (!getDefaultContext().execute(remaining)) {
+                // nothing handled
+            }
+        } catch (ParseException e) {
             log.error("{}. Type --help for more information.", e.getMessage());
         } catch (ExecutionException e) {
             log.error("Error while starting: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Error while starting: {}", e.getMessage(), e);
         } finally {
             close();
         }

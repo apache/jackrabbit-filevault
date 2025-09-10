@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.cli2.CommandLine;
+import org.apache.commons.cli.CommandLine;
 import org.apache.jackrabbit.vault.util.console.commands.CmdEnv;
 import org.apache.jackrabbit.vault.util.console.commands.CmdExec;
 import org.apache.jackrabbit.vault.util.console.commands.CmdExit;

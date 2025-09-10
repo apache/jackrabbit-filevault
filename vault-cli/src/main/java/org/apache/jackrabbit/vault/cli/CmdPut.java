@@ -22,14 +22,10 @@ import java.io.IOException;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
-import org.apache.jackrabbit.vault.fs.api.VaultFsTransaction;
 import org.apache.jackrabbit.vault.util.FileInputSource;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.jackrabbit.util.Text;
@@ -42,8 +38,8 @@ import org.apache.jackrabbit.vault.util.console.ExecutionException;
 public class CmdPut extends AbstractJcrFsCommand {
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        String name = (String) cl.getValue(argLocalPath);
-        String jcrPath = (String) cl.getValue(argJcrPath);
+        String name = cl.getOptionValue("local-path");
+        String jcrPath = cl.getOptionValue("jcr-path");
 
         VaultFile file;
         if (jcrPath == null) {
@@ -107,37 +103,27 @@ public class CmdPut extends AbstractJcrFsCommand {
     }
 
     //private Option optForce;
-    private Argument argLocalPath;
-    private Argument argJcrPath;
+    private Option argLocalPath;
+    private Option argJcrPath;
+    private Options options;
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("put")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                                /*
-                                .withOption(optForce = new DefaultOptionBuilder()
-                                        .withShortName("f")
-                                        .withDescription("force overwrite if local file already exists")
-                                        .create())
-                                */
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("local-path")
-                                .withDescription("the local path")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcrl-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public CmdPut() {
+        options = new Options();
+        argLocalPath = Option.builder()
+                .argName("local-path")
+                .desc("the local path")
+                .hasArg()
+                .build();
+        options.addOption(argLocalPath);
+        argJcrPath = Option.builder()
+                .argName("jcr-path")
+                .desc("the jcr path")
+                .hasArg()
+                .build();
+        options.addOption(argJcrPath);
+    }
+
+    public Options getOptions() {
+        return options;
     }
 }

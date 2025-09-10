@@ -24,14 +24,10 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 
@@ -43,10 +39,13 @@ public class CmdMixins extends AbstractJcrFsCommand {
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl)
             throws Exception {
-        String jcrPath = (String) cl.getValue(argJcrPath);
+        String[] args = cl.getArgs();
+        String jcrPath = args != null && args.length > 0 ? args[0] : null;
 
-        List added = cl.getValues(optAdd);
-        List rems = cl.getValues(optRemove);
+        String[] addedArr = cl.getOptionValues(optAdd.getOpt());
+        String[] remsArr = cl.getOptionValues(optRemove.getOpt());
+        List added = addedArr == null ? java.util.Collections.emptyList() : java.util.Arrays.asList(addedArr);
+        List rems = remsArr == null ? java.util.Collections.emptyList() : java.util.Arrays.asList(remsArr);
 
         ConsoleFile wo = ctx.getFile(jcrPath, true);
         if (wo instanceof RepositoryCFile) {
@@ -91,47 +90,27 @@ public class CmdMixins extends AbstractJcrFsCommand {
 
     }
 
-    private Argument argJcrPath;
-
     private Option optAdd;
 
     private Option optRemove;
+    private Options options;
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("mixins")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optAdd = new DefaultOptionBuilder()
-                                .withShortName("a")
-                                .withLongName("add")
-                                .withDescription("adds a mixin")
-                                .withArgument(new ArgumentBuilder()
-                                        .withName("nodetype")
-                                        .withMinimum(1)
-                                        .create())
-                                .create())
-                        .withOption(optRemove = new DefaultOptionBuilder()
-                                .withShortName("r")
-                                .withLongName("remove")
-                                .withDescription("removes a mixin")
-                                .withArgument(new ArgumentBuilder()
-                                        .withName("nodetype")
-                                        .withMinimum(1)
-                                        .create())
-                                .create())
-
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public CmdMixins() {
+        options = new Options();
+        optAdd = Option.builder("a")
+                .longOpt("add")
+                .desc("adds a mixin")
+                .hasArgs()
+                .build();
+        options.addOption(optAdd);
+        optRemove = Option.builder("r")
+                .longOpt("remove")
+                .desc("removes a mixin")
+                .hasArgs()
+                .build();
+        options.addOption(optRemove);
     }
 
+    public Options getOptions() { return options; }
+    public void printHelp() { new HelpFormatter().printHelp("mixins [options] <jcr-path>", options); }
 }

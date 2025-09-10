@@ -20,14 +20,10 @@ package org.apache.jackrabbit.vault.cli;
 import java.io.File;
 import java.util.List;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.actions.Delete;
 
@@ -38,49 +34,48 @@ import org.apache.jackrabbit.vault.vlt.actions.Delete;
 public class CmdDelete extends AbstractVaultCommand {
 
     private Option optForce;
-    private Argument argLocalPath;
+    private Option optLocalPath;
+    private Options options;
 
-    @SuppressWarnings("unchecked")
+    public CmdDelete() {
+        options = new Options();
+        options.addOption(OPT_VERBOSE);
+        options.addOption(OPT_QUIET);
+        optForce = Option.builder()
+                .longOpt("force")
+                .desc("force operation to run")
+                .build();
+        options.addOption(optForce);
+        optLocalPath = Option.builder()
+                .argName("file")
+                .desc("file or directory to delete")
+                .hasArg()
+                .required()
+                .build();
+        options.addOption(optLocalPath);
+    }
+
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
-        List<String> localPaths = cl.getValues(argLocalPath);
-        List<File> localFiles = app.getPlatformFiles(localPaths, false);
+        String localPath = cl.getOptionValue(optLocalPath.getOpt());
+        File localFile = app.getPlatformFile(localPath, false);
         File localDir = app.getPlatformFile("", true);
         VltContext vCtx = app.createVaultContext(localDir);
-        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
-        vCtx.setQuiet(cl.hasOption(OPT_QUIET));
-        Delete d = new Delete(localDir, localFiles, false, cl.hasOption(optForce));
+        vCtx.setVerbose(cl.hasOption(OPT_VERBOSE.getOpt()));
+        vCtx.setQuiet(cl.hasOption(OPT_QUIET.getOpt()));
+        Delete d = new Delete(localDir, List.of(localFile), false, cl.hasOption(optForce.getOpt()));
         vCtx.execute(d);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public String getShortDescription() {
         return "Remove files and directories from version control.";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("delete")
-                .withName("del")
-                .withName("rm")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(OPT_VERBOSE)
-                        .withOption(OPT_QUIET)
-                        .withOption(optForce = new DefaultOptionBuilder()
-                                .withLongName("force")
-                                .withDescription("force operation to run")
-                                .create())
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("file")
-                                .withDescription("file or directory to delete")
-                                .withMinimum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public Options getOptions() {
+        return options;
+    }
+
+    public void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("delete", options);
     }
 }

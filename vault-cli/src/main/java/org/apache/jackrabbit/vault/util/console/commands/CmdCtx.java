@@ -16,23 +16,21 @@
  */
 package org.apache.jackrabbit.vault.util.console.commands;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.util.console.ConsoleExecutionContext;
 
 /**
- * {@code CmdExit}...
+ * {@code CmdCtx}...
  */
 public class CmdCtx extends AbstractConsoleCommand {
 
     private Option argContext;
+    private Options options;
 
     protected void doExecute(ConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        String arg = (String) cl.getValue(argContext);
+        String arg = cl.getOptionValue("context");
         ctx.getConsole().switchContext(arg);
     }
 
@@ -40,21 +38,18 @@ public class CmdCtx extends AbstractConsoleCommand {
         return "change the execution context.";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("ctx")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(argContext = new ArgumentBuilder()
-                                .withName("context")
-                                .withDescription("change to the given context. if empty display list.")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public CmdCtx() {
+        options = new Options();
+        argContext = Option.builder()
+                .argName("context")
+                .desc("change to the given context. if empty display list.")
+                .hasArg()
+                .build();
+        options.addOption(argContext);
     }
+
+    public Options getOptions() {
+        return options;
+    }
+
 }

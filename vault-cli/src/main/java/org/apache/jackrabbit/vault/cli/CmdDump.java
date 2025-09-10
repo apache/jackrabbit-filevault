@@ -24,14 +24,9 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.Dumpable;
 import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
@@ -39,19 +34,47 @@ import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 import org.apache.jackrabbit.vault.util.console.platform.PlatformFile;
 
 /**
- * Implements the 'mount' command.
+ * Implements the 'dump' command.
  *
  */
 public class CmdDump extends AbstractJcrFsCommand {
 
+    private Option argPath;
+
+    private Option optConfig;
+
+    private Option optFilter;
+
+    private Options options;
+
+    public CmdDump() {
+        options = new Options();
+        optConfig = Option.builder("c")
+                .longOpt("config")
+                .desc("writes the config to the local file")
+                .build();
+        options.addOption(optConfig);
+        optFilter = Option.builder("f")
+                .longOpt("filter")
+                .desc("writes the workspace filter to the local file")
+                .build();
+        options.addOption(optFilter);
+        argPath = Option.builder()
+                .argName("path")
+                .desc("the path")
+                .hasArg()
+                .build();
+        options.addOption(argPath);
+    }
+
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl)
             throws Exception {
-        String path = (String) cl.getValue(argPath);
+        String path = cl.getOptionValue("path");
         VaultFileSystem fs = ctx.getVaultFsApp().getVaultFileSystem();
         if (fs == null) {
             VaultFsApp.log.info("Not mounted.");
         } else if (path != null && !path.equals("")) {
-            if (cl.hasOption(optConfig) || cl.hasOption(optFilter)) {
+            if (cl.hasOption(optConfig.getOpt()) || cl.hasOption(optFilter.getOpt())) {
                 ConsoleFile f = ctx.getCurrentFile();
                 File file;
                 if (f instanceof PlatformFile) {
@@ -60,7 +83,7 @@ public class CmdDump extends AbstractJcrFsCommand {
                 } else {
                     file = ctx.getVaultFsApp().getPlatformFile(path, false);
                 }
-                if (cl.hasOption(optConfig)) {
+                if (cl.hasOption(optConfig.getOpt())) {
                     try (InputStream input = fs.getConfig().getSource()) {
                         Files.copy(input, file.toPath());
                     }
@@ -94,36 +117,8 @@ public class CmdDump extends AbstractJcrFsCommand {
                 "config or filter to the local file system.";
     }
 
-    private Argument argPath;
-
-    private Option optConfig;
-
-    private Option optFilter;
-
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("dump")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optConfig = new DefaultOptionBuilder()
-                                .withShortName("c")
-                                .withLongName("config")
-                                .withDescription("writes the config to the local file")
-                                .create())
-                        .withOption(optFilter = new DefaultOptionBuilder()
-                                .withShortName("f")
-                                .withLongName("filter")
-                                .withDescription("writes the workspace filter to the local file")
-                                .create())
-                        .withOption(argPath = new ArgumentBuilder()
-                                .withName("path")
-                                .withDescription("the path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create())
-                        .create())
-                .create();
+    public Options getOptions() {
+        return options;
     }
 
 }

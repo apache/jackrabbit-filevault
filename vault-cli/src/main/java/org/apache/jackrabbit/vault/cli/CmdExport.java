@@ -19,14 +19,12 @@ package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.io.AbstractExporter;
 import org.apache.jackrabbit.vault.fs.io.JarExporter;
@@ -41,20 +39,47 @@ public class CmdExport extends AbstractJcrFsCommand {
 
     private Option optType;
     private Option optPrune;
-    private Argument argLocalPath;
-    private Argument argJcrPath;
+    private Option optLocalPath;
+    private Option optJcrPath;
+    private Options options;
+
+    public CmdExport() {
+        options = new Options();
+        options.addOption(OPT_VERBOSE);
+        optType = Option.builder("t")
+                .desc("specifies the export type. either 'platform' or 'jar'.")
+                .hasArg()
+                .build();
+        options.addOption(optType);
+        optPrune = Option.builder("P")
+                .longOpt("prune-missing")
+                .desc("specifies if missing local files should be deleted.")
+                .build();
+        options.addOption(optPrune);
+        optJcrPath = Option.builder()
+                .argName("jcr-path")
+                .desc("the jcr path")
+                .hasArg()
+                .build();
+        options.addOption(optJcrPath);
+        optLocalPath = Option.builder()
+                .argName("local-path")
+                .desc("the local path")
+                .hasArg()
+                .build();
+        options.addOption(optLocalPath);
+    }
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        String localPath = (String) cl.getValue(argLocalPath);
-        String jcrPath = (String) cl.getValue(argJcrPath);
-        boolean verbose = cl.hasOption(OPT_VERBOSE);
-        String type = (String) cl.getValue(optType, "platform");
+        String localPath = cl.getOptionValue("local-path");
+        String jcrPath = cl.getOptionValue("jcr-path");
+        boolean verbose = cl.hasOption(OPT_VERBOSE.getOpt());
+        String type = cl.getOptionValue("t", "platform");
         VaultFile vaultFile = ctx.getVaultFsApp().getVaultFile(jcrPath, true);
         if (localPath == null) {
             localPath = vaultFile.getName();
         }
         File localFile = ctx.getVaultFsApp().getPlatformFile(localPath, false);
-
         AbstractExporter exporter = null;
         try {
             if (type.equals("platform")) {
@@ -62,7 +87,7 @@ public class CmdExport extends AbstractJcrFsCommand {
                     localFile.mkdirs();
                 }
                 exporter = new PlatformExporter(localFile);
-                ((PlatformExporter) exporter).setPruneMissing(cl.hasOption(optPrune));
+                ((PlatformExporter) exporter).setPruneMissing(cl.hasOption(optPrune.getOpt()));
             } else if (type.equals("jar")) {
                 exporter = new JarExporter(localFile);
             } else {
@@ -99,42 +124,12 @@ public class CmdExport extends AbstractJcrFsCommand {
                 "to their respective CWDs.";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("export")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(OPT_VERBOSE)
-                        .withOption(optType = new DefaultOptionBuilder()
-                                .withShortName("t")
-                                .withDescription("specifies the export type. either 'platform' or 'jar'.")
-                                .withArgument(new ArgumentBuilder()
-                                        .withMinimum(0)
-                                        .withMaximum(1)
-                                        .create())
-                                .create())
-                        .withOption(optPrune = new DefaultOptionBuilder()
-                                .withShortName("P")
-                                .withLongName("prune-missing")
-                                .withDescription("specifies if missing local files should be deleted.")
-                                .create())
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("local-path")
-                                .withDescription("the local path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public Options getOptions() {
+        return options;
+    }
+
+    public void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("export", options);
     }
 }

@@ -20,24 +20,34 @@ package org.apache.jackrabbit.vault.cli;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.util.console.ConsoleFile;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 
 /**
- * Implements the 'get' command.
+ * Implements the 'save' command.
  *
  */
 public class CmdSave extends AbstractJcrFsCommand {
 
+    private Option argJcrPath;
+    private Options options;
+
+    public CmdSave() {
+        options = new Options();
+        argJcrPath = Option.builder()
+                .argName("jcr-path")
+                .desc("the jcr path")
+                .hasArg()
+                .build();
+        options.addOption(argJcrPath);
+    }
+
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl)
             throws Exception {
-        String jcrPath = (String) cl.getValue(argJcrPath);
+        String jcrPath = cl.getOptionValue("jcr-path");
         if (jcrPath == null) {
             jcrPath = "/";
         }
@@ -62,25 +72,8 @@ public class CmdSave extends AbstractJcrFsCommand {
         return "Saves the repository node.";
     }
 
-
-    private Argument argJcrPath;
-
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("save")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public Options getOptions() {
+        return options;
     }
 
 }

@@ -17,7 +17,7 @@
 
 package org.apache.jackrabbit.vault.cli;
 
-import org.apache.commons.cli2.CommandLine;
+import org.apache.commons.cli.CommandLine;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
 /**

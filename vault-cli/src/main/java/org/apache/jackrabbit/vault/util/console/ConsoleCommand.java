@@ -16,14 +16,14 @@
  */
 package org.apache.jackrabbit.vault.util.console;
 
-import org.apache.commons.cli2.CommandLine;
+import org.apache.commons.cli.CommandLine;
 
 /**
- * {@code Command}...
+ * Console command interface using Commons CLI
  */
 public interface ConsoleCommand extends CliCommand {
 
-    public boolean execute(ConsoleExecutionContext ctx, CommandLine cl)
+    boolean execute(ConsoleExecutionContext ctx, CommandLine cl)
             throws Exception;
 
 }

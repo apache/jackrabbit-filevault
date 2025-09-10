@@ -16,9 +16,9 @@
  */
 package org.apache.jackrabbit.vault.util.console.commands;
 
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.jackrabbit.vault.util.console.CliCommand;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;
 
@@ -27,37 +27,35 @@ import org.apache.jackrabbit.vault.util.console.ExecutionContext;
  */
 public abstract class AbstractCommand implements CliCommand {
 
-    private Command cmd;
+    private String name;
+    private Options options;
 
     protected AbstractCommand() {
     }
 
     public boolean execute(ExecutionContext ctx, CommandLine cl) throws Exception {
-        if (cl.hasOption(getCommand())) {
-            doExecute(ctx, cl);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public Option getCommand() {
-        if (cmd == null) {
-            cmd = createCommand();
-        }
-        return cmd;
+        doExecute(ctx, cl);
+        return true;
     }
 
     public boolean hasName(String name) {
-        return getCommand().getTriggers().contains(name);
+        return getName().equals(name);
     }
 
     public String getName() {
-        return getCommand().getPreferredName();
+        if (name == null) {
+            String cls = getClass().getSimpleName();
+            if (cls.startsWith("Cmd") && cls.length() > 3) {
+                name = cls.substring(3).toLowerCase();
+            } else {
+                name = cls.toLowerCase();
+            }
+        }
+        return name;
     }
 
     public String toString() {
-        return getCommand().toString();
+        return getName();
     }
 
     public String getLongDescription() {
@@ -68,8 +66,19 @@ public abstract class AbstractCommand implements CliCommand {
         return null;
     }
 
+    public Options getOptions() {
+        if (options == null) {
+            options = new Options();
+        }
+        return options;
+    }
+
+    public void printHelp() {
+        HelpFormatter hf = new HelpFormatter();
+        hf.printHelp(getName(), getOptions());
+    }
+
     protected abstract void doExecute(ExecutionContext ctx, CommandLine cl)
             throws Exception;
 
-    protected abstract Command createCommand();
 }

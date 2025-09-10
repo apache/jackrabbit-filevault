@@ -22,14 +22,10 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
@@ -49,18 +45,51 @@ public class CmdExportCli extends AbstractVaultCommand {
 
     private Option optType;
     private Option optPrune;
-    private Argument argLocalPath;
-    private Argument argJcrPath;
-    private Argument argMountpoint;
+    private Option optLocalPath;
+    private Option optJcrPath;
+    private Option optMountpoint;
+    private Options options;
 
+    public CmdExportCli() {
+        options = new Options();
+        options.addOption(OPT_VERBOSE);
+        optType = Option.builder("t")
+                .longOpt("type")
+                .desc("specifies the export type. either 'platform' or 'jar'.")
+                .hasArg()
+                .build();
+        options.addOption(optType);
+        optPrune = Option.builder("P")
+                .longOpt("prune-missing")
+                .desc("specifies if missing local files should be deleted.")
+                .build();
+        options.addOption(optPrune);
+        optJcrPath = Option.builder()
+                .argName("jcr-path")
+                .desc("the jcr path")
+                .hasArg()
+                .build();
+        options.addOption(optJcrPath);
+        optLocalPath = Option.builder()
+                .argName("local-path")
+                .desc("the local path")
+                .hasArg()
+                .build();
+        options.addOption(optLocalPath);
+        optMountpoint = Option.builder()
+                .argName("mountpoint")
+                .desc("the mountpoint URI")
+                .hasArg()
+                .build();
+        options.addOption(optMountpoint);
+    }
 
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
-        boolean verbose = cl.hasOption(OPT_VERBOSE);
-        String type = (String) cl.getValue(optType, "platform");
-
-        String jcrPath = (String) cl.getValue(argJcrPath);
-        String localPath = (String) cl.getValue(argLocalPath);
-        String root = (String) cl.getValue(argMountpoint);
+        boolean verbose = cl.hasOption(OPT_VERBOSE.getOpt());
+        String type = cl.getOptionValue("t", "platform");
+        String jcrPath = cl.getOptionValue("jcr-path");
+        String localPath = cl.getOptionValue("local-path");
+        String root = cl.getOptionValue("mountpoint");
         RepositoryAddress addr = new RepositoryAddress(root);
         // shift arguments
         if (localPath == null) {
@@ -71,19 +100,16 @@ public class CmdExportCli extends AbstractVaultCommand {
             jcrPath = "/";
         }
         if (localPath == null) {
-            if (jcrPath .equals("/")) {
+            if (jcrPath.equals("/")) {
                 localPath = Text.getName(addr.toString());
             } else {
                 localPath = Text.getName(jcrPath);
             }
             if (type.equals("jar")) {
                 localPath += "-" + FMT.format(Instant.now()) + ".jar";
-            } else {
-
             }
         }
         File localFile = app.getPlatformFile(localPath, false);
-
         AbstractExporter exporter = null;
         try {
             VltContext vCtx;
@@ -92,7 +118,7 @@ public class CmdExportCli extends AbstractVaultCommand {
                     localFile.mkdirs();
                 }
                 exporter = new PlatformExporter(localFile);
-                ((PlatformExporter) exporter).setPruneMissing(cl.hasOption(optPrune));
+                ((PlatformExporter) exporter).setPruneMissing(cl.hasOption(optPrune.getOpt()));
                 vCtx = app.createVaultContext(localFile);
             } else if (type.equals("jar")) {
                 exporter = new JarExporter(localFile);
@@ -100,14 +126,12 @@ public class CmdExportCli extends AbstractVaultCommand {
             } else {
                 throw new Exception("Type " + type + " not supported");
             }
-    
-            vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
+            vCtx.setVerbose(cl.hasOption(OPT_VERBOSE.getOpt()));
             VaultFile vaultFile = vCtx.getFileSystem(addr).getFile(jcrPath);
             if (vaultFile == null) {
                 VaultFsApp.log.error("Not such remote file: {}", jcrPath);
                 return;
             }
-    
             VaultFsApp.log.info("Exporting {} to {}", vaultFile.getPath(), localFile.getCanonicalPath());
             if (verbose) {
                 exporter.setVerbose(new DefaultProgressListener());
@@ -122,63 +146,16 @@ public class CmdExportCli extends AbstractVaultCommand {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public String getShortDescription() {
         return "Export the Vault filesystem";
     }
 
-
-    public String getLongDescription() {
-        return  "Export the Vault filesystem mounted at <uri> to the " +
-                "local filesystem at <local-path>. An optional <jcr-path> can be " +
-                "specified in order to export just a sub tree.\n\n" +
-                "Example:\n" +
-                "  vlt export http://localhost:4502/crx /apps/geometrixx myproject";
+    public Options getOptions() {
+        return options;
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("export")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(OPT_VERBOSE)
-                        .withOption(optType = new DefaultOptionBuilder()
-                                .withShortName("t")
-                                .withLongName("type")
-                                .withDescription("specifies the export type. either 'platform' or 'jar'.")
-                                .withArgument(new ArgumentBuilder()
-                                        .withMinimum(0)
-                                        .withMaximum(1)
-                                        .create())
-                                .create())
-                        .withOption(optPrune = new DefaultOptionBuilder()
-                                .withShortName("p")
-                                .withLongName("prune-missing")
-                                .withDescription("specifies if missing local files should be deleted.")
-                                .create())
-                        .withOption(argMountpoint = new ArgumentBuilder()
-                                .withName("uri")
-                                .withDescription("mountpoint uri")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create())
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("local-path")
-                                .withDescription("the local path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create())
-                        .create()
-                )
-                .create();
+    public void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("export", options);
     }
 }

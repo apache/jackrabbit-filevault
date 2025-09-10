@@ -18,35 +18,39 @@
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.actions.Debug;
 
 /**
- * Implements the 'export' command.
+ * Implements the 'vltdebug' command.
  *
  */
 public class CmdVaultDebug extends AbstractVaultCommand {
 
-    private Argument argCommand;
+    private Option argCommand;
+    private Options options;
 
     @SuppressWarnings("unchecked")
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
         File localDir = app.getPlatformFile("", true);
-        List<String> commands = cl.getValues(argCommand);
-        for (String cmd: commands) {
+        String[] commands = cl.getOptionValues("cmd");
+        List<String> cmds = new ArrayList<String>();
+        if (commands != null) {
+            cmds = Arrays.asList(commands);
+        }
+        for (String cmd: cmds) {
             if (cmd.equals("binary")) {
                 Debug dbg = new Debug(localDir);
                 VltContext vCtx = app.createVaultContext(localDir);
-                vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
-                vCtx.setQuiet(cl.hasOption(OPT_QUIET));
+                vCtx.setVerbose(cl.hasOption(OPT_VERBOSE.getOpt()));
+                vCtx.setQuiet(cl.hasOption(OPT_QUIET.getOpt()));
                 vCtx.execute(dbg);
             }
         }
@@ -59,22 +63,20 @@ public class CmdVaultDebug extends AbstractVaultCommand {
         return "Debug.";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("vltdebug")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(OPT_VERBOSE)
-                        .withOption(OPT_QUIET)
-                        .withOption(argCommand = new ArgumentBuilder()
-                                .withName("cmd")
-                                .withDescription("command")
-                                .withMinimum(0)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public CmdVaultDebug() {
+        options = new Options();
+        options.addOption(OPT_VERBOSE);
+        options.addOption(OPT_QUIET);
+        argCommand = Option.builder()
+                .argName("cmd")
+                .desc("command")
+                .hasArgs()
+                .build();
+        options.addOption(argCommand);
     }
+
+    public Options getOptions() {
+        return options;
+    }
+
 }

@@ -17,14 +17,11 @@
 
 package org.apache.jackrabbit.vault.cli;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.Option;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.jackrabbit.vault.util.console.CliCommand;
+import org.apache.commons.cli.HelpFormatter;
 
 /**
  * Implements the 'connect' command.
@@ -32,16 +29,32 @@ import org.apache.commons.cli2.option.Command;
  */
 public class CmdConnect extends AbstractJcrFsCommand {
 
-    private Argument argURI;
-
+    private Option optURI;
     private Option optForce;
+    private Options options;
+
+    public CmdConnect() {
+        options = new Options();
+        optForce = Option.builder("f")
+                .desc("force reconnect if already connected")
+                .build();
+        options.addOption(optForce);
+        optURI = Option.builder()
+                .argName("rmiuri")
+                .hasArg()
+                .desc("the rmi uri of the repository")
+                .build();
+        options.addOption(optURI);
+        options.addOption(CliCommand.OPT_VERBOSE);
+        options.addOption(CliCommand.OPT_QUIET);
+    }
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        String uri = (String) cl.getValue(argURI);
+        String uri = cl.getOptionValue(optURI.getOpt());
         if (uri != null) {
             ctx.getVaultFsApp().setProperty(VaultFsApp.KEY_DEFAULT_URI, uri);
         }
-        if (ctx.getVaultFsApp().isConnected() && cl.hasOption(optForce)) {
+        if (ctx.getVaultFsApp().isConnected() && cl.hasOption(optForce.getOpt())) {
             ctx.getVaultFsApp().disconnect();
         }
         ctx.getVaultFsApp().connect();
@@ -54,26 +67,6 @@ public class CmdConnect extends AbstractJcrFsCommand {
         return "Connect to a repository";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("connect")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(optForce = new DefaultOptionBuilder()
-                                .withShortName("f")
-                                .withDescription("force reconnect if already connected")
-                                .create())
-                        .withOption(argURI = new ArgumentBuilder()
-                                .withName("rmiuri")
-                                .withDescription("the rmi uri of the repository")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
-    }
-
+    public Options getOptions() { return options; }
+    public void printHelp() { new HelpFormatter().printHelp("connect", options); }
 }

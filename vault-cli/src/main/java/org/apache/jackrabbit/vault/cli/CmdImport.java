@@ -21,12 +21,10 @@ import java.io.File;
 
 import javax.jcr.Session;
 
-import org.apache.commons.cli2.Argument;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.CommandBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.option.Command;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.FileArchive;
@@ -41,13 +39,31 @@ import org.apache.jackrabbit.vault.util.DefaultProgressListener;
 public class CmdImport extends AbstractJcrFsCommand {
 
     //private Option optExclude;
-    private Argument argLocalPath;
-    private Argument argJcrPath;
+    private Option optLocalPath;
+    private Option optJcrPath;
+    private Options options;
+
+    public CmdImport() {
+        options = new Options();
+        options.addOption(OPT_VERBOSE);
+        optLocalPath = Option.builder()
+                .argName("local-path")
+                .desc("the local path")
+                .hasArg()
+                .build();
+        options.addOption(optLocalPath);
+        optJcrPath = Option.builder()
+                .argName("jcr-path")
+                .desc("the jcr path")
+                .hasArg()
+                .build();
+        options.addOption(optJcrPath);
+    }
 
     protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
-        String localPath = (String) cl.getValue(argLocalPath);
-        String jcrPath = (String) cl.getValue(argJcrPath);
-        boolean verbose = cl.hasOption(OPT_VERBOSE);
+        String localPath = cl.getOptionValue("local-path");
+        String jcrPath = cl.getOptionValue("jcr-path");
+        boolean verbose = cl.hasOption(OPT_VERBOSE.getOpt());
         /*
         List excludeList = cl.getValues(optExclude);
         String[] excludes = Constants.EMPTY_STRING_ARRAY;
@@ -95,39 +111,13 @@ public class CmdImport extends AbstractJcrFsCommand {
                 "to their respective CWDs.";
     }
 
-    protected Command createCommand() {
-        return new CommandBuilder()
-                .withName("import")
-                .withDescription(getShortDescription())
-                .withChildren(new GroupBuilder()
-                        .withName("Options:")
-                        .withOption(OPT_VERBOSE)
-                        /*
-                        .withOption(optExclude = new DefaultOptionBuilder()
-                                .withShortName("e")
-                                .withDescription("specifies the excluded local files. can be multiple.")
-                                .withArgument(new ArgumentBuilder()
-                                        .withMinimum(0)
-                                        .create())
-                                .create())
-                        */
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("local-path")
-                                .withDescription("the local path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
-                .create();
+    public Options getOptions() {
+        return options;
+    }
+
+    public void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("import", options);
     }
 
 }

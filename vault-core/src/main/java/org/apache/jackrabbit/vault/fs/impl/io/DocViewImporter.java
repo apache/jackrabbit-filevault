@@ -72,6 +72,7 @@ import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo.Info;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo.Type;
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
@@ -226,6 +227,11 @@ public class DocViewImporter implements DocViewParserHandler {
     private final boolean isSnsSupported;
 
     /**
+     * set true if filter checks can be skipped on import
+     */
+    private boolean skipFilterChecksOnImport = false;
+
+    /**
      * Creates a new importer that will imports the
      * items below the given root.
      *
@@ -236,12 +242,12 @@ public class DocViewImporter implements DocViewParserHandler {
      * @throws RepositoryException if an error occurs.
      */
     public DocViewImporter(Node parentNode, String rootNodeName,
-                              ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws RepositoryException {
-        this(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, AccessControlHandling.IGNORE, null);
+                              ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, boolean skipFilterChecksOnImport) throws RepositoryException {
+        this(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, AccessControlHandling.IGNORE, null, skipFilterChecksOnImport);
     }
 
     public DocViewImporter(Node parentNode, String rootNodeName,
-            ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, AccessControlHandling aclHandling, AccessControlHandling cugHandling) throws RepositoryException {
+            ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, AccessControlHandling aclHandling, AccessControlHandling cugHandling, boolean skipFilterChecksOnImport) throws RepositoryException {
         this.filter = artifacts.getCoverage();
         this.wspFilter = wspFilter;
         this.rootDepth = parentNode.getDepth() + 1;
@@ -270,9 +276,11 @@ public class DocViewImporter implements DocViewParserHandler {
         for (Artifact a : artifacts.values(ArtifactType.HINT)) {
             hints.add(rootPath + a.getRelativePath());
         }
-        
+
         stack = new StackElement(parentNode, parentNode.isNew());
         npResolver = new DefaultNamePathResolver(parentNode.getSession());
+
+        this.skipFilterChecksOnImport = skipFilterChecksOnImport;
     }
 
     /**
@@ -1018,7 +1026,8 @@ public class DocViewImporter implements DocViewParserHandler {
             // TODO: is this faster than using sysview import?
             // set new primary type (but never set rep:root)
             String newPrimaryType = ni.getPrimaryType().orElseThrow(() -> new IllegalStateException("Mandatory property 'jcr:primaryType' missing from " + ni));
-            if (importMode == ImportMode.REPLACE && !"rep:root".equals(newPrimaryType) && wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_PRIMARYTYPE))) {
+            final boolean allowedByFilter = (skipFilterChecksOnImport || wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_PRIMARYTYPE)));
+            if (importMode == ImportMode.REPLACE && !"rep:root".equals(newPrimaryType) && allowedByFilter) {
                 String currentPrimaryType = node.getPrimaryNodeType().getName();
                 if (!currentPrimaryType.equals(newPrimaryType)) {
                     vs.ensureCheckedOut();
@@ -1161,7 +1170,8 @@ public class DocViewImporter implements DocViewParserHandler {
             // add the protected properties
             for (DocViewProperty2 p : ni.getProperties()) {
                 String qualifiedPropertyName = npResolver.getJCRName(p.getName());
-                if (p.getStringValue().isPresent() && PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES.contains(p.getName()) && wspFilter.includesProperty(nodePath + "/" + qualifiedPropertyName)) {
+                final boolean allowedByFilter = (skipFilterChecksOnImport || wspFilter.includesProperty(nodePath + "/" + qualifiedPropertyName));
+                if (p.getStringValue().isPresent() && PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES.contains(p.getName()) && allowedByFilter) {
                     attrs = new AttributesImpl();
                     attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", ATTRIBUTE_TYPE_CDATA, qualifiedPropertyName);
                     attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", ATTRIBUTE_TYPE_CDATA, PropertyType.nameFromValue(p.getType()));
@@ -1281,7 +1291,8 @@ public class DocViewImporter implements DocViewParserHandler {
         // add properties
         for (DocViewProperty2 prop : ni.getProperties()) {
             String name = npResolver.getJCRName(prop.getName());
-            if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(name)) && wspFilter.includesProperty(node.getPath() + "/" + name)) {
+            final boolean allowedByFilter = (skipFilterChecksOnImport || wspFilter.includesProperty(node.getPath() + "/" + name));
+            if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(name)) && allowedByFilter) {
                 // check if property is allowed
                 try {
                     modified |= prop.apply(node);

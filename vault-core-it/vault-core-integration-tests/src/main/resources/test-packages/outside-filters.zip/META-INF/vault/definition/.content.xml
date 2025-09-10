@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:vlt="http://www.day.com/jcr/vault/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:created="{Date}2011-06-07T14:31:49.179-07:00"
+    jcr:createdBy="admin"
+    jcr:description=""
+    jcr:lastModified="{Date}2011-06-07T14:31:49.179-07:00"
+    jcr:lastModifiedBy="admin"
+    jcr:primaryType="vlt:PackageDefinition"
+    buildCount="1"
+    cqVersion="5.3"
+    group="my_packages"
+    lastUnwrapped="{Date}2011-06-07T14:31:49.179-07:00"
+    lastUnwrappedBy="admin"
+    lastWrapped="{Date}2011-06-07T14:31:49.179-07:00"
+    lastWrappedBy="admin"
+    name="tmp"
+    version="">
+    <filter jcr:primaryType="nt:unstructured">
+        <f0
+            jcr:primaryType="nt:unstructured"
+            mode="replace"
+            root="/tmp"
+            rules="[]"/>
+    </filter>
+</jcr:root>

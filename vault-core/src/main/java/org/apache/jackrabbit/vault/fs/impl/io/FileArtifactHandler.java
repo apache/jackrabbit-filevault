@@ -228,7 +228,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                         mode = wspFilter.getImportMode(path);
                     }
                     if (mode != ImportMode.MERGE) {
-                        info.merge(importDocView(file.getInputSource(), newParent, newName, newSet, wspFilter, options.getIdConflictPolicy()));
+                        info.merge(importDocView(file.getInputSource(), newParent, newName, newSet, wspFilter, options.getIdConflictPolicy(), options.getSkipFilterChecksOnImport()));
                     } else {
                         info.onNop(path);
                     }
@@ -315,7 +315,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
         if (idx > 0) {
             rootName = rootName.substring(0, idx);
         }
-        return importDocView(source, parent, rootName, artifacts, wspFilter, options.getIdConflictPolicy());
+        return importDocView(source, parent, rootName, artifacts, wspFilter, options.getIdConflictPolicy(),options.getSkipFilterChecksOnImport());
     }
 
     private boolean importNtResource(ImportInfo info, Node content, Artifact artifact)

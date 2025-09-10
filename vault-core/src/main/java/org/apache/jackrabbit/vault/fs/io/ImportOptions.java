@@ -73,6 +73,8 @@ public class ImportOptions {
 
     private Boolean overwritePrimaryTypesOfFolders = null;
 
+    private Boolean skipFilterChecksOnImport = false;
+
     /**
      * Default constructor.
      */
@@ -105,6 +107,7 @@ public class ImportOptions {
             dependencyHandling = base.dependencyHandling;
             idConflictPolicy = base.idConflictPolicy;
             overwritePrimaryTypesOfFolders = base.overwritePrimaryTypesOfFolders;
+            skipFilterChecksOnImport = base.skipFilterChecksOnImport;
         }
     }
 
@@ -132,6 +135,7 @@ public class ImportOptions {
         ret.dependencyHandling = dependencyHandling;
         ret.idConflictPolicy = idConflictPolicy;
         ret.overwritePrimaryTypesOfFolders = overwritePrimaryTypesOfFolders;
+        ret.skipFilterChecksOnImport = skipFilterChecksOnImport;
         return ret;
     }
 
@@ -480,6 +484,26 @@ public class ImportOptions {
         this.idConflictPolicy = idConflictPolicy;
     }
 
+    /**
+     * Allows to skip filter checks when importing packages; you can set this
+     * to {{code true}} if you are sure that this package contains no content
+     * which would be rejected by filters.
+     * This only affects checks against items in the package, but not existing items in
+     * the repository.
+     * @param skipFilterChecksOnImport if true skip the checks
+     */
+    public void setSkipFilterChecksOnImport (boolean skipFilterChecksOnImport) {
+        this.skipFilterChecksOnImport = skipFilterChecksOnImport;
+    }
+
+    /**
+     * get the filter check skip policy
+     * @return true if the filter check is skipped
+     */
+    public boolean getSkipFilterChecksOnImport() {
+        return this.skipFilterChecksOnImport;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -502,6 +526,7 @@ public class ImportOptions {
         result = prime * result + ((idConflictPolicy == null) ? 0 : idConflictPolicy.hashCode());
         result = prime * result + (strict ? 1231 : 1237);
         result = prime * result + (overwritePrimaryTypesOfFolders ? 1231 : 1237);
+        result = prime * result + (skipFilterChecksOnImport ? 1231 : 1237);
 
         return result;
     }
@@ -575,6 +600,8 @@ public class ImportOptions {
                 return false;
         } else if (!idConflictPolicy.equals(other.idConflictPolicy))
             return false;
+        if (skipFilterChecksOnImport != other.skipFilterChecksOnImport)
+            return false;
         return true;
     }
 
@@ -592,6 +619,7 @@ public class ImportOptions {
                 + (pathMapping != null ? "pathMapping=" + pathMapping + ", " : "")
                 + (dependencyHandling != null ? "dependencyHandling=" + dependencyHandling + ", " : "")
                 + "overwritePrimaryTypesOfFolders=" + overwritePrimaryTypesOfFolders + ", "
-                + "idConflictPolicy=" + (idConflictPolicy != null ? idConflictPolicy : IdConflictPolicy.FAIL) + "]";
+                + "idConflictPolicy=" + (idConflictPolicy != null ? idConflictPolicy : IdConflictPolicy.FAIL) + "],"
+                + "skipFilterChecksOnImport=" + skipFilterChecksOnImport;
     }
 }

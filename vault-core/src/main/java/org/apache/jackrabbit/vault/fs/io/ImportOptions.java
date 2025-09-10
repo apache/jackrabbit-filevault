@@ -500,7 +500,7 @@ public class ImportOptions {
      * get the filter check skip policy
      * @return true if the filter check is skipped
      */
-    public boolean getskipFilterChecksOnImport() {
+    public boolean getSkipFilterChecksOnImport() {
         return this.skipFilterChecksOnImport;
     }
 

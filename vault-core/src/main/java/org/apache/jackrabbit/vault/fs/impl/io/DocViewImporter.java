@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Item;
@@ -1078,11 +1079,10 @@ public class DocViewImporter implements DocViewParserHandler {
                 }
             }
             EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
-            // logging for uncovered protected properties
-            logIgnoredProtectedProperties(effectiveNodeType, node.getPath(), ni.getProperties(), PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES);
+            Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(ni.getProperties(), effectiveNodeType, node.getPath(), PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES);
             
             // add/modify properties contained in package
-            if (setUnprotectedProperties(effectiveNodeType, node, ni, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
+            if (setProperties(node, ni,unprotectedProperties, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
                 updatedNode = node;
             }
         }
@@ -1181,9 +1181,8 @@ public class DocViewImporter implements DocViewParserHandler {
             Node node = getNodeByIdOrName(parentNode, ni, importUuidBehavior == ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
             EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
 
-            // logging for uncovered protected properties
-            logIgnoredProtectedProperties(effectiveNodeType, node.getPath(), ni.getProperties(), PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES);
-            setUnprotectedProperties(effectiveNodeType, node, ni, true, null);
+            Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(ni.getProperties(), effectiveNodeType, node.getPath(), PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES);
+            setProperties(node, ni, unprotectedProperties, true, null);
             // remove mix referenceable if it was temporarily added
             if (addMixRef) {
                 node.removeMixin(JcrConstants.MIX_REFERENCEABLE);
@@ -1211,20 +1210,36 @@ public class DocViewImporter implements DocViewParserHandler {
         }
     }
 
-    private void logIgnoredProtectedProperties(EffectiveNodeType effectiveNodeType, String nodePath, Collection<DocViewProperty2> properties, Set<Name> importedProtectedProperties) {
-        // logging for protected properties which are not considered during import
-        properties.stream()
-            .filter(p -> p.getStringValue().isPresent() 
-                    && !importedProtectedProperties.contains(p.getName()))
-            .forEach(p -> {
-                try {
-                    if (isPropertyProtected(effectiveNodeType, p)) {
-                       log.warn("Ignore protected property '{}' on node '{}'", npResolver.getJCRName(p.getName()), nodePath);
+    /**
+     *  filter the provided properties for non-protected properties, and all protected are removed.
+     *  Any removed protected property is logged unless its name is contained in the importedProtectedProperties parameter.
+     *  
+     * @param properties all properties
+     * @param effectiveNodeType the effective nodetype of the node to which the properties are supposed to be added
+     * @param nodePath the path of the node
+     * @param importedProtectedProperties a list of names of protected properties, which are not supposed to logged
+     * @return a non-null collection of non-protected properties
+     */
+    private @NotNull Collection<DocViewProperty2> removeProtectedProperties(@NotNull Collection<DocViewProperty2> properties, @NotNull EffectiveNodeType effectiveNodeType,
+            @NotNull String nodePath, @NotNull Set<Name> importedProtectedProperties) {
+        return properties.stream()
+                .filter(p -> {
+                    try {
+                        if (isPropertyProtected(effectiveNodeType, p)) {
+                            // remove all protected properties
+                            if (p.getStringValue().isPresent() && !importedProtectedProperties.contains(p.getName())) {
+                                // log only those properties, which are not protected by the JCR standard because of special meaning
+                                log.warn("Ignore protected property '{}' on node '{}'", npResolver.getJCRName(p.getName()), nodePath);
+                            }
+                            return false;
+                        } else {
+                            return true; // pass on non-protected properties
+                        }
+                    } catch (RepositoryException e) {
+                        throw new IllegalStateException("Error retrieving protected status of properties", e);
                     }
-                } catch (RepositoryException e) {
-                    throw new IllegalStateException("Error retrieving protected status of properties", e);
-                }
-            });
+                })
+                .collect(Collectors.toList());
     }
 
     /**
@@ -1269,7 +1284,19 @@ public class DocViewImporter implements DocViewParserHandler {
         return node;
     }
 
-    private boolean setUnprotectedProperties(@NotNull EffectiveNodeType effectiveNodeType, @NotNull Node node, @NotNull DocViewNode2 ni, boolean overwriteExistingProperties, @Nullable VersioningState vs) throws RepositoryException {
+    /**
+     * Set all provided properties to the node.
+     * There is no check or special handling if the properties are protected or not, so only invoke it with non-protected properties.
+     * 
+     * @param node the node to set the properties to
+     * @param ni the DocViewNode to persist
+     * @param unprotectedProperties the (unprotected) properties to set on the given node
+     * @param overwriteExistingProperties 
+     * @param vs
+     * @return
+     * @throws RepositoryException
+     */
+    private boolean setProperties(@NotNull Node node, @NotNull DocViewNode2 ni, @NotNull Collection<DocViewProperty2> unprotectedProperties, boolean overwriteExistingProperties, @Nullable VersioningState vs) throws RepositoryException {
         boolean isAtomicCounter = false;
         for (String mixin : ni.getMixinTypes()) {
             if ("mix:atomicCounter".equals(mixin)) {
@@ -1279,9 +1306,9 @@ public class DocViewImporter implements DocViewParserHandler {
 
         boolean modified = false;
         // add properties
-        for (DocViewProperty2 prop : ni.getProperties()) {
+        for (DocViewProperty2 prop : unprotectedProperties) {
             String name = npResolver.getJCRName(prop.getName());
-            if (prop != null && !isPropertyProtected(effectiveNodeType, prop) && (overwriteExistingProperties || !node.hasProperty(name)) && wspFilter.includesProperty(node.getPath() + "/" + name)) {
+            if (prop != null && (overwriteExistingProperties || !node.hasProperty(name)) && wspFilter.includesProperty(node.getPath() + "/" + name)) {
                 // check if property is allowed
                 try {
                     modified |= prop.apply(node);

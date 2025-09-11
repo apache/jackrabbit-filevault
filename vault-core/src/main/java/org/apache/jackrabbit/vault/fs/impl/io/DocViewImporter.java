@@ -1082,7 +1082,7 @@ public class DocViewImporter implements DocViewParserHandler {
             Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(ni.getProperties(), effectiveNodeType, node.getPath(), PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES);
             
             // add/modify properties contained in package
-            if (setUnprotectedProperties(node, ni,unprotectedProperties, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
+            if (setProperties(node, ni,unprotectedProperties, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
                 updatedNode = node;
             }
         }
@@ -1182,7 +1182,7 @@ public class DocViewImporter implements DocViewParserHandler {
             EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
 
             Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(ni.getProperties(), effectiveNodeType, node.getPath(), PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES);
-            setUnprotectedProperties(node, ni, unprotectedProperties, true, null);
+            setProperties(node, ni, unprotectedProperties, true, null);
             // remove mix referenceable if it was temporarily added
             if (addMixRef) {
                 node.removeMixin(JcrConstants.MIX_REFERENCEABLE);
@@ -1290,13 +1290,13 @@ public class DocViewImporter implements DocViewParserHandler {
      * 
      * @param node the node to set the properties to
      * @param ni the DocViewNode to persist
-     * @param unprotectedProperties the unprotected properties to set on the given node
+     * @param unprotectedProperties the (unprotected) properties to set on the given node
      * @param overwriteExistingProperties 
      * @param vs
      * @return
      * @throws RepositoryException
      */
-    private boolean setUnprotectedProperties(@NotNull Node node, @NotNull DocViewNode2 ni, @NotNull Collection<DocViewProperty2> unprotectedProperties, boolean overwriteExistingProperties, @Nullable VersioningState vs) throws RepositoryException {
+    private boolean setProperties(@NotNull Node node, @NotNull DocViewNode2 ni, @NotNull Collection<DocViewProperty2> unprotectedProperties, boolean overwriteExistingProperties, @Nullable VersioningState vs) throws RepositoryException {
         boolean isAtomicCounter = false;
         for (String mixin : ni.getMixinTypes()) {
             if ("mix:atomicCounter".equals(mixin)) {

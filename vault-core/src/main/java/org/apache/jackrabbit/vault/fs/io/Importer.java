@@ -17,11 +17,9 @@
 
 package org.apache.jackrabbit.vault.fs.io;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +34,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.jcr.Node;
@@ -45,8 +42,6 @@ import javax.jcr.Session;
 import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.version.Version;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.api.security.authorization.PrincipalSetPolicy;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
@@ -228,12 +223,6 @@ public class Importer {
      * overall handler for importing file artifacts
      */
     private final FileArtifactHandler fileHandler = new FileArtifactHandler();
-
-    /**
-     * list of archive entries that are detected as lowlevel patches and need to be copied to the
-     * filesystem after import.
-     */
-    private final List<Archive.Entry> patches = new LinkedList<Archive.Entry>();
 
     private Map<String, TxInfo> intermediates = new LinkedHashMap<String, TxInfo>();
 
@@ -564,7 +553,6 @@ public class Importer {
         restorePrincipalAcls(session, shouldStashPrincipalPoliciesForArchive(archive));
         checkinNodes(session);
         applyMemberships(session);
-        applyPatches();
         if (opts.isDryRun()) {
             if (hasErrors) {
                 track("Package import simulation finished. (with errors, check logs!)", "");
@@ -856,12 +844,6 @@ public class Importer {
                 String repoPath = parentInfo.path + "/" + repoName;
                 if (file.getName().equals(Constants.DOT_CONTENT_XML)) {
                     continue;
-                }
-                if (opts.getPatchDirectory() != null && repoPath.startsWith(opts.getPatchParentPath())) {
-                    patches.add(file);
-                    if (!opts.isPatchKeepInRepo()) {
-                        continue;
-                    }
                 }
                 // todo: find better way to detect sub-packages
                 if (repoPath.startsWith(JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
@@ -1259,25 +1241,6 @@ public class Importer {
             }
         }
         memberships.clear();
-    }
-
-    private void applyPatches() {
-        for (Archive.Entry e: patches) {
-            String name = e.getName();
-            File target = new File(opts.getPatchDirectory(), name);
-            if (opts.isDryRun()) {
-                log.debug("Dry run: Would copy patch {} to {}", name, target.getPath());
-            } else {
-                log.debug("Copying patch {} to {}", name, target.getPath());
-                try (InputStream in = archive.getInputSource(e).getByteStream();
-                     OutputStream out = FileUtils.openOutputStream(target)) {
-                    IOUtils.copy(in, out);
-                } catch (IOException e1) {
-                    log.error("Error while copying patch.", e);
-                }
-            }
-            track("P", name);
-        }
     }
 
     private static class TxInfo {

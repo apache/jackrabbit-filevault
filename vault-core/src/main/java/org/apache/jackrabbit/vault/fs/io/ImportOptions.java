@@ -31,21 +31,18 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.packaging.DependencyHandling;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Option that control the package import.
  */
 public class ImportOptions {
+    private static final Logger LOG = LoggerFactory.getLogger(ImportOptions.class);
 
     private Boolean strict;
 
     private ProgressTrackerListener listener;
-
-    private String patchParentPath = "/var/crxpatches/";
-
-    private File patchDirectory;
-
-    private boolean patchKeepInRepo = true;
 
     private boolean nonRecursive = false;
 
@@ -89,9 +86,6 @@ public class ImportOptions {
         if (base != null) {
             strict = base.strict;
             listener = base.listener;
-            patchParentPath = base.patchParentPath;
-            patchDirectory = base.patchDirectory;
-            patchKeepInRepo = base.patchKeepInRepo;
             nonRecursive = base.nonRecursive;
             dryRun = base.dryRun;
             autoSaveThreshold = base.autoSaveThreshold;
@@ -116,9 +110,6 @@ public class ImportOptions {
         ImportOptions ret = new ImportOptions();
         ret.strict = strict;
         ret.listener = listener;
-        ret.patchParentPath = patchParentPath;
-        ret.patchDirectory = patchDirectory;
-        ret.patchKeepInRepo = patchKeepInRepo;
         ret.nonRecursive = nonRecursive;
         ret.dryRun = dryRun;
         ret.autoSaveThreshold = autoSaveThreshold;
@@ -204,25 +195,32 @@ public class ImportOptions {
     /**
      * Returns the patch parent path
      * @return the patch parent path
+     * @deprecated No longer evaluated as patch files are no longer supported for security reasons.
      */
+    @Deprecated(since = "4.2.0", forRemoval = true)
     public String getPatchParentPath() {
-        return patchParentPath;
+        return null;
     }
 
     /**
      * Sets the parent path of the patch node.
      * @param patchParentPath the path
+     * @deprecated No longer evaluated as patch files are no longer supported for security reasons.
      */
+    @Deprecated(since = "4.2.0", forRemoval = true)
     public void setPatchParentPath(String patchParentPath) {
-        this.patchParentPath = patchParentPath;
+        // noop
+        LOG.warn("Patch files are no longer supported for security reasons. Ignoring patch parent path {}", patchParentPath);
     }
 
     /**
      * Returns the patch directory
      * @return the patch directory
+     * @deprecated No longer evaluated as patch files are no longer supported for security reasons.
      */
+    @Deprecated(since = "4.2.0", forRemoval = true)
     public File getPatchDirectory() {
-        return patchDirectory;
+        return null;
     }
 
     /**
@@ -230,27 +228,33 @@ public class ImportOptions {
      * copied into this directory during extraction.
      * @param patchDirectory The directory
      * @throws IOException if an i/o error occurrs during obtaining the canonical file of this directory.
+     * @deprecated No longer evaluated as patch files are no longer supported for security reasons.
      */
+    @Deprecated(since = "4.2.0", forRemoval = true)
     public void setPatchDirectory(File patchDirectory) throws IOException {
-        this.patchDirectory = patchDirectory == null
-                ? null
-                : patchDirectory.getCanonicalFile();
+        LOG.warn("Patch files are no longer supported for security reasons. Ignoring patch directory {}", patchDirectory);
+        // noop
     }
 
     /**
      * Returns the 'patch-keep-in-repo' flag.
      * @return the 'patch-keep-in-repo' flag.
+     * @deprecated No longer evaluated as patch files are no longer supported for security reasons.
      */
+    @Deprecated(since = "4.2.0", forRemoval = true)
     public boolean isPatchKeepInRepo() {
-        return patchKeepInRepo;
+        return false;
     }
 
     /**
      * Sets the flag if patches should be kept in the repository after there were copied to the disk.
      * @param patchKeepInRepo the flag
+     * @deprecated No longer evaluated as patch files are no longer supported for security reasons.
      */
+    @Deprecated(since = "4.2.0", forRemoval = true)
     public void setPatchKeepInRepo(boolean patchKeepInRepo) {
-        this.patchKeepInRepo = patchKeepInRepo;
+        // noop
+        LOG.warn("Patch files are no longer supported for security reasons. Ignoring setPatchKeepInRepo({})", patchKeepInRepo);
     }
 
     /**
@@ -495,9 +499,6 @@ public class ImportOptions {
         result = prime * result + ((importMode == null) ? 0 : importMode.hashCode());
         result = prime * result + ((listener == null) ? 0 : listener.hashCode());
         result = prime * result + (nonRecursive ? 1231 : 1237);
-        result = prime * result + ((patchDirectory == null) ? 0 : patchDirectory.hashCode());
-        result = prime * result + (patchKeepInRepo ? 1231 : 1237);
-        result = prime * result + ((patchParentPath == null) ? 0 : patchParentPath.hashCode());
         result = prime * result + ((pathMapping == null) ? 0 : pathMapping.hashCode());
         result = prime * result + ((idConflictPolicy == null) ? 0 : idConflictPolicy.hashCode());
         result = prime * result + (strict ? 1231 : 1237);
@@ -549,18 +550,6 @@ public class ImportOptions {
             return false;
         if (nonRecursive != other.nonRecursive)
             return false;
-        if (patchDirectory == null) {
-            if (other.patchDirectory != null)
-                return false;
-        } else if (!patchDirectory.equals(other.patchDirectory))
-            return false;
-        if (patchKeepInRepo != other.patchKeepInRepo)
-            return false;
-        if (patchParentPath == null) {
-            if (other.patchParentPath != null)
-                return false;
-        } else if (!patchParentPath.equals(other.patchParentPath))
-            return false;
         if (pathMapping == null) {
             if (other.pathMapping != null)
                 return false;
@@ -581,8 +570,6 @@ public class ImportOptions {
     @Override
     public String toString() {
         return "ImportOptions [strict=" + strict + ", " + (listener != null ? "listener=" + listener + ", " : "")
-                + (patchParentPath != null ? "patchParentPath=" + patchParentPath + ", " : "")
-                + (patchDirectory != null ? "patchDirectory=" + patchDirectory + ", " : "") + "patchKeepInRepo=" + patchKeepInRepo
                 + ", nonRecursive=" + nonRecursive + ", dryRun=" + dryRun + ", autoSave=" + autoSaveThreshold + ", "
                 + (acHandling != null ? "acHandling=" + acHandling + ", " : "")
                 + (cugHandling != null ? "cugHandling=" + cugHandling + ", " : "")

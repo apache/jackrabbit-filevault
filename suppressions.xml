@@ -82,7 +82,7 @@
        <notes><![CDATA[
        file name: jackrabbit-jcr-commons-2.20.17.jar with JNDI usage, not used in FileVault
        ]]></notes>
-       <packageUrl regex="true">^pkg:maven/org\.apache\.jackrabbit/jackrabbit-jcr-commons@.*$</packageUrl>
-       <vulnerabilityName>CVE-2025-58782</vulnerabilityName>
+       <packageUrl regex="true">^pkg:maven/org\.apache\.jackrabbit/jackrabbit-.*$</packageUrl>
+       <cve>CVE-2025-58782</cve>
     </suppress>
 </suppressions>

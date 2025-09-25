@@ -594,12 +594,21 @@ Bundle-Category: jackrabbit
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
             <!-- Sling -->
             <dependency>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>org.apache.sling.api</artifactId>
                 <version>${sling.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>3.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>5.20.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -37,7 +37,7 @@
         <jackson.version>2.13.4</jackson.version>
     </properties>
 
-    <!-- the following dependencies are provided by AEM 6.5.16, all must have scope "provided" to prevent them polluting referencing modules -->
+    <!-- the following dependencies are provided by AEMaaCS, all must have scope "provided" to prevent them polluting referencing modules -->
     <dependencies>
         <dependency>
             <groupId>org.apache.felix</groupId>

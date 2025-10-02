@@ -37,18 +37,18 @@
         <jackson.version>2.13.4</jackson.version>
     </properties>
 
-    <!-- the following dependencies are provided by AEM 6.5.16, all must have scope "provided" to prevent them polluting referencing modules -->
+    <!-- the following dependencies are provided by AEMaaCS, all must have scope "provided" to prevent them polluting referencing modules -->
     <dependencies>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.framework</artifactId>
-            <version>7.0.3</version>
+            <version>7.0.5</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.scr</artifactId>
-            <version>2.2.4</version>
+            <version>2.2.12</version>
             <scope>provided</scope>
         </dependency>
         <!-- transitive deps of felix.scr -->
@@ -79,7 +79,7 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.http.servlet-api</artifactId>
-            <version>1.2.0</version>
+            <version>2.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -91,14 +91,14 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.32</version>
+            <version>1.7.36</version>
             <scope>provided</scope>
         </dependency>
         <!-- required SLF4J Impl capability -->
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.commons.log</artifactId>
-            <version>5.4.2</version>
+            <version>5.5.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -116,31 +116,31 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
+            <version>2.20.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>3.18.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
+            <version>4.5.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.15</version>
+            <version>1.19.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.api</artifactId>
-            <version>2.27.0</version>
+            <version>2.27.6</version>
             <scope>provided</scope>
         </dependency>
         <!--transitive dep of sling.api -->
@@ -189,7 +189,7 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.jcr.base</artifactId>
-            <version>3.1.6</version>
+            <version>3.1.14</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -216,6 +216,5 @@
             <version>${jackson.version}</version>
             <scope>provided</scope>
         </dependency>
-        
     </dependencies>
 </project>

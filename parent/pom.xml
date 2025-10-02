@@ -452,21 +452,23 @@ Bundle-Category: jackrabbit
                 <artifactId>jackrabbit-webdav</artifactId>
                 <version>${jackrabbit.min.version}</version>
             </dependency>
-            <!-- the following jackrabbit dependencies are usually not used on the server side, i.e. not available in OSGi containers -->
+            <!-- the following jackrabbit dependencies are usually not used on the server side, i.e. not available in OSGi containers
+                 however, they are embedded in OSGi bundles deployed to servers, therefore also use min.version to not raise
+                 transitive runtime requirements -->
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>jackrabbit-jcr2spi</artifactId>
-                <version>${jackrabbit.max.version}</version>
+                <version>${jackrabbit.min.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>jackrabbit-spi2dav</artifactId>
-                <version>${jackrabbit.max.version}</version>
+                <version>${jackrabbit.min.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>jackrabbit-jcr-client</artifactId>
-                <version>${jackrabbit.max.version}</version>
+                <version>${jackrabbit.min.version}</version>
             </dependency>
 
             <!-- JCR Stuff -->

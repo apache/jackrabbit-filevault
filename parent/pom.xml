@@ -66,6 +66,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <minimalJavaBuildVersion>11</minimalJavaBuildVersion>
         <maven.compiler.release>11</maven.compiler.release>
         <sling.url>http://localhost:4502</sling.url>
+        <sling.api.version>2.25.4</sling.api.version>
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
         <!-- downgrade to m-release-p 3.1.0 due to https://github.com/apache/maven-release/issues/1380 -->
         <version.maven-release-plugin>3.1.0</version.maven-release-plugin>
@@ -591,6 +592,13 @@ Bundle-Category: jackrabbit
                 <version>5.9.2</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- Sling -->
+            <dependency>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>org.apache.sling.api</artifactId>
+                <version>${sling.api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

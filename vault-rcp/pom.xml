@@ -184,7 +184,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.14.0</version><!-- to support PROPAGATE_TRANSIENT_MARKER -->
+            <version>2.6.0</version><!-- to support PROPAGATE_TRANSIENT_MARKER -->
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -206,6 +206,7 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.api</artifactId>
+            <version>2.6.0</version>
             <scope>provided</scope>
         </dependency>
         <!-- OSGi Annotations: @Version -->

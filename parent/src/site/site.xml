@@ -26,7 +26,7 @@
         <image src="./jackrabbit.png" alt="Apache Jackrabbit Logo" />
     </bannerLeft>
     <bannerRight href="https://apache.org/">
-        <image src="./asf_logo.png" alt="Apache Software Foundation (ASF) Logo" />
+        <image src="https://apache.org/images/asflogo_horizontal_color.svg" height="70px" alt="Apache Software Foundation (ASF) Logo" />
     </bannerRight>
     <edit>${project.scm.url}</edit>
     <body>

@@ -38,7 +38,12 @@
         <jackson.version>2.17.2</jackson.version>
     </properties>
 
-    <!-- the following dependencies are provided by AEM 6.5 LTS SP1, all must have scope "provided" to prevent them polluting referencing modules -->
+    <!-- 
+      The following dependencies are provided by AEM 6.5 LTS SP1, all must have scope "provided" to prevent them polluting referencing modules 
+
+      We also list explicit dependency versions so any change in the parent pom does not influence this maven project as well, as it would 
+      defeat the purpose of it.
+    -->
     <dependencies>
         <dependency>
             <groupId>org.apache.felix</groupId>
@@ -56,6 +61,7 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.service.component</artifactId>
+            <version>1.5.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -116,6 +122,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <version>2.18.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -148,12 +155,6 @@
             <scope>provided</scope>
         </dependency>
         <!--transitive dep of sling.api -->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.felix</groupId>-->
-<!--            <artifactId>org.apache.felix.converter</artifactId>-->
-<!--            <version>1.0.2</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>javax.jcr</groupId>
             <artifactId>jcr</artifactId>

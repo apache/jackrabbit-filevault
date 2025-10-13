@@ -59,14 +59,14 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <!-- for embedded dependencies the newest version should be used -->
         <oak.max.version>1.82.0</oak.max.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <commons-io.version>2.14.0</commons-io.version>
+        <commons-io.version>2.18.0</commons-io.version>
         <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
         <bnd.version>6.4.0</bnd.version>
         <minimalMavenBuildVersion>3.6.1</minimalMavenBuildVersion><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
         <minimalJavaBuildVersion>11</minimalJavaBuildVersion>
         <maven.compiler.release>11</maven.compiler.release>
         <sling.url>http://localhost:4502</sling.url>
-        <sling.api.version>2.25.4</sling.api.version>
+        <sling.api.version>2.27.6</sling.api.version> <!-- identical to the minimum version -->
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
         <!-- downgrade to m-release-p 3.1.0 due to https://github.com/apache/maven-release/issues/1380 -->
         <version.maven-release-plugin>3.1.0</version.maven-release-plugin>

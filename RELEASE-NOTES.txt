@@ -10,6 +10,25 @@ The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
 
 
+
+Changes in Jackrabbit FileVault 4.1.0
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 4.1.0
+This version requires Java 11 or above
+The OSGi bundles depend on Jackrabbit 2.20.17+ (JCR Commons, SPI, SPI Commons), Oak JR API 1.22.4+, Commons IO 2.18+, Commons Collections 4.1+ and SLF4J 1.7+
+
+** Improvement
+    * [JCRVLT-816] - Fix Security warnings
+    * [JCRVLT-817] - All properties are checked twice if they are protected
+    * [JCRVLT-818] - Vault CLI contains embedded vulnerable libraries
+    * [JCRVLT-819] - Upgrade JLine 1.0 to 3.x
+
+** Task
+    * [JCRVLT-813] - read node and property definitions lazy
+    * [JCRVLT-814] - Remove redundant calculations in DocViewImporer
+
+
 Changes in Jackrabbit FileVault 4.0.0
 --------------------------------------
 

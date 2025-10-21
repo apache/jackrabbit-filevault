@@ -48,7 +48,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
     <properties>
         <!-- CI-friendly version, https://maven.apache.org/maven-ci-friendly.html -->
-        <revision>4.1.2</revision>
+        <revision>4.1.3-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
         <jackrabbit.min.version>2.20.17</jackrabbit.min.version>
@@ -70,7 +70,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
         <!-- downgrade to m-release-p 3.1.0 due to https://github.com/apache/maven-release/issues/1380 -->
         <version.maven-release-plugin>3.1.0</version.maven-release-plugin>
-        <project.build.outputTimestamp>2025-10-21T09:00:48Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-10-21T09:04:54Z</project.build.outputTimestamp>
     </properties>
 
     <!-- ====================================================================== -->
@@ -81,7 +81,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
         <connection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</developerConnection>
         <url>https://github.com/apache/jackrabbit-filevault/tree/${project.scm.tag}</url>
-        <tag>jackrabbit-filevault-4.1.2</tag>
+        <tag>master</tag>
     </scm>
 
     <!-- ====================================================================== -->

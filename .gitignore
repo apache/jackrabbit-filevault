@@ -10,3 +10,4 @@ console.properties
 bin/
 derby.log
 .flattened-pom.xml
+.DS_Store

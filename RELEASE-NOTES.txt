@@ -11,10 +11,10 @@ utility to work and develop with repository content.
 
 
 
-Changes in Jackrabbit FileVault 4.1.2
+Changes in Jackrabbit FileVault 4.1.4
 --------------------------------------
 
-Release Notes - Jackrabbit FileVault - Version 4.1.2
+Release Notes - Jackrabbit FileVault - Version 4.1.4
 This version requires Java 11 or above
 The OSGi bundles depend on Jackrabbit 2.20.17+ (JCR Commons, SPI, SPI Commons), Oak JR API 1.22.4+, Commons IO 2.18+, Commons Collections 4.1+ and SLF4J 1.7+
 
@@ -30,6 +30,9 @@ The OSGi bundles depend on Jackrabbit 2.20.17+ (JCR Commons, SPI, SPI Commons), 
     * [JCRVLT-814] - Remove redundant calculations in DocViewImporer
 
 
+Changes in Jackrabbit FileVault 4.1.2
+--------------------------------------
+(this release has failed)
 
 Changes in Jackrabbit FileVault 4.1.0
 --------------------------------------

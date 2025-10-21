@@ -1068,8 +1068,8 @@ public class DocViewImporter implements DocViewParserHandler {
                 while (pIter.hasNext()) {
                     Property p = pIter.nextProperty();
                     String propName = p.getName();
-                    if (!p.getDefinition().isProtected()
-                            && !ni.hasProperty(npResolver.getQName(propName))
+                    if (!ni.hasProperty(npResolver.getQName(propName))
+                            && !p.getDefinition().isProtected()
                             && !preserveProperties.contains(p.getPath())
                             && wspFilter.includesProperty(p.getPath())) {
                         vs.ensureCheckedOut();

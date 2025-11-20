@@ -535,8 +535,8 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
 
     @Test
     @Ignore("JCRVLT-828")
-    public void testInstallPackageConflictTargetUnchanged_LEGACY() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.CONFLICT_TARGET_UNCHANGED, ID_NEW, NA);
+    public void testInstallPackageConflictTargetPresent_LEGACY() throws Exception {
+        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_KEPT, NA);
     }
 
     // postcondition: exception
@@ -655,9 +655,9 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         Node asset2 = testRoot.getNode(srcName);
         String id2 = asset2.getIdentifier();
         if (expectNewId) {
-            assertNotEquals(id1, id2);
+            assertNotEquals("expect Identifier changed on target node", id1, id2);
         } else {
-            assertEquals(id1, id2);
+            assertEquals("expect Identifier NOT changed on target node", id1, id2);
         }
     }
 

@@ -697,4 +697,38 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         options.setIdConflictPolicy(policy);
         extractVaultPackage("/test-packages/referenceable-dup.zip", options);
     }
+
+    @Test
+    public void testUuidPreservedWithLegacyPolicy() throws Exception {
+        // 1. Install package with UUID from package
+        extractVaultPackageStrict("/test-packages/referenceable.zip");
+        Node node = admin.getNode("/tmp/referenceable");
+        String originalUuid = node.getIdentifier();
+        assertEquals(UUID_REFERENCEABLE, originalUuid);
+
+        // 2. Change the UUID manually (simulating an existing node with different UUID)
+        // This simulates the scenario where node exists with UUID1, package has UUID2
+        node.remove();
+        admin.save();
+        node = JcrUtils.getOrCreateByPath("/tmp/referenceable", null, JcrConstants.NT_UNSTRUCTURED, admin, true);
+        node.addMixin(JcrConstants.MIX_VERSIONABLE);
+        node.setProperty(PROPERTY_NAME, PROPERTY_VALUE); // Keep same property
+        admin.save();
+        String currentUuid = node.getIdentifier();
+        assertNotEquals("Node should have different UUID than package", UUID_REFERENCEABLE, currentUuid);
+
+        // 3. Re-import with LEGACY policy and UPDATE_PROPERTIES mode
+        // Expected: UUID should be preserved (not replaced with package UUID)
+        // Bug: UUID gets replaced unconditionally at line 996
+        ImportOptions opts = getDefaultOptions();
+        opts.setIdConflictPolicy(IdConflictPolicy.LEGACY);
+        opts.setImportMode(ImportMode.REPLACE);
+        extractVaultPackage("/test-packages/referenceable.zip", opts);
+
+        // 4. Verify UUID is preserved (not replaced)
+        node = admin.getNode("/tmp/referenceable");
+        String finalUuid = node.getIdentifier();
+        assertEquals("UUID should be preserved with LEGACY policy", currentUuid, finalUuid);
+        assertNotEquals("UUID should NOT be replaced with package UUID", UUID_REFERENCEABLE, finalUuid);
+    }
 }

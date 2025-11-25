@@ -533,12 +533,6 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
     }
 
-    @Test
-    @Ignore("JCRVLT-828")
-    public void testInstallPackageConflictTargetPresent_LEGACY() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_KEPT, NA);
-    }
-
     // postcondition: exception
     private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TARGET_STATE dstState, Class<?> expectedException,
             Class<?> expectedRootCause) throws Exception {

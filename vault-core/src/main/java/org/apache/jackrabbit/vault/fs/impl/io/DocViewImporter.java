@@ -914,10 +914,10 @@ public class DocViewImporter implements DocViewParserHandler {
                             }
                         }
                     }
-                } catch (ItemNotFoundException e) {
-                    // no node with same ID present, but target node exists
+                } catch (ItemNotFoundException expected) {
+                    // LEGACY mode: no node with same ID present, but target node exists: ignore the ID from the package being imported
                     if (existingNode != null && idConflictPolicy == IdConflictPolicy.LEGACY && existingNode.isNodeType(JcrConstants.MIX_REFERENCEABLE)) {
-                        log.debug("IdConflictPolicy.LEGACY - removing Identifier " + identifier.get() + " from imported package at: " + docViewNode.getName());
+                        log.debug("IdConflictPolicy.LEGACY - ignoring Identifier {} from imported package at {} but keep existing identifier {}", identifier.get(), docViewNode.getName(), existingNode.getIdentifier());
                         preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_UUID));
                     }
                 }

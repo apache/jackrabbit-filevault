@@ -906,16 +906,20 @@ public class DocViewImporter implements DocViewParserHandler {
                             } else {
                                 log.warn("To-be imported node and existing conflicting node have different parents. Will create new identifier for the former. ({})",
                                         newNodePath);
-                                preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_UUID) 
-                                        || p.getName().equals(NameConstants.JCR_BASEVERSION) 
+                                preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_UUID)
+                                        || p.getName().equals(NameConstants.JCR_BASEVERSION)
                                         || p.getName().equals(NameConstants.JCR_PREDECESSORS)
                                         || p.getName().equals(NameConstants.JCR_SUCCESSORS)
                                         || p.getName().equals(NameConstants.JCR_VERSIONHISTORY));
                             }
                         }
                     }
-                } catch (ItemNotFoundException e) {
-                    // ignore
+                } catch (ItemNotFoundException expected) {
+                    // LEGACY mode: no node with same ID present, but target node exists: ignore the ID from the package being imported
+                    if (existingNode != null && idConflictPolicy == IdConflictPolicy.LEGACY && existingNode.isNodeType(JcrConstants.MIX_REFERENCEABLE)) {
+                        log.debug("IdConflictPolicy.LEGACY - ignoring Identifier {} from imported package at {} but keep existing identifier {}", identifier.get(), docViewNode.getName(), existingNode.getIdentifier());
+                        preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_UUID));
+                    }
                 }
             }
         }
@@ -1039,6 +1043,9 @@ public class DocViewImporter implements DocViewParserHandler {
                         newMixins.add(mixin);
                     }
                 }
+
+                boolean wasReferenceable = node.isNodeType(JcrConstants.MIX_REFERENCEABLE);
+
                 // remove mixins not in package (only for mode = replace)
                 if (importMode == ImportMode.REPLACE) {
                     for (NodeType mix : node.getMixinNodeTypes()) {
@@ -1049,12 +1056,20 @@ public class DocViewImporter implements DocViewParserHandler {
                                     || acHandling == AccessControlHandling.CLEAR
                                     || acHandling == AccessControlHandling.OVERWRITE) {
                                 vs.ensureCheckedOut();
-                                node.removeMixin(name);
+
+                                // can't remove a mixin which would remove the UUID in LEGACY Mode
+                                if (idConflictPolicy == idConflictPolicy.LEGACY && wasReferenceable && mix.isNodeType(JcrConstants.MIX_REFERENCEABLE)) {
+                                    log.debug("idConflictPolicy.LEGACY: not removing mixin " + mix.getName() + ", so that UUID can be preserved.");
+                                } else {
+                                    node.removeMixin(name);
+                                }
+
                                 updatedNode = node;
                             }
                         }
                     }
                 }
+
                 // add remaining mixins (for all import modes)
                 for (String mixin : newMixins) {
                     vs.ensureCheckedOut();
@@ -1080,7 +1095,7 @@ public class DocViewImporter implements DocViewParserHandler {
             }
             EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
             Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(ni.getProperties(), effectiveNodeType, node.getPath(), PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES);
-            
+
             // add/modify properties contained in package
             if (setProperties(node, ni,unprotectedProperties, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
                 updatedNode = node;

@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.it;
 
@@ -50,37 +52,48 @@ public abstract class AbstractValidationIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractValidationIT.class);
 
-    public @NotNull Collection<ValidationViolation> validatePackageFolder(String resourceName) throws URISyntaxException, IOException, ConfigurationException {
+    public @NotNull Collection<ValidationViolation> validatePackageFolder(String resourceName)
+            throws URISyntaxException, IOException, ConfigurationException {
         return validatePackageFolder(resourceName, Collections.emptyMap());
     }
 
-    public @NotNull Collection<ValidationViolation> validatePackageFolder(String resourceName, Map<String, ? extends ValidatorSettings> validatorsSettings) throws URISyntaxException, IOException, ConfigurationException {
+    public @NotNull Collection<ValidationViolation> validatePackageFolder(
+            String resourceName, Map<String, ? extends ValidatorSettings> validatorsSettings)
+            throws URISyntaxException, IOException, ConfigurationException {
         URL resourceUrl = AbstractValidationIT.class.getResource(resourceName);
         if (resourceUrl == null) {
             throw new IllegalArgumentException("Could not find resource with name " + resourceName);
         }
         Path path = Paths.get(resourceUrl.toURI());
         Collection<ValidationViolation> violations = validatePackageFolder(path, validatorsSettings);
-        violations = violations.stream().filter(v -> v.getSeverity().ordinal() > ValidationMessageSeverity.INFO.ordinal()).collect(Collectors.toList());
+        violations = violations.stream()
+                .filter(v -> v.getSeverity().ordinal() > ValidationMessageSeverity.INFO.ordinal())
+                .collect(Collectors.toList());
         violations.forEach(v -> LOGGER.info(v.toString()));
         return violations;
     }
 
-    public @NotNull Collection<ValidationViolation> validatePackageFolder(Path rootPath) throws IOException, ConfigurationException {
+    public @NotNull Collection<ValidationViolation> validatePackageFolder(Path rootPath)
+            throws IOException, ConfigurationException {
         return validatePackageFolder(rootPath, Collections.emptyMap());
     }
 
-    public @NotNull Collection<ValidationViolation> validatePackageFolder(Path rootPath, Map<String, ? extends ValidatorSettings> validatorsSettings) throws IOException, ConfigurationException {
-        ValidationExecutorFactory executorFactory = new ValidationExecutorFactory(Thread.currentThread().getContextClassLoader());
+    public @NotNull Collection<ValidationViolation> validatePackageFolder(
+            Path rootPath, Map<String, ? extends ValidatorSettings> validatorsSettings)
+            throws IOException, ConfigurationException {
+        ValidationExecutorFactory executorFactory =
+                new ValidationExecutorFactory(Thread.currentThread().getContextClassLoader());
         ValidationContext context = new PackageFolderValidationContext(rootPath);
-        ValidationExecutor executor = executorFactory.createValidationExecutor(context, false, false, validatorsSettings);
+        ValidationExecutor executor =
+                executorFactory.createValidationExecutor(context, false, false, validatorsSettings);
         if (executor == null) {
             Assert.fail("No validator services found in current thread's context class loader");
         }
         return validatePackageFolder(executor, rootPath);
     }
 
-    private static @NotNull Collection<ValidationViolation> validatePackageFolder(ValidationExecutor executor, Path rootPath) throws IOException {
+    private static @NotNull Collection<ValidationViolation> validatePackageFolder(
+            ValidationExecutor executor, Path rootPath) throws IOException {
         Collection<ValidationViolation> violations = new LinkedList<>();
         try (Stream<Path> files = Files.walk(rootPath).skip(1).sorted(new ParentAndDotContentXmlFirstComparator())) {
             files.forEach(file -> {
@@ -97,21 +110,23 @@ public abstract class AbstractValidationIT {
         return violations;
     }
 
-    private static Collection<ValidationViolation> validateFile(ValidationExecutor executor, Path rootPath, Path file) throws IOException {
+    private static Collection<ValidationViolation> validateFile(ValidationExecutor executor, Path rootPath, Path file)
+            throws IOException {
         int rootPathLevel = rootPath.getNameCount();
         if (file.getNameCount() < rootPathLevel + 2) {
             return Collections.emptyList();
         }
         String topLevelFolderName = file.getName(rootPathLevel).toString();
         final boolean isMetaInf;
-        final Path basePath = file.subpath(0, rootPathLevel+1);
+        final Path basePath = file.subpath(0, rootPathLevel + 1);
         final Path relativeFilePath = file.subpath(rootPathLevel + 1, file.getNameCount());
         if (topLevelFolderName.equals(Constants.META_INF)) {
             isMetaInf = true;
         } else if (topLevelFolderName.equals(Constants.ROOT_DIR)) {
             isMetaInf = false;
         } else {
-            throw new IllegalArgumentException("Unexpected folder with name " + topLevelFolderName + " below " + rootPath);
+            throw new IllegalArgumentException(
+                    "Unexpected folder with name " + topLevelFolderName + " below " + rootPath);
         }
         if (Files.isDirectory(file)) {
             return validateStream(executor, isMetaInf, null, relativeFilePath, basePath);
@@ -122,7 +137,9 @@ public abstract class AbstractValidationIT {
         }
     }
 
-    private static @NotNull Collection<ValidationViolation> validateStream(ValidationExecutor executor, boolean isMetaInf, InputStream input, Path relativeFilePath, Path basePath) throws IOException {
+    private static @NotNull Collection<ValidationViolation> validateStream(
+            ValidationExecutor executor, boolean isMetaInf, InputStream input, Path relativeFilePath, Path basePath)
+            throws IOException {
         if (isMetaInf) {
             return executor.validateMetaInf(input, relativeFilePath, basePath);
         } else {
@@ -130,11 +147,11 @@ public abstract class AbstractValidationIT {
         }
     }
 
-    /** 
+    /**
      * Comparator on file paths which makes sure that parent folders and files named {@code .content.xml} come first.
      */
     static final class ParentAndDotContentXmlFirstComparator implements Comparator<Path> {
-        
+
         @Override
         public int compare(Path path1, Path path2) {
             if (path2.startsWith(path1)) {

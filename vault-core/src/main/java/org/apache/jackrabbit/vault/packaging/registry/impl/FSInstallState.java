@@ -1,20 +1,27 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,11 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.jackrabbit.vault.fs.api.FilterSet.Entry;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
@@ -125,9 +127,8 @@ public class FSInstallState {
     }
 
     public FSInstallState withDependencies(Set<Dependency> dependencies) {
-        this.dependencies = dependencies == null
-                ? Collections.<Dependency>emptySet()
-                : Collections.unmodifiableSet(dependencies);
+        this.dependencies =
+                dependencies == null ? Collections.<Dependency>emptySet() : Collections.unmodifiableSet(dependencies);
         return this;
     }
 
@@ -208,7 +209,8 @@ public class FSInstallState {
             if (doc.hasAttribute(ATTR_SIZE)) {
                 size = Long.valueOf(doc.getAttribute(ATTR_SIZE));
             }
-            FSPackageStatus status = FSPackageStatus.valueOf(doc.getAttribute(ATTR_PACKAGE_STATUS).toUpperCase(Locale.ROOT));
+            FSPackageStatus status = FSPackageStatus.valueOf(
+                    doc.getAttribute(ATTR_PACKAGE_STATUS).toUpperCase(Locale.ROOT));
             NodeList nl = doc.getChildNodes();
             Set<Dependency> dependencies = new HashSet<>();
             Map<PackageId, SubPackageHandling.Option> subPackages = new HashMap<>();
@@ -227,10 +229,10 @@ public class FSInstallState {
                     } else if (TAG_PACKAGEPROPERTIES.equals(childName)) {
                         properties = readProperties((Element) child);
                     } else {
-                        throw new IOException("<" + TAG_DEPENDENCY + "> or <" + TAG_SUBPACKAGE + "> or <" + TAG_WORKSPACEFILTER + "> expected.");
+                        throw new IOException("<" + TAG_DEPENDENCY + "> or <" + TAG_SUBPACKAGE + "> or <"
+                                + TAG_WORKSPACEFILTER + "> expected.");
                     }
                 }
-
             }
             return new FSInstallState(PackageId.fromString(packageId), status, filePath)
                     .withExternal(external)
@@ -297,7 +299,6 @@ public class FSInstallState {
         return wsfilter;
     }
 
-
     /**
      * Persists the installState to a metadatafile
      *
@@ -306,7 +307,11 @@ public class FSInstallState {
      */
     public void save(Path file) throws IOException {
         Path parent = file.getParent();
-        log.debug("checking for presence of {} - exists {} - isDirectory {}", parent, Files.exists(parent), Files.isDirectory(parent));
+        log.debug(
+                "checking for presence of {} - exists {} - isDirectory {}",
+                parent,
+                Files.exists(parent),
+                Files.isDirectory(parent));
         if (!Files.exists(parent)) {
             Path created = Files.createDirectories(parent);
             log.debug("Created {}", created);
@@ -372,7 +377,8 @@ public class FSInstallState {
                 for (java.util.Map.Entry<PackageId, Option> entry : subPackages.entrySet()) {
                     writer.writeStartElement(TAG_SUBPACKAGE);
                     writer.writeAttribute(ATTR_PACKAGE_ID, entry.getKey().toString());
-                    writer.writeAttribute(ATTR_SUBPACKAGE_HANDLING_OPTION, entry.getValue().toString());
+                    writer.writeAttribute(
+                            ATTR_SUBPACKAGE_HANDLING_OPTION, entry.getValue().toString());
                     writer.writeEndElement();
                 }
             }
@@ -449,64 +455,46 @@ public class FSInstallState {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         FSInstallState other = (FSInstallState) obj;
         if (dependencies == null) {
-            if (other.dependencies != null)
-                return false;
-        } else if (!dependencies.equals(other.dependencies))
-            return false;
-        if (external != other.external)
-            return false;
+            if (other.dependencies != null) return false;
+        } else if (!dependencies.equals(other.dependencies)) return false;
+        if (external != other.external) return false;
         if (filePath == null) {
-            if (other.filePath != null)
-                return false;
-        } else if (!filePath.equals(other.filePath))
-            return false;
+            if (other.filePath != null) return false;
+        } else if (!filePath.equals(other.filePath)) return false;
         if (filter == null) {
-            if (other.filter != null)
-                return false;
-        } else if (!filter.equals(other.filter))
-            return false;
+            if (other.filter != null) return false;
+        } else if (!filter.equals(other.filter)) return false;
         if (installTime == null) {
-            if (other.installTime != null)
-                return false;
-        } else if (!installTime.equals(other.installTime))
-            return false;
+            if (other.installTime != null) return false;
+        } else if (!installTime.equals(other.installTime)) return false;
         if (packageId == null) {
-            if (other.packageId != null)
-                return false;
-        } else if (!packageId.equals(other.packageId))
-            return false;
+            if (other.packageId != null) return false;
+        } else if (!packageId.equals(other.packageId)) return false;
         if (properties == null) {
-            if (other.properties != null)
-                return false;
-        } else if (!properties.equals(other.properties))
-            return false;
-        if (size != other.size)
-            return false;
-        if (status != other.status)
-            return false;
+            if (other.properties != null) return false;
+        } else if (!properties.equals(other.properties)) return false;
+        if (size != other.size) return false;
+        if (status != other.status) return false;
         if (subPackages == null) {
-            if (other.subPackages != null)
-                return false;
-        } else if (!subPackages.equals(other.subPackages))
-            return false;
+            if (other.subPackages != null) return false;
+        } else if (!subPackages.equals(other.subPackages)) return false;
         return true;
     }
 
     @Override
     public String toString() {
         return "FSInstallState [" + (packageId != null ? "packageId=" + packageId + ", " : "")
-                + (status != null ? "status=" + status + ", " : "") + (filePath != null ? "filePath=" + filePath + ", " : "") + "external="
+                + (status != null ? "status=" + status + ", " : "")
+                + (filePath != null ? "filePath=" + filePath + ", " : "") + "external="
                 + external + ", " + (dependencies != null ? "dependencies=" + dependencies + ", " : "")
                 + (subPackages != null ? "subPackages=" + subPackages + ", " : "")
                 + (installTime != null ? "installTime=" + installTime + ", " : "") + "size=" + size + ", "
-                + (filter != null ? "filter=" + filter + ", " : "") + (properties != null ? "properties=" + properties : "") + "]";
+                + (filter != null ? "filter=" + filter + ", " : "")
+                + (properties != null ? "properties=" + properties : "") + "]";
     }
 }

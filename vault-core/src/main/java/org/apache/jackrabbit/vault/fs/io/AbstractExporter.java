@@ -1,21 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.nodetype.NodeDefinition;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.NodeTypeManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,13 +41,8 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.nodetype.NodeDefinition;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.NodeTypeManager;
-
 import org.apache.jackrabbit.util.ISO8601;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.AggregateManager;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -55,7 +57,6 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,8 +115,8 @@ public abstract class AbstractExporter implements AutoCloseable {
 
     protected ExportInfo exportInfo = new ExportInfo();
 
-    private static String DEFAULT_GENERATOR = "org.apache.jackrabbit.vault" + ":"
-            + getVersion("org.apache.jackrabbit.vault", AbstractExporter.class);
+    private static String DEFAULT_GENERATOR =
+            "org.apache.jackrabbit.vault" + ":" + getVersion("org.apache.jackrabbit.vault", AbstractExporter.class);
 
     private String generator = DEFAULT_GENERATOR;
 
@@ -218,8 +219,7 @@ public abstract class AbstractExporter implements AutoCloseable {
      * @throws RepositoryException if an error occurs
      * @throws IOException if an I/O error occurs
      */
-    public void export(VaultFile parent, boolean noClose)
-            throws RepositoryException, IOException {
+    public void export(VaultFile parent, boolean noClose) throws RepositoryException, IOException {
         exportInfo.getEntries().clear();
         open();
         AggregateManager mgr = parent.getFileSystem().getAggregateManager();
@@ -239,12 +239,14 @@ public abstract class AbstractExporter implements AutoCloseable {
                 rootPath = "";
             }
             if (mountPath.length() > 0 || rootPath.length() > 0) {
-                filter = filter.translate(new SimplePathMapping(mountPath, PlatformNameFormat.getRepositoryPath(rootPath)));
+                filter = filter.translate(
+                        new SimplePathMapping(mountPath, PlatformNameFormat.getRepositoryPath(rootPath)));
             }
 
             // check for package type
             if (!properties.containsKey(NAME_PACKAGE_TYPE)) {
-                properties.setProperty(NAME_PACKAGE_TYPE, detectPackageType(filter).name().toLowerCase(Locale.ROOT));
+                properties.setProperty(
+                        NAME_PACKAGE_TYPE, detectPackageType(filter).name().toLowerCase(Locale.ROOT));
             }
 
             // write Manifest
@@ -258,7 +260,7 @@ public abstract class AbstractExporter implements AutoCloseable {
             String name = properties.getProperty(NAME_NAME);
             PackageId id = new PackageId(group, name, version);
             Set<String> rts = new HashSet<String>();
-            for (PathFilterSet p: filter.getFilterSets()) {
+            for (PathFilterSet p : filter.getFilterSets()) {
                 rts.add(p.getRoot());
             }
             String[] filterRoots = rts.toArray(new String[rts.size()]);
@@ -285,14 +287,18 @@ public abstract class AbstractExporter implements AutoCloseable {
             // write properties
             tmpOut = new ByteArrayOutputStream();
             properties.storeToXML(tmpOut, "FileVault Package Properties", "utf-8");
-            writeFile(new ByteArrayInputStream(tmpOut.toByteArray()), Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
+            writeFile(
+                    new ByteArrayInputStream(tmpOut.toByteArray()),
+                    Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
             writeFile(mgr.getConfig().getSource(), Constants.META_DIR + "/" + Constants.CONFIG_XML);
             writeFile(filter.getSource(), Constants.META_DIR + "/" + Constants.FILTER_XML);
         }
         export(parent, "");
         if (!noMetaInf) {
             // write node types last, as they are calculated during export.
-            writeFile(getNodeTypes(mgr.getSession(), mgr.getNodeTypes()), Constants.META_DIR + "/" + Constants.NODETYPES_CND);
+            writeFile(
+                    getNodeTypes(mgr.getSession(), mgr.getNodeTypes()),
+                    Constants.META_DIR + "/" + Constants.NODETYPES_CND);
         }
         if (!noClose) {
             close();
@@ -307,8 +313,7 @@ public abstract class AbstractExporter implements AutoCloseable {
      * @throws RepositoryException if an error occurs
      * @throws IOException if an I/O error occurs
      */
-    public void export(VaultFile parent, String relPath)
-            throws RepositoryException, IOException {
+    public void export(VaultFile parent, String relPath) throws RepositoryException, IOException {
         for (VaultFile vaultFile : parent.getChildren()) {
             String path = relPath + "/" + vaultFile.getName();
             if (vaultFile.isDirectory()) {
@@ -337,7 +342,7 @@ public abstract class AbstractExporter implements AutoCloseable {
             tracker.track(e, path);
         }
     }
-    
+
     protected String getPlatformFilePath(VaultFile file, String relPath) {
         StringBuilder buf = new StringBuilder(rootPath);
         if (isRelativePaths()) {
@@ -351,34 +356,32 @@ public abstract class AbstractExporter implements AutoCloseable {
         }
         return buf.toString();
     }
-    
-    private InputStream getNodeTypes(Session s, Collection<String> nodeTypes)
-            throws IOException, RepositoryException {
+
+    private InputStream getNodeTypes(Session s, Collection<String> nodeTypes) throws IOException, RepositoryException {
         NodeTypeManager ntMgr = s.getWorkspace().getNodeTypeManager();
         // init with repository predefined node types
         Set<String> written = new HashSet<String>();
         written.addAll(ServiceProviderFactory.getProvider().getBuiltInNodeTypeNames());
         StringWriter out = new StringWriter();
         CNDWriter w = ServiceProviderFactory.getProvider().getCNDWriter(out, s, true);
-        for (String nt: nodeTypes) {
+        for (String nt : nodeTypes) {
             writeNodeType(ntMgr.getNodeType(nt), w, written);
         }
         w.close();
         return new ByteArrayInputStream(out.getBuffer().toString().getBytes("utf-8"));
     }
 
-    private void writeNodeType(NodeType nt, CNDWriter w, Set<String> written)
-            throws IOException, RepositoryException {
+    private void writeNodeType(NodeType nt, CNDWriter w, Set<String> written) throws IOException, RepositoryException {
         if (nt != null && !written.contains(nt.getName())) {
             written.add(nt.getName());
             w.write(nt);
-            for (NodeType s: nt.getSupertypes()) {
+            for (NodeType s : nt.getSupertypes()) {
                 writeNodeType(s, w, written);
             }
-            for (NodeDefinition n: nt.getChildNodeDefinitions()) {
+            for (NodeDefinition n : nt.getChildNodeDefinitions()) {
                 writeNodeType(n.getDefaultPrimaryType(), w, written);
                 if (n.getRequiredPrimaryTypes() != null) {
-                    for (NodeType r: n.getRequiredPrimaryTypes()) {
+                    for (NodeType r : n.getRequiredPrimaryTypes()) {
                         writeNodeType(r, w, written);
                     }
                 }
@@ -404,15 +407,18 @@ public abstract class AbstractExporter implements AutoCloseable {
      * @param filter the workspace filter
      * @return the package type
      */
-    private static PackageType detectPackageType(WorkspaceFilter filter)  {
+    private static PackageType detectPackageType(WorkspaceFilter filter) {
         boolean hasApps = false;
         boolean hasOther = false;
-        for (PathFilterSet p: filter.getFilterSets()) {
+        for (PathFilterSet p : filter.getFilterSets()) {
             if ("cleanup".equals(p.getType())) {
                 continue;
             }
             String root = p.getRoot();
-            if ("/apps".equals(root) || root.startsWith("/apps/") || "/libs".equals(root) || root.startsWith("/libs/")) {
+            if ("/apps".equals(root)
+                    || root.startsWith("/apps/")
+                    || "/libs".equals(root)
+                    || root.startsWith("/libs/")) {
                 hasApps = true;
             } else {
                 hasOther = true;
@@ -436,8 +442,8 @@ public abstract class AbstractExporter implements AutoCloseable {
     private static String getVersion(String moduleName, Class<?> clazz) {
         // borrowed from oak-commons
         String version = "SNAPSHOT"; // fallback
-        try (InputStream stream = clazz
-                .getResourceAsStream("/META-INF/maven/org.apache.jackrabbit.vault/" + moduleName + "/pom.properties")) {
+        try (InputStream stream = clazz.getResourceAsStream(
+                "/META-INF/maven/org.apache.jackrabbit.vault/" + moduleName + "/pom.properties")) {
             if (stream != null) {
                 Properties properties = new Properties();
                 properties.load(stream);
@@ -463,11 +469,9 @@ public abstract class AbstractExporter implements AutoCloseable {
      */
     public abstract void close() throws IOException, RepositoryException;
 
-    public abstract void createDirectory(String relPath)
-            throws IOException;
+    public abstract void createDirectory(String relPath) throws IOException;
 
-    public abstract void createDirectory(VaultFile file, String relPath)
-            throws RepositoryException, IOException;
+    public abstract void createDirectory(VaultFile file, String relPath) throws RepositoryException, IOException;
 
     /**
      * <p>The specified stream is automatically closed after this method returns or throws an exception.
@@ -475,10 +479,7 @@ public abstract class AbstractExporter implements AutoCloseable {
      * @param relPath
      * @throws IOException
      */
-    public abstract void writeFile(InputStream in, String relPath)
-            throws IOException;
+    public abstract void writeFile(InputStream in, String relPath) throws IOException;
 
-    public abstract void writeFile(VaultFile file, String relPath)
-            throws RepositoryException, IOException;
-
+    public abstract void writeFile(VaultFile file, String relPath) throws RepositoryException, IOException;
 }

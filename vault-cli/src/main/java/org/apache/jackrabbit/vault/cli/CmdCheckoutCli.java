@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
@@ -27,8 +28,8 @@ import org.apache.commons.cli2.builder.CommandBuilder;
 import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.option.Command;
-import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.util.Text;
+import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.util.console.ExecutionException;
 import org.apache.jackrabbit.vault.vlt.VltContext;
 import org.apache.jackrabbit.vault.vlt.actions.Checkout;
@@ -51,8 +52,7 @@ public class CmdCheckoutCli extends AbstractVaultCommand {
     private Argument argMountpoint;
 
     @Override
-    protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl)
-            throws Exception {
+    protected void doExecute(VaultFsConsoleExecutionContext ctx, CommandLine cl) throws Exception {
         throw new ExecutionException("internal error. command not supported in console");
     }
 
@@ -66,7 +66,7 @@ public class CmdCheckoutCli extends AbstractVaultCommand {
         if (localPath == null) {
             localPath = jcrPath;
             jcrPath = null;
-        } 
+        }
         if (jcrPath == null) {
             jcrPath = addr.getPath();
             addr = addr.resolve("/");
@@ -101,70 +101,71 @@ public class CmdCheckoutCli extends AbstractVaultCommand {
     }
 
     public String getLongDescription() {
-        return  "Checkout the Vault file system (starting at <uri> to the " +
-                "local filesystem at <local-path>.\n" +
-                "A <jcrPath> argument can be provided to checkout a sub directory " +
-                "of the remote tree.\n\n" +
-                "A workspace filters can be specified that will be copied into the " +
-                "META-INF directory.\n\n" +
-                "Examples:\n" +
-                "\n" +
-                "Using the JCR Remoting:\n" +
-                "  vlt --credentials admin:admin co http://localhost:8080/crx/server/crx.default/jcr:root/\n" +
-                "  \n" +
-                "with default workspace:\n" +
-                "  vlt --credentials admin:admin co http://localhost:8080/crx/server/-/jcr:root/\n" +
-                "  \n" +
-                "if URI is incomplete, it will be expanded:\n" +
-                "  vlt --credentials admin:admin co http://localhost:8080/crx\n";
+        return "Checkout the Vault file system (starting at <uri> to the " + "local filesystem at <local-path>.\n"
+                + "A <jcrPath> argument can be provided to checkout a sub directory "
+                + "of the remote tree.\n\n"
+                + "A workspace filters can be specified that will be copied into the "
+                + "META-INF directory.\n\n"
+                + "Examples:\n"
+                + "\n"
+                + "Using the JCR Remoting:\n"
+                + "  vlt --credentials admin:admin co http://localhost:8080/crx/server/crx.default/jcr:root/\n"
+                + "  \n"
+                + "with default workspace:\n"
+                + "  vlt --credentials admin:admin co http://localhost:8080/crx/server/-/jcr:root/\n"
+                + "  \n"
+                + "if URI is incomplete, it will be expanded:\n"
+                + "  vlt --credentials admin:admin co http://localhost:8080/crx\n";
     }
 
     protected Command createCommand() {
         argMountpoint = new ArgumentBuilder()
-            .withName("uri")
-            .withDescription("mountpoint uri")
-            .withMinimum(1)
-            .withMaximum(1)
-            .create();
+                .withName("uri")
+                .withDescription("mountpoint uri")
+                .withMinimum(1)
+                .withMaximum(1)
+                .create();
         argJcrPath = new ArgumentBuilder()
-            .withName("jcrPath")
-            .withDescription("remote path (optional)")
-            .withMinimum(0)
-            .withMaximum(1)
-            .create();
+                .withName("jcrPath")
+                .withDescription("remote path (optional)")
+                .withMinimum(0)
+                .withMaximum(1)
+                .create();
         argLocalPath = new ArgumentBuilder()
-            .withName("localPath")
-            .withDescription("local path (optional)")
-            .withMinimum(0)
-            .withMaximum(1)
-            .create();
+                .withName("localPath")
+                .withDescription("local path (optional)")
+                .withMinimum(0)
+                .withMaximum(1)
+                .create();
         return new CommandBuilder()
                 .withName("checkout")
                 .withName("co")
                 .withDescription(getShortDescription())
                 .withChildren(new GroupBuilder()
                         .withName("Options:")
-                        .withOption(optForce = new DefaultOptionBuilder()
-                                .withLongName("force")
-                                .withDescription("force checkout to overwrite local files if they already exist.")
-                                .create())
+                        .withOption(
+                                optForce = new DefaultOptionBuilder()
+                                        .withLongName("force")
+                                        .withDescription(
+                                                "force checkout to overwrite local files if they already exist.")
+                                        .create())
                         .withOption(OPT_VERBOSE)
                         .withOption(OPT_QUIET)
-                        .withOption(optFilter = new DefaultOptionBuilder()
-                                .withShortName("f")
-                                .withLongName("filter")
-                                .withDescription("specifies auto filters if none defined.")
-                                .withArgument(new ArgumentBuilder()
-                                        .withName("file")
-                                        .withMaximum(1)
-                                        .withMinimum(1)
+                        .withOption(
+                                optFilter = new DefaultOptionBuilder()
+                                        .withShortName("f")
+                                        .withLongName("filter")
+                                        .withDescription("specifies auto filters if none defined.")
+                                        .withArgument(new ArgumentBuilder()
+                                                .withName("file")
+                                                .withMaximum(1)
+                                                .withMinimum(1)
+                                                .create())
                                         .create())
-                                .create())
                         .withOption(argMountpoint)
                         .withOption(argJcrPath)
                         .withOption(argLocalPath)
-                        .create()
-                )
+                        .create())
                 .create();
     }
 }

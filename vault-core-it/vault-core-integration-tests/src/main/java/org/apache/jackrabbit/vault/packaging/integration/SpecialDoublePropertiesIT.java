@@ -1,30 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Properties;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -72,16 +73,17 @@ public class SpecialDoublePropertiesIT extends IntegrationTestBase {
         try (Reader r = new InputStreamReader(is.getByteStream(), "utf-8")) {
             String contentXml = IOUtils.toString(r);
 
-            assertEquals("Serialized content",
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                            "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
-                            "    jcr:primaryType=\"nt:unstructured\">\n" +
-                            "    <jcr:content\n" +
-                            "        jcr:primaryType=\"nt:unstructured\"\n" +
-                            "        double_nan=\"{Double}NaN\"\n" +
-                            "        double_neg_inf=\"{Double}-Infinity\"\n" +
-                            "        double_pos_inf=\"{Double}Infinity\"/>\n" +
-                            "</jcr:root>\n",
+            assertEquals(
+                    "Serialized content",
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                            + "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n"
+                            + "    jcr:primaryType=\"nt:unstructured\">\n"
+                            + "    <jcr:content\n"
+                            + "        jcr:primaryType=\"nt:unstructured\"\n"
+                            + "        double_nan=\"{Double}NaN\"\n"
+                            + "        double_neg_inf=\"{Double}-Infinity\"\n"
+                            + "        double_pos_inf=\"{Double}Infinity\"/>\n"
+                            + "</jcr:root>\n",
                     contentXml);
         }
         pkg.close();
@@ -99,5 +101,4 @@ public class SpecialDoublePropertiesIT extends IntegrationTestBase {
         assertEquals(Double.POSITIVE_INFINITY, tmp.getProperty("double_pos_inf").getDouble(), 0.0);
         assertEquals(Double.NEGATIVE_INFINITY, tmp.getProperty("double_neg_inf").getDouble(), 0.0);
     }
-
 }

@@ -1,20 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt;
+
+import javax.jcr.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,8 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.api.VaultFileOutput;
@@ -52,7 +54,7 @@ public class VltDirectory {
 
     private MetaDirectory metaDir;
 
-    //private final File entriesFile;
+    // private final File entriesFile;
 
     private VltEntries entries;
 
@@ -71,7 +73,7 @@ public class VltDirectory {
             throw ctx.error(dir.getPath(), "meta directory not controllable.");
         }
         metaDir = VltContext.createMetaDirectory(new File(dir, META_DIR_NAME));
-        //entriesFile = new File(metaDir, ENTRIES_FILE_NAME);
+        // entriesFile = new File(metaDir, ENTRIES_FILE_NAME);
 
         init();
     }
@@ -133,7 +135,7 @@ public class VltDirectory {
             metaDir = null;
         }
     }
-    
+
     public void control(String path, String aPath) throws VltException {
         if (!metaDir.exists()) {
             try {
@@ -154,8 +156,7 @@ public class VltDirectory {
         files = new FileList(this, entries);
     }
 
-    public void uncontrol()
-            throws VltException {
+    public void uncontrol() throws VltException {
         if (metaDir.exists()) {
             try {
                 metaDir.delete();
@@ -195,8 +196,7 @@ public class VltDirectory {
         }
     }
 
-    public void prepareCommit(VaultFsTransaction tx, Collection<String> names,
-                              boolean nonRecursive, boolean force)
+    public void prepareCommit(VaultFsTransaction tx, Collection<String> names, boolean nonRecursive, boolean force)
             throws VltException {
         assertControlled();
         VaultFile remoteDir = getRemoteDirectory(ctx);
@@ -209,7 +209,7 @@ public class VltDirectory {
                 prepareCommit(tx, remoteDir, file, nonRecursive, force);
             }
         } else {
-            for (String name: names) {
+            for (String name : names) {
                 VltFile file = files.getFile(name);
                 if (file == null) {
                     throw ctx.error(name, "no such file or directory.");
@@ -246,8 +246,7 @@ public class VltDirectory {
         }
     }
 
-    private void update(VaultFile remote, String name)
-            throws VltException {
+    private void update(VaultFile remote, String name) throws VltException {
         VltFile file = new VltFile(this, name, null);
         files.addFile(file);
 
@@ -260,21 +259,20 @@ public class VltDirectory {
         sync();
     }
 
-    private void prepareCommit(VaultFsTransaction tx, VaultFile remoteDir,
-                               VltFile file, boolean nonRecursive, boolean force)
+    private void prepareCommit(
+            VaultFsTransaction tx, VaultFile remoteDir, VltFile file, boolean nonRecursive, boolean force)
             throws VltException {
         VaultFile remoteFile;
         try {
-            remoteFile = remoteDir == null
-                    ? null
-                    : remoteDir.getChild(file.getName());
+            remoteFile = remoteDir == null ? null : remoteDir.getChild(file.getName());
         } catch (RepositoryException e) {
             throw ctx.exception(file.getPath(), "Error while retrieving status", e);
         }
 
         if (file.status(remoteFile) != FileAction.VOID && !force) {
-            throw ctx.error(file.getPath(), "Some files need to be updated first." +
-                    " Specify --force to overwrite remote files.");
+            throw ctx.error(
+                    file.getPath(),
+                    "Some files need to be updated first." + " Specify --force to overwrite remote files.");
         }
         try {
             switch (file.getStatus()) {
@@ -311,7 +309,7 @@ public class VltDirectory {
                     ctx.printMessage("adding.....", file);
                     break;
                 default:
-                    // ignore
+                // ignore
             }
         } catch (IOException e) {
             ctx.exception(file.getPath(), "Error while preparing commit.", e);
@@ -324,7 +322,7 @@ public class VltDirectory {
             if (dir.isControlled()) {
                 // add all files in this directory
                 VaultFile remDir = dir.getRemoteDirectory(ctx);
-                for (VltFile child: dir.getFiles()) {
+                for (VltFile child : dir.getFiles()) {
                     dir.prepareCommit(tx, remDir, child, nonRecursive, force);
                 }
                 dir.saveEntries();
@@ -341,13 +339,11 @@ public class VltDirectory {
         }
     }
 
-    public void apply(Action action, String name, boolean nonRecursive)
-            throws VltException {
+    public void apply(Action action, String name, boolean nonRecursive) throws VltException {
         apply(action, Arrays.asList(name), nonRecursive);
     }
 
-    public void apply(Action action, Collection<String> names,
-                      boolean nonRecursive) throws VltException {
+    public void apply(Action action, Collection<String> names, boolean nonRecursive) throws VltException {
         if (!action.run(this, null)) {
             return;
         }
@@ -357,7 +353,7 @@ public class VltDirectory {
                 apply(action, file, nonRecursive);
             }
         } else {
-            for (String name: names) {
+            for (String name : names) {
                 // special check for jcr_root
                 VltFile file;
                 if (ctx.getExportRoot().getJcrRoot().getParentFile().equals(dir)) {
@@ -374,8 +370,7 @@ public class VltDirectory {
         }
     }
 
-    private void apply(Action action, VltFile file, boolean nonRecursive)
-            throws VltException {
+    private void apply(Action action, VltFile file, boolean nonRecursive) throws VltException {
         action.run(this, file, null);
         if (entries != null) {
             entries.update(file);
@@ -388,25 +383,21 @@ public class VltDirectory {
         }
     }
 
-
     public void sync() throws VltException {
         saveEntries();
         // reload files (todo: make better)
         files = new FileList(this, entries);
     }
 
-    public void applyWithRemote(Action action, Collection<String> names, boolean nonRecursive)
-            throws VltException {
+    public void applyWithRemote(Action action, Collection<String> names, boolean nonRecursive) throws VltException {
         applyWithRemote(action, getRemoteDirectory(ctx), names, nonRecursive);
     }
 
-    public void applyWithRemote(Action action, String name, boolean nonRecursive)
-            throws VltException {
+    public void applyWithRemote(Action action, String name, boolean nonRecursive) throws VltException {
         applyWithRemote(action, getRemoteDirectory(ctx), Arrays.asList(name), nonRecursive);
     }
 
-    public void applyWithRemote(Action action, VaultFile remoteDir, Collection<String> names,
-                                boolean nonRecursive)
+    public void applyWithRemote(Action action, VaultFile remoteDir, Collection<String> names, boolean nonRecursive)
             throws VltException {
         if (!action.run(this, remoteDir)) {
             return;
@@ -428,14 +419,14 @@ public class VltDirectory {
                 }
             }
             // second go over all local ones
-            for (VltFile file: getFiles()) {
+            for (VltFile file : getFiles()) {
                 if (!processed.contains(file.getName())) {
                     applyWithRemote(action, file, null, nonRecursive);
                 }
             }
         } else {
             try {
-                for (String name: names) {
+                for (String name : names) {
                     VltFile file = files.getFile(name);
                     VaultFile remoteFile = remoteDir.getChild(name);
                     applyWithRemote(action, file, remoteFile, nonRecursive);
@@ -446,8 +437,7 @@ public class VltDirectory {
         }
     }
 
-    public void applyWithRemote(Action action, VltFile file, VaultFile remoteFile,
-                                boolean nonRecursive)
+    public void applyWithRemote(Action action, VltFile file, VaultFile remoteFile, boolean nonRecursive)
             throws VltException {
         // if remote file is missing, do depth first
         if (remoteFile == null && file != null && file.canDescend() && !nonRecursive) {

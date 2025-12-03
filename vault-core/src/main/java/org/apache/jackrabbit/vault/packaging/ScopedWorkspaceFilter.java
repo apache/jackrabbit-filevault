@@ -1,21 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,10 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
@@ -37,7 +39,6 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
-import org.apache.jackrabbit.util.Text;
 import org.w3c.dom.Element;
 
 /**
@@ -46,7 +47,7 @@ import org.w3c.dom.Element;
  */
 public class ScopedWorkspaceFilter extends DefaultWorkspaceFilter {
 
-    private static final String[] APP_ROOTS = {"/apps", "/libs" };
+    private static final String[] APP_ROOTS = {"/apps", "/libs"};
 
     private final DefaultWorkspaceFilter base;
 
@@ -65,13 +66,13 @@ public class ScopedWorkspaceFilter extends DefaultWorkspaceFilter {
 
         List<PathFilterSet> nodesFilterSets = new ArrayList<>();
         List<PathFilterSet> propsFilterSets = new ArrayList<>();
-        for (PathFilterSet set: base.getFilterSets()) {
+        for (PathFilterSet set : base.getFilterSets()) {
             String root = set.getRoot();
             if ("/".equals(root) || match(root)) {
                 nodesFilterSets.add(set);
             }
         }
-        for (PathFilterSet set: base.getPropertyFilterSets()) {
+        for (PathFilterSet set : base.getPropertyFilterSets()) {
             String root = set.getRoot();
             if ("/".equals(root) || match(root)) {
                 propsFilterSets.add(set);
@@ -83,7 +84,7 @@ public class ScopedWorkspaceFilter extends DefaultWorkspaceFilter {
 
     private boolean match(String path) {
         if (allow) {
-            for (String root: roots) {
+            for (String root : roots) {
                 if (Text.isDescendantOrEqual(root, path)) {
                     return true;
                 }
@@ -91,7 +92,7 @@ public class ScopedWorkspaceFilter extends DefaultWorkspaceFilter {
             return false;
         }
 
-        for (String root: roots) {
+        for (String root : roots) {
             if (Text.isDescendantOrEqual(root, path)) {
                 return false;
             }
@@ -162,7 +163,7 @@ public class ScopedWorkspaceFilter extends DefaultWorkspaceFilter {
 
     @Override
     public boolean isAncestor(String path) {
-        for (PathFilterSet set: nodesFilterSets) {
+        for (PathFilterSet set : nodesFilterSets) {
             if (set.isAncestor(path)) {
                 return true;
             }
@@ -226,7 +227,8 @@ public class ScopedWorkspaceFilter extends DefaultWorkspaceFilter {
     }
 
     @Override
-    public void dumpCoverage(Session session, ProgressTrackerListener listener, boolean skipJcrContent) throws RepositoryException {
+    public void dumpCoverage(Session session, ProgressTrackerListener listener, boolean skipJcrContent)
+            throws RepositoryException {
         throw new UnsupportedOperationException();
     }
 }

@@ -1,25 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging;
 
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.util.XMLChar;
 import org.jetbrains.annotations.NotNull;
-import org.apache.jackrabbit.util.Text;
 
 /**
  * {@code PackageId} provides the basic metrics for identifying a package.
@@ -46,7 +47,7 @@ public class PackageId implements Comparable<PackageId> {
     public static final String ETC_PACKAGES_PREFIX = "/etc/packages/";
 
     public static final PackageId[] EMPTY = new PackageId[0];
-    
+
     private final String group;
 
     private final String name;
@@ -93,8 +94,8 @@ public class PackageId implements Comparable<PackageId> {
         }
         // check if name contains a version
         String[] segs = Text.explode(name, '-');
-        int i=segs.length-1;
-        while (i>0) {
+        int i = segs.length - 1;
+        while (i > 0) {
             try {
                 // accept numbers < 1000 (hotfix case)
                 if (Integer.parseInt(segs[i]) >= 1000) {
@@ -112,12 +113,12 @@ public class PackageId implements Comparable<PackageId> {
             }
             i--;
         }
-        if (i == segs.length-1) {
+        if (i == segs.length - 1) {
             this.name = name;
             version = Version.EMPTY;
         } else {
             StringBuilder str = new StringBuilder();
-            for (int j = 0; j<= i; j++) {
+            for (int j = 0; j <= i; j++) {
                 if (j > 0) {
                     str.append('-');
                 }
@@ -125,8 +126,8 @@ public class PackageId implements Comparable<PackageId> {
             }
             this.name = str.toString();
             str.setLength(0);
-            for (int j = i+1; j<segs.length; j++) {
-                if (j > i+1) {
+            for (int j = i + 1; j < segs.length; j++) {
+                if (j > i + 1) {
                     str.append('-');
                 }
                 str.append(segs[j]);
@@ -166,7 +167,7 @@ public class PackageId implements Comparable<PackageId> {
                 path = path.substring(0, idx);
             }
         }
-        if (version != null && path.endsWith('-'+version.toString())) {
+        if (version != null && path.endsWith('-' + version.toString())) {
             path = path.substring(0, path.length() - version.toString().length() - 1);
         }
         idx = path.lastIndexOf('/');
@@ -251,9 +252,9 @@ public class PackageId implements Comparable<PackageId> {
      * @return the array of package ids
      * @see #fromString(String)
      */
-    public static PackageId[] fromString(String ... str) {
+    public static PackageId[] fromString(String... str) {
         PackageId[] ret = new PackageId[str.length];
-        for (int i=0; i<str.length; i++) {
+        for (int i = 0; i < str.length; i++) {
             ret[i] = PackageId.fromString(str[i]);
         }
         return ret;
@@ -264,12 +265,12 @@ public class PackageId implements Comparable<PackageId> {
      * @param packs the ids
      * @return the string
      */
-    public static String toString(PackageId ... packs) {
+    public static String toString(PackageId... packs) {
         String delim = "";
         StringBuilder b = new StringBuilder();
-        for (PackageId pack: packs) {
+        for (PackageId pack : packs) {
             b.append(delim).append(pack);
-            delim=",";
+            delim = ",";
         }
         return b.toString();
     }
@@ -368,9 +369,7 @@ public class PackageId implements Comparable<PackageId> {
 
     @Override
     public boolean equals(Object o) {
-        return this == o ||
-                o instanceof PackageId && str.equals(o.toString());
-
+        return this == o || o instanceof PackageId && str.equals(o.toString());
     }
 
     @Override
@@ -380,7 +379,7 @@ public class PackageId implements Comparable<PackageId> {
 
     /**
      * {@inheritDoc}
-     *  
+     *
      * Compares this id with the given one.
      */
     public int compareTo(PackageId o) {
@@ -444,7 +443,7 @@ public class PackageId implements Comparable<PackageId> {
             if (version != null && !version.isEmpty()) {
                 assertValidJcrName(version);
             }
-            for (String groupSegment: Text.explode(group, '/')) {
+            for (String groupSegment : Text.explode(group, '/')) {
                 assertValidJcrName(groupSegment);
             }
             return true;
@@ -494,7 +493,7 @@ public class PackageId implements Comparable<PackageId> {
                     }
                     prefix = jcrName.substring(0, i);
                     if (!XMLChar.isValidNCName(prefix)) {
-                        throw new IllegalArgumentException("Invalid name prefix: "+ prefix);
+                        throw new IllegalArgumentException("Invalid name prefix: " + prefix);
                     }
                     state = STATE_NAME_START;
                 } else if (state == STATE_URI) {
@@ -550,10 +549,9 @@ public class PackageId implements Comparable<PackageId> {
                         state = STATE_NAME;
                         nameStart = 0;
                     } else {
-                        throw new IllegalArgumentException(
-                                "The URI prefix of the name " + jcrName
-                                        + " is neither a valid URI nor a valid part"
-                                        + " of a local name.");
+                        throw new IllegalArgumentException("The URI prefix of the name " + jcrName
+                                + " is neither a valid URI nor a valid part"
+                                + " of a local name.");
                     }
                 } else if (state == STATE_PREFIX_START) {
                     state = STATE_PREFIX; // prefix start -> validation later on will fail.

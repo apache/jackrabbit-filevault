@@ -1,29 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.fs.io;
-
-import org.apache.jackrabbit.vault.fs.api.PathMapping;
-import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
-import org.apache.jackrabbit.vault.fs.config.MetaInf;
-import org.apache.jackrabbit.util.Text;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +24,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.apache.jackrabbit.util.Text;
+import org.apache.jackrabbit.vault.fs.api.PathMapping;
+import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
+import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements an archive wrapper that remaps the entries of an underlying archive using a {@link PathMapping}.
@@ -67,7 +69,7 @@ public class MappedArchive extends AbstractArchive {
      * @param dst destination entry parent
      */
     private void applyMapping(@NotNull Entry src, @NotNull VirtualEntry dst) {
-        for (Entry child: src.getChildren()) {
+        for (Entry child : src.getChildren()) {
             VirtualEntry dstChild = dst.add(child.getName(), child);
             if ("/jcr_root".equals(dstChild.getPath())) {
                 jcrRoot = dstChild;
@@ -86,18 +88,21 @@ public class MappedArchive extends AbstractArchive {
      * @param jcrPath the jcr path of the source entry
      */
     private void applyMapping(@NotNull Entry src, @NotNull String jcrPath) {
-        for (Entry child: src.getChildren()) {
+        for (Entry child : src.getChildren()) {
             String path = jcrPath + "/" + child.getName();
             String mappedPath = mapping.map(path);
 
             // add entry to tree
             String[] segments = Text.explode(mappedPath, '/');
             VirtualEntry entry = jcrRoot;
-            for (String seg: segments) {
+            for (String seg : segments) {
                 entry = entry.add(seg, null);
             }
             if (entry.baseEntry != null) {
-                log.warn("Path mapping maps multiple paths to the same destination: {} -> {}. ignoring this source.", path, mappedPath);
+                log.warn(
+                        "Path mapping maps multiple paths to the same destination: {} -> {}. ignoring this source.",
+                        path,
+                        mappedPath);
             } else {
                 entry.baseEntry = child;
             }

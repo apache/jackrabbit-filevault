@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging;
 
@@ -43,7 +45,7 @@ import org.apache.jackrabbit.util.Text;
  *  behaves the same as 'add'. The default option if not explicitly specified is "install".
  *  Future implementations will transport the sub packages outside of the normal package
  *  content, e.g. in a META-INF/vault/subpackages/ folder (see <a href="https://issues.apache.org/jira/browse/JCRVLT-33">JCRVLT-33</a>).
- *  
+ *
  *  <p>
  *  The sub package handling is being specified in the package properties xml within property {@link PackageProperties#NAME_SUB_PACKAGE_HANDLING} and is parsed via {@link SubPackageHandling#fromString(String)}.
  *  </p>
@@ -74,13 +76,13 @@ public class SubPackageHandling {
          * ignores the sub package completely
          */
         IGNORE,
-        
+
         /**
          * adds and installs the package using {@link JcrPackage#install(org.apache.jackrabbit.vault.fs.io.ImportOptions)} even in case a newer version has already been installed
          * (allows downgrades)
          */
         FORCE_INSTALL,
-        
+
         /**
          * adds and extracts the package using {@link JcrPackage#extract(org.apache.jackrabbit.vault.fs.io.ImportOptions)} even in case a newer version has already been installed
          * (allows downgrades)
@@ -140,9 +142,9 @@ public class SubPackageHandling {
             return SubPackageHandling.DEFAULT;
         }
         SubPackageHandling sp = new SubPackageHandling();
-        for (String instruction: Text.explode(str, ',')) {
+        for (String instruction : Text.explode(str, ',')) {
             String[] opts = Text.explode(instruction.trim(), ';');
-            if (opts.length >  0) {
+            if (opts.length > 0) {
                 PackageId id = PackageId.fromString(opts[0]);
                 Option opt = Option.INSTALL;
                 if (opts.length > 1) {
@@ -166,7 +168,7 @@ public class SubPackageHandling {
      */
     public Option getOption(PackageId id) {
         Option opt = null;
-        for (Entry e: entries) {
+        for (Entry e : entries) {
             if (!"*".equals(e.groupName) && !id.getGroup().equals(e.groupName)) {
                 continue;
             }
@@ -192,7 +194,7 @@ public class SubPackageHandling {
      */
     public String getString() {
         StringBuilder sb = new StringBuilder();
-        for (Entry e: entries) {
+        for (Entry e : entries) {
             if (sb.length() > 0) {
                 sb.append(",");
             }

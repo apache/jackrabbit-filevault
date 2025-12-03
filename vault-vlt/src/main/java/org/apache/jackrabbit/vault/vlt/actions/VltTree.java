@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt.actions;
 
@@ -83,7 +85,7 @@ public class VltTree {
     }
 
     public void addAll(Collection<File> localFiles) throws IOException, VltException {
-        for (File file: localFiles) {
+        for (File file : localFiles) {
             add(file);
         }
     }
@@ -99,7 +101,7 @@ public class VltTree {
     public List<Info> infos() {
         if (!nonRecursive) {
             // strip all redundant entries
-            for (Map.Entry<String, Info> e: infos.map().entrySet()) {
+            for (Map.Entry<String, Info> e : infos.map().entrySet()) {
                 if (e.getValue().names.isEmpty()) {
                     infos.removeChildren(e.getKey());
                 }
@@ -128,10 +130,9 @@ public class VltTree {
 
         private void dump(VltContext ctx) {
             ctx.printMessage("dir: " + path);
-            for (String n: names) {
+            for (String n : names) {
                 ctx.printMessage("   ./" + n);
             }
         }
     }
-
 }

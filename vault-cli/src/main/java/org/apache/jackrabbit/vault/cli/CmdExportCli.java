@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
@@ -53,7 +54,6 @@ public class CmdExportCli extends AbstractVaultCommand {
     private Argument argJcrPath;
     private Argument argMountpoint;
 
-
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
         boolean verbose = cl.hasOption(OPT_VERBOSE);
         String type = (String) cl.getValue(optType, "platform");
@@ -71,7 +71,7 @@ public class CmdExportCli extends AbstractVaultCommand {
             jcrPath = "/";
         }
         if (localPath == null) {
-            if (jcrPath .equals("/")) {
+            if (jcrPath.equals("/")) {
                 localPath = Text.getName(addr.toString());
             } else {
                 localPath = Text.getName(jcrPath);
@@ -100,14 +100,14 @@ public class CmdExportCli extends AbstractVaultCommand {
             } else {
                 throw new Exception("Type " + type + " not supported");
             }
-    
+
             vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
             VaultFile vaultFile = vCtx.getFileSystem(addr).getFile(jcrPath);
             if (vaultFile == null) {
                 VaultFsApp.log.error("Not such remote file: {}", jcrPath);
                 return;
             }
-    
+
             VaultFsApp.log.info("Exporting {} to {}", vaultFile.getPath(), localFile.getCanonicalPath());
             if (verbose) {
                 exporter.setVerbose(new DefaultProgressListener());
@@ -129,13 +129,12 @@ public class CmdExportCli extends AbstractVaultCommand {
         return "Export the Vault filesystem";
     }
 
-
     public String getLongDescription() {
-        return  "Export the Vault filesystem mounted at <uri> to the " +
-                "local filesystem at <local-path>. An optional <jcr-path> can be " +
-                "specified in order to export just a sub tree.\n\n" +
-                "Example:\n" +
-                "  vlt export http://localhost:4502/crx /apps/geometrixx myproject";
+        return "Export the Vault filesystem mounted at <uri> to the "
+                + "local filesystem at <local-path>. An optional <jcr-path> can be "
+                + "specified in order to export just a sub tree.\n\n"
+                + "Example:\n"
+                + "  vlt export http://localhost:4502/crx /apps/geometrixx myproject";
     }
 
     protected Command createCommand() {
@@ -145,40 +144,44 @@ public class CmdExportCli extends AbstractVaultCommand {
                 .withChildren(new GroupBuilder()
                         .withName("Options:")
                         .withOption(OPT_VERBOSE)
-                        .withOption(optType = new DefaultOptionBuilder()
-                                .withShortName("t")
-                                .withLongName("type")
-                                .withDescription("specifies the export type. either 'platform' or 'jar'.")
-                                .withArgument(new ArgumentBuilder()
+                        .withOption(
+                                optType = new DefaultOptionBuilder()
+                                        .withShortName("t")
+                                        .withLongName("type")
+                                        .withDescription("specifies the export type. either 'platform' or 'jar'.")
+                                        .withArgument(new ArgumentBuilder()
+                                                .withMinimum(0)
+                                                .withMaximum(1)
+                                                .create())
+                                        .create())
+                        .withOption(
+                                optPrune = new DefaultOptionBuilder()
+                                        .withShortName("p")
+                                        .withLongName("prune-missing")
+                                        .withDescription("specifies if missing local files should be deleted.")
+                                        .create())
+                        .withOption(
+                                argMountpoint = new ArgumentBuilder()
+                                        .withName("uri")
+                                        .withDescription("mountpoint uri")
+                                        .withMinimum(1)
+                                        .withMaximum(1)
+                                        .create())
+                        .withOption(
+                                argJcrPath = new ArgumentBuilder()
+                                        .withName("jcr-path")
+                                        .withDescription("the jcr path")
                                         .withMinimum(0)
                                         .withMaximum(1)
                                         .create())
-                                .create())
-                        .withOption(optPrune = new DefaultOptionBuilder()
-                                .withShortName("p")
-                                .withLongName("prune-missing")
-                                .withDescription("specifies if missing local files should be deleted.")
-                                .create())
-                        .withOption(argMountpoint = new ArgumentBuilder()
-                                .withName("uri")
-                                .withDescription("mountpoint uri")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create())
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("local-path")
-                                .withDescription("the local path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create())
-                        .create()
-                )
+                        .withOption(
+                                argLocalPath = new ArgumentBuilder()
+                                        .withName("local-path")
+                                        .withDescription("the local path")
+                                        .withMinimum(0)
+                                        .withMaximum(1)
+                                        .create())
+                        .create())
                 .create();
     }
 }

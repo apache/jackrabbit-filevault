@@ -1,21 +1,27 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.spi.impl.jcr20;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.security.AccessControlManager;
+import javax.jcr.security.AccessControlPolicy;
 
 import java.security.Principal;
 import java.util.Arrays;
@@ -25,11 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.security.AccessControlManager;
-import javax.jcr.security.AccessControlPolicy;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlManager;
@@ -48,7 +49,7 @@ import org.jetbrains.annotations.NotNull;
 public class JackrabbitACLManagement implements ACLManagement {
 
     // Constants copied from Oak classes
-    
+
     /**
      * The primary node type name of the CUG policy node.
      */
@@ -58,7 +59,7 @@ public class JackrabbitACLManagement implements ACLManagement {
      * The name of the CUG policy node.
      */
     public static final String REP_CUG_POLICY = "rep:cugPolicy";
-    
+
     /** the name of the ACL policy node (resource based) */
     public static final String REP_POLICY = "rep:policy";
 
@@ -73,19 +74,20 @@ public class JackrabbitACLManagement implements ACLManagement {
      * The primary node type name of intermediate folders within which authorizables might be found.
      */
     public static final String NT_REP_AUTHORIZABLE_FOLDER = "rep:AuthorizableFolder";
-   
+
     /** the name of the repository wide ACL policy node (both principal and resource based) */
     public static final String REP_REPO_POLICY = "rep:repoPolicy";
-    
+
     /**
      * Node type name of ancestor for both {@link #NT_REP_PRINCIPAL_POLICY} and {@link #NT_REP_ACL}
      */
     public static final String NT_REP_POLICY = "rep:Policy";
-    
+
     /**
      * The primary node type name of the resource based access control policy node.
      */
     public static final String NT_REP_ACL = "rep:ACL";
+
     public static final String NT_REP_ACE = "rep:ACE";
     public static final String NT_REP_GRANT_ACE = "rep:GrantACE";
     public static final String NT_REP_DENY_ACE = "rep:DenyACE";
@@ -167,17 +169,17 @@ public class JackrabbitACLManagement implements ACLManagement {
     public void clearACL(Node node) throws RepositoryException {
         AccessControlManager ac = node.getSession().getAccessControlManager();
         String pPath = node.getPath();
-        for (AccessControlPolicy p: ac.getPolicies(pPath)) {
+        for (AccessControlPolicy p : ac.getPolicies(pPath)) {
             ac.removePolicy(pPath, p);
         }
         if (isRootNode(node)) {
-            for (AccessControlPolicy p: ac.getPolicies(null)) {
+            for (AccessControlPolicy p : ac.getPolicies(null)) {
                 ac.removePolicy(null, p);
             }
         }
     }
 
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
     private static boolean isRootNode(Node node) throws RepositoryException {
         return node.getDepth() == 0;
     }
@@ -195,17 +197,20 @@ public class JackrabbitACLManagement implements ACLManagement {
     }
 
     @Override
-    public @NotNull Map<String, List<? extends AccessControlPolicy>> getPrincipalAcls(Node node) throws RepositoryException {
+    public @NotNull Map<String, List<? extends AccessControlPolicy>> getPrincipalAcls(Node node)
+            throws RepositoryException {
         // first do a quick check if path may contain principal ACLs at all before triggering expensive traversal
         if (!areAuthorizablesAllowed(node)) {
-            // TODO: Oak restricts further where principal ACLs may be maintained (https://jackrabbit.apache.org/oak/docs/security/authorization/principalbased.html#filterprovider-implementation)
+            // TODO: Oak restricts further where principal ACLs may be maintained
+            // (https://jackrabbit.apache.org/oak/docs/security/authorization/principalbased.html#filterprovider-implementation)
             // there could be a shortcut evaluating that as well
             return Collections.emptyMap();
         }
-        JackrabbitSession jrSession = (JackrabbitSession)node.getSession();
+        JackrabbitSession jrSession = (JackrabbitSession) node.getSession();
         AccessControlManager acMgr = jrSession.getAccessControlManager();
         if (!(acMgr instanceof JackrabbitAccessControlManager)) {
-            throw new RepositoryException("The access control manager returned is no JackrabbitAccessControlManager, this is probably not a Jackrabbit/Oak repository");
+            throw new RepositoryException(
+                    "The access control manager returned is no JackrabbitAccessControlManager, this is probably not a Jackrabbit/Oak repository");
         }
         JackrabbitAccessControlManager jrAcMgr = (JackrabbitAccessControlManager) acMgr;
         PrincipalAccessControlPolicyCollector policiesCollector = new PrincipalAccessControlPolicyCollector(jrAcMgr);
@@ -245,17 +250,17 @@ public class JackrabbitACLManagement implements ACLManagement {
         }
     }
 
-    private void findPrincipalsRecursively(UserManager userMgr, Node node, Consumer<Principal> principalConsumer) throws RepositoryException {
+    private void findPrincipalsRecursively(UserManager userMgr, Node node, Consumer<Principal> principalConsumer)
+            throws RepositoryException {
         if (isAuthorizable(node)) {
             Authorizable authorizable = userMgr.getAuthorizableByPath(node.getPath());
             if (authorizable != null) {
                 principalConsumer.accept(authorizable.getPrincipal());
             }
         } else if (isAuthorizableFolder(node)) {
-            for (Node child : JcrUtils.in(((Iterator<Node>)node.getNodes()))) {
+            for (Node child : JcrUtils.in(((Iterator<Node>) node.getNodes()))) {
                 findPrincipalsRecursively(userMgr, child, principalConsumer);
             }
         }
     }
-
 }

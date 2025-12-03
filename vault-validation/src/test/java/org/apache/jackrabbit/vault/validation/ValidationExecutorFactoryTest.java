@@ -1,20 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,8 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.jackrabbit.vault.validation.impl.util.ValidatorSettingsImpl;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
@@ -49,19 +51,25 @@ public class ValidationExecutorFactoryTest {
 
     @Mock
     private Validator validator1;
+
     @Mock
     private Validator validator2;
+
     @Mock
     private Validator validator3;
+
     @Mock
     private ValidatorFactory validatorFactory1;
+
     @Mock
     private ValidatorFactory validatorFactory2;
+
     @Mock
     private ValidatorFactory validatorFactory3;
+
     @Mock
     private ValidationContext context;
-    
+
     private Map<String, ValidatorSettings> validatorsSettings;
     List<ValidatorFactory> validatorFactories;
 
@@ -70,17 +78,20 @@ public class ValidationExecutorFactoryTest {
         validatorFactories = new LinkedList<>();
         Mockito.when(validatorFactory1.getId()).thenReturn("id1");
         Mockito.when(validatorFactory1.getServiceRanking()).thenReturn(3);
-        Mockito.when(validatorFactory1.createValidator(Mockito.any(ValidationContext.class), Mockito.any())).thenReturn(validator1);
+        Mockito.when(validatorFactory1.createValidator(Mockito.any(ValidationContext.class), Mockito.any()))
+                .thenReturn(validator1);
         validatorFactories.add(validatorFactory1);
         Mockito.when(validatorFactory2.getId()).thenReturn("id2");
         Mockito.when(validatorFactory2.getServiceRanking()).thenReturn(2);
-        Mockito.when(validatorFactory2.createValidator(Mockito.any(ValidationContext.class), Mockito.any())).thenReturn(validator2);
+        Mockito.when(validatorFactory2.createValidator(Mockito.any(ValidationContext.class), Mockito.any()))
+                .thenReturn(validator2);
         validatorFactories.add(validatorFactory2);
         Mockito.when(validatorFactory3.getId()).thenReturn("id3");
         Mockito.when(validatorFactory3.getServiceRanking()).thenReturn(0);
-        Mockito.when(validatorFactory3.createValidator(Mockito.any(ValidationContext.class), Mockito.any())).thenReturn(validator3);
+        Mockito.when(validatorFactory3.createValidator(Mockito.any(ValidationContext.class), Mockito.any()))
+                .thenReturn(validator3);
         validatorFactories.add(validatorFactory3);
-       
+
         executorFactory = new ValidationExecutorFactory(validatorFactories);
         validatorsSettings = new HashMap<>();
     }
@@ -88,7 +99,7 @@ public class ValidationExecutorFactoryTest {
     @Test
     public void testOrderOfValidators() throws ParserConfigurationException, SAXException {
         // first validate order
-        ValidationExecutor executor =  executorFactory.createValidationExecutor(context, true, true, validatorsSettings);
+        ValidationExecutor executor = executorFactory.createValidationExecutor(context, true, true, validatorsSettings);
         if (executor == null) {
             throw new IllegalStateException("Could not create validation executor!");
         }
@@ -102,7 +113,7 @@ public class ValidationExecutorFactoryTest {
         // the reinstantiate with a different order
         Collections.shuffle(validatorFactories);
         executorFactory = new ValidationExecutorFactory(validatorFactories);
-        executor =  executorFactory.createValidationExecutor(context, true, true, validatorsSettings);
+        executor = executorFactory.createValidationExecutor(context, true, true, validatorsSettings);
         if (executor == null) {
             throw new IllegalStateException("Could not create validation executor!");
         }
@@ -113,11 +124,15 @@ public class ValidationExecutorFactoryTest {
     }
 
     @Test
-    public void testOrderOfValidatorFactories()  {
-        MatcherAssert.assertThat(executorFactory.validatorFactories, Matchers.contains(validatorFactory1, validatorFactory2, validatorFactory3));
+    public void testOrderOfValidatorFactories() {
+        MatcherAssert.assertThat(
+                executorFactory.validatorFactories,
+                Matchers.contains(validatorFactory1, validatorFactory2, validatorFactory3));
         Collections.shuffle(validatorFactories);
         executorFactory = new ValidationExecutorFactory(validatorFactories);
-        MatcherAssert.assertThat(executorFactory.validatorFactories, Matchers.contains(validatorFactory1, validatorFactory2, validatorFactory3));
+        MatcherAssert.assertThat(
+                executorFactory.validatorFactories,
+                Matchers.contains(validatorFactory1, validatorFactory2, validatorFactory3));
     }
 
     @Test
@@ -125,7 +140,9 @@ public class ValidationExecutorFactoryTest {
         Mockito.when(validatorFactory2.getServiceRanking()).thenReturn(3);
         Mockito.when(validatorFactory3.getServiceRanking()).thenReturn(3);
         executorFactory = new ValidationExecutorFactory(validatorFactories);
-        MatcherAssert.assertThat(executorFactory.validatorFactories, Matchers.containsInAnyOrder(validatorFactory1, validatorFactory2, validatorFactory3));
+        MatcherAssert.assertThat(
+                executorFactory.validatorFactories,
+                Matchers.containsInAnyOrder(validatorFactory1, validatorFactory2, validatorFactory3));
     }
 
     @Test

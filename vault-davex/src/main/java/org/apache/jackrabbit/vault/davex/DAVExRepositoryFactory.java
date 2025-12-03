@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.davex;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,10 +33,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.client.RepositoryFactoryImpl;
@@ -61,6 +63,7 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
     public static final String PARAM_JCR_REMOTING_SPILOG = "jcr.remoting.spilog";
 
     private static final Set<String> SCHEMES = new HashSet<String>();
+
     static {
         SCHEMES.add("http");
         SCHEMES.add("https");
@@ -75,7 +78,8 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
         return createRepository(address, null);
     }
 
-    public Repository createRepository(RepositoryAddress address, ConnectionOptions connectionOptions) throws RepositoryException {
+    public Repository createRepository(RepositoryAddress address, ConnectionOptions connectionOptions)
+            throws RepositoryException {
         if (!SCHEMES.contains(address.getSpecificURI().getScheme())) {
             return null;
         }
@@ -84,14 +88,24 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
             URI uri = address.getSpecificURI();
             if (uri.getUserInfo() != null) {
                 try {
-                    uri = new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment());
+                    uri = new URI(
+                            uri.getScheme(),
+                            null,
+                            uri.getHost(),
+                            uri.getPort(),
+                            uri.getPath(),
+                            uri.getQuery(),
+                            uri.getFragment());
                 } catch (URISyntaxException e) {
                     // ignore
                 }
             }
             Map<String, Object> parameters = new HashMap<String, Object>();
-            parameters.put(Jcr2spiRepositoryFactory.PARAM_REPOSITORY_SERVICE_FACTORY, Spi2davexRepositoryServiceFactory.class.getName());
-            parameters.put(Jcr2spiRepositoryFactory.PARAM_ITEM_CACHE_SIZE, Integer.getInteger(PARAM_JCR_REMOTING_DEPTH, 128));
+            parameters.put(
+                    Jcr2spiRepositoryFactory.PARAM_REPOSITORY_SERVICE_FACTORY,
+                    Spi2davexRepositoryServiceFactory.class.getName());
+            parameters.put(
+                    Jcr2spiRepositoryFactory.PARAM_ITEM_CACHE_SIZE, Integer.getInteger(PARAM_JCR_REMOTING_DEPTH, 128));
             parameters.put(Spi2davexRepositoryServiceFactory.PARAM_REPOSITORY_URI, uri.toString());
             DefaultBatchReadConfig br = new DefaultBatchReadConfig();
             br.setDefaultDepth(Integer.getInteger(PARAM_JCR_REMOTING_DEPTH, 4));
@@ -101,12 +115,8 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
             String file = System.getProperty(PARAM_JCR_REMOTING_SPILOG);
             if (file != null) {
                 WriterLogWriterProvider provider = new WriterLogWriterProvider(
-                        new OutputStreamWriter(FileUtils.openOutputStream(new File(file)), StandardCharsets.UTF_8)
-                );
-                parameters.put(
-                        Jcr2spiRepositoryFactory.PARAM_LOG_WRITER_PROVIDER,
-                        provider
-                );
+                        new OutputStreamWriter(FileUtils.openOutputStream(new File(file)), StandardCharsets.UTF_8));
+                parameters.put(Jcr2spiRepositoryFactory.PARAM_LOG_WRITER_PROVIDER, provider);
             }
 
             String workspace = address.getWorkspace();
@@ -116,7 +126,10 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
             if (connectionOptions != null) {
                 parameters.putAll(connectionOptions.toServiceFactoryParameters());
             }
-            System.out.printf(Locale.ENGLISH, "Connecting via JCR remoting to %s%n", address.getSpecificURI().toString());
+            System.out.printf(
+                    Locale.ENGLISH,
+                    "Connecting via JCR remoting to %s%n",
+                    address.getSpecificURI().toString());
             return new RepositoryFactoryImpl().getRepository(parameters);
         } catch (IOException e) {
             throw new RepositoryException(e);

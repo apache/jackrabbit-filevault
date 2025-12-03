@@ -1,21 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
+
+import javax.jcr.RepositoryException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,8 +32,6 @@ import java.util.jar.JarOutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -61,8 +62,8 @@ public class JarExporter extends AbstractExporter {
      * Contains the compression levels for which the binaries are always compressed
      * independently of their actual compressibility.
      */
-    private static final Set<Integer> COMPRESSED_LEVELS = new HashSet<Integer>(Arrays.asList(
-            DEFAULT_COMPRESSION, NO_COMPRESSION, BEST_COMPRESSION));
+    private static final Set<Integer> COMPRESSED_LEVELS =
+            new HashSet<Integer>(Arrays.asList(DEFAULT_COMPRESSION, NO_COMPRESSION, BEST_COMPRESSION));
 
     private JarOutputStream jOut;
 
@@ -93,7 +94,6 @@ public class JarExporter extends AbstractExporter {
         compressedLevel = COMPRESSED_LEVELS.contains(level);
         this.jarFile = jarFile;
         this.level = level;
-
     }
 
     /**
@@ -108,7 +108,7 @@ public class JarExporter extends AbstractExporter {
     /**
      * Constructs a new jar exporter that writes to the output stream.
      * The given output stream is closed when calling {@link #close()}.
-     * 
+     *
      * @param out   the output stream
      * @param level level the compression level
      */
@@ -148,8 +148,7 @@ public class JarExporter extends AbstractExporter {
         }
     }
 
-    public void createDirectory(VaultFile file, String relPath)
-            throws RepositoryException, IOException {
+    public void createDirectory(VaultFile file, String relPath) throws RepositoryException, IOException {
         ZipEntry e = new ZipEntry(getPlatformFilePath(file, relPath) + "/");
         jOut.putNextEntry(e);
         jOut.closeEntry();
@@ -164,8 +163,7 @@ public class JarExporter extends AbstractExporter {
         exportInfo.update(ExportInfo.Type.MKDIR, e.getName());
     }
 
-    public void writeFile(VaultFile file, String relPath)
-            throws RepositoryException, IOException {
+    public void writeFile(VaultFile file, String relPath) throws RepositoryException, IOException {
         ZipEntry e = new ZipEntry(getPlatformFilePath(file, relPath));
         Artifact a = file.getArtifact();
         boolean compress = compressedLevel
@@ -235,5 +233,4 @@ public class JarExporter extends AbstractExporter {
             jOut.setLevel(level);
         }
     }
-
 }

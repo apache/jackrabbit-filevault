@@ -1,21 +1,27 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
+
+import javax.jcr.Binary;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,17 +30,12 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import javax.jcr.Binary;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.util.Text;
 
 /**
  * Implements a Vault filesystem exporter that exports Vault files to a JCR
@@ -76,7 +77,7 @@ public class JcrExporter extends AbstractExporter {
      */
     public void close() throws IOException, RepositoryException {
         if (autoDeleteFiles) {
-            for (ExportInfo.Entry e: exportInfo.getEntries().values()) {
+            for (ExportInfo.Entry e : exportInfo.getEntries().values()) {
                 if (e.type == ExportInfo.Type.DELETE) {
                     String relPath = PathUtil.getRelativePath(localParent.getPath(), e.path);
                     try {
@@ -109,8 +110,7 @@ public class JcrExporter extends AbstractExporter {
         }
     }
 
-    public void createDirectory(VaultFile file, String relPath)
-            throws RepositoryException, IOException {
+    public void createDirectory(VaultFile file, String relPath) throws RepositoryException, IOException {
         getOrCreateItem(getPlatformFilePath(file, relPath), true);
     }
 
@@ -118,8 +118,7 @@ public class JcrExporter extends AbstractExporter {
         getOrCreateItem(relPath, true);
     }
 
-    public void writeFile(VaultFile file, String relPath)
-            throws RepositoryException, IOException {
+    public void writeFile(VaultFile file, String relPath) throws RepositoryException, IOException {
         Node local = getOrCreateItem(getPlatformFilePath(file, relPath), false);
         track(local.isNew() ? "A" : "U", relPath);
         Node content;
@@ -134,7 +133,7 @@ public class JcrExporter extends AbstractExporter {
                 throw new RepositoryException("Artifact has no content.");
 
             case SPOOL:
-                // we can't support spool
+            // we can't support spool
             case STREAM:
                 try (InputStream in = a.getInputStream()) {
                     Binary b = content.getSession().getValueFactory().createBinary(in);
@@ -150,7 +149,7 @@ public class JcrExporter extends AbstractExporter {
         content.setProperty(JcrConstants.JCR_LASTMODIFIED, now);
         if (a.getContentType() != null) {
             content.setProperty(JcrConstants.JCR_MIMETYPE, a.getContentType());
-        } else if (!content.hasProperty(JcrConstants.JCR_MIMETYPE)){
+        } else if (!content.hasProperty(JcrConstants.JCR_MIMETYPE)) {
             content.setProperty(JcrConstants.JCR_MIMETYPE, "application/octet-stream");
         }
     }
@@ -166,8 +165,10 @@ public class JcrExporter extends AbstractExporter {
             }
             Binary b = content.getSession().getValueFactory().createBinary(in);
             content.setProperty(JcrConstants.JCR_DATA, b);
-            content.setProperty(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
-            if (!content.hasProperty(JcrConstants.JCR_MIMETYPE)){
+            content.setProperty(
+                    JcrConstants.JCR_LASTMODIFIED,
+                    Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
+            if (!content.hasProperty(JcrConstants.JCR_MIMETYPE)) {
                 content.setProperty(JcrConstants.JCR_MIMETYPE, "application/octet-stream");
             }
             b.dispose();
@@ -182,7 +183,7 @@ public class JcrExporter extends AbstractExporter {
         try {
             String[] segments = Text.explode(relPath, '/');
             Node root = localParent;
-            for (int i=0; i<segments.length; i++) {
+            for (int i = 0; i < segments.length; i++) {
                 String s = segments[i];
                 if (root.hasNode(s)) {
                     root = root.getNode(s);
@@ -192,7 +193,7 @@ public class JcrExporter extends AbstractExporter {
                         exportInfo.update(ExportInfo.Type.UPDATE, root.getPath());
                     }
                 } else {
-                    if (i == segments.length -1 && !isDir) {
+                    if (i == segments.length - 1 && !isDir) {
                         root = root.addNode(s, JcrConstants.NT_FILE);
                         exportInfo.update(ExportInfo.Type.ADD, root.getPath());
                     } else {
@@ -208,5 +209,4 @@ public class JcrExporter extends AbstractExporter {
             throw io;
         }
     }
-
 }

@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
@@ -62,11 +64,15 @@ public final class MockPackageRegistry implements PackageRegistry {
     }
 
     MockPackageRegistry(Collection<PackageId> packageIds) {
-        this.containedPackageIdsAndDependencies = packageIds.stream().collect(Collectors.<PackageId, PackageId, List<Dependency>>toMap(packageId -> packageId, packageId -> Collections.emptyList()));
+        this.containedPackageIdsAndDependencies = packageIds.stream()
+                .collect(Collectors.<PackageId, PackageId, List<Dependency>>toMap(
+                        packageId -> packageId, packageId -> Collections.emptyList()));
     }
 
     void addPackageWithDependencies(String packageId, String... dependencies) {
-        this.containedPackageIdsAndDependencies.put(PackageId.fromString(packageId), Stream.of(dependencies).map(Dependency::fromString).collect(Collectors.toList()));
+        this.containedPackageIdsAndDependencies.put(
+                PackageId.fromString(packageId),
+                Stream.of(dependencies).map(Dependency::fromString).collect(Collectors.toList()));
     }
 
     @Override
@@ -89,7 +95,8 @@ public final class MockPackageRegistry implements PackageRegistry {
     }
 
     @Override
-    public @NotNull PackageId register(@NotNull InputStream in, boolean replace) throws IOException, PackageExistsException {
+    public @NotNull PackageId register(@NotNull InputStream in, boolean replace)
+            throws IOException, PackageExistsException {
         this.containedPackageIdsAndDependencies.put(NEW_PACKAGE_ID, Collections.emptyList());
         return NEW_PACKAGE_ID;
     }
@@ -140,7 +147,8 @@ public final class MockPackageRegistry implements PackageRegistry {
     @Override
     public @NotNull PackageId[] usage(@NotNull PackageId id) throws IOException {
         List<PackageId> dependentPackages = new ArrayList<>();
-        for (Entry<PackageId, List<Dependency>> packageIdAndDependencies : containedPackageIdsAndDependencies.entrySet()) {
+        for (Entry<PackageId, List<Dependency>> packageIdAndDependencies :
+                containedPackageIdsAndDependencies.entrySet()) {
             for (Dependency dependency : packageIdAndDependencies.getValue()) {
                 if (dependency.matches(id)) {
                     dependentPackages.add(packageIdAndDependencies.getKey());
@@ -154,5 +162,4 @@ public final class MockPackageRegistry implements PackageRegistry {
     public @NotNull ExecutionPlanBuilder createExecutionPlan() {
         throw new UnsupportedOperationException();
     }
-
 }

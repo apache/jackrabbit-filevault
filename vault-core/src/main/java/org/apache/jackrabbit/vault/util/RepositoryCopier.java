@@ -1,28 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.util;
-
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 
 import javax.jcr.Credentials;
 import javax.jcr.ImportUUIDBehavior;
@@ -37,12 +31,19 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.io.AutoSave;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
-import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
@@ -235,7 +236,8 @@ public class RepositoryCopier {
         }
     }
 
-    public void copy(Session srcSession, String srcPath, Session dstSession, String dstPath, boolean recursive) throws RepositoryException {
+    public void copy(Session srcSession, String srcPath, Session dstSession, String dstPath, boolean recursive)
+            throws RepositoryException {
         if (srcSession == null || dstSession == null) {
             throw new IllegalArgumentException("no src or dst session provided");
         }
@@ -267,7 +269,7 @@ public class RepositoryCopier {
         currentSize = 0;
         totalSize = 0;
         start = System.currentTimeMillis();
-        
+
         AutoSave autoSave = new AutoSave();
         autoSave.setThreshold(getBatchSize());
         autoSave.setTracker(new ProgressTracker(tracker));
@@ -278,7 +280,7 @@ public class RepositoryCopier {
             track("", "Done.");
         }
         long end = System.currentTimeMillis();
-        track("", "Copy completed. %d nodes in %dms. %d bytes", totalNodes, end-start, totalSize);
+        track("", "Copy completed. %d nodes in %dms. %d bytes", totalNodes, end - start, totalSize);
     }
 
     private void copy(AutoSave autoSave, Node src, Node dstParent, String dstName, boolean recursive)
@@ -361,23 +363,23 @@ public class RepositoryCopier {
             Set<String> names = new HashSet<String>();
             if (!skip && (overwrite || isNew)) {
                 if (!isNew) {
-                    for (NodeType nt: dst.getMixinNodeTypes()) {
+                    for (NodeType nt : dst.getMixinNodeTypes()) {
                         names.add(nt.getName());
                     }
                     // add mixins
-                    for (NodeType nt: src.getMixinNodeTypes()) {
+                    for (NodeType nt : src.getMixinNodeTypes()) {
                         String mixName = checkNameSpace(nt.getName(), src.getSession(), dst.getSession());
                         if (!names.remove(mixName)) {
                             dst.addMixin(nt.getName());
                         }
                     }
                     // handle removed mixins
-                    for (String mix: names) {
+                    for (String mix : names) {
                         dst.removeMixin(mix);
                     }
                 } else {
                     // add mixins
-                    for (NodeType nt: src.getMixinNodeTypes()) {
+                    for (NodeType nt : src.getMixinNodeTypes()) {
                         dst.addMixin(checkNameSpace(nt.getName(), src.getSession(), dst.getSession()));
                     }
                 }
@@ -406,20 +408,20 @@ public class RepositoryCopier {
                     if (p.getDefinition().isMultiple()) {
                         Value[] vs = p.getValues();
                         dst.setProperty(pName, vs);
-                        for (long s: p.getLengths()) {
-                            totalSize+=s;
-                            currentSize+=s;
+                        for (long s : p.getLengths()) {
+                            totalSize += s;
+                            currentSize += s;
                         }
                     } else {
                         Value v = p.getValue();
                         dst.setProperty(pName, v);
-                        long s= p.getLength();
-                        totalSize+=s;
-                        currentSize+=s;
+                        long s = p.getLength();
+                        totalSize += s;
+                        currentSize += s;
                     }
                 }
                 // remove obsolete properties
-                for (String pName: names) {
+                for (String pName : names) {
                     try {
                         // ignore protected. should not happen, unless the primary node type changes.
                         Property dstP = dst.getProperty(pName);
@@ -451,7 +453,10 @@ public class RepositoryCopier {
                 }
                 if (resumeFrom == null) {
                     // check if we need to order
-                    if (overwrite && !isNew && !noOrdering && src.getPrimaryNodeType().hasOrderableChildNodes()) {
+                    if (overwrite
+                            && !isNew
+                            && !noOrdering
+                            && src.getPrimaryNodeType().hasOrderableChildNodes()) {
                         niter = src.getNodes();
                         while (niter.hasNext()) {
                             Node child = niter.nextNode();
@@ -463,7 +468,7 @@ public class RepositoryCopier {
                     }
 
                     // remove obsolete child nodes
-                    for (String name: names) {
+                    for (String name : names) {
                         try {
                             Node cNode = dst.getNode(name);
                             track(cNode.getPath(), "%06d D", ++totalNodes);
@@ -483,11 +488,17 @@ public class RepositoryCopier {
 
         // check for save
         if (autoSave.needsSave()) {
-            track("", "Intermediate saving %d nodes (%d kB)...", numNodes, currentSize/1000);
+            track("", "Intermediate saving %d nodes (%d kB)...", numNodes, currentSize / 1000);
             long now = System.currentTimeMillis();
             autoSave.save(dst.getSession(), true);
             long end = System.currentTimeMillis();
-            track("", "Done in %d ms. Total time: %d, total nodes %d, %d kB", end-now, end-start, totalNodes, totalSize/1000);
+            track(
+                    "",
+                    "Done in %d ms. Total time: %d, total nodes %d, %d kB",
+                    end - now,
+                    end - start,
+                    totalNodes,
+                    totalSize / 1000);
             lastKnownGood = currentPath;
             numNodes = 0;
             currentSize = 0;
@@ -505,7 +516,9 @@ public class RepositoryCopier {
 
     private Node sysCopy(Node src, Node dstParent, String dstName) throws RepositoryException {
         try {
-            ContentHandler handler = dstParent.getSession().getImportContentHandler(dstParent.getPath(), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+            ContentHandler handler = dstParent
+                    .getSession()
+                    .getImportContentHandler(dstParent.getPath(), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
             src.getSession().exportSystemView(src.getPath(), handler, true, false);
             return dstParent.getNode(dstName);
         } catch (SAXException e) {
@@ -542,7 +555,8 @@ public class RepositoryCopier {
             if (cqLastModified != null && src.hasProperty(cqLastModified) && dst.hasProperty(cqLastModified)) {
                 srcDate = src.getProperty(cqLastModified).getDate();
                 dstDate = dst.getProperty(cqLastModified).getDate();
-            } else if (src.hasProperty(JcrConstants.JCR_LASTMODIFIED) && dst.hasProperty(JcrConstants.JCR_LASTMODIFIED)) {
+            } else if (src.hasProperty(JcrConstants.JCR_LASTMODIFIED)
+                    && dst.hasProperty(JcrConstants.JCR_LASTMODIFIED)) {
                 srcDate = src.getProperty(JcrConstants.JCR_LASTMODIFIED).getDate();
                 dstDate = dst.getProperty(JcrConstants.JCR_LASTMODIFIED).getDate();
             }
@@ -565,11 +579,11 @@ public class RepositoryCopier {
                         mapped = dstSession.getNamespacePrefix(uri);
                     } catch (NamespaceException e) {
                         mapped = prefix;
-                        int i=0;
-                        while (i>=0) {
+                        int i = 0;
+                        while (i >= 0) {
                             try {
                                 dstSession.getWorkspace().getNamespaceRegistry().registerNamespace(mapped, uri);
-                                i=-1;
+                                i = -1;
                             } catch (NamespaceException e1) {
                                 mapped = prefix + i++;
                             }
@@ -589,7 +603,7 @@ public class RepositoryCopier {
         return name;
     }
 
-    private void track(String path, String fmt, Object ... args) {
+    private void track(String path, String fmt, Object... args) {
         if (tracker != null) {
             tracker.onMessage(ProgressTrackerListener.Mode.TEXT, String.format(Locale.ENGLISH, fmt, args), path);
         }
@@ -622,46 +636,28 @@ public class RepositoryCopier {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         RepositoryCopier other = (RepositoryCopier) obj;
-        if (abort != other.abort)
-            return false;
-        if (batchSize != other.batchSize)
-            return false;
-        if (noOrdering != other.noOrdering)
-            return false;
-        if (onlyNewer != other.onlyNewer)
-            return false;
+        if (abort != other.abort) return false;
+        if (batchSize != other.batchSize) return false;
+        if (noOrdering != other.noOrdering) return false;
+        if (onlyNewer != other.onlyNewer) return false;
         if (prefixMapping == null) {
-            if (other.prefixMapping != null)
-                return false;
-        } else if (!prefixMapping.equals(other.prefixMapping))
-            return false;
+            if (other.prefixMapping != null) return false;
+        } else if (!prefixMapping.equals(other.prefixMapping)) return false;
         if (resumeFrom == null) {
-            if (other.resumeFrom != null)
-                return false;
-        } else if (!resumeFrom.equals(other.resumeFrom))
-            return false;
+            if (other.resumeFrom != null) return false;
+        } else if (!resumeFrom.equals(other.resumeFrom)) return false;
         if (srcFilter == null) {
-            if (other.srcFilter != null)
-                return false;
-        } else if (!srcFilter.equals(other.srcFilter))
-            return false;
-        if (throttle != other.throttle)
-            return false;
+            if (other.srcFilter != null) return false;
+        } else if (!srcFilter.equals(other.srcFilter)) return false;
+        if (throttle != other.throttle) return false;
         if (tracker == null) {
-            if (other.tracker != null)
-                return false;
-        } else if (!tracker.equals(other.tracker))
-            return false;
-        if (update != other.update)
-            return false;
+            if (other.tracker != null) return false;
+        } else if (!tracker.equals(other.tracker)) return false;
+        if (update != other.update) return false;
         return true;
     }
-
 }

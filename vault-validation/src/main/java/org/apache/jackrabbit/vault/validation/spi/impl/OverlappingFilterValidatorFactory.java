@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
@@ -38,7 +40,8 @@ public final class OverlappingFilterValidatorFactory implements ValidatorFactory
      * This pattern is often used in overlay scenarios to enforce certain ancestor nodes.
      * By default those overlaps should do not lead to a failure.
      */
-    public static final String OPTION_SEVERITY_FOR_OVERLAPPING_SINGLE_NODE_PATTERNS = "severityForOverlappingSingleNodePatterns";
+    public static final String OPTION_SEVERITY_FOR_OVERLAPPING_SINGLE_NODE_PATTERNS =
+            "severityForOverlappingSingleNodePatterns";
 
     @Override
     public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
@@ -47,12 +50,14 @@ public final class OverlappingFilterValidatorFactory implements ValidatorFactory
             final ValidationMessageSeverity severityForOverlappingSingleNodePatterns;
             if (settings.getOptions().containsKey(OPTION_SEVERITY_FOR_OVERLAPPING_SINGLE_NODE_PATTERNS)) {
                 String optionValue = settings.getOptions().get(OPTION_SEVERITY_FOR_OVERLAPPING_SINGLE_NODE_PATTERNS);
-                severityForOverlappingSingleNodePatterns = ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
+                severityForOverlappingSingleNodePatterns =
+                        ValidationMessageSeverity.valueOf(optionValue.toUpperCase(Locale.ROOT));
             } else {
                 severityForOverlappingSingleNodePatterns = ValidationMessageSeverity.WARN;
             }
             // create new validator for every root container (which may contain additional subpackages)
-            validator = new OverlappingFilterValidator(settings.getDefaultSeverity(), severityForOverlappingSingleNodePatterns);
+            validator = new OverlappingFilterValidator(
+                    settings.getDefaultSeverity(), severityForOverlappingSingleNodePatterns);
             // store in context
             context.setAttribute("overlappingValidator", validator);
             // add filter
@@ -61,7 +66,8 @@ public final class OverlappingFilterValidatorFactory implements ValidatorFactory
         } else {
             // for each sub package (even nested ones)
             // find topmost container
-            validator = (OverlappingFilterValidator)getRootContainerContext(context).getAttribute("overlappingValidator");
+            validator = (OverlappingFilterValidator)
+                    getRootContainerContext(context).getAttribute("overlappingValidator");
             // add filter
             validator.addFilter(context.getFilter(), getRelativePath(context.getPackageRootPath()));
         }
@@ -95,5 +101,4 @@ public final class OverlappingFilterValidatorFactory implements ValidatorFactory
     public int getServiceRanking() {
         return 0;
     }
-
 }

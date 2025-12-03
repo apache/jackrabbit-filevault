@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
@@ -46,18 +48,23 @@ import org.jetbrains.annotations.Nullable;
 
 public class OverlappingFilterValidator implements FilterValidator {
 
-    static final String MESSAGE_OVERLAPPING_FILTER_ROOTS = "Filter root '%s' in package '%s' potentially overlapping with filter root '%s' in package '%s' (prior checking include/exclude patterns)";
-    static final String MESSAGE_OVERLAPPING_FILTERS = "Filter root '%s' with include pattern %s in package '%s' potentially overlapping with filter '%s' in package '%s'";
+    static final String MESSAGE_OVERLAPPING_FILTER_ROOTS =
+            "Filter root '%s' in package '%s' potentially overlapping with filter root '%s' in package '%s' (prior checking include/exclude patterns)";
+    static final String MESSAGE_OVERLAPPING_FILTERS =
+            "Filter root '%s' with include pattern %s in package '%s' potentially overlapping with filter '%s' in package '%s'";
 
     private static final Pattern PATTERN_OPTIONAL_GROUP = Pattern.compile("\\(.*\\)\\?");
     private static final Pattern PATTERN_ESCAPED_CHARACTER = Pattern.compile("\\\\([^\\(])");
     private static final String PATTERN_ALLOW_ALL = ".*";
     /** key = path of package (might be a nested subpackage) */
     private final NavigableMap<String, List<PathFilterSet>> filtersPerPackages = new TreeMap<>();
+
     private final ValidationMessageSeverity severityForOverlappingSingleNodePatterns;
     private final ValidationMessageSeverity defaultSeverity;
 
-    public OverlappingFilterValidator(ValidationMessageSeverity defaultSeverity, ValidationMessageSeverity severityForOverlappingSingleNodePatterns) {
+    public OverlappingFilterValidator(
+            ValidationMessageSeverity defaultSeverity,
+            ValidationMessageSeverity severityForOverlappingSingleNodePatterns) {
         this.defaultSeverity = defaultSeverity;
         this.severityForOverlappingSingleNodePatterns = severityForOverlappingSingleNodePatterns;
     }
@@ -67,7 +74,8 @@ public class OverlappingFilterValidator implements FilterValidator {
         return validateFilters(filtersPerPackages);
     }
 
-    private Collection<ValidationMessage> validateFilters(NavigableMap<String, List<PathFilterSet>> filtersPerPackages) {
+    private Collection<ValidationMessage> validateFilters(
+            NavigableMap<String, List<PathFilterSet>> filtersPerPackages) {
         Collection<ValidationMessage> validationMessages = new ArrayList<>();
         // go through each package individually
         for (Map.Entry<String, List<PathFilterSet>> filtersPerPackage : filtersPerPackages.entrySet()) {
@@ -76,35 +84,41 @@ public class OverlappingFilterValidator implements FilterValidator {
                 break;
             }
             // and compare with rest of packages (that covers all possible combinations)
-            validationMessages.addAll(
-                    validateFiltersOfSinglePackage(
-                            filtersPerPackage.getValue(),
-                            filtersPerPackage.getKey(),
-                            filtersPerPackages.tailMap(higherKey)));
+            validationMessages.addAll(validateFiltersOfSinglePackage(
+                    filtersPerPackage.getValue(), filtersPerPackage.getKey(), filtersPerPackages.tailMap(higherKey)));
         }
         return validationMessages;
     }
 
-    private Collection<ValidationMessage> validateFiltersOfSinglePackage(List<PathFilterSet> filtersOfPackage, String packagePath,
+    private Collection<ValidationMessage> validateFiltersOfSinglePackage(
+            List<PathFilterSet> filtersOfPackage,
+            String packagePath,
             SortedMap<String, List<PathFilterSet>> otherPackageFiltersPerPackages) {
         Collection<ValidationMessage> validationMessages = new ArrayList<>();
         int index = 0;
         while (index < filtersOfPackage.size()) {
             PathFilterSet set1 = filtersOfPackage.get(index);
             // go through all other packages
-            for (Map.Entry<String, List<PathFilterSet>> otherPackageFiltersPerPackage : otherPackageFiltersPerPackages.entrySet()) {
+            for (Map.Entry<String, List<PathFilterSet>> otherPackageFiltersPerPackage :
+                    otherPackageFiltersPerPackages.entrySet()) {
                 // find one that is nested
                 Optional<PathFilterSet> set2 = otherPackageFiltersPerPackage.getValue().stream()
                         .filter(new NestedPathPredicate(set1))
                         .findAny();
                 if (set2.isPresent()) {
-                    validationMessages.add(
-                            new ValidationMessage(ValidationMessageSeverity.DEBUG,
-                                    String.format(Locale.ENGLISH, MESSAGE_OVERLAPPING_FILTER_ROOTS,
-                                            set1.getRoot(), packagePath, set2.get().getRoot(), otherPackageFiltersPerPackage.getKey())
-                                            + " (prior checking includes/excludes)"));
+                    validationMessages.add(new ValidationMessage(
+                            ValidationMessageSeverity.DEBUG,
+                            String.format(
+                                            Locale.ENGLISH,
+                                            MESSAGE_OVERLAPPING_FILTER_ROOTS,
+                                            set1.getRoot(),
+                                            packagePath,
+                                            set2.get().getRoot(),
+                                            otherPackageFiltersPerPackage.getKey())
+                                    + " (prior checking includes/excludes)"));
                     // 2. only allow if the canonical includes are excludes in the other rule
-                    validationMessages.addAll(validateFilterSets(set1, packagePath, set2.get(), otherPackageFiltersPerPackage.getKey()));
+                    validationMessages.addAll(
+                            validateFilterSets(set1, packagePath, set2.get(), otherPackageFiltersPerPackage.getKey()));
                 }
             }
             index++;
@@ -124,38 +138,54 @@ public class OverlappingFilterValidator implements FilterValidator {
         @Override
         public boolean test(PathFilterSet t) {
             String path2 = t.getRoot();
-            return (Text.isDescendantOrEqual(path, path2) ||
-                    Text.isDescendant(path2, path));
+            return (Text.isDescendantOrEqual(path, path2) || Text.isDescendant(path2, path));
         }
     }
 
     /** This is just a heuristic which might emit false positives. It is impossible to come up with a better estimation without knowing the
      * importing repository and the package contents.
      * The order of the filter sets don't matter, i.e. this method is symmetric (but the there is only one validation message emitted)
-     * 
+     *
      * @param filterSet1
      * @param filterSet2
      * @return {@code true} in case the filter sets are overlapping, {@code false} otherwise */
-    private Collection<ValidationMessage> validateFilterSets(PathFilterSet filterSet1, String packagePathFilterSet1, PathFilterSet filterSet2, String packagePathFilterSet2) {
-        Collection<ValidationMessage> messages = validateIncludesInFilterSet1AreExcludedInFilterSet2(filterSet1, packagePathFilterSet1, filterSet2, packagePathFilterSet2);
+    private Collection<ValidationMessage> validateFilterSets(
+            PathFilterSet filterSet1,
+            String packagePathFilterSet1,
+            PathFilterSet filterSet2,
+            String packagePathFilterSet2) {
+        Collection<ValidationMessage> messages = validateIncludesInFilterSet1AreExcludedInFilterSet2(
+                filterSet1, packagePathFilterSet1, filterSet2, packagePathFilterSet2);
         // only check the other direction in case no overlap has been found yet
         if (messages.isEmpty()) {
-            messages = validateIncludesInFilterSet1AreExcludedInFilterSet2(filterSet2, packagePathFilterSet2, filterSet1, packagePathFilterSet1);
+            messages = validateIncludesInFilterSet1AreExcludedInFilterSet2(
+                    filterSet2, packagePathFilterSet2, filterSet1, packagePathFilterSet1);
         }
         return messages;
     }
 
-    private Collection<ValidationMessage> validateIncludesInFilterSet1AreExcludedInFilterSet2(PathFilterSet includeFilterSet, String packagePathIncludeFilterSet, PathFilterSet excludeFilterSet, String packagePathExcludeFilterSet) {
+    private Collection<ValidationMessage> validateIncludesInFilterSet1AreExcludedInFilterSet2(
+            PathFilterSet includeFilterSet,
+            String packagePathIncludeFilterSet,
+            PathFilterSet excludeFilterSet,
+            String packagePathExcludeFilterSet) {
         Collection<ValidationMessage> messages = new LinkedList<>();
         for (PathFilter includeFilter : getIncludeFilters(includeFilterSet.getEntries())) {
             String testPattern = getNormalizedPattern(includeFilter, includeFilterSet.getRoot());
             if (!isExcluded(testPattern, excludeFilterSet)) {
                 boolean isSingleNodeFilterPattern = isSingleNodeFilterPattern(testPattern);
-                ValidationMessageSeverity severity =  isSingleNodeFilterPattern ? severityForOverlappingSingleNodePatterns : defaultSeverity;
-                messages.add(
-                        new ValidationMessage(severity,
-                                String.format(Locale.ENGLISH, MESSAGE_OVERLAPPING_FILTERS,
-                                        includeFilterSet.getRoot(), getPatternLabel(includeFilter), packagePathIncludeFilterSet, excludeFilterSet, packagePathExcludeFilterSet)));
+                ValidationMessageSeverity severity =
+                        isSingleNodeFilterPattern ? severityForOverlappingSingleNodePatterns : defaultSeverity;
+                messages.add(new ValidationMessage(
+                        severity,
+                        String.format(
+                                Locale.ENGLISH,
+                                MESSAGE_OVERLAPPING_FILTERS,
+                                includeFilterSet.getRoot(),
+                                getPatternLabel(includeFilter),
+                                packagePathIncludeFilterSet,
+                                excludeFilterSet,
+                                packagePathExcludeFilterSet)));
             }
         }
         return messages;
@@ -188,7 +218,7 @@ public class OverlappingFilterValidator implements FilterValidator {
     }
 
     /**
-     * 
+     *
      * @param testPattern the normalized pattern to check against
      * @param filterSet the filter set containing the potential excludes
      * @return {@code true} in case the filter set excludes the test pattern
@@ -246,7 +276,7 @@ public class OverlappingFilterValidator implements FilterValidator {
         } else if (filter == PathFilter.ALL) {
             pattern = Pattern.quote(rootPath.endsWith("/") ? rootPath : rootPath + "/");
             pattern += PATTERN_ALLOW_ALL;
-            
+
         } else {
             // unsupported filter type
             throw new IllegalArgumentException("Unsupported filter type " + filter);
@@ -265,7 +295,9 @@ public class OverlappingFilterValidator implements FilterValidator {
     static String getPatternLabel(PathFilter filter) {
         final StringBuilder pattern = new StringBuilder();
         if (filter instanceof DefaultPathFilter) {
-            pattern.append("'").append(DefaultPathFilter.class.cast(filter).getPattern()).append("'");
+            pattern.append("'")
+                    .append(DefaultPathFilter.class.cast(filter).getPattern())
+                    .append("'");
         } else if (filter == PathFilter.ALL) {
             pattern.append("(implicit) ALL");
         } else {
@@ -277,7 +309,7 @@ public class OverlappingFilterValidator implements FilterValidator {
 
     /** Replace string quoting using {@code /Q} and {@code /E} with the individual character quoting. The implementation is copied from the
      * private method {@code java.util.Pattern.RemoveQEQuoting()}.
-     * 
+     *
      * @param pattern the regular expression pattern
      * @return the pattern with the QE quotes replaced */
     static String removeQeQuoting(String pattern) {
@@ -285,15 +317,12 @@ public class OverlappingFilterValidator implements FilterValidator {
         int[] temp = pattern.codePoints().toArray();
         int i = 0;
         while (i < pLen - 1) {
-            if (temp[i] != '\\')
-                i += 1;
-            else if (temp[i + 1] != 'Q')
-                i += 2;
-            else
-                break;
+            if (temp[i] != '\\') i += 1;
+            else if (temp[i + 1] != 'Q') i += 2;
+            else break;
         }
         if (i >= pLen - 1) // No \Q sequence found
-            return pattern;
+        return pattern;
         int j = i;
         i += 2;
         int[] newtemp = new int[j + 3 * (pLen - i) + 2];
@@ -317,8 +346,7 @@ public class OverlappingFilterValidator implements FilterValidator {
                 }
                 newtemp[j++] = c;
             } else if (c != '\\') {
-                if (inQuote)
-                    newtemp[j++] = '\\';
+                if (inQuote) newtemp[j++] = '\\';
                 newtemp[j++] = c;
             } else if (inQuote) {
                 if (temp[i] == 'E') {
@@ -336,8 +364,7 @@ public class OverlappingFilterValidator implements FilterValidator {
                     continue;
                 } else {
                     newtemp[j++] = c;
-                    if (i != pLen)
-                        newtemp[j++] = temp[i++];
+                    if (i != pLen) newtemp[j++] = temp[i++];
                 }
             }
 
@@ -383,134 +410,134 @@ public class OverlappingFilterValidator implements FilterValidator {
         static final int XDIGIT = (HEX);
 
         private static final int[] ctype = new int[] {
-                CNTRL, /* 00 (NUL) */
-                CNTRL, /* 01 (SOH) */
-                CNTRL, /* 02 (STX) */
-                CNTRL, /* 03 (ETX) */
-                CNTRL, /* 04 (EOT) */
-                CNTRL, /* 05 (ENQ) */
-                CNTRL, /* 06 (ACK) */
-                CNTRL, /* 07 (BEL) */
-                CNTRL, /* 08 (BS) */
-                SPACE + CNTRL + BLANK, /* 09 (HT) */
-                SPACE + CNTRL, /* 0A (LF) */
-                SPACE + CNTRL, /* 0B (VT) */
-                SPACE + CNTRL, /* 0C (FF) */
-                SPACE + CNTRL, /* 0D (CR) */
-                CNTRL, /* 0E (SI) */
-                CNTRL, /* 0F (SO) */
-                CNTRL, /* 10 (DLE) */
-                CNTRL, /* 11 (DC1) */
-                CNTRL, /* 12 (DC2) */
-                CNTRL, /* 13 (DC3) */
-                CNTRL, /* 14 (DC4) */
-                CNTRL, /* 15 (NAK) */
-                CNTRL, /* 16 (SYN) */
-                CNTRL, /* 17 (ETB) */
-                CNTRL, /* 18 (CAN) */
-                CNTRL, /* 19 (EM) */
-                CNTRL, /* 1A (SUB) */
-                CNTRL, /* 1B (ESC) */
-                CNTRL, /* 1C (FS) */
-                CNTRL, /* 1D (GS) */
-                CNTRL, /* 1E (RS) */
-                CNTRL, /* 1F (US) */
-                SPACE + BLANK, /* 20 SPACE */
-                PUNCT, /* 21 ! */
-                PUNCT, /* 22 " */
-                PUNCT, /* 23 # */
-                PUNCT, /* 24 $ */
-                PUNCT, /* 25 % */
-                PUNCT, /* 26 & */
-                PUNCT, /* 27 ' */
-                PUNCT, /* 28 ( */
-                PUNCT, /* 29 ) */
-                PUNCT, /* 2A * */
-                PUNCT, /* 2B + */
-                PUNCT, /* 2C , */
-                PUNCT, /* 2D - */
-                PUNCT, /* 2E . */
-                PUNCT, /* 2F / */
-                DIGIT + HEX + 0, /* 30 0 */
-                DIGIT + HEX + 1, /* 31 1 */
-                DIGIT + HEX + 2, /* 32 2 */
-                DIGIT + HEX + 3, /* 33 3 */
-                DIGIT + HEX + 4, /* 34 4 */
-                DIGIT + HEX + 5, /* 35 5 */
-                DIGIT + HEX + 6, /* 36 6 */
-                DIGIT + HEX + 7, /* 37 7 */
-                DIGIT + HEX + 8, /* 38 8 */
-                DIGIT + HEX + 9, /* 39 9 */
-                PUNCT, /* 3A : */
-                PUNCT, /* 3B ; */
-                PUNCT, /* 3C < */
-                PUNCT, /* 3D = */
-                PUNCT, /* 3E > */
-                PUNCT, /* 3F ? */
-                PUNCT, /* 40 @ */
-                UPPER + HEX + 10, /* 41 A */
-                UPPER + HEX + 11, /* 42 B */
-                UPPER + HEX + 12, /* 43 C */
-                UPPER + HEX + 13, /* 44 D */
-                UPPER + HEX + 14, /* 45 E */
-                UPPER + HEX + 15, /* 46 F */
-                UPPER + 16, /* 47 G */
-                UPPER + 17, /* 48 H */
-                UPPER + 18, /* 49 I */
-                UPPER + 19, /* 4A J */
-                UPPER + 20, /* 4B K */
-                UPPER + 21, /* 4C L */
-                UPPER + 22, /* 4D M */
-                UPPER + 23, /* 4E N */
-                UPPER + 24, /* 4F O */
-                UPPER + 25, /* 50 P */
-                UPPER + 26, /* 51 Q */
-                UPPER + 27, /* 52 R */
-                UPPER + 28, /* 53 S */
-                UPPER + 29, /* 54 T */
-                UPPER + 30, /* 55 U */
-                UPPER + 31, /* 56 V */
-                UPPER + 32, /* 57 W */
-                UPPER + 33, /* 58 X */
-                UPPER + 34, /* 59 Y */
-                UPPER + 35, /* 5A Z */
-                PUNCT, /* 5B [ */
-                PUNCT, /* 5C \ */
-                PUNCT, /* 5D ] */
-                PUNCT, /* 5E ^ */
-                PUNCT | UNDER, /* 5F _ */
-                PUNCT, /* 60 ` */
-                LOWER + HEX + 10, /* 61 a */
-                LOWER + HEX + 11, /* 62 b */
-                LOWER + HEX + 12, /* 63 c */
-                LOWER + HEX + 13, /* 64 d */
-                LOWER + HEX + 14, /* 65 e */
-                LOWER + HEX + 15, /* 66 f */
-                LOWER + 16, /* 67 g */
-                LOWER + 17, /* 68 h */
-                LOWER + 18, /* 69 i */
-                LOWER + 19, /* 6A j */
-                LOWER + 20, /* 6B k */
-                LOWER + 21, /* 6C l */
-                LOWER + 22, /* 6D m */
-                LOWER + 23, /* 6E n */
-                LOWER + 24, /* 6F o */
-                LOWER + 25, /* 70 p */
-                LOWER + 26, /* 71 q */
-                LOWER + 27, /* 72 r */
-                LOWER + 28, /* 73 s */
-                LOWER + 29, /* 74 t */
-                LOWER + 30, /* 75 u */
-                LOWER + 31, /* 76 v */
-                LOWER + 32, /* 77 w */
-                LOWER + 33, /* 78 x */
-                LOWER + 34, /* 79 y */
-                LOWER + 35, /* 7A z */
-                PUNCT, /* 7B { */
-                PUNCT, /* 7C | */
-                PUNCT, /* 7D } */
-                PUNCT, /* 7E ~ */
-                CNTRL, /* 7F (DEL) */
+            CNTRL, /* 00 (NUL) */
+            CNTRL, /* 01 (SOH) */
+            CNTRL, /* 02 (STX) */
+            CNTRL, /* 03 (ETX) */
+            CNTRL, /* 04 (EOT) */
+            CNTRL, /* 05 (ENQ) */
+            CNTRL, /* 06 (ACK) */
+            CNTRL, /* 07 (BEL) */
+            CNTRL, /* 08 (BS) */
+            SPACE + CNTRL + BLANK, /* 09 (HT) */
+            SPACE + CNTRL, /* 0A (LF) */
+            SPACE + CNTRL, /* 0B (VT) */
+            SPACE + CNTRL, /* 0C (FF) */
+            SPACE + CNTRL, /* 0D (CR) */
+            CNTRL, /* 0E (SI) */
+            CNTRL, /* 0F (SO) */
+            CNTRL, /* 10 (DLE) */
+            CNTRL, /* 11 (DC1) */
+            CNTRL, /* 12 (DC2) */
+            CNTRL, /* 13 (DC3) */
+            CNTRL, /* 14 (DC4) */
+            CNTRL, /* 15 (NAK) */
+            CNTRL, /* 16 (SYN) */
+            CNTRL, /* 17 (ETB) */
+            CNTRL, /* 18 (CAN) */
+            CNTRL, /* 19 (EM) */
+            CNTRL, /* 1A (SUB) */
+            CNTRL, /* 1B (ESC) */
+            CNTRL, /* 1C (FS) */
+            CNTRL, /* 1D (GS) */
+            CNTRL, /* 1E (RS) */
+            CNTRL, /* 1F (US) */
+            SPACE + BLANK, /* 20 SPACE */
+            PUNCT, /* 21 ! */
+            PUNCT, /* 22 " */
+            PUNCT, /* 23 # */
+            PUNCT, /* 24 $ */
+            PUNCT, /* 25 % */
+            PUNCT, /* 26 & */
+            PUNCT, /* 27 ' */
+            PUNCT, /* 28 ( */
+            PUNCT, /* 29 ) */
+            PUNCT, /* 2A * */
+            PUNCT, /* 2B + */
+            PUNCT, /* 2C , */
+            PUNCT, /* 2D - */
+            PUNCT, /* 2E . */
+            PUNCT, /* 2F / */
+            DIGIT + HEX + 0, /* 30 0 */
+            DIGIT + HEX + 1, /* 31 1 */
+            DIGIT + HEX + 2, /* 32 2 */
+            DIGIT + HEX + 3, /* 33 3 */
+            DIGIT + HEX + 4, /* 34 4 */
+            DIGIT + HEX + 5, /* 35 5 */
+            DIGIT + HEX + 6, /* 36 6 */
+            DIGIT + HEX + 7, /* 37 7 */
+            DIGIT + HEX + 8, /* 38 8 */
+            DIGIT + HEX + 9, /* 39 9 */
+            PUNCT, /* 3A : */
+            PUNCT, /* 3B ; */
+            PUNCT, /* 3C < */
+            PUNCT,
+            /* 3D = */ PUNCT, /* 3E > */
+            PUNCT, /* 3F ? */
+            PUNCT, /* 40 @ */
+            UPPER + HEX + 10, /* 41 A */
+            UPPER + HEX + 11, /* 42 B */
+            UPPER + HEX + 12, /* 43 C */
+            UPPER + HEX + 13, /* 44 D */
+            UPPER + HEX + 14, /* 45 E */
+            UPPER + HEX + 15, /* 46 F */
+            UPPER + 16, /* 47 G */
+            UPPER + 17, /* 48 H */
+            UPPER + 18, /* 49 I */
+            UPPER + 19, /* 4A J */
+            UPPER + 20, /* 4B K */
+            UPPER + 21, /* 4C L */
+            UPPER + 22, /* 4D M */
+            UPPER + 23, /* 4E N */
+            UPPER + 24, /* 4F O */
+            UPPER + 25, /* 50 P */
+            UPPER + 26, /* 51 Q */
+            UPPER + 27, /* 52 R */
+            UPPER + 28, /* 53 S */
+            UPPER + 29, /* 54 T */
+            UPPER + 30, /* 55 U */
+            UPPER + 31, /* 56 V */
+            UPPER + 32, /* 57 W */
+            UPPER + 33, /* 58 X */
+            UPPER + 34, /* 59 Y */
+            UPPER + 35, /* 5A Z */
+            PUNCT, /* 5B [ */
+            PUNCT, /* 5C \ */
+            PUNCT, /* 5D ] */
+            PUNCT, /* 5E ^ */
+            PUNCT | UNDER, /* 5F _ */
+            PUNCT, /* 60 ` */
+            LOWER + HEX + 10, /* 61 a */
+            LOWER + HEX + 11, /* 62 b */
+            LOWER + HEX + 12, /* 63 c */
+            LOWER + HEX + 13, /* 64 d */
+            LOWER + HEX + 14, /* 65 e */
+            LOWER + HEX + 15, /* 66 f */
+            LOWER + 16, /* 67 g */
+            LOWER + 17, /* 68 h */
+            LOWER + 18, /* 69 i */
+            LOWER + 19, /* 6A j */
+            LOWER + 20, /* 6B k */
+            LOWER + 21, /* 6C l */
+            LOWER + 22, /* 6D m */
+            LOWER + 23, /* 6E n */
+            LOWER + 24, /* 6F o */
+            LOWER + 25, /* 70 p */
+            LOWER + 26, /* 71 q */
+            LOWER + 27, /* 72 r */
+            LOWER + 28, /* 73 s */
+            LOWER + 29, /* 74 t */
+            LOWER + 30, /* 75 u */
+            LOWER + 31, /* 76 v */
+            LOWER + 32, /* 77 w */
+            LOWER + 33, /* 78 x */
+            LOWER + 34, /* 79 y */
+            LOWER + 35, /* 7A z */
+            PUNCT, /* 7B { */
+            PUNCT, /* 7C | */
+            PUNCT, /* 7D } */
+            PUNCT, /* 7E ~ */
+            CNTRL, /* 7F (DEL) */
         };
 
         static int getType(int ch) {
@@ -543,5 +570,4 @@ public class OverlappingFilterValidator implements FilterValidator {
         // nothing to do here, as filters are injected from outside (i.e. from factory via addFilter(...))
         return null;
     }
-
 }

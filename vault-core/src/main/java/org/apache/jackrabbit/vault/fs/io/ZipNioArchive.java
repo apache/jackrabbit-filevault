@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
 
 import java.io.IOException;
@@ -59,7 +60,7 @@ public class ZipNioArchive extends AbstractArchive {
     private final Path path;
 
     private final boolean deleteAtClose;
- 
+
     /**
      * The (loaded) meta info
      */
@@ -72,7 +73,7 @@ public class ZipNioArchive extends AbstractArchive {
 
     /**
      * Shortcut for {@link ZipNioArchive#ZipNioArchive(Path, boolean)} with {@code false} as second parameter.
-     * 
+     *
      * @param path the path of the zip file
      */
     public ZipNioArchive(Path path) {
@@ -80,7 +81,7 @@ public class ZipNioArchive extends AbstractArchive {
     }
 
     /**
-     * 
+     *
      * @param path the path of the zip file
      * @param deleteAtClose if {@code true} removes the file with the given path during {@link #close()}
      */
@@ -98,7 +99,7 @@ public class ZipNioArchive extends AbstractArchive {
             return;
         }
         try {
-            zipFileSystem = FileSystems.newFileSystem(path, (ClassLoader)null);
+            zipFileSystem = FileSystems.newFileSystem(path, (ClassLoader) null);
         } catch (ProviderNotFoundException e) {
             throw new IOException("Can not open zip file '" + path + "'", e);
         }
@@ -115,7 +116,7 @@ public class ZipNioArchive extends AbstractArchive {
         if (zipFileSystem == null) {
             throw new ArchiveNotOpenException(path.toString());
         }
-        return Files.newInputStream(((EntryImpl)entry).path);
+        return Files.newInputStream(((EntryImpl) entry).path);
     }
 
     @Override
@@ -127,7 +128,7 @@ public class ZipNioArchive extends AbstractArchive {
         if (zipFileSystem == null) {
             throw new ArchiveNotOpenException(path.toString());
         }
-        final EntryImpl entryImpl = (EntryImpl)entry;
+        final EntryImpl entryImpl = (EntryImpl) entry;
         return new VaultInputSourceImpl(entryImpl);
     }
 
@@ -270,10 +271,10 @@ public class ZipNioArchive extends AbstractArchive {
             if (numNames == 0) {
                 return "";
             }
-            String name = path.getName(numNames-1).toString();
+            String name = path.getName(numNames - 1).toString();
             // strip trailing slashes (returned by Zip File System provider for directories)
             if (name.endsWith("/")) {
-                name = name.substring(0, name.length()-1);
+                name = name.substring(0, name.length() - 1);
             }
             return name;
         }
@@ -294,7 +295,9 @@ public class ZipNioArchive extends AbstractArchive {
 
         private @NotNull Map<String, EntryImpl> populateChildren() {
             try (Stream<Path> childStream = Files.list(path)) {
-                return childStream.map(EntryImpl::new).collect(Collectors.toMap(EntryImpl::getName, Function.identity()));
+                return childStream
+                        .map(EntryImpl::new)
+                        .collect(Collectors.toMap(EntryImpl::getName, Function.identity()));
             } catch (IOException e) {
                 throw new IllegalStateException("Could not retrieve children", e);
             }
@@ -312,7 +315,7 @@ public class ZipNioArchive extends AbstractArchive {
 
     public final class ArchiveNotOpenException extends IllegalStateException {
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 5634035426424134529L;
 

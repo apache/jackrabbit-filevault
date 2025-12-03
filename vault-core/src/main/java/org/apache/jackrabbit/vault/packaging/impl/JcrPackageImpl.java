@@ -1,24 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.impl;
 
-import static org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl.ARCHIVE_PACKAGE_ROOT_PATH;
-import static org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
+import javax.jcr.Binary;
+import javax.jcr.NamespaceException;
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.nodetype.NodeTypeManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,14 +40,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.jcr.Binary;
-import javax.jcr.NamespaceException;
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.nodetype.NodeTypeManager;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -84,6 +82,9 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.jackrabbit.vault.packaging.impl.JcrPackageManagerImpl.ARCHIVE_PACKAGE_ROOT_PATH;
+import static org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
+
 /**
  * Implements a JcrPackage
  */
@@ -92,7 +93,7 @@ public class JcrPackageImpl implements JcrPackage {
     /**
      * max allowed package size for using a memory archive
      */
-    public static final long MAX_MEMORY_ARCHIVE_SIZE = 1024*1024;
+    public static final long MAX_MEMORY_ARCHIVE_SIZE = 1024 * 1024;
 
     /**
      * default logger
@@ -127,7 +128,8 @@ public class JcrPackageImpl implements JcrPackage {
         this.node = node;
     }
 
-    public JcrPackageImpl(@NotNull JcrPackageRegistry mgr, @Nullable Node node, @Nullable ZipVaultPackage pack) throws RepositoryException {
+    public JcrPackageImpl(@NotNull JcrPackageRegistry mgr, @Nullable Node node, @Nullable ZipVaultPackage pack)
+            throws RepositoryException {
         this.mgr = mgr;
         this.node = node;
         this.pack = pack;
@@ -140,9 +142,7 @@ public class JcrPackageImpl implements JcrPackage {
         if (def == null) {
             if (isValid()) {
                 Node defNode = getDefNode();
-                def = defNode == null
-                        ? null
-                        : new JcrPackageDefinitionImpl(defNode);
+                def = defNode == null ? null : new JcrPackageDefinitionImpl(defNode);
             }
         }
         return def;
@@ -220,7 +220,6 @@ public class JcrPackageImpl implements JcrPackage {
             log.warn("Error during isSealed()", e);
             return false;
         }
-
     }
 
     /**
@@ -232,7 +231,6 @@ public class JcrPackageImpl implements JcrPackage {
     public boolean verifyId(boolean autoFix, boolean autoSave) throws RepositoryException {
         return true;
     }
-
 
     /**
      * Tries to unwrap the definition of this package.
@@ -313,7 +311,8 @@ public class JcrPackageImpl implements JcrPackage {
                     if (props == null || props.isEmpty()) {
                         JcrPackageDefinition def = getDefinition();
                         if (def != null) {
-                            ((DefaultMetaInf) archive.getMetaInf()).setProperties(def.getMetaInf().getProperties());
+                            ((DefaultMetaInf) archive.getMetaInf())
+                                    .setProperties(def.getMetaInf().getProperties());
                         }
                     }
                     pack = new ZipVaultPackage(archive, true);
@@ -324,8 +323,8 @@ public class JcrPackageImpl implements JcrPackage {
             } else {
                 File tmpFile = File.createTempFile("vaultpack", ".zip");
                 Binary bin = getData().getBinary();
-                try (FileOutputStream out = FileUtils.openOutputStream(tmpFile); 
-                    InputStream in = bin.getStream()) {
+                try (FileOutputStream out = FileUtils.openOutputStream(tmpFile);
+                        InputStream in = bin.getStream()) {
                     IOUtils.copy(in, out);
                 } finally {
                     bin.dispose();
@@ -341,7 +340,6 @@ public class JcrPackageImpl implements JcrPackage {
      */
     public void extract(ImportOptions opts) throws RepositoryException, PackageException, IOException {
         extract(opts, false, false);
-
     }
 
     /**
@@ -350,7 +348,6 @@ public class JcrPackageImpl implements JcrPackage {
     public void install(ImportOptions opts) throws RepositoryException, PackageException, IOException {
         extract(opts, true, false);
     }
-
 
     private void extract(ImportOptions options, boolean createSnapshot, boolean replaceSnapshot)
             throws RepositoryException, PackageException, IOException {
@@ -368,7 +365,8 @@ public class JcrPackageImpl implements JcrPackage {
      * @throws PackageException if a package error occurs
      * @throws IOException if an I/O error occurs
      */
-    private void extract(Set<PackageId> processed, ImportOptions options, boolean createSnapshot, boolean replaceSnapshot)
+    private void extract(
+            Set<PackageId> processed, ImportOptions options, boolean createSnapshot, boolean replaceSnapshot)
             throws RepositoryException, PackageException, IOException {
         getPackage();
         getDefinition();
@@ -383,12 +381,17 @@ public class JcrPackageImpl implements JcrPackage {
         // get a copy of the import options (bug 35164)
         ImportOptions opts = options.copy();
         // check for disable intermediate saves (GRANITE-1047)
-        if (this.getDefinition().getBoolean(JcrPackageDefinition.PN_DISABLE_INTERMEDIATE_SAVE) ) {
+        if (this.getDefinition().getBoolean(JcrPackageDefinition.PN_DISABLE_INTERMEDIATE_SAVE)) {
             // MAX_VALUE disables saving completely, therefore we have to use a lower value!
             opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
         }
-        InstallContextImpl ctx = pack.prepareExtract(node.getSession(), opts, mgr.getSecurityConfig(), mgr.isStrictByDefault(),
-                mgr.overwritePrimaryTypesOfFoldersByDefault(), mgr.getDefaultIdConflictPolicy());
+        InstallContextImpl ctx = pack.prepareExtract(
+                node.getSession(),
+                opts,
+                mgr.getSecurityConfig(),
+                mgr.isStrictByDefault(),
+                mgr.overwritePrimaryTypesOfFoldersByDefault(),
+                mgr.getDefaultIdConflictPolicy());
         JcrPackage snap = null;
         if (!opts.isDryRun() && createSnapshot) {
             ExportOptions eOpts = new ExportOptions();
@@ -404,9 +407,10 @@ public class JcrPackageImpl implements JcrPackage {
         // process sub packages
         Session s = node.getSession();
         List<JcrPackageImpl> subPacks = new LinkedList<>();
-        // contains a value only if a more recent version of the package with the given id (from the key) is already installed
+        // contains a value only if a more recent version of the package with the given id (from the key) is already
+        // installed
         Map<PackageId, PackageId> newerPackageIdPerSubPackage = new HashMap<>();
-        for (String path: subPackages) {
+        for (String path : subPackages) {
             if (s.nodeExists(path)) {
                 JcrPackageImpl p = new JcrPackageImpl(mgr, s.getNode(path));
                 if (!p.isValid()) {
@@ -440,7 +444,8 @@ public class JcrPackageImpl implements JcrPackage {
                         def = (JcrPackageDefinitionImpl) p.getDefinition();
                     }
 
-                    // ensure that sub package is marked as not-installed. it might contain wrong data in vlt:definition (JCRVLT-114)
+                    // ensure that sub package is marked as not-installed. it might contain wrong data in vlt:definition
+                    // (JCRVLT-114)
                     def.clearLastUnpacked(false);
 
                     // add dependency to the parent package if required
@@ -458,7 +463,7 @@ public class JcrPackageImpl implements JcrPackage {
                     List<JcrPackage> listPackages = pkgMgr.listPackages(pId.getGroup(), true);
 
                     // loop in the list of packages returned previously by package manager
-                    for (JcrPackage listedPackage: listPackages) {
+                    for (JcrPackage listedPackage : listPackages) {
                         JcrPackageDefinition listedPackageDef = listedPackage.getDefinition();
                         if (listedPackageDef == null) {
                             continue;
@@ -467,10 +472,14 @@ public class JcrPackageImpl implements JcrPackage {
                         if (listedPackageId.equals(pId)) {
                             continue;
                         }
-                        // check that the listed package is actually from same name (so normally only version would differ)
-                        // if that package is valid, installed, and the version is more recent than the one in our sub package
+                        // check that the listed package is actually from same name (so normally only version would
+                        // differ)
+                        // if that package is valid, installed, and the version is more recent than the one in our sub
+                        // package
                         // then we can stop the loop here
-                        if (pName.equals(listedPackageId.getName()) && listedPackage.isValid() && listedPackage.isInstalled()
+                        if (pName.equals(listedPackageId.getName())
+                                && listedPackage.isValid()
+                                && listedPackage.isInstalled()
                                 && listedPackageId.getVersion().compareTo(pVersion) > 0) {
                             newerPackageIdPerSubPackage.put(pId, listedPackageId);
                             break;
@@ -492,7 +501,7 @@ public class JcrPackageImpl implements JcrPackage {
             }
             List<PackageId> subIds = new LinkedList<PackageId>();
             SubPackageHandling sb = pack.getSubPackageHandling();
-            for (JcrPackageImpl p: subPacks) {
+            for (JcrPackageImpl p : subPacks) {
                 boolean skip = false;
                 PackageId id = p.getDefinition().getId();
                 SubPackageHandling.Option option = sb.getOption(id);
@@ -501,16 +510,21 @@ public class JcrPackageImpl implements JcrPackage {
                 if (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.EXTRACT) {
                     PackageId newerPackageId = newerPackageIdPerSubPackage.get(id);
                     if (newerPackageId != null) {
-                        msg = String.format(Locale.ENGLISH, "Skipping installation of subpackage '%s' due to newer installed version: '%s'", id, newerPackageId);
+                        msg = String.format(
+                                Locale.ENGLISH,
+                                "Skipping installation of subpackage '%s' due to newer installed version: '%s'",
+                                id,
+                                newerPackageId);
                         skip = true;
                     }
                 }
-                
+
                 if (!skip) {
                     if (option == SubPackageHandling.Option.ADD || option == SubPackageHandling.Option.IGNORE) {
                         msg = "Skipping installation of subpackage " + id + " due to option " + option;
                         skip = true;
-                    } else if (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.FORCE_INSTALL) {
+                    } else if (option == SubPackageHandling.Option.INSTALL
+                            || option == SubPackageHandling.Option.FORCE_INSTALL) {
                         msg = "Starting installation of subpackage " + id;
                     } else {
                         msg = "Starting extraction of subpackage " + id;
@@ -525,7 +539,9 @@ public class JcrPackageImpl implements JcrPackage {
                     log.debug(msg);
                 }
                 if (!skip) {
-                    if (createSnapshot && (option == SubPackageHandling.Option.INSTALL || option == SubPackageHandling.Option.FORCE_INSTALL)) {
+                    if (createSnapshot
+                            && (option == SubPackageHandling.Option.INSTALL
+                                    || option == SubPackageHandling.Option.FORCE_INSTALL)) {
                         p.extract(options, true, true);
                         subIds.add(id);
                     } else {
@@ -584,31 +600,41 @@ public class JcrPackageImpl implements JcrPackage {
 
         // check if filter has root outside /etc/packages
         boolean hasOwnContent = false;
-        for (PathFilterSet root: a.getMetaInf().getFilter().getFilterSets()) {
+        for (PathFilterSet root : a.getMetaInf().getFilter().getFilterSets()) {
             // todo: find better way to detect subpackages
             if (!Text.isDescendantOrEqual(DEFAULT_PACKAGE_ROOT_PATH, root.getRoot())) {
-                log.debug("Package {}: contains content outside /etc/packages. Sub packages will have a dependency to it", pId);
+                log.debug(
+                        "Package {}: contains content outside /etc/packages. Sub packages will have a dependency to it",
+                        pId);
                 hasOwnContent = true;
                 break;
             }
         }
         // check if package has nodetype no installed in the repository
         if (!hasOwnContent) {
-            DefaultNamePathResolver npResolver = new DefaultNamePathResolver(getNode().getSession());
+            DefaultNamePathResolver npResolver =
+                    new DefaultNamePathResolver(getNode().getSession());
             NodeTypeManager ntMgr = getNode().getSession().getWorkspace().getNodeTypeManager();
-            loop0: for (NodeTypeSet cnd: a.getMetaInf().getNodeTypes()) {
-                for (Name name: cnd.getNodeTypes().keySet()) {
+            loop0:
+            for (NodeTypeSet cnd : a.getMetaInf().getNodeTypes()) {
+                for (Name name : cnd.getNodeTypes().keySet()) {
                     String jcrName;
                     try {
                         jcrName = npResolver.getJCRName(name);
                     } catch (NamespaceException e) {
                         // in case the uri is not registered. we also break here
-                        log.debug("Package {}: contains namespace not installed in the repository: {}. Sub packages will have a dependency to it", pId, name.getNamespaceURI());
+                        log.debug(
+                                "Package {}: contains namespace not installed in the repository: {}. Sub packages will have a dependency to it",
+                                pId,
+                                name.getNamespaceURI());
                         hasOwnContent = true;
                         break loop0;
                     }
                     if (!ntMgr.hasNodeType(jcrName)) {
-                        log.debug("Package {}: contains nodetype not installed in the repository: {}. Sub packages will have a dependency to it", pId, jcrName);
+                        log.debug(
+                                "Package {}: contains nodetype not installed in the repository: {}. Sub packages will have a dependency to it",
+                                pId,
+                                jcrName);
                         hasOwnContent = true;
                         break loop0;
                     }
@@ -617,7 +643,7 @@ public class JcrPackageImpl implements JcrPackage {
         }
 
         // process the discovered sub-packages
-        for (Archive.Entry e: entries) {
+        for (Archive.Entry e : entries) {
             VaultInputSource in = a.getInputSource(e);
             try (InputStream ins = in.getByteStream()) {
                 try {
@@ -639,9 +665,15 @@ public class JcrPackageImpl implements JcrPackage {
         }
     }
 
-    private PackageId extractSubpackage(@NotNull PackageId containerPackageId, @NotNull InputStream input, @NotNull ImportOptions opts, @NotNull Set<PackageId> processed, boolean hasOwnContent) throws RepositoryException, IOException, PackageException {
+    private PackageId extractSubpackage(
+            @NotNull PackageId containerPackageId,
+            @NotNull InputStream input,
+            @NotNull ImportOptions opts,
+            @NotNull Set<PackageId> processed,
+            boolean hasOwnContent)
+            throws RepositoryException, IOException, PackageException {
         JcrPackageImpl subPackage;
-        
+
         PackageId subPid = mgr.register(input, true);
         try (JcrRegisteredPackage subPkg = (JcrRegisteredPackage) mgr.open(subPid)) {
             if (subPkg == null) {
@@ -662,7 +694,7 @@ public class JcrPackageImpl implements JcrPackage {
                 // add parent dependencies to this package
                 Dependency[] oldDeps = subPackage.getDefinition().getDependencies();
                 Dependency[] newDeps = oldDeps;
-                for (Dependency d: getDefinition().getDependencies()) {
+                for (Dependency d : getDefinition().getDependencies()) {
                     newDeps = DependencyUtil.add(newDeps, d);
                 }
                 if (oldDeps != newDeps) {
@@ -680,7 +712,7 @@ public class JcrPackageImpl implements JcrPackage {
     }
 
     private void findSubPackageEntries(@NotNull List<Archive.Entry> entries, @NotNull Archive.Entry folder) {
-        for (Archive.Entry e: folder.getChildren()) {
+        for (Archive.Entry e : folder.getChildren()) {
             final String name = e.getName();
             if (e.isDirectory()) {
                 if (!".snapshot".equals(name)) {
@@ -705,7 +737,7 @@ public class JcrPackageImpl implements JcrPackage {
             return Dependency.EMPTY;
         }
         List<Dependency> unresolved = new LinkedList<Dependency>();
-        for (Dependency dep: def.getDependencies()) {
+        for (Dependency dep : def.getDependencies()) {
             try {
                 if (mgr.resolve(dep, true) == null) {
                     unresolved.add(dep);
@@ -730,7 +762,7 @@ public class JcrPackageImpl implements JcrPackage {
             return PackageId.EMPTY;
         }
         List<PackageId> resolved = new LinkedList<PackageId>();
-        for (Dependency dep: def.getDependencies()) {
+        for (Dependency dep : def.getDependencies()) {
             try {
                 PackageId id = mgr.resolve(dep, true);
                 if (id != null) {
@@ -750,7 +782,8 @@ public class JcrPackageImpl implements JcrPackage {
      * Checks if all the package dependencies are resolved
      * @param opts install options
      */
-    private void installDependencies(Set<PackageId> processed, ImportOptions opts, boolean createSnapshot, boolean replaceSnapshot)
+    private void installDependencies(
+            Set<PackageId> processed, ImportOptions opts, boolean createSnapshot, boolean replaceSnapshot)
             throws PackageException, RepositoryException, IOException {
         if (def == null) {
             return;
@@ -758,7 +791,7 @@ public class JcrPackageImpl implements JcrPackage {
         List<Dependency> unresolved = new LinkedList<>();
         List<RegisteredPackage> uninstalled = new LinkedList<>();
         try {
-            for (Dependency dep: def.getDependencies()) {
+            for (Dependency dep : def.getDependencies()) {
                 // resolve to installed and uninstalled packages
                 PackageId id = mgr.resolve(dep, false);
                 if (id == null) {
@@ -781,13 +814,18 @@ public class JcrPackageImpl implements JcrPackage {
             }
             // if the package is not installed at all, abort for required and strict handling
             if ((opts.getDependencyHandling() == DependencyHandling.STRICT && unresolved.size() > 0)
-                    || (opts.getDependencyHandling() == DependencyHandling.REQUIRED && unresolved.size() > uninstalled.size())) {
-                String msg = String.format(Locale.ENGLISH, "Refusing to install package %s: required dependencies missing: %s", def.getId(), unresolved);
+                    || (opts.getDependencyHandling() == DependencyHandling.REQUIRED
+                            && unresolved.size() > uninstalled.size())) {
+                String msg = String.format(
+                        Locale.ENGLISH,
+                        "Refusing to install package %s: required dependencies missing: %s",
+                        def.getId(),
+                        unresolved);
                 log.error(msg);
                 throw new DependencyException(msg);
             }
-    
-            for (RegisteredPackage pack: uninstalled) {
+
+            for (RegisteredPackage pack : uninstalled) {
                 if (pack.isInstalled()) {
                     continue;
                 }
@@ -796,21 +834,29 @@ public class JcrPackageImpl implements JcrPackage {
                     if (opts.getDependencyHandling() == DependencyHandling.BEST_EFFORT) {
                         continue;
                     }
-                    String msg = String.format(Locale.ENGLISH, "Unable to install package %s. dependency has as cycling reference to %s", def.getId(), packageId);
+                    String msg = String.format(
+                            Locale.ENGLISH,
+                            "Unable to install package %s. dependency has as cycling reference to %s",
+                            def.getId(),
+                            packageId);
                     log.error(msg);
                     throw new CyclicDependencyException(msg);
                 }
                 if (pack instanceof JcrRegisteredPackage) {
-                    JcrPackage jcrPackage = ((JcrRegisteredPackage)pack).getJcrPackage();
-                    ((JcrPackageImpl)jcrPackage).extract(processed, opts, createSnapshot, replaceSnapshot);
+                    JcrPackage jcrPackage = ((JcrRegisteredPackage) pack).getJcrPackage();
+                    ((JcrPackageImpl) jcrPackage).extract(processed, opts, createSnapshot, replaceSnapshot);
                 } else {
-                    String msg = String.format(Locale.ENGLISH, "Unable to install package %s. dependency not found in JcrPackageRegistry %s", def.getId(), packageId);
+                    String msg = String.format(
+                            Locale.ENGLISH,
+                            "Unable to install package %s. dependency not found in JcrPackageRegistry %s",
+                            def.getId(),
+                            packageId);
                     log.error(msg);
                     throw new DependencyException(msg);
                 }
             }
         } finally {
-            for (RegisteredPackage pack: uninstalled) {
+            for (RegisteredPackage pack : uninstalled) {
                 pack.close();
             }
         }
@@ -828,11 +874,15 @@ public class JcrPackageImpl implements JcrPackage {
         }
         PackageId[] usage = mgr.usage(getDefinition().getId());
         if (usage.length > 0 && opts.getDependencyHandling() == DependencyHandling.STRICT) {
-            String msg = String.format(Locale.ENGLISH, "Refusing to uninstall package %s. it is still used by: %s", def.getId(), Arrays.toString(usage));
+            String msg = String.format(
+                    Locale.ENGLISH,
+                    "Refusing to uninstall package %s. it is still used by: %s",
+                    def.getId(),
+                    Arrays.toString(usage));
             log.error(msg);
             throw new DependencyException(msg);
         }
-        for (PackageId id: usage) {
+        for (PackageId id : usage) {
             try (JcrRegisteredPackage pack = (JcrRegisteredPackage) mgr.open(id)) {
                 if (pack == null || !pack.isInstalled()) {
                     continue;
@@ -868,7 +918,8 @@ public class JcrPackageImpl implements JcrPackage {
      * @throws IOException if an error occurrs.
      */
     @Nullable
-    private JcrPackage snapshot(@NotNull ExportOptions opts, boolean replace, @Nullable AccessControlHandling acHandling)
+    private JcrPackage snapshot(
+            @NotNull ExportOptions opts, boolean replace, @Nullable AccessControlHandling acHandling)
             throws RepositoryException, PackageException, IOException {
         if (node == null) {
             return null;
@@ -890,13 +941,14 @@ public class JcrPackageImpl implements JcrPackage {
             log.info("Refusing to create snapshot {} due to empty filters", id);
             return null;
         }
-        for (PathFilterSet set: filter.getFilterSets()) {
-            if (("".equals(set.getRoot()) || "/".equals(set.getRoot())) && set.getEntries().isEmpty()) {
+        for (PathFilterSet set : filter.getFilterSets()) {
+            if (("".equals(set.getRoot()) || "/".equals(set.getRoot()))
+                    && set.getEntries().isEmpty()) {
                 log.info("Refusing to create snapshot {} due to / only filter", id);
                 return null;
             }
         }
-        
+
         log.debug("Creating snapshot for {}.", id);
         JcrPackageManagerImpl packMgr = new JcrPackageManagerImpl(mgr);
         String path = mgr.getInstallationPath(id);
@@ -907,20 +959,27 @@ public class JcrPackageImpl implements JcrPackage {
             JcrPackageDefinitionImpl snapDef = (JcrPackageDefinitionImpl) snap.getDefinition();
             snapDef.setId(id, false);
             snapDef.setFilter(filter, false);
-            snapDef.set(JcrPackageDefinition.PN_DESCRIPTION, "Snapshot of package " + myDef.getId().toString(), false);
+            snapDef.set(
+                    JcrPackageDefinition.PN_DESCRIPTION,
+                    "Snapshot of package " + myDef.getId().toString(),
+                    false);
             if (acHandling == null) {
                 snapDef.set(JcrPackageDefinition.PN_AC_HANDLING, myDef.get(JcrPackageDefinition.PN_AC_HANDLING), false);
             } else {
                 snapDef.set(JcrPackageDefinition.PN_AC_HANDLING, acHandling.name(), false);
             }
             if (opts.getListener() != null) {
-                opts.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, "Creating snapshot for package " + myDef.getId(), "");
+                opts.getListener()
+                        .onMessage(
+                                ProgressTrackerListener.Mode.TEXT,
+                                "Creating snapshot for package " + myDef.getId(),
+                                "");
             }
             packMgr.assemble(snap.getNode(), snapDef, opts.getListener());
             log.debug("Creating snapshot for {} completed.", id);
             mgr.dispatch(PackageEvent.Type.SNAPSHOT, id, null);
             return snap;
-        } catch (RepositoryException|PackageException|IOException e) {
+        } catch (RepositoryException | PackageException | IOException e) {
             snap.close();
             throw e;
         }
@@ -974,12 +1033,8 @@ public class JcrPackageImpl implements JcrPackage {
         } else {
             group += "/.snapshot";
         }
-        return new PackageId(
-                group,
-                id.getName(),
-                id.getVersion());
+        return new PackageId(group, id.getName(), id.getVersion());
     }
-
 
     /**
      * {@inheritDoc}
@@ -988,7 +1043,8 @@ public class JcrPackageImpl implements JcrPackage {
         uninstall(new HashSet<>(), opts);
     }
 
-    private void uninstall(Set<PackageId> processed, ImportOptions opts) throws RepositoryException, PackageException, IOException {
+    private void uninstall(Set<PackageId> processed, ImportOptions opts)
+            throws RepositoryException, PackageException, IOException {
         getDefinition();
         if (def != null) {
             processed.add(def.getId());
@@ -1006,9 +1062,15 @@ public class JcrPackageImpl implements JcrPackage {
             if (opts.isStrict(mgr.isStrictByDefault())) {
                 throw new PackageException("Unable to uninstall package. No snapshot present.");
             }
-            log.warn("Unable to revert package content {}. Snapshot missing.", getDefinition().getId());
+            log.warn(
+                    "Unable to revert package content {}. Snapshot missing.",
+                    getDefinition().getId());
             if (opts.getListener() != null) {
-                opts.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, "Unable to revert package content. Snapshot missing.", "");
+                opts.getListener()
+                        .onMessage(
+                                ProgressTrackerListener.Mode.TEXT,
+                                "Unable to revert package content. Snapshot missing.",
+                                "");
             }
 
         } else {
@@ -1030,7 +1092,12 @@ public class JcrPackageImpl implements JcrPackage {
             }
 
             if (opts.getListener() != null) {
-                opts.getListener().onMessage(ProgressTrackerListener.Mode.TEXT, "Uninstalling package from snapshot " + snap.getDefinition().getId(), "");
+                opts.getListener()
+                        .onMessage(
+                                ProgressTrackerListener.Mode.TEXT,
+                                "Uninstalling package from snapshot "
+                                        + snap.getDefinition().getId(),
+                                "");
             }
             // override import mode
             opts.setImportMode(ImportMode.REPLACE);
@@ -1053,7 +1120,6 @@ public class JcrPackageImpl implements JcrPackage {
         def.clearLastUnpacked(true);
 
         mgr.dispatch(PackageEvent.Type.UNINSTALL, def.getId(), null);
-
     }
 
     /**
@@ -1105,9 +1171,7 @@ public class JcrPackageImpl implements JcrPackage {
     @Nullable
     public Node getDefNode() throws RepositoryException {
         Node content = getContent();
-        return content != null && content.hasNode(NN_VLT_DEFINITION)
-                ? content.getNode(NN_VLT_DEFINITION)
-                : null;
+        return content != null && content.hasNode(NN_VLT_DEFINITION) ? content.getNode(NN_VLT_DEFINITION) : null;
     }
 
     /**

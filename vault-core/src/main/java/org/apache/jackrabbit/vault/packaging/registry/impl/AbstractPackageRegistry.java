@@ -1,20 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
+
+import javax.jcr.Session;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
-
-import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -70,8 +72,8 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
     /**
      * Archive root path for packages
      */
-    public final static String ARCHIVE_PACKAGE_ROOT_PATH = "/jcr_root" + DEFAULT_PACKAGE_ROOT_PATH;
-    
+    public static final String ARCHIVE_PACKAGE_ROOT_PATH = "/jcr_root" + DEFAULT_PACKAGE_ROOT_PATH;
+
     /**
      * default root path prefix for packages
      */
@@ -80,7 +82,7 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
     protected @NotNull SecurityConfig securityConfig;
 
     /** whether package imports should be strict by default (can be overwritten by {@link ImportOptions#setStrict(boolean)})
-     * 
+     *
      */
     private final boolean isStrictByDefault;
 
@@ -88,8 +90,11 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
 
     private final IdConflictPolicy defaultIdConflictPolicy;
 
-    public AbstractPackageRegistry(SecurityConfig securityConfig, boolean isStrictByDefault,
-            boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy defaultIdConflictPolicy) {
+    public AbstractPackageRegistry(
+            SecurityConfig securityConfig,
+            boolean isStrictByDefault,
+            boolean overwritePrimaryTypesOfFoldersByDefault,
+            IdConflictPolicy defaultIdConflictPolicy) {
         if (securityConfig != null) {
             this.securityConfig = securityConfig;
         } else {
@@ -173,7 +178,8 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
      */
     @NotNull
     @Override
-    public DependencyReport analyzeDependencies(@NotNull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException {
+    public DependencyReport analyzeDependencies(@NotNull PackageId id, boolean onlyInstalled)
+            throws IOException, NoSuchPackageException {
         List<Dependency> unresolved = new LinkedList<Dependency>();
         List<PackageId> resolved = new LinkedList<PackageId>();
         try (RegisteredPackage pkg = open(id)) {
@@ -191,9 +197,10 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
             }
         }
 
-        return new DependencyReportImpl(id, unresolved.toArray(new Dependency[unresolved.size()]),
-                resolved.toArray(new PackageId[resolved.size()])
-        );
+        return new DependencyReportImpl(
+                id,
+                unresolved.toArray(new Dependency[unresolved.size()]),
+                resolved.toArray(new PackageId[resolved.size()]));
     }
 
     /**
@@ -259,7 +266,7 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
 
     /**
      * Creates a random package id for packages that lack one.
-     * 
+     *
      * @return a random package id.
      */
     protected static PackageId createRandomPid() {
@@ -269,6 +276,4 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
     public @NotNull SecurityConfig getSecurityConfig() {
         return securityConfig;
     }
-
-
 }

@@ -1,21 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
+
+import javax.jcr.RepositoryException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,8 +28,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
-
-import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -87,28 +88,28 @@ public class PlatformExporter extends AbstractExporter {
         if (pruneMissing) {
             // first, remove all empty directories
             exportInfo.getEntries().values().stream()
-                .filter(e -> e.type == ExportInfo.Type.RMDIR)
-                .map(e -> e.path)
-                .sorted(Comparator.comparingInt(String::length))
-                .forEachOrdered(path -> {
-                    File file = new File(path);
-                    if (file.exists()) {
-                        FileUtils.deleteQuietly(file);
-                        track("D", PathUtil.getRelativePath(localParent.getAbsolutePath(), path));
-                    }
-                });
+                    .filter(e -> e.type == ExportInfo.Type.RMDIR)
+                    .map(e -> e.path)
+                    .sorted(Comparator.comparingInt(String::length))
+                    .forEachOrdered(path -> {
+                        File file = new File(path);
+                        if (file.exists()) {
+                            FileUtils.deleteQuietly(file);
+                            track("D", PathUtil.getRelativePath(localParent.getAbsolutePath(), path));
+                        }
+                    });
 
             // then remove files, which are still there
             exportInfo.getEntries().values().stream()
-                .filter(e -> e.type == ExportInfo.Type.DELETE)
-                .map(e -> e.path)
-                .forEach(path -> {
-                    File file = new File(path);
-                    if (file.exists()) {
-                        FileUtils.deleteQuietly(file);
-                        track("D", PathUtil.getRelativePath(localParent.getAbsolutePath(), path));
-                    }
-                });
+                    .filter(e -> e.type == ExportInfo.Type.DELETE)
+                    .map(e -> e.path)
+                    .forEach(path -> {
+                        File file = new File(path);
+                        if (file.exists()) {
+                            FileUtils.deleteQuietly(file);
+                            track("D", PathUtil.getRelativePath(localParent.getAbsolutePath(), path));
+                        }
+                    });
         }
     }
 
@@ -117,7 +118,7 @@ public class PlatformExporter extends AbstractExporter {
         if (files == null) {
             return;
         }
-        for (File file: files) {
+        for (File file : files) {
             String name = file.getName();
             if (".svn".equals(name) || ".vlt".equals(name)) {
                 continue;
@@ -131,8 +132,7 @@ public class PlatformExporter extends AbstractExporter {
         }
     }
 
-    public void createDirectory(VaultFile file, String relPath)
-            throws RepositoryException, IOException {
+    public void createDirectory(VaultFile file, String relPath) throws RepositoryException, IOException {
         File dir = new File(localParent, getPlatformFilePath(file, relPath));
         mkdirs(dir);
         exportInfo.update(ExportInfo.Type.MKDIR, dir.getPath());
@@ -144,8 +144,7 @@ public class PlatformExporter extends AbstractExporter {
         exportInfo.update(ExportInfo.Type.MKDIR, dir.getPath());
     }
 
-    public void writeFile(VaultFile file, String relPath)
-            throws RepositoryException, IOException {
+    public void writeFile(VaultFile file, String relPath) throws RepositoryException, IOException {
         File local = new File(localParent, getPlatformFilePath(file, relPath));
         if (!local.getParentFile().exists()) {
             mkdirs(local.getParentFile());
@@ -170,7 +169,7 @@ public class PlatformExporter extends AbstractExporter {
 
             case STREAM:
                 try (InputStream in = a.getInputStream();
-                    OutputStream out = new FileOutputStream(local)) {
+                        OutputStream out = new FileOutputStream(local)) {
                     IOUtils.copy(in, out);
                 }
                 break;
@@ -205,5 +204,4 @@ public class PlatformExporter extends AbstractExporter {
             track("A", PathUtil.getRelativeFilePath(localParent.getAbsolutePath(), dir.getAbsolutePath()));
         }
     }
-
 }

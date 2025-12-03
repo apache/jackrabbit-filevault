@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.fs.api;
 
@@ -57,7 +59,7 @@ public class PathMappingTest {
         assertEquals("/dest/2/test", map.map("/source/tree/b/test"));
         assertEquals("/dest/foo/1/test", map.map("/source/foo/a/test"));
         assertEquals("/test/flop", map.map("/source/foo/a/top/flop"));
-   }
+    }
 
     @Test
     public void testMultiReverse() {
@@ -75,7 +77,6 @@ public class PathMappingTest {
         assertEquals("/source/tree/a/a/b/c/d", map.map("/dest/1/a/b/c/d", true));
         assertEquals("/source/foo/a/test", map.map("/dest/foo/1/test", true));
         assertEquals("/dest/foo/1/top/flop", map.map("/test/flop", true));
-
     }
 
     @Test
@@ -91,5 +92,4 @@ public class PathMappingTest {
 
         assertEquals("/dummy/my/fake/data/custom", pathMapping.map("/etc/my/fake/data"));
     }
-
 }

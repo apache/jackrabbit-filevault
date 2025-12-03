@@ -1,21 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl.io;
+
+import javax.jcr.ImportUUIDBehavior;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
+import javax.jcr.ValueFactory;
+import javax.jcr.nodetype.NodeType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,12 +33,6 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import javax.jcr.ImportUUIDBehavior;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
-import javax.jcr.ValueFactory;
-import javax.jcr.nodetype.NodeType;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
@@ -53,7 +55,7 @@ import org.xml.sax.InputSource;
  * {@link SerializationType#GENERIC} artifacts.
  *
  */
-public class FileArtifactHandler extends AbstractArtifactHandler  {
+public class FileArtifactHandler extends AbstractArtifactHandler {
 
     /**
      * The node type for xml deserialization
@@ -114,13 +116,18 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
      * Handles generic artifact sets
      */
     @Override
-    public ImportInfoImpl accept(@NotNull ImportOptions options, boolean isStrictByDefault, WorkspaceFilter wspFilter, Node parent,
-                                String name, ArtifactSetImpl artifacts)
+    public ImportInfoImpl accept(
+            @NotNull ImportOptions options,
+            boolean isStrictByDefault,
+            WorkspaceFilter wspFilter,
+            Node parent,
+            String name,
+            ArtifactSetImpl artifacts)
             throws RepositoryException, IOException {
         // check if any file artifacts was removed
         ImportInfoImpl info = null;
         Collection<Artifact> removed = artifacts.removed();
-        for (Artifact a: removed) {
+        for (Artifact a : removed) {
             if (a.getType() == ArtifactType.FILE) {
                 if (parent.hasNode(a.getRelativePath())) {
                     Node file = parent.getNode(a.getRelativePath());
@@ -154,7 +161,8 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     mode = wspFilter.getImportMode(path);
                 }
                 // only update if not MERGE (i.e. is REPLACE or UPDATE)
-                // this is for maintaining backwards-compatibility the rest of the import modes are evaluated in DocViewSAXImporter
+                // this is for maintaining backwards-compatibility the rest of the import modes are evaluated in
+                // DocViewSAXImporter
                 if (mode != ImportMode.MERGE) {
                     InputSource source = primary.getInputSource();
                     if (source != null) {
@@ -165,7 +173,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                 }
             }
             // handle files
-            for (Artifact file: artifacts.values(ArtifactType.FILE)) {
+            for (Artifact file : artifacts.values(ArtifactType.FILE)) {
                 if (info == null) {
                     info = new ImportInfoImpl();
                 }
@@ -215,7 +223,9 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                         if (parent.hasNode(relPath)) {
                             newParent = parent.getNode(relPath);
                         } else {
-                            throw new IllegalArgumentException("Special docview file can't be imported. parent does not exist: " + parent.getPath() + "/" + relPath);
+                            throw new IllegalArgumentException(
+                                    "Special docview file can't be imported. parent does not exist: " + parent.getPath()
+                                            + "/" + relPath);
                         }
                     }
                     ArtifactSetImpl newSet = new ArtifactSetImpl();
@@ -228,16 +238,23 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                         mode = wspFilter.getImportMode(path);
                     }
                     if (mode != ImportMode.MERGE) {
-                        info.merge(importDocView(file.getInputSource(), newParent, newName, newSet, wspFilter, options.getIdConflictPolicy()));
+                        info.merge(importDocView(
+                                file.getInputSource(),
+                                newParent,
+                                newName,
+                                newSet,
+                                wspFilter,
+                                options.getIdConflictPolicy()));
                     } else {
                         info.onNop(path);
                     }
                 } else {
-                    throw new IllegalArgumentException("Files of type " + file.getSerializationType() + " can't be handled by this handler " + this);
+                    throw new IllegalArgumentException("Files of type " + file.getSerializationType()
+                            + " can't be handled by this handler " + this);
                 }
             }
             ValueFactory factory = parent.getSession().getValueFactory();
-            for (Artifact binary: artifacts.values(ArtifactType.BINARY)) {
+            for (Artifact binary : artifacts.values(ArtifactType.BINARY)) {
                 // get parent node
                 Node parentNode = parent;
                 String path = binary.getRelativePath();
@@ -292,14 +309,16 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
             fileNode = parent.getNode(name);
             if (!fileNode.isNodeType(JcrConstants.NT_FILE)) {
                 parent.getSession().refresh(false);
-                throw new IOException("Incompatible content. Expected a nt:file but was " + fileNode.getPrimaryNodeType().getName());
+                throw new IOException("Incompatible content. Expected a nt:file but was "
+                        + fileNode.getPrimaryNodeType().getName());
             }
             contentNode = fileNode.getNode(JcrConstants.JCR_CONTENT);
             info.onNop(fileNode.getPath());
         } else {
             fileNode = parent.addNode(name, JcrConstants.NT_FILE);
-            String contentNodeType = primary.getSerializationType() == SerializationType.XML_GENERIC
-                    && isExplodeXml() ? getXmlNodeType() : JcrConstants.NT_RESOURCE;
+            String contentNodeType = primary.getSerializationType() == SerializationType.XML_GENERIC && isExplodeXml()
+                    ? getXmlNodeType()
+                    : JcrConstants.NT_RESOURCE;
             contentNode = fileNode.addNode(JcrConstants.JCR_CONTENT, contentNodeType);
             info.onCreated(fileNode.getPath());
             info.onCreated(contentNode.getPath());
@@ -307,8 +326,12 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
         importNtResource(info, contentNode, primary);
     }
 
-    private ImportInfoImpl importDocView(Node parent, InputSource source,
-                                     ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, ImportOptions options)
+    private ImportInfoImpl importDocView(
+            Node parent,
+            InputSource source,
+            ArtifactSetImpl artifacts,
+            WorkspaceFilter wspFilter,
+            ImportOptions options)
             throws RepositoryException, IOException {
         String rootName = artifacts.getPrimaryData().getRelativePath();
         int idx = rootName.indexOf('/');
@@ -370,5 +393,4 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
         }
         return modified;
     }
-
 }

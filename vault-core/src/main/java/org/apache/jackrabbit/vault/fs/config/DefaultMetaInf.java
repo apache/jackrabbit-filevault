@@ -1,21 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.config;
+
+import javax.jcr.NamespaceException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,13 +33,12 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.jcr.NamespaceException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.jackrabbit.spi.commons.privilege.ParseException;
 import org.apache.jackrabbit.spi.commons.privilege.PrivilegeDefinitionReader;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.spi.CNDReader;
@@ -46,7 +48,6 @@ import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.impl.PackagePropertiesImpl;
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -82,9 +83,7 @@ public class DefaultMetaInf implements MetaInf {
      * @since 2.0
      */
     public int getPackageFormatVersion() {
-        String prop = properties == null
-                ? null
-                : properties.getProperty(PACKAGE_FORMAT_VERSION);
+        String prop = properties == null ? null : properties.getProperty(PACKAGE_FORMAT_VERSION);
         if (prop != null) {
             try {
                 return Integer.parseInt(prop);
@@ -98,7 +97,7 @@ public class DefaultMetaInf implements MetaInf {
     /**
      * Loads a setting based on the name of the system id.
      * <p>The specified stream remains open after this method returns.
-     * 
+     *
      * @param systemId the system id of the setting to load
      * @param in the input stream
      * @return {@code true} if the setting was loaded.
@@ -150,9 +149,9 @@ public class DefaultMetaInf implements MetaInf {
     }
 
     /**
-     * 
+     *
      * <p>The specified stream remains open after this method returns.
-     * 
+     *
      * @param in
      * @param systemId
      * @throws ConfigurationException
@@ -194,8 +193,7 @@ public class DefaultMetaInf implements MetaInf {
      * @param systemId
      * @throws IOException
      */
-    public void loadProperties(@NotNull InputStream in, @NotNull String systemId)
-            throws IOException {
+    public void loadProperties(@NotNull InputStream in, @NotNull String systemId) throws IOException {
         Properties props = new Properties();
         // prevent the input stream from being closed for achieving a consistent behaviour
         props.loadFromXML(new CloseShieldInputStream(in));
@@ -209,12 +207,11 @@ public class DefaultMetaInf implements MetaInf {
      * @param systemId
      * @throws IOException
      */
-    public void loadPrivileges(@NotNull InputStream in, @NotNull String systemId)
-            throws IOException {
+    public void loadPrivileges(@NotNull InputStream in, @NotNull String systemId) throws IOException {
         try {
             PrivilegeDefinitionReader reader = new PrivilegeDefinitionReader(in, "text/xml");
             Collections.addAll(privileges.getDefinitions(), reader.getPrivilegeDefinitions());
-            for (Map.Entry<String, String> e: reader.getNamespaces().entrySet()) {
+            for (Map.Entry<String, String> e : reader.getNamespaces().entrySet()) {
                 privileges.getNamespaceMapping().setMapping(e.getKey(), e.getValue());
             }
         } catch (ParseException | NamespaceException e) {
@@ -315,8 +312,7 @@ public class DefaultMetaInf implements MetaInf {
         this.hasDefinition = hasDefinition;
     }
 
-    protected void loadSettings(@NotNull File metaDir)
-            throws ConfigurationException, IOException {
+    protected void loadSettings(@NotNull File metaDir) throws ConfigurationException, IOException {
         File file = new File(metaDir, Constants.SETTINGS_XML);
         if (file.isFile()) {
             VaultSettings settings = new VaultSettings();
@@ -334,16 +330,14 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void loadConfig(@NotNull File metaDir)
-            throws ConfigurationException, IOException {
+    protected void loadConfig(@NotNull File metaDir) throws ConfigurationException, IOException {
         File file = new File(metaDir, Constants.CONFIG_XML);
         if (file.isFile()) {
             this.config = AbstractVaultFsConfig.load(file);
         }
     }
 
-    protected void saveConfig(@NotNull File metaDir)
-            throws IOException {
+    protected void saveConfig(@NotNull File metaDir) throws IOException {
         if (config != null) {
             File file = new File(metaDir, Constants.CONFIG_XML);
             try (OutputStream output = FileUtils.openOutputStream(file)) {
@@ -352,8 +346,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void loadFilter(@NotNull File metaDir, boolean vltMode)
-            throws ConfigurationException, IOException {
+    protected void loadFilter(@NotNull File metaDir, boolean vltMode) throws ConfigurationException, IOException {
         File file = new File(metaDir, Constants.FILTER_XML);
         if (vltMode) {
             File altFile = new File(metaDir, Constants.FILTER_VLT_XML);
@@ -369,8 +362,7 @@ public class DefaultMetaInf implements MetaInf {
         }
     }
 
-    protected void saveFilter(@NotNull File metaDir)
-            throws IOException {
+    protected void saveFilter(@NotNull File metaDir) throws IOException {
         if (filter != null) {
             File file = new File(metaDir, Constants.FILTER_XML);
             try (OutputStream output = FileUtils.openOutputStream(file)) {
@@ -413,9 +405,9 @@ public class DefaultMetaInf implements MetaInf {
         if (files == null) {
             return;
         }
-        for (File file: files) {
+        for (File file : files) {
             if (file.getName().endsWith(".cnd")) {
-                try(Reader r = new InputStreamReader(new FileInputStream(file), "utf8")) {
+                try (Reader r = new InputStreamReader(new FileInputStream(file), "utf8")) {
                     CNDReader reader = ServiceProviderFactory.getProvider().getCNDReader();
                     reader.read(r, file.getName(), null);
                     cnds.add(reader);
@@ -430,12 +422,11 @@ public class DefaultMetaInf implements MetaInf {
     @Override
     public PackageProperties getPackageProperties() {
         return new PackagePropertiesImpl() {
-            
+
             @Override
             protected Properties getPropertiesMap() {
                 return getProperties();
             }
         };
     }
-
 }

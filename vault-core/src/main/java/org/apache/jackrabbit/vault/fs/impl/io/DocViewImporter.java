@@ -1,40 +1,22 @@
-/*************************************************************************
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ************************************************************************/
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.jackrabbit.vault.fs.impl.io;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Duration;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Item;
@@ -61,6 +43,26 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.version.VersionException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
@@ -107,7 +109,8 @@ import org.xml.sax.helpers.AttributesImpl;
 public class DocViewImporter implements DocViewParserHandler {
 
     public static final String ATTRIBUTE_TYPE_CDATA = "CDATA";
-    private static final Name NAME_REP_CUG_POLICY = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "cugPolicy");
+    private static final Name NAME_REP_CUG_POLICY =
+            NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "cugPolicy");
     private static final Name NAME_REP_MEMBERS = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "members");
 
     private static final String NAMESPACE_OAK = "http://jackrabbit.apache.org/oak/ns/1.0";
@@ -142,7 +145,6 @@ public class DocViewImporter implements DocViewParserHandler {
         PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES = Collections.unmodifiableSet(props);
     }
 
-
     /**
      * the importing session
      */
@@ -167,8 +169,7 @@ public class DocViewImporter implements DocViewParserHandler {
     /**
      * a map of binaries (attachments)
      */
-    private Map<String, Map<String, BlobInfo>> binaries
-            = new HashMap<>();
+    private Map<String, Map<String, BlobInfo>> binaries = new HashMap<>();
 
     /**
      * map of hint nodes in the same artifact set
@@ -236,13 +237,25 @@ public class DocViewImporter implements DocViewParserHandler {
      * @param wspFilter    workspace filter
      * @throws RepositoryException if an error occurs.
      */
-    public DocViewImporter(Node parentNode, String rootNodeName,
-                              ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws RepositoryException {
+    public DocViewImporter(
+            Node parentNode,
+            String rootNodeName,
+            ArtifactSetImpl artifacts,
+            WorkspaceFilter wspFilter,
+            IdConflictPolicy idConflictPolicy)
+            throws RepositoryException {
         this(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, AccessControlHandling.IGNORE, null);
     }
 
-    public DocViewImporter(Node parentNode, String rootNodeName,
-            ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy, AccessControlHandling aclHandling, AccessControlHandling cugHandling) throws RepositoryException {
+    public DocViewImporter(
+            Node parentNode,
+            String rootNodeName,
+            ArtifactSetImpl artifacts,
+            WorkspaceFilter wspFilter,
+            IdConflictPolicy idConflictPolicy,
+            AccessControlHandling aclHandling,
+            AccessControlHandling cugHandling)
+            throws RepositoryException {
         this.filter = artifacts.getCoverage();
         this.wspFilter = wspFilter;
         this.rootDepth = parentNode.getDepth() + 1;
@@ -253,9 +266,10 @@ public class DocViewImporter implements DocViewParserHandler {
         this.idConflictPolicy = idConflictPolicy;
         this.aclHandling = aclHandling;
         this.cugHandling = cugHandling;
-        this.isSnsSupported = session.getRepository().
-                getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED).getBoolean();
-    
+        this.isSnsSupported = session.getRepository()
+                .getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED)
+                .getBoolean();
+
         String rootPath = parentNode.getPath();
         if (!rootPath.equals("/")) {
             rootPath += "/";
@@ -271,7 +285,7 @@ public class DocViewImporter implements DocViewParserHandler {
         for (Artifact a : artifacts.values(ArtifactType.HINT)) {
             hints.add(rootPath + a.getRelativePath());
         }
-        
+
         stack = new StackElement(parentNode, parentNode.isNew());
         npResolver = new DefaultNamePathResolver(parentNode.getSession());
     }
@@ -284,7 +298,8 @@ public class DocViewImporter implements DocViewParserHandler {
      */
     @Override
     public void startPrefixMapping(String prefix, String uri) {
-        // for backwards compatibility unknown namespaces in the repository need to be registered because some API can only deal with qualified/prefixed names
+        // for backwards compatibility unknown namespaces in the repository need to be registered because some API can
+        // only deal with qualified/prefixed names
         log.trace("-> prefixMapping for {}:{}", prefix, uri);
         DocViewSAXHandler.Namespace ns = new DocViewSAXHandler.Namespace(prefix, uri);
         // push on stack
@@ -355,7 +370,13 @@ public class DocViewImporter implements DocViewParserHandler {
     }
 
     @Override
-    public void startDocViewNode(@NotNull String nodePath, @NotNull DocViewNode2 docViewNode, @NotNull Optional<DocViewNode2> parentDocViewNode, int line, int column) throws IOException, RepositoryException {
+    public void startDocViewNode(
+            @NotNull String nodePath,
+            @NotNull DocViewNode2 docViewNode,
+            @NotNull Optional<DocViewNode2> parentDocViewNode,
+            int line,
+            int column)
+            throws IOException, RepositoryException {
         stack.addName(docViewNode.getSnsAwareName());
         Node node = stack.getNode();
         if (node == null) {
@@ -373,19 +394,30 @@ public class DocViewImporter implements DocViewParserHandler {
                 stack = stack.push();
                 return;
             } else if (docViewNode.getIndex() > 1 && !isSnsSupported) {
-                //skip SNS nodes with index > 1
-                log.warn("Skipping unsupported SNS node with index > 1. Some content will be missing after import: {}", nodePath);
+                // skip SNS nodes with index > 1
+                log.warn(
+                        "Skipping unsupported SNS node with index > 1. Some content will be missing after import: {}",
+                        nodePath);
                 stack = stack.push();
                 return;
             }
             try {
                 // is policy node?
-                if (docViewNode.getPrimaryType().filter(aclManagement::isACLNodeType).isPresent()) {
+                if (docViewNode
+                        .getPrimaryType()
+                        .filter(aclManagement::isACLNodeType)
+                        .isPresent()) {
                     AccessControlHandling acHandling = getAcHandling(docViewNode.getName());
                     if (acHandling != AccessControlHandling.CLEAR && acHandling != AccessControlHandling.IGNORE) {
-                        log.trace("Access control policy element detected. starting special transformation {}/{}", node.getPath(), docViewNode.getName());
-                        if (aclManagement.ensureAccessControllable(node, npResolver.getJCRName(docViewNode.getName()))) {
-                            log.debug("Adding access control policy element to non access-controllable parent - adding mixin: {}", node.getPath());
+                        log.trace(
+                                "Access control policy element detected. starting special transformation {}/{}",
+                                node.getPath(),
+                                docViewNode.getName());
+                        if (aclManagement.ensureAccessControllable(
+                                node, npResolver.getJCRName(docViewNode.getName()))) {
+                            log.debug(
+                                    "Adding access control policy element to non access-controllable parent - adding mixin: {}",
+                                    node.getPath());
                         }
                         stack = stack.push();
                         if (NameConstants.REP_REPO_POLICY.equals(docViewNode.getName())) {
@@ -396,14 +428,18 @@ public class DocViewImporter implements DocViewParserHandler {
                                 log.debug("ignoring invalid location for repository level ACL: {}", node.getPath());
                             }
                         } else {
-                            
+
                             stack.adapter = new JackrabbitACLImporter(node, acHandling);
                             stack.adapter.startNode(docViewNode);
                         }
                     } else {
                         stack = stack.push();
                     }
-                } else if (userManagement != null && docViewNode.getPrimaryType().filter(userManagement::isAuthorizableNodeType).isPresent()) {
+                } else if (userManagement != null
+                        && docViewNode
+                                .getPrimaryType()
+                                .filter(userManagement::isAuthorizableNodeType)
+                                .isPresent()) {
                     // is authorizable node?
                     handleAuthorizable(node, docViewNode);
                 } else {
@@ -411,9 +447,15 @@ public class DocViewImporter implements DocViewParserHandler {
                     stack = stack.push(addNode(docViewNode));
                 }
             } catch (RepositoryException | IOException e) {
-                if (e instanceof ConstraintViolationException && wspFilter.getImportMode(nodePath) != ImportMode.REPLACE) {
-                    // only warn in case of constraint violations for mode != replace (as best effort is used in that case)
-                    log.warn("Error during processing of {}: {}, skip node due to import mode {}", nodePath, e.toString(), wspFilter.getImportMode(nodePath));
+                if (e instanceof ConstraintViolationException
+                        && wspFilter.getImportMode(nodePath) != ImportMode.REPLACE) {
+                    // only warn in case of constraint violations for mode != replace (as best effort is used in that
+                    // case)
+                    log.warn(
+                            "Error during processing of {}: {}, skip node due to import mode {}",
+                            nodePath,
+                            e.toString(),
+                            wspFilter.getImportMode(nodePath));
                     importInfo.onNop(nodePath);
                 } else {
                     log.error("Error during processing of {}: {}", nodePath, e.toString());
@@ -424,9 +466,14 @@ public class DocViewImporter implements DocViewParserHandler {
         }
     }
 
-
     @Override
-    public void endDocViewNode(@NotNull String nodePath, @NotNull DocViewNode2 docViewNode, @NotNull Optional<DocViewNode2> parentDocViewNode, int line, int column) throws IOException, RepositoryException {
+    public void endDocViewNode(
+            @NotNull String nodePath,
+            @NotNull DocViewNode2 docViewNode,
+            @NotNull Optional<DocViewNode2> parentDocViewNode,
+            int line,
+            int column)
+            throws IOException, RepositoryException {
         // currentNode's import is finished, check if any child nodes
         // need to be removed
         NodeNameList childNames = stack.getChildNames();
@@ -474,23 +521,35 @@ public class DocViewImporter implements DocViewParserHandler {
                             if (childDefinition.isProtected()) {
                                 log.warn("Refuse to delete protected child node: {}", path);
                                 shouldRemoveChild = false;
-                                // check if child is mandatory (and not residual, https://s.apache.org/jcr-2.0-spec/2.0/3_Repository_Model.html#3.7.2.4%20Mandatory)
-                            } else if (childDefinition.isMandatory() && !childDefinition.getName().equals("*")) {
+                                // check if child is mandatory (and not residual,
+                                // https://s.apache.org/jcr-2.0-spec/2.0/3_Repository_Model.html#3.7.2.4%20Mandatory)
+                            } else if (childDefinition.isMandatory()
+                                    && !childDefinition.getName().equals("*")) {
                                 // get relevant child node definition from parent's effective node type
                                 if (entParent == null) {
                                     entParent = EffectiveNodeType.ofNode(node);
                                 }
-                                Optional<NodeDefinition> childNodeDefinition = entParent.getApplicableChildNodeDefinition(child.getName(), child.getPrimaryNodeType());
+                                Optional<NodeDefinition> childNodeDefinition =
+                                        entParent.getApplicableChildNodeDefinition(
+                                                child.getName(), child.getPrimaryNodeType());
                                 if (!childNodeDefinition.isPresent()) {
-                                    // this should never happen as then child.getDefinition().isMandatory() would have returned false in the first place...
-                                    throw new IllegalStateException("Could not find applicable child node definition for mandatory child node " + child.getPath());
+                                    // this should never happen as then child.getDefinition().isMandatory() would have
+                                    // returned false in the first place...
+                                    throw new IllegalStateException(
+                                            "Could not find applicable child node definition for mandatory child node "
+                                                    + child.getPath());
                                 } else {
-                                    if (!hasSiblingWithPrimaryTypesAndName(child, childNodeDefinition.get().getRequiredPrimaryTypes(), childNodeDefinition.get().getName())) {
-                                        log.warn("Refuse to delete mandatory non-residual child node: {} with no other matching siblings", path);
+                                    if (!hasSiblingWithPrimaryTypesAndName(
+                                            child,
+                                            childNodeDefinition.get().getRequiredPrimaryTypes(),
+                                            childNodeDefinition.get().getName())) {
+                                        log.warn(
+                                                "Refuse to delete mandatory non-residual child node: {} with no other matching siblings",
+                                                path);
                                         shouldRemoveChild = false;
                                     }
                                 }
-                            } 
+                            }
 
                             if (shouldRemoveChild) {
                                 stashPrincipalAcls(child);
@@ -525,7 +584,8 @@ public class DocViewImporter implements DocViewParserHandler {
         }
     }
 
-    private boolean hasSiblingWithPrimaryTypesAndName(Node node, NodeType[] requiredPrimaryNodeTypes, String requiredName) throws RepositoryException {
+    private boolean hasSiblingWithPrimaryTypesAndName(
+            Node node, NodeType[] requiredPrimaryNodeTypes, String requiredName) throws RepositoryException {
         NodeIterator iter = node.getParent().getNodes();
         while (iter.hasNext()) {
             Node sibling = iter.nextNode();
@@ -546,14 +606,14 @@ public class DocViewImporter implements DocViewParserHandler {
 
     /**
      * {@inheritDoc}
-     * @throws RepositoryException 
-     * @throws IOException 
-     * @throws ConstraintViolationException 
-     * @throws VersionException 
-     * @throws LockException 
-     * @throws NoSuchNodeTypeException 
-     * @throws PathNotFoundException 
-     * @throws ItemExistsException 
+     * @throws RepositoryException
+     * @throws IOException
+     * @throws ConstraintViolationException
+     * @throws VersionException
+     * @throws LockException
+     * @throws NoSuchNodeTypeException
+     * @throws PathNotFoundException
+     * @throws ItemExistsException
      */
     @Override
     public void endDocument() throws RepositoryException, IOException {
@@ -606,8 +666,7 @@ public class DocViewImporter implements DocViewParserHandler {
         }
     }
 
-    private void registerBinary(Artifact a, String rootPath)
-            throws RepositoryException {
+    private void registerBinary(Artifact a, String rootPath) throws RepositoryException {
         String path = rootPath + a.getRelativePath();
         final int idx;
         int pos = path.indexOf('[', path.lastIndexOf('/'));
@@ -619,7 +678,8 @@ public class DocViewImporter implements DocViewParserHandler {
         }
         if (a.getType() == ArtifactType.FILE && a instanceof PropertyValueArtifact) {
             // hack, mark "file" properties just as present
-            String parentPath = ((PropertyValueArtifact) a).getProperty().getParent().getPath();
+            String parentPath =
+                    ((PropertyValueArtifact) a).getProperty().getParent().getPath();
             preserveProperties.add(parentPath + "/" + JcrConstants.JCR_DATA);
             preserveProperties.add(parentPath + "/" + JcrConstants.JCR_LASTMODIFIED);
         } else {
@@ -630,7 +690,7 @@ public class DocViewImporter implements DocViewParserHandler {
             preserveProperties.add(path + "/jcr:content/jcr:mimeType");
             String parentPath = Text.getRelativeParent(path, 1);
             String name = Text.getName(path);
-            Map<String, BlobInfo> infoSet = binaries.computeIfAbsent(parentPath, (p) ->  new HashMap<>());
+            Map<String, BlobInfo> infoSet = binaries.computeIfAbsent(parentPath, (p) -> new HashMap<>());
             BlobInfo info = infoSet.computeIfAbsent(name, (n) -> new BlobInfo(idx >= 0));
             if (idx >= 0) {
                 info.add(idx, a);
@@ -736,14 +796,13 @@ public class DocViewImporter implements DocViewParserHandler {
         }
     }
 
-
     /**
      * Handle an authorizable node
      *
      * @param node the parent node
      * @param docViewNode   doc view node of the authorizable
      * @throws RepositoryException if an error accessing the repository occurrs.
-     * @throws IOException 
+     * @throws IOException
      * @throws SAXException        if an XML parsing error occurrs.
      */
     private void handleAuthorizable(Node node, DocViewNode2 docViewNode) throws RepositoryException, IOException {
@@ -752,9 +811,9 @@ public class DocViewImporter implements DocViewParserHandler {
         boolean isIncluded = wspFilter.contains(newPath);
         String oldPath = userManagement.getAuthorizablePath(this.session, id);
         // what to do with policies inside the authorizable node subtree?
-        boolean keepAcPolicies = aclHandling == AccessControlHandling.IGNORE || 
-                aclHandling == AccessControlHandling.MERGE || 
-                aclHandling == AccessControlHandling.MERGE_PRESERVE;
+        boolean keepAcPolicies = aclHandling == AccessControlHandling.IGNORE
+                || aclHandling == AccessControlHandling.MERGE
+                || aclHandling == AccessControlHandling.MERGE_PRESERVE;
         if (oldPath == null) {
             if (!isIncluded) {
                 log.trace("auto-creating authorizable node not in filter {}", newPath);
@@ -795,7 +854,8 @@ public class DocViewImporter implements DocViewParserHandler {
                 // todo: how to deal with multi-node memberships? see JCRVLT-69
                 Optional<DocViewProperty2> prop = docViewNode.getProperty(NAME_REP_MEMBERS);
                 if (prop.isPresent()) {
-                    importInfo.registerMemberships(id, prop.get().getStringValues().toArray(new String[0]));
+                    importInfo.registerMemberships(
+                            id, prop.get().getStringValues().toArray(new String[0]));
                 }
 
                 log.debug("Skipping import of existing authorizable '{}' due to MERGE import mode.", id);
@@ -829,17 +889,13 @@ public class DocViewImporter implements DocViewParserHandler {
                     DocViewProperty2 authId = new DocViewProperty2(
                             JackrabbitUserManagement.NAME_REP_AUTHORIZABLE_ID,
                             authNode.getProperty("rep:authorizableId").getString(),
-                            PropertyType.STRING
-                    );
+                            PropertyType.STRING);
                     properties.removeIf((p) -> p.getName().equals(JackrabbitUserManagement.NAME_REP_AUTHORIZABLE_ID));
                     properties.add(authId);
                 }
-                
-                DocViewNode2 mapped = new DocViewNode2(
-                        npResolver.getQName(newName),
-                        properties
-                );
-                
+
+                DocViewNode2 mapped = new DocViewNode2(npResolver.getQName(newName), properties);
+
                 stack.adapter.startNode(mapped);
                 importInfo.onReplaced(oldPath);
                 importInfo.onAuthorizableCreated(id);
@@ -856,7 +912,8 @@ public class DocViewImporter implements DocViewParserHandler {
             // special case for root node update
             existingNode = currentNode;
         } else {
-            if (stack.checkForNode() && currentNode.hasNode(docViewNode.getName().toString())) {
+            if (stack.checkForNode()
+                    && currentNode.hasNode(docViewNode.getName().toString())) {
                 existingNode = currentNode.getNode(docViewNode.getName().toString());
             }
             Optional<String> identifier = docViewNode.getIdentifier();
@@ -867,19 +924,31 @@ public class DocViewImporter implements DocViewParserHandler {
                     String newNodePath = currentNode.getPath() + "/" + npResolver.getJCRName(docViewNode.getName());
                     // edge-case: same node path -> uuid is kept
                     if (existingNode != null && existingNode.getPath().equals(sameIdNode.getPath())) {
-                        log.debug("Node at {} with existing identifier {} is being updated without modifying its identifier", existingNode.getPath(), docViewNode.getIdentifier());
+                        log.debug(
+                                "Node at {} with existing identifier {} is being updated without modifying its identifier",
+                                existingNode.getPath(),
+                                docViewNode.getIdentifier());
                     } else {
-                        log.warn("Node Collision: To-be imported node {} uses a node identifier {} which is already taken by {}, trying to resolve conflict according to policy {}", 
-                                newNodePath, docViewNode.getIdentifier(), sameIdNode.getPath(), idConflictPolicy.name());
+                        log.warn(
+                                "Node Collision: To-be imported node {} uses a node identifier {} which is already taken by {}, trying to resolve conflict according to policy {}",
+                                newNodePath,
+                                docViewNode.getIdentifier(),
+                                sameIdNode.getPath(),
+                                idConflictPolicy.name());
                         if (idConflictPolicy == IdConflictPolicy.FAIL) {
                             // uuid found in path covered by filter
                             if (isIncluded(sameIdNode, 0)) {
                                 Info sameIdNodeInfo = importInfo.getInfo(sameIdNode.getPath());
-                                // is the conflicting node part of the package (i.e. the package contained duplicate uuids)
+                                // is the conflicting node part of the package (i.e. the package contained duplicate
+                                // uuids)
                                 if (sameIdNodeInfo != null && sameIdNodeInfo.getType() != Type.DEL) {
-                                    throw new ReferentialIntegrityException("Node identifier " + docViewNode.getIdentifier() + " already taken by node " + sameIdNode.getPath() + " from the same package");
+                                    throw new ReferentialIntegrityException(
+                                            "Node identifier " + docViewNode.getIdentifier() + " already taken by node "
+                                                    + sameIdNode.getPath() + " from the same package");
                                 } else {
-                                    log.warn("Trying to remove existing conflicting node {} (and all its references)", sameIdNode.getPath());
+                                    log.warn(
+                                            "Trying to remove existing conflicting node {} (and all its references)",
+                                            sameIdNode.getPath());
                                     removeReferences(sameIdNode);
                                     String sameIdNodePath = sameIdNode.getPath();
                                     session.removeItem(sameIdNodePath);
@@ -888,23 +957,29 @@ public class DocViewImporter implements DocViewParserHandler {
                                 existingNode = null;
                             } else {
                                 // uuid found in path not-covered by filter
-                                throw new ReferentialIntegrityException("Node identifier " + docViewNode.getIdentifier() + " already taken by node " + sameIdNode.getPath());
+                                throw new ReferentialIntegrityException("Node identifier " + docViewNode.getIdentifier()
+                                        + " already taken by node " + sameIdNode.getPath());
                             }
                         } else if (idConflictPolicy == IdConflictPolicy.LEGACY) {
                             // is the conflicting node a sibling
                             if (sameIdNode.getParent().isSame(currentNode)) {
                                 String sameIdNodePath = sameIdNode.getPath();
                                 if (isIncluded(sameIdNode, 0)) {
-                                    log.warn("Existing conflicting node {} has same parent as to-be imported one and is contained in the filter, trying to remove it.", sameIdNodePath);
+                                    log.warn(
+                                            "Existing conflicting node {} has same parent as to-be imported one and is contained in the filter, trying to remove it.",
+                                            sameIdNodePath);
                                     session.removeItem(sameIdNodePath); // references point to new node afterwards
                                     importInfo.onDeleted(sameIdNodePath);
                                 } else {
-                                    log.warn("Existing conflicting node {} has same parent as to-be imported one and is not contained in the filter, ignoring new node but continue with children below existing conflicting node", sameIdNodePath);
+                                    log.warn(
+                                            "Existing conflicting node {} has same parent as to-be imported one and is not contained in the filter, ignoring new node but continue with children below existing conflicting node",
+                                            sameIdNodePath);
                                     importInfo.onRemapped(newNodePath, sameIdNodePath);
                                     existingNode = sameIdNode;
                                 }
                             } else {
-                                log.warn("To-be imported node and existing conflicting node have different parents. Will create new identifier for the former. ({})",
+                                log.warn(
+                                        "To-be imported node and existing conflicting node have different parents. Will create new identifier for the former. ({})",
                                         newNodePath);
                                 preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_UUID)
                                         || p.getName().equals(NameConstants.JCR_BASEVERSION)
@@ -915,9 +990,16 @@ public class DocViewImporter implements DocViewParserHandler {
                         }
                     }
                 } catch (ItemNotFoundException expected) {
-                    // LEGACY mode: no node with same ID present, but target node exists: ignore the ID from the package being imported
-                    if (existingNode != null && idConflictPolicy == IdConflictPolicy.LEGACY && existingNode.isNodeType(JcrConstants.MIX_REFERENCEABLE)) {
-                        log.debug("IdConflictPolicy.LEGACY - ignoring Identifier {} from imported package at {} but keep existing identifier {}", identifier.get(), docViewNode.getName(), existingNode.getIdentifier());
+                    // LEGACY mode: no node with same ID present, but target node exists: ignore the ID from the package
+                    // being imported
+                    if (existingNode != null
+                            && idConflictPolicy == IdConflictPolicy.LEGACY
+                            && existingNode.isNodeType(JcrConstants.MIX_REFERENCEABLE)) {
+                        log.debug(
+                                "IdConflictPolicy.LEGACY - ignoring Identifier {} from imported package at {} but keep existing identifier {}",
+                                identifier.get(),
+                                docViewNode.getName(),
+                                existingNode.getIdentifier());
                         preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_UUID));
                     }
                 }
@@ -926,14 +1008,18 @@ public class DocViewImporter implements DocViewParserHandler {
 
         // check if new node needs to be checked in
         preprocessedProperties.removeIf(p -> p.getName().equals(NameConstants.JCR_ISCHECKEDOUT));
-        boolean isCheckedIn = "false".equals(docViewNode.getPropertyValue(NameConstants.JCR_ISCHECKEDOUT).orElse("true"));
+        boolean isCheckedIn = "false"
+                .equals(docViewNode
+                        .getPropertyValue(NameConstants.JCR_ISCHECKEDOUT)
+                        .orElse("true"));
 
         // create or update node
         boolean isNew = existingNode == null;
         if (isNew) {
             // workaround for bug in jcr2spi if mixins are empty
             if (!docViewNode.hasProperty(NameConstants.JCR_MIXINTYPES)) {
-                preprocessedProperties.add(new DocViewProperty2(NameConstants.JCR_MIXINTYPES, Collections.emptyList(), PropertyType.NAME));
+                preprocessedProperties.add(
+                        new DocViewProperty2(NameConstants.JCR_MIXINTYPES, Collections.emptyList(), PropertyType.NAME));
             }
 
             stack.ensureCheckedOut();
@@ -957,9 +1043,11 @@ public class DocViewImporter implements DocViewParserHandler {
                 importInfo.registerToVersion(existingNode.getPath());
             }
             ImportMode importMode = wspFilter.getImportMode(existingNode.getPath());
-            Node updatedNode = updateExistingNode(existingNode, docViewNode.cloneWithDifferentProperties(preprocessedProperties), importMode);
+            Node updatedNode = updateExistingNode(
+                    existingNode, docViewNode.cloneWithDifferentProperties(preprocessedProperties), importMode);
             if (updatedNode != null) {
-                if (updatedNode.isNodeType(JcrConstants.NT_RESOURCE) && !updatedNode.hasProperty(JcrConstants.JCR_DATA)) {
+                if (updatedNode.isNodeType(JcrConstants.NT_RESOURCE)
+                        && !updatedNode.hasProperty(JcrConstants.JCR_DATA)) {
                     importInfo.onMissing(existingNode.getPath() + "/" + JcrConstants.JCR_DATA);
                 }
                 importInfo.onModified(updatedNode.getPath());
@@ -988,7 +1076,8 @@ public class DocViewImporter implements DocViewParserHandler {
             if (isIncluded(referenceProperty, 0) || idConflictPolicy == IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID) {
                 removableReferencePaths.add(referenceProperty.getPath());
             } else {
-                throw new ReferentialIntegrityException("Found non-removable reference for conflicting UUID " + node.getIdentifier() + " (" + node.getPath() + ") at " + referenceProperty.getPath());
+                throw new ReferentialIntegrityException("Found non-removable reference for conflicting UUID "
+                        + node.getIdentifier() + " (" + node.getPath() + ") at " + referenceProperty.getPath());
             }
         }
         for (String referencePath : removableReferencePaths) {
@@ -997,17 +1086,24 @@ public class DocViewImporter implements DocViewParserHandler {
         }
     }
 
-    private @Nullable Node updateExistingNode(@NotNull Node node, @NotNull DocViewNode2 ni, @NotNull ImportMode importMode) throws RepositoryException {
+    private @Nullable Node updateExistingNode(
+            @NotNull Node node, @NotNull DocViewNode2 ni, @NotNull ImportMode importMode) throws RepositoryException {
         VersioningState vs = new VersioningState(stack, node);
         Node updatedNode = null;
         Optional<String> identifier = ni.getIdentifier();
         // try to set uuid via sysview import if it differs from existing one
-        if (identifier.isPresent() && !node.getIdentifier().equals(identifier.get()) && !"rep:root".equals(ni.getPrimaryType().orElse(""))) {
+        if (identifier.isPresent()
+                && !node.getIdentifier().equals(identifier.get())
+                && !"rep:root".equals(ni.getPrimaryType().orElse(""))) {
             long startTime = System.currentTimeMillis();
             String previousIdentifier = node.getIdentifier();
             log.debug(
                     "Node stashing for {} starting, existing identifier: {}, new identifier: {}, ImportMode: {}, IdConflictPoliy: {}",
-                    node.getPath(), previousIdentifier, identifier.get(), importMode, idConflictPolicy);
+                    node.getPath(),
+                    previousIdentifier,
+                    identifier.get(),
+                    importMode,
+                    idConflictPolicy);
             NodeStash stash = new NodeStash(session, node.getPath());
             stash.stash(importInfo);
             Node parent = node.getParent();
@@ -1017,17 +1113,29 @@ public class DocViewImporter implements DocViewParserHandler {
             stash.recover(importMode, importInfo);
             log.debug(
                     "Node stashing for {} finished, previous identifier: {}, new identifier: {}, elapsed: {}, ImportMode: {}, IdConflictPoliy: {}",
-                    updatedNode.getPath(), previousIdentifier, updatedNode.getIdentifier(),
-                    Duration.ofMillis(System.currentTimeMillis() - startTime), importMode, idConflictPolicy);
+                    updatedNode.getPath(),
+                    previousIdentifier,
+                    updatedNode.getIdentifier(),
+                    Duration.ofMillis(System.currentTimeMillis() - startTime),
+                    importMode,
+                    idConflictPolicy);
         } else {
             // TODO: is this faster than using sysview import?
             // set new primary type (but never set rep:root)
-            String newPrimaryType = ni.getPrimaryType().orElseThrow(() -> new IllegalStateException("Mandatory property 'jcr:primaryType' missing from " + ni));
-            if (importMode == ImportMode.REPLACE && !"rep:root".equals(newPrimaryType) && wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_PRIMARYTYPE))) {
+            String newPrimaryType = ni.getPrimaryType()
+                    .orElseThrow(
+                            () -> new IllegalStateException("Mandatory property 'jcr:primaryType' missing from " + ni));
+            if (importMode == ImportMode.REPLACE
+                    && !"rep:root".equals(newPrimaryType)
+                    && wspFilter.includesProperty(PathUtil.append(node.getPath(), JcrConstants.JCR_PRIMARYTYPE))) {
                 String currentPrimaryType = node.getPrimaryNodeType().getName();
                 if (!currentPrimaryType.equals(newPrimaryType)) {
                     vs.ensureCheckedOut();
-                    log.trace("Changing primary node type for {} from {} to {}", node.getPath(), currentPrimaryType, newPrimaryType);
+                    log.trace(
+                            "Changing primary node type for {} from {} to {}",
+                            node.getPath(),
+                            currentPrimaryType,
+                            newPrimaryType);
                     node.setPrimaryType(newPrimaryType);
                     updatedNode = node;
                 }
@@ -1038,8 +1146,7 @@ public class DocViewImporter implements DocViewParserHandler {
                 AccessControlHandling acHandling = getAcHandling(ni.getName());
                 for (String mixin : ni.getMixinTypes()) {
                     // omit if mix:AccessControllable and CLEAR
-                    if (!aclManagement.isAccessControllableMixin(mixin)
-                            || acHandling != AccessControlHandling.CLEAR) {
+                    if (!aclManagement.isAccessControllableMixin(mixin) || acHandling != AccessControlHandling.CLEAR) {
                         newMixins.add(mixin);
                     }
                 }
@@ -1058,8 +1165,11 @@ public class DocViewImporter implements DocViewParserHandler {
                                 vs.ensureCheckedOut();
 
                                 // can't remove a mixin which would remove the UUID in LEGACY Mode
-                                if (idConflictPolicy == idConflictPolicy.LEGACY && wasReferenceable && mix.isNodeType(JcrConstants.MIX_REFERENCEABLE)) {
-                                    log.debug("idConflictPolicy.LEGACY: not removing mixin " + mix.getName() + ", so that UUID can be preserved.");
+                                if (idConflictPolicy == idConflictPolicy.LEGACY
+                                        && wasReferenceable
+                                        && mix.isNodeType(JcrConstants.MIX_REFERENCEABLE)) {
+                                    log.debug("idConflictPolicy.LEGACY: not removing mixin " + mix.getName()
+                                            + ", so that UUID can be preserved.");
                                 } else {
                                     node.removeMixin(name);
                                 }
@@ -1094,10 +1204,21 @@ public class DocViewImporter implements DocViewParserHandler {
                 }
             }
             EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
-            Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(ni.getProperties(), effectiveNodeType, node.getPath(), PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES);
+            Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(
+                    ni.getProperties(),
+                    effectiveNodeType,
+                    node.getPath(),
+                    PROTECTED_PROPERTIES_CONSIDERED_FOR_UPDATED_NODES);
 
             // add/modify properties contained in package
-            if (setProperties(node, ni,unprotectedProperties, importMode == ImportMode.REPLACE|| importMode == ImportMode.UPDATE || importMode == ImportMode.UPDATE_PROPERTIES, vs)) {
+            if (setProperties(
+                    node,
+                    ni,
+                    unprotectedProperties,
+                    importMode == ImportMode.REPLACE
+                            || importMode == ImportMode.UPDATE
+                            || importMode == ImportMode.UPDATE_PROPERTIES,
+                    vs)) {
                 updatedNode = node;
             }
         }
@@ -1105,17 +1226,16 @@ public class DocViewImporter implements DocViewParserHandler {
     }
 
     /**
-     * Creates a new node via system view XML and {@link Session#importXML(String, InputStream, int)} to be able to set protected properties. 
+     * Creates a new node via system view XML and {@link Session#importXML(String, InputStream, int)} to be able to set protected properties.
      * Afterwards uses regular JCR API to set unprotected properties (on a best-effort basis as this depends on the repo implementation).
      * @param parentNode the parent node below which the new node should be created
      * @param ni the information about the new node to be created
      * @return the newly created node
      * @throws RepositoryException
      */
-    private @NotNull Node createNewNode(Node parentNode, DocViewNode2 ni)
-            throws RepositoryException {
+    private @NotNull Node createNewNode(Node parentNode, DocViewNode2 ni) throws RepositoryException {
         final int importUuidBehavior;
-        switch(idConflictPolicy) {
+        switch (idConflictPolicy) {
             case CREATE_NEW_ID:
                 // what happens to references?
                 importUuidBehavior = ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW;
@@ -1129,9 +1249,7 @@ public class DocViewImporter implements DocViewParserHandler {
         }
         try {
             String parentPath = parentNode.getPath();
-            final ContentHandler handler = session.getImportContentHandler(
-                    parentPath,
-                    importUuidBehavior);
+            final ContentHandler handler = session.getImportContentHandler(parentPath, importUuidBehavior);
             // first define the current namespaces
             String[] prefixes = session.getNamespacePrefixes();
             handler.startDocument();
@@ -1139,20 +1257,26 @@ public class DocViewImporter implements DocViewParserHandler {
                 handler.startPrefixMapping(prefix, session.getNamespaceURI(prefix));
             }
             AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", ATTRIBUTE_TYPE_CDATA, npResolver.getJCRName(ni.getName()));
+            attrs.addAttribute(
+                    Name.NS_SV_URI, "name", "sv:name", ATTRIBUTE_TYPE_CDATA, npResolver.getJCRName(ni.getName()));
             handler.startElement(Name.NS_SV_URI, "node", "sv:node", attrs);
-    
+
             // check if SNS and a helper uuid if needed
             boolean addMixRef = false;
-            
+
             if (ni.getIndex() > 0 && !ni.getIdentifier().isPresent()) {
                 Collection<DocViewProperty2> preprocessedProperties = new LinkedList<>(ni.getProperties());
-                preprocessedProperties.add(new DocViewProperty2( NameConstants.JCR_UUID, UUID.randomUUID().toString(), PropertyType.STRING));
+                preprocessedProperties.add(new DocViewProperty2(
+                        NameConstants.JCR_UUID, UUID.randomUUID().toString(), PropertyType.STRING));
                 // check mixins
-                DocViewProperty2 mix = ni.getProperty(NameConstants.JCR_MIXINTYPES).orElse(null);
+                DocViewProperty2 mix =
+                        ni.getProperty(NameConstants.JCR_MIXINTYPES).orElse(null);
                 addMixRef = true;
                 if (mix == null) {
-                    mix = new DocViewProperty2(NameConstants.JCR_MIXINTYPES, Collections.singletonList(JcrConstants.MIX_REFERENCEABLE), PropertyType.NAME);
+                    mix = new DocViewProperty2(
+                            NameConstants.JCR_MIXINTYPES,
+                            Collections.singletonList(JcrConstants.MIX_REFERENCEABLE),
+                            PropertyType.NAME);
                     preprocessedProperties.add(mix);
                 } else {
                     for (String v : mix.getStringValues()) {
@@ -1176,10 +1300,17 @@ public class DocViewImporter implements DocViewParserHandler {
             // add the protected properties
             for (DocViewProperty2 p : ni.getProperties()) {
                 String qualifiedPropertyName = npResolver.getJCRName(p.getName());
-                if (p.getStringValue().isPresent() && PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES.contains(p.getName()) && wspFilter.includesProperty(nodePath + "/" + qualifiedPropertyName)) {
+                if (p.getStringValue().isPresent()
+                        && PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES.contains(p.getName())
+                        && wspFilter.includesProperty(nodePath + "/" + qualifiedPropertyName)) {
                     attrs = new AttributesImpl();
                     attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", ATTRIBUTE_TYPE_CDATA, qualifiedPropertyName);
-                    attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", ATTRIBUTE_TYPE_CDATA, PropertyType.nameFromValue(p.getType()));
+                    attrs.addAttribute(
+                            Name.NS_SV_URI,
+                            "type",
+                            "sv:type",
+                            ATTRIBUTE_TYPE_CDATA,
+                            PropertyType.nameFromValue(p.getType()));
                     handler.startElement(Name.NS_SV_URI, "property", "sv:property", attrs);
                     for (String v : p.getStringValues()) {
                         handler.startElement(Name.NS_SV_URI, "value", "sv:value", DocViewSAXHandler.EMPTY_ATTRIBUTES);
@@ -1193,24 +1324,32 @@ public class DocViewImporter implements DocViewParserHandler {
             handler.endDocument();
 
             // retrieve newly created node either by uuid, label or name
-            Node node = getNodeByIdOrName(parentNode, ni, importUuidBehavior == ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+            Node node =
+                    getNodeByIdOrName(parentNode, ni, importUuidBehavior == ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
             EffectiveNodeType effectiveNodeType = EffectiveNodeType.ofNode(node);
 
-            Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(ni.getProperties(), effectiveNodeType, node.getPath(), PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES);
+            Collection<DocViewProperty2> unprotectedProperties = removeProtectedProperties(
+                    ni.getProperties(),
+                    effectiveNodeType,
+                    node.getPath(),
+                    PROTECTED_PROPERTIES_CONSIDERED_FOR_NEW_NODES);
             setProperties(node, ni, unprotectedProperties, true, null);
             // remove mix referenceable if it was temporarily added
             if (addMixRef) {
                 node.removeMixin(JcrConstants.MIX_REFERENCEABLE);
             }
             return node;
-    
+
         } catch (SAXException e) {
             Exception root = e.getException();
             if (root instanceof RepositoryException) {
                 if (root instanceof ConstraintViolationException) {
-                    // potentially rollback changes in the transient space (only relevant for Oak, https://issues.apache.org/jira/browse/OAK-9436), as otherwise the same exception is thrown again at Session.save()
+                    // potentially rollback changes in the transient space (only relevant for Oak,
+                    // https://issues.apache.org/jira/browse/OAK-9436), as otherwise the same exception is thrown again
+                    // at Session.save()
                     try {
-                        Node node = getNodeByIdOrName(parentNode, ni, importUuidBehavior == ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+                        Node node = getNodeByIdOrName(
+                                parentNode, ni, importUuidBehavior == ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
                         node.remove();
                     } catch (RepositoryException re) {
                         // ignore as no node found when the transient space is clean already
@@ -1228,23 +1367,30 @@ public class DocViewImporter implements DocViewParserHandler {
     /**
      *  filter the provided properties for non-protected properties, and all protected are removed.
      *  Any removed protected property is logged unless its name is contained in the importedProtectedProperties parameter.
-     *  
+     *
      * @param properties all properties
      * @param effectiveNodeType the effective nodetype of the node to which the properties are supposed to be added
      * @param nodePath the path of the node
      * @param importedProtectedProperties a list of names of protected properties, which are not supposed to logged
      * @return a non-null collection of non-protected properties
      */
-    private @NotNull Collection<DocViewProperty2> removeProtectedProperties(@NotNull Collection<DocViewProperty2> properties, @NotNull EffectiveNodeType effectiveNodeType,
-            @NotNull String nodePath, @NotNull Set<Name> importedProtectedProperties) {
+    private @NotNull Collection<DocViewProperty2> removeProtectedProperties(
+            @NotNull Collection<DocViewProperty2> properties,
+            @NotNull EffectiveNodeType effectiveNodeType,
+            @NotNull String nodePath,
+            @NotNull Set<Name> importedProtectedProperties) {
         return properties.stream()
                 .filter(p -> {
                     try {
                         if (isPropertyProtected(effectiveNodeType, p)) {
                             // remove all protected properties
                             if (p.getStringValue().isPresent() && !importedProtectedProperties.contains(p.getName())) {
-                                // log only those properties, which are not protected by the JCR standard because of special meaning
-                                log.warn("Ignore protected property '{}' on node '{}'", npResolver.getJCRName(p.getName()), nodePath);
+                                // log only those properties, which are not protected by the JCR standard because of
+                                // special meaning
+                                log.warn(
+                                        "Ignore protected property '{}' on node '{}'",
+                                        npResolver.getJCRName(p.getName()),
+                                        nodePath);
                             }
                             return false;
                         } else {
@@ -1259,17 +1405,26 @@ public class DocViewImporter implements DocViewParserHandler {
 
     /**
      * Determines if a given property is protected according to the node type.
-     * 
+     *
      * @param effectiveNodeType the effective node type
      * @param docViewProperty the property
      * @return{@code true} in case the property is protected, {@code false} otherwise
-     * @throws RepositoryException 
+     * @throws RepositoryException
      */
-    private boolean isPropertyProtected(@NotNull EffectiveNodeType effectiveNodeType, @NotNull DocViewProperty2 docViewProperty) throws RepositoryException {
-        return effectiveNodeType.getApplicablePropertyDefinition(npResolver.getJCRName(docViewProperty.getName()), docViewProperty.isMultiValue(), docViewProperty.getType()).map(PropertyDefinition::isProtected).orElse(false);
+    private boolean isPropertyProtected(
+            @NotNull EffectiveNodeType effectiveNodeType, @NotNull DocViewProperty2 docViewProperty)
+            throws RepositoryException {
+        return effectiveNodeType
+                .getApplicablePropertyDefinition(
+                        npResolver.getJCRName(docViewProperty.getName()),
+                        docViewProperty.isMultiValue(),
+                        docViewProperty.getType())
+                .map(PropertyDefinition::isProtected)
+                .orElse(false);
     }
 
-    private Node getNodeByIdOrName(@NotNull Node currentNode, @NotNull DocViewNode2 ni, boolean isIdNewlyAssigned) throws RepositoryException {
+    private Node getNodeByIdOrName(@NotNull Node currentNode, @NotNull DocViewNode2 ni, boolean isIdNewlyAssigned)
+            throws RepositoryException {
         Node node = null;
         Optional<String> id = ni.getIdentifier();
         String name = npResolver.getJCRName(ni.getName());
@@ -1277,7 +1432,10 @@ public class DocViewImporter implements DocViewParserHandler {
             try {
                 node = currentNode.getSession().getNodeByIdentifier(id.get());
             } catch (RepositoryException e) {
-                log.warn("Newly created node not found by uuid {}: {}", currentNode.getPath() + "/" + name, e.toString());
+                log.warn(
+                        "Newly created node not found by uuid {}: {}",
+                        currentNode.getPath() + "/" + name,
+                        e.toString());
             }
         }
         if (node == null) {
@@ -1285,14 +1443,20 @@ public class DocViewImporter implements DocViewParserHandler {
             try {
                 node = currentNode.getNode(snsName);
             } catch (RepositoryException e) {
-                log.warn("Newly created node not found by SNS aware name {}: {}", currentNode.getPath() + "/" + snsName, e.toString());
+                log.warn(
+                        "Newly created node not found by SNS aware name {}: {}",
+                        currentNode.getPath() + "/" + snsName,
+                        e.toString());
             }
         }
         if (node == null) {
             try {
                 node = currentNode.getNode(name);
             } catch (RepositoryException e) {
-                log.debug("Newly created node not found by name {}: {}", currentNode.getPath() + "/" + name, e.toString());
+                log.debug(
+                        "Newly created node not found by name {}: {}",
+                        currentNode.getPath() + "/" + name,
+                        e.toString());
                 throw e;
             }
         }
@@ -1302,16 +1466,22 @@ public class DocViewImporter implements DocViewParserHandler {
     /**
      * Set all provided properties to the node.
      * There is no check or special handling if the properties are protected or not, so only invoke it with non-protected properties.
-     * 
+     *
      * @param node the node to set the properties to
      * @param ni the DocViewNode to persist
      * @param unprotectedProperties the (unprotected) properties to set on the given node
-     * @param overwriteExistingProperties 
+     * @param overwriteExistingProperties
      * @param vs
      * @return
      * @throws RepositoryException
      */
-    private boolean setProperties(@NotNull Node node, @NotNull DocViewNode2 ni, @NotNull Collection<DocViewProperty2> unprotectedProperties, boolean overwriteExistingProperties, @Nullable VersioningState vs) throws RepositoryException {
+    private boolean setProperties(
+            @NotNull Node node,
+            @NotNull DocViewNode2 ni,
+            @NotNull Collection<DocViewProperty2> unprotectedProperties,
+            boolean overwriteExistingProperties,
+            @Nullable VersioningState vs)
+            throws RepositoryException {
         boolean isAtomicCounter = false;
         for (String mixin : ni.getMixinTypes()) {
             if ("mix:atomicCounter".equals(mixin)) {
@@ -1323,7 +1493,9 @@ public class DocViewImporter implements DocViewParserHandler {
         // add properties
         for (DocViewProperty2 prop : unprotectedProperties) {
             String name = npResolver.getJCRName(prop.getName());
-            if (prop != null && (overwriteExistingProperties || !node.hasProperty(name)) && wspFilter.includesProperty(node.getPath() + "/" + name)) {
+            if (prop != null
+                    && (overwriteExistingProperties || !node.hasProperty(name))
+                    && wspFilter.includesProperty(node.getPath() + "/" + name)) {
                 // check if property is allowed
                 try {
                     modified |= prop.apply(node);
@@ -1338,7 +1510,11 @@ public class DocViewImporter implements DocViewParserHandler {
                     } catch (RepositoryException e1) {
                         // be lenient in case of mode != replace
                         if (wspFilter.getImportMode(node.getPath()) != ImportMode.REPLACE) {
-                            log.warn("Error while setting property {} (ignore due to mode {}): {}", prop.getName(), wspFilter.getImportMode(node.getPath()), e1);
+                            log.warn(
+                                    "Error while setting property {} (ignore due to mode {}): {}",
+                                    prop.getName(),
+                                    wspFilter.getImportMode(node.getPath()),
+                                    e1);
                         } else {
                             throw e;
                         }
@@ -1348,14 +1524,16 @@ public class DocViewImporter implements DocViewParserHandler {
         }
 
         // adjust oak atomic counter
-        if (isAtomicCounter && wspFilter.includesProperty(node.getPath() + "/" + npResolver.getJCRName(NAME_OAK_COUNTER))) {
+        if (isAtomicCounter
+                && wspFilter.includesProperty(node.getPath() + "/" + npResolver.getJCRName(NAME_OAK_COUNTER))) {
             long previous = 0;
             if (node.hasProperty(NAME_OAK_COUNTER.toString())) {
                 previous = node.getProperty(NAME_OAK_COUNTER.toString()).getLong();
             }
             long counter = 0;
             try {
-                counter = ni.getPropertyValue(NAME_OAK_COUNTER).map(Long::valueOf).orElse(0L);
+                counter =
+                        ni.getPropertyValue(NAME_OAK_COUNTER).map(Long::valueOf).orElse(0L);
             } catch (NumberFormatException e) {
                 // ignore
             }
@@ -1382,7 +1560,6 @@ public class DocViewImporter implements DocViewParserHandler {
             return aclHandling;
         }
     }
-
 
     /**
      * Encapsulates information about the node which has been imported last
@@ -1467,7 +1644,6 @@ public class DocViewImporter implements DocViewParserHandler {
             return elem;
         }
 
-
         public StackElement pop() {
             return parent;
         }
@@ -1478,7 +1654,6 @@ public class DocViewImporter implements DocViewParserHandler {
             }
             return parent == null ? null : parent.getAdapter();
         }
-
     }
 
     /**
@@ -1510,8 +1685,7 @@ public class DocViewImporter implements DocViewParserHandler {
             artifacts.set(idx, a);
         }
 
-        public Value[] getValues(Session session)
-                throws RepositoryException, IOException {
+        public Value[] getValues(Session session) throws RepositoryException, IOException {
             Value[] values = new Value[artifacts.size()];
             for (int i = 0; i < values.length; i++) {
                 Artifact a = artifacts.get(i);
@@ -1522,8 +1696,7 @@ public class DocViewImporter implements DocViewParserHandler {
             return values;
         }
 
-        public Value getValue(Session session)
-                throws RepositoryException, IOException {
+        public Value getValue(Session session) throws RepositoryException, IOException {
             Artifact a = artifacts.get(0);
             try (InputStream input = a.getInputStream()) {
                 return session.getValueFactory().createValue(input);
@@ -1535,7 +1708,7 @@ public class DocViewImporter implements DocViewParserHandler {
                 if (a instanceof PropertyValueArtifact) {
                     try {
                         ((PropertyValueArtifact) a).detach();
-                    } catch (IOException|RepositoryException e) {
+                    } catch (IOException | RepositoryException e) {
                         log.warn("error while detaching property artifact", e);
                     }
                 }
@@ -1576,5 +1749,4 @@ public class DocViewImporter implements DocViewParserHandler {
             }
         }
     }
-
 }

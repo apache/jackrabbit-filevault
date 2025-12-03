@@ -1,26 +1,27 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl.io;
+
+import javax.jcr.RepositoryException;
 
 import java.io.IOException;
 import java.io.InputStream;
-
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.AccessType;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -60,7 +61,7 @@ public class InputSourceArtifact extends AbstractArtifact implements ImportArtif
     /**
      * Constructs a new artifact for the given source. the parent artifact is
      * only used for generating the paths and is not linked to this artifact.
-     * 
+     *
      * @param parent the parent artifact
      * @param repoName the repository name
      * @param extension the platform extension
@@ -68,9 +69,13 @@ public class InputSourceArtifact extends AbstractArtifact implements ImportArtif
      * @param source the input source of the artifact
      * @param serType the serialization type
      */
-    public InputSourceArtifact(Artifact parent, String repoName, String extension,
-                               ArtifactType type, VaultInputSource source,
-                               SerializationType serType) {
+    public InputSourceArtifact(
+            Artifact parent,
+            String repoName,
+            String extension,
+            ArtifactType type,
+            VaultInputSource source,
+            SerializationType serType) {
         super(parent, repoName, extension, type);
         this.source = source;
         this.serType = serType;
@@ -106,8 +111,7 @@ public class InputSourceArtifact extends AbstractArtifact implements ImportArtif
     /**
      * {@inheritDoc}
      */
-    public InputStream getInputStream()
-            throws IOException, RepositoryException {
+    public InputStream getInputStream() throws IOException, RepositoryException {
         return source.getByteStream();
     }
 
@@ -116,8 +120,7 @@ public class InputSourceArtifact extends AbstractArtifact implements ImportArtif
      *
      * @return the underlying source
      */
-    public VaultInputSource getInputSource()
-            throws IOException, RepositoryException {
+    public VaultInputSource getInputSource() throws IOException, RepositoryException {
         return source;
     }
 

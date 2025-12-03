@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.io.IOException;
@@ -78,7 +79,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                     }
                 }
             }
-            
+
             // also look for external hooks in properties
             // currently only the format: "installhook.{name}.class" is supported
             Properties props = archive.getMetaInf().getProperties();
@@ -122,7 +123,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
     private void initHook(Hook hook) throws IOException, PackageException {
         try {
             hook.init();
-        } catch (IOException|PackageException e) {
+        } catch (IOException | PackageException e) {
             log.error("Error while initializing hook: {}", e.toString());
             try {
                 hook.destroy();
@@ -138,14 +139,15 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
     public boolean hasHooks() {
         return !hooks.isEmpty();
     }
-    
+
     public boolean execute(InstallContext context) {
         for (Hook hook : hooks.values()) {
             try {
                 hook.getHook().execute(context);
             } catch (Throwable e) {
                 // abort processing only for prepare and installed phase
-                if (context.getPhase() == InstallContext.Phase.PREPARE || context.getPhase() == InstallContext.Phase.INSTALLED) {
+                if (context.getPhase() == InstallContext.Phase.PREPARE
+                        || context.getPhase() == InstallContext.Phase.INSTALLED) {
                     log.warn("Hook {} threw exception. {} aborted.", hook.name, context.getPhase(), e);
                     return false;
                 }
@@ -163,7 +165,8 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                 hook.destroy();
             } catch (IOException e) {
                 if (ioException == null) {
-                    ioException = new IOException("Error while destroying one or more hooks. Look at suppressed exceptions for details!");
+                    ioException = new IOException(
+                            "Error while destroying one or more hooks. Look at suppressed exceptions for details!");
                 }
                 ioException.addSuppressed(e);
             }
@@ -228,30 +231,31 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                     // create classloader
                     if (parentClassLoader == null) {
                         try {
-                            // 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
+                            // 1st fallback is the current classes classloader (the bundle classloader in the OSGi
+                            // context)
                             urlClassLoader = URLClassLoader.newInstance(
-                                    new URL[] { jarFile.toUri().toURL() },
+                                    new URL[] {jarFile.toUri().toURL()},
                                     this.getClass().getClassLoader());
                             loadMainClass(urlClassLoader);
                         } catch (ClassNotFoundException cnfe) {
                             urlClassLoader.close();
                             // 2nd fallback is the thread context classloader
                             urlClassLoader = URLClassLoader.newInstance(
-                                    new URL[] { jarFile.toUri().toURL() },
+                                    new URL[] {jarFile.toUri().toURL()},
                                     Thread.currentThread().getContextClassLoader());
                             loadMainClass(urlClassLoader);
                         }
                     } else {
                         urlClassLoader = URLClassLoader.newInstance(
-                                new URL[] { jarFile.toUri().toURL() },
-                                parentClassLoader);
+                                new URL[] {jarFile.toUri().toURL()}, parentClassLoader);
                         loadMainClass(urlClassLoader);
                     }
                 } else {
                     // create classloader
                     if (parentClassLoader == null) {
                         try {
-                            // 1st fallback is the current classes classloader (the bundle classloader in the OSGi context)
+                            // 1st fallback is the current classes classloader (the bundle classloader in the OSGi
+                            // context)
                             loadMainClass(this.getClass().getClassLoader());
                         } catch (ClassNotFoundException cnfe) {
                             // 2nd fallback is the thread context classloader
@@ -272,7 +276,8 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             // find main class
             Class<?> clazz = classLoader.loadClass(mainClassName);
             if (!InstallHook.class.isAssignableFrom(clazz)) {
-                throw new PackageException("hook's main class " + mainClassName + " does not implement the InstallHook interface: " + name);
+                throw new PackageException("hook's main class " + mainClassName
+                        + " does not implement the InstallHook interface: " + name);
             }
             // create instance
             try {

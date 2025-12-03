@@ -1,30 +1,32 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.impl;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.Mounter;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.PathMapping;
@@ -39,7 +41,6 @@ import org.apache.jackrabbit.vault.packaging.ExportPostProcessor;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
-import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +76,8 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
                     continue;
                 }
                 mgr.getInternalRegistry();
-                String etcPath = DEFAULT_PACKAGE_ROOT_PATH + "/" + AbstractPackageRegistry.getRelativeInstallationPath(pkg.getKey()) + ".zip";
+                String etcPath = DEFAULT_PACKAGE_ROOT_PATH + "/"
+                        + AbstractPackageRegistry.getRelativeInstallationPath(pkg.getKey()) + ".zip";
                 etcPath = Text.getRelativeParent(etcPath, 1);
 
                 // define a workspace filter for the package at the real location
@@ -85,7 +87,8 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
                 // mount the repository at the group node level
                 RepositoryAddress addr;
                 try {
-                    addr = new RepositoryAddress(Text.escapePath("/" + session.getWorkspace().getName() + Text.getRelativeParent(nodePath, 1)));
+                    addr = new RepositoryAddress(Text.escapePath(
+                            "/" + session.getWorkspace().getName() + Text.getRelativeParent(nodePath, 1)));
                 } catch (URISyntaxException e) {
                     throw new IllegalArgumentException(e);
                 }
@@ -112,14 +115,15 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
     }
 
     public WorkspaceFilter prepare(final WorkspaceFilter originalFilter) throws RepositoryException {
-        for (JcrPackage pkg: mgr.listPackages(originalFilter)) {
+        for (JcrPackage pkg : mgr.listPackages(originalFilter)) {
             if (pkg.isValid() && pkg.getSize() > 0) {
                 subPackages.put(pkg.getDefinition().getId(), pkg.getNode().getPath());
             }
         }
         // now also get the packages from the primary root
-        WorkspaceFilter filter = originalFilter.translate(new SimplePathMapping(DEFAULT_PACKAGE_ROOT_PATH, mgr.getInternalRegistry().getPackRootPaths()[0]));
-        for (JcrPackage pkg: mgr.listPackages(filter)) {
+        WorkspaceFilter filter = originalFilter.translate(new SimplePathMapping(
+                DEFAULT_PACKAGE_ROOT_PATH, mgr.getInternalRegistry().getPackRootPaths()[0]));
+        for (JcrPackage pkg : mgr.listPackages(filter)) {
             if (pkg.isValid() && pkg.getSize() > 0) {
                 subPackages.put(pkg.getDefinition().getId(), pkg.getNode().getPath());
             }
@@ -151,7 +155,8 @@ public class SubPackageExportProcessor implements ExportPostProcessor {
             // re-add all the packages in /etc/packages
             for (Map.Entry<PackageId, String> pkg : subPackages.entrySet()) {
                 mgr.getInternalRegistry();
-                String path = DEFAULT_PACKAGE_ROOT_PATH + "/" + AbstractPackageRegistry.getRelativeInstallationPath(pkg.getKey()) + ".zip";
+                String path = DEFAULT_PACKAGE_ROOT_PATH + "/"
+                        + AbstractPackageRegistry.getRelativeInstallationPath(pkg.getKey()) + ".zip";
                 newFilter.add(new PathFilterSet(path));
             }
 

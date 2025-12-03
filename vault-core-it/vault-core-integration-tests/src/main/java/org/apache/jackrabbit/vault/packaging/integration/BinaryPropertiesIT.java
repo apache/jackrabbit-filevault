@@ -1,37 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
 
 import javax.jcr.Binary;
 import javax.jcr.Node;
@@ -44,6 +29,16 @@ import javax.jcr.ValueFormatException;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
@@ -71,23 +66,30 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 @RunWith(Parameterized.class)
 public class BinaryPropertiesIT extends IntegrationTestBase {
 
-    private final static String SMALL_TEXT = "Lorem ipsum"; // less than 16KB data is not stored in the blob store
-    private final static String SMALL_TEXT2 = "The quick brown fox";
+    private static final String SMALL_TEXT = "Lorem ipsum"; // less than 16KB data is not stored in the blob store
+    private static final String SMALL_TEXT2 = "The quick brown fox";
 
-    private final static String BIG_BINARY_PROPERTY = "bigbin";
-    private final static String SMALL_BINARY_PROPERTY = "smallbin";
-    private final static String BIG_BINARY_MV_PROPERTY = "bigbin-mv";
-    private final static String SMALL_BINARY_MV_PROPERTY = "smallbin-mv";
+    private static final String BIG_BINARY_PROPERTY = "bigbin";
+    private static final String SMALL_BINARY_PROPERTY = "smallbin";
+    private static final String BIG_BINARY_MV_PROPERTY = "bigbin-mv";
+    private static final String SMALL_BINARY_MV_PROPERTY = "smallbin-mv";
 
     private String fileNodePath, exportFileNodePath;
     private String binaryNodePath, exportBinaryNodePath;
 
-    private final static int BIG_TEXT_LENGTH = 0x1000 * 64; // 64 KB
-    private final static String BIG_TEXT;
-    private final static String BIG_TEXT2;
+    private static final int BIG_TEXT_LENGTH = 0x1000 * 64; // 64 KB
+    private static final String BIG_TEXT;
+    private static final String BIG_TEXT2;
+
     static {
         StringBuilder buffer = new StringBuilder(BIG_TEXT_LENGTH);
         buffer.append("0123456789abcdef");
@@ -111,7 +113,7 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
 
     @Parameters(name = "useBinaryReferences:{0}, testAuthorizables:{1}")
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] { { false, false }, { true, false }, { true, true } });
+        return Arrays.asList(new Object[][] {{false, false}, {true, false}, {true, true}});
     }
 
     @BeforeClass
@@ -121,10 +123,11 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
 
     @Before
     public void setup() throws RepositoryException, PackageException, IOException {
-        // test only works for Jackrabbit 2.0 or Oak with FileDataStore (as it relies on ReferenceBinary), this is assured though by the overwritten initRepository method
+        // test only works for Jackrabbit 2.0 or Oak with FileDataStore (as it relies on ReferenceBinary), this is
+        // assured though by the overwritten initRepository method
 
         if (testAuthorizables && admin instanceof JackrabbitSession) {
-            UserManager um = ((JackrabbitSession)admin).getUserManager();
+            UserManager um = ((JackrabbitSession) admin).getUserManager();
             Authorizable adminAuthorizable = um.getAuthorizable(admin.getUserID());
             // assertNull(adminAuthorizable.getPath());
             exportBinaryNodePath = adminAuthorizable.getPath();
@@ -148,17 +151,21 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
         String referenceBigBinary = ((ReferenceBinary) bigProperty.getBinary()).getReference();
         assertNotNull(referenceBigBinary);
         if (isOak()) {
-            // every binary is ReferenceBinary (but does return null for small binaries via ReferenceBinary.getReference())
+            // every binary is ReferenceBinary (but does return null for small binaries via
+            // ReferenceBinary.getReference())
             assertTrue(smallProperty.getBinary() instanceof ReferenceBinary);
         } else {
             // only large binaries are ReferenceBinary objects in JR2
             assertFalse(smallProperty.getBinary() instanceof ReferenceBinary);
         }
-        JcrUtils.putFile(binaryNode.getParent(), "file", "text/plain", IOUtils.toInputStream(BIG_TEXT, StandardCharsets.UTF_8));
+        JcrUtils.putFile(
+                binaryNode.getParent(), "file", "text/plain", IOUtils.toInputStream(BIG_TEXT, StandardCharsets.UTF_8));
         admin.save();
     }
 
-    private Property setBinaryProperty(Node node, String name, String value) throws ValueFormatException, VersionException, LockException, ConstraintViolationException, RepositoryException {
+    private Property setBinaryProperty(Node node, String name, String value)
+            throws ValueFormatException, VersionException, LockException, ConstraintViolationException,
+                    RepositoryException {
         Binary binary = admin.getValueFactory().createBinary(IOUtils.toInputStream(value, StandardCharsets.UTF_8));
         try {
             return node.setProperty(name, binary);
@@ -167,14 +174,19 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
         }
     }
 
-    private Property setBinaryMultivalueProperty(Node node, String name, String... values) throws ValueFormatException, VersionException, LockException, ConstraintViolationException, RepositoryException {
+    private Property setBinaryMultivalueProperty(Node node, String name, String... values)
+            throws ValueFormatException, VersionException, LockException, ConstraintViolationException,
+                    RepositoryException {
         ValueFactory valueFactory = admin.getValueFactory();
         List<Binary> binaries = new ArrayList<>(values.length);
         for (String value : values) {
             binaries.add(valueFactory.createBinary(IOUtils.toInputStream(value, StandardCharsets.UTF_8)));
         }
         try {
-            return node.setProperty(name, binaries.stream().map(b -> valueFactory.createValue(b)).toArray(Value[]::new), PropertyType.BINARY);
+            return node.setProperty(
+                    name,
+                    binaries.stream().map(b -> valueFactory.createValue(b)).toArray(Value[]::new),
+                    PropertyType.BINARY);
         } finally {
             binaries.stream().forEach(Binary::dispose);
         }
@@ -184,13 +196,15 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
         assertBinaryProperty(path, -1, input);
     }
 
-    private void assertBinaryProperty(String path, int index, String expectedInput) throws RepositoryException, IOException {
+    private void assertBinaryProperty(String path, int index, String expectedInput)
+            throws RepositoryException, IOException {
         try (InputStream input = IOUtils.toInputStream(expectedInput, StandardCharsets.UTF_8)) {
             assertBinaryProperty(path, index, input);
         }
     }
 
-    private void assertBinaryProperty(String path, int index, InputStream expectedInput) throws RepositoryException, IOException {
+    private void assertBinaryProperty(String path, int index, InputStream expectedInput)
+            throws RepositoryException, IOException {
         Property property = admin.getProperty(path);
         final Value value;
         if (index == -1) {
@@ -203,10 +217,9 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
             value = values[index];
         }
         Binary binary = value.getBinary();
-        try (InputStream actualInput =  binary.getStream()) {
+        try (InputStream actualInput = binary.getStream()) {
             assertTrue("Content not equal on " + path, IOUtils.contentEquals(expectedInput, actualInput));
-        }
-        finally {
+        } finally {
             binary.dispose();
         }
     }
@@ -250,19 +263,47 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
 
             if (useBinaryReferences) {
                 // make sure that only non-reference binaries are in dedicated artifacts
-                assertNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_PROPERTY + ".binary"));
-                assertNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary"));
-                assertNull(pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary"));
-                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_PROPERTY + ".binary", present);
-                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary", present);
-                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary", present);
+                assertNull(
+                        pkg.getArchive().getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_PROPERTY + ".binary"));
+                assertNull(pkg.getArchive()
+                        .getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary"));
+                assertNull(pkg.getArchive()
+                        .getEntry("jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary"));
+                checkExistingMember(
+                        pkg.getArchive(),
+                        "jcr_root" + binaryNodePath + "/" + SMALL_BINARY_PROPERTY + ".binary",
+                        present);
+                checkExistingMember(
+                        pkg.getArchive(),
+                        "jcr_root" + binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary",
+                        present);
+                checkExistingMember(
+                        pkg.getArchive(),
+                        "jcr_root" + binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary",
+                        present);
             } else {
-                checkExistingMember(pkg.getArchive(), "jcr_root" + binaryNodePath + "/" + BIG_BINARY_PROPERTY + ".binary", present);
-                checkExistingMember(pkg.getArchive(), "jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary", present);
-                checkExistingMember(pkg.getArchive(), "jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary", present);
-                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_PROPERTY + ".binary", present);
-                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary", present);
-                checkExistingMember(pkg.getArchive(), "jcr_root"+ binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary", present);
+                checkExistingMember(
+                        pkg.getArchive(), "jcr_root" + binaryNodePath + "/" + BIG_BINARY_PROPERTY + ".binary", present);
+                checkExistingMember(
+                        pkg.getArchive(),
+                        "jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[0].binary",
+                        present);
+                checkExistingMember(
+                        pkg.getArchive(),
+                        "jcr_root" + binaryNodePath + "/" + BIG_BINARY_MV_PROPERTY + "[1].binary",
+                        present);
+                checkExistingMember(
+                        pkg.getArchive(),
+                        "jcr_root" + binaryNodePath + "/" + SMALL_BINARY_PROPERTY + ".binary",
+                        present);
+                checkExistingMember(
+                        pkg.getArchive(),
+                        "jcr_root" + binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[0].binary",
+                        present);
+                checkExistingMember(
+                        pkg.getArchive(),
+                        "jcr_root" + binaryNodePath + "/" + SMALL_BINARY_MV_PROPERTY + "[1].binary",
+                        present);
             }
             clean(nodePath);
             pkg.extract(admin, getDefaultOptions());
@@ -277,7 +318,9 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void exportMultiValueBinaryWithPotentiallyMixedReferences() throws ValueFormatException, VersionException, LockException, ConstraintViolationException, RepositoryException, IOException, PackageException {
+    public void exportMultiValueBinaryWithPotentiallyMixedReferences()
+            throws ValueFormatException, VersionException, LockException, ConstraintViolationException,
+                    RepositoryException, IOException, PackageException {
         setBinaryMultivalueProperty(binaryNode, "mixedMVBinary", SMALL_TEXT, BIG_TEXT);
         if (useBinaryReferences) {
             // short text is a non-reference binary but big text is a reference binary

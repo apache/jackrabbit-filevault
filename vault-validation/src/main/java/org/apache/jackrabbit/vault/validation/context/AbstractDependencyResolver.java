@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.context;
 
@@ -60,7 +62,8 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
     }
 
     @Override
-    public @NotNull Collection<PackageInfo> resolvePackageInfo(@NotNull Dependency[] dependencies, @NotNull Map<PackageId, URI> dependencyLocations) throws IOException {
+    public @NotNull Collection<PackageInfo> resolvePackageInfo(
+            @NotNull Dependency[] dependencies, @NotNull Map<PackageId, URI> dependencyLocations) throws IOException {
         List<PackageInfo> packageInfos = new LinkedList<>();
         // resolve dependencies
         for (Dependency dependency : dependencies) {
@@ -80,7 +83,9 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
                         if (coords != null) {
                             packageInfo = resolvePackageInfo(coords);
                         } else {
-                            log.warn("Could not resolve Maven coordinates for dependency location URI: {}", dependencyLocation.getValue());
+                            log.warn(
+                                    "Could not resolve Maven coordinates for dependency location URI: {}",
+                                    dependencyLocation.getValue());
                         }
                     }
                 }
@@ -114,17 +119,20 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
      * @throws IOException
      */
     protected @Nullable PackageInfo resolvePackageInfo(@NotNull Dependency dependency) throws IOException {
-        // resolving a version range is not supported with Maven API, but only with lower level Aether API (requires Maven 3.5 or newer)
+        // resolving a version range is not supported with Maven API, but only with lower level Aether API (requires
+        // Maven 3.5 or newer)
         // https://github.com/eclipse/aether-demo/blob/master/aether-demo-snippets/src/main/java/org/eclipse/aether/examples/FindAvailableVersions.java
         // therefore do an best effort resolve instead
         final String groupId = dependency.getGroup();
         final String artifactId = dependency.getName();
         PackageInfo info = null;
         if (dependency.getRange().isLowInclusive()) {
-            info = resolvePackageInfo(new MavenCoordinates(groupId, artifactId, dependency.getRange().getLow().toString()));
+            info = resolvePackageInfo(new MavenCoordinates(
+                    groupId, artifactId, dependency.getRange().getLow().toString()));
         }
         if (info == null && dependency.getRange().isHighInclusive()) {
-            info = resolvePackageInfo(new MavenCoordinates(groupId, artifactId, dependency.getRange().getHigh().toString()));
+            info = resolvePackageInfo(new MavenCoordinates(
+                    groupId, artifactId, dependency.getRange().getHigh().toString()));
         }
         if (info == null && VersionRange.INFINITE.equals(dependency.getRange())) {
             info = resolvePackageInfo(new MavenCoordinates(groupId, artifactId, Artifact.LATEST_VERSION));
@@ -141,15 +149,25 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
      * @return the resolved package info or {@code null}
      * @throws IOException
      */
-    public abstract @Nullable PackageInfo resolvePackageInfo(@NotNull MavenCoordinates mavenCoordinates) throws IOException;
+    public abstract @Nullable PackageInfo resolvePackageInfo(@NotNull MavenCoordinates mavenCoordinates)
+            throws IOException;
 
     /** Encapsulates Maven coordinates groupId, artifactId, version, packaging (default {@code zip}), classifier (optional) */
     public static final class MavenCoordinates {
-        @NotNull private final String groupId;
-        @NotNull private final String artifactId;
-        @NotNull private final String version;
-        @NotNull private final String packaging;
-        @Nullable private final String classifier;
+        @NotNull
+        private final String groupId;
+
+        @NotNull
+        private final String artifactId;
+
+        @NotNull
+        private final String version;
+
+        @NotNull
+        private final String packaging;
+
+        @Nullable
+        private final String classifier;
 
         private static final String DEFAULT_PACKAGING = "zip";
 
@@ -157,7 +175,12 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
             this(groupId, artifactId, version, DEFAULT_PACKAGING, null);
         }
 
-        public MavenCoordinates(@NotNull String groupId, @NotNull String artifactId, @NotNull String version, @NotNull String packaging, String classifier) {
+        public MavenCoordinates(
+                @NotNull String groupId,
+                @NotNull String artifactId,
+                @NotNull String version,
+                @NotNull String packaging,
+                String classifier) {
             super();
             this.groupId = groupId;
             this.artifactId = artifactId;
@@ -177,16 +200,18 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
             if (!uri.isOpaque()) {
                 throw new IllegalArgumentException("Only opaque Maven URIs are supported");
             }
-            // support groupId, artifactId, packaging and classifier (format like https://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html#artifact)
+            // support groupId, artifactId, packaging and classifier (format like
+            // https://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html#artifact)
             // extract group id and artifact id
             String[] parts = uri.getSchemeSpecificPart().split(":");
             if (parts.length < 3) {
-                throw new IllegalArgumentException("At least group id, artifact id and version need to be given separated by ':'");
+                throw new IllegalArgumentException(
+                        "At least group id, artifact id and version need to be given separated by ':'");
             }
             String groupId = parts[0];
             String artifactId = parts[1];
             String version = parts[2];
-            
+
             String packaging = DEFAULT_PACKAGING;
             if (parts.length > 3) {
                 packaging = parts[3];
@@ -221,8 +246,10 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
         @Override
         public String toString() {
             return "MavenCoordinates [" + (groupId != null ? "groupId=" + groupId + ", " : "")
-                    + (artifactId != null ? "artifactId=" + artifactId + ", " : "") + (version != null ? "version=" + version + ", " : "")
-                    + (packaging != null ? "packaging=" + packaging + ", " : "") + (classifier != null ? "classifier=" + classifier : "")
+                    + (artifactId != null ? "artifactId=" + artifactId + ", " : "")
+                    + (version != null ? "version=" + version + ", " : "")
+                    + (packaging != null ? "packaging=" + packaging + ", " : "")
+                    + (classifier != null ? "classifier=" + classifier : "")
                     + "]";
         }
 
@@ -233,15 +260,14 @@ public abstract class AbstractDependencyResolver implements DependencyResolver {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
             MavenCoordinates other = (MavenCoordinates) obj;
-            return Objects.equals(artifactId, other.artifactId) && Objects.equals(classifier, other.classifier)
-                    && Objects.equals(groupId, other.groupId) && Objects.equals(packaging, other.packaging)
+            return Objects.equals(artifactId, other.artifactId)
+                    && Objects.equals(classifier, other.classifier)
+                    && Objects.equals(groupId, other.groupId)
+                    && Objects.equals(packaging, other.packaging)
                     && Objects.equals(version, other.version);
         }
     }

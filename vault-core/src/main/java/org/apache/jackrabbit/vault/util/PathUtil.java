@@ -1,26 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.util;
-
-import java.io.File;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+
+import java.io.File;
+
 import org.apache.jackrabbit.util.Text;
 
 /**
@@ -60,7 +62,7 @@ public class PathUtil {
         // canonicalize
         int dst = 0;
         boolean startsWithParent = false;
-        for (int i=0; i<composed.length; i++) {
+        for (int i = 0; i < composed.length; i++) {
             String element = composed[i];
             if (element.equals(".")) {
                 // skip
@@ -100,7 +102,7 @@ public class PathUtil {
     public static File getRelativeFile(File parent, File file) {
         return new File(getRelativeFilePath(parent.getPath(), file.getPath()));
     }
-    
+
     public static String getRelativePath(String parent, String path) {
         return getRelativeFilePath(parent, path, "/");
     }
@@ -122,19 +124,19 @@ public class PathUtil {
         String[] p1 = Text.explode(cwd, separator.charAt(0));
         String[] p2 = Text.explode(path, separator.charAt(0));
         // search common ancestor
-        int i=0;
-        while (i<p1.length && i<p2.length && p1[i].equals(p2[i])) {
+        int i = 0;
+        while (i < p1.length && i < p2.length && p1[i].equals(p2[i])) {
             i++;
         }
         StringBuffer buf = new StringBuffer();
         String delim = "";
         // go p1.length - i levels up to the common ancestor
-        for (int j = i; j<p1.length; j++) {
+        for (int j = i; j < p1.length; j++) {
             buf.append(delim).append("..");
             delim = separator;
         }
         // append rest of path
-        while (i<p2.length) {
+        while (i < p2.length) {
             buf.append(delim).append(p2[i++]);
             delim = separator;
         }
@@ -149,21 +151,21 @@ public class PathUtil {
         if (parent != null) {
             ret.append(parent);
         }
-        if (ret.length() > 0 && ret.charAt(ret.length()-1) != '/') {
+        if (ret.length() > 0 && ret.charAt(ret.length() - 1) != '/') {
             ret.append('/');
         }
         ret.append(relPath);
         return ret.toString();
     }
-    
+
     public static int getDepth(String path) {
         // assume valid absolute path
         int len = path.length();
-        if (len <=1) {
+        if (len <= 1) {
             return 0;
         }
         int depth = 1;
-        for (int i=1; i<len; i++) {
+        for (int i = 1; i < len; i++) {
             if (path.charAt(i) == '/') {
                 depth++;
             }

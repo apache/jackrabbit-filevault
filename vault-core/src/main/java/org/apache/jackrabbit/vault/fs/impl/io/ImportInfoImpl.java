@@ -1,21 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl.io;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.security.AccessControlPolicy;
+import javax.jcr.version.Version;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,13 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.security.AccessControlPolicy;
-import javax.jcr.version.Version;
-
-import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.MultiPathMapping;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
@@ -111,7 +111,7 @@ public class ImportInfoImpl implements ImportInfo {
         if (base instanceof ImportInfoImpl) {
             ImportInfoImpl baseImpl = (ImportInfoImpl) base;
             infos.putAll(baseImpl.infos);
-            numModified +=baseImpl.numModified;
+            numModified += baseImpl.numModified;
             numErrors += baseImpl.numErrors;
             toVersion.addAll(baseImpl.toVersion);
             if (mapping == null) {
@@ -141,9 +141,7 @@ public class ImportInfoImpl implements ImportInfo {
 
     @Deprecated
     public NodeNameList getNameList() {
-        return infos.isEmpty()
-                ? null
-                : infos.firstEntry().getValue().getNameList();
+        return infos.isEmpty() ? null : infos.firstEntry().getValue().getNameList();
     }
 
     private InfoImpl getOrCreateInfo(String path) {
@@ -235,7 +233,7 @@ public class ImportInfoImpl implements ImportInfo {
 
     public TreeMap<String, Type> getModifications() {
         TreeMap<String, Type> mods = new TreeMap<String, Type>();
-        for (Map.Entry<String, Info> e: infos.entrySet()) {
+        for (Map.Entry<String, Info> e : infos.entrySet()) {
             Type mod = e.getValue().getType();
             if (mod != null) {
                 mods.put(e.getKey(), mod);

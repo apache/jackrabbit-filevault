@@ -1,28 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.impl;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
@@ -53,8 +55,7 @@ import org.slf4j.LoggerFactory;
 @Component(
         service = Packaging.class,
         immediate = true,
-        property = {"service.vendor=The Apache Software Foundation"}
-)
+        property = {"service.vendor=The Apache Software Foundation"})
 @Designate(ocd = PackagingImpl.Config.class)
 public class PackagingImpl implements Packaging {
 
@@ -65,10 +66,11 @@ public class PackagingImpl implements Packaging {
 
     @Reference
     private PackageEventDispatcher eventDispatcher;
-    
+
     // In case a PackageRegistry is exposed as OSGi Service the first one will be considered
     // as base registry to fall back for dependency checks - currently only FSPackageRegistry is exposed as such
-    @Reference (cardinality = ReferenceCardinality.MULTIPLE,
+    @Reference(
+            cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC,
             policyOption = ReferencePolicyOption.GREEDY)
     @SuppressWarnings("java:S3077") // volatile mandated by OSGi spec
@@ -81,33 +83,45 @@ public class PackagingImpl implements Packaging {
 
     Config config;
 
-    public PackagingImpl() {
-    }
+    public PackagingImpl() {}
 
-    @ObjectClassDefinition(
-            name = "Apache Jackrabbit FileVault Packaging Service (Package Manager Configuration)"
-    )
+    @ObjectClassDefinition(name = "Apache Jackrabbit FileVault Packaging Service (Package Manager Configuration)")
     @interface Config {
 
         /**
          * Defines the package roots of the package manager
          */
-        @AttributeDefinition(name = "Repository Path for Packages", description = "The locations in the repository which are used by the JCR package manager")
+        @AttributeDefinition(
+                name = "Repository Path for Packages",
+                description = "The locations in the repository which are used by the JCR package manager")
         String[] packageRoots() default {"/etc/packages"};
 
-        @AttributeDefinition(name = "Allowed Users for Hook Execution", description = "The authorizable ids or principal names which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
+        @AttributeDefinition(
+                name = "Allowed Users for Hook Execution",
+                description =
+                        "The authorizable ids or principal names which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForHookExecution();
 
-        @AttributeDefinition(name = "Allowed Users for Package Installation", description = "The authorizable ids or principal names which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
+        @AttributeDefinition(
+                name = "Allowed Users for Package Installation",
+                description =
+                        "The authorizable ids or principal names which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForRootInstallation();
 
-        @AttributeDefinition(name = "Default Strict Mode", description = "Whether by default imports are executed in strict mode. In strict mode every import failure leads to an exception, while without strict mode those failures are just logged but the import continues in a best effort manner")
+        @AttributeDefinition(
+                name = "Default Strict Mode",
+                description =
+                        "Whether by default imports are executed in strict mode. In strict mode every import failure leads to an exception, while without strict mode those failures are just logged but the import continues in a best effort manner")
         boolean isStrict() default true;
 
-        @AttributeDefinition(name = "Legacy Folder Primary Type Mode", description = "Whether to overwrite the primary type of folders during imports")
+        @AttributeDefinition(
+                name = "Legacy Folder Primary Type Mode",
+                description = "Whether to overwrite the primary type of folders during imports")
         boolean overwritePrimaryTypesOfFolders() default true;
 
-        @AttributeDefinition(name = "Default ID Conflict Policy", description = "Default node id conflict policy to use during import")
+        @AttributeDefinition(
+                name = "Default ID Conflict Policy",
+                description = "Default node id conflict policy to use during import")
         IdConflictPolicy defaultIdConflictPolicy() default IdConflictPolicy.FAIL;
     }
 
@@ -129,15 +143,21 @@ public class PackagingImpl implements Packaging {
      * {@inheritDoc}
      */
     public JcrPackageManager getPackageManager(Session session) {
-        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(session, config.packageRoots(), config.authIdsForHookExecution(),
-                config.authIdsForRootInstallation(), config.isStrict(), config.overwritePrimaryTypesOfFolders(),
+        JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(
+                session,
+                config.packageRoots(),
+                config.authIdsForHookExecution(),
+                config.authIdsForRootInstallation(),
+                config.isStrict(),
+                config.overwritePrimaryTypesOfFolders(),
                 config.defaultIdConflictPolicy());
         mgr.setDispatcher(eventDispatcher);
         setBaseRegistry(mgr.getInternalRegistry(), registries);
         return mgr;
     }
 
-    private static boolean setBaseRegistry(JcrPackageRegistry jcrPackageRegistry, List<PackageRegistry> otherRegistries) {
+    private static boolean setBaseRegistry(
+            JcrPackageRegistry jcrPackageRegistry, List<PackageRegistry> otherRegistries) {
         if (!otherRegistries.isEmpty()) {
             jcrPackageRegistry.setBaseRegistry(otherRegistries.get(0));
             return true;
@@ -145,7 +165,7 @@ public class PackagingImpl implements Packaging {
             return false;
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -162,7 +182,8 @@ public class PackagingImpl implements Packaging {
     }
 
     @Override
-    public PackageRegistry getCompositePackageRegistry(Session session, boolean useJcrRegistryAsPrimaryRegistry) throws IOException {
+    public PackageRegistry getCompositePackageRegistry(Session session, boolean useJcrRegistryAsPrimaryRegistry)
+            throws IOException {
         List<PackageRegistry> allRegistries = new ArrayList<>(registries);
         JcrPackageRegistry jcrPackageRegistry = getJcrPackageRegistry(session, false);
         if (useJcrRegistryAsPrimaryRegistry) {
@@ -184,9 +205,13 @@ public class PackagingImpl implements Packaging {
     }
 
     private JcrPackageRegistry getJcrPackageRegistry(Session session, boolean useBaseRegistry) {
-        JcrPackageRegistry registry = new JcrPackageRegistry(session,
-                new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation()),
-                config.isStrict(), config.overwritePrimaryTypesOfFolders(), config.defaultIdConflictPolicy(),
+        JcrPackageRegistry registry = new JcrPackageRegistry(
+                session,
+                new AbstractPackageRegistry.SecurityConfig(
+                        config.authIdsForHookExecution(), config.authIdsForRootInstallation()),
+                config.isStrict(),
+                config.overwritePrimaryTypesOfFolders(),
+                config.defaultIdConflictPolicy(),
                 config.packageRoots());
         registry.setDispatcher(eventDispatcher);
         if (useBaseRegistry) {

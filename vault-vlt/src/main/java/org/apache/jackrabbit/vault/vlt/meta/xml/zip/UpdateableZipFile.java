@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.vlt.meta.xml.zip;
 
 import java.io.BufferedOutputStream;
@@ -47,7 +48,6 @@ public class UpdateableZipFile {
      * default logger
      */
     private static final Logger log = LoggerFactory.getLogger(UpdateableZipFile.class);
-
 
     private final File file;
 
@@ -156,12 +156,11 @@ public class UpdateableZipFile {
         }
         // create tmp file
         File newZip = File.createTempFile(file.getName(), ".tmp", file.getParentFile());
-        try (ZipOutputStream out = new ZipOutputStream(
-                new BufferedOutputStream(new FileOutputStream(newZip)))) {
+        try (ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(newZip)))) {
             out.setLevel(Deflater.NO_COMPRESSION);
-    
+
             // add new files on top
-            for (Map.Entry<String, InputStream> update: toUpdate.entrySet()) {
+            for (Map.Entry<String, InputStream> update : toUpdate.entrySet()) {
                 ZipEntry entry = new ZipEntry(update.getKey());
                 out.putNextEntry(entry);
                 InputStream in = update.getValue();
@@ -171,7 +170,7 @@ public class UpdateableZipFile {
             // process existing zip entries
             if (file.exists()) {
                 try (InputStream in = FileUtils.openInputStream(file);
-                     ZipInputStream zin = new ZipInputStream(in)) {
+                        ZipInputStream zin = new ZipInputStream(in)) {
                     ZipEntry entry = zin.getNextEntry();
                     while (entry != null) {
                         if (!toUpdate.containsKey(entry.getName()) && !toDelete.contains(entry.getName())) {
@@ -179,7 +178,7 @@ public class UpdateableZipFile {
                             if (toMove.containsKey(entry.getName())) {
                                 newEntry = new ZipEntry(toMove.get(entry.getName()));
                                 newEntry.setTime(entry.getTime());
-                                //newEntry.setSize(entry.getSize());
+                                // newEntry.setSize(entry.getSize());
                             }
                             out.putNextEntry(newEntry);
                             copy(zin, out);
@@ -191,7 +190,7 @@ public class UpdateableZipFile {
         }
         toDelete.clear();
         toUpdate.clear();
-        
+
         // rotate files
         FileUtils.deleteQuietly(file);
         FileUtils.moveFile(newZip, file);

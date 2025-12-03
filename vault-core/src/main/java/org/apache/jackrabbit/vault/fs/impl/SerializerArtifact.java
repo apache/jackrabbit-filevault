@@ -1,29 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl;
+
+import javax.jcr.RepositoryException;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.output.DeferredFileOutputStream;
 import org.apache.jackrabbit.vault.fs.api.AccessType;
@@ -59,8 +60,8 @@ public class SerializerArtifact extends AbstractArtifact implements ExportArtifa
      *
      * @throws IllegalArgumentException if the type is not suitable.
      */
-    public SerializerArtifact(Artifact parent, String name, String ext, ArtifactType type,
-                              Serializer serializer, long lastModified) {
+    public SerializerArtifact(
+            Artifact parent, String name, String ext, ArtifactType type, Serializer serializer, long lastModified) {
         super(parent, name, ext, type);
         if (type == ArtifactType.DIRECTORY) {
             throw new IllegalArgumentException("Illegal type 'TYPE_DIRECTORY' for a serialized artifact.");
@@ -88,8 +89,7 @@ public class SerializerArtifact extends AbstractArtifact implements ExportArtifa
     /**
      * {@inheritDoc}
      */
-    public void spool(OutputStream out)
-            throws IOException, RepositoryException {
+    public void spool(OutputStream out) throws IOException, RepositoryException {
         serializer.writeContent(out);
     }
 
@@ -117,6 +117,7 @@ public class SerializerArtifact extends AbstractArtifact implements ExportArtifa
             return new VaultInputSource() {
                 private InputStream in = null;
                 private long size = -1;
+
                 @Override
                 public String getSystemId() {
                     return SerializerArtifact.this.getRelativePath();

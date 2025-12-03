@@ -1,24 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.rcp.impl;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 
 import javax.jcr.Credentials;
 import javax.jcr.Repository;
@@ -26,6 +24,14 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.davex.DAVExRepositoryFactory;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -42,17 +48,13 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /** {@code RcpTask}... */
-@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE,
-isGetterVisibility = JsonAutoDetect.Visibility.NONE,
-setterVisibility = JsonAutoDetect.Visibility.NONE,
-creatorVisibility = JsonAutoDetect.Visibility.ANY,
-fieldVisibility = JsonAutoDetect.Visibility.ANY)
+@JsonAutoDetect(
+        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+        setterVisibility = JsonAutoDetect.Visibility.NONE,
+        creatorVisibility = JsonAutoDetect.Visibility.ANY,
+        fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class RcpTaskImpl implements Runnable, RcpTask {
 
     /** default logger */
@@ -114,21 +116,34 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         }
     }
 
-    public RcpTaskImpl(ClassLoader classLoader, RepositoryAddress src, ConnectionOptions connectionOptions, Credentials srcCreds, String dst, String id, List<String> excludes,
-            @Nullable Boolean recursive) throws ConfigurationException {
+    public RcpTaskImpl(
+            ClassLoader classLoader,
+            RepositoryAddress src,
+            ConnectionOptions connectionOptions,
+            Credentials srcCreds,
+            String dst,
+            String id,
+            List<String> excludes,
+            @Nullable Boolean recursive)
+            throws ConfigurationException {
         this(classLoader, src, connectionOptions, srcCreds, dst, id, createFilterForExcludes(excludes), recursive);
         this.excludes = excludes;
     }
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-    public RcpTaskImpl(@JsonProperty("classLoader") ClassLoader dynLoader, @JsonProperty("source") RepositoryAddress src, @JsonProperty("connectionOptions") ConnectionOptions connectionOptions, @JsonProperty("srcCreds") Credentials srcCreds, @JsonProperty("destination") String dst, @JsonProperty("id") String id, @JsonProperty("filter") WorkspaceFilter srcFilter,
+    public RcpTaskImpl(
+            @JsonProperty("classLoader") ClassLoader dynLoader,
+            @JsonProperty("source") RepositoryAddress src,
+            @JsonProperty("connectionOptions") ConnectionOptions connectionOptions,
+            @JsonProperty("srcCreds") Credentials srcCreds,
+            @JsonProperty("destination") String dst,
+            @JsonProperty("id") String id,
+            @JsonProperty("filter") WorkspaceFilter srcFilter,
             @JsonProperty("recursive") @Nullable Boolean recursive) {
         this.src = src;
         this.dst = dst;
         this.srcCreds = srcCreds;
-        this.id = id == null || id.length() == 0
-                ? UUID.randomUUID().toString()
-                : id;
+        this.id = id == null || id.length() == 0 ? UUID.randomUUID().toString() : id;
         this.recursive = recursive != null ? recursive : false;
         this.classLoader = dynLoader;
         this.connectionOptions = connectionOptions;
@@ -150,7 +165,14 @@ public class RcpTaskImpl implements Runnable, RcpTask {
     }
 
     // additional constructor for editing existing tasks, all arguments are optional except the first one
-    public RcpTaskImpl(@NotNull RcpTaskImpl oldTask, @Nullable RepositoryAddress src, @Nullable ConnectionOptions connectionOptions, @Nullable Credentials srcCreds, @Nullable String dst, @Nullable List<String> excludes, @Nullable WorkspaceFilter srcFilter,
+    public RcpTaskImpl(
+            @NotNull RcpTaskImpl oldTask,
+            @Nullable RepositoryAddress src,
+            @Nullable ConnectionOptions connectionOptions,
+            @Nullable Credentials srcCreds,
+            @Nullable String dst,
+            @Nullable List<String> excludes,
+            @Nullable WorkspaceFilter srcFilter,
             @Nullable Boolean recursive) {
         this.src = src != null ? src : oldTask.src;
         this.connectionOptions = connectionOptions != null ? connectionOptions : oldTask.connectionOptions;
@@ -194,7 +216,9 @@ public class RcpTaskImpl implements Runnable, RcpTask {
     @Override
     public boolean stop() {
         // wait for thread
-        if (result.getState() != Result.State.STOPPED && result.getState() != Result.State.STOPPING && result.getState() != Result.State.NEW) {
+        if (result.getState() != Result.State.STOPPED
+                && result.getState() != Result.State.STOPPING
+                && result.getState() != Result.State.NEW) {
             rcp.abort();
             int cnt = 3;
             while (thread != null && thread.isAlive() && cnt-- > 0) {
@@ -271,9 +295,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
 
     public void run() {
         result = new ResultImpl(Result.State.RUNNING);
-        log.info("Starting repository copy task id={}. From {} to {}.", new Object[] {
-                id, src.toString(), dst
-        });
+        log.info("Starting repository copy task id={}. From {} to {}.", new Object[] {id, src.toString(), dst});
         try {
             rcp.copy(srcSession, src.getPath(), dstSession, dst, recursive);
             result = new ResultImpl(Result.State.ENDED);
@@ -343,38 +365,26 @@ public class RcpTaskImpl implements Runnable, RcpTask {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         RcpTaskImpl other = (RcpTaskImpl) obj;
         if (dst == null) {
-            if (other.dst != null)
-                return false;
-        } else if (!dst.equals(other.dst))
-            return false;
+            if (other.dst != null) return false;
+        } else if (!dst.equals(other.dst)) return false;
         if (excludes == null) {
-            if (other.excludes != null)
-                return false;
-        } else if (!excludes.equals(other.excludes))
-            return false;
+            if (other.excludes != null) return false;
+        } else if (!excludes.equals(other.excludes)) return false;
         if (!areFiltersEqual(filter, other.filter)) {
             return false;
         }
         if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (recursive != other.recursive)
-            return false;
+            if (other.id != null) return false;
+        } else if (!id.equals(other.id)) return false;
+        if (recursive != other.recursive) return false;
         if (src == null) {
-            if (other.src != null)
-                return false;
-        } else if (!src.equals(other.src))
-            return false;
+            if (other.src != null) return false;
+        } else if (!src.equals(other.src)) return false;
         if (!areCredentialsEqual(srcCreds, other.srcCreds)) {
             return false;
         }
@@ -388,8 +398,11 @@ public class RcpTaskImpl implements Runnable, RcpTask {
     @Override
     public String toString() {
         return "RcpTaskImpl [" + (id != null ? "id=" + id + ", " : "") + (src != null ? "src=" + src + ", " : "")
-                + (srcCreds != null ? "srcCreds=" + srcCreds + ", " : "") + (dst != null ? "dst=" + dst + ", " : "") + "recursive="
-                + recursive + ", " + (excludes != null ? "excludes=" + excludes + ", " : "") + (filter != null ? "filter=" + filter.getSourceAsString() + ", "  : "") + (rcp != null ? "rcp=" + repositoryCopierToString(rcp) + ", " : "") + "]";
+                + (srcCreds != null ? "srcCreds=" + srcCreds + ", " : "") + (dst != null ? "dst=" + dst + ", " : "")
+                + "recursive="
+                + recursive + ", " + (excludes != null ? "excludes=" + excludes + ", " : "")
+                + (filter != null ? "filter=" + filter.getSourceAsString() + ", " : "")
+                + (rcp != null ? "rcp=" + repositoryCopierToString(rcp) + ", " : "") + "]";
     }
 
     /** @param credentials
@@ -421,14 +434,16 @@ public class RcpTaskImpl implements Runnable, RcpTask {
             }
 
             for (String attributeName : simpleCredentials.getAttributeNames()) {
-                if (!simpleCredentials.getAttribute(attributeName).equals(simpleOtherCredentials.getAttribute(attributeName))) {
+                if (!simpleCredentials
+                        .getAttribute(attributeName)
+                        .equals(simpleOtherCredentials.getAttribute(attributeName))) {
                     return false;
                 }
             }
         }
         return true;
     }
-    
+
     /** Cannot rely on RepositoryCopier.equals() as not implemented in older versions of FileVault */
     static boolean areRepositoryCopiersEqual(RepositoryCopier rcp, RepositoryCopier otherRcp) {
         if (rcp == null || otherRcp == null) {
@@ -454,7 +469,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         }
         return true;
     }
-    
+
     /** Cannot rely on RepositoryCopier.equals() as not implemented in older versions of FileVault */
     static boolean areFiltersEqual(WorkspaceFilter filter, WorkspaceFilter otherFilter) {
         if (filter == null || otherFilter == null) {
@@ -470,6 +485,7 @@ public class RcpTaskImpl implements Runnable, RcpTask {
     }
 
     static String repositoryCopierToString(RepositoryCopier rcp) {
-        return "RepositoryCopier [batchSize=" + rcp.getBatchSize() + ", onlyNewer="+ rcp.isOnlyNewer() + ", update=" + rcp.isUpdate() + ", noOrdering=" + rcp.isNoOrdering() + ", throttle=" + rcp.getThrottle() + "]";
+        return "RepositoryCopier [batchSize=" + rcp.getBatchSize() + ", onlyNewer=" + rcp.isOnlyNewer() + ", update="
+                + rcp.isUpdate() + ", noOrdering=" + rcp.isNoOrdering() + ", throttle=" + rcp.getThrottle() + "]";
     }
 }

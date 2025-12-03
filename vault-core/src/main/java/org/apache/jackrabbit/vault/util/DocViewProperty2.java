@@ -1,31 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.util;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.jcr.Binary;
 import javax.jcr.InvalidSerializedDataException;
@@ -42,6 +33,16 @@ import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.jackrabbit.api.ReferenceBinary;
 import org.apache.jackrabbit.commons.jackrabbit.SimpleReferenceBinary;
 import org.apache.jackrabbit.spi.Name;
@@ -51,7 +52,6 @@ import org.apache.jackrabbit.spi.commons.conversion.NameResolver;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.util.XMLChar;
-import org.apache.jackrabbit.value.ValueFactoryImpl;
 import org.apache.jackrabbit.value.ValueHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -105,6 +105,7 @@ public class DocViewProperty2 {
      * set of unambiguous property names (which never need an explicit type descriptor as the types are defined by the spec)
      */
     private static final Set<Name> UNAMBIGUOUS = new HashSet<>();
+
     static {
         UNAMBIGUOUS.add(NameConstants.JCR_PRIMARYTYPE);
         UNAMBIGUOUS.add(NameConstants.JCR_MIXINTYPES);
@@ -121,7 +122,14 @@ public class DocViewProperty2 {
      * @return the new property
      * @throws RepositoryException
      */
-    public static @NotNull DocViewProperty2 fromValues(@NotNull Name name, @NotNull Value[] values, int type, boolean isMulti, boolean sort, boolean useBinaryReferences) throws RepositoryException {
+    public static @NotNull DocViewProperty2 fromValues(
+            @NotNull Name name,
+            @NotNull Value[] values,
+            int type,
+            boolean isMulti,
+            boolean sort,
+            boolean useBinaryReferences)
+            throws RepositoryException {
         List<String> strValues = new ArrayList<>();
         if (isMulti && sort) {
             Arrays.sort(values, ValueComparator.getInstance());
@@ -139,7 +147,8 @@ public class DocViewProperty2 {
                     isBinaryRef = isCurrentValueBinaryRef;
                 } else {
                     if (isBinaryRef != isCurrentValueBinaryRef) {
-                        throw new ValueFormatException("Mixed binary references and regular binary values in the same multi-value property is not supported");
+                        throw new ValueFormatException(
+                                "Mixed binary references and regular binary values in the same multi-value property is not supported");
                     }
                 }
             }
@@ -159,16 +168,18 @@ public class DocViewProperty2 {
      * @throws IllegalArgumentException if single value property and not exactly 1 value is given.
      * @throws RepositoryException if another error occurs
      */
-    public static @NotNull DocViewProperty2 fromProperty(@NotNull Property prop, boolean sort, boolean useBinaryReferences) throws RepositoryException {
+    public static @NotNull DocViewProperty2 fromProperty(
+            @NotNull Property prop, boolean sort, boolean useBinaryReferences) throws RepositoryException {
         boolean isMultiValue = prop.getDefinition().isMultiple();
         final Value[] values;
         if (isMultiValue) {
             values = prop.getValues();
         } else {
-            values = new Value[] { prop.getValue() };
+            values = new Value[] {prop.getValue()};
         }
         NameResolver nameResolver = new DefaultNamePathResolver(prop.getSession());
-        return fromValues(nameResolver.getQName(prop.getName()), values, prop.getType(), isMultiValue, sort, useBinaryReferences);
+        return fromValues(
+                nameResolver.getQName(prop.getName()), values, prop.getType(), isMultiValue, sort, useBinaryReferences);
     }
 
     static String serializeValue(Value value, boolean useBinaryReferences) throws RepositoryException {
@@ -209,7 +220,7 @@ public class DocViewProperty2 {
     public DocViewProperty2(@NotNull Name name, @NotNull String value) {
         this(name, Collections.singletonList(value), false, PropertyType.UNDEFINED, false);
     }
-    
+
     /**
      * Creates a new multi-value property.
      * @param name name of the property
@@ -238,7 +249,8 @@ public class DocViewProperty2 {
      * @param isRef {@code true} to indicate that this is a binary reference property
      * @throws IllegalArgumentException if single value property and not exactly 1 value is given
      */
-    protected DocViewProperty2(@NotNull Name name, @NotNull List<String> values, boolean isMultiValue, int type, boolean isRef) {
+    protected DocViewProperty2(
+            @NotNull Name name, @NotNull List<String> values, boolean isMultiValue, int type, boolean isRef) {
         this.name = name;
         this.values = Collections.unmodifiableList(values);
         this.isMultiValue = isMultiValue;
@@ -261,10 +273,11 @@ public class DocViewProperty2 {
      * @param value (attribute) value
      * @throws IllegalArgumentException in case the given value does not follow the doc view property grammar
      * @return a property
-     * @throws NamespaceException 
-     * @throws IllegalNameException 
+     * @throws NamespaceException
+     * @throws IllegalNameException
      */
-    public static @NotNull DocViewProperty2 parse(String name, String value, NameResolver nameResolver) throws IllegalNameException, NamespaceException {
+    public static @NotNull DocViewProperty2 parse(String name, String value, NameResolver nameResolver)
+            throws IllegalNameException, NamespaceException {
         return parse(nameResolver.getQName(name), value);
     }
 
@@ -274,10 +287,11 @@ public class DocViewProperty2 {
      * @param value (attribute) value
      * @throws IllegalArgumentException in case the given value does not follow the doc view property grammar
      * @return a property
-     * @throws NamespaceException 
-     * @throws IllegalNameException 
+     * @throws NamespaceException
+     * @throws IllegalNameException
      */
-    public static @NotNull DocViewProperty2 parse(Name name, String value) throws IllegalNameException, NamespaceException {
+    public static @NotNull DocViewProperty2 parse(Name name, String value)
+            throws IllegalNameException, NamespaceException {
         boolean isMulti = false;
         boolean isBinaryRef = false;
         int type = PropertyType.UNDEFINED;
@@ -399,7 +413,7 @@ public class DocViewProperty2 {
     public static @NotNull String format(@NotNull Property prop) throws RepositoryException {
         return format(prop, false, false);
     }
-    
+
     /**
      * Formats (serializes) the given JCR property value to the enhanced docview syntax.
      * @param prop the JCR property
@@ -413,13 +427,13 @@ public class DocViewProperty2 {
         return fromProperty(prop, sort, useBinaryReferences).formatValue();
     }
 
-    /** 
+    /**
      * Generates string representation of this DocView property value.
      * @return the string representation of the value
      */
     public @NotNull String formatValue() {
         StringBuilder attrValue = new StringBuilder();
-        
+
         if (isAmbiguous(type, name)) {
             final String strType;
             if (isReferenceProperty) {
@@ -432,7 +446,7 @@ public class DocViewProperty2 {
         if (isMultiValue) {
             attrValue.append('[');
         }
-        for (int i=0;i<values.size();i++) {
+        for (int i = 0; i < values.size(); i++) {
             String value = values.get(i);
             if (values.size() == 1 && value.length() == 0) {
                 // special case for empty string MV value (JCR-3661)
@@ -479,7 +493,7 @@ public class DocViewProperty2 {
      */
     protected static String escape(String value, boolean isMultiValue) {
         StringBuilder buf = new StringBuilder();
-        for (int i=0; i<value.length(); i++) {
+        for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
             if (c == '\\') {
                 buf.append("\\\\");
@@ -487,7 +501,7 @@ public class DocViewProperty2 {
                 buf.append("\\,");
             } else if (i == 0 && !isMultiValue && (c == '[' || c == '{')) {
                 buf.append('\\').append(c);
-            } else if ( XMLChar.isInvalid(c)) {
+            } else if (XMLChar.isInvalid(c)) {
                 buf.append("\\u");
                 buf.append(Text.hexTable[(c >> 12) & 15]);
                 buf.append(Text.hexTable[(c >> 8) & 15]);
@@ -556,7 +570,7 @@ public class DocViewProperty2 {
             if (vs != null && vs.length == values.size()) {
                 // quick check all values
                 boolean modified = false;
-                for (int i=0; i<vs.length; i++) {
+                for (int i = 0; i < vs.length; i++) {
                     if (!vs[i].getString().equals(values.get(i))) {
                         modified = true;
                     }
@@ -594,13 +608,16 @@ public class DocViewProperty2 {
         return false;
     }
 
-    private boolean applyBinary(@NotNull Node node, @Nullable Value... existingValues) throws ValueFormatException, VersionException, LockException, ConstraintViolationException, RepositoryException {
+    private boolean applyBinary(@NotNull Node node, @Nullable Value... existingValues)
+            throws ValueFormatException, VersionException, LockException, ConstraintViolationException,
+                    RepositoryException {
         List<Value> binaryValues = new ArrayList<>(values.size());
         if (!isReferenceProperty) {
             for (String value : values) {
                 // empty string is used for binary properties which should not be touched!
-                if (!value.isEmpty()) { 
-                    throw new InvalidSerializedDataException("Inline binaries are only supported as binary references, but is " + value);
+                if (!value.isEmpty()) {
+                    throw new InvalidSerializedDataException(
+                            "Inline binaries are only supported as binary references, but is " + value);
                 }
             }
             // just silently ignore binaries with only empty string values
@@ -608,7 +625,7 @@ public class DocViewProperty2 {
         }
         try {
             boolean modified = false;
-            for (int n=0; n < values.size(); n++) {
+            for (int n = 0; n < values.size(); n++) {
                 String value = values.get(n);
                 ReferenceBinary ref = new SimpleReferenceBinary(value);
                 Value binaryValue = node.getSession().getValueFactory().createValue(ref);
@@ -655,24 +672,16 @@ public class DocViewProperty2 {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         DocViewProperty2 other = (DocViewProperty2) obj;
-        if (isMultiValue != other.isMultiValue)
-            return false;
-        if (isReferenceProperty != other.isReferenceProperty)
-            return false;
+        if (isMultiValue != other.isMultiValue) return false;
+        if (isReferenceProperty != other.isReferenceProperty) return false;
         if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        if (type != other.type)
-            return false;
+            if (other.name != null) return false;
+        } else if (!name.equals(other.name)) return false;
+        if (type != other.type) return false;
         return (values.equals(other.values));
     }
 
@@ -682,8 +691,9 @@ public class DocViewProperty2 {
      */
     @Override
     public String toString() {
-        return "DocViewProperty2 [name=" + name + ", values=" + String.join(",", values) + ", isMultiValue=" + isMultiValue + ", type=" + PropertyType.nameFromValue(type)
-                + ", isReferenceProperty=" + isReferenceProperty + "]";
+        return "DocViewProperty2 [name=" + name + ", values=" + String.join(",", values) + ", isMultiValue="
+                + isMultiValue + ", type=" + PropertyType.nameFromValue(type) + ", isReferenceProperty="
+                + isReferenceProperty + "]";
     }
 
     public @NotNull Name getName() {
@@ -699,7 +709,7 @@ public class DocViewProperty2 {
     }
 
     /**
-     * 
+     *
      * @return one of the values defined in {@link PropertyType}
      */
     public int getType() {
@@ -726,7 +736,7 @@ public class DocViewProperty2 {
      * @return the value or empty if no value set. For multi value only the first item is returned
      * @throws ValueFormatException
      * @since 3.7.0
-     */ 
+     */
     public @NotNull Optional<Value> getValue(@NotNull ValueFactory valueFactory) throws ValueFormatException {
         if (!values.isEmpty()) {
             return Optional.of(valueFactory.createValue(values.get(0), getSafeType()));
@@ -742,13 +752,15 @@ public class DocViewProperty2 {
      */
     public @NotNull List<Value> getValues(@NotNull ValueFactory valueFactory) throws ValueFormatException {
         try {
-            return values.stream().map(v -> {
-                try {
-                    return valueFactory.createValue(v, getSafeType());
-                } catch (ValueFormatException e) {
-                    throw new UncheckedValueFormatException(e);
-                }
-            }).collect(Collectors.toList());
+            return values.stream()
+                    .map(v -> {
+                        try {
+                            return valueFactory.createValue(v, getSafeType());
+                        } catch (ValueFormatException e) {
+                            throw new UncheckedValueFormatException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
         } catch (UncheckedValueFormatException e) {
             throw e.getCause();
         }

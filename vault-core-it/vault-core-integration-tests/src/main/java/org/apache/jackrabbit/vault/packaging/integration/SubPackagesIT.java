@@ -1,26 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,9 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -48,6 +44,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests that covers sub packages. the package "my_packages:subtest" contains 2 sub packages
  * "my_packages:sub_a" and "my_packages:sub_b" which each contain 1 node /tmp/a and /tmp/b respectively.
@@ -57,19 +58,21 @@ public class SubPackagesIT extends IntegrationTestBase {
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {new String[]{"/etc/packages"}, false},
-                {new String[]{"/var/packages"}, false},
-                {new String[]{"/var/packages", "/etc/packages"}, false},
-                {new String[]{"/var/packages/deep/path"}, false}
+        return Arrays.asList(new Object[][] {
+            {new String[] {"/etc/packages"}, false},
+            {new String[] {"/var/packages"}, false},
+            {new String[] {"/var/packages", "/etc/packages"}, false},
+            {new String[] {"/var/packages/deep/path"}, false}
         });
     }
 
     private static final PackageId PACKAGE_ID_SUB_TEST = PackageId.fromString("my_packages:subtest");
     private static final PackageId PACKAGE_ID_SUB_A_SNAPSHOT = PackageId.fromString("my_packages/.snapshot:sub_a");
     private static final PackageId PACKAGE_ID_SUB_B_SNAPSHOT = PackageId.fromString("my_packages/.snapshot:sub_b");
-    private static final PackageId PACKAGE_ID_SUB_TEST_10 = PackageId.fromString("my_packages:subtest_test_version:1.0");
-    private static final PackageId PACKAGE_ID_SUB_TEST_101 = PackageId.fromString("my_packages:subtest_test_version:1.0.1");
+    private static final PackageId PACKAGE_ID_SUB_TEST_10 =
+            PackageId.fromString("my_packages:subtest_test_version:1.0");
+    private static final PackageId PACKAGE_ID_SUB_TEST_101 =
+            PackageId.fromString("my_packages:subtest_test_version:1.0.1");
 
     private final String[] packageRoots;
 
@@ -92,7 +95,8 @@ public class SubPackagesIT extends IntegrationTestBase {
      */
     public String getInstallationPath(PackageId id) {
         // make sure we use the one from the test parameter
-        return packageRoots[0] + "/" + ((JcrPackageRegistry)packMgr.getRegistry()).getRelativeInstallationPath(id) + ".zip";
+        return packageRoots[0] + "/" + ((JcrPackageRegistry) packMgr.getRegistry()).getRelativeInstallationPath(id)
+                + ".zip";
     }
 
     /**
@@ -124,11 +128,16 @@ public class SubPackagesIT extends IntegrationTestBase {
 
         JcrPackage p1 = packMgr.open(PACKAGE_ID_SUB_A);
         assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
-        assertEquals("has dependency to parent package", expected, p1.getDefinition().getDependencies()[0].toString());
+        assertEquals(
+                "has dependency to parent package",
+                expected,
+                p1.getDefinition().getDependencies()[0].toString());
         JcrPackage p2 = packMgr.open(PACKAGE_ID_SUB_B);
         assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
-        assertEquals("has dependency to parent package", expected, p2.getDefinition().getDependencies()[0].toString());
-
+        assertEquals(
+                "has dependency to parent package",
+                expected,
+                p2.getDefinition().getDependencies()[0].toString());
     }
 
     /**
@@ -198,7 +207,6 @@ public class SubPackagesIT extends IntegrationTestBase {
         assertNodeExists("/tmp/b");
     }
 
-
     /**
      * Installs a package that contains sub packages recursive
      */
@@ -224,7 +232,6 @@ public class SubPackagesIT extends IntegrationTestBase {
         assertNodeExists("/tmp/b");
     }
 
-
     /**
      * Uninstalls a package that contains sub packages non recursive
      */
@@ -249,7 +256,6 @@ public class SubPackagesIT extends IntegrationTestBase {
         assertPackageNodeMissing(PACKAGE_ID_SUB_B);
         assertNodeExists("/tmp/a");
         assertNodeExists("/tmp/b");
-
     }
 
     /**
@@ -276,7 +282,6 @@ public class SubPackagesIT extends IntegrationTestBase {
         assertPackageNodeMissing(PACKAGE_ID_SUB_B);
         assertNodeMissing("/tmp/a");
         assertNodeMissing("/tmp/b");
-
     }
 
     /**
@@ -284,7 +289,8 @@ public class SubPackagesIT extends IntegrationTestBase {
      */
     @Test
     public void testNonRecursiveClearsInstalledState() throws RepositoryException, IOException, PackageException {
-        JcrPackage packNewer = packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false);
+        JcrPackage packNewer =
+                packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false);
         assertNotNull(packNewer);
 
         // extract the sub packages, but don't install them.
@@ -295,7 +301,8 @@ public class SubPackagesIT extends IntegrationTestBase {
         // check for sub packages version 1.0.1 exists but not installed
         assertNodeMissing("/tmp/a");
         assertPackageNodeExists(PACKAGE_ID_SUB_TEST_101);
-        assertFalse(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_101))).isInstalled());
+        assertFalse(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_101)))
+                .isInstalled());
     }
 
     /**
@@ -325,7 +332,6 @@ public class SubPackagesIT extends IntegrationTestBase {
         assertPackageNodeMissing(PACKAGE_ID_SUB_B);
         assertNodeExists("/tmp/a");
         assertNodeMissing("/tmp/b");
-
     }
 
     /**
@@ -333,7 +339,8 @@ public class SubPackagesIT extends IntegrationTestBase {
      */
     @Test
     public void testSkipOlderVersionInstallation() throws RepositoryException, IOException, PackageException {
-        JcrPackage packNewer = packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false);
+        JcrPackage packNewer =
+                packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false);
         assertNotNull(packNewer);
 
         // install package that contains newer version of the sub package first
@@ -343,17 +350,19 @@ public class SubPackagesIT extends IntegrationTestBase {
 
         // check for sub packages version 1.0.1 exists
         assertPackageNodeExists(PACKAGE_ID_SUB_TEST_101);
-        assertTrue(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_101))).isInstalled());
+        assertTrue(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_101)))
+                .isInstalled());
         assertNodeExists("/tmp/b");
 
         opts = getDefaultOptions();
         opts.setNonRecursive(false);
-        JcrPackage packOlder = packMgr.upload(getStream("/test-packages/subtest_extract_contains_older_version.zip"), false);
+        JcrPackage packOlder =
+                packMgr.upload(getStream("/test-packages/subtest_extract_contains_older_version.zip"), false);
         packOlder.install(opts);
         assertPackageNodeExists(PACKAGE_ID_SUB_TEST_10);
-        assertFalse(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_10))).isInstalled());
+        assertFalse(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_10)))
+                .isInstalled());
         assertNodeMissing("/tmp/a");
-
     }
 
     /**
@@ -361,7 +370,8 @@ public class SubPackagesIT extends IntegrationTestBase {
      */
     @Test
     public void testNotSkipOlderVersionInstallation() throws RepositoryException, IOException, PackageException {
-        JcrPackage packNewer = packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false);
+        JcrPackage packNewer =
+                packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false);
         assertNotNull(packNewer);
 
         // extract the sub packages, but don't install them.
@@ -372,22 +382,27 @@ public class SubPackagesIT extends IntegrationTestBase {
         // check for sub packages version 1.0.1 exists but not installed
         assertNodeMissing("/tmp/a");
         assertPackageNodeExists(PACKAGE_ID_SUB_TEST_101);
-        assertFalse(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_101))).isInstalled());
+        assertFalse(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_101)))
+                .isInstalled());
 
         opts = getDefaultOptions();
         opts.setNonRecursive(false);
-        JcrPackage packOlder = packMgr.upload(getStream("/test-packages/subtest_extract_contains_older_version.zip"), false);
+        JcrPackage packOlder =
+                packMgr.upload(getStream("/test-packages/subtest_extract_contains_older_version.zip"), false);
         packOlder.install(opts);
         assertPackageNodeExists(PACKAGE_ID_SUB_TEST_10);
-        assertTrue(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_10))).isInstalled());
+        assertTrue(packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_10)))
+                .isInstalled());
         assertNodeExists("/tmp/a");
     }
 
     @Test
-    public void testDowngradeInstallationOfSubpackages() throws PathNotFoundException, RepositoryException, IOException, PackageException {
-        try (JcrPackage packNewer = packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false)) {
+    public void testDowngradeInstallationOfSubpackages()
+            throws PathNotFoundException, RepositoryException, IOException, PackageException {
+        try (JcrPackage packNewer =
+                packMgr.upload(getStream("/test-packages/subtest_extract_contains_newer_version.zip"), false)) {
             assertNotNull(packNewer);
-    
+
             // install package that contains newer version of the sub package first
             ImportOptions opts = getDefaultOptions();
             packNewer.install(opts);
@@ -398,15 +413,18 @@ public class SubPackagesIT extends IntegrationTestBase {
             assertTrue(subPackage.isInstalled());
         }
         assertNodeExists("/tmp/b");
-        
+
         // now install package which is supposed to downgrade
-        try (JcrPackage packOlder = packMgr.upload(getStream("/test-packages/subtest_extract_contains_older_version_force_downgrade.zip"), false)) {
+        try (JcrPackage packOlder = packMgr.upload(
+                getStream("/test-packages/subtest_extract_contains_older_version_force_downgrade.zip"), false)) {
             assertNotNull(packOlder);
             packOlder.install(getDefaultOptions());
         }
         assertPackageNodeExists(PACKAGE_ID_SUB_TEST_10);
         try (JcrPackage subPackage = packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_TEST_10)))) {
-            assertTrue("Older Subpackage is not installed, although it is explicitly requested to downgrade", subPackage.isInstalled());
+            assertTrue(
+                    "Older Subpackage is not installed, although it is explicitly requested to downgrade",
+                    subPackage.isInstalled());
         }
         assertNodeExists("/tmp/a");
     }
@@ -508,11 +526,17 @@ public class SubPackagesIT extends IntegrationTestBase {
 
         JcrPackage p1 = packMgr.open(PACKAGE_ID_SUB_A);
         assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
-        assertEquals("has dep inherited from parent", expected, p1.getDefinition().getDependencies()[0].toString());
+        assertEquals(
+                "has dep inherited from parent",
+                expected,
+                p1.getDefinition().getDependencies()[0].toString());
 
         JcrPackage p2 = packMgr.open(PACKAGE_ID_SUB_B);
         assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
-        assertEquals("has dep inherited from parent", expected, p2.getDefinition().getDependencies()[0].toString());
+        assertEquals(
+                "has dep inherited from parent",
+                expected,
+                p2.getDefinition().getDependencies()[0].toString());
 
         // parent package should node be be installed.
         assertEquals("Parent package with not content should be marked as installed.", true, pack.isInstalled());
@@ -537,10 +561,16 @@ public class SubPackagesIT extends IntegrationTestBase {
 
         JcrPackage p1 = packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_A)));
         assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
-        assertEquals("has dependency to parent package", expected, p1.getDefinition().getDependencies()[0].toString());
+        assertEquals(
+                "has dependency to parent package",
+                expected,
+                p1.getDefinition().getDependencies()[0].toString());
         JcrPackage p2 = packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_B)));
         assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
-        assertEquals("has dependency to parent package", expected, p2.getDefinition().getDependencies()[0].toString());
+        assertEquals(
+                "has dependency to parent package",
+                expected,
+                p2.getDefinition().getDependencies()[0].toString());
 
         // parent package should not be installed.
         assertEquals("Parent package with content should not be marked as installed.", false, pack.isInstalled());
@@ -565,10 +595,16 @@ public class SubPackagesIT extends IntegrationTestBase {
 
         JcrPackage p1 = packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_A)));
         assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
-        assertEquals("has dependency to parent package", expected, p1.getDefinition().getDependencies()[0].toString());
+        assertEquals(
+                "has dependency to parent package",
+                expected,
+                p1.getDefinition().getDependencies()[0].toString());
         JcrPackage p2 = packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_B)));
         assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
-        assertEquals("has dependency to parent package", expected, p2.getDefinition().getDependencies()[0].toString());
+        assertEquals(
+                "has dependency to parent package",
+                expected,
+                p2.getDefinition().getDependencies()[0].toString());
 
         // parent package should not be installed.
         assertEquals("Parent package with content should not be marked as installed.", false, pack.isInstalled());
@@ -634,10 +670,16 @@ public class SubPackagesIT extends IntegrationTestBase {
         String expected = new Dependency(p0.getDefinition().getId()).toString();
         JcrPackage p1 = packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_A)));
         assertEquals("has 1 dependency", 1, p1.getDefinition().getDependencies().length);
-        assertEquals("has dependency to parent package", expected, p1.getDefinition().getDependencies()[0].toString());
+        assertEquals(
+                "has dependency to parent package",
+                expected,
+                p1.getDefinition().getDependencies()[0].toString());
         JcrPackage p2 = packMgr.open(admin.getNode(getInstallationPath(PACKAGE_ID_SUB_B)));
         assertEquals("has 1 dependency", 1, p2.getDefinition().getDependencies().length);
-        assertEquals("has dependency to parent package", expected, p2.getDefinition().getDependencies()[0].toString());
+        assertEquals(
+                "has dependency to parent package",
+                expected,
+                p2.getDefinition().getDependencies()[0].toString());
     }
 
     @Test
@@ -686,7 +728,7 @@ public class SubPackagesIT extends IntegrationTestBase {
             }
             Collections.sort(entries);
             StringBuffer result = new StringBuffer();
-            for (String name: entries) {
+            for (String name : entries) {
                 // exclude some of the entries that depend on the repository setup
                 if ("jcr_root/etc/.content.xml".equals(name)
                         || "jcr_root/etc/packages/my_packages/.content.xml".equals(name)
@@ -695,40 +737,42 @@ public class SubPackagesIT extends IntegrationTestBase {
                 }
                 result.append(name).append("\n");
             }
-        
-            assertEquals("Filter must be correct",
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<workspaceFilter version=\"1.0\">\n" +
-                    "    <filter root=\"/etc/packages/my_packages/sub_a.zip\"/>\n" +
-                    "    <filter root=\"/etc/packages/my_packages/sub_b.zip\"/>\n" +
-                    "</workspaceFilter>\n", filter);
-    
-            assertEquals("Package must contain proper entries.",
-                    "META-INF/\n" +
-                    "META-INF/MANIFEST.MF\n" +
-                    "META-INF/vault/\n" +
-                    "META-INF/vault/config.xml\n" +
-                    "META-INF/vault/definition/\n" +
-                    "META-INF/vault/definition/.content.xml\n" +
-                    "META-INF/vault/filter.xml\n" +
-                    "META-INF/vault/nodetypes.cnd\n" +
-                    "META-INF/vault/properties.xml\n" +
-                    "jcr_root/.content.xml\n" +
-                    "jcr_root/etc/\n" +
-                    "jcr_root/etc/packages/\n" +
-                    "jcr_root/etc/packages/my_packages/\n" +
-                    "jcr_root/etc/packages/my_packages/sub_a.zip\n" +
-                    "jcr_root/etc/packages/my_packages/sub_a.zip.dir/\n" +
-                    "jcr_root/etc/packages/my_packages/sub_a.zip.dir/.content.xml\n" +
-                    "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/\n" +
-                    "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/_vlt_definition/\n" +
-                    "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/_vlt_definition/.content.xml\n" +
-                    "jcr_root/etc/packages/my_packages/sub_b.zip\n" +
-                    "jcr_root/etc/packages/my_packages/sub_b.zip.dir/\n" +
-                    "jcr_root/etc/packages/my_packages/sub_b.zip.dir/.content.xml\n" +
-                    "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/\n" +
-                    "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/_vlt_definition/\n" +
-                    "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/_vlt_definition/.content.xml\n", result.toString());
+
+            assertEquals(
+                    "Filter must be correct",
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<workspaceFilter version=\"1.0\">\n"
+                            + "    <filter root=\"/etc/packages/my_packages/sub_a.zip\"/>\n"
+                            + "    <filter root=\"/etc/packages/my_packages/sub_b.zip\"/>\n"
+                            + "</workspaceFilter>\n",
+                    filter);
+
+            assertEquals(
+                    "Package must contain proper entries.",
+                    "META-INF/\n" + "META-INF/MANIFEST.MF\n"
+                            + "META-INF/vault/\n"
+                            + "META-INF/vault/config.xml\n"
+                            + "META-INF/vault/definition/\n"
+                            + "META-INF/vault/definition/.content.xml\n"
+                            + "META-INF/vault/filter.xml\n"
+                            + "META-INF/vault/nodetypes.cnd\n"
+                            + "META-INF/vault/properties.xml\n"
+                            + "jcr_root/.content.xml\n"
+                            + "jcr_root/etc/\n"
+                            + "jcr_root/etc/packages/\n"
+                            + "jcr_root/etc/packages/my_packages/\n"
+                            + "jcr_root/etc/packages/my_packages/sub_a.zip\n"
+                            + "jcr_root/etc/packages/my_packages/sub_a.zip.dir/\n"
+                            + "jcr_root/etc/packages/my_packages/sub_a.zip.dir/.content.xml\n"
+                            + "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/\n"
+                            + "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/_vlt_definition/\n"
+                            + "jcr_root/etc/packages/my_packages/sub_a.zip.dir/_jcr_content/_vlt_definition/.content.xml\n"
+                            + "jcr_root/etc/packages/my_packages/sub_b.zip\n"
+                            + "jcr_root/etc/packages/my_packages/sub_b.zip.dir/\n"
+                            + "jcr_root/etc/packages/my_packages/sub_b.zip.dir/.content.xml\n"
+                            + "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/\n"
+                            + "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/_vlt_definition/\n"
+                            + "jcr_root/etc/packages/my_packages/sub_b.zip.dir/_jcr_content/_vlt_definition/.content.xml\n",
+                    result.toString());
         }
     }
 
@@ -739,7 +783,7 @@ public class SubPackagesIT extends IntegrationTestBase {
      */
     @Test
     public void testMixedPackageUpdatesCorrectly() throws Exception {
-       // install 1.0
+        // install 1.0
         JcrPackage pack = packMgr.upload(getStream("/test-packages/multipackage-a-1.0.zip"), false);
         assertNotNull(pack);
 
@@ -747,7 +791,7 @@ public class SubPackagesIT extends IntegrationTestBase {
         pack.install(opts);
 
         assertNodeExists("/tmp/testroot/sub");
-        assertProperty("/apps/test/version","1.0");
+        assertProperty("/apps/test/version", "1.0");
 
         // install 2.0
         pack = packMgr.upload(getStream("/test-packages/multipackage-a-2.0.zip"), false);
@@ -757,7 +801,6 @@ public class SubPackagesIT extends IntegrationTestBase {
         pack.install(opts);
 
         assertNodeExists("/tmp/testroot/sub");
-        assertProperty("/apps/test/version","2.0");
-
+        assertProperty("/apps/test/version", "2.0");
     }
 }

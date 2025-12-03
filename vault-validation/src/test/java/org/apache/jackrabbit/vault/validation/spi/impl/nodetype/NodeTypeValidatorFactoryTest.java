@@ -18,22 +18,21 @@
  */
 package org.apache.jackrabbit.vault.validation.spi.impl.nodetype;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 public class NodeTypeValidatorFactoryTest {
 
     @Test
     public void testParseNamespaces() {
-        String optionValue = "ns1=http://uri1,\n"
-                + "     ns2 = http://uri2,ns3=http://uri3";
-        Map<String,String> actual = NodeTypeValidatorFactory.parseNamespaces(optionValue);
+        String optionValue = "ns1=http://uri1,\n" + "     ns2 = http://uri2,ns3=http://uri3";
+        Map<String, String> actual = NodeTypeValidatorFactory.parseNamespaces(optionValue);
 
-        Map<String,String> expected = new HashMap<>();
+        Map<String, String> expected = new HashMap<>();
         expected.put("ns1", "http://uri1");
         expected.put("ns2", "http://uri2");
         expected.put("ns3", "http://uri3");
@@ -42,14 +41,11 @@ public class NodeTypeValidatorFactoryTest {
 
     @Test
     public void testParseNamespacesMixedInvalid() {
-        String optionValue = "ns1=http://uri1,\n"
-                + "     abc,def=\n,"
-                + "=http://xyz,aa=bb=cc";
-        Map<String,String> actual = NodeTypeValidatorFactory.parseNamespaces(optionValue);
+        String optionValue = "ns1=http://uri1,\n" + "     abc,def=\n," + "=http://xyz,aa=bb=cc";
+        Map<String, String> actual = NodeTypeValidatorFactory.parseNamespaces(optionValue);
 
-        Map<String,String> expected = new HashMap<>();
+        Map<String, String> expected = new HashMap<>();
         expected.put("ns1", "http://uri1");
         assertEquals(expected, actual);
     }
-
 }

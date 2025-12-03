@@ -1,21 +1,27 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl;
+
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,11 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.LinkedList;
-
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.AccessType;
@@ -71,14 +72,14 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
      */
     private final int valueIndex;
 
-    public PropertyValueArtifact(Artifact parent, String relPath, String ext, ArtifactType type,
-                                 Property prop, long lastModified)
+    public PropertyValueArtifact(
+            Artifact parent, String relPath, String ext, ArtifactType type, Property prop, long lastModified)
             throws RepositoryException {
         this(parent, relPath, ext, type, prop, -1, lastModified);
     }
 
-    public PropertyValueArtifact(Artifact parent, String relPath, String ext, ArtifactType type,
-                                 Property prop, int index, long lastModified)
+    public PropertyValueArtifact(
+            Artifact parent, String relPath, String ext, ArtifactType type, Property prop, int index, long lastModified)
             throws RepositoryException {
         super(parent, relPath, ext, type);
         this.property = prop;
@@ -88,7 +89,7 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
                 index = 0;
             }
         } else {
-            if (index >=0) {
+            if (index >= 0) {
                 index = -1;
             }
         }
@@ -111,13 +112,13 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
      * @return a collection of Artifacts.
      * @throws RepositoryException if an error occurs
      */
-    public static Collection<PropertyValueArtifact> create(Artifact parent,
-                   String relPath, String ext, ArtifactType type, Property prop, long lastModified)
+    public static Collection<PropertyValueArtifact> create(
+            Artifact parent, String relPath, String ext, ArtifactType type, Property prop, long lastModified)
             throws RepositoryException {
         LinkedList<PropertyValueArtifact> list = new LinkedList<PropertyValueArtifact>();
         if (prop.getDefinition().isMultiple()) {
             Value[] values = prop.getValues();
-            for (int i=0; i<values.length; i++) {
+            for (int i = 0; i < values.length; i++) {
                 StringBuffer n = new StringBuffer(relPath);
                 n.append('[').append(i).append(']');
                 list.add(new PropertyValueArtifact(parent, n.toString(), ext, type, prop, i, lastModified));
@@ -148,7 +149,7 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
      * {@inheritDoc}
      */
     public InputStream getInputStream() throws IOException, RepositoryException {
-        return tmpFile == null ?  new PVAInputStream() : new FileInputStream(tmpFile);
+        return tmpFile == null ? new PVAInputStream() : new FileInputStream(tmpFile);
     }
 
     /**
@@ -166,7 +167,7 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
             tmpFile.setLastModified(getLastModified());
             tmpFile.deleteOnExit();
             try (FileOutputStream out = new FileOutputStream(tmpFile);
-                 InputStream in = getValue().getBinary().getStream()) {
+                    InputStream in = getValue().getBinary().getStream()) {
                 IOUtils.copy(in, out);
             }
         }
@@ -190,7 +191,6 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
             public InputStream getByteStream() {
                 return in;
             }
-
 
             public long getContentLength() {
                 return PropertyValueArtifact.this.getContentLength();
@@ -370,5 +370,4 @@ public class PropertyValueArtifact extends AbstractArtifact implements ExportArt
             return stream.markSupported();
         }
     }
-
 }

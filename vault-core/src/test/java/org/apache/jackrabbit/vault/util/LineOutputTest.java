@@ -1,28 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.util;
-
-import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * {@code LineOutputTest}...
@@ -32,33 +33,33 @@ public class LineOutputTest {
 
     @Test
     public void testInput0() throws Exception {
-        byte[] in = new byte[]{0,0,0,0x0a,0,0,0,0x0a,0,0,0};
-        byte[] u = new byte[]{0,0,0,0x0a,0,0,0,0x0a,0,0,0};
-        byte[] w = new byte[]{0,0,0,0x0d,0x0a,0,0,0,0x0d,0x0a,0,0,0};
+        byte[] in = new byte[] {0, 0, 0, 0x0a, 0, 0, 0, 0x0a, 0, 0, 0};
+        byte[] u = new byte[] {0, 0, 0, 0x0a, 0, 0, 0, 0x0a, 0, 0, 0};
+        byte[] w = new byte[] {0, 0, 0, 0x0d, 0x0a, 0, 0, 0, 0x0d, 0x0a, 0, 0, 0};
         doTest(in, u, w);
     }
 
     @Test
     public void testInput1() throws Exception {
-        byte[] in = new byte[]{0,0,0,0x0a,0,0,0,0x0a,0,0,0x0a};
-        byte[] u = new byte[]{0,0,0,0x0a,0,0,0,0x0a,0,0,0x0a};
-        byte[] w = new byte[]{0,0,0,0x0d,0x0a,0,0,0,0x0d,0x0a,0,0,0x0d,0x0a};
+        byte[] in = new byte[] {0, 0, 0, 0x0a, 0, 0, 0, 0x0a, 0, 0, 0x0a};
+        byte[] u = new byte[] {0, 0, 0, 0x0a, 0, 0, 0, 0x0a, 0, 0, 0x0a};
+        byte[] w = new byte[] {0, 0, 0, 0x0d, 0x0a, 0, 0, 0, 0x0d, 0x0a, 0, 0, 0x0d, 0x0a};
         doTest(in, u, w);
     }
 
     @Test
     public void testInput2() throws Exception {
-        byte[] in = new byte[]{0,0,0,0x0a,0x0d,0,0,0,0x0a,0x0d,0,0,0x0a,0x0d};
-        byte[] u = new byte[]{0,0,0,0x0a,0,0,0,0x0a,0,0,0x0a};
-        byte[] w = new byte[]{0,0,0,0x0d,0x0a,0,0,0,0x0d,0x0a,0,0,0x0d,0x0a};
+        byte[] in = new byte[] {0, 0, 0, 0x0a, 0x0d, 0, 0, 0, 0x0a, 0x0d, 0, 0, 0x0a, 0x0d};
+        byte[] u = new byte[] {0, 0, 0, 0x0a, 0, 0, 0, 0x0a, 0, 0, 0x0a};
+        byte[] w = new byte[] {0, 0, 0, 0x0d, 0x0a, 0, 0, 0, 0x0d, 0x0a, 0, 0, 0x0d, 0x0a};
         doTest(in, u, w);
     }
 
     @Test
     public void testInput3() throws Exception {
-        byte[] in = new byte[]{0,0,0,0x0a,0x0a,0,0,0,0x0d,0x0d,0,0,0x0a,0x0d};
-        byte[] u = new byte[]{0,0,0,0x0a,0x0a,0,0,0,0x0a,0x0a,0,0,0x0a};
-        byte[] w = new byte[]{0,0,0,0x0d,0x0a,0x0d,0x0a,0,0,0,0x0d,0x0a,0x0d,0x0a,0,0,0x0d,0x0a};
+        byte[] in = new byte[] {0, 0, 0, 0x0a, 0x0a, 0, 0, 0, 0x0d, 0x0d, 0, 0, 0x0a, 0x0d};
+        byte[] u = new byte[] {0, 0, 0, 0x0a, 0x0a, 0, 0, 0, 0x0a, 0x0a, 0, 0, 0x0a};
+        byte[] w = new byte[] {0, 0, 0, 0x0d, 0x0a, 0x0d, 0x0a, 0, 0, 0, 0x0d, 0x0a, 0x0d, 0x0a, 0, 0, 0x0d, 0x0a};
         doTest(in, u, w);
     }
 
@@ -88,13 +89,13 @@ public class LineOutputTest {
 
     @Test
     public void testLarge1() throws Exception {
-        byte[] in = new byte[3*8192];
+        byte[] in = new byte[3 * 8192];
         Arrays.fill(in, (byte) 20);
         in[8192] = 0xa;
-        byte[] u = new byte[3*8192];
+        byte[] u = new byte[3 * 8192];
         Arrays.fill(u, (byte) 20);
         u[8192] = 0xa;
-        byte[] w = new byte[3*8192 + 1];
+        byte[] w = new byte[3 * 8192 + 1];
         Arrays.fill(w, (byte) 20);
         w[8192] = 0xd;
         w[8193] = 0xa;
@@ -108,17 +109,17 @@ public class LineOutputTest {
 
     private void check(byte[] in, byte[] expect, byte[] ls) throws Exception {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        LineOutputStream lo = new LineOutputStream(bo,ls);
+        LineOutputStream lo = new LineOutputStream(bo, ls);
         lo.write(in);
         lo.close();
         byte[] result = bo.toByteArray();
 
         StringBuffer hexIn = new StringBuffer();
-        for (byte b: expect) {
+        for (byte b : expect) {
             hexIn.append(String.format("%x, ", b));
         }
         StringBuffer hexOut = new StringBuffer();
-        for (byte b: result) {
+        for (byte b : result) {
             hexOut.append(String.format("%x, ", b));
         }
         assertEquals(hexIn.toString(), hexOut.toString());

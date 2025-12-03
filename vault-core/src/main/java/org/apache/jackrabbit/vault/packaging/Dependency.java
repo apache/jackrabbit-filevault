@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Implements a package dependency reference.
- * 
+ *
  * The string representation is {@code <group>:<name>[:<versionrange>]}
  * @since 2.0
  * @see VersionRange
@@ -148,9 +149,7 @@ public class Dependency {
      * @return {@code true} if matches
      */
     public boolean matches(@NotNull PackageId id) {
-        return groupId.equals(id.getGroup())
-                && name.equals(id.getName())
-                && range.isInRange(id.getVersion());
+        return groupId.equals(id.getGroup()) && name.equals(id.getName()) && range.isInRange(id.getVersion());
     }
 
     /**
@@ -189,7 +188,7 @@ public class Dependency {
             if (idx >= 0 && groupId.length() == 0) {
                 groupId = name.substring(0, idx);
                 name = name.substring(idx + 1);
-            } else if ((idx = groupId.lastIndexOf('/')) >=0 && isVersion) {
+            } else if ((idx = groupId.lastIndexOf('/')) >= 0 && isVersion) {
                 groupId = segs[0].substring(0, idx);
                 name = segs[0].substring(idx + 1);
                 range = segs[1];
@@ -215,7 +214,7 @@ public class Dependency {
         boolean inRange = false;
         int start = 0;
         boolean wasSeg = false;
-        for (int i=0; i<str.length(); i++) {
+        for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             if (c == ',') {
                 if (!inRange) {
@@ -239,14 +238,14 @@ public class Dependency {
         }
         return deps.toArray(new Dependency[deps.size()]);
     }
-    
+
     /**
      * Returns dependencies from the given strings.
      * @param str the strings
      * @return the dependencies
      */
     @NotNull
-    public static Dependency[] fromString(@NotNull String ... str) {
+    public static Dependency[] fromString(@NotNull String... str) {
         List<Dependency> deps = new ArrayList<>(str.length);
         for (String s : str) {
             Dependency dep = Dependency.fromString(s);
@@ -263,13 +262,13 @@ public class Dependency {
      * @return the strings
      */
     @NotNull
-    public static String toString(@NotNull Dependency ... deps) {
+    public static String toString(@NotNull Dependency... deps) {
         String delim = "";
         StringBuilder b = new StringBuilder();
-        for (Dependency dep: deps) {
+        for (Dependency dep : deps) {
             if (dep != null) {
                 b.append(delim).append(dep);
-                delim=",";
+                delim = ",";
             }
         }
         return b.toString();
@@ -283,13 +282,11 @@ public class Dependency {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        return this == obj ||
-                obj instanceof Dependency && str.equals(obj.toString());
+        return this == obj || obj instanceof Dependency && str.equals(obj.toString());
     }
 
     @Override
     public int hashCode() {
         return str.hashCode();
     }
-
 }

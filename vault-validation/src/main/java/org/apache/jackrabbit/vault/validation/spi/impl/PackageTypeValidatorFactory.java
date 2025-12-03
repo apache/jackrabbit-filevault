@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
@@ -43,13 +45,14 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
     public static final String OPTION_JCR_INSTALLER_NODE_PATH_REGEX = "jcrInstallerNodePathRegex";
 
     /**
-     * The option to specify the regex of the <i>file</i> node paths which all OSGi bundles and configuration within packages 
+     * The option to specify the regex of the <i>file</i> node paths which all OSGi bundles and configuration within packages
      * must match in addition to {@code jcrInstallerPathRegex}.
      * @see <a href="https://sling.apache.org/documentation/bundles/jcr-installer-provider.html">JCR Installer</a>
-     * 
+     *
      * Some artifacts are not based on file nodes (e.g. sling:OsgiConfig nodes), those do not need to match this regex.
      */
-    public static final String OPTION_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX = "additionalJcrInstallerFileNodePathRegex";
+    public static final String OPTION_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX =
+            "additionalJcrInstallerFileNodePathRegex";
 
     public static final String OPTION_SEVERITY_FOR_LEGACY_TYPE = "legacyTypeSeverity";
 
@@ -59,15 +62,19 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
 
     public static final String OPTION_PROHIBIT_IMMUTABLE_CONTENT = "prohibitImmutableContent";
 
-    public static final String OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES = "allowComplexFilterRulesInApplicationPackages";
+    public static final String OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES =
+            "allowComplexFilterRulesInApplicationPackages";
 
-    public static final String OPTION_ALLOW_INSTALL_HOOKS_IN_APPLICATION_PACKAGES = "allowInstallHooksInApplicationPackages";
+    public static final String OPTION_ALLOW_INSTALL_HOOKS_IN_APPLICATION_PACKAGES =
+            "allowInstallHooksInApplicationPackages";
 
     private static final String OPTION_IMMUTABLE_ROOT_NODE_NAMES = "immutableRootNodeNames";
 
-    static final Pattern DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX = Pattern.compile("/([^/]*/){0,4}?(install|config)[\\./].*");
+    static final Pattern DEFAULT_JCR_INSTALLER_NODE_PATH_REGEX =
+            Pattern.compile("/([^/]*/){0,4}?(install|config)[\\./].*");
 
-    static final Pattern DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX = Pattern.compile(".*\\.(config|cfg|cfg\\.json|jar)");
+    static final Pattern DEFAULT_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX =
+            Pattern.compile(".*\\.(config|cfg|cfg\\.json|jar)");
 
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_LEGACY_TYPE = ValidationMessageSeverity.WARN;
     private static final ValidationMessageSeverity DEFAULT_SEVERITY_FOR_NO_TYPE = ValidationMessageSeverity.WARN;
@@ -75,7 +82,8 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
     static final Set<String> DEFAULT_IMMUTABLE_ROOT_NODE_NAMES = new TreeSet<>(Arrays.asList("apps", "libs"));
 
     @Override
-    public @Nullable Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
+    public @Nullable Validator createValidator(
+            @NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         // evaluate options
         final Pattern jcrInstallerAdditionalFileNodePathRegex;
         if (settings.getOptions().containsKey(OPTION_JCR_INSTALLER_ADDITIONAL_FILE_NODE_PATH_REGEX)) {
@@ -119,25 +127,45 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
         }
         final boolean allowComplexFilterRulesInApplicationPackages;
         if (settings.getOptions().containsKey(OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES)) {
-            allowComplexFilterRulesInApplicationPackages = Boolean.valueOf(settings.getOptions().get(OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES));
+            allowComplexFilterRulesInApplicationPackages = Boolean.valueOf(
+                    settings.getOptions().get(OPTION_ALLOW_COMPLEX_FILTER_RULES_IN_APPLICATION_PACKAGES));
         } else {
             allowComplexFilterRulesInApplicationPackages = false;
         }
         final boolean allowInstallHooksInApplicationPackages;
         if (settings.getOptions().containsKey(OPTION_ALLOW_INSTALL_HOOKS_IN_APPLICATION_PACKAGES)) {
-            allowInstallHooksInApplicationPackages = Boolean.valueOf(settings.getOptions().get(OPTION_ALLOW_INSTALL_HOOKS_IN_APPLICATION_PACKAGES));
+            allowInstallHooksInApplicationPackages =
+                    Boolean.valueOf(settings.getOptions().get(OPTION_ALLOW_INSTALL_HOOKS_IN_APPLICATION_PACKAGES));
         } else {
             allowInstallHooksInApplicationPackages = false;
         }
         final Set<String> immutableRootNodeNames;
         if (settings.getOptions().containsKey(OPTION_IMMUTABLE_ROOT_NODE_NAMES)) {
             String immutableRootNodeNamesValue = settings.getOptions().get(OPTION_IMMUTABLE_ROOT_NODE_NAMES);
-            immutableRootNodeNames = Arrays.stream(immutableRootNodeNamesValue.split(",")).map(String::trim).collect(Collectors.toSet());
+            immutableRootNodeNames = Arrays.stream(immutableRootNodeNamesValue.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toSet());
         } else {
             immutableRootNodeNames = DEFAULT_IMMUTABLE_ROOT_NODE_NAMES;
         }
-        @NotNull PackageType packageType = (context.getProperties().getPackageType() != null) ? context.getProperties().getPackageType() : PackageType.MIXED;
-        return new PackageTypeValidator(context.getFilter(), settings.getDefaultSeverity(), severityForNoType, severityForLegacyType, prohibitMutableContent, prohibitImmutableContent, allowComplexFilterRulesInApplicationPackages, allowInstallHooksInApplicationPackages, packageType, jcrInstallerNodePathRegex, jcrInstallerAdditionalFileNodePathRegex, immutableRootNodeNames, context.getContainerValidationContext());
+        @NotNull
+        PackageType packageType = (context.getProperties().getPackageType() != null)
+                ? context.getProperties().getPackageType()
+                : PackageType.MIXED;
+        return new PackageTypeValidator(
+                context.getFilter(),
+                settings.getDefaultSeverity(),
+                severityForNoType,
+                severityForLegacyType,
+                prohibitMutableContent,
+                prohibitImmutableContent,
+                allowComplexFilterRulesInApplicationPackages,
+                allowInstallHooksInApplicationPackages,
+                packageType,
+                jcrInstallerNodePathRegex,
+                jcrInstallerAdditionalFileNodePathRegex,
+                immutableRootNodeNames,
+                context.getContainerValidationContext());
     }
 
     @Override
@@ -154,6 +182,4 @@ public final class PackageTypeValidatorFactory implements ValidatorFactory {
     public int getServiceRanking() {
         return 0;
     }
-
-    
 }

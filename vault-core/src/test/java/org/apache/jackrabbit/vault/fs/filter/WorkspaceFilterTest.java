@@ -1,27 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.fs.filter;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +36,13 @@ import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * {@code WorkspaceFilterTest}...
@@ -119,8 +121,7 @@ public class WorkspaceFilterTest {
     }
 
     @Test
-    public void testLoadingWorkspaceFilter()
-            throws IOException, ConfigurationException {
+    public void testLoadingWorkspaceFilter() throws IOException, ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         try (InputStream input = getClass().getResourceAsStream("workspacefilters/items.xml")) {
             filter.load(input);
@@ -144,11 +145,13 @@ public class WorkspaceFilterTest {
         assertEquals(1, propertyFilters.size());
         FilterSet.Entry<PathFilter> propertyFilter = propertyFilters.get(0);
         assertFalse(propertyFilter.isInclude());
-        
+
         // make sure serialization format is kept (including comments)
         try (InputStream input = getClass().getResourceAsStream("workspacefilters/items.xml");
-             InputStream actualInput = filter.getSource()) {
-            assertEquals(IOUtils.toString(input, StandardCharsets.UTF_8), IOUtils.toString(actualInput, StandardCharsets.UTF_8));
+                InputStream actualInput = filter.getSource()) {
+            assertEquals(
+                    IOUtils.toString(input, StandardCharsets.UTF_8),
+                    IOUtils.toString(actualInput, StandardCharsets.UTF_8));
         }
     }
 
@@ -159,7 +162,7 @@ public class WorkspaceFilterTest {
             filter.load(input);
         }
         filter.resetSource();
-        
+
         try (InputStream input = getClass().getResourceAsStream("workspacefilters/complex-expected.xml")) {
             String expected = IOUtils.toString(input, StandardCharsets.UTF_8);
             assertEquals("Filter source", expected, filter.getSourceAsString());
@@ -167,13 +170,12 @@ public class WorkspaceFilterTest {
     }
 
     @Test
-    public void testGeneratedSourceFromCode() throws ConfigurationException  {
-        String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<workspaceFilter version=\"1.0\">\n" +
-                "    <filter root=\"/tmp\">\n" +
-                "        <include pattern=\"/tmp\"/>\n" +
-                "    </filter>\n" +
-                "</workspaceFilter>\n";
+    public void testGeneratedSourceFromCode() throws ConfigurationException {
+        String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<workspaceFilter version=\"1.0\">\n"
+                + "    <filter root=\"/tmp\">\n"
+                + "        <include pattern=\"/tmp\"/>\n"
+                + "    </filter>\n"
+                + "</workspaceFilter>\n";
 
         PathFilterSet props = new PathFilterSet("/tmp");
         PathFilterSet nodes = new PathFilterSet("/tmp");
@@ -184,18 +186,16 @@ public class WorkspaceFilterTest {
         filter.add(nodes, props);
 
         assertEquals(expected, filter.getSourceAsString());
-
     }
 
     @Test
-    public void testGeneratedSourceFromCodeWithProps() throws ConfigurationException  {
-        String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<workspaceFilter version=\"1.0\">\n" +
-                "    <filter root=\"/foo\"/>\n" +
-                "    <filter root=\"/tmp\">\n" +
-                "        <exclude pattern=\"/tmp/foo/p.*\" matchProperties=\"true\"/>\n" +
-                "    </filter>\n" +
-                "</workspaceFilter>\n";
+    public void testGeneratedSourceFromCodeWithProps() throws ConfigurationException {
+        String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<workspaceFilter version=\"1.0\">\n"
+                + "    <filter root=\"/foo\"/>\n"
+                + "    <filter root=\"/tmp\">\n"
+                + "        <exclude pattern=\"/tmp/foo/p.*\" matchProperties=\"true\"/>\n"
+                + "    </filter>\n"
+                + "</workspaceFilter>\n";
 
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
@@ -205,7 +205,6 @@ public class WorkspaceFilterTest {
         filter.add(new PathFilterSet("/tmp"), properties);
 
         assertEquals(expected, filter.getSourceAsString());
-
     }
 
     @Test
@@ -256,7 +255,7 @@ public class WorkspaceFilterTest {
         }
     }
 
-    @Test(expected=ConfigurationException.class)
+    @Test(expected = ConfigurationException.class)
     public void testInvalidPattern() throws IOException, ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         try (InputStream input = getClass().getResourceAsStream("workspacefilters/invalid-pattern.xml")) {

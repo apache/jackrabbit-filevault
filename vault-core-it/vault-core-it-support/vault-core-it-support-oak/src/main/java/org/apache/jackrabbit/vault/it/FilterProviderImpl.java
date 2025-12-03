@@ -1,20 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.it;
+
+import javax.jcr.RepositoryException;
+
+import java.security.Principal;
+import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -41,11 +49,6 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jcr.RepositoryException;
-import java.security.Principal;
-import java.util.Map;
-import java.util.Set;
-
 import static com.google.common.base.Preconditions.checkState;
 
 /**
@@ -53,7 +56,7 @@ import static com.google.common.base.Preconditions.checkState;
  * org.apache.jackrabbit.oak.spi.security.authorization.principalbased.impl.FilterProviderImpl @ 25c01b8</a> due to
  * <a href="https://issues.apache.org/jira/browse/OAK-10332">OAK-10332</a>.
  * <p>
- * 
+ *
  * Implementation of the {@link org.apache.jackrabbit.oak.spi.security.authorization.principalbased.Filter} interface that
  * consists of the following two filtering conditions:
  *
@@ -62,7 +65,9 @@ import static com.google.common.base.Preconditions.checkState;
  *     <li>All principals in the set must be located in the repository below the configured path.</li>
  * </ol>
  */
-@Component(service = {FilterProvider.class}, configurationPolicy = ConfigurationPolicy.REQUIRE)
+@Component(
+        service = {FilterProvider.class},
+        configurationPolicy = ConfigurationPolicy.REQUIRE)
 @Designate(ocd = FilterProviderImpl.Configuration.class)
 public class FilterProviderImpl implements FilterProvider {
 
@@ -70,7 +75,8 @@ public class FilterProviderImpl implements FilterProvider {
     public @interface Configuration {
         @AttributeDefinition(
                 name = "Path",
-                description = "Required path underneath which all filtered system-user-principals must be located in the repository.")
+                description =
+                        "Required path underneath which all filtered system-user-principals must be located in the repository.")
         String path();
     }
 
@@ -81,7 +87,7 @@ public class FilterProviderImpl implements FilterProvider {
     private final Map<String, String> validatedPrincipalNamesPathMap = Maps.newConcurrentMap();
     private final Map<String, String> unsupportedPrincipalNames = Maps.newConcurrentMap();
 
-    //-----------------------------------------------------< FilterProvider >---
+    // -----------------------------------------------------< FilterProvider >---
 
     @Override
     public boolean handlesPath(@NotNull String oakPath) {
@@ -96,12 +102,15 @@ public class FilterProviderImpl implements FilterProvider {
 
     @NotNull
     @Override
-    public Filter getFilter(@NotNull SecurityProvider securityProvider, @NotNull Root root, @NotNull NamePathMapper namePathMapper) {
-        PrincipalProvider principalProvider = securityProvider.getConfiguration(PrincipalConfiguration.class).getPrincipalProvider(root, namePathMapper);
+    public Filter getFilter(
+            @NotNull SecurityProvider securityProvider, @NotNull Root root, @NotNull NamePathMapper namePathMapper) {
+        PrincipalProvider principalProvider = securityProvider
+                .getConfiguration(PrincipalConfiguration.class)
+                .getPrincipalProvider(root, namePathMapper);
         return new FilterImpl(root, principalProvider, namePathMapper);
     }
 
-    //----------------------------------------------------< SCR Integration >---
+    // ----------------------------------------------------< SCR Integration >---
 
     @Activate
     protected void activate(Configuration configuration, Map<String, Object> properties) {
@@ -121,7 +130,7 @@ public class FilterProviderImpl implements FilterProvider {
     private static boolean isValidPath(@Nullable String path) {
         return !Strings.isNullOrEmpty(path) && PathUtils.isAbsolute(path);
     }
-    //-------------------------------------------------------------< Filter >---
+    // -------------------------------------------------------------< Filter >---
 
     private final class FilterImpl implements Filter {
 
@@ -129,7 +138,10 @@ public class FilterProviderImpl implements FilterProvider {
         private final PrincipalProvider principalProvider;
         private final NamePathMapper namePathMapper;
 
-        private FilterImpl(@NotNull Root root, @NotNull PrincipalProvider principalProvider, @NotNull NamePathMapper namePathMapper) {
+        private FilterImpl(
+                @NotNull Root root,
+                @NotNull PrincipalProvider principalProvider,
+                @NotNull NamePathMapper namePathMapper) {
             this.root = root;
             this.principalProvider = principalProvider;
             this.namePathMapper = namePathMapper;
@@ -222,7 +234,8 @@ public class FilterProviderImpl implements FilterProvider {
                 prinicpalOakPath = getOakPath((ItemBasedPrincipal) principal);
             }
             if (prinicpalOakPath == null || !root.getTree(prinicpalOakPath).exists()) {
-                // the given principal is not ItemBasedPrincipal or it has been obtained with a different name-path-mapper
+                // the given principal is not ItemBasedPrincipal or it has been obtained with a different
+                // name-path-mapper
                 // (making the conversion to oak-path return null) or it has been moved and the path no longer points to
                 // an existing tree -> try looking up principal by name
                 Principal p = principalProvider.getPrincipal(principal.getName());
@@ -240,7 +253,10 @@ public class FilterProviderImpl implements FilterProvider {
             try {
                 return namePathMapper.getOakPath(principal.getPath());
             } catch (RepositoryException e) {
-                log.error("Error while retrieving path from ItemBasedPrincipal {}, {}", principal.getName(), e.getMessage());
+                log.error(
+                        "Error while retrieving path from ItemBasedPrincipal {}, {}",
+                        principal.getName(),
+                        e.getMessage());
                 return null;
             }
         }

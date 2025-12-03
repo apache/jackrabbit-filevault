@@ -1,27 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-import java.io.IOException;
-import java.security.Principal;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.InvalidItemStateException;
@@ -37,6 +32,9 @@ import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.version.VersionException;
+
+import java.io.IOException;
+import java.security.Principal;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
@@ -58,6 +56,9 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * {@code ImportTests}...
@@ -98,7 +99,7 @@ public class ImportIT extends IntegrationTestBase {
 
             assertNodeExists("/tmp/foo/bar/tobi");
         }
-        
+
         try (Archive archive = getFileArchive("/test-packages/tmp_less.zip")) {
             archive.open(true);
             importer.run(archive, rootNode);
@@ -204,7 +205,7 @@ public class ImportIT extends IntegrationTestBase {
             archive.open(true);
             Node rootNode = admin.getNode(TEST_ROOT);
             ImportOptions opts = getDefaultOptions();
-            //opts.setListener(new DefaultProgressListener());
+            // opts.setListener(new DefaultProgressListener());
             Importer importer = new Importer(opts);
             importer.run(archive, rootNode);
             admin.save();
@@ -215,7 +216,8 @@ public class ImportIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testConcurrentModificationHandling() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void testConcurrentModificationHandling()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
         try (Archive archive = getFileArchive("/test-packages/tags.zip")) {
             archive.open(true);
             Node rootNode = admin.getRootNode();
@@ -248,7 +250,9 @@ public class ImportIT extends IntegrationTestBase {
             assertProperty("/tmp/testroot/foo/name", "foo1");
 
             // only check for SNS nodes if SNS supported
-            if (admin.getRepository().getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED).getBoolean()) {
+            if (admin.getRepository()
+                    .getDescriptorValue(Repository.NODE_TYPE_MANAGEMENT_SAME_NAME_SIBLINGS_SUPPORTED)
+                    .getBoolean()) {
                 assertNodeExists("/tmp/testroot/foo[2]");
                 assertNodeExists("/tmp/testroot/foo[3]");
                 assertProperty("/tmp/testroot/foo[2]/name", "foo2");
@@ -260,7 +264,6 @@ public class ImportIT extends IntegrationTestBase {
             }
         }
     }
-
 
     @Test
     public void testSubArchiveExtract() throws IOException, RepositoryException, ConfigurationException {
@@ -276,7 +279,7 @@ public class ImportIT extends IntegrationTestBase {
             Node defNode = contentNode.addNode("vlt:definition", "vlt:PackageDefinition");
 
             ImportOptions opts = getDefaultOptions();
-            Archive subArchive =  archive.getSubArchive("META-INF/vault/definition", true);
+            Archive subArchive = archive.getSubArchive("META-INF/vault/definition", true);
 
             DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
             filter.add(new PathFilterSet(defNode.getPath()));
@@ -286,7 +289,7 @@ public class ImportIT extends IntegrationTestBase {
             importer.getOptions().setFilter(filter);
             importer.run(subArchive, defNode);
             admin.save();
-            
+
             assertFalse("Importer must not have any errors", importer.hasErrors());
             assertNodeExists("/tmp/package.zip/jcr:content/vlt:definition/thumbnail.png");
         }
@@ -297,7 +300,7 @@ public class ImportIT extends IntegrationTestBase {
         Assume.assumeTrue(!isOak());
 
         // Create test user
-        UserManager userManager = ((JackrabbitSession)admin).getUserManager();
+        UserManager userManager = ((JackrabbitSession) admin).getUserManager();
         String userId = "user1";
         String userPwd = "pwd1";
         User user1 = userManager.createUser(userId, userPwd);
@@ -309,9 +312,14 @@ public class ImportIT extends IntegrationTestBase {
 
         // Setup test user ACLs such that the
         // root node is not accessible
-        AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
-        AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, false);
-        AccessControlUtils.addAccessControlEntry(admin, "/tmp", principal1, new String[]{"jcr:all"}, true);
+        AccessControlUtils.addAccessControlEntry(
+                admin,
+                null,
+                principal1,
+                new String[] {"jcr:namespaceManagement", "jcr:nodeTypeDefinitionManagement"},
+                true);
+        AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[] {"jcr:all"}, false);
+        AccessControlUtils.addAccessControlEntry(admin, "/tmp", principal1, new String[] {"jcr:all"}, true);
         admin.save();
 
         // Import with a session associated to the test user
@@ -333,7 +341,7 @@ public class ImportIT extends IntegrationTestBase {
         Assume.assumeTrue(!isOak());
 
         // Create test user
-        UserManager userManager = ((JackrabbitSession)admin).getUserManager();
+        UserManager userManager = ((JackrabbitSession) admin).getUserManager();
         String userId = "user1";
         String userPwd = "pwd1";
         User user1 = userManager.createUser(userId, userPwd);
@@ -345,9 +353,14 @@ public class ImportIT extends IntegrationTestBase {
 
         // Setup test user ACLs such that the
         // root node is not accessible
-        AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
-        AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, false);
-        AccessControlUtils.addAccessControlEntry(admin, "/tmp/foo", principal1, new String[]{"jcr:all"}, true);
+        AccessControlUtils.addAccessControlEntry(
+                admin,
+                null,
+                principal1,
+                new String[] {"jcr:namespaceManagement", "jcr:nodeTypeDefinitionManagement"},
+                true);
+        AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[] {"jcr:all"}, false);
+        AccessControlUtils.addAccessControlEntry(admin, "/tmp/foo", principal1, new String[] {"jcr:all"}, true);
         admin.save();
 
         // Import with a session associated to the test user
@@ -374,7 +387,10 @@ public class ImportIT extends IntegrationTestBase {
             importer.run(archive, rootNode);
         }
         admin.save();
-        assertProperty("/testroot/jcr:createdBy", "admin"); // must have a different value than in the .content.xml as it is protected and set automatically
+        assertProperty(
+                "/testroot/jcr:createdBy",
+                "admin"); // must have a different value than in the .content.xml as it is protected and set
+        // automatically
         assertPropertyMissing("/testroot/someProtectedBooleanProperty"); // is protected and skipped in the import
         assertProperty("/testroot/someUnprotectedStringProperty", "foo"); // is not protected and must be there
         assertProperty("/testroot/someUnprotectedStringMvProperty", new String[0]);
@@ -382,15 +398,22 @@ public class ImportIT extends IntegrationTestBase {
 
     @Test
     @SuppressWarnings("java:S5783")
-    public void testImportWithPropertyConstraintViolation() throws IOException, RepositoryException, ConfigurationException {
+    public void testImportWithPropertyConstraintViolation()
+            throws IOException, RepositoryException, ConfigurationException {
         try (Archive archive = getFileArchive("/test-packages/property_constraint_violation.zip")) {
             Node rootNode = admin.getRootNode();
             ImportOptions opts = getDefaultOptions();
             Importer importer = new Importer(opts);
             archive.open(true);
-            // we don't care whether constraint is immediately enforced or only on save() as both is valid according to JCR spec
-            RepositoryException e = Assert.assertThrows(RepositoryException.class, () -> { importer.run(archive, rootNode); admin.save(); });
-            assertEquals(ConstraintViolationException.class, ExceptionUtils.getRootCause(e).getClass());
+            // we don't care whether constraint is immediately enforced or only on save() as both is valid according to
+            // JCR spec
+            RepositoryException e = Assert.assertThrows(RepositoryException.class, () -> {
+                importer.run(archive, rootNode);
+                admin.save();
+            });
+            assertEquals(
+                    ConstraintViolationException.class,
+                    ExceptionUtils.getRootCause(e).getClass());
         }
     }
 
@@ -408,16 +431,24 @@ public class ImportIT extends IntegrationTestBase {
         try (Archive archive = getFileArchive("/test-packages/test_nt_unstructured_below_folder_aggregate.zip")) {
             archive.open(true);
             importer.run(archive, rootNode);
-           // admin.save();
-            Assert.fail("Installing the package should fail as it tries to install an nt:unstructured node below an nt:folder node");
+            // admin.save();
+            Assert.fail(
+                    "Installing the package should fail as it tries to install an nt:unstructured node below an nt:folder node");
         } catch (RepositoryException e) {
             // expected
         }
         admin.refresh(false);
         // restore type of /testroot/myfolder
-        testrootNode.getNode("myfolder").setPrimaryType(JcrConstants.NT_UNSTRUCTURED/*NodeType.NT_UNSTRUCTURED*/); // TODO: somehow expanded names do not work in Oak (see https://issues.apache.org/jira/browse/OAK-9616)
+        testrootNode
+                .getNode("myfolder")
+                .setPrimaryType(
+                        JcrConstants
+                                .NT_UNSTRUCTURED /*NodeType.NT_UNSTRUCTURED*/); // TODO: somehow expanded names do not
+        // work in Oak (see
+        // https://issues.apache.org/jira/browse/OAK-9616)
         admin.save();
-        // don't overwrite node types for folder aggregates (i.e. keep nt:unstructured instead of converting to nt:folder)
+        // don't overwrite node types for folder aggregates (i.e. keep nt:unstructured instead of converting to
+        // nt:folder)
         opts.setOverwritePrimaryTypesOfFolders(false);
         importer = new Importer(opts);
         // now installation should succeed
@@ -433,7 +464,10 @@ public class ImportIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testEnhancedFileAggregatePackageWithIntermediateSaves() throws IOException, ConfigurationException, AccessDeniedException, ItemExistsException, ReferentialIntegrityException, ConstraintViolationException, InvalidItemStateException, VersionException, LockException, NoSuchNodeTypeException, RepositoryException {
+    public void testEnhancedFileAggregatePackageWithIntermediateSaves()
+            throws IOException, ConfigurationException, AccessDeniedException, ItemExistsException,
+                    ReferentialIntegrityException, ConstraintViolationException, InvalidItemStateException,
+                    VersionException, LockException, NoSuchNodeTypeException, RepositoryException {
         ImportOptions opts = getDefaultOptions();
         opts.setAutoSaveThreshold(1); // auto-save after each deserialized aggregator
         Importer importer = new Importer(opts);

@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
@@ -42,7 +44,7 @@ public class MergeLimitationsValidatorTest {
 
     @Before
     public void setUp() throws IOException, ConfigurationException {
-        try (InputStream input = this.getClass().getResourceAsStream("/filter-with-merge.xml"))  {
+        try (InputStream input = this.getClass().getResourceAsStream("/filter-with-merge.xml")) {
             DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
             filter.load(input);
             validator = new MergeLimitationsValidator(ValidationMessageSeverity.ERROR, filter);
@@ -51,23 +53,34 @@ public class MergeLimitationsValidatorTest {
 
     @Test
     public void testWithAggregateAtWrongLevel() {
-    	DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, Arrays.asList(
-         		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
-         		new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
-        Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), false);
-        ValidationExecutorTest.assertViolation(messages,
-                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(MergeLimitationsValidator.PACKAGE_NON_ROOT_NODE_MERGED, "/apps/test/deep")));
-        MatcherAssert.assertThat(validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+        DocViewNode2 node = new DocViewNode2(
+                NameConstants.JCR_ROOT,
+                Arrays.asList(
+                        new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
+                        new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
+        Collection<ValidationMessage> messages = validator.validate(
+                node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), false);
+        ValidationExecutorTest.assertViolation(
+                messages,
+                new ValidationMessage(
+                        ValidationMessageSeverity.ERROR,
+                        String.format(MergeLimitationsValidator.PACKAGE_NON_ROOT_NODE_MERGED, "/apps/test/deep")));
+        MatcherAssert.assertThat(
+                validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
 
     @Test
     public void testWithAggregateAtCorrectLevel() {
-    	DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, Arrays.asList(
-         		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
-         		new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
-        Collection<ValidationMessage> messages = validator.validate(node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), true);
-        MatcherAssert.assertThat(messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
-        MatcherAssert.assertThat(validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+        DocViewNode2 node = new DocViewNode2(
+                NameConstants.JCR_ROOT,
+                Arrays.asList(
+                        new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
+                        new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
+        Collection<ValidationMessage> messages = validator.validate(
+                node, new NodeContextImpl("/apps/test/deep", Paths.get(".content.xml"), Paths.get("")), true);
+        MatcherAssert.assertThat(
+                messages, AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+        MatcherAssert.assertThat(
+                validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
-
 }

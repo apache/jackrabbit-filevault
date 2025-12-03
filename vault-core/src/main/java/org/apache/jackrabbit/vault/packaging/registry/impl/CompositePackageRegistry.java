@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
@@ -48,7 +50,7 @@ public class CompositePackageRegistry implements PackageRegistry {
 
     private final List<PackageRegistry> registries;
     private final PackageRegistry primaryRegistry;
-    
+
     CompositePackageRegistry(PackageRegistry... registries) throws IOException {
         this(Arrays.asList(registries));
     }
@@ -60,20 +62,24 @@ public class CompositePackageRegistry implements PackageRegistry {
     }
 
     private void enforcePackageIdsUniqueness(List<PackageRegistry> registries) throws IOException {
-        for (int n=0; n<registries.size(); n++) {
-            for (int i=n+1; i<registries.size(); i++) {
+        for (int n = 0; n < registries.size(); n++) {
+            for (int i = n + 1; i < registries.size(); i++) {
                 registries.get(n).packages().retainAll(registries.get(i).packages());
                 Set<PackageId> packageIntersection = registries.get(n).packages();
                 packageIntersection.retainAll(registries.get(i).packages());
                 if (!packageIntersection.isEmpty()) {
-                    String duplicatePackageIds = packageIntersection.stream().map(packageId -> packageId.toString()).collect(Collectors.joining(", "));
-                    throw new IllegalStateException("The following package ids exist in registry " + registries.get(i) + " and registry " + registries.get(n) + ": " +duplicatePackageIds);
+                    String duplicatePackageIds = packageIntersection.stream()
+                            .map(packageId -> packageId.toString())
+                            .collect(Collectors.joining(", "));
+                    throw new IllegalStateException("The following package ids exist in registry " + registries.get(i)
+                            + " and registry " + registries.get(n) + ": " + duplicatePackageIds);
                 }
             }
         }
     }
 
-    private void enforcePackageIdsUniqueness(PackageId packageId, PackageRegistry sourcePackageRegistry) throws PackageExistsException, IOException {
+    private void enforcePackageIdsUniqueness(PackageId packageId, PackageRegistry sourcePackageRegistry)
+            throws PackageExistsException, IOException {
         for (PackageRegistry registry : registries) {
             if (registry == sourcePackageRegistry) {
                 continue;
@@ -84,11 +90,12 @@ public class CompositePackageRegistry implements PackageRegistry {
                 } catch (NoSuchPackageException e) {
                     throw new IOException("Could not remove duplicate package id " + packageId, e);
                 }
-                throw new PackageExistsException("The package id " + packageId + " already exists in another registry " + registry);
+                throw new PackageExistsException(
+                        "The package id " + packageId + " already exists in another registry " + registry);
             }
         }
     }
- 
+
     @Override
     public boolean contains(@NotNull PackageId id) throws IOException {
         for (PackageRegistry registry : registries) {
@@ -119,7 +126,8 @@ public class CompositePackageRegistry implements PackageRegistry {
     }
 
     @Override
-    public @NotNull PackageId register(@NotNull InputStream in, boolean replace) throws IOException, PackageExistsException {
+    public @NotNull PackageId register(@NotNull InputStream in, boolean replace)
+            throws IOException, PackageExistsException {
         PackageId packageId = primaryRegistry.register(in, replace);
         enforcePackageIdsUniqueness(packageId, primaryRegistry);
         return packageId;
@@ -133,7 +141,8 @@ public class CompositePackageRegistry implements PackageRegistry {
     }
 
     @Override
-    public @NotNull PackageId registerExternal(@NotNull File file, boolean replace) throws IOException, PackageExistsException {
+    public @NotNull PackageId registerExternal(@NotNull File file, boolean replace)
+            throws IOException, PackageExistsException {
         PackageId packageId = primaryRegistry.registerExternal(file, replace);
         enforcePackageIdsUniqueness(packageId, primaryRegistry);
         return packageId;
@@ -189,5 +198,4 @@ public class CompositePackageRegistry implements PackageRegistry {
     public @NotNull ExecutionPlanBuilder createExecutionPlan() {
         return new ExecutionPlanBuilderImpl(this);
     }
-
 }

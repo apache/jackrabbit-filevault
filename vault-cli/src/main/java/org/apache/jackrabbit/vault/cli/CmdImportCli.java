@@ -1,27 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.cli;
-
-import java.io.File;
-import java.io.InputStream;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Session;
+
+import java.io.File;
+import java.io.InputStream;
 
 import org.apache.commons.cli2.Argument;
 import org.apache.commons.cli2.CommandLine;
@@ -76,7 +77,6 @@ public class CmdImportCli extends AbstractVaultCommand {
         VltContext vCtx = app.createVaultContext(localFile);
         vCtx.setVerbose(cl.hasOption(OPT_VERBOSE));
 
-
         if (cl.hasOption(optSysView)) {
             if (!localFile.isFile()) {
                 VaultFsApp.log.error("--sysview specified but local path does not point to a file.");
@@ -85,11 +85,11 @@ public class CmdImportCli extends AbstractVaultCommand {
             // todo: move to another location
             try (InputStream ins = FileUtils.openInputStream(localFile)) {
                 Session session = vCtx.getFileSystem(addr).getAggregateManager().getSession();
-                session.getWorkspace().importXML(jcrPath, ins, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+                session.getWorkspace()
+                        .importXML(jcrPath, ins, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
                 return;
             }
         }
-
 
         VaultFile vaultFile = vCtx.getFileSystem(addr).getFile(jcrPath);
 
@@ -133,14 +133,13 @@ public class CmdImportCli extends AbstractVaultCommand {
         return "Import a Vault filesystem";
     }
 
-
     public String getLongDescription() {
-        return "Import the local filesystem (starting at <local-path> to the " +
-                "vault filesystem at <uri>. A <jcr-path> can be specified as " +
-                "import root. If --sync is specified, the imported files are " +
-                "automatically put under vault control.\n\n" +
-                "Example:\n" +
-                "  vlt import http://localhost:4502/crx . /";
+        return "Import the local filesystem (starting at <local-path> to the "
+                + "vault filesystem at <uri>. A <jcr-path> can be specified as "
+                + "import root. If --sync is specified, the imported files are "
+                + "automatically put under vault control.\n\n"
+                + "Example:\n"
+                + "  vlt import http://localhost:4502/crx . /";
     }
 
     protected Command createCommand() {
@@ -150,38 +149,40 @@ public class CmdImportCli extends AbstractVaultCommand {
                 .withChildren(new GroupBuilder()
                         .withName("Options:")
                         .withOption(OPT_VERBOSE)
-                        .withOption(optSync = new DefaultOptionBuilder()
-                                .withShortName("s")
-                                .withLongName("sync")
-                                .withDescription("put local files under vault control.")
-                                .create())
-                        .withOption(optSysView = new DefaultOptionBuilder()
-                                .withLongName("sysview")
-                                .withDescription("specifies that the indicated local file has the sysview format")
-                                .create())
-                        .withOption(argMountpoint = new ArgumentBuilder()
-                                .withName("uri")
-                                .withDescription("mountpoint uri")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("local-path")
-                                .withDescription("the local path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
+                        .withOption(
+                                optSync = new DefaultOptionBuilder()
+                                        .withShortName("s")
+                                        .withLongName("sync")
+                                        .withDescription("put local files under vault control.")
+                                        .create())
+                        .withOption(
+                                optSysView = new DefaultOptionBuilder()
+                                        .withLongName("sysview")
+                                        .withDescription(
+                                                "specifies that the indicated local file has the sysview format")
+                                        .create())
+                        .withOption(
+                                argMountpoint = new ArgumentBuilder()
+                                        .withName("uri")
+                                        .withDescription("mountpoint uri")
+                                        .withMinimum(1)
+                                        .withMaximum(1)
+                                        .create())
+                        .withOption(
+                                argLocalPath = new ArgumentBuilder()
+                                        .withName("local-path")
+                                        .withDescription("the local path")
+                                        .withMinimum(0)
+                                        .withMaximum(1)
+                                        .create())
+                        .withOption(
+                                argJcrPath = new ArgumentBuilder()
+                                        .withName("jcr-path")
+                                        .withDescription("the jcr path")
+                                        .withMinimum(0)
+                                        .withMaximum(1)
+                                        .create())
+                        .create())
                 .create();
     }
-
 }

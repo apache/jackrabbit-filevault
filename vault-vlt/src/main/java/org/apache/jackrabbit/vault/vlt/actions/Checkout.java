@@ -1,20 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt.actions;
+
+import javax.jcr.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,8 +26,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
@@ -72,13 +74,15 @@ public class Checkout extends AbstractAction {
         if (ctx.getExportRoot().isValid()) {
             String path = ctx.getExportRoot().getJcrRoot().getPath();
             if (force) {
-                ctx.printMessage("Checkout " + mountPoint.resolve(remoteDir) + " with local files using root at " + path);
+                ctx.printMessage(
+                        "Checkout " + mountPoint.resolve(remoteDir) + " with local files using root at " + path);
                 // ensure we use the calculated jcr_root
                 localDir = ctx.getExportRoot().getJcrRoot();
             } else {
-                throw ctx.error(localDir.getPath(),
-                        "there seems to be already a checkout at " + path + ". " +
-                        "Use --force option to overwrite local files with remote.");
+                throw ctx.error(
+                        localDir.getPath(),
+                        "there seems to be already a checkout at " + path + ". "
+                                + "Use --force option to overwrite local files with remote.");
             }
         } else {
             // turn of sync
@@ -118,7 +122,8 @@ public class Checkout extends AbstractAction {
             }
 
             if (ctx.isVerbose()) {
-                DumpContext dc = new DumpContext(new PrintWriter(new OutputStreamWriter(ctx.getStdout(), StandardCharsets.US_ASCII)));
+                DumpContext dc = new DumpContext(
+                        new PrintWriter(new OutputStreamWriter(ctx.getStdout(), StandardCharsets.US_ASCII)));
                 dc.println("Filter");
                 ctx.getMetaInf().getFilter().dump(dc, true);
                 dc.outdent();
@@ -149,5 +154,4 @@ public class Checkout extends AbstractAction {
             throw new VltException(remoteDir, "Error during checkout", e);
         }
     }
-
 }

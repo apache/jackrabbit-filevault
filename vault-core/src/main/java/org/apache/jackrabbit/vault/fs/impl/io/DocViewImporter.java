@@ -1001,8 +1001,19 @@ public class DocViewImporter implements DocViewParserHandler {
         VersioningState vs = new VersioningState(stack, node);
         Node updatedNode = null;
         Optional<String> identifier = ni.getIdentifier();
+
+        boolean isUuidProtected = false;
+        if (! session.getRepository().getDescriptor(Repository.REP_NAME_DESC).contains("Oak")) {
+            // workaround for non-Oak repos that may not be able to add
+            // mixin:referencable *after* setting jcr:uuid
+            isUuidProtected = true;
+        } else if (node.hasProperty(Property.JCR_UUID)) {
+            isUuidProtected = node.getProperty(Property.JCR_UUID).getDefinition().isProtected();
+        }
+
         // try to set uuid via sysview import if it differs from existing one
-        if (identifier.isPresent() && !node.getIdentifier().equals(identifier.get()) && !"rep:root".equals(ni.getPrimaryType().orElse(""))) {
+        if (identifier.isPresent() && isUuidProtected && !node.getIdentifier().equals(identifier.get())
+                && !"rep:root".equals(ni.getPrimaryType().orElse(""))) {
             long startTime = System.currentTimeMillis();
             String previousIdentifier = node.getIdentifier();
             log.debug(
@@ -1072,8 +1083,38 @@ public class DocViewImporter implements DocViewParserHandler {
 
                 // add remaining mixins (for all import modes)
                 for (String mixin : newMixins) {
+                    Property uuidProp = null;
                     vs.ensureCheckedOut();
-                    node.addMixin(mixin);
+
+                    if (mixin.equals("mix:referenceable") && identifier.isPresent()) {
+                        // if this is mix:ref and ni specifies an identifier,
+                        // try to set it
+                        try {
+                            uuidProp = node.setProperty(Property.JCR_UUID, identifier.get());
+                        } catch (RepositoryException ex) {
+                            log.debug("tried to set jcr:uuid to {} before adding mix:referenceable failed, continuing", ex);
+                        }
+
+                        try {
+                            node.addMixin(mixin);
+                        } catch (RepositoryException ex) {
+                            // try to add the mixin; this fails with classic
+                            // jackrabbit, so undo the change for jcr:uuid and retry
+                            if (uuidProp != null) {
+                                log.debug(
+                                        "failed to add mix:referenceable after setting jcr:uuid, retrying without (uuid will be lost)",
+                                        ex);
+                                // retry once after removing jcr:uuid
+                                uuidProp.remove();
+                                node.addMixin(mixin);
+                            } else {
+                                throw ex;
+                            }
+                        }
+                    } else {
+                        node.addMixin(mixin);
+                    }
+
                     updatedNode = node;
                 }
             }

@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
@@ -231,6 +232,34 @@ public class DocViewSaxFormatterIT extends IntegrationTestBase {
                 "    jcr:mixinTypes=\"[mix:created,mix:lockable,mix:title]\"\n" + // sort mixins alphabetically
                 "    jcr:primaryType=\"nt:unstructured\"\n" +
                 "    customMv=\"[value2,value3,value1]\"/>\n", serialization); // don't sort other mv-properties
+    }
+
+    @Test
+    public void testBigMultivaluedProperties() throws RepositoryException, URISyntaxException, IOException {
+        Node node = JcrUtils.getOrCreateByPath("/testroot", NodeType.NT_UNSTRUCTURED, admin);
+        ArrayList<String> values = new ArrayList<>();
+        StringBuilder serializedValue = new StringBuilder();
+        int count = 100000;
+
+        for (int i = 0; i < count; i++) {
+            String value = String.format("test %05d", i);
+            values.add(value);
+            serializedValue.append(value);
+            if (i != count - 1) {
+                serializedValue.append(",");
+            }
+        }
+
+        node.setProperty("customBigMv", values.toArray(new String[0]));
+        admin.save();
+
+        String serialization = getSerializedAggregate(admin, "/testroot");
+
+        assertEquals("valid xml",
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
+                        "    jcr:primaryType=\"nt:unstructured\"\n" +
+                        "    customBigMv=\"[" + serializedValue + "]\"/>\n", serialization);
     }
 
     @Test

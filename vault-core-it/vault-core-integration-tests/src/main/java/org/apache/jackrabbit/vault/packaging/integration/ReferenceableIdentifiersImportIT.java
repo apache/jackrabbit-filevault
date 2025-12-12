@@ -28,6 +28,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
@@ -35,14 +36,17 @@ import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.ReferentialIntegrityException;
 import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.JcrUtils;
+import org.apache.jackrabbit.value.StringValue;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -690,6 +694,50 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         options.setStrict(true);
         options.setIdConflictPolicy(policy);
         extractVaultPackage("/test-packages/referenceable-dup.zip", options);
+    }
+
+    @Test
+    public void testBigMV() throws Exception {
+
+        // create initial state and export
+
+        Node node = JcrUtils.getOrCreateByPath("/testroot", NodeType.NT_UNSTRUCTURED, admin);
+
+        ArrayList<String> values = new ArrayList<>();
+        int count = 1000000;
+
+        for (int i = 0; i < count; i++) {
+            String value = String.format("test %05d", i);
+            values.add(value);
+        }
+
+        node.setProperty("customBigMv", values.toArray(new String[0]));
+        admin.save();
+
+        File pkgFile = exportContentPackage("/testroot");
+
+
+        // re-import and check post-conditions
+
+        try (ZipVaultPackage pack = new ZipVaultPackage(pkgFile, true)) {
+            ImportOptions opts = getDefaultOptions();
+            opts.setImportMode(ImportMode.UPDATE_PROPERTIES);
+            opts.setStrict(true);
+            node.remove();
+            admin.save();
+            pack.extract(admin, opts);
+        }
+
+        Node imported = admin.getNode("/testroot");
+        Property mv = imported.getProperty("customBigMv");
+        assertTrue(mv.isMultiple());
+        assertEquals(count, mv.getValues().length);
+
+        Value[] vs = mv.getValues();
+        for (int i = 0; i < count; i++) {
+            String value = String.format("test %05d", i);
+            assertEquals(value, vs[i].getString());
+        }
     }
 
     @Test

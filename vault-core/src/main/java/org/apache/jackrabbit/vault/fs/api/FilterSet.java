@@ -302,7 +302,7 @@ public abstract class FilterSet<E extends Filter> implements Dumpable {
             result = null;
         }
 
-        log.debug("getDirectChildNameTowardsFilterRoot(root={}, path={}) -> {}", rootMatch, pathMatch, result);
+        log.error("getDirectChildNameTowardsFilterRoot(root={}, path={}) -> {}", rootMatch, pathMatch, result);
 
         return result;
     }

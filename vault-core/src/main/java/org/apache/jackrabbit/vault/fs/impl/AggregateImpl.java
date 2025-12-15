@@ -538,7 +538,7 @@ public class AggregateImpl implements Aggregate {
         addNamespaceForName(propName);
         switch (prop.getType()) {
             case PropertyType.NAME:
-                if ("jcr:mixinTypes".equals(propName) || prop.getDefinition().isMultiple()) {
+                if (prop.getDefinition().isMultiple()) {
                     Value[] values = prop.getValues();
                     for (Value value: values) {
                         addNamespaceForName(value.getString());

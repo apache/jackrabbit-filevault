@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/content/dam/qcom/content-fragments/en/test1">
+        <include pattern="/\Qcontent/dam/qcom/content-fragments/en/test1\E"/>
+        <include pattern="\Q/content/dam/qcom/content-fragments/en/test1/jcr:content\E"/>
+        <include pattern="\Q/content/dam/qcom/content-fragments/en/test1/jcr:content\E/.*"/>
+        <exclude pattern=".*rep:policy"/>
+        <exclude pattern=".*rep:repoPolicy"/>
+        <exclude pattern="^.*/cq:lastReplicated.*" matchProperties="true"/>
+        <exclude pattern="^.*/cq:lastReplicatedBy.*" matchProperties="true"/>
+        <exclude pattern="^.*/cq:lastReplicationAction.*" matchProperties="true"/>
+        <exclude pattern="^.*/cq:isDelivered.*" matchProperties="true"/>
+        <exclude pattern="^.*/jcr:isCheckedOut.*" matchProperties="true"/>
+        <exclude pattern="^.*/jcr:baseVersion.*" matchProperties="true"/>
+        <exclude pattern="^.*/jcr:predecessors.*" matchProperties="true"/>
+        <exclude pattern="^.*/jcr:versionHistory.*" matchProperties="true"/>
+        <exclude pattern="^.*/jcr:activity.*" matchProperties="true"/>
+        <exclude pattern="^.*/jcr:configuration.*" matchProperties="true"/>
+    </filter>
+</workspaceFilter>

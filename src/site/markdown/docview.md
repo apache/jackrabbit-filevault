@@ -58,10 +58,10 @@ As by that the filename implicitly sets the root element name, its namespace is 
 
 ### Empty Elements
 
-The deserialization treats empty elements different than the default [JCR 2.0 DocView Import][import-docview], as
+The deserialization treats empty elements differently than the default [JCR 2.0 DocView Import][import-docview], as
 empty elements never create a new node in the repository but are merely used to define the child node 
 sort order.
-Nodes/properties below empty elements will never be removed during import ([JCRVLT-251](https://issues.apache.org/jira/browse/JCRVLT-251))
+Nodes/properties below empty elements will never be removed during import ([JCRVLT-251](https://issues.apache.org/jira/browse/JCRVLT-251)).
 
 ### Property Values
 

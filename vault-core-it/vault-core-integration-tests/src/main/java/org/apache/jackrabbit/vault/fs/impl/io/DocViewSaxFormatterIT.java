@@ -38,6 +38,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.ValueFactory;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
@@ -48,6 +49,7 @@ import javax.jcr.version.VersionException;
 
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 import org.apache.jackrabbit.commons.JcrUtils;
+import org.apache.jackrabbit.commons.NamespaceHelper;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
 import org.apache.jackrabbit.oak.spi.security.principal.EveryonePrincipal;
 import org.apache.jackrabbit.util.ISO8601;
@@ -259,5 +261,55 @@ public class DocViewSaxFormatterIT extends IntegrationTestBase {
                 "    jcr:primaryType=\"nt:unstructured\"\n" +
                 "    jcr:uuid=\"" + node.getIdentifier() + "\"/>\n"
                 , serialization); 
+    }
+
+    private static final String NL = "\n";
+
+    private static String q(String input) {
+        return '"' + input + '"';
+    }
+
+    private static String qns(String prefix, String name) {
+        return "xmlns:" + prefix + "=" + q(name);
+    }
+
+    private static String XMLNS_JCR = qns("jcr", NamespaceHelper.JCR);
+    private static String XMLNS_NT = qns("nt", NamespaceHelper.NT);
+    private static String XMLNS_MIX = qns("mix", NamespaceHelper.MIX);
+
+    @Test
+    // JCRVLT-832
+    public void testNamePathPropertyValueNamespacePrefixes() throws RepositoryException, URISyntaxException, IOException {
+        ValueFactory vf = admin.getValueFactory();
+
+        NamespaceHelper nh = new NamespaceHelper(admin);
+        nh.registerNamespace("foo1", "bar1:");
+        nh.registerNamespace("foo2", "bar2:");
+
+        Node node = JcrUtils.getOrCreateByPath("/testroot", NodeType.NT_UNSTRUCTURED, admin);
+
+        // simple multivalued Boolean
+        node.setProperty("mvbool", new Value[] {vf.createValue(true), vf.createValue(false), vf.createValue(true)});
+        // single valued name property
+        node.setProperty("svname", vf.createValue("svname-test", PropertyType.NAME));
+        // multi valued name property using namespace
+        node.setProperty("mvname",
+                new Value[] {vf.createValue("foo1:mvname-test", PropertyType.NAME), vf.createValue("xyz", PropertyType.NAME)});
+        // single valued path property using namespace
+        node.setProperty("svpath", vf.createValue("/foo1:a/foo2:b", PropertyType.PATH));
+
+        admin.save();
+
+        String serialization = getSerializedAggregate(admin, "/testroot");
+
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + NL +
+                        "<jcr:root " + XMLNS_JCR + " " + XMLNS_NT + " " + qns("foo1", "bar1:") + " " + qns("foo2", "bar2:") + NL +
+                        "    jcr:primaryType=\"nt:unstructured\"" + NL +
+                        "    mvbool=\"{Boolean}[true,false,true]\"" + NL +
+                        "    mvname=\"{Name}[foo1:mvname-test,xyz]\"" + NL +
+                        "    svname=\"{Name}svname-test\"" + NL +
+                        "    svpath=\"{Path}/foo1:a/foo2:b\"" +
+                "/>" + NL
+                , serialization);
     }
 }

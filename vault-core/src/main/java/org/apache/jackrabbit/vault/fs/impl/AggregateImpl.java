@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.fs.impl;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -675,6 +676,7 @@ public class AggregateImpl implements Aggregate {
         NodeIterator nIter = getNodeIteratorFor(node, filter);
 
         int visited = 0;
+        long startTime = System.nanoTime();
 
         // include "our" nodes to the include set and delegate the others to the
         // respective aggregator building sub aggregates
@@ -742,7 +744,9 @@ public class AggregateImpl implements Aggregate {
             }
         }
 
-        log.debug("In " + node.getPath() + ", visited " + visited + " siblings");
+        Duration duration = Duration.ofNanos(System.nanoTime() - startTime);
+        log.debug("In {}, visited {} siblings in {}ms ({})", node.getPath(), visited,
+                duration.toMillis(), duration);
     }
 
     private static NodeIterator getNodeIteratorFor(Node node, WorkspaceFilter filter) throws RepositoryException {

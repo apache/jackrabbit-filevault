@@ -17,6 +17,8 @@
 
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
@@ -25,12 +27,16 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Properties;
+import java.util.zip.Deflater;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.nodetype.NodeType;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
@@ -39,15 +45,22 @@ import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.util.Text;
+import org.apache.jackrabbit.vault.fs.api.Aggregator;
+import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.Registry;
+import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.Assume;
 import org.junit.Test;
@@ -75,6 +88,7 @@ public class UserContentPackageIT extends IntegrationTestBase {
         installUserA(null, true, true);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void installUserA_Merge() throws RepositoryException, IOException, PackageException {
         installUserA(ImportMode.MERGE, false, false);
@@ -380,6 +394,35 @@ public class UserContentPackageIT extends IntegrationTestBase {
         Assume.assumeTrue(isOak());
         install_user_with_rep_cache(ImportMode.MERGE);
     }
+    
+    
+    @Test(expected = RepositoryException.class)
+    public void createPackageGroup() throws AccessDeniedException, UnsupportedRepositoryOperationException, RepositoryException, IOException, PackageException {
+        UserManager mgr = ((JackrabbitSession) admin).getUserManager();
+        User u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD);
+        Group group = mgr.createGroup(ID_TEST_GROUP_A);
+        group.addMember(u);
+        String path = group.getPath();
+        admin.save();
+        DefaultWorkspaceFilter filter = createDistributionFilter(path);
+        File tmpFile = createPackage("test", "test", filter);
+        try {
+            try (JcrPackage pack = packMgr.upload(tmpFile, true, true, null);) {
+                assertNotNull(pack);
+                ImportOptions opts = getDefaultOptions();
+                pack.install(opts);
+
+                u = (User) mgr.getAuthorizable(ID_TEST_USER_A);
+                assertNotNull(u);
+                Group g = (Group) mgr.getAuthorizable(ID_TEST_GROUP_A);
+                assertNotNull(g);
+                Authorizable u2 = g.getMembers().next();
+                assertThat(u2.getID(), equalTo(ID_TEST_USER_A));
+            }
+        } finally {
+            tmpFile.delete();
+        }
+    }
 
     private void install_user_with_rep_cache(ImportMode mode) throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
@@ -490,28 +533,59 @@ public class UserContentPackageIT extends IntegrationTestBase {
         return userA;
     }
 
-    private File createPackage(String group, String name, String... paths) throws RepositoryException, IOException, PackageException {
-        ExportOptions opts = new ExportOptions();
-        DefaultMetaInf inf = new DefaultMetaInf();
+    /**
+     * Create filter as used in sling content distribution
+     * @param paths replicated
+     * @return filter
+     */
+    private DefaultWorkspaceFilter createDistributionFilter(String... paths) {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         for (String path : paths) {
-            filter.add(new PathFilterSet(path));
+            filter.add(distributionFilterSet(path));
         }
-
-        inf.setFilter(filter);
-        Properties props = new Properties();
-        props.setProperty(VaultPackage.NAME_GROUP, group);
-        props.setProperty(VaultPackage.NAME_NAME, name);
-        inf.setProperties(props);
-
-        opts.setMetaInf(inf);
-
-        File tmpFile = File.createTempFile("vaulttest", ".zip");
-        VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile);
-
-        pkg.close();
-
-        return tmpFile;
+        return filter;
     }
+
+	private PathFilterSet distributionFilterSet(String path) {
+		PathFilterSet pathFilterSet = new PathFilterSet(path);
+		try {
+		    pathFilterSet.addInclude(new DefaultPathFilter("/\\Q" + path.substring(1) + "\\E"));
+		    pathFilterSet.addInclude(new DefaultPathFilter(".*/rep:policy"));
+		} catch (ConfigurationException e) {
+		    throw new RuntimeException(e);
+		}
+		return pathFilterSet;
+	}
+    
+    private File createPackage(String group, String name, String... paths) throws RepositoryException, IOException, PackageException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        for (String path : paths) {
+            PathFilterSet pathFilterSet = new PathFilterSet(path);
+            filter.add(pathFilterSet);
+        }
+        return createPackage(group, name, filter);
+    }
+
+	private File createPackage(String group, String name, DefaultWorkspaceFilter filter) throws RepositoryException, IOException, PackageException {
+	    ExportOptions opts = new ExportOptions();
+	    opts.setCompressionLevel(Deflater.BEST_SPEED);
+	    DefaultMetaInf inf = new DefaultMetaInf();
+	    inf.setFilter(filter);
+	    Properties props = new Properties();
+	    props.setProperty(VaultPackage.NAME_GROUP, group);
+	    props.setProperty(VaultPackage.NAME_NAME, name);
+	    props.setProperty(PackageProperties.NAME_USE_BINARY_REFERENCES, "true");
+	    inf.setProperties(props);
+	
+	    opts.setMetaInf(inf);
+	
+	    File tmpFile = File.createTempFile("vaulttest", ".zip");
+	    System.out.println(tmpFile);
+	    VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile);
+	
+	    pkg.close();
+	
+	    return tmpFile;
+	}
 
 }

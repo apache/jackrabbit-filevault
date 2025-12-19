@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Content-Package-Id: sling/distribution:filevault_1763695579150_3109300f-
+ d8ac-4dae-ba37-59ef714790b6:0.0.1
+Content-Package-Roots: /content/dam/qcom/content-fragments/en/test1
+Content-Package-Type: content
+

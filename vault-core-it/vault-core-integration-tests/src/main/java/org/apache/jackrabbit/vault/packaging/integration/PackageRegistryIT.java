@@ -1,28 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
@@ -215,7 +216,7 @@ public class PackageRegistryIT extends IntegrationTestBase {
         registry.register(getStream(TEST_PACKAGE_A_10), false);
         registry.register(getStream(TEST_PACKAGE_B_10), false);
         assertEquals("packages contains 2 elements", 2, registry.packages().size());
-        JcrPackageRegistry multiReg = new JcrPackageRegistry(admin, "/var/packages" , "/etc/packages");
+        JcrPackageRegistry multiReg = new JcrPackageRegistry(admin, "/var/packages", "/etc/packages");
         assertEquals("packages contains 2 elements", 2, multiReg.packages().size());
 
         // install 3rd package in /var
@@ -263,19 +264,30 @@ public class PackageRegistryIT extends IntegrationTestBase {
 
         DependencyReport report = registry.analyzeDependencies(idA, false);
         assertEquals("resolved dependencies", "", PackageId.toString(report.getResolvedDependencies()));
-        assertEquals("unresolved dependencies", "my_packages:test_b,my_packages:test_c:[1.0,2.0)", Dependency.toString(report.getUnresolvedDependencies()));
+        assertEquals(
+                "unresolved dependencies",
+                "my_packages:test_b,my_packages:test_c:[1.0,2.0)",
+                Dependency.toString(report.getUnresolvedDependencies()));
 
         // b depends on c
         registry.register(getStream(TEST_PACKAGE_B_10), false);
         report = registry.analyzeDependencies(idA, false);
-        assertEquals("resolved dependencies", "my_packages:test_b:1.0", PackageId.toString(report.getResolvedDependencies()));
-        assertEquals("unresolved dependencies", "my_packages:test_c:[1.0,2.0)", Dependency.toString(report.getUnresolvedDependencies()));
+        assertEquals(
+                "resolved dependencies",
+                "my_packages:test_b:1.0",
+                PackageId.toString(report.getResolvedDependencies()));
+        assertEquals(
+                "unresolved dependencies",
+                "my_packages:test_c:[1.0,2.0)",
+                Dependency.toString(report.getUnresolvedDependencies()));
 
         registry.register(getStream(TEST_PACKAGE_C_10), false);
         report = registry.analyzeDependencies(idA, false);
-        assertEquals("resolved dependencies", "my_packages:test_b:1.0,my_packages:test_c:1.0", PackageId.toString(report.getResolvedDependencies()));
+        assertEquals(
+                "resolved dependencies",
+                "my_packages:test_b:1.0,my_packages:test_c:1.0",
+                PackageId.toString(report.getResolvedDependencies()));
         assertEquals("unresolved dependencies", "", Dependency.toString(report.getUnresolvedDependencies()));
-
     }
 
     /**
@@ -288,20 +300,32 @@ public class PackageRegistryIT extends IntegrationTestBase {
 
         DependencyReport report = registry.analyzeDependencies(idA, true);
         assertEquals("resolved dependencies", "", PackageId.toString(report.getResolvedDependencies()));
-        assertEquals("unresolved dependencies", "my_packages:test_b,my_packages:test_c:[1.0,2.0)", Dependency.toString(report.getUnresolvedDependencies()));
+        assertEquals(
+                "unresolved dependencies",
+                "my_packages:test_b,my_packages:test_c:[1.0,2.0)",
+                Dependency.toString(report.getUnresolvedDependencies()));
 
         // b depends on c
         PackageId idB = registry.register(getStream(TEST_PACKAGE_B_10), false);
         report = registry.analyzeDependencies(idA, true);
         assertEquals("resolved dependencies", "", PackageId.toString(report.getResolvedDependencies()));
-        assertEquals("unresolved dependencies", "my_packages:test_b,my_packages:test_c:[1.0,2.0)", Dependency.toString(report.getUnresolvedDependencies()));
+        assertEquals(
+                "unresolved dependencies",
+                "my_packages:test_b,my_packages:test_c:[1.0,2.0)",
+                Dependency.toString(report.getUnresolvedDependencies()));
 
         // install B
         packMgr.open(idB).install(getDefaultOptions());
 
         report = registry.analyzeDependencies(idA, true);
-        assertEquals("resolved dependencies", "my_packages:test_b:1.0", PackageId.toString(report.getResolvedDependencies()));
-        assertEquals("unresolved dependencies", "my_packages:test_c:[1.0,2.0)", Dependency.toString(report.getUnresolvedDependencies()));
+        assertEquals(
+                "resolved dependencies",
+                "my_packages:test_b:1.0",
+                PackageId.toString(report.getResolvedDependencies()));
+        assertEquals(
+                "unresolved dependencies",
+                "my_packages:test_c:[1.0,2.0)",
+                Dependency.toString(report.getUnresolvedDependencies()));
     }
 
     @Test
@@ -319,7 +343,7 @@ public class PackageRegistryIT extends IntegrationTestBase {
 
     @Test
     public void testAlternativeRoot() throws IOException, PackageException, RepositoryException {
-        JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages" , "/etc/packages");
+        JcrPackageRegistry reg = new JcrPackageRegistry(admin, "/var/packages", "/etc/packages");
         File file = getFile("/test-packages/tmp.zip");
         PackageId id = reg.register(file, false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
@@ -374,8 +398,9 @@ public class PackageRegistryIT extends IntegrationTestBase {
         reg.getPrimaryPackageRoot(true); // create new path
         List<Node> roots = reg.getPackageRoots();
         assertEquals("Has 2 package root", 2, roots.size());
-        assertEquals("primary root has correct path", "/var/packages", roots.get(0).getPath());
-        assertEquals("secondary root has legacy path", "/etc/packages", roots.get(1).getPath());
+        assertEquals(
+                "primary root has correct path", "/var/packages", roots.get(0).getPath());
+        assertEquals(
+                "secondary root has legacy path", "/etc/packages", roots.get(1).getPath());
     }
-
 }

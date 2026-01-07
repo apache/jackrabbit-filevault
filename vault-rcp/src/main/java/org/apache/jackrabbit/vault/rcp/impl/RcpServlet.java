@@ -1,27 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.rcp.impl;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import javax.jcr.Credentials;
 import javax.jcr.Session;
@@ -29,6 +24,12 @@ import javax.jcr.SimpleCredentials;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.utils.json.JSONParser;
@@ -53,12 +54,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  */
-@Component(service = Servlet.class,
-        property = {
-                "service.vendor=The Apache Software Foundation",
-                "sling.servlet.paths=" + RcpServlet.SERVLET_PATH
-        }
-)
+@Component(
+        service = Servlet.class,
+        property = {"service.vendor=The Apache Software Foundation", "sling.servlet.paths=" + RcpServlet.SERVLET_PATH})
 public class RcpServlet extends SlingAllMethodsServlet {
 
     protected static final String SERVLET_PATH = "/system/jackrabbit/filevault/rcp";
@@ -90,7 +88,6 @@ public class RcpServlet extends SlingAllMethodsServlet {
     public static final String PARAM_PROXY_PROTOCOL = "proxyProtocol";
     public static final String PARAM_PROXY_USERNAME = "proxyUsername";
     public static final String PARAM_PROXY_PASSWORD = "proxyPassword";
-    
 
     /**
      * default logger
@@ -99,11 +96,11 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
     @Reference
     private RcpTaskManager taskMgr;
-    
+
     private Bundle bundle;
 
     @Activate
-    protected void activate(BundleContext context){
+    protected void activate(BundleContext context) {
         bundle = context.getBundle();
     }
 
@@ -115,16 +112,17 @@ public class RcpServlet extends SlingAllMethodsServlet {
         response.setCharacterEncoding("utf-8");
 
         try {
-            if ("json".equals(request.getRequestPathInfo().getExtension()) && "info".equals(request.getRequestPathInfo().getSelectorString())) {
+            if ("json".equals(request.getRequestPathInfo().getExtension())
+                    && "info".equals(request.getRequestPathInfo().getSelectorString())) {
                 writeInfoJson(response.getWriter());
             } else {
                 String taskId = request.getRequestPathInfo().getSuffix();
                 JSONWriter w = new JSONWriter(response.getWriter());
-    
+
                 if (taskId != null) {
                     taskId = taskId.substring(1);
                     RcpTask task = taskMgr.getTask(taskId);
-    
+
                     if (task != null) {
                         write(w, task);
                     } else {
@@ -134,7 +132,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 } else {
                     w.object();
                     w.key("tasks").array();
-                    for (RcpTask task: taskMgr.getTasks().values()) {
+                    for (RcpTask task : taskMgr.getTasks().values()) {
                         write(w, task);
                     }
                     w.endArray();
@@ -168,7 +166,8 @@ public class RcpServlet extends SlingAllMethodsServlet {
         }
         String cmd = data.optString(PARAM_CMD, "");
         RcpTask task;
-        final String id = data.optString(PARAM_ID, null);;
+        final String id = data.optString(PARAM_ID, null);
+        ;
         try {
             // --------------------------------------------------------------------------------------------< create >---
             boolean isEdit = "edit".equals(cmd);
@@ -190,9 +189,14 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 if (creds != null) {
                     // remove creds from repository address to prevent logging
                     URI uri = address.getURI();
-                    address = new RepositoryAddress(
-                            new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment())
-                    );
+                    address = new RepositoryAddress(new URI(
+                            uri.getScheme(),
+                            null,
+                            uri.getHost(),
+                            uri.getPort(),
+                            uri.getPath(),
+                            uri.getQuery(),
+                            uri.getFragment()));
                 }
                 if (srcCreds != null && srcCreds.length() > 0) {
                     creds = createCredentials(srcCreds);
@@ -204,8 +208,10 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
                 ConnectionOptions.Builder connectionOptionsBuilder = ConnectionOptions.builder();
                 connectionOptionsBuilder.useSystemProperties(data.optBoolean(PARAM_USE_SYSTEM_PROPERTIES, false));
-                connectionOptionsBuilder.allowSelfSignedCertificates(data.optBoolean(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE, false));
-                connectionOptionsBuilder.disableHostnameVerification(data.optBoolean(PARAM_DISABLE_HOSTNAME_VERIFICATION, false));
+                connectionOptionsBuilder.allowSelfSignedCertificates(
+                        data.optBoolean(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE, false));
+                connectionOptionsBuilder.disableHostnameVerification(
+                        data.optBoolean(PARAM_DISABLE_HOSTNAME_VERIFICATION, false));
                 int connectionTimeoutMs = data.optInt(PARAM_CONNECTION_TIMEOUT_MS, -1);
                 connectionOptionsBuilder.connectionTimeoutMs(connectionTimeoutMs);
                 int requestTimeoutMs = data.optInt(PARAM_REQUEST_TIMEOUT_MS, -1);
@@ -231,9 +237,18 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 if (data.containsKey(PARAM_EXCLUDES)) {
                     List<String> excludeList = data.getStringList(PARAM_EXCLUDES);
                     if (isEdit) {
-                        task = taskMgr.editTask(id, address, connectionOptionsBuilder.build(), creds, dst, excludeList, null, recursive);
+                        task = taskMgr.editTask(
+                                id,
+                                address,
+                                connectionOptionsBuilder.build(),
+                                creds,
+                                dst,
+                                excludeList,
+                                null,
+                                recursive);
                     } else {
-                        task = taskMgr.addTask(address, connectionOptionsBuilder.build(), creds, dst, id, excludeList, recursive);
+                        task = taskMgr.addTask(
+                                address, connectionOptionsBuilder.build(), creds, dst, id, excludeList, recursive);
                     }
                 } else {
                     final WorkspaceFilter filter;
@@ -245,9 +260,11 @@ public class RcpServlet extends SlingAllMethodsServlet {
                         filter = null;
                     }
                     if (isEdit) {
-                        task = taskMgr.editTask(id, address, connectionOptionsBuilder.build(), creds, dst, null, filter, recursive);
+                        task = taskMgr.editTask(
+                                id, address, connectionOptionsBuilder.build(), creds, dst, null, filter, recursive);
                     } else {
-                        task = taskMgr.addTask(address, connectionOptionsBuilder.build(), creds, dst, id, filter, recursive);
+                        task = taskMgr.addTask(
+                                address, connectionOptionsBuilder.build(), creds, dst, id, filter, recursive);
                     }
                 }
 
@@ -278,7 +295,8 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 String path = SERVLET_PATH + "/" + task.getId();
                 response.setHeader("Location", path);
 
-            // ---------------------------------------------------------------------------------------------< start >---
+                // ---------------------------------------------------------------------------------------------< start
+                // >---
             } else if ("start".equals(cmd)) {
                 if (id == null || id.length() == 0) {
                     throw new IllegalArgumentException("Need task id.");
@@ -289,7 +307,8 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 }
                 task.start(request.getResourceResolver().adaptTo(Session.class));
 
-            // ----------------------------------------------------------------------------------------------< stop >---
+                // ----------------------------------------------------------------------------------------------< stop
+                // >---
             } else if ("stop".equals(cmd)) {
                 if (id == null || id.length() == 0) {
                     throw new IllegalArgumentException("Need task id.");
@@ -300,7 +319,8 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 }
                 task.stop();
 
-            // --------------------------------------------------------------------------------------------< remove >---
+                // --------------------------------------------------------------------------------------------< remove
+                // >---
             } else if ("remove".equals(cmd)) {
                 if (id == null || id.length() == 0) {
                     throw new IllegalArgumentException("Need task id.");
@@ -308,7 +328,8 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 if (!taskMgr.removeTask(id)) {
                     throw new IllegalArgumentException("No such task with id='" + id + "'");
                 }
-            // --------------------------------------------------------------------------------------------< remove >---
+                // --------------------------------------------------------------------------------------------< remove
+                // >---
             } else if ("set-credentials".equals(cmd)) {
                 // only add the credentials for a certain task id
                 if (id == null || id.length() == 0) {
@@ -359,7 +380,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
         } else {
             creds = new SimpleCredentials(
                     credentialsAsString.substring(0, idx),
-                    credentialsAsString.substring(idx+1).toCharArray());
+                    credentialsAsString.substring(idx + 1).toCharArray());
         }
         return creds;
     }
@@ -379,7 +400,7 @@ public class RcpServlet extends SlingAllMethodsServlet {
         if (rcpTask.getExcludes() != null) {
             if (rcpTask.getExcludes().size() > 0) {
                 w.key(RcpServlet.PARAM_EXCLUDES).array();
-                for (String exclude: rcpTask.getExcludes()) {
+                for (String exclude : rcpTask.getExcludes()) {
                     w.value(exclude);
                 }
                 w.endArray();
@@ -390,8 +411,10 @@ public class RcpServlet extends SlingAllMethodsServlet {
             }
         }
         w.key(PARAM_USE_SYSTEM_PROPERTIES).value(rcpTask.getConnectionOptions().isUseSystemPropertes());
-        w.key(PARAM_DISABLE_HOSTNAME_VERIFICATION).value(rcpTask.getConnectionOptions().isDisableHostnameVerification());
-        w.key(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE).value(rcpTask.getConnectionOptions().isAllowSelfSignedCertificates());
+        w.key(PARAM_DISABLE_HOSTNAME_VERIFICATION)
+                .value(rcpTask.getConnectionOptions().isDisableHostnameVerification());
+        w.key(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE)
+                .value(rcpTask.getConnectionOptions().isAllowSelfSignedCertificates());
         w.key(PARAM_CONNECTION_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getConnectionTimeoutMs());
         w.key(PARAM_REQUEST_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getRequestTimeoutMs());
         w.key(PARAM_SOCKET_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getSocketTimeoutMs());
@@ -413,9 +436,12 @@ public class RcpServlet extends SlingAllMethodsServlet {
         w.key("totalSize").value(rcpTask.getRcp().getTotalSize());
         w.key("currentSize").value(rcpTask.getRcp().getCurrentSize());
         w.key("currentNodes").value(rcpTask.getRcp().getCurrentNumNodes());
-        w.key("error").value(rcpTask.getResult().getThrowable() == null ? "" : rcpTask.getResult().getThrowable().toString());
+        w.key("error")
+                .value(
+                        rcpTask.getResult().getThrowable() == null
+                                ? ""
+                                : rcpTask.getResult().getThrowable().toString());
         w.endObject();
         w.endObject();
     }
 }
-

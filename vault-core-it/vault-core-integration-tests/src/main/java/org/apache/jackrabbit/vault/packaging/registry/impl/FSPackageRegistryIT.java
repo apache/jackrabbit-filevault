@@ -1,29 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import javax.jcr.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +30,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.jcr.RepositoryException;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -68,25 +61,28 @@ import org.osgi.util.converter.Converters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Test the Package registry interface
  */
 public class FSPackageRegistryIT extends IntegrationTestBase {
 
-    private static final File DIR_REGISTRY_HOME = new File("target/fspackageregistry-" + System.getProperty("repoSuffix", "fork1"));
+    private static final File DIR_REGISTRY_HOME =
+            new File("target/fspackageregistry-" + System.getProperty("repoSuffix", "fork1"));
 
     private static final Logger log = LoggerFactory.getLogger(FSPackageRegistryIT.class);
 
-    public static final String[] APPLICATION_PATHS = {
-            "/libs",
-            "/libs/foo"
-    };
-    
-    public static final String[] CONTENT_PATHS = {
-            "/tmp",
-            "/tmp/foo"
-    };
-    
+    public static final String[] APPLICATION_PATHS = {"/libs", "/libs/foo"};
+
+    public static final String[] CONTENT_PATHS = {"/tmp", "/tmp/foo"};
+
     private static final PackageId TEST_PACKAGE_ID = new PackageId("test", "test-package-with-etc", "1.0");
 
     @Rule
@@ -104,10 +100,10 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         } else {
             DIR_REGISTRY_HOME.mkdir();
         }
-        
+
         getFreshRegistry();
     }
-    
+
     /**
      * checks is a non existent package is really not there
      */
@@ -223,7 +219,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             }
         }
     }
-    
+
     /**
      * registers a file as external package twice (replace = false)
      */
@@ -247,9 +243,9 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             assertEquals("colliding pid must be correct", id, e.getId());
         }
     }
-    
+
     /**
-     * registers a file as external package twice with 
+     * registers a file as external package twice with
      */
     @SuppressWarnings("deprecation")
     @Test
@@ -262,10 +258,10 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             assertEquals("package id of registered is correct", TMP_PACKAGE_ID, pkg.getId());
             assertFalse("Package is not installed", pkg.isInstalled());
         }
-        
+
         // loading registry again to force loading of metadata from files
         registry = new FSPackageRegistry(registryHome);
-        
+
         try {
             registry.registerExternal(file, false);
             fail("registering the package twice should fail");
@@ -274,7 +270,6 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             assertEquals("colliding pid must be correct", id, e.getId());
         }
     }
-
 
     /**
      * registers a file as external package twice (replace = false)
@@ -287,7 +282,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         assertTrue("file should still exist", file.exists());
         registry.registerExternal(file, true);
     }
-    
+
     /**
      * registers a file as external package with subpackages (replace = true)
      */
@@ -299,16 +294,16 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         assertTrue(registry.contains(PACKAGE_ID_SUB_A));
         assertTrue(registry.contains(PACKAGE_ID_SUB_B));
     }
-    
+
     /**
-     * installs a file as external package with subpackages 
+     * installs a file as external package with subpackages
      * Subpackages are only installed if either explicitly added to executionPlan or another package depends on them.
      */
     @Test
     public void testInstallExternalWithSubPackages() throws IOException, PackageException {
         File file = getFile("/test-packages/subtest.zip");
         PackageId parentPkg = registry.registerExternal(file, false);
-        
+
         ExecutionPlanBuilder builder = registry.createExecutionPlan();
         builder.with(new ProgressTrackerListener() {
             public void onMessage(Mode mode, String action, String path) {
@@ -320,9 +315,9 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             }
         });
         builder.addTask().with(parentPkg).with(Type.EXTRACT);
-        ExecutionPlan plan  = builder.with(admin).execute();
+        ExecutionPlan plan = builder.with(admin).execute();
         assertFalse(plan.hasErrors());
-        
+
         assertFalse(registry.open(PACKAGE_ID_SUB_A).isInstalled());
         assertFalse(registry.open(PACKAGE_ID_SUB_B).isInstalled());
     }
@@ -330,18 +325,18 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
     @Test
     public void testInstallExternalUnScoped() throws IOException, PackageException, RepositoryException {
         File file = getFile("/test-packages/mixed_package.zip");
-        
+
         cleanPaths(APPLICATION_PATHS);
         cleanPaths(CONTENT_PATHS);
         getFreshRegistry();
 
         PackageId pkg = registry.registerExternal(file, false);
-        
+
         ExecutionPlanBuilder builder = registry.createExecutionPlan();
         Collector listener = new Collector();
         builder.with(listener);
         builder.addTask().with(pkg).with(Type.EXTRACT);
-        ExecutionPlan plan  = builder.with(admin).execute();
+        ExecutionPlan plan = builder.with(admin).execute();
         assertFalse(plan.hasErrors());
         checkFiltered(APPLICATION_PATHS, new String[] {}, listener.paths);
         checkFiltered(CONTENT_PATHS, new String[] {}, listener.paths);
@@ -354,14 +349,14 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         cleanPaths(APPLICATION_PATHS);
         cleanPaths(CONTENT_PATHS);
         getFreshRegistry(InstallationScope.CONTENT_SCOPED);
-        
+
         PackageId pkg = registry.registerExternal(file, false);
-        
+
         ExecutionPlanBuilder builder = registry.createExecutionPlan();
         Collector listener = new Collector();
         builder.with(listener);
         builder.addTask().with(pkg).with(Type.EXTRACT);
-        ExecutionPlan plan  = builder.with(admin).execute();
+        ExecutionPlan plan = builder.with(admin).execute();
         assertFalse(plan.hasErrors());
         checkFiltered(CONTENT_PATHS, APPLICATION_PATHS, listener.paths);
     }
@@ -375,23 +370,21 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
     @Test
     public void testInstallExternalApplicationScoped() throws IOException, PackageException, RepositoryException {
         File file = getFile("/test-packages/mixed_package.zip");
-        
+
         cleanPaths(APPLICATION_PATHS);
         cleanPaths(CONTENT_PATHS);
         getFreshRegistry(InstallationScope.APPLICATION_SCOPED);
-        
+
         PackageId pkg = registry.registerExternal(file, false);
-        
+
         ExecutionPlanBuilder builder = registry.createExecutionPlan();
         Collector listener = new Collector();
         builder.with(listener);
         builder.addTask().with(pkg).with(Type.EXTRACT);
-        ExecutionPlan plan  = builder.with(admin).execute();
+        ExecutionPlan plan = builder.with(admin).execute();
         assertFalse(plan.hasErrors());
         checkFiltered(APPLICATION_PATHS, CONTENT_PATHS, listener.paths);
-        
     }
-    
 
     /**
      * test if package removal works
@@ -453,23 +446,30 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
 
         DependencyReport report = registry.analyzeDependencies(idA, false);
         assertEquals("resolved dependencies", "", PackageId.toString(report.getResolvedDependencies()));
-        assertEquals("unresolved dependencies", "my_packages:test_b,my_packages:test_c:[1.0,2.0)",
+        assertEquals(
+                "unresolved dependencies",
+                "my_packages:test_b,my_packages:test_c:[1.0,2.0)",
                 Dependency.toString(report.getUnresolvedDependencies()));
 
         // b depends on c
         registry.register(getStream(TEST_PACKAGE_B_10), false);
         report = registry.analyzeDependencies(idA, false);
-        assertEquals("resolved dependencies", "my_packages:test_b:1.0",
+        assertEquals(
+                "resolved dependencies",
+                "my_packages:test_b:1.0",
                 PackageId.toString(report.getResolvedDependencies()));
-        assertEquals("unresolved dependencies", "my_packages:test_c:[1.0,2.0)",
+        assertEquals(
+                "unresolved dependencies",
+                "my_packages:test_c:[1.0,2.0)",
                 Dependency.toString(report.getUnresolvedDependencies()));
 
         registry.register(getStream(TEST_PACKAGE_C_10), false);
         report = registry.analyzeDependencies(idA, false);
-        assertEquals("resolved dependencies", "my_packages:test_b:1.0,my_packages:test_c:1.0",
+        assertEquals(
+                "resolved dependencies",
+                "my_packages:test_b:1.0,my_packages:test_c:1.0",
                 PackageId.toString(report.getResolvedDependencies()));
         assertEquals("unresolved dependencies", "", Dependency.toString(report.getUnresolvedDependencies()));
-
     }
 
     @Test
@@ -489,7 +489,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         });
 
         builder.addTask().with(idC).with(PackageTask.Type.INSTALL);
-        ExecutionPlan plan  = builder.with(admin).execute();
+        ExecutionPlan plan = builder.with(admin).execute();
         assertTrue(plan.hasErrors());
         assertFalse(registry.open(idC).isInstalled());
     }
@@ -501,14 +501,18 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
 
         DependencyReport report = registry.analyzeDependencies(idA, false);
         assertEquals("resolved dependencies", "", PackageId.toString(report.getResolvedDependencies()));
-        assertEquals("unresolved dependencies", "my_packages:test_b,my_packages:test_c:[1.0,2.0)",
+        assertEquals(
+                "unresolved dependencies",
+                "my_packages:test_b,my_packages:test_c:[1.0,2.0)",
                 Dependency.toString(report.getUnresolvedDependencies()));
 
         // b depends on c
         PackageId idB = registry.register(getStream(TEST_PACKAGE_B_10), false);
         report = registry.analyzeDependencies(idB, false);
         assertEquals("resolved dependencies", "", PackageId.toString(report.getResolvedDependencies()));
-        assertEquals("unresolved dependencies", "my_packages:test_c",
+        assertEquals(
+                "unresolved dependencies",
+                "my_packages:test_c",
                 Dependency.toString(report.getUnresolvedDependencies()));
 
         ExecutionPlanBuilder builder = registry.createExecutionPlan();
@@ -532,19 +536,21 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         }
         PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
         report = registry.analyzeDependencies(idB, false);
-        assertEquals("resolved dependencies", "my_packages:test_c:1.0",
+        assertEquals(
+                "resolved dependencies",
+                "my_packages:test_c:1.0",
                 PackageId.toString(report.getResolvedDependencies()));
         assertEquals("unresolved dependencies", "", Dependency.toString(report.getUnresolvedDependencies()));
 
         builder.addTask().with(idC).with(PackageTask.Type.EXTRACT);
-        ExecutionPlan plan  = builder.with(admin).execute();
+        ExecutionPlan plan = builder.with(admin).execute();
         assertFalse(plan.hasErrors());
 
         assertTrue(registry.open(idA).isInstalled());
         assertTrue(registry.open(idB).isInstalled());
         assertTrue(registry.open(idC).isInstalled());
     }
-    
+
     @Test
     public void testExtractSubPackage() throws IOException, PackageException, RepositoryException {
         registry.register(getStream("/test-packages/subtest.zip"), false);
@@ -573,12 +579,12 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
 
         builder.addTask().with(idB).with(PackageTask.Type.EXTRACT);
         builder.addTask().with(idC).with(PackageTask.Type.EXTRACT);
-        ExecutionPlan plan  = builder.with(admin).execute();
+        ExecutionPlan plan = builder.with(admin).execute();
         assertFalse(plan.hasErrors());
 
         assertEquals("usage", "my_packages:test_b:1.0", PackageId.toString(registry.usage(idC)));
     }
-    
+
     @Test
     public void testInstalledDependencies() throws Exception {
         PackageId idB = registry.register(getStream(TEST_PACKAGE_B_10), false);
@@ -598,7 +604,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         });
 
         builder.addTask().with(idC).with(PackageTask.Type.EXTRACT);
-        ExecutionPlan plan  = builder.with(admin).execute();
+        ExecutionPlan plan = builder.with(admin).execute();
         assertFalse(plan.hasErrors());
 
         Dependency depB = new Dependency(idB);
@@ -606,15 +612,14 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         assertNull("Dependency B should not resolve", registry.resolve(depB, true));
         assertEquals("Dependency C should resovle to package C", idC, registry.resolve(depC, true));
     }
-    
-    
+
     @Test
     public void testInstallTime() throws Exception {
 
         PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
 
         assertNull(registry.open(idC).getInstallationTime());
-        
+
         ExecutionPlanBuilder builder = registry.createExecutionPlan();
         builder.with(new ProgressTrackerListener() {
             public void onMessage(Mode mode, String action, String path) {
@@ -632,9 +637,12 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         Calendar after = Calendar.getInstance();
         assertFalse(plan.hasErrors());
 
-        assertTrue("Installation time for idC too late", registry.open(idC).getInstallationTime().compareTo(after) <= 0);
-        assertTrue("Installation time for idC too early", registry.open(idC).getInstallationTime().compareTo(before) >= 0);
-
+        assertTrue(
+                "Installation time for idC too late",
+                registry.open(idC).getInstallationTime().compareTo(after) <= 0);
+        assertTrue(
+                "Installation time for idC too early",
+                registry.open(idC).getInstallationTime().compareTo(before) >= 0);
     }
 
     @Test
@@ -642,7 +650,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         PackageId idC = registry.register(getStream(TEST_PACKAGE_C_10), false);
 
         assertNull(registry.open(idC).getInstallationTime());
-        
+
         ExecutionPlanBuilder builder = registry.createExecutionPlan();
         builder.with(new ProgressTrackerListener() {
             public void onMessage(Mode mode, String action, String path) {
@@ -658,11 +666,11 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         ExecutionPlan plan = builder.with(admin).execute();
         assertFalse(plan.hasErrors());
 
-        try{
+        try {
             registry.uninstallPackage(admin, registry.open(idC), new ImportOptions());
             fail("uninstall attempt should fail.");
         } catch (PackageException ex) {
-            //expected
+            // expected
         }
     }
 
@@ -674,7 +682,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
 
     @Test
     public void testCacheInitializedAfterOSGiActivate() throws IOException {
-         new FSPackageRegistry();
+        new FSPackageRegistry();
         getFreshRegistryWithDefaultConstructor("test-package.zip", "test-package.xml");
         assertTrue(registry.contains(TEST_PACKAGE_ID));
         assertEquals(Collections.singleton(TEST_PACKAGE_ID), registry.packages());
@@ -699,14 +707,17 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         assertEquals(FSPackageStatus.EXTRACTED, installState.getStatus());
     }
 
-    private void getFreshRegistryWithDefaultConstructor(String packageName, String packageMetadataName) throws IOException {
+    private void getFreshRegistryWithDefaultConstructor(String packageName, String packageMetadataName)
+            throws IOException {
         if (this.registryHome != null && this.registryHome.exists()) {
             this.registryHome.delete();
         }
         this.registryHome = new File(DIR_REGISTRY_HOME, UUID.randomUUID().toString());
-        FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(packageName), new File(this.registryHome, "package1.zip"));
-        FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(packageMetadataName), new File(this.registryHome, "package1.zip.xml"));
-        
+        FileUtils.copyInputStreamToFile(
+                getClass().getResourceAsStream(packageName), new File(this.registryHome, "package1.zip"));
+        FileUtils.copyInputStreamToFile(
+                getClass().getResourceAsStream(packageMetadataName), new File(this.registryHome, "package1.zip.xml"));
+
         BundleContext context = Mockito.mock(BundleContext.class);
         Mockito.when(context.getProperty(FSPackageRegistry.REPOSITORY_HOME)).thenReturn(DIR_REGISTRY_HOME.toString());
         Converter converter = Converters.standardConverter();
@@ -731,7 +742,7 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             this.registry = new FSPackageRegistry(registryHome);
         }
     }
-    
+
     private static class Collector implements ProgressTrackerListener {
         private final List<String> paths = new LinkedList<String>();
 
@@ -739,13 +750,17 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
             paths.add(path);
         }
 
-        public void onError(Mode mode, String path, Exception e) {
-        }
-    }
-    
-    public static void checkFiltered(String[] containing, String[] filtered, List<String> result) {
-        assertEquals("Results don't contain expected values", Collections.EMPTY_LIST, CollectionUtils.subtract(Arrays.asList(containing), result));
-        assertEquals("Results contain unexpected values", Collections.EMPTY_LIST , CollectionUtils.intersection(result, Arrays.asList(filtered)));
+        public void onError(Mode mode, String path, Exception e) {}
     }
 
+    public static void checkFiltered(String[] containing, String[] filtered, List<String> result) {
+        assertEquals(
+                "Results don't contain expected values",
+                Collections.EMPTY_LIST,
+                CollectionUtils.subtract(Arrays.asList(containing), result));
+        assertEquals(
+                "Results contain unexpected values",
+                Collections.EMPTY_LIST,
+                CollectionUtils.intersection(result, Arrays.asList(filtered)));
+    }
 }

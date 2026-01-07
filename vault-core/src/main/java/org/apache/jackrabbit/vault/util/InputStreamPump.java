@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.util;
 
@@ -33,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * This is similar to a {@link TeeInputStream} but leverages {@link PipedInputStream} and {@link PipedOutputStream}
  * and can execute additional tasks in the additional thread consuming the PipedInputStream.
  * Only after calling {@link #close()} the PipedInputStream has been fully consumed (as it waits for the pump's thread to complete).
- * 
+ *
  * @see MemoryArchive
  */
 public class InputStreamPump extends InputStream {
@@ -66,7 +68,8 @@ public class InputStreamPump extends InputStream {
                     pump.run(new CloseShieldInputStream(in));
                     // ensure that input stream is pumping in case it didn't read to the end
                     byte[] buffer = new byte[8192];
-                    while (in.read(buffer) >= 0);
+                    while (in.read(buffer) >= 0)
+                        ;
                 } catch (Exception e) {
                     error = e;
                     log.error("Error while processing input stream", e);
@@ -86,7 +89,7 @@ public class InputStreamPump extends InputStream {
     }
 
     /**
-     * 
+     *
      * @return exception which has occurred in the pump thread or {@code null}.
      * @deprecated Rather call {@link #close()}, as otherwise this might be called too early (before the thread finished).
      * {@code close()} will automatically wrap the potential exception from the pump in an IOException and throws it as well

@@ -1,21 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl.io;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.RepositoryException;
 
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
@@ -26,9 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.NameFactory;
@@ -84,7 +85,6 @@ import org.xml.sax.helpers.NamespaceSupport;
  * </pre>
  */
 public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements NamespaceResolver {
-
 
     /**
      * A representation of a namespace. One of these will be pushed on the namespace
@@ -152,10 +152,13 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     private final Deque<DocViewNode2> nodeStack;
     /** absolute repository path of the node which is currently parsed */
     private String currentPath;
-    
+
     private Locator locator;
-    
-    public DocViewSAXHandler(@NotNull DocViewParserHandler handler, @NotNull String rootNodePath, @Nullable NamespaceResolver nsResolver) {
+
+    public DocViewSAXHandler(
+            @NotNull DocViewParserHandler handler,
+            @NotNull String rootNodePath,
+            @Nullable NamespaceResolver nsResolver) {
         super();
         Objects.requireNonNull(handler, "handler must not be null");
         this.handler = handler;
@@ -164,7 +167,7 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
             throw new IllegalArgumentException("rootNodePath must not be empty");
         }
         this.rootNodePath = rootNodePath;
-        
+
         nsSupport = new NamespaceSupport();
         nodeStack = new LinkedList<>();
         currentPath = null;
@@ -183,7 +186,7 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
 
     @Override
     public void setDocumentLocator(Locator locator) {
-        this.locator = locator; 
+        this.locator = locator;
     }
 
     public @NotNull Locator getDocumentLocator() {
@@ -191,7 +194,7 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     }
 
     /**
-     * 
+     *
      * @return the node path which has been last processed
      */
     public @NotNull String getCurrentPath() {
@@ -238,8 +241,7 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
         handler.endPrefixMapping(prefix);
     }
 
-    
-    /** 
+    /**
      * Extracts the index and the original item name from a name according to <a href="https://s.apache.org/jcr-2.0-spec/22_Same-Name_Siblings.html#22.2%20Addressing%20Same-Name%20Siblings%20by%20Path">JCR 2.0 22.2</a>.
      * @param name
      * @return
@@ -296,7 +298,8 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
     }
 
     @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes)
+            throws SAXException {
         // special handling for root node
         log.trace("-> element {}", qName);
         Name name;
@@ -314,9 +317,10 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
                 try {
                     name = nameResolver.getQName(nameAndIndex.getKey());
                 } catch (NamespaceException e) {
-                    throw new SAXException("Unknown namespace prefix used in file name '" + nameAndIndex.getKey() + "'", e);
+                    throw new SAXException(
+                            "Unknown namespace prefix used in file name '" + nameAndIndex.getKey() + "'", e);
                 } catch (IllegalNameException e) {
-                	throw new SAXException("Invalid name format used in file name '" + nameAndIndex.getKey() + "'", e);
+                    throw new SAXException("Invalid name format used in file name '" + nameAndIndex.getKey() + "'", e);
                 }
             }
             currentPath = rootNodePath;
@@ -341,29 +345,35 @@ public class DocViewSAXHandler extends RejectingEntityDefaultHandler implements 
                 if (!attributes.getType(i).equals(DocViewImporter.ATTRIBUTE_TYPE_CDATA)) {
                     continue;
                 }
-                Name pName = FACTORY.create(
-                        attributes.getURI(i),
-                        ISO9075.decode(attributes.getLocalName(i)));
-                DocViewProperty2 property = DocViewProperty2.parse(
-                        pName,
-                        attributes.getValue(i));
+                Name pName = FACTORY.create(attributes.getURI(i), ISO9075.decode(attributes.getLocalName(i)));
+                DocViewProperty2 property = DocViewProperty2.parse(pName, attributes.getValue(i));
                 props.add(property);
             }
             DocViewNode2 ni = new DocViewNode2(name, index, props);
-            handler.startDocViewNode(currentPath, ni, Optional.ofNullable(nodeStack.peek()), locator.getLineNumber(), locator.getColumnNumber());
+            handler.startDocViewNode(
+                    currentPath,
+                    ni,
+                    Optional.ofNullable(nodeStack.peek()),
+                    locator.getLineNumber(),
+                    locator.getColumnNumber());
             nodeStack.push(ni);
-        }  catch (RepositoryException|IOException e) {
+        } catch (RepositoryException | IOException e) {
             throw new SAXException("Error while processing element " + qName, e);
-        } 
+        }
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         log.trace("<- element {}", qName);
         try {
-            handler.endDocViewNode(currentPath, nodeStack.pop(), Optional.ofNullable(nodeStack.peek()), locator.getLineNumber(), locator.getColumnNumber());
+            handler.endDocViewNode(
+                    currentPath,
+                    nodeStack.pop(),
+                    Optional.ofNullable(nodeStack.peek()),
+                    locator.getLineNumber(),
+                    locator.getColumnNumber());
             currentPath = Text.getRelativeParent(currentPath, 1);
-        } catch (RepositoryException|IOException e) {
+        } catch (RepositoryException | IOException e) {
             throw new SAXException(e);
         }
     }

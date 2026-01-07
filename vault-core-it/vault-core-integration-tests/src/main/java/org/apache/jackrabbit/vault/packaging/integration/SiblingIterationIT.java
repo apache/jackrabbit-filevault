@@ -1,20 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.integration;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.jackrabbit.oak.commons.junit.LogCustomizer;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -28,13 +38,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.event.Level;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -102,7 +105,8 @@ public class SiblingIterationIT extends IntegrationTestBase {
         internalTestSiblingIteration(filter, false);
     }
 
-    private void internalTestSiblingIteration(WorkspaceFilter filter, boolean expectIterated) throws RepositoryException, IOException {
+    private void internalTestSiblingIteration(WorkspaceFilter filter, boolean expectIterated)
+            throws RepositoryException, IOException {
 
         ExportOptions opts = new ExportOptions();
         DefaultMetaInf inf = new DefaultMetaInf();
@@ -113,8 +117,10 @@ public class SiblingIterationIT extends IntegrationTestBase {
         inf.setProperties(props);
         opts.setMetaInf(inf);
 
-        LogCustomizer clog = LogCustomizer.forLogger(AggregateImpl.class).enable(Level.TRACE).
-               contains("checking ").create();
+        LogCustomizer clog = LogCustomizer.forLogger(AggregateImpl.class)
+                .enable(Level.TRACE)
+                .contains("checking ")
+                .create();
 
         File tmpFile = File.createTempFile("vaulttest-sibling-iteration", "zip");
 
@@ -122,22 +128,27 @@ public class SiblingIterationIT extends IntegrationTestBase {
             clog.starting();
             try (VaultPackage pkg = packMgr.assemble(admin, opts, tmpFile)) {
 
-                assertNotNull(DO_FIND_ME + " should be part of the package", pkg.getArchive().getEntry("jcr_root" + "/" + ROOT + "/" + DO_FIND_ME));
+                assertNotNull(
+                        DO_FIND_ME + " should be part of the package",
+                        pkg.getArchive().getEntry("jcr_root" + "/" + ROOT + "/" + DO_FIND_ME));
                 assertNull(pkg.getArchive().getEntry("jcr_root" + "/" + ROOT + "/" + DO_NOT_FIND_ME));
 
                 String entries = clog.getLogs().toString();
 
                 // independent of filers: one included, one not
-                assertTrue("trace should contain entry for '" + DO_FIND_ME + "' got: " + entries,
+                assertTrue(
+                        "trace should contain entry for '" + DO_FIND_ME + "' got: " + entries,
                         entries.contains("/" + ROOT + "/" + DO_FIND_ME));
                 assertNull(pkg.getArchive().getEntry("jcr_root" + "/" + ROOT + "/" + DO_NOT_FIND_ME));
 
                 // dependent on filters: verify expected iteration
                 if (!expectIterated) {
-                    assertFalse("trace should not contain entry for '" + DO_NOT_FIND_ME + "', got: " + entries,
+                    assertFalse(
+                            "trace should not contain entry for '" + DO_NOT_FIND_ME + "', got: " + entries,
                             entries.contains("/" + ROOT + "/" + DO_NOT_FIND_ME));
                 } else {
-                    assertTrue("trace should contain entry for '" + DO_NOT_FIND_ME + "', got: " + entries,
+                    assertTrue(
+                            "trace should contain entry for '" + DO_NOT_FIND_ME + "', got: " + entries,
                             entries.contains("/" + ROOT + "/" + DO_NOT_FIND_ME));
                 }
             }

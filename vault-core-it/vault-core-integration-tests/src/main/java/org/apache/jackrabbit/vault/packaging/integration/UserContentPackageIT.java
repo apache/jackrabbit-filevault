@@ -1,37 +1,32 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.SimpleCredentials;
 import javax.jcr.nodetype.NodeType;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -51,6 +46,12 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.Assume;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class UserContentPackageIT extends IntegrationTestBase {
 
@@ -175,7 +176,8 @@ public class UserContentPackageIT extends IntegrationTestBase {
     }
 
     @Test
-    public void installUserA_Profile_Picture_NonExistingUser() throws RepositoryException, IOException, PackageException {
+    public void installUserA_Profile_Picture_NonExistingUser()
+            throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
         assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
 
@@ -216,10 +218,13 @@ public class UserContentPackageIT extends IntegrationTestBase {
 
         User u = mgr.createUser(ID_TEST_USER_A, "nonce");
         String authPath = u.getPath();
-        assertNotSame("authorizable path must be different than the one in the package", PARENT_PATH_TEST_USER_A, Text.getRelativeParent(authPath, 1));
+        assertNotSame(
+                "authorizable path must be different than the one in the package",
+                PARENT_PATH_TEST_USER_A,
+                Text.getRelativeParent(authPath, 1));
 
         // assert that user does not have an ACL setup
-        assertPermissionMissing(authPath, true, new String[]{"jcr:all"}, "everyone", null);
+        assertPermissionMissing(authPath, true, new String[] {"jcr:all"}, "everyone", null);
 
         JcrPackage pack = packMgr.upload(getStream("/test-packages/test_user_a_policy.zip"), false);
         assertNotNull(pack);
@@ -234,7 +239,7 @@ public class UserContentPackageIT extends IntegrationTestBase {
         authPath = u.getPath();
 
         // assert that user has an ACL setup
-        assertPermission(authPath, true, new String[]{"jcr:all"}, "everyone", null);
+        assertPermission(authPath, true, new String[] {"jcr:all"}, "everyone", null);
     }
 
     /**
@@ -251,15 +256,13 @@ public class UserContentPackageIT extends IntegrationTestBase {
         pack.install(opts);
     }
 
-
-
     @Test
     public void install_mv_property() throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
         User u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD);
         Node node = admin.getNode(u.getPath());
 
-        node.setProperty("mv", new String[]{"mv1", "mv2"});
+        node.setProperty("mv", new String[] {"mv1", "mv2"});
         Property property = node.getProperty("mv");
         assertTrue(property.isMultiple());
         admin.save();
@@ -293,7 +296,7 @@ public class UserContentPackageIT extends IntegrationTestBase {
         User u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD);
         Node node = admin.getNode(u.getPath());
 
-        node.setProperty("mv", new String[]{"mv1"});
+        node.setProperty("mv", new String[] {"mv1"});
         Property property = node.getProperty("mv");
         assertTrue(property.isMultiple());
         admin.save();
@@ -301,10 +304,10 @@ public class UserContentPackageIT extends IntegrationTestBase {
         File tmpFile = createPackage("test", "test", u.getPath());
         try {
             u.remove();
-            u = (User)  mgr.getAuthorizable(ID_TEST_USER_A);
+            u = (User) mgr.getAuthorizable(ID_TEST_USER_A);
             assertNull(u);
 
-            try (JcrPackage pack = packMgr.upload(tmpFile, true, true, null);) {
+            try (JcrPackage pack = packMgr.upload(tmpFile, true, true, null); ) {
                 assertNotNull(pack);
                 ImportOptions opts = getDefaultOptions();
                 pack.install(opts);
@@ -381,7 +384,8 @@ public class UserContentPackageIT extends IntegrationTestBase {
         install_user_with_rep_cache(ImportMode.MERGE);
     }
 
-    private void install_user_with_rep_cache(ImportMode mode) throws RepositoryException, IOException, PackageException {
+    private void install_user_with_rep_cache(ImportMode mode)
+            throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
         assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
 
@@ -397,7 +401,8 @@ public class UserContentPackageIT extends IntegrationTestBase {
         assertNotNull("test-user-a must exist", userA);
     }
 
-    private void install_moved_user_with_rep_cache(ImportMode mode) throws RepositoryException, IOException, PackageException {
+    private void install_moved_user_with_rep_cache(ImportMode mode)
+            throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
         User u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD);
         String newPath = u.getPath() + "_moved";
@@ -409,7 +414,9 @@ public class UserContentPackageIT extends IntegrationTestBase {
         admin.save();
 
         // login to the repository to generate some rep:cache nodes
-        repository.login(new SimpleCredentials(ID_TEST_USER_A, ID_TEST_PASSWORD.toCharArray())).logout();
+        repository
+                .login(new SimpleCredentials(ID_TEST_USER_A, ID_TEST_PASSWORD.toCharArray()))
+                .logout();
         admin.refresh(false);
 
         // ensure that there is a rep:cache node
@@ -427,21 +434,27 @@ public class UserContentPackageIT extends IntegrationTestBase {
         assertNotNull("test-user-a must exist", userA);
     }
 
-    private User installUserA(ImportMode mode, boolean usePkgPath, boolean expectPkgPath) throws RepositoryException, IOException, PackageException {
+    private User installUserA(ImportMode mode, boolean usePkgPath, boolean expectPkgPath)
+            throws RepositoryException, IOException, PackageException {
         UserManager mgr = ((JackrabbitSession) admin).getUserManager();
         assertNull("test-user-a must not exist", mgr.getAuthorizable(ID_TEST_USER_A));
 
         User u;
         if (usePkgPath) {
-            u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD, new PrincipalImpl(ID_TEST_USER_A), PARENT_PATH_TEST_USER_A);
+            u = mgr.createUser(
+                    ID_TEST_USER_A, ID_TEST_PASSWORD, new PrincipalImpl(ID_TEST_USER_A), PARENT_PATH_TEST_USER_A);
         } else {
             u = mgr.createUser(ID_TEST_USER_A, ID_TEST_PASSWORD);
         }
         final String authPath = u.getPath();
         if (usePkgPath) {
-            assertEquals("authorizable path must be correct", PARENT_PATH_TEST_USER_A, Text.getRelativeParent(authPath, 1));
+            assertEquals(
+                    "authorizable path must be correct", PARENT_PATH_TEST_USER_A, Text.getRelativeParent(authPath, 1));
         } else {
-            assertNotSame("authorizable path must be different than the one in the package", PARENT_PATH_TEST_USER_A, Text.getRelativeParent(authPath, 1));
+            assertNotSame(
+                    "authorizable path must be different than the one in the package",
+                    PARENT_PATH_TEST_USER_A,
+                    Text.getRelativeParent(authPath, 1));
         }
 
         // create test property and node
@@ -464,7 +477,10 @@ public class UserContentPackageIT extends IntegrationTestBase {
 
         // check path
         if (expectPkgPath) {
-            assertEquals("authorizable path must be correct", PARENT_PATH_TEST_USER_A, Text.getRelativeParent(userA.getPath(), 1));
+            assertEquals(
+                    "authorizable path must be correct",
+                    PARENT_PATH_TEST_USER_A,
+                    Text.getRelativeParent(userA.getPath(), 1));
         } else {
             assertEquals("authorizable path must be correct", authPath, userA.getPath());
         }
@@ -490,7 +506,8 @@ public class UserContentPackageIT extends IntegrationTestBase {
         return userA;
     }
 
-    private File createPackage(String group, String name, String... paths) throws RepositoryException, IOException, PackageException {
+    private File createPackage(String group, String name, String... paths)
+            throws RepositoryException, IOException, PackageException {
         ExportOptions opts = new ExportOptions();
         DefaultMetaInf inf = new DefaultMetaInf();
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
@@ -513,5 +530,4 @@ public class UserContentPackageIT extends IntegrationTestBase {
 
         return tmpFile;
     }
-
 }

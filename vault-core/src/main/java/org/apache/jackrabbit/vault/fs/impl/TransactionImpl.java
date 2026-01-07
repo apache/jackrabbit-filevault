@@ -1,21 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl;
+
+import javax.jcr.RepositoryException;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -26,8 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.jcr.RepositoryException;
-
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
@@ -50,7 +52,6 @@ import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PathComparator;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +60,7 @@ import org.slf4j.LoggerFactory;
  * the Vault filesystem. A transaction is always needed due to the fact that
  * several jcr files could belong to the same artifact.
  * This is only used from Vault CLI but not during package import which uses the {@link Importer} instead.
- * 
+ *
  * TODO: check all vault operations!
  *
  */
@@ -111,18 +112,20 @@ public class TransactionImpl implements VaultFsTransaction {
             String repoParentPath = file.getAggregate().getPath();
             // analyze the xml to scan for added nodes
             DocViewAnalyzer.analyze(
-                new DocViewAnalyzerListener(){
-                    public void onNode(String path, boolean intermediate, String nodeType) {
-                        if (!intermediate) {
-                            dotXmlNodes.put(path, new DotXmlInfo(change, nodeType == null));
+                    new DocViewAnalyzerListener() {
+                        public void onNode(String path, boolean intermediate, String nodeType) {
+                            if (!intermediate) {
+                                dotXmlNodes.put(path, new DotXmlInfo(change, nodeType == null));
+                            }
                         }
-                    }
-                }, fs.getAggregateManager().getSession(), repoParentPath, input);
+                    },
+                    fs.getAggregateManager().getSession(),
+                    repoParentPath,
+                    input);
         }
     }
 
-    public VaultFileOutput add(String path, VaultInputSource input)
-            throws IOException, RepositoryException {
+    public VaultFileOutput add(String path, VaultInputSource input) throws IOException, RepositoryException {
 
         String repoPath = PlatformNameFormat.getRepositoryPath(path, true);
         String repoName = Text.getName(repoPath);
@@ -136,22 +139,21 @@ public class TransactionImpl implements VaultFsTransaction {
 
             // analyze the xml to scan for added nodes
             DocViewAnalyzer.analyze(
-                new DocViewAnalyzerListener(){
-                    public void onNode(String path, boolean intermediate, String nodeType) {
-                        if (!intermediate) {
-                            dotXmlNodes.put(path, new DotXmlInfo(change, nodeType == null));
+                    new DocViewAnalyzerListener() {
+                        public void onNode(String path, boolean intermediate, String nodeType) {
+                            if (!intermediate) {
+                                dotXmlNodes.put(path, new DotXmlInfo(change, nodeType == null));
+                            }
                         }
-                    }
-                }, fs.getAggregateManager().getSession(), repoParentPath, input);
+                    },
+                    fs.getAggregateManager().getSession(),
+                    repoParentPath,
+                    input);
             // create artifact
             String parentExt = parentPath.endsWith(".dir") ? ".dir" : "";
             Artifact parent = new DirectoryArtifact(Text.getName(repoParentPath), parentExt);
             InputSourceArtifact isa = new InputSourceArtifact(
-                    parent,
-                    Constants.DOT_CONTENT_XML,
-                    "",
-                    ArtifactType.PRIMARY, input,
-                    SerializationType.XML_DOCVIEW);
+                    parent, Constants.DOT_CONTENT_XML, "", ArtifactType.PRIMARY, input, SerializationType.XML_DOCVIEW);
             isa.setContentType("text/xml");
             // attach to change
             change.isa = isa;
@@ -187,8 +189,7 @@ public class TransactionImpl implements VaultFsTransaction {
                     extension = ext;
                 }
             }
-            InputSourceArtifact isa = new InputSourceArtifact(null, repoName,
-                    extension, aType, input, serType);
+            InputSourceArtifact isa = new InputSourceArtifact(null, repoName, extension, aType, input, serType);
 
             Change change = new Change(Type.ADDED, repoParentPath + "/" + repoName, path, input);
             change.isa = isa;
@@ -248,7 +249,7 @@ public class TransactionImpl implements VaultFsTransaction {
                 if (ignoreMP) {
                     ignoreMP = false;
                 } else {
-                    for (Change c: changes) {
+                    for (Change c : changes) {
                         infos.put(c.filePath, new Info(Type.ERROR, c.filePath));
                     }
                     // abort iteration
@@ -262,7 +263,7 @@ public class TransactionImpl implements VaultFsTransaction {
                     // check if primary artifact is still present
                     if (info.out == null && info.aggregate == null) {
                         // this was an intermediate directory delete
-                        for (String path: info.original.keySet()) {
+                        for (String path : info.original.keySet()) {
                             infos.put(path, new Info(Type.DELETED, path));
                             if (verbose) {
                                 log.info("...comitting  DEL {}", path);
@@ -274,7 +275,7 @@ public class TransactionImpl implements VaultFsTransaction {
                             info.aggregate.remove(false);
                         }
                         // generate infos for the deleted ones
-                        for (String path: info.original.keySet()) {
+                        for (String path : info.original.keySet()) {
                             infos.put(path, new Info(Type.DELETED, path));
                             if (verbose) {
                                 log.info("...comitting  DEL {}", path);
@@ -284,9 +285,9 @@ public class TransactionImpl implements VaultFsTransaction {
                         // TODO fix
                         String cXmlPath = info.parentFile.getPath();
                         if (cXmlPath.endsWith("/")) {
-                            cXmlPath+= Constants.DOT_CONTENT_XML;
+                            cXmlPath += Constants.DOT_CONTENT_XML;
                         } else {
-                            cXmlPath+= "/" + Constants.DOT_CONTENT_XML;
+                            cXmlPath += "/" + Constants.DOT_CONTENT_XML;
                         }
                         Info i = infos.get(cXmlPath);
                         if (i == null) {
@@ -299,7 +300,7 @@ public class TransactionImpl implements VaultFsTransaction {
                         if (!parentPath.endsWith("/")) {
                             parentPath += "/";
                         }
-                        for (Artifact a: info.out.getArtifacts().values()) {
+                        for (Artifact a : info.out.getArtifacts().values()) {
                             if (a instanceof ImportArtifact) {
                                 String path = parentPath + a.getPlatformPath();
                                 infos.put(path, new Info(Type.ADDED, path));
@@ -310,7 +311,8 @@ public class TransactionImpl implements VaultFsTransaction {
                         if (ret != null) {
                             allInfos.merge(ret);
                             if (verbose) {
-                                for (Map.Entry<String,ImportInfo.Type> e: ret.getModifications().entrySet()) {
+                                for (Map.Entry<String, ImportInfo.Type> e :
+                                        ret.getModifications().entrySet()) {
                                     log.info("...committing  {} {}", e.getValue(), e.getKey());
                                 }
                             }
@@ -324,14 +326,15 @@ public class TransactionImpl implements VaultFsTransaction {
                         if (ret != null) {
                             allInfos.merge(ret);
                         }
-                        for (VaultFile file: info.original.values()) {
+                        for (VaultFile file : info.original.values()) {
                             infos.put(file.getPath(), new Info(Type.MODIFIED, file.getPath()));
                             if (verbose) {
                                 log.info("...comitting  UPD {}", file.getPath());
                             }
                         }
                         if (verbose && ret != null) {
-                            for (Map.Entry<String,ImportInfo.Type> e: ret.getModifications().entrySet()) {
+                            for (Map.Entry<String, ImportInfo.Type> e :
+                                    ret.getModifications().entrySet()) {
                                 log.info("...committing  {} {}", e.getValue(), e.getKey());
                             }
                         }
@@ -358,37 +361,135 @@ public class TransactionImpl implements VaultFsTransaction {
         return infos.values();
     }
 
-
     private boolean processChange(Change change, Map<String, TxInfo> modified, boolean ignoreMP)
             throws RepositoryException, IOException {
         switch (change.type) {
-            case ADDED_X: {
-                // special handling for .content.xml
-                // filePath: /vltTest/foo/.content.xml
-                // repoPath: /vltTest/foo
+            case ADDED_X:
+                {
+                    // special handling for .content.xml
+                    // filePath: /vltTest/foo/.content.xml
+                    // repoPath: /vltTest/foo
 
-                // parentPath: /vltTest/foo
-                String parentPath = Text.getRelativeParent(change.filePath, 1);
-                VaultFile parent = fs.getFile(parentPath);
-                TxInfo txInfo;
-                String repoPath;
-                if (parent == null) {
-                    // parentPath: /vltTest
-                    parentPath = Text.getRelativeParent(parentPath, 1);
-                    parent = fs.getFile(parentPath);
-                    repoPath = change.repoPath;
-                    String repoName = Text.getName(repoPath);
+                    // parentPath: /vltTest/foo
+                    String parentPath = Text.getRelativeParent(change.filePath, 1);
+                    VaultFile parent = fs.getFile(parentPath);
+                    TxInfo txInfo;
+                    String repoPath;
                     if (parent == null) {
-                        // special case if parent is an intermediate directory
-                        // that is not created yet. for example _jcr_content
-                        // /header.png/_jcr_content/renditions
+                        // parentPath: /vltTest
+                        parentPath = Text.getRelativeParent(parentPath, 1);
+                        parent = fs.getFile(parentPath);
+                        repoPath = change.repoPath;
+                        String repoName = Text.getName(repoPath);
+                        if (parent == null) {
+                            // special case if parent is an intermediate directory
+                            // that is not created yet. for example _jcr_content
+                            // /header.png/_jcr_content/renditions
 
-                        // check if parent node exists
-                        if (!fs.getAggregateManager().getSession().nodeExists(Text.getRelativeParent(repoPath, 1))) {
+                            // check if parent node exists
+                            if (!fs.getAggregateManager()
+                                    .getSession()
+                                    .nodeExists(Text.getRelativeParent(repoPath, 1))) {
+                                return false;
+                            }
+                            while ((parent == null || parent.getAggregate() == null) && parentPath.length() > 0) {
+                                String parentName = Text.getName(parentPath);
+                                if (parentName.endsWith(".dir")) {
+                                    parentName = parentName.substring(0, parentName.length() - 4);
+                                }
+                                repoName = PlatformNameFormat.getRepositoryName(parentName) + "/" + repoName;
+                                parentPath = Text.getRelativeParent(parentPath, 1);
+                                parent = fs.getFile(parentPath);
+                            }
+                            if (parent == null || parent.getAggregate() == null) {
+                                return false;
+                            }
+                            String repoRelPath = Text.getName(parentPath) + "/" + repoName;
+                            txInfo = modified.get(parent.getAggregate().getPath());
+                            if (txInfo == null) {
+                                txInfo = new TxInfo(parent.getAggregate());
+                                modified.put(parent.getAggregate().getPath(), txInfo);
+                            }
+                            txInfo.out
+                                    .getArtifacts()
+                                    .add(new InputSourceArtifact(
+                                            null,
+                                            repoRelPath,
+                                            change.isa.getExtension(),
+                                            ArtifactType.FILE,
+                                            change.isa.getInputSource(),
+                                            change.isa.getSerializationType()));
+                        } else {
+                            // repoPath: /vltTest.foo
+                            assertInFilter(repoPath);
+                            txInfo = modified.get(repoPath);
+                            if (txInfo == null) {
+                                txInfo = new TxInfo(repoPath, ((AggregateImpl) parent.getAggregate()).create(repoName));
+                                txInfo.parentFile = parent;
+                                modified.put(repoPath, txInfo);
+                            }
+                            txInfo.out.getArtifacts().add(change.isa);
+                        }
+                    } else {
+                        // repoPath: /vltTest/foo
+                        repoPath = parent.getAggregate().getPath();
+                        assertInFilter(repoPath);
+                        txInfo = modified.get(repoPath);
+                        if (txInfo == null) {
+                            txInfo = new TxInfo(parent.getAggregate());
+                            txInfo.parentFile = parent;
+                            modified.put(repoPath, txInfo);
+                        }
+                        txInfo.out.getArtifacts().add(change.isa);
+                    }
+                    if (txInfo == null) {
+                        return false;
+                    }
+                    // add sub changes
+                    if (change.subChanges != null) {
+                        for (Change sc : change.subChanges) {
+                            // need to adjust relative path of input
+                            // repoPath    = /vltTest/foo
+                            // sc.repoPath = /vltTest/foo/text/file
+                            // relPath     = foo/text/file
+                            String relPath = PathUtil.getRelativePath(repoPath, sc.repoPath);
+                            relPath = Text.getName(repoPath) + "/" + relPath;
+                            if (!relPath.equals(sc.isa.getRelativePath())) {
+                                // todo: check if correct platform path
+                                sc.isa = new InputSourceArtifact(
+                                        null,
+                                        relPath,
+                                        "",
+                                        sc.isa.getType(),
+                                        sc.isa.getInputSource(),
+                                        sc.isa.getSerializationType());
+                            }
+                            txInfo.out.getArtifacts().add(sc.isa);
+                        }
+                    }
+                    if (verbose) {
+                        log.info("...scheduling ADD {}/{}", parent.getPath(), Constants.DOT_CONTENT_XML);
+                    }
+                }
+                break;
+            case ADDED:
+                {
+                    // get parent file
+                    String parentPath = Text.getRelativeParent(change.filePath, 1);
+
+                    // stop processing if parent file does not exist.
+                    VaultFile parent = fs.getFile(parentPath);
+                    String repoName = change.isa.getRelativePath();
+                    if (parent == null || parent.getAggregate() == null) {
+                        if (ignoreMP) {
                             return false;
                         }
-                        while ((parent == null || parent.getAggregate() == null)
-                                && parentPath.length() > 0) {
+                        // Hack: if parent is intermediate directory, search
+                        // next valid parent and modify its artifact set.
+                        // since we cannot easily determine if the parent is an
+                        // intermediate directory, we just process all failing ones
+                        // at the end.
+                        while ((parent == null || parent.getAggregate() == null) && parentPath.length() > 0) {
                             String parentName = Text.getName(parentPath);
                             if (parentName.endsWith(".dir")) {
                                 parentName = parentName.substring(0, parentName.length() - 4);
@@ -397,129 +498,77 @@ public class TransactionImpl implements VaultFsTransaction {
                             parentPath = Text.getRelativeParent(parentPath, 1);
                             parent = fs.getFile(parentPath);
                         }
-                        if (parent == null || parent.getAggregate() == null) {
+                        if (parent == null) {
+                            // no parent found ?
                             return false;
                         }
-                        String repoRelPath = Text.getName(parentPath) + "/" + repoName;
-                        txInfo = modified.get(parent.getAggregate().getPath());
-                        if (txInfo == null) {
-                            txInfo = new TxInfo(parent.getAggregate());
-                            modified.put(parent.getAggregate().getPath(), txInfo);
+                        String repoPath = parent.getAggregate().getPath();
+                        String repoRelPath = Text.getName(repoPath) + "/" + repoName;
+                        if (!repoPath.endsWith("/")) {
+                            repoPath += "/";
                         }
-                        txInfo.out.getArtifacts().add(new InputSourceArtifact(null,
-                                repoRelPath, change.isa.getExtension(),
-                                ArtifactType.FILE,
-                                change.isa.getInputSource(), change.isa.getSerializationType()
-                        ));
-                    } else {
-                        // repoPath: /vltTest.foo
+                        repoPath += repoName;
                         assertInFilter(repoPath);
-                        txInfo = modified.get(repoPath);
+                        if (false && change.isa.getSerializationType() == SerializationType.XML_DOCVIEW) {
+                            // special case that full coverage is below a intermediate
+                            // ignore and wait for next cycle
+                        } else {
+                            TxInfo txInfo = modified.get(parent.getAggregate().getPath());
+                            if (txInfo == null) {
+                                txInfo = new TxInfo(parent.getAggregate());
+                                modified.put(parent.getAggregate().getPath(), txInfo);
+                            }
+                            txInfo.out
+                                    .getArtifacts()
+                                    .add(new InputSourceArtifact(
+                                            null,
+                                            repoRelPath,
+                                            change.isa.getExtension(),
+                                            ArtifactType.FILE,
+                                            change.isa.getInputSource(),
+                                            change.isa.getSerializationType()));
+                        }
+                    } else {
+                        String repoPath = parent.getAggregate().getPath();
+
+                        if (!repoPath.endsWith("/")) {
+                            repoPath += "/";
+                        }
+                        repoPath += repoName;
+                        assertInFilter(repoPath);
+                        TxInfo txInfo = modified.get(repoPath);
                         if (txInfo == null) {
-                            txInfo = new TxInfo(repoPath,
-                                    ((AggregateImpl) parent.getAggregate()).create(repoName));
-                            txInfo.parentFile = parent;
+                            txInfo = new TxInfo(repoPath, ((AggregateImpl) parent.getAggregate()).create(repoName));
+                            txInfo.setParentFile(parent);
                             modified.put(repoPath, txInfo);
                         }
                         txInfo.out.getArtifacts().add(change.isa);
                     }
-                } else {
-                    // repoPath: /vltTest/foo
-                    repoPath = parent.getAggregate().getPath();
-                    assertInFilter(repoPath);
-                    txInfo = modified.get(repoPath);
-                    if (txInfo == null) {
-                        txInfo = new TxInfo(parent.getAggregate());
-                        txInfo.parentFile = parent;
-                        modified.put(repoPath, txInfo);
-                    }
-                    txInfo.out.getArtifacts().add(change.isa);
-                }
-                if (txInfo == null) {
-                    return false;
-                }
-                // add sub changes
-                if (change.subChanges != null) {
-                    for (Change sc: change.subChanges) {
-                        // need to adjust relative path of input
-                        // repoPath    = /vltTest/foo
-                        // sc.repoPath = /vltTest/foo/text/file
-                        // relPath     = foo/text/file
-                        String relPath = PathUtil.getRelativePath(repoPath, sc.repoPath);
-                        relPath  = Text.getName(repoPath) + "/" + relPath;
-                        if (!relPath.equals(sc.isa.getRelativePath())) {
-                            // todo: check if correct platform path
-                            sc.isa = new InputSourceArtifact(
-                                    null,
-                                    relPath,
-                                    "",
-                                    sc.isa.getType(),
-                                    sc.isa.getInputSource(),
-                                    sc.isa.getSerializationType()
-                            );
-                        }
-                        txInfo.out.getArtifacts().add(sc.isa);
+                    if (verbose) {
+                        log.info("...scheduling ADD {}/{}", parent.getPath(), repoName);
                     }
                 }
-                if (verbose) {
-                    log.info("...scheduling ADD {}/{}", parent.getPath(), Constants.DOT_CONTENT_XML);
-                }
-            } break;
-            case ADDED: {
-                // get parent file
-                String parentPath = Text.getRelativeParent(change.filePath, 1);
-
-                // stop processing if parent file does not exist.
-                VaultFile parent = fs.getFile(parentPath);
-                String repoName = change.isa.getRelativePath();
-                if (parent == null || parent.getAggregate() == null) {
-                    if (ignoreMP) {
+                break;
+            case MKDIR:
+                {
+                    // get parent file
+                    String parentPath = Text.getRelativeParent(change.filePath, 1);
+                    String name = Text.getName(change.filePath);
+                    VaultFile parent = fs.getFile(parentPath);
+                    if (parent == null || parent.isTransient()) {
                         return false;
                     }
-                    // Hack: if parent is intermediate directory, search
-                    // next valid parent and modify its artifact set.
-                    // since we cannot easily determine if the parent is an
-                    // intermediate directory, we just process all failing ones
-                    // at the end.
-                    while ((parent == null || parent.getAggregate() == null)
-                            && parentPath.length() > 0) {
-                        String parentName = Text.getName(parentPath);
-                        if (parentName.endsWith(".dir")) {
-                            parentName = parentName.substring(0, parentName.length() - 4);
+                    String repoName = PlatformNameFormat.getRepositoryName(name);
+                    int idx = repoName.lastIndexOf('.');
+                    if (idx > 0) {
+                        String base = repoName.substring(0, idx);
+                        String ext = repoName.substring(idx);
+                        if (ext.equals(".dir")) {
+                            // assume no directories with .dir extension
+                            repoName = base;
                         }
-                        repoName = PlatformNameFormat.getRepositoryName(parentName) + "/" + repoName;
-                        parentPath = Text.getRelativeParent(parentPath, 1);
-                        parent = fs.getFile(parentPath);
-                    }
-                    if (parent == null) {
-                        // no parent found ?
-                        return false;
                     }
                     String repoPath = parent.getAggregate().getPath();
-                    String repoRelPath = Text.getName(repoPath) + "/" + repoName;
-                    if (!repoPath.endsWith("/")) {
-                        repoPath += "/";
-                    }
-                    repoPath += repoName;
-                    assertInFilter(repoPath);
-                    if (false && change.isa.getSerializationType() == SerializationType.XML_DOCVIEW) {
-                        // special case that full coverage is below a intermediate
-                        // ignore and wait for next cycle
-                    } else {
-                        TxInfo txInfo = modified.get(parent.getAggregate().getPath());
-                        if (txInfo == null) {
-                            txInfo = new TxInfo(parent.getAggregate());
-                            modified.put(parent.getAggregate().getPath(), txInfo);
-                        }
-                        txInfo.out.getArtifacts().add(new InputSourceArtifact(null,
-                                repoRelPath, change.isa.getExtension(),
-                                ArtifactType.FILE,
-                                change.isa.getInputSource(), change.isa.getSerializationType()
-                        ));
-                    }
-                } else {
-                    String repoPath = parent.getAggregate().getPath();
-
                     if (!repoPath.endsWith("/")) {
                         repoPath += "/";
                     }
@@ -531,59 +580,52 @@ public class TransactionImpl implements VaultFsTransaction {
                         txInfo.setParentFile(parent);
                         modified.put(repoPath, txInfo);
                     }
-                    txInfo.out.getArtifacts().add(change.isa);
-
-                }
-                if (verbose) {
-                    log.info("...scheduling ADD {}/{}", parent.getPath(), repoName);
-                }
-            } break;
-            case MKDIR:{
-                // get parent file
-                String parentPath = Text.getRelativeParent(change.filePath, 1);
-                String name = Text.getName(change.filePath);
-                VaultFile parent = fs.getFile(parentPath);
-                if (parent == null || parent.isTransient()) {
-                    return false;
-                }
-                String repoName = PlatformNameFormat.getRepositoryName(name);
-                int idx = repoName.lastIndexOf('.');
-                if (idx > 0) {
-                    String base = repoName.substring(0, idx);
-                    String ext = repoName.substring(idx);
-                    if (ext.equals(".dir")) {
-                        // assume no directories with .dir extension
-                        repoName = base;
+                    txInfo.out.addArtifact(new DirectoryArtifact(repoName));
+                    if (verbose) {
+                        log.info("...scheduling MKD {}/{}", parent.getPath(), repoName);
                     }
                 }
-                String repoPath = parent.getAggregate().getPath();
-                if (!repoPath.endsWith("/")) {
-                    repoPath += "/";
+                break;
+            case DELETED:
+                {
+                    Aggregate an = change.file.getAggregate();
+                    if (an == null) {
+                        // intermediate directory
+                        // can't handle here
+                        assertInFilter(change.repoPath);
+                        TxInfo txInfo = new TxInfo(change.repoPath, null);
+                        txInfo.original.put(change.file.getPath(), change.file);
+                        modified.put(txInfo.artifactsPath, txInfo);
+                    } else {
+                        assertInFilter(an.getPath());
+                        TxInfo txInfo = modified.get(an.getPath());
+                        if (txInfo == null) {
+                            txInfo = new TxInfo(an);
+                            VaultFile dir = null;
+                            for (VaultFile rel : change.file.getRelated()) {
+                                txInfo.original.put(rel.getPath(), rel);
+                                if (rel.isDirectory()) {
+                                    dir = rel;
+                                }
+                            }
+                            modified.put(txInfo.artifactsPath, txInfo);
+                            // set parent file
+                            if (dir == null) {
+                                txInfo.parentFile = change.file.getParent();
+                            } else {
+                                txInfo.parentFile = dir.getParent();
+                            }
+                        }
+                        txInfo.out.getArtifacts().remove(change.file.getArtifact());
+                        if (verbose) {
+                            log.info("...scheduling DEL {}", an.getPath());
+                        }
+                    }
                 }
-                repoPath += repoName;
-                assertInFilter(repoPath);
-                TxInfo txInfo = modified.get(repoPath);
-                if (txInfo == null) {
-                    txInfo = new TxInfo(repoPath, ((AggregateImpl) parent.getAggregate()).create(repoName));
-                    txInfo.setParentFile(parent);
-                    modified.put(repoPath, txInfo);
-                }
-                txInfo.out.addArtifact(new DirectoryArtifact(repoName));
-                if (verbose) {
-                    log.info("...scheduling MKD {}/{}", parent.getPath(), repoName);
-                }
-            } break;
-            case DELETED: {
-                Aggregate an = change.file.getAggregate();
-                if (an == null) {
-                    // intermediate directory
-                    // can't handle here
-                    assertInFilter(change.repoPath);
-                    TxInfo txInfo = new TxInfo(change.repoPath, null);
-                    txInfo.original.put(change.file.getPath(), change.file);
-                    modified.put(txInfo.artifactsPath, txInfo);
-                } else {
-                    assertInFilter(an.getPath());
+                break;
+            case MODIFIED:
+                {
+                    Aggregate an = change.file.getAggregate();
                     TxInfo txInfo = modified.get(an.getPath());
                     if (txInfo == null) {
                         txInfo = new TxInfo(an);
@@ -602,62 +644,36 @@ public class TransactionImpl implements VaultFsTransaction {
                             txInfo.parentFile = dir.getParent();
                         }
                     }
-                    txInfo.out.getArtifacts().remove(change.file.getArtifact());
-                    if (verbose) {
-                        log.info("...scheduling DEL {}", an.getPath());
-                    }
-                }
-            } break;
-            case MODIFIED: {
-                Aggregate an = change.file.getAggregate();
-                TxInfo txInfo = modified.get(an.getPath());
-                if (txInfo == null) {
-                    txInfo = new TxInfo(an);
-                    VaultFile dir = null;
-                    for (VaultFile rel: change.file.getRelated()) {
-                        txInfo.original.put(rel.getPath(), rel);
-                        if (rel.isDirectory()) {
-                            dir = rel;
+                    InputSourceArtifact isa = new InputSourceArtifact(change.file.getArtifact(), change.input);
+                    txInfo.out.getArtifacts().put(isa);
+                    // add sub changes
+                    if (change.subChanges != null) {
+                        for (Change sc : change.subChanges) {
+                            // need to adjust relative path of input
+                            // repoPath    = /vltTest/foo
+                            // sc.repoPath = /vltTest/foo/text/file
+                            // relPath     = foo/text/file
+                            String relPath = PathUtil.getRelativePath(change.repoPath, sc.repoPath);
+                            relPath = Text.getName(change.repoPath) + "/" + relPath;
+                            if (!relPath.equals(sc.isa.getRelativePath())) {
+                                // todo: check if correct platform path
+                                sc.isa = new InputSourceArtifact(
+                                        null,
+                                        relPath,
+                                        sc.isa.getExtension(),
+                                        sc.isa.getType(),
+                                        sc.isa.getInputSource(),
+                                        sc.isa.getSerializationType());
+                            }
+                            txInfo.out.getArtifacts().add(sc.isa);
                         }
                     }
-                    modified.put(txInfo.artifactsPath, txInfo);
-                    // set parent file
-                    if (dir == null) {
-                        txInfo.parentFile = change.file.getParent();
-                    } else {
-                        txInfo.parentFile = dir.getParent();
-                    }
-                }
-                InputSourceArtifact isa = new InputSourceArtifact(change.file.getArtifact(), change.input);
-                txInfo.out.getArtifacts().put(isa);
-                // add sub changes
-                if (change.subChanges != null) {
-                    for (Change sc: change.subChanges) {
-                        // need to adjust relative path of input
-                        // repoPath    = /vltTest/foo
-                        // sc.repoPath = /vltTest/foo/text/file
-                        // relPath     = foo/text/file
-                        String relPath = PathUtil.getRelativePath(change.repoPath, sc.repoPath);
-                        relPath  = Text.getName(change.repoPath) + "/" + relPath;
-                        if (!relPath.equals(sc.isa.getRelativePath())) {
-                            // todo: check if correct platform path
-                            sc.isa = new InputSourceArtifact(
-                                    null,
-                                    relPath,
-                                    sc.isa.getExtension(),
-                                    sc.isa.getType(),
-                                    sc.isa.getInputSource(),
-                                    sc.isa.getSerializationType()
-                            );
-                        }
-                        txInfo.out.getArtifacts().add(sc.isa);
-                    }
-                }
 
-                if (verbose) {
-                    log.info("...scheduling UPD {}/{}", isa.getRelativePath());
+                    if (verbose) {
+                        log.info("...scheduling UPD {}/{}", isa.getRelativePath());
+                    }
                 }
-            } break;
+                break;
             case MOVED:
             case ERROR:
                 break;
@@ -734,6 +750,7 @@ public class TransactionImpl implements VaultFsTransaction {
             this.intermediate = intermediate;
         }
     }
+
     private static class TxInfo {
 
         private final AggregateImpl aggregate;
@@ -762,5 +779,4 @@ public class TransactionImpl implements VaultFsTransaction {
             this.parentFile = parentFile;
         }
     }
-
 }

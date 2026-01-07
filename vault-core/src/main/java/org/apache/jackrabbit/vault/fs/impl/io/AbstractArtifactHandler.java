@@ -1,27 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl.io;
-
-import java.io.IOException;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+
+import java.io.IOException;
 
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.ArtifactHandler;
@@ -118,23 +119,25 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
     }
 
     @Override
-    public ImportInfo accept(Session session, Aggregate file,
-                             ArtifactSet artifacts)
+    public ImportInfo accept(Session session, Aggregate file, ArtifactSet artifacts)
             throws RepositoryException, IOException {
         Node node = file.getNode();
         String name = node.getName();
-        return accept(new ImportOptions(), true, file.getManager().getWorkspaceFilter(),
+        return accept(
+                new ImportOptions(),
+                true,
+                file.getManager().getWorkspaceFilter(),
                 name.length() == 0 ? node : node.getParent(),
-                name, (ArtifactSetImpl) artifacts);
+                name,
+                (ArtifactSetImpl) artifacts);
     }
 
     @Override
-    public ImportInfo accept(Session session, Aggregate parent, String name,
-                             ArtifactSet artifacts)
+    public ImportInfo accept(Session session, Aggregate parent, String name, ArtifactSet artifacts)
             throws RepositoryException, IOException {
         Node node = parent.getNode();
-        return accept(new ImportOptions(), true, parent.getManager().getWorkspaceFilter(),
-                node, name, (ArtifactSetImpl) artifacts);
+        return accept(new ImportOptions(), true, parent.getManager().getWorkspaceFilter(), node, name, (ArtifactSetImpl)
+                artifacts);
     }
 
     /**
@@ -151,8 +154,13 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
      * @throws RepositoryException if an error occurs.
      * @throws IOException if an I/O error occurs.
      */
-    public abstract ImportInfoImpl accept(@NotNull ImportOptions options, boolean isStrictByDefault, WorkspaceFilter wspFilter, Node parent,
-                                         String name, ArtifactSetImpl artifacts)
+    public abstract ImportInfoImpl accept(
+            @NotNull ImportOptions options,
+            boolean isStrictByDefault,
+            WorkspaceFilter wspFilter,
+            Node parent,
+            String name,
+            ArtifactSetImpl artifacts)
             throws RepositoryException, IOException;
 
     /**
@@ -162,12 +170,28 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
         ctx.println(isLast, getClass().getSimpleName());
     }
 
-    protected ImportInfoImpl importDocView(InputSource source, Node parentNode, String rootNodeName, ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws IOException, RepositoryException {
+    protected ImportInfoImpl importDocView(
+            InputSource source,
+            Node parentNode,
+            String rootNodeName,
+            ArtifactSetImpl artifacts,
+            WorkspaceFilter wspFilter,
+            IdConflictPolicy idConflictPolicy)
+            throws IOException, RepositoryException {
         return importDocView(source, parentNode, rootNodeName, artifacts, true, wspFilter, idConflictPolicy);
     }
 
-    protected ImportInfoImpl importDocView(InputSource source, Node parentNode, String rootNodeName, ArtifactSetImpl artifacts, boolean isStrict, WorkspaceFilter wspFilter, IdConflictPolicy idConflictPolicy) throws IOException, RepositoryException {
-        DocViewImporter handler = new DocViewImporter(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, getAcHandling(), getCugHandling());
+    protected ImportInfoImpl importDocView(
+            InputSource source,
+            Node parentNode,
+            String rootNodeName,
+            ArtifactSetImpl artifacts,
+            boolean isStrict,
+            WorkspaceFilter wspFilter,
+            IdConflictPolicy idConflictPolicy)
+            throws IOException, RepositoryException {
+        DocViewImporter handler = new DocViewImporter(
+                parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, getAcHandling(), getCugHandling());
         String rootNodePath = parentNode.getPath();
         if (!rootNodePath.equals("/")) {
             rootNodePath += "/";

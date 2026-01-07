@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.rcp.impl;
 
 import java.util.AbstractMap;
@@ -29,9 +30,10 @@ import java.util.stream.Collectors;
  * Those additional getter methods allow to retrieve a specific typed value.
  * The method names are inspired by <a href="https://sling.apache.org/apidocs/sling8/org/apache/sling/commons/json/JSONObject.html">org.apache.sling.commons.json.JSONObject</a>.
  */
-public class TypedMapWrapper extends AbstractMap<String,Object> implements Map<String, Object> {
+public class TypedMapWrapper extends AbstractMap<String, Object> implements Map<String, Object> {
 
     private final Map<String, Object> wrappedMap;
+
     public TypedMapWrapper(Map<String, Object> wrappedMap) {
         this.wrappedMap = wrappedMap;
     }
@@ -51,12 +53,14 @@ public class TypedMapWrapper extends AbstractMap<String,Object> implements Map<S
 
     public List<String> getStringList(String key) {
         List<?> objects = getTypedOrThrow(key, List.class);
-        return objects.stream().map( o -> {
-            if (o instanceof String) {
-                return String.class.cast(o);
-            }
-            throw new IllegalArgumentException("List does not contain out of strings");
-        }).collect(Collectors.toList());
+        return objects.stream()
+                .map(o -> {
+                    if (o instanceof String) {
+                        return String.class.cast(o);
+                    }
+                    throw new IllegalArgumentException("List does not contain out of strings");
+                })
+                .collect(Collectors.toList());
     }
 
     public long getLong(String key) throws IllegalArgumentException {
@@ -84,7 +88,8 @@ public class TypedMapWrapper extends AbstractMap<String,Object> implements Map<S
     }
 
     private <T> T getTypedOrThrow(String key, Class<T> clazz) {
-        return getTyped(key, clazz).orElseThrow(() -> new IllegalArgumentException("Key " + key + " is unknown or value is no " + clazz));
+        return getTyped(key, clazz)
+                .orElseThrow(() -> new IllegalArgumentException("Key " + key + " is unknown or value is no " + clazz));
     }
 
     private <T> Optional<T> getTyped(String key, Class<T> clazz) {
@@ -95,6 +100,4 @@ public class TypedMapWrapper extends AbstractMap<String,Object> implements Map<S
             return Optional.empty();
         }
     }
-
-    
 }

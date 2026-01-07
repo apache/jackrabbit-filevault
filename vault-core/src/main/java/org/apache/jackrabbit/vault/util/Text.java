@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.util;
 
 import java.io.ByteArrayOutputStream;
@@ -36,8 +37,7 @@ public class Text {
     /**
      * Hidden constructor.
      */
-    private Text() {
-    }
+    private Text() {}
 
     /**
      * used for the md5
@@ -52,8 +52,7 @@ public class Text {
      * @return a hex encoded string of the md5 digested input
      * @throws UnsupportedEncodingException if the encoding is not supported
      */
-    public static String md5(String data, String enc)
-            throws UnsupportedEncodingException {
+    public static String md5(String data, String enc) throws UnsupportedEncodingException {
         try {
             return digest("MD5", data.getBytes(enc));
         } catch (NoSuchAlgorithmException e) {
@@ -103,8 +102,7 @@ public class Text {
      * @throws java.security.NoSuchAlgorithmException if the desired algorithm is not supported by
      *                                  the MessageDigest class.
      */
-    public static String digest(String algorithm, byte[] data)
-            throws NoSuchAlgorithmException {
+    public static String digest(String algorithm, byte[] data) throws NoSuchAlgorithmException {
 
         MessageDigest md = MessageDigest.getInstance(algorithm);
         byte[] digest = md.digest(data);
@@ -402,12 +400,12 @@ public class Text {
      *                                        or if not enough characters follow an
      *                                        escape character
      */
-    public static String unescape(String string, char escape)  {
+    public static String unescape(String string, char escape) {
         byte[] utf8 = string.getBytes(StandardCharsets.UTF_8);
 
         // Check whether escape occurs at invalid position
-        if ((utf8.length >= 1 && utf8[utf8.length - 1] == escape) ||
-            (utf8.length >= 2 && utf8[utf8.length - 2] == escape)) {
+        if ((utf8.length >= 1 && utf8[utf8.length - 1] == escape)
+                || (utf8.length >= 2 && utf8[utf8.length - 2] == escape)) {
             throw new IllegalArgumentException("Premature end of escape sequence at end of input");
         }
 
@@ -416,14 +414,12 @@ public class Text {
             byte b = utf8[k];
             if (b == escape) {
                 out.write((decodeDigit(utf8[++k]) << 4) & 0xff + decodeDigit(utf8[++k]) & 0xff);
-            }
-            else {
+            } else {
                 out.write(b);
             }
         }
 
         return new String(out.toByteArray(), StandardCharsets.UTF_8);
-        
     }
 
     /**
@@ -468,11 +464,18 @@ public class Text {
         StringBuffer buffer = new StringBuffer(name.length() * 2);
         for (int i = 0; i < name.length(); i++) {
             char ch = name.charAt(i);
-            if (ch == '%' || ch == '/' || ch == ':' || ch == '[' || ch == ']'
-                || ch == '*' || ch == '|'
-                || (ch == '.' && name.length() < 3)
-                || (ch == ' ' && (i == 0 || i == name.length() - 1))
-                || ch == '\t' || ch == '\r' || ch == '\n') {
+            if (ch == '%'
+                    || ch == '/'
+                    || ch == ':'
+                    || ch == '['
+                    || ch == ']'
+                    || ch == '*'
+                    || ch == '|'
+                    || (ch == '.' && name.length() < 3)
+                    || (ch == ' ' && (i == 0 || i == name.length() - 1))
+                    || ch == '\t'
+                    || ch == '\r'
+                    || ch == '\n') {
                 buffer.append('%');
                 buffer.append(Character.toUpperCase(Character.forDigit(ch / 16, 16)));
                 buffer.append(Character.toUpperCase(Character.forDigit(ch % 16, 16)));
@@ -497,8 +500,7 @@ public class Text {
         sb.append(s.substring(0, (s.length() - 1)));
         char c = s.charAt(s.length() - 1);
         // NOTE: keep this in sync with _ESCAPED_CHAR below!
-        if (c == '!' || c == '(' || c == ':' || c == '^'
-            || c == '[' || c == ']' || c == '{' || c == '}' || c == '?') {
+        if (c == '!' || c == '(' || c == ':' || c == '^' || c == '[' || c == ']' || c == '{' || c == '}' || c == '?') {
             sb.append('\\');
         }
         sb.append(c);
@@ -556,9 +558,7 @@ public class Text {
      * @return the name part or {@code null} if {@code path} is {@code null}.
      */
     public static String getName(String path, char delim) {
-        return path == null
-                ? null
-                : path.substring(path.lastIndexOf(delim) + 1);
+        return path == null ? null : path.substring(path.lastIndexOf(delim) + 1);
     }
 
     /**
@@ -572,7 +572,7 @@ public class Text {
      */
     public static String getName(String path, boolean ignoreTrailingSlash) {
         if (ignoreTrailingSlash && path != null && path.endsWith("/") && path.length() > 1) {
-            path = path.substring(0, path.length()-1);
+            path = path.substring(0, path.length() - 1);
         }
         return getName(path);
     }
@@ -593,7 +593,7 @@ public class Text {
      */
     public static String getNamespacePrefix(String qname) {
         int pos = qname.indexOf(':');
-        return pos >=0 ? qname.substring(0, pos) : "";
+        return pos >= 0 ? qname.substring(0, pos) : "";
     }
 
     /**
@@ -611,7 +611,7 @@ public class Text {
      */
     public static String getLocalName(String qname) {
         int pos = qname.indexOf(':');
-        return pos >=0 ? qname.substring(pos+1) : qname;
+        return pos >= 0 ? qname.substring(pos + 1) : qname;
     }
 
     /**
@@ -638,8 +638,7 @@ public class Text {
      */
     public static boolean isDescendant(String path, String descendant) {
         String pattern = path.endsWith("/") ? path : path + "/";
-        return !pattern.equals(descendant) &&
-                descendant.startsWith(pattern);
+        return !pattern.equals(descendant) && descendant.startsWith(pattern);
     }
 
     /**
@@ -693,7 +692,7 @@ public class Text {
      */
     public static String getRelativeParent(String path, int level, boolean ignoreTrailingSlash) {
         if (ignoreTrailingSlash && path.endsWith("/") && path.length() > 1) {
-            path = path.substring(0, path.length()-1);
+            path = path.substring(0, path.length() - 1);
         }
         return getRelativeParent(path, level);
     }
@@ -734,8 +733,7 @@ public class Text {
      * @return value after variable replacements
      * @throws IllegalArgumentException if the replacement of a referenced variable is not found
      */
-    public static String replaceVariables(Properties variables, String value,
-                                          boolean ignoreMissing)
+    public static String replaceVariables(Properties variables, String value, boolean ignoreMissing)
             throws IllegalArgumentException {
         StringBuffer result = new StringBuffer();
 
@@ -743,11 +741,11 @@ public class Text {
         // +--+-+--------+-+-----------------+
         // |  |p|-->     |q|-->              |
         // +--+-+--------+-+-----------------+
-        int p = 0, q = value.indexOf("${");                // Find first ${
+        int p = 0, q = value.indexOf("${"); // Find first ${
         while (q != -1) {
-            result.append(value.substring(p, q));          // Text before ${
+            result.append(value.substring(p, q)); // Text before ${
             p = q;
-            q = value.indexOf("}", q + 2);                 // Find }
+            q = value.indexOf("}", q + 2); // Find }
             if (q != -1) {
                 String variable = value.substring(p + 2, q);
                 String replacement = variables.getProperty(variable);
@@ -755,13 +753,12 @@ public class Text {
                     if (ignoreMissing) {
                         replacement = "";
                     } else {
-                        throw new IllegalArgumentException(
-                                "Replacement not found for ${" + variable + "}.");
+                        throw new IllegalArgumentException("Replacement not found for ${" + variable + "}.");
                     }
                 }
                 result.append(replacement);
                 p = q + 1;
-                q = value.indexOf("${", p);                // Find next ${
+                q = value.indexOf("${", p); // Find next ${
             }
         }
         result.append(value.substring(p, value.length())); // Trailing text
@@ -772,16 +769,12 @@ public class Text {
     private static byte decodeDigit(byte b) {
         if (b >= 0x30 && b <= 0x39) {
             return (byte) (b - 0x30);
-        }
-        else if (b >= 0x41 && b <= 0x46) {
+        } else if (b >= 0x41 && b <= 0x46) {
             return (byte) (b - 0x37);
-        }
-        else if (b >= 0x61 && b <= 0x66) {
+        } else if (b >= 0x61 && b <= 0x66) {
             return (byte) (b - 0x57);
-        }
-        else {
-            throw new IllegalArgumentException("Escape sequence is not hexadecimal: " + (char)b);
+        } else {
+            throw new IllegalArgumentException("Escape sequence is not hexadecimal: " + (char) b);
         }
     }
-
 }

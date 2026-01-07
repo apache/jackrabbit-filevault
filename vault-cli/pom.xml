@@ -1,4 +1,5 @@
-<?xml version="1.0"?><!--
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -15,261 +16,268 @@
   limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <!-- ====================================================================== -->
-    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
-    <!-- ====================================================================== -->
-    <parent>
-        <groupId>org.apache.jackrabbit.vault</groupId>
-        <artifactId>parent</artifactId>
-        <relativePath>../parent/pom.xml</relativePath>
-        <version>${revision}</version>
-    </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <!-- ====================================================================== -->
+  <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
+  <!-- ====================================================================== -->
+  <parent>
+    <groupId>org.apache.jackrabbit.vault</groupId>
+    <artifactId>parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
 
-    <!-- ====================================================================== -->
-    <!-- P R O J E C T  D E S C R I P T I O N                                   -->
-    <!-- ====================================================================== -->
-    <artifactId>vault-cli</artifactId>
-    <packaging>jar</packaging>
+  <!-- ====================================================================== -->
+  <!-- P R O J E C T  D E S C R I P T I O N                                   -->
+  <!-- ====================================================================== -->
+  <artifactId>vault-cli</artifactId>
+  <packaging>jar</packaging>
 
-    <name>Apache Jackrabbit FileVault Command Line Interface</name>
-    <description>
-        Provides a simple shell-like console that access the file vault.
-    </description>
+  <name>Apache Jackrabbit FileVault Command Line Interface</name>
+  <description>Provides a simple shell-like console that access the file vault.</description>
 
-    <properties>
-        <!-- embed the newest JR2 versions -->
-        <jackrabbit.min.version>${jackrabbit.max.version}</jackrabbit.min.version>
-    </properties>
-    <!-- ====================================================================== -->
-    <!-- B U I L D   D E F I N I T I O N                                        -->
-    <!-- ====================================================================== -->
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <configuration>
-                        <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>appassembler-maven-plugin</artifactId>
-                <version>2.1.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>assemble</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <licenseHeaderFile>${basedir}/src/main/appassembler/license-header.txt</licenseHeaderFile>
-                    <unixScriptTemplate>${basedir}/src/main/appassembler/unix-template.sh</unixScriptTemplate>
-                    <windowsScriptTemplate>${basedir}/src/main/appassembler/windows-template.bat</windowsScriptTemplate>
-                    <repositoryLayout>flat</repositoryLayout>
-                    <repositoryName>lib</repositoryName>
-                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
-                    <copyConfigurationDirectory>true</copyConfigurationDirectory>
-                    <extraJvmArguments>-Xms500m -Xmx500m</extraJvmArguments>
-                    <programs>
-                        <program>
-                            <mainClass>org.apache.jackrabbit.vault.cli.VaultFsApp</mainClass>
-                            <name>vlt</name>
-                        </program>
-                    </programs>
-                </configuration>
-            </plugin>
-            <!-- assemble dist -->
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>assemble-distribution</id>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>${basedir}/src/main/assembly/assembly.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- skip tests -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <!-- exclude appassembler resources from rat-check -->
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>src/main/appassembler/unix-template.sh</exclude>
-                        <exclude>src/main/appassembler/windows-template.bat</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <!-- validate that all necessary dependencies are part of the application -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.sling</groupId>
-                        <artifactId>maven-enforcer-rules</artifactId>
-                        <version>1.2.0</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>enforce-complete-runtime-classpath</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireProvidedDependenciesInRuntimeClasspath>
-                                    <excludes>
-                                        <exclude>javax.servlet:javax.servlet-api</exclude><!-- not used in the CLI context -->
-                                        <exclude>*:txw2</exclude><!-- embedded in vault-core -->
-                                        <exclude>*:woodstox-core</exclude><!-- embedded in vault-core -->
-                                        <exclude>*:stax2-api</exclude><!-- embedded in vault-core -->
-                                        <exclude>*:maven-artifact</exclude><!-- embedded in vault-core -->
-                                        <exclude>*:h2</exclude><!-- embedded in vault-core -->
-                                        <exclude>org.apache.commons:commons-jci-fam</exclude><!-- embedded in vault-sync -->
-                                        <exclude>commons-logging:commons-logging-api</exclude><!-- embedded in vault-sync -->
-                                        <exclude>org.apache.sling:org.apache.sling.jcr.api</exclude><!-- only used on server-side -->
-                                        <!-- no annotations are evaluated at run time -->
-                                        <exclude>org.jetbrains:annotations</exclude>
-                                        <exclude>org.osgi:org.osgi.annotation</exclude>
-                                        <exclude>org.osgi:org.osgi.annotation.versioning</exclude>
-                                        <exclude>org.osgi:org.osgi.service.metatype.annotations</exclude>
-                                        <exclude>org.osgi:org.osgi.service.component.annotations</exclude>
-                                    </excludes>
-                                </requireProvidedDependenciesInRuntimeClasspath>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-              </plugin>
-        </plugins>
-    </build>
+  <properties>
+    <!-- embed the newest JR2 versions -->
+    <jackrabbit.min.version>${jackrabbit.max.version}</jackrabbit.min.version>
+  </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- override minimum versions from parent with most recent backwards compatible versions -->
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>2.17.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpmime</artifactId>
-                <version>4.5.14</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>4.5.14</version>
-            </dependency>
-            <!-- minimum SLF4J API supported by non vulnerable logback 1.5-->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>2.0.17</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <!-- ====================================================================== -->
-    <!-- D E P E N D E N C I E S                                                -->
-    <!-- ====================================================================== -->
+  <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>org.apache.jackrabbit.vault</groupId>
-            <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <!-- transitive (but with scope "provided") dependency of vault -->
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.framework</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jackrabbit.vault</groupId>
-            <artifactId>vault-vlt</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jackrabbit.vault</groupId>
-            <artifactId>vault-sync</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jackrabbit.vault</groupId>
-            <artifactId>vault-davex</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- CLI Stuff -->
-        <dependency>
-            <groupId>org.apache.mahout.commons</groupId>
-            <artifactId>commons-cli</artifactId>
-            <version>2.0-mahout</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jline</groupId>
-            <artifactId>jline</artifactId>
-            <version>3.30.6</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- JCR Stuff -->
-        <dependency>
-            <groupId>javax.jcr</groupId>
-            <artifactId>jcr</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- Jackrabbit Util -->
-        <dependency>
-            <groupId>org.apache.jackrabbit</groupId>
-            <artifactId>jackrabbit-jcr-commons</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- SLF4j / Logback -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.5.18</version>
-            <scope>compile</scope>
-        </dependency>
+      <!-- override minimum versions from parent with most recent backwards compatible versions -->
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.17.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpmime</artifactId>
+        <version>4.5.14</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.14</version>
+      </dependency>
+      <!-- minimum SLF4J API supported by non vulnerable logback 1.5-->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>2.0.17</version>
+      </dependency>
     </dependencies>
+  </dependencyManagement>
+
+  <!-- ====================================================================== -->
+  <!-- D E P E N D E N C I E S                                                -->
+  <!-- ====================================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.jackrabbit.vault</groupId>
+      <artifactId>org.apache.jackrabbit.vault</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <!-- transitive (but with scope "provided") dependency of vault -->
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.framework</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jackrabbit.vault</groupId>
+      <artifactId>vault-vlt</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jackrabbit.vault</groupId>
+      <artifactId>vault-sync</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jackrabbit.vault</groupId>
+      <artifactId>vault-davex</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- CLI Stuff -->
+    <dependency>
+      <groupId>org.apache.mahout.commons</groupId>
+      <artifactId>commons-cli</artifactId>
+      <version>2.0-mahout</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jline</groupId>
+      <artifactId>jline</artifactId>
+      <version>3.30.6</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- JCR Stuff -->
+    <dependency>
+      <groupId>javax.jcr</groupId>
+      <artifactId>jcr</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- Jackrabbit Util -->
+    <dependency>
+      <groupId>org.apache.jackrabbit</groupId>
+      <artifactId>jackrabbit-jcr-commons</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- SLF4j / Logback -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.5.18</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+  <!-- ====================================================================== -->
+  <!-- B U I L D   D E F I N I T I O N                                        -->
+  <!-- ====================================================================== -->
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <configuration>
+            <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>appassembler-maven-plugin</artifactId>
+        <version>2.1.0</version>
+        <configuration>
+          <licenseHeaderFile>${basedir}/src/main/appassembler/license-header.txt</licenseHeaderFile>
+          <unixScriptTemplate>${basedir}/src/main/appassembler/unix-template.sh</unixScriptTemplate>
+          <windowsScriptTemplate>${basedir}/src/main/appassembler/windows-template.bat</windowsScriptTemplate>
+          <repositoryLayout>flat</repositoryLayout>
+          <repositoryName>lib</repositoryName>
+          <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+          <copyConfigurationDirectory>true</copyConfigurationDirectory>
+          <extraJvmArguments>-Xms500m -Xmx500m</extraJvmArguments>
+          <programs>
+            <program>
+              <mainClass>org.apache.jackrabbit.vault.cli.VaultFsApp</mainClass>
+              <name>vlt</name>
+            </program>
+          </programs>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>assemble</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- assemble dist -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>assemble-distribution</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>${basedir}/src/main/assembly/assembly.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- skip tests -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <!-- exclude appassembler resources from rat-check -->
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>src/main/appassembler/unix-template.sh</exclude>
+            <exclude>src/main/appassembler/windows-template.bat</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <!-- validate that all necessary dependencies are part of the application -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>maven-enforcer-rules</artifactId>
+            <version>1.2.0</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>enforce-complete-runtime-classpath</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireProvidedDependenciesInRuntimeClasspath>
+                  <excludes>
+                    <exclude>javax.servlet:javax.servlet-api</exclude>
+                    <!-- not used in the CLI context -->
+                    <exclude>*:txw2</exclude>
+                    <!-- embedded in vault-core -->
+                    <exclude>*:woodstox-core</exclude>
+                    <!-- embedded in vault-core -->
+                    <exclude>*:stax2-api</exclude>
+                    <!-- embedded in vault-core -->
+                    <exclude>*:maven-artifact</exclude>
+                    <!-- embedded in vault-core -->
+                    <exclude>*:h2</exclude>
+                    <!-- embedded in vault-core -->
+                    <exclude>org.apache.commons:commons-jci-fam</exclude>
+                    <!-- embedded in vault-sync -->
+                    <exclude>commons-logging:commons-logging-api</exclude>
+                    <!-- embedded in vault-sync -->
+                    <exclude>org.apache.sling:org.apache.sling.jcr.api</exclude>
+                    <!-- only used on server-side -->
+                    <!-- no annotations are evaluated at run time -->
+                    <exclude>org.jetbrains:annotations</exclude>
+                    <exclude>org.osgi:org.osgi.annotation</exclude>
+                    <exclude>org.osgi:org.osgi.annotation.versioning</exclude>
+                    <exclude>org.osgi:org.osgi.service.metatype.annotations</exclude>
+                    <exclude>org.osgi:org.osgi.service.component.annotations</exclude>
+                  </excludes>
+                </requireProvidedDependenciesInRuntimeClasspath>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

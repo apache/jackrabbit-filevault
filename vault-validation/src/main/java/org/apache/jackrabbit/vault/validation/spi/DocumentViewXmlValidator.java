@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.spi;
 
@@ -30,8 +32,8 @@ import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Validator interface for (enhanced) Document View XML files within content packages.
- * 
- * @see <a href="https://jackrabbit.apache.org/filevault/docview.html">Filevault DocView</a> 
+ *
+ * @see <a href="https://jackrabbit.apache.org/filevault/docview.html">Filevault DocView</a>
  *
  */
 @ProviderType
@@ -43,7 +45,7 @@ public interface DocumentViewXmlValidator extends Validator {
      * The node and attribute names have the string representation outlined in {@link Name} (i.e. including the namespace uri in the format <code>{namespaceURI}localPart</code>).
      * This is also referred to as <a href="https://docs.adobe.com/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.2.5.1%20Expanded%20Form">JCR name expanded form</a>.
      * To construct such names either use {@link NameUtil} or use the constants from {@link NameConstants}.
-     * 
+     *
      * The node's label refers to the XML element name specifying the node. There shouldn't be any checks derived from it, but only from the expanded name.
      * @param node the node which should be validated
      * @param nodePath the absolute repository path of the given node
@@ -53,17 +55,18 @@ public interface DocumentViewXmlValidator extends Validator {
      * @deprecated Use {@link #validate(DocViewNode2, NodeContext, boolean)} instead
      */
     @Deprecated
-    default @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
+    default @Nullable Collection<ValidationMessage> validate(
+            @NotNull DocViewNode node, @NotNull String nodePath, @NotNull Path filePath, boolean isRoot) {
         throw new UnsupportedOperationException();
     }
-    
+
     /**
      * Called for the beginning of each new JCR document view node.
      * Deserialization of the node information was already done when this method is called!
      * The node and attribute names have the string representation outlined in {@link Name} (i.e. including the namespace uri in the format <code>{namespaceURI}localPart</code>).
      * This is also referred to as <a href="https://docs.adobe.com/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.2.5.1%20Expanded%20Form">JCR name expanded form</a>.
      * To construct such names either use {@link NameUtil} or use the constants from {@link NameConstants}.
-     * 
+     *
      * The node's label refers to the XML element name specifying the node. There shouldn't be any checks derived from it, but only from the expanded name.
      * @param node the node which should be validated
      * @param nodeContext the information about the node context (like path)
@@ -72,21 +75,23 @@ public interface DocumentViewXmlValidator extends Validator {
      * @deprecated Use {@link #validate(DocViewNode2, NodeContext, boolean)} instead
      */
     @Deprecated
-    default @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
+    default @Nullable Collection<ValidationMessage> validate(
+            @NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
         return validate(node, nodeContext.getNodePath(), nodeContext.getFilePath(), isRoot);
     }
 
     /**
      * Called for the beginning of each deserialized new JCR document view node.
      * Child nodes have not yet been deserialized at this point in time but only the node itself and its direct properties.
-     * 
+     *
      * @param node the node which should be validated
      * @param nodeContext the information about the node context (like path) of the node given in {@code node}. The last part of the context's JCR path is the JCR qualified name of the {@code node}'s name.
      * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
      * @return validation messages or {@code null}
      * @since 3.6.0
      */
-    default @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
+    default @Nullable Collection<ValidationMessage> validate(
+            @NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
         return validate(DocViewNode.fromDocViewNode2(node), nodeContext, isRoot);
     }
 
@@ -96,7 +101,7 @@ public interface DocumentViewXmlValidator extends Validator {
      * The node and attribute names have the string representation outlined in {@link Name} (i.e. including the namespace uri in the format <code>{namespaceURI}localPart</code>).
      * This is also referred to as <a href="https://docs.adobe.com/docs/en/spec/jcr/2.0/3_Repository_Model.html#3.2.5.1%20Expanded%20Form">JCR name expanded form</a>.
      * To construct such names either use {@link NameUtil} or use the constants from {@link NameConstants}.
-     * 
+     *
      * The node's label refers to the XML element name specifying the node. There shouldn't be any checks derived from it, but only from the expanded name.
      * @param node the node which should be validated
      * @param nodeContext the information about the node context (like path)
@@ -105,20 +110,22 @@ public interface DocumentViewXmlValidator extends Validator {
      * @deprecated Use {@link #validateEnd(DocViewNode2, NodeContext, boolean)} instead
      */
     @Deprecated
-    default @Nullable Collection<ValidationMessage> validateEnd(@NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
+    default @Nullable Collection<ValidationMessage> validateEnd(
+            @NotNull DocViewNode node, @NotNull NodeContext nodeContext, boolean isRoot) {
         return null;
     }
 
     /**
      * Called for the end of each new deserialized JCR document view node (after all child nodes have been processed).
-     * 
+     *
      * @param node the node which should be validated
      * @param nodeContext the information about the node context (like path) of the node given in {@code node}. The last part of the context's JCR path is the JCR qualified name of the {@code node}'s name.
      * @param isRoot {@code true} in case this is the root node of the docview file otherwise {@code false}
      * @return validation messages or {@code null}
      * @since 3.6.0
      */
-    default @Nullable Collection<ValidationMessage> validateEnd(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
+    default @Nullable Collection<ValidationMessage> validateEnd(
+            @NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
         return validateEnd(DocViewNode.fromDocViewNode2(node), nodeContext, isRoot);
     }
 }

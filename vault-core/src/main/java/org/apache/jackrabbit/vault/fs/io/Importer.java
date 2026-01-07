@@ -1,21 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.security.AccessControlPolicy;
+import javax.jcr.version.Version;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,12 +42,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.security.AccessControlPolicy;
-import javax.jcr.version.Version;
 
 import org.apache.jackrabbit.api.security.authorization.PrincipalSetPolicy;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
@@ -236,12 +237,14 @@ public class Importer {
     /**
      * overall acl management behavior
      */
-    private final ACLManagement aclManagement = ServiceProviderFactory.getProvider().getACLManagement();
+    private final ACLManagement aclManagement =
+            ServiceProviderFactory.getProvider().getACLManagement();
 
     /**
      * overall user management behavior
      */
-    private final UserManagement userManagement = ServiceProviderFactory.getProvider().getUserManagement();
+    private final UserManagement userManagement =
+            ServiceProviderFactory.getProvider().getUserManagement();
 
     /**
      * the import options
@@ -294,7 +297,7 @@ public class Importer {
      * Default constructor neither setting specific import options nor defaults.
      */
     public Importer() {
-         this(new ImportOptions(), false, true);
+        this(new ImportOptions(), false, true);
     }
 
     /**
@@ -333,7 +336,11 @@ public class Importer {
      * @param overwritePrimaryTypesOfFoldersByDefault if folder aggregates' JCR primary type should be changed if the node is already existing or not
      * @param defaultIdConflictPolicy the default {@link IdConflictPolicy} to use if no policy is set in {@code opts}. May be {@code null}.
      */
-    public Importer(ImportOptions opts, boolean isStrictByDefault, boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy defaultIdConflictPolicy) {
+    public Importer(
+            ImportOptions opts,
+            boolean isStrictByDefault,
+            boolean overwritePrimaryTypesOfFoldersByDefault,
+            IdConflictPolicy defaultIdConflictPolicy) {
         this.opts = opts;
         this.isStrict = opts.isStrict(isStrictByDefault);
         this.isStrictByDefault = isStrictByDefault;
@@ -394,8 +401,7 @@ public class Importer {
      *
      * @since 2.3.20
      */
-    public void run(Archive archive, Node importRoot)
-            throws IOException, RepositoryException, ConfigurationException {
+    public void run(Archive archive, Node importRoot) throws IOException, RepositoryException, ConfigurationException {
         run(archive, importRoot.getSession(), importRoot.getPath());
     }
 
@@ -457,7 +463,8 @@ public class Importer {
         genericHandler.setCugHandling(opts.getCugHandling());
         folderHandler.setAcHandling(opts.getAccessControlHandling());
         folderHandler.setCugHandling(opts.getCugHandling());
-        folderHandler.setOverwritePrimaryTypesOfFolders(opts.overwritePrimaryTypesOfFolders(overwritePrimaryTypesOfFoldersByDefault));
+        folderHandler.setOverwritePrimaryTypesOfFolders(
+                opts.overwritePrimaryTypesOfFolders(overwritePrimaryTypesOfFoldersByDefault));
 
         filter = opts.getFilter();
         if (filter == null) {
@@ -480,11 +487,13 @@ public class Importer {
             if (filter instanceof DefaultWorkspaceFilter) {
                 ((DefaultWorkspaceFilter) filter).setImportMode(opts.getImportMode());
             } else {
-                log.warn("Unable to override import mode, incompatible filter: {}", filter.getClass().getName());
+                log.warn(
+                        "Unable to override import mode, incompatible filter: {}",
+                        filter.getClass().getName());
             }
         }
         // build filter tree
-        for (PathFilterSet set: filter.getFilterSets()) {
+        for (PathFilterSet set : filter.getFilterSets()) {
             filterTree.put(set.getRoot(), set);
         }
 
@@ -494,7 +503,9 @@ public class Importer {
 
         track("Collecting import information...", "");
         TxInfo root = prepare(archive.getJcrRoot(), parentPath, new SessionNamespaceResolver(session));
-        if (filter!=null && filter.getFilterSets() != null && filter.getFilterSets().size() > 0 ) {
+        if (filter != null
+                && filter.getFilterSets() != null
+                && filter.getFilterSets().size() > 0) {
             root = postFilter(root);
         }
 
@@ -526,8 +537,11 @@ public class Importer {
                     log.error("Error while committing changes. Aborting.");
                     throw e;
                 } else {
-                    log.warn("Error while committing changes: Retrying import from checkpoint at {}. Retries {}/10. {}",
-                            cpTxInfo == null ? "/" : cpTxInfo.path, recoveryRetryCounter, getExtendedThrowableMessage(e));
+                    log.warn(
+                            "Error while committing changes: Retrying import from checkpoint at {}. Retries {}/10. {}",
+                            cpTxInfo == null ? "/" : cpTxInfo.path,
+                            recoveryRetryCounter,
+                            getExtendedThrowableMessage(e));
                     autoSave = cpAutosave.copy();
                     // build skip list
                     skipList.clear();
@@ -538,7 +552,7 @@ public class Importer {
                     }
                     // reset any intermediate changes in this run
                     intermediates.putAll(removedIntermediates);
-                    for (TxInfo i: removedIntermediates.values()) {
+                    for (TxInfo i : removedIntermediates.values()) {
                         i.isIntermediate = 1;
                     }
                     removedIntermediates.clear();
@@ -565,7 +579,9 @@ public class Importer {
             if (hasErrors) {
                 track("Package imported (with errors, check logs!)", "");
                 if (isStrict) {
-                    throw new RepositoryException("Some errors occurred while installing packages. Please check the logs for details. First exception is logged as cause.", firstException);
+                    throw new RepositoryException(
+                            "Some errors occurred while installing packages. Please check the logs for details. First exception is logged as cause.",
+                            firstException);
                 }
                 log.error("There were errors during package install. Please check the logs for details.");
                 track("First error was " + getExtendedThrowableMessage(firstException), "");
@@ -576,14 +592,18 @@ public class Importer {
     }
 
     // remove featureStashPrincipalPolicies argument before making this method public
-    private void restorePrincipalAcls(Session session, boolean featureStashPrincipalPolicies) throws RepositoryException {
+    private void restorePrincipalAcls(Session session, boolean featureStashPrincipalPolicies)
+            throws RepositoryException {
         for (String authorizableId : createdAuthorizableIds) {
             String principalName = userManagement.getPrincipalName(session, authorizableId);
             if (deletedPrincipalAcls.containsKey(principalName)) {
                 if (opts.isDryRun()) {
                     track("Dry run: Would potentially restore principal ACLs of " + principalName + " ...", "");
                 } else if (!featureStashPrincipalPolicies) {
-                    track(FEATURE_STASH_PRINCIPAL_POLICIES + " disabled: Would potentially restore principal ACLs of " + principalName + " ...", "");
+                    track(
+                            FEATURE_STASH_PRINCIPAL_POLICIES + " disabled: Would potentially restore principal ACLs of "
+                                    + principalName + " ...",
+                            "");
                 } else {
                     for (AccessControlPolicy policy : deletedPrincipalAcls.get(principalName)) {
                         // CUG or ACL handling relevant?
@@ -610,19 +630,17 @@ public class Importer {
                                 break;
                             default:
                                 aclHandlingForRestoredPolicy = AccessControlHandling.MERGE;
-                           
                         }
                         String accessControlledPath = userManagement.getAuthorizablePath(session, authorizableId);
-                        List<String> paths = JackrabbitAccessControlPolicy.fromAccessControlPolicy(policy).apply(session, aclHandlingForRestoredPolicy, accessControlledPath);
-                        for (String path: paths) {
+                        List<String> paths = JackrabbitAccessControlPolicy.fromAccessControlPolicy(policy)
+                                .apply(session, aclHandlingForRestoredPolicy, accessControlledPath);
+                        for (String path : paths) {
                             track("Restored principal ACLs of " + principalName, path);
                         }
                     }
                 }
             }
         }
-        
-        
     }
 
     /**
@@ -640,13 +658,14 @@ public class Importer {
         messageBuilder.append(throwable.getMessage());
         Throwable cause = throwable.getCause();
         while (cause != null) {
-            if (!isDelimiter(messageBuilder.charAt(messageBuilder.length()-1))) {
+            if (!isDelimiter(messageBuilder.charAt(messageBuilder.length() - 1))) {
                 messageBuilder.append(".");
             }
-            messageBuilder.append(" Caused by ")
-            .append(cause.getClass().getName())
-            .append(": ")
-            .append(cause.getMessage());
+            messageBuilder
+                    .append(" Caused by ")
+                    .append(cause.getClass().getName())
+                    .append(": ")
+                    .append(cause.getMessage());
             cause = cause.getCause();
         }
         return messageBuilder.toString();
@@ -654,13 +673,14 @@ public class Importer {
 
     /** all punctuation delimiters between sentences in English */
     private static final List<Character> DELIMITERS = Arrays.asList('.', '?', '!');
+
     static boolean isDelimiter(char character) {
         return DELIMITERS.contains(character);
     }
 
     private TxInfo postFilter(TxInfo root) {
         TxInfo modifierRoot = root;
-        if (filter.contains(modifierRoot.path)){
+        if (filter.contains(modifierRoot.path)) {
             return modifierRoot;
         }
         if (filter.isAncestor(modifierRoot.path)) {
@@ -668,8 +688,7 @@ public class Importer {
                 TxInfo child = modifierRoot.children().get(k);
                 modifierRoot.children().put(k, postFilter(child));
             }
-        }
-        else {
+        } else {
             modifierRoot.discard();
         }
         return modifierRoot;
@@ -683,11 +702,10 @@ public class Importer {
         return archive.getMetaInf().getSettings();
     }
 
-    private void installNodeTypes(Session session)
-            throws IOException, RepositoryException {
+    private void installNodeTypes(Session session) throws IOException, RepositoryException {
         Collection<NodeTypeSet> metaTypes = archive.getMetaInf().getNodeTypes();
         if (metaTypes != null) {
-            for (NodeTypeSet cnd: metaTypes) {
+            for (NodeTypeSet cnd : metaTypes) {
                 nodeTypes.add(cnd);
             }
         }
@@ -754,15 +772,14 @@ public class Importer {
                     "",
                     ArtifactType.PRIMARY,
                     archive.getInputSource(contentXml),
-                    SerializationType.XML_DOCVIEW
-            ));
+                    SerializationType.XML_DOCVIEW));
         }
         root.artifacts.add(new DirectoryArtifact(Text.getName(parentPath)));
 
         prepare(jcrRoot, root, resolver);
 
         // go over the filter roots and create intermediates for the parents if needed (bug #25370)
-        for (PathFilterSet sets: filter.getFilterSets()) {
+        for (PathFilterSet sets : filter.getFilterSets()) {
             String rootPath = sets.getRoot();
             // make filter root relative to import root
             if (parentPath.length() > 0 && rootPath.startsWith(parentPath)) {
@@ -791,7 +808,7 @@ public class Importer {
         Collection<? extends Archive.Entry> files = directory.getChildren();
 
         // first process the directories
-        for (Archive.Entry file: files) {
+        for (Archive.Entry file : files) {
             if (file.isDirectory()) {
                 String fileName = file.getName();
                 if (isExcluded(fileName)) {
@@ -822,8 +839,7 @@ public class Importer {
                             "",
                             ArtifactType.PRIMARY,
                             archive.getInputSource(contentXml),
-                            SerializationType.XML_DOCVIEW
-                    ));
+                            SerializationType.XML_DOCVIEW));
                 } else {
                     // this is an empty directory and potential intermediate
                     info.isIntermediate = 1;
@@ -834,7 +850,7 @@ public class Importer {
             }
         }
         // second the files
-        for (Archive.Entry file: files) {
+        for (Archive.Entry file : files) {
             if (!file.isDirectory()) {
                 String fileName = file.getName();
                 if (isExcluded(fileName)) {
@@ -846,7 +862,8 @@ public class Importer {
                     continue;
                 }
                 // todo: find better way to detect sub-packages
-                if (repoPath.startsWith(JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
+                if (repoPath.startsWith(JcrPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH_PREFIX)
+                        && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
                     subPackages.add(repoPath);
                 }
 
@@ -877,7 +894,8 @@ public class Importer {
                     if (opts.getCndPattern().matcher(repoPath).matches()) {
                         InputStream in = is.getByteStream();
                         try (Reader r = new InputStreamReader(in, "utf8")) {
-                            CNDReader reader = ServiceProviderFactory.getProvider().getCNDReader();
+                            CNDReader reader =
+                                    ServiceProviderFactory.getProvider().getCNDReader();
                             // provide session namespaces
                             reader.read(r, is.getSystemId(), new NamespaceMapping(resolver));
                             nodeTypes.add(reader);
@@ -914,9 +932,7 @@ public class Importer {
                             // "normal" file
                             TxInfo tx = new TxInfo(parentInfo, parentInfo.path + "/" + repoName);
                             log.trace("Creating file artifact for {}", repoName);
-                            tx.artifacts.add(new InputSourceArtifact(null,
-                                    repoName, ext, type, is, serType
-                            ));
+                            tx.artifacts.add(new InputSourceArtifact(null, repoName, ext, type, is, serType));
                             parentInfo.addChild(tx);
                         }
                     }
@@ -924,18 +940,14 @@ public class Importer {
                         String path = parentInfo.path + "/" + repoName;
                         String relPath = parent.name + path.substring(parent.path.length());
                         log.trace("Attaching {} artifact {}", type, path);
-                        parent.artifacts.add(new InputSourceArtifact(null,
-                                relPath, ext, type, is, serType
-                        ));
+                        parent.artifacts.add(new InputSourceArtifact(null, relPath, ext, type, is, serType));
                     }
                 }
                 if (type == ArtifactType.PRIMARY) {
                     // if primary artifact, add new tx info
                     TxInfo tx = new TxInfo(parentInfo, parentInfo.path + "/" + repoName);
                     log.trace("Creating primary artifact for {}", repoName);
-                    tx.artifacts.add(new InputSourceArtifact(null,
-                            repoName, ext, type, is, serType
-                    ));
+                    tx.artifacts.add(new InputSourceArtifact(null, repoName, ext, type, is, serType));
                     parentInfo.addChild(tx);
                 }
             }
@@ -947,7 +959,8 @@ public class Importer {
         }
     }
 
-    private void commit(Session session, TxInfo info, LinkedList<TxInfo> skipList) throws RepositoryException, IOException {
+    private void commit(Session session, TxInfo info, LinkedList<TxInfo> skipList)
+            throws RepositoryException, IOException {
         try {
             ImportInfoImpl imp = null;
             if (skipList.isEmpty()) {
@@ -967,7 +980,7 @@ public class Importer {
                 }
             } else if (log.isDebugEnabled()) {
                 StringBuilder skips = new StringBuilder();
-                for (TxInfo i: skipList) {
+                for (TxInfo i : skipList) {
                     skips.append(i.path).append(',');
                 }
                 log.trace("skip list: {}", skips);
@@ -996,7 +1009,7 @@ public class Importer {
 
             // traverse children but skip the ones not in the skip list
             TxInfo next = skipList.isEmpty() ? null : skipList.removeFirst();
-            for (TxInfo child: children) {
+            for (TxInfo child : children) {
                 if (next == null || next == child) {
                     commit(session, child, skipList);
                     // continue normally after lng child was found
@@ -1052,21 +1065,27 @@ public class Importer {
                     }
                 }
             }
-        } else if (info.artifacts.getPrimaryData() !=null && info.artifacts.size() == 1) {
+        } else if (info.artifacts.getPrimaryData() != null && info.artifacts.size() == 1) {
             // simple case, only 1 primary artifact
             Node node = info.getParentNode(session);
             if (node == null) {
                 imp = new ImportInfoImpl();
                 imp.onError(info.path, new IllegalStateException("Parent node not found."));
             } else {
-                imp = genericHandler.accept(opts, isStrictByDefault, filter, node, info.artifacts.getPrimaryData().getRelativePath(), info.artifacts);
+                imp = genericHandler.accept(
+                        opts,
+                        isStrictByDefault,
+                        filter,
+                        node,
+                        info.artifacts.getPrimaryData().getRelativePath(),
+                        info.artifacts);
                 if (imp == null) {
                     throw new IllegalStateException("generic handler did not accept " + info.path);
                 }
             }
         } else if (info.artifacts.getDirectory() != null) {
             String prefix = info.parent == null ? info.name : info.name + "/";
-            for (TxInfo child: info.children().values()) {
+            for (TxInfo child : info.children().values()) {
                 // add the directory artifacts as hint to this one.
                 if (child.artifacts == null) {
                     // in this case it's some deleted intermediate directory???
@@ -1074,7 +1093,7 @@ public class Importer {
                     info.artifacts.add(new HintArtifact(path));
 
                 } else {
-                    for (Artifact a: child.artifacts.values()) {
+                    for (Artifact a : child.artifacts.values()) {
                         String path = prefix + a.getRelativePath();
                         info.artifacts.add(new HintArtifact(path));
                     }
@@ -1090,12 +1109,18 @@ public class Importer {
                     log.trace("skipping intermediate node at {}", info.path);
                 } else if (info.artifacts.getPrimaryData() == null) {
                     // create nt:folder node if not exists
-                    imp = folderHandler.accept(opts, isStrictByDefault, filter, node, info.name,  info.artifacts);
+                    imp = folderHandler.accept(opts, isStrictByDefault, filter, node, info.name, info.artifacts);
                     if (imp == null) {
                         throw new IllegalStateException("folder handler did not accept " + info.path);
                     }
                 } else {
-                    imp = genericHandler.accept(opts, isStrictByDefault, filter, node, info.artifacts.getDirectory().getRelativePath(), info.artifacts);
+                    imp = genericHandler.accept(
+                            opts,
+                            isStrictByDefault,
+                            filter,
+                            node,
+                            info.artifacts.getDirectory().getRelativePath(),
+                            info.artifacts);
                     if (imp == null) {
                         throw new IllegalStateException("generic handler did not accept " + info.path);
                     }
@@ -1107,7 +1132,7 @@ public class Importer {
                 imp = new ImportInfoImpl();
                 imp.onError(info.path, new IllegalStateException("Parent node not found."));
             } else {
-                imp = fileHandler.accept(opts, isStrictByDefault, filter, node, info.name,  info.artifacts);
+                imp = fileHandler.accept(opts, isStrictByDefault, filter, node, info.name, info.artifacts);
                 if (imp == null) {
                     throw new IllegalStateException("file handler did not accept " + info.path);
                 }
@@ -1117,7 +1142,7 @@ public class Importer {
         }
 
         if (imp != null) {
-            for (Map.Entry<String, ImportInfo.Info> entry: imp.getInfos().entrySet()) {
+            for (Map.Entry<String, ImportInfo.Info> entry : imp.getInfos().entrySet()) {
                 String path = entry.getKey();
                 ImportInfo.Type type = entry.getValue().getType();
                 if (type != ImportInfoImpl.Type.DEL) {
@@ -1189,7 +1214,7 @@ public class Importer {
         } else {
             track("Committing versions...", "");
         }
-        for (String path: nodesToCheckin) {
+        for (String path : nodesToCheckin) {
             try {
                 Node node = session.getNode(path);
                 try {
@@ -1200,7 +1225,7 @@ public class Importer {
                         track("V", String.format(Locale.ENGLISH, "%s (%s)", path, v.getName()));
                     }
                 } catch (RepositoryException e) {
-                    log.error("Error while checkin node {}: {}",path, e.toString());
+                    log.error("Error while checkin node {}: {}", path, e.toString());
                 }
             } catch (RepositoryException e) {
                 log.error("Error while retrieving node to be versioned at {}.", path, e);
@@ -1218,7 +1243,7 @@ public class Importer {
         } else {
             track("Applying merged group memberships...", "");
         }
-        for (String id: memberships.keySet()) {
+        for (String id : memberships.keySet()) {
             String[] members = memberships.get(id);
             String authPath = userManagement.getAuthorizablePath(session, id);
             if (authPath != null) {
@@ -1260,7 +1285,7 @@ public class Importer {
         private NodeNameList nameList;
 
         public TxInfo(TxInfo parent, String path) {
-            log.trace("New TxInfo {}" , path);
+            log.trace("New TxInfo {}", path);
             this.parent = parent;
             this.path = path;
             this.name = Text.getName(path);
@@ -1283,7 +1308,7 @@ public class Importer {
         }
 
         public void sort(Collection<String> names) {
-            if (children == null || children.size() <=1 || names == null || names.isEmpty()) {
+            if (children == null || children.size() <= 1 || names == null || names.isEmpty()) {
                 return;
             }
             Map<String, TxInfo> ret = new LinkedHashMap<String, TxInfo>();
@@ -1301,16 +1326,12 @@ public class Importer {
 
         public Node getParentNode(Session s) throws RepositoryException {
             String parentPath = emptyPathToRoot(Text.getRelativeParent(path, 1));
-            return s.nodeExists(parentPath)
-                    ? s.getNode(parentPath)
-                    : null;
+            return s.nodeExists(parentPath) ? s.getNode(parentPath) : null;
         }
 
         public Node getNode(Session s) throws RepositoryException {
             String p = emptyPathToRoot(path);
-            return s.nodeExists(p)
-                    ? s.getNode(p)
-                    : null;
+            return s.nodeExists(p) ? s.getNode(p) : null;
         }
 
         public void discard() {
@@ -1328,7 +1349,7 @@ public class Importer {
             }
             absPath = absPath.substring(path.length());
             TxInfo root = this;
-            for (String name: Text.explode(absPath, '/')) {
+            for (String name : Text.explode(absPath, '/')) {
                 root = root.children().get(name);
                 if (root == null) {
                     break;
@@ -1354,7 +1375,7 @@ public class Importer {
             ret.isIntermediate = isIntermediate;
 
             if (children != null) {
-                for (TxInfo child: children.values()) {
+                for (TxInfo child : children.values()) {
                     child = child.remap(mapping);
                     child.parent = this;
                     ret.addChild(child);

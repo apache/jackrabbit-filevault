@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging;
 
 import org.hamcrest.CoreMatchers;
@@ -30,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * {@code VersionTest}...
  */
-public class VersionTest  {
+public class VersionTest {
 
     @Rule
     public ErrorCollector errorCollector = new ErrorCollector();
@@ -59,9 +60,10 @@ public class VersionTest  {
 
     @Test
     public void testNormalizedSegments() {
-        assertArrayEquals(new String[]{"1"}, Version.create("1").getNormalizedSegments());
-        assertArrayEquals(new String[]{"4"}, Version.create("-.4").getNormalizedSegments());
-        assertArrayEquals(new String[]{"6","3","FP1"}, Version.create("6.3-FP1").getNormalizedSegments());
+        assertArrayEquals(new String[] {"1"}, Version.create("1").getNormalizedSegments());
+        assertArrayEquals(new String[] {"4"}, Version.create("-.4").getNormalizedSegments());
+        assertArrayEquals(
+                new String[] {"6", "3", "FP1"}, Version.create("6.3-FP1").getNormalizedSegments());
     }
 
     @Test
@@ -98,8 +100,7 @@ public class VersionTest  {
         Version vv1 = Version.create(v1);
         Version vv2 = Version.create(v2);
         int ret = vv1.compareTo(vv2);
-        errorCollector.checkThat(v1 + " compare to " + v2,
-                Math.signum(ret), CoreMatchers.is(Math.signum(comp)));
+        errorCollector.checkThat(v1 + " compare to " + v2, Math.signum(ret), CoreMatchers.is(Math.signum(comp)));
     }
 
     @Test

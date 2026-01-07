@@ -1,20 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.fs.io;
+
+import javax.jcr.Session;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,12 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
-
-import javax.jcr.Session;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.input.BoundedInputStream;
@@ -48,7 +50,7 @@ import org.xml.sax.SAXException;
 /**
  * This is a thread-safe SAX parser which deals with <a href="https://jackrabbit.apache.org/filevault/docview.html">FileVault Document View XML files</a>
  * and passes them to a given {@link DocViewParserHandler}.
- * 
+ *
  */
 @ProviderType
 public final class DocViewParser {
@@ -58,11 +60,11 @@ public final class DocViewParser {
     public static final int MAX_NUM_BYTES_TO_READ_FOR_DOCVIEW_DETECTION = 1024;
 
     public DocViewParser() {
-        this((NamespaceResolver)null);
+        this((NamespaceResolver) null);
     }
 
     /**
-     * 
+     *
      * @param session uses the namespace from the session for resolving otherwise unknown namespace prefixes in docview files
      */
     public DocViewParser(@NotNull Session session) {
@@ -81,9 +83,10 @@ public final class DocViewParser {
     public static final class XmlParseException extends Exception {
 
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1L;
+
         private final String nodePath;
         private final int lineNumber;
         private final int columnNumber;
@@ -125,14 +128,14 @@ public final class DocViewParser {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
             XmlParseException other = (XmlParseException) obj;
-            return Objects.equals(nodePath, other.nodePath) && columnNumber == other.columnNumber && lineNumber == other.lineNumber && getMessage().equals(other.getMessage());
+            return Objects.equals(nodePath, other.nodePath)
+                    && columnNumber == other.columnNumber
+                    && lineNumber == other.lineNumber
+                    && getMessage().equals(other.getMessage());
         }
     }
 
@@ -145,8 +148,9 @@ public final class DocViewParser {
      */
     public static boolean isDocView(InputSource source) throws IOException {
         String encoding = source.getEncoding() != null ? source.getEncoding() : StandardCharsets.UTF_8.name();
-        try (Reader reader = (source.getCharacterStream() != null ? source.getCharacterStream() : 
-               new InputStreamReader(source.getByteStream(), encoding))) {
+        try (Reader reader = (source.getCharacterStream() != null
+                ? source.getCharacterStream()
+                : new InputStreamReader(source.getByteStream(), encoding))) {
             return isDocView(reader);
         }
     }
@@ -162,18 +166,17 @@ public final class DocViewParser {
         // read a couple of chars...1024 should be enough, assume 1 char = 1 byte
         char[] buffer = new char[MAX_NUM_BYTES_TO_READ_FOR_DOCVIEW_DETECTION];
         int pos = 0;
-        while (pos<buffer.length) {
+        while (pos < buffer.length) {
             int read = reader.read(buffer, pos, buffer.length - pos);
             if (read < 0) {
                 break;
             }
-            pos+=read;
+            pos += read;
         }
         String str = new String(buffer, 0, pos);
         // check for docview
         return str.contains("<jcr:root") && str.contains("\"http://www.jcp.org/jcr/1.0\"");
     }
-
 
     /**
      * Converts the given file path to the absolute root node path given that {@link InputStream} is complying with the Document View XML format.
@@ -194,7 +197,7 @@ public final class DocViewParser {
                 rootPath = filePath.getParent();
             } else {
                 rootPath = Paths.get("");
-            } 
+            }
             // correct suffix matching
         } else if (name.toString().endsWith(".xml")) {
 
@@ -203,7 +206,9 @@ public final class DocViewParser {
             // this closes the input source internally, therefore protect against closing
             // make sure to initialize the SLF4J logger appropriately (for the XmlAnalyzer)
             try {
-                if (DocViewParser.isDocView(new InputStreamReader(new BoundedInputStream(input, MAX_NUM_BYTES_TO_READ_FOR_DOCVIEW_DETECTION), StandardCharsets.US_ASCII))) { // make sure only 1 byte = character is used
+                if (DocViewParser.isDocView(new InputStreamReader(
+                        new BoundedInputStream(input, MAX_NUM_BYTES_TO_READ_FOR_DOCVIEW_DETECTION),
+                        StandardCharsets.US_ASCII))) { // make sure only 1 byte = character is used
                     //  remove .xml extension
                     String fileName = filePath.getFileName().toString();
                     fileName = fileName.substring(0, fileName.length() - ".xml".length());
@@ -239,20 +244,21 @@ public final class DocViewParser {
      * @param rootNodePath the path of the root node of the given docview xml
      * @param inputSource the source of the docview xml
      * @param handler the callback handler which gets the deserialized node information
-     * @throws IOException 
-     * @throws XmlParseException 
+     * @throws IOException
+     * @throws XmlParseException
      */
-    public void parse(String rootNodePath, InputSource inputSource, DocViewParserHandler handler) throws IOException, XmlParseException {
+    public void parse(String rootNodePath, InputSource inputSource, DocViewParserHandler handler)
+            throws IOException, XmlParseException {
         final SAXParser parser;
         try {
             parser = createSaxParser();
-        } catch (ParserConfigurationException|SAXException e) {
+        } catch (ParserConfigurationException | SAXException e) {
             throw new IllegalStateException("Could not create SAX parser" + e.getMessage(), e);
         }
         DocViewSAXHandler docViewSaxHandler = new DocViewSAXHandler(handler, rootNodePath, resolver);
         try {
             parser.parse(inputSource, docViewSaxHandler);
-        } catch (SAXException|IllegalArgumentException e) {
+        } catch (SAXException | IllegalArgumentException e) {
             throw new XmlParseException(e, docViewSaxHandler.getCurrentPath(), docViewSaxHandler.getDocumentLocator());
         }
     }

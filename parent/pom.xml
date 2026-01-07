@@ -1,4 +1,5 @@
-<?xml version="1.0"?><!--
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
     Licensed to the Apache Software Foundation (ASF) under one or more
     contributor license agreements. See the NOTICE file distributed with
     this work for additional information regarding copyright ownership.
@@ -14,190 +15,386 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" child.project.url.inherit.append.path="false">
-    <modelVersion>4.0.0</modelVersion>
-    <!-- ====================================================================== -->
-    <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
-    <!-- ====================================================================== -->
-    <parent>
-        <groupId>org.apache</groupId>
-        <artifactId>apache</artifactId>
-        <version>34</version>
-        <relativePath />
-    </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" child.project.url.inherit.append.path="false" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <!-- ====================================================================== -->
+  <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
+  <!-- ====================================================================== -->
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>34</version>
+    <relativePath />
+  </parent>
 
-    <!-- ====================================================================== -->
-    <!-- P R O J E C T D E S C R I P T I O N -->
-    <!-- ====================================================================== -->
-    <groupId>org.apache.jackrabbit.vault</groupId>
-    <artifactId>parent</artifactId>
-    <version>${revision}</version>
-    <packaging>pom</packaging>
+  <!-- ====================================================================== -->
+  <!-- P R O J E C T D E S C R I P T I O N -->
+  <!-- ====================================================================== -->
+  <groupId>org.apache.jackrabbit.vault</groupId>
+  <artifactId>parent</artifactId>
+  <version>${revision}</version>
+  <packaging>pom</packaging>
 
-    <name>Apache Jackrabbit FileVault (Parent Project)</name>
-    <description>
-The FileVault introduces a JCR repository to filesystem mapping. The mapping
+  <name>Apache Jackrabbit FileVault (Parent Project)</name>
+  <description>The FileVault introduces a JCR repository to filesystem mapping. The mapping
 is exposed by an API and used by the "FileVault Content Packages" which allow to
 create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
 
-Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
-    </description>
+Apache Jackrabbit FileVault is a project of the Apache Software Foundation.</description>
 
-    <properties>
-        <!-- CI-friendly version, https://maven.apache.org/maven-ci-friendly.html -->
-        <revision>4.1.5-SNAPSHOT</revision>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
-        <jackrabbit.min.version>2.20.17</jackrabbit.min.version>
-        <!-- for embedded dependencies the newest version should be used -->
-        <jackrabbit.max.version>2.22.1</jackrabbit.max.version>
-        <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
-        <oak.min.version>1.22.4</oak.min.version>
-        <!-- for embedded dependencies the newest version should be used -->
-        <oak.max.version>1.82.0</oak.max.version>
-        <slf4j.version>1.7.25</slf4j.version>
-        <commons-io.version>2.18.0</commons-io.version>
-        <test.oak>true</test.oak> <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
-        <bnd.version>6.4.0</bnd.version>
-        <minimalMavenBuildVersion>3.6.1</minimalMavenBuildVersion><!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
-        <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
-        <maven.compiler.release>11</maven.compiler.release>
-        <sling.url>http://localhost:4502</sling.url>
-        <sling.api.version>2.27.6</sling.api.version> <!-- identical to the minimum version -->
-        <jacoco.command /><!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
-        <!-- downgrade to m-release-p 3.1.0 due to https://github.com/apache/maven-release/issues/1380 -->
-        <version.maven-release-plugin>3.1.0</version.maven-release-plugin>
-        <project.build.outputTimestamp>2025-10-21T10:22:56Z</project.build.outputTimestamp>
-    </properties>
+  <url>https://jackrabbit.apache.org/filevault/</url>
 
-    <!-- ====================================================================== -->
-    <!-- S C M D E F I N I T I O N -->
-    <!-- ====================================================================== -->
-    <!-- using adjusted inheritance rules: https://issues.apache.org/jira/browse/MNG-6059 -->
-    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
-        <connection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</connection>
-        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</developerConnection>
-        <url>https://github.com/apache/jackrabbit-filevault/tree/${project.scm.tag}</url>
-        <tag>master</tag>
-    </scm>
+  <!-- ====================================================================== -->
+  <!-- P R O J E C T  I N F O                                                 -->
+  <!-- ====================================================================== -->
+  <mailingLists>
+    <mailingList>
+      <name>Jackrabbit Developer List</name>
+      <subscribe>dev-subscribe@jackrabbit.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@jackrabbit.apache.org</unsubscribe>
+      <post>mailto:dev@jackrabbit.apache.org</post>
+      <archive>https://lists.apache.org/list.html?dev@jackrabbit.apache.org</archive>
+    </mailingList>
 
-    <!-- ====================================================================== -->
-    <!-- P R O J E C T  I N F O                                                 -->
-    <!-- ====================================================================== -->
-    <mailingLists>
-        <mailingList>
-            <name>Jackrabbit Developer List</name>
-            <subscribe>dev-subscribe@jackrabbit.apache.org</subscribe>
-            <unsubscribe>dev-unsubscribe@jackrabbit.apache.org</unsubscribe>
-            <post>mailto:dev@jackrabbit.apache.org</post>
-            <archive>https://lists.apache.org/list.html?dev@jackrabbit.apache.org</archive>
-        </mailingList>
+    <mailingList>
+      <name>Jackrabbit User List</name>
+      <subscribe>users-subscribe@jackrabbit.apache.org</subscribe>
+      <unsubscribe>users-unsubscribe@jackrabbit.apache.org</unsubscribe>
+      <post>mailto:users@jackrabbit.apache.org</post>
+      <archive>https://lists.apache.org/list.html?users@jackrabbit.apache.org</archive>
+    </mailingList>
+  </mailingLists>
 
-        <mailingList>
-            <name>Jackrabbit User List</name>
-            <subscribe>users-subscribe@jackrabbit.apache.org</subscribe>
-            <unsubscribe>users-unsubscribe@jackrabbit.apache.org</unsubscribe>
-            <post>mailto:users@jackrabbit.apache.org</post>
-            <archive>https://lists.apache.org/list.html?users@jackrabbit.apache.org</archive>
-        </mailingList>
-    </mailingLists>
+  <!-- ====================================================================== -->
+  <!-- S C M D E F I N I T I O N -->
+  <!-- ====================================================================== -->
+  <!-- using adjusted inheritance rules: https://issues.apache.org/jira/browse/MNG-6059 -->
+  <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/jackrabbit-filevault.git</developerConnection>
+    <tag>master</tag>
+    <url>https://github.com/apache/jackrabbit-filevault/tree/${project.scm.tag}</url>
+  </scm>
 
-    <issueManagement>
-        <system>JIRA</system>
-        <url>https://issues.apache.org/jira/browse/JCRVLT</url>
-    </issueManagement>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/JCRVLT</url>
+  </issueManagement>
 
-    <ciManagement>
-        <system>Jenkins</system>
-        <url>https://ci-builds.apache.org/blue/organizations/jenkins/Jackrabbit%2Ffilevault/activity</url>
-    </ciManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-builds.apache.org/blue/organizations/jenkins/Jackrabbit%2Ffilevault/activity</url>
+  </ciManagement>
 
-    <url>https://jackrabbit.apache.org/filevault/</url>
+  <properties>
+    <!-- CI-friendly version, https://maven.apache.org/maven-ci-friendly.html -->
+    <revision>4.1.5-SNAPSHOT</revision>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
+    <jackrabbit.min.version>2.20.17</jackrabbit.min.version>
+    <!-- for embedded dependencies the newest version should be used -->
+    <jackrabbit.max.version>2.22.1</jackrabbit.max.version>
+    <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
+    <oak.min.version>1.22.4</oak.min.version>
+    <!-- for embedded dependencies the newest version should be used -->
+    <oak.max.version>1.82.0</oak.max.version>
+    <slf4j.version>1.7.25</slf4j.version>
+    <commons-io.version>2.18.0</commons-io.version>
+    <test.oak>true</test.oak>
+    <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
+    <bnd.version>6.4.0</bnd.version>
+    <minimalMavenBuildVersion>3.6.1</minimalMavenBuildVersion>
+    <!-- due to https://issues.apache.org/jira/browse/MNG-6059 -->
+    <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
+    <maven.compiler.release>11</maven.compiler.release>
+    <sling.url>http://localhost:4502</sling.url>
+    <sling.api.version>2.27.6</sling.api.version>
+    <!-- identical to the minimum version -->
+    <jacoco.command />
+    <!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
+    <!-- downgrade to m-release-p 3.1.0 due to https://github.com/apache/maven-release/issues/1380 -->
+    <version.maven-release-plugin>3.1.0</version.maven-release-plugin>
+    <project.build.outputTimestamp>2025-10-21T10:22:56Z</project.build.outputTimestamp>
+  </properties>
 
-    <!-- ====================================================================== -->
-    <!-- B U I L D D E F I N I T I O N -->
-    <!-- ====================================================================== -->
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                  <groupId>com.diffplug.spotless</groupId>
-                  <artifactId>spotless-maven-plugin</artifactId>
-                  <version>3.1.0</version>
-                  <configuration>
-                    <java>
-                      <!-- orders of used formatters are important MPOM-376 -->
-                      <!-- eg. palantir override importOrder, so should be first -->
-                      <palantirJavaFormat>
-                        <version>2.83.0</version>
-                      </palantirJavaFormat>
-                      <removeUnusedImports />
-                      <importOrder>
-                        <file>config/maven-eclipse-importorder.txt</file>
-                      </importOrder>
-                      <licenseHeader>
-                        <file>config/maven-header-plain.txt</file>
-                      </licenseHeader>
-                    </java>
-                    <!-- accept all endings to support validations on top of source archives -->
-                    <lineEndings>PRESERVE</lineEndings>
-                    <pom>
-                      <sortPom>
-                        <expandEmptyElements>false</expandEmptyElements>
-                        <!-- https://issues.apache.org/jira/browse/MRELEASE-1111 -->
-                        <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
-                        <quiet>true</quiet>
-                      </sortPom>
-                    </pom>
-                    <upToDateChecking>
-                      <enabled>true</enabled>
-                    </upToDateChecking>
-                  </configuration>
-                  <dependencies>
-                    <dependency>
-                      <groupId>org.apache.maven.shared</groupId>
-                      <artifactId>maven-shared-resources</artifactId>
-                      <version>6</version>
-                    </dependency>
-                  </dependencies>
-                  <executions>
-                    <execution>
-                      <id>spotless-format</id>
-                      <goals>
-                        <goal>${spotless.action}</goal>
-                      </goals>
-                      <phase>process-sources</phase>
-                    </execution>
-                  </executions>
-                </plugin>
-                <!-- ====================================================================== -->
-                <!-- S L I N G P L U G I N -->
-                <!-- ====================================================================== -->
-                <plugin>
-                    <groupId>org.apache.sling</groupId>
-                    <artifactId>sling-maven-plugin</artifactId>
-                    <version>3.0.2</version>
-                    <configuration>
-                        <!-- slingUrl dynamically set by property -->
-                        <slingUrlSuffix>/system/console</slingUrlSuffix>
-                        <deploymentMethod>WebConsole</deploymentMethod>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>biz.aQute.bnd</groupId>
-                    <artifactId>bnd-maven-plugin</artifactId>
-                    <version>${bnd.version}</version>
-                    <executions>
-                        <execution>
-                            <id>generate-osgi-metadata</id>
-                            <goals>
-                                <goal>bnd-process</goal>
-                            </goals>
-                            <configuration>
-                                <bnd><![CDATA[
+  <!-- ====================================================================== -->
+  <!-- D E P E N D E N C Y M A N A G E M E N T -->
+  <!-- ====================================================================== -->
+  <dependencyManagement>
+    <dependencies>
+      <!-- jackrabbit dependencies usually provided as dedicated OSGi bundles (not embedded)-->
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>oak-jackrabbit-api</artifactId>
+        <version>${oak.min.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>jackrabbit-jcr-commons</artifactId>
+        <version>${jackrabbit.min.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>jackrabbit-spi</artifactId>
+        <version>${jackrabbit.min.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>jackrabbit-spi-commons</artifactId>
+        <version>${jackrabbit.min.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>jackrabbit-webdav</artifactId>
+        <version>${jackrabbit.min.version}</version>
+      </dependency>
+      <!-- the following jackrabbit dependencies are usually not used on the server side, i.e. not available in OSGi containers
+                 however, they are embedded in OSGi bundles deployed to servers, therefore also use min.version to not raise
+                 transitive runtime requirements -->
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>jackrabbit-jcr2spi</artifactId>
+        <version>${jackrabbit.min.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>jackrabbit-spi2dav</artifactId>
+        <version>${jackrabbit.min.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>jackrabbit-jcr-client</artifactId>
+        <version>${jackrabbit.min.version}</version>
+      </dependency>
+
+      <!-- JCR Stuff -->
+      <dependency>
+        <groupId>javax.jcr</groupId>
+        <artifactId>jcr</artifactId>
+        <version>2.0</version>
+      </dependency>
+
+      <!-- SLF4j / Log4j -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <!-- https://github.com/JetBrains/java-annotations -->
+      <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>23.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>biz.aQute.bnd.annotation</artifactId>
+        <version>${bnd.version}</version>
+      </dependency>
+      <!-- other -->
+
+      <!-- OSGi -->
+      <!-- OSGi framework 1.8, Core R6 (https://osgi.org/javadoc/r6/core/org/osgi/framework/package-summary.html) -->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.framework</artifactId>
+        <version>1.8.0</version>
+      </dependency>
+      <!-- Configuration Admin 1.6, Compendium R7 (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/cm/package-frame.html) -->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.service.cm</artifactId>
+        <version>1.6.0</version>
+      </dependency>
+      <!-- Service Component 1.5, Compendium R7 (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/component/package-frame.html) -->
+      <!-- and component property types (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/component/propertytypes/package-frame.html) -->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.service.component</artifactId>
+        <version>1.5.0</version>
+      </dependency>
+      <!-- Event Admin 1.3.1, Compendium R6 (https://osgi.org/javadoc/r6/cmpn/org/osgi/service/event/package-summary.html) -->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.service.event</artifactId>
+        <version>1.3.1</version>
+      </dependency>
+
+      <!-- OSGi Annotations: @Version -->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.annotation.versioning</artifactId>
+        <version>1.1.0</version>
+      </dependency>
+      <!-- Declarative Service Annotations -->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.service.component.annotations</artifactId>
+        <version>1.4.0</version>
+      </dependency>
+      <!-- Metatype Annotations -->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.service.metatype.annotations</artifactId>
+        <version>1.3.0</version>
+      </dependency>
+
+      <!-- these are minimum version referenced in OSGi bundles, for embedding a newer version should be used -->
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.18.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-collections4</artifactId>
+        <version>4.1</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpmime</artifactId>
+        <version>4.5.8</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.13</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.0.3</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.9.2</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest</artifactId>
+        <version>3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>5.20.0</version>
+      </dependency>
+      <!-- Sling -->
+      <dependency>
+        <groupId>org.apache.sling</groupId>
+        <artifactId>org.apache.sling.api</artifactId>
+        <version>${sling.api.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <!-- ====================================================================== -->
+  <!-- B U I L D D E F I N I T I O N -->
+  <!-- ====================================================================== -->
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>3.1.0</version>
+          <configuration>
+            <java>
+              <!-- orders of used formatters are important MPOM-376 -->
+              <!-- eg. palantir override importOrder, so should be first -->
+              <palantirJavaFormat>
+                <version>2.83.0</version>
+              </palantirJavaFormat>
+              <removeUnusedImports />
+              <importOrder>
+                <file>config/maven-eclipse-importorder.txt</file>
+              </importOrder>
+              <licenseHeader>
+                <file>config/maven-header-plain.txt</file>
+              </licenseHeader>
+            </java>
+            <!-- accept all endings to support validations on top of source archives -->
+            <lineEndings>PRESERVE</lineEndings>
+            <pom>
+              <sortPom>
+                <expandEmptyElements>false</expandEmptyElements>
+                <!-- https://issues.apache.org/jira/browse/MRELEASE-1111 -->
+                <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                <quiet>true</quiet>
+              </sortPom>
+            </pom>
+            <upToDateChecking>
+              <enabled>true</enabled>
+            </upToDateChecking>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.shared</groupId>
+              <artifactId>maven-shared-resources</artifactId>
+              <version>6</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <id>spotless-format</id>
+              <goals>
+                <goal>${spotless.action}</goal>
+              </goals>
+              <phase>process-sources</phase>
+            </execution>
+          </executions>
+        </plugin>
+        <!-- ====================================================================== -->
+        <!-- S L I N G P L U G I N -->
+        <!-- ====================================================================== -->
+        <plugin>
+          <groupId>org.apache.sling</groupId>
+          <artifactId>sling-maven-plugin</artifactId>
+          <version>3.0.2</version>
+          <configuration>
+            <!-- slingUrl dynamically set by property -->
+            <slingUrlSuffix>/system/console</slingUrlSuffix>
+            <deploymentMethod>WebConsole</deploymentMethod>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>biz.aQute.bnd</groupId>
+          <artifactId>bnd-maven-plugin</artifactId>
+          <version>${bnd.version}</version>
+          <executions>
+            <execution>
+              <id>generate-osgi-metadata</id>
+              <goals>
+                <goal>bnd-process</goal>
+              </goals>
+              <configuration>
+                <bnd><![CDATA[
 # we cannot let bnd-maven-plugin generate it automatically, as Maven applies some inheritance logic
 Bundle-DocURL: https://jackrabbit.apache.org/filevault/
 Bundle-Category: jackrabbit
@@ -213,618 +410,427 @@ Bundle-Category: jackrabbit
     restrict:=warning; \
     is:=error
                                 ]]></bnd>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>biz.aQute.bnd</groupId>
-                    <artifactId>bnd-baseline-maven-plugin</artifactId>
-                    <version>${bnd.version}</version>
-                    <configuration>
-                        <includeDistributionManagement>false</includeDistributionManagement>
-                        <fullReport>true</fullReport>
-                        <diffignores>
-                            <!-- ignore Bundle-Version header for baseline, i.e. no enforcement of specific bundle versions -->
-                            <diffignore>Bundle-Version</diffignore>
-                        </diffignores>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>baseline</id>
-                            <goals>
-                                <goal>baseline</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>biz.aQute.bnd</groupId>
-                    <artifactId>bnd-resolver-maven-plugin</artifactId>
-                    <version>${bnd.version}</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>resolve</goal>
-                            </goals>
-                            <phase>verify</phase>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <useMavenDependencies>true</useMavenDependencies>
-                        <!-- also include compile scoped dependencies (https://github.com/bndtools/bnd/blob/38ef85e389678370304846d6b09ffd31f9efb87d/biz.aQute.bnd.maven/src/aQute/bnd/maven/lib/resolve/Scope.java#L13), compare with https://github.com/bndtools/bnd/issues/4207 -->
-                        <scopes>compile</scopes>
-                        <failOnChanges>false</failOnChanges><!-- reuse for multiple bundles which all require different minimum container -->
-                        <writeOnChanges>false</writeOnChanges>
-                    </configuration>
-                </plugin>
-                <!-- ====================================================================== -->
-                <!-- R E L E A S E P L U G I N -->
-                <!-- ====================================================================== -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <configuration>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-                        <projectVersionPolicyId>OddEvenVersionPolicy</projectVersionPolicyId>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.maven.release</groupId>
-                            <artifactId>maven-release-oddeven-policy</artifactId>
-                            <version>${version.maven-release-plugin}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <!-- ====================================================================== -->
-                <!-- R A T P L U G I N -->
-                <!-- ====================================================================== -->
-                <plugin>
-                    <groupId>org.apache.rat</groupId>
-                    <artifactId>apache-rat-plugin</artifactId>
-                    <configuration>
-                        <excludes>
-                            <excludes>.asf.yaml</excludes>
-                            <excludes>.ratignore</excludes>
-                            <exclude>release.properties</exclude>
-                            <exclude>.git/**</exclude>
-                            <exclude>.idea/**</exclude>
-                            <exclude>.gitattributes</exclude>
-                            <exclude>.gitignore</exclude>
-                            <exclude>derby.log</exclude>
-                            <exclude>**/*.zip/**</exclude>
-                            <exclude>.mvn/**</exclude>
-                            <exclude>.no-defender.sh</exclude>
-                            <exclude>.repository/**</exclude>
-                            <exclude>local-snapshots-dir/**</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>
-                <!-- ====================================================================== -->
-                <!-- S I T E P L U G I N -->
-                <!-- ====================================================================== -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <configuration>
-                        <skip>true</skip><!-- skip for all modules where not explicitly enabled -->
-                        <skipDeploy>true</skipDeploy><!-- always deploy via maven-scm-publish-plugin -->
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.13</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <version>12.1.6</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                            <configuration>
-                                <!-- fail for CVSS above LOW (https://nvd.nist.gov/vuln-metrics/cvss) -->
-                                <failBuildOnCVSS>4</failBuildOnCVSS>
-                                <!-- use the mirror provided by https://github.com/dependency-check/DependencyCheck_Builder which is updated daily -->
-                                <!-- compare with https://jeremylong.github.io/DependencyCheck/data/mirrornvd.html -->
-                                <nvdDatafeedUrl>https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/</nvdDatafeedUrl>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-        <plugins>
-             <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <consoleOutput>true</consoleOutput>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- compiler stuff -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <debug>true</debug>
-                    <showDeprecation>false</showDeprecation>
-                    <showWarnings>true</showWarnings>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>enforce-explicit-scope</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <!-- https://maven.apache.org/enforcer/enforcer-rules/requireExplicitDependencyScope.html -->
-                                <requireExplicitDependencyScope />
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- deploy site.xml as being used in downstream dependencies -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <id>attach-descriptor</id>
-                        <goals>
-                            <goal>attach-descriptor</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.7.1</version>
-                <configuration>
-                    <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>flatten</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>flatten</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>de.thetaphi</groupId>
-                <artifactId>forbiddenapis</artifactId>
-                <version>3.9</version>
-                <configuration>
-                    <!--
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>biz.aQute.bnd</groupId>
+          <artifactId>bnd-baseline-maven-plugin</artifactId>
+          <version>${bnd.version}</version>
+          <configuration>
+            <includeDistributionManagement>false</includeDistributionManagement>
+            <fullReport>true</fullReport>
+            <diffignores>
+              <!-- ignore Bundle-Version header for baseline, i.e. no enforcement of specific bundle versions -->
+              <diffignore>Bundle-Version</diffignore>
+            </diffignores>
+          </configuration>
+          <executions>
+            <execution>
+              <id>baseline</id>
+              <goals>
+                <goal>baseline</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>biz.aQute.bnd</groupId>
+          <artifactId>bnd-resolver-maven-plugin</artifactId>
+          <version>${bnd.version}</version>
+          <configuration>
+            <useMavenDependencies>true</useMavenDependencies>
+            <!-- also include compile scoped dependencies (https://github.com/bndtools/bnd/blob/38ef85e389678370304846d6b09ffd31f9efb87d/biz.aQute.bnd.maven/src/aQute/bnd/maven/lib/resolve/Scope.java#L13), compare with https://github.com/bndtools/bnd/issues/4207 -->
+            <scopes>compile</scopes>
+            <failOnChanges>false</failOnChanges>
+            <!-- reuse for multiple bundles which all require different minimum container -->
+            <writeOnChanges>false</writeOnChanges>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>resolve</goal>
+              </goals>
+              <phase>verify</phase>
+            </execution>
+          </executions>
+        </plugin>
+        <!-- ====================================================================== -->
+        <!-- R E L E A S E P L U G I N -->
+        <!-- ====================================================================== -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <projectVersionPolicyId>OddEvenVersionPolicy</projectVersionPolicyId>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.release</groupId>
+              <artifactId>maven-release-oddeven-policy</artifactId>
+              <version>${version.maven-release-plugin}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <!-- ====================================================================== -->
+        <!-- R A T P L U G I N -->
+        <!-- ====================================================================== -->
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <configuration>
+            <excludes>
+              <excludes>.asf.yaml</excludes>
+              <excludes>.ratignore</excludes>
+              <exclude>release.properties</exclude>
+              <exclude>.git/**</exclude>
+              <exclude>.idea/**</exclude>
+              <exclude>.gitattributes</exclude>
+              <exclude>.gitignore</exclude>
+              <exclude>derby.log</exclude>
+              <exclude>**/*.zip/**</exclude>
+              <exclude>.mvn/**</exclude>
+              <exclude>.no-defender.sh</exclude>
+              <exclude>.repository/**</exclude>
+              <exclude>local-snapshots-dir/**</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+        <!-- ====================================================================== -->
+        <!-- S I T E P L U G I N -->
+        <!-- ====================================================================== -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <configuration>
+            <skip>true</skip>
+            <!-- skip for all modules where not explicitly enabled -->
+            <skipDeploy>true</skipDeploy>
+            <!-- always deploy via maven-scm-publish-plugin -->
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.13</version>
+        </plugin>
+        <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <version>12.1.6</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <configuration>
+                <!-- fail for CVSS above LOW (https://nvd.nist.gov/vuln-metrics/cvss) -->
+                <failBuildOnCVSS>4</failBuildOnCVSS>
+                <!-- use the mirror provided by https://github.com/dependency-check/DependencyCheck_Builder which is updated daily -->
+                <!-- compare with https://jeremylong.github.io/DependencyCheck/data/mirrornvd.html -->
+                <nvdDatafeedUrl>https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/</nvdDatafeedUrl>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <consoleOutput>true</consoleOutput>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- compiler stuff -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <debug>true</debug>
+          <showDeprecation>false</showDeprecation>
+          <showWarnings>true</showWarnings>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-explicit-scope</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <!-- https://maven.apache.org/enforcer/enforcer-rules/requireExplicitDependencyScope.html -->
+                <requireExplicitDependencyScope />
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- deploy site.xml as being used in downstream dependencies -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>attach-descriptor</id>
+            <goals>
+              <goal>attach-descriptor</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.7.1</version>
+        <configuration>
+          <updatePomFile>true</updatePomFile>
+          <flattenMode>resolveCiFriendliesOnly</flattenMode>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+            <phase>process-resources</phase>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <phase>clean</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>de.thetaphi</groupId>
+        <artifactId>forbiddenapis</artifactId>
+        <version>3.9</version>
+        <configuration>
+          <!--
                       if the used Java version is too new,
                       don't fail, just do nothing:
                     -->
-                    <failOnUnsupportedJava>false</failOnUnsupportedJava>
-                    <bundledSignatures>
-                        <!--
+          <failOnUnsupportedJava>false</failOnUnsupportedJava>
+          <bundledSignatures>
+            <!--
                           This will automatically choose the right
                           signatures based on 'maven.compiler.target':
                         -->
-                        <bundledSignature>jdk-unsafe</bundledSignature>
-                        <bundledSignature>jdk-deprecated</bundledSignature>
-                        <!-- disallow undocumented classes like sun.misc.Unsafe: -->
-                        <bundledSignature>jdk-non-portable</bundledSignature>
-                        <!-- don't allow unsafe reflective access: -->
-                        <bundledSignature>jdk-reflection</bundledSignature>
-                        <bundledSignature>commons-io-unsafe-${commons-io.version}</bundledSignature>
-                    </bundledSignatures>
-                    <ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+            <bundledSignature>jdk-unsafe</bundledSignature>
+            <bundledSignature>jdk-deprecated</bundledSignature>
+            <!-- disallow undocumented classes like sun.misc.Unsafe: -->
+            <bundledSignature>jdk-non-portable</bundledSignature>
+            <!-- don't allow unsafe reflective access: -->
+            <bundledSignature>jdk-reflection</bundledSignature>
+            <bundledSignature>commons-io-unsafe-${commons-io.version}</bundledSignature>
+          </bundledSignatures>
+          <ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
 
-    </build>
+  </build>
 
-    <!-- ====================================================================== -->
-    <!-- R E P O R T I N G -->
-    <!-- ====================================================================== -->
-    <reporting>
-        <plugins>
+  <!-- ====================================================================== -->
+  <!-- R E P O R T I N G -->
+  <!-- ====================================================================== -->
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <!--avoid child modules from inheriting anything from the apache parent pom -->
+        <inherited>false</inherited>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <!-- ====================================================================== -->
+  <!-- P R O F I L E S -->
+  <!-- ====================================================================== -->
+  <profiles>
+    <profile>
+      <id>jacoco-report</id>
+      <build>
+        <pluginManagement>
+          <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <!--avoid child modules from inheriting anything from the apache parent pom -->
-                <inherited>false</inherited>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                <argLine>@{jacoco.command}</argLine>
+              </configuration>
             </plugin>
-        </plugins>
-    </reporting>
-
-    <!-- ====================================================================== -->
-    <!-- D E P E N D E N C Y M A N A G E M E N T -->
-    <!-- ====================================================================== -->
-    <dependencyManagement>
-        <dependencies>
-            <!-- jackrabbit dependencies usually provided as dedicated OSGi bundles (not embedded)-->
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>oak-jackrabbit-api</artifactId>
-                <version>${oak.min.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-jcr-commons</artifactId>
-                <version>${jackrabbit.min.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-spi</artifactId>
-                <version>${jackrabbit.min.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-spi-commons</artifactId>
-                <version>${jackrabbit.min.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-webdav</artifactId>
-                <version>${jackrabbit.min.version}</version>
-            </dependency>
-            <!-- the following jackrabbit dependencies are usually not used on the server side, i.e. not available in OSGi containers
-                 however, they are embedded in OSGi bundles deployed to servers, therefore also use min.version to not raise
-                 transitive runtime requirements -->
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-jcr2spi</artifactId>
-                <version>${jackrabbit.min.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-spi2dav</artifactId>
-                <version>${jackrabbit.min.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-jcr-client</artifactId>
-                <version>${jackrabbit.min.version}</version>
-            </dependency>
-
-            <!-- JCR Stuff -->
-            <dependency>
-                <groupId>javax.jcr</groupId>
-                <artifactId>jcr</artifactId>
-                <version>2.0</version>
-            </dependency>
-
-            <!-- SLF4j / Log4j -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <!-- https://github.com/JetBrains/java-annotations -->
-            <dependency>
-                <groupId>org.jetbrains</groupId>
-                <artifactId>annotations</artifactId>
-                <version>23.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>biz.aQute.bnd</groupId>
-                <artifactId>biz.aQute.bnd.annotation</artifactId>
-                <version>${bnd.version}</version>
-            </dependency>
-            <!-- other -->
-
-            <!-- OSGi -->
-            <!-- OSGi framework 1.8, Core R6 (https://osgi.org/javadoc/r6/core/org/osgi/framework/package-summary.html) -->
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.framework</artifactId>
-                <version>1.8.0</version>
-            </dependency>
-            <!-- Configuration Admin 1.6, Compendium R7 (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/cm/package-frame.html) -->
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.service.cm</artifactId>
-                <version>1.6.0</version>
-            </dependency>
-            <!-- Service Component 1.5, Compendium R7 (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/component/package-frame.html) -->
-            <!-- and component property types (https://osgi.org/javadoc/osgi.cmpn/7.0.0/org/osgi/service/component/propertytypes/package-frame.html) -->
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.service.component</artifactId>
-                <version>1.5.0</version>
-            </dependency>
-            <!-- Event Admin 1.3.1, Compendium R6 (https://osgi.org/javadoc/r6/cmpn/org/osgi/service/event/package-summary.html) -->
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.service.event</artifactId>
-                <version>1.3.1</version>
-            </dependency>
-
-            <!-- OSGi Annotations: @Version -->
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.annotation.versioning</artifactId>
-                <version>1.1.0</version>
-            </dependency>
-            <!-- Declarative Service Annotations -->
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.service.component.annotations</artifactId>
-                <version>1.4.0</version>
-            </dependency>
-            <!-- Metatype Annotations -->
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.service.metatype.annotations</artifactId>
-                <version>1.3.0</version>
-            </dependency>
-
-            <!-- these are minimum version referenced in OSGi bundles, for embedding a newer version should be used -->
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons-io.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.18.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-collections4</artifactId>
-                <version>4.1</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>1.10</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpmime</artifactId>
-                <version>4.5.8</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>4.5.13</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>1.0.3</version>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.13.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>5.9.2</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest</artifactId>
-                <version>3.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>5.20.0</version>
-            </dependency>
-            <!-- Sling -->
-            <dependency>
-                <groupId>org.apache.sling</groupId>
-                <artifactId>org.apache.sling.api</artifactId>
-                <version>${sling.api.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <!-- ====================================================================== -->
-    <!-- P R O F I L E S -->
-    <!-- ====================================================================== -->
-    <profiles>
-        <profile>
-            <id>jacoco-report</id>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-surefire-plugin</artifactId>
-                            <configuration>
-                                <argLine>@{jacoco.command}</argLine>
-                            </configuration>
-                        </plugin>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-failsafe-plugin</artifactId>
-                            <configuration>
-                                <!-- 
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-failsafe-plugin</artifactId>
+              <configuration>
+                <!-- 
                                 for IT where you need a forked JVM to run the tests you can use this system property to make sure that
                                 the JaCoCo agent correctly instruments your code
                                 set system property also via argLine as only that allows late evaluation -->
-                                <argLine>@{jacoco.command} -Djacoco.command=@{jacoco.command}</argLine>
-                            </configuration>
-                        </plugin>
-                        <!-- generates aggregate (cross-module) coverage reports, https://github.com/olamy/jacoco-aggregator-maven-plugin
+                <argLine>@{jacoco.command} -Djacoco.command=@{jacoco.command}</argLine>
+              </configuration>
+            </plugin>
+            <!-- generates aggregate (cross-module) coverage reports, https://github.com/olamy/jacoco-aggregator-maven-plugin
                             only enable this plugin (without inheritance) in the root module, as this is an aggregator plugin
                          -->
-                        <plugin>
-                            <groupId>io.github.olamy.maven.plugins</groupId>
-                            <artifactId>jacoco-aggregator-maven-plugin</artifactId>
-                            <version>1.0.3</version>
-                            <configuration>
-                                <includes>
-                                    <!-- exclude shaded 3rd party classes -->
-                                    <include>org/apache/jackrabbit/vault/**</include>
-                                </includes>
-                                <excludes>
-                                    <!-- exclude ITs -->
-                                    <exclude>org/apache/jackrabbit/vault/**/*IT.class</exclude>
-                                    <exclude>org/apache/jackrabbit/vault/**/IT*.class</exclude>
-                                    <exclude>org/apache/jackrabbit/vault/it/**</exclude>
-                                    <exclude>org/apache/jackrabbit/vault/integration/support/**</exclude>
-                                </excludes>
-                                <!-- only consider merged data files (consisting of both IT and UT) -->
-                                <dataFileIncludes>
-                                   <dataFileInclude>**/jacoco.exec</dataFileInclude> 
-                                </dataFileIncludes>
-                            </configuration>
-                            <executions>
-                                <!-- -->
-                                <execution>
-                                    <id>aggregate</id>
-                                    <phase>verify</phase>
-                                    <goals>
-                                        <goal>report-aggregate-all</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jacoco</groupId>
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                        <configuration>
-                            <propertyName>jacoco.command</propertyName>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>prepare-agent</id>
-                                <goals>
-                                    <goal>prepare-agent</goal>
-                                </goals>
-                                <configuration>
-                                    <destFile>${project.build.directory}/jacoco-unit.exec</destFile>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>prepare-agent-integration</id>
-                                <goals>
-                                    <goal>prepare-agent-integration</goal>
-                                </goals>
-                                <configuration>
-                                    <destFile>${project.build.directory}/jacoco-it.exec</destFile>
-                                     <!-- potentially ITs fork Java again (e.g. for testing Maven plugins), therefore always append to destFile as multiple VMs would then write to the same file -->
-                                    <append>true</append>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>merge-unit-and-it</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>merge</goal>
-                                </goals>
-                                <configuration>
-                                    <fileSets>
-                                        <fileSet>
-                                            <directory>${project.build.directory}</directory>
-                                            <includes>
-                                                <include>jacoco-unit.exec</include>
-                                                <include>jacoco-it.exec</include>
-                                            </includes>
-                                        </fileSet>
-                                    </fileSets>
-                                </configuration>
-                            </execution>
-                            <!-- this report is not used for SonarQube, but just the aggregate one. This is just for local development purposes -->
-                            <execution>
-                                <id>report-merged</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>report</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>dependency-check</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.owasp</groupId>
-                        <artifactId>dependency-check-maven</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-          <id>format-check</id>
-          <activation>
-            <property>
-              <name>env.CI</name>
-            </property>
-          </activation>
-          <properties>
-            <spotless.action>check</spotless.action>
-          </properties>
-        </profile>
-        <profile>
-          <id>format</id>
-          <activation>
-            <property>
-              <name>!env.CI</name>
-            </property>
-          </activation>
-          <properties>
-            <spotless.action>apply</spotless.action>
-          </properties>
-        </profile>
-    </profiles>
+            <plugin>
+              <groupId>io.github.olamy.maven.plugins</groupId>
+              <artifactId>jacoco-aggregator-maven-plugin</artifactId>
+              <version>1.0.3</version>
+              <configuration>
+                <includes>
+                  <!-- exclude shaded 3rd party classes -->
+                  <include>org/apache/jackrabbit/vault/**</include>
+                </includes>
+                <excludes>
+                  <!-- exclude ITs -->
+                  <exclude>org/apache/jackrabbit/vault/**/*IT.class</exclude>
+                  <exclude>org/apache/jackrabbit/vault/**/IT*.class</exclude>
+                  <exclude>org/apache/jackrabbit/vault/it/**</exclude>
+                  <exclude>org/apache/jackrabbit/vault/integration/support/**</exclude>
+                </excludes>
+                <!-- only consider merged data files (consisting of both IT and UT) -->
+                <dataFileIncludes>
+                  <dataFileInclude>**/jacoco.exec</dataFileInclude>
+                </dataFileIncludes>
+              </configuration>
+              <executions>
+                <!-- -->
+                <execution>
+                  <id>aggregate</id>
+                  <goals>
+                    <goal>report-aggregate-all</goal>
+                  </goals>
+                  <phase>verify</phase>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <configuration>
+              <propertyName>jacoco.command</propertyName>
+            </configuration>
+            <executions>
+              <execution>
+                <id>prepare-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <destFile>${project.build.directory}/jacoco-unit.exec</destFile>
+                </configuration>
+              </execution>
+              <execution>
+                <id>prepare-agent-integration</id>
+                <goals>
+                  <goal>prepare-agent-integration</goal>
+                </goals>
+                <configuration>
+                  <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                  <!-- potentially ITs fork Java again (e.g. for testing Maven plugins), therefore always append to destFile as multiple VMs would then write to the same file -->
+                  <append>true</append>
+                </configuration>
+              </execution>
+              <execution>
+                <id>merge-unit-and-it</id>
+                <goals>
+                  <goal>merge</goal>
+                </goals>
+                <phase>post-integration-test</phase>
+                <configuration>
+                  <fileSets>
+                    <fileSet>
+                      <directory>${project.build.directory}</directory>
+                      <includes>
+                        <include>jacoco-unit.exec</include>
+                        <include>jacoco-it.exec</include>
+                      </includes>
+                    </fileSet>
+                  </fileSets>
+                </configuration>
+              </execution>
+              <!-- this report is not used for SonarQube, but just the aggregate one. This is just for local development purposes -->
+              <execution>
+                <id>report-merged</id>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>dependency-check</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>format-check</id>
+      <activation>
+        <property>
+          <name>env.CI</name>
+        </property>
+      </activation>
+      <properties>
+        <spotless.action>check</spotless.action>
+      </properties>
+    </profile>
+    <profile>
+      <id>format</id>
+      <activation>
+        <property>
+          <name>!env.CI</name>
+        </property>
+      </activation>
+      <properties>
+        <spotless.action>apply</spotless.action>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>

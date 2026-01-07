@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
@@ -43,9 +45,7 @@ public class CompositePackageRegistryTest {
     @Test
     public void testPackagesContainsAndRemove() throws IOException, NoSuchPackageException {
         CompositePackageRegistry registry = new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1, PACKAGE3),
-                new MockPackageRegistry(PACKAGE2)
-                );
+                new MockPackageRegistry(PACKAGE1, PACKAGE3), new MockPackageRegistry(PACKAGE2));
         Assert.assertEquals(Stream.of(PACKAGE1, PACKAGE2, PACKAGE3).collect(Collectors.toSet()), registry.packages());
         Assert.assertTrue(registry.contains(PACKAGE1));
         Assert.assertTrue(registry.contains(PACKAGE2));
@@ -57,27 +57,20 @@ public class CompositePackageRegistryTest {
 
     @Test(expected = NoSuchPackageException.class)
     public void testRemoveNonExistingPackage() throws NoSuchPackageException, IOException {
-        CompositePackageRegistry registry = new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1),
-                new MockPackageRegistry(PACKAGE3)
-                );
+        CompositePackageRegistry registry =
+                new CompositePackageRegistry(new MockPackageRegistry(PACKAGE1), new MockPackageRegistry(PACKAGE3));
         registry.remove(PACKAGE2);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testPackageIdInMultipleRegistries() throws NoSuchPackageException, IOException {
-        new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1),
-                new MockPackageRegistry(PACKAGE1)
-                );
+        new CompositePackageRegistry(new MockPackageRegistry(PACKAGE1), new MockPackageRegistry(PACKAGE1));
     }
 
-    @Test(expected=PackageExistsException.class)
+    @Test(expected = PackageExistsException.class)
     public void testRegisterWithExistingPackageIdInOtherRegistry() throws PackageExistsException, IOException {
         CompositePackageRegistry registry = new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1),
-                new MockPackageRegistry(MockPackageRegistry.NEW_PACKAGE_ID)
-                );
+                new MockPackageRegistry(PACKAGE1), new MockPackageRegistry(MockPackageRegistry.NEW_PACKAGE_ID));
         File file = File.createTempFile("vlt", null);
         try {
             registry.register(file, false);
@@ -88,10 +81,8 @@ public class CompositePackageRegistryTest {
 
     @Test
     public void testRegisterFile() throws PackageExistsException, IOException {
-        CompositePackageRegistry registry = new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1),
-                new MockPackageRegistry(PACKAGE3)
-                );
+        CompositePackageRegistry registry =
+                new CompositePackageRegistry(new MockPackageRegistry(PACKAGE1), new MockPackageRegistry(PACKAGE3));
         File file = File.createTempFile("vlt", null);
         try {
             registry.register(file, false);
@@ -103,11 +94,9 @@ public class CompositePackageRegistryTest {
 
     @Test
     public void testRegisterInputStream() throws PackageExistsException, IOException {
-        CompositePackageRegistry registry = new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1),
-                new MockPackageRegistry(PACKAGE3)
-                );
-        try (InputStream input = new NullInputStream(0)){
+        CompositePackageRegistry registry =
+                new CompositePackageRegistry(new MockPackageRegistry(PACKAGE1), new MockPackageRegistry(PACKAGE3));
+        try (InputStream input = new NullInputStream(0)) {
             registry.register(input, false);
         }
         Assert.assertTrue(registry.contains(MockPackageRegistry.NEW_PACKAGE_ID));
@@ -115,10 +104,8 @@ public class CompositePackageRegistryTest {
 
     @Test
     public void testRegisterExternal() throws PackageExistsException, IOException {
-        CompositePackageRegistry registry = new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1),
-                new MockPackageRegistry(PACKAGE3)
-                );
+        CompositePackageRegistry registry =
+                new CompositePackageRegistry(new MockPackageRegistry(PACKAGE1), new MockPackageRegistry(PACKAGE3));
         File file = File.createTempFile("vlt", null);
         try {
             registry.registerExternal(file, false);
@@ -130,38 +117,30 @@ public class CompositePackageRegistryTest {
 
     @Test
     public void testOpen() throws IOException {
-        CompositePackageRegistry registry = new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1),
-                new MockPackageRegistry(PACKAGE2)
-                );
+        CompositePackageRegistry registry =
+                new CompositePackageRegistry(new MockPackageRegistry(PACKAGE1), new MockPackageRegistry(PACKAGE2));
         Assert.assertNotNull(registry.open(PACKAGE2));
         Assert.assertNull(registry.open(PACKAGE3));
     }
 
     @Test
     public void testDependencyReport() throws IOException, NoSuchPackageException {
-        CompositePackageRegistry registry = new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1),
-                new MockPackageRegistry(PACKAGE2)
-                );
+        CompositePackageRegistry registry =
+                new CompositePackageRegistry(new MockPackageRegistry(PACKAGE1), new MockPackageRegistry(PACKAGE2));
         Assert.assertNotNull(registry.analyzeDependencies(PACKAGE2, true));
     }
 
     @Test(expected = NoSuchPackageException.class)
     public void testDependencyReportForNonExistingPackage() throws IOException, NoSuchPackageException {
-        CompositePackageRegistry registry = new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1),
-                new MockPackageRegistry(PACKAGE2)
-                );
+        CompositePackageRegistry registry =
+                new CompositePackageRegistry(new MockPackageRegistry(PACKAGE1), new MockPackageRegistry(PACKAGE2));
         registry.analyzeDependencies(PACKAGE3, true);
     }
 
     @Test
     public void testResolve() throws IOException {
-        CompositePackageRegistry registry = new CompositePackageRegistry(
-                new MockPackageRegistry(PACKAGE1),
-                new MockPackageRegistry(PACKAGE2)
-                );
+        CompositePackageRegistry registry =
+                new CompositePackageRegistry(new MockPackageRegistry(PACKAGE1), new MockPackageRegistry(PACKAGE2));
         Dependency dependency = Dependency.fromString("my.group:package1:2.0");
         Assert.assertEquals(PACKAGE2, registry.resolve(dependency, true));
         dependency = Dependency.fromString("my.group:unknown-package1:2.0");
@@ -173,11 +152,15 @@ public class CompositePackageRegistryTest {
         MockPackageRegistry registry1 = new MockPackageRegistry();
         registry1.addPackageWithDependencies("package1", "my.group:package1:2.0");
         MockPackageRegistry registry2 = new MockPackageRegistry();
-        
+
         registry2.addPackageWithDependencies("package3", "my.group:package1:2.0");
         registry2.addPackageWithDependencies("package2", "my.group:package1:2.0");
         CompositePackageRegistry compositeRegistry = new CompositePackageRegistry(registry1, registry2);
-        MatcherAssert.assertThat(Arrays.asList(compositeRegistry.usage(PackageId.fromString("my.group:package1:2.0"))), 
-                Matchers.containsInAnyOrder(PackageId.fromString("package1"), PackageId.fromString("package2"), PackageId.fromString("package3")));
+        MatcherAssert.assertThat(
+                Arrays.asList(compositeRegistry.usage(PackageId.fromString("my.group:package1:2.0"))),
+                Matchers.containsInAnyOrder(
+                        PackageId.fromString("package1"),
+                        PackageId.fromString("package2"),
+                        PackageId.fromString("package3")));
     }
 }

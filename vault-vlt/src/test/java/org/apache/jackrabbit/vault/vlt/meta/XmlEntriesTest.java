@@ -1,27 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt.meta;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -40,6 +35,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class XmlEntriesTest {
 
@@ -119,7 +121,7 @@ class XmlEntriesTest {
         assertNotNull(base);
         base.setContentType("text/plain");
         base.setDate(1000);
-        base.setMd5(new MD5(2,3));
+        base.setMd5(new MD5(2, 3));
         base.setSize(4);
         ((XmlEntryInfo) base).setName("myName");
         reopen();
@@ -127,7 +129,7 @@ class XmlEntriesTest {
         base = e.base();
         assertEquals("text/plain", base.getContentType());
         assertEquals(1000, base.getDate());
-        assertEquals(new MD5(2,3), base.getMd5());
+        assertEquals(new MD5(2, 3), base.getMd5());
         assertEquals(4, base.getSize());
         assertEquals("myName", ((XmlEntryInfo) base).getName());
     }
@@ -155,20 +157,19 @@ class XmlEntriesTest {
 
     @Test
     void testXSS() throws VltException {
-        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<!DOCTYPE entries [\n" +
-                "   <!ENTITY % foo \"bar\">\n" +
-                "]>\n" +
-                "<entries path=\"/home/users/m/mCY2rm1YSMlKFlJ-NEN3\">\n" +
-                " <entry name=\".content.xml\" rp=\"\" ap=\"/home/users/m/mCY2rm1YSMlKFlJ-NEN3\">\n" +
-                "   <base date=\"2018-10-02T11:44:02.000+02:00\" md5=\"268b8e1f6d7b3fc9ec71226ee1a9dc70\" contentType=\"text/xml\" size=\"946\"/>\n" +
-                "   <work date=\"2018-10-02T11:44:02.000+02:00\" md5=\"268b8e1f6d7b3fc9ec71226ee1a9dc70\" contentType=\"text/xml\" size=\"946\"/>\n" +
-                " </entry>\n" +
-                " <entry name=\"_rep_policy.xml\" rp=\"\" ap=\"/home/users/m/mCY2rm1YSMlKFlJ-NEN3/rep:policy\">\n" +
-                "   <base date=\"2018-10-02T11:44:02.000+02:00\" md5=\"5a788decc1968551e2838bc46914f75a\" contentType=\"text/xml\" size=\"500\"/>\n" +
-                "   <work date=\"2018-10-02T11:44:02.000+02:00\" md5=\"5a788decc1968551e2838bc46914f75a\" contentType=\"text/xml\" size=\"500\"/>\n" +
-                " </entry>\n" +
-                "</entries>";
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<!DOCTYPE entries [\n"
+                + "   <!ENTITY % foo \"bar\">\n"
+                + "]>\n"
+                + "<entries path=\"/home/users/m/mCY2rm1YSMlKFlJ-NEN3\">\n"
+                + " <entry name=\".content.xml\" rp=\"\" ap=\"/home/users/m/mCY2rm1YSMlKFlJ-NEN3\">\n"
+                + "   <base date=\"2018-10-02T11:44:02.000+02:00\" md5=\"268b8e1f6d7b3fc9ec71226ee1a9dc70\" contentType=\"text/xml\" size=\"946\"/>\n"
+                + "   <work date=\"2018-10-02T11:44:02.000+02:00\" md5=\"268b8e1f6d7b3fc9ec71226ee1a9dc70\" contentType=\"text/xml\" size=\"946\"/>\n"
+                + " </entry>\n"
+                + " <entry name=\"_rep_policy.xml\" rp=\"\" ap=\"/home/users/m/mCY2rm1YSMlKFlJ-NEN3/rep:policy\">\n"
+                + "   <base date=\"2018-10-02T11:44:02.000+02:00\" md5=\"5a788decc1968551e2838bc46914f75a\" contentType=\"text/xml\" size=\"500\"/>\n"
+                + "   <work date=\"2018-10-02T11:44:02.000+02:00\" md5=\"5a788decc1968551e2838bc46914f75a\" contentType=\"text/xml\" size=\"500\"/>\n"
+                + " </entry>\n"
+                + "</entries>";
         try {
             XmlEntries entries = XmlEntries.load(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
             assertTrue(entries.hasEntry(".content.xml"));

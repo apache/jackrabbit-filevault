@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.net.URI;
@@ -51,7 +52,8 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     private static final Logger log = LoggerFactory.getLogger(PackagePropertiesImpl.class);
 
     /** supports parsing dates given out via {@code SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")} */
-    private static final DateTimeFormatter DATE_TIME_FORMATTER_LEGACY = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.ENGLISH);
+    private static final DateTimeFormatter DATE_TIME_FORMATTER_LEGACY =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.ENGLISH);
     /** supports parsing dates given out via {@code SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")}" */
     private static final DateTimeFormatter DATE_TIME_FORMATTER_ISO_8601 = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
@@ -63,7 +65,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
             String version = getProperty(NAME_VERSION);
             if (version == null) {
                 log.warn("Package does not specify a version. setting to ''");
-                 version = "";
+                version = "";
             }
             String group = getProperty(NAME_GROUP);
             String name = getProperty(NAME_NAME);
@@ -213,7 +215,7 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
             for (String item : deps.split(",")) {
                 String[] parts = item.split("=", 2);
                 if (parts.length < 2) {
-                    log.error("Invalid dependencies locations string, item " +item + " does not contain a '='");
+                    log.error("Invalid dependencies locations string, item " + item + " does not contain a '='");
                 } else {
                     PackageId packageId = PackageId.fromString(parts[0]);
                     if (packageId == null) {
@@ -226,7 +228,6 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
                     } catch (URISyntaxException e) {
                         log.error("Invalid uri given in item " + item);
                     }
-                    
                 }
             }
             return dependenciesLocations;
@@ -246,11 +247,12 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
                 try {
                     zonedDateTime = ZonedDateTime.parse(p, DATE_TIME_FORMATTER_ISO_8601);
                 } catch (DateTimeParseException e) {
-                    // support dates in legacy format (used in package-maven-plugin till version 1.0.3, compare with https://issues.apache.org/jira/browse/JCRVLT-276)
+                    // support dates in legacy format (used in package-maven-plugin till version 1.0.3, compare with
+                    // https://issues.apache.org/jira/browse/JCRVLT-276)
                     zonedDateTime = ZonedDateTime.parse(p, DATE_TIME_FORMATTER_LEGACY);
                 }
                 result = GregorianCalendar.from(zonedDateTime);
-            } catch (DateTimeParseException|IllegalArgumentException e) {
+            } catch (DateTimeParseException | IllegalArgumentException e) {
                 log.warn("Error while parsing date property {}: {}, falling back to null!", p, e.getMessage());
                 log.debug("Exception while parsing date property {}", p, e);
             }
@@ -320,6 +322,4 @@ public abstract class PackagePropertiesImpl implements PackageProperties {
     }
 
     protected abstract Properties getPropertiesMap();
-
-
 }

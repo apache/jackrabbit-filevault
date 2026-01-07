@@ -1,25 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.cli;
 
-import java.io.File;
-
 import javax.jcr.Session;
+
+import java.io.File;
 
 import org.apache.commons.cli2.Argument;
 import org.apache.commons.cli2.CommandLine;
@@ -40,7 +41,7 @@ import org.apache.jackrabbit.vault.util.DefaultProgressListener;
  */
 public class CmdImport extends AbstractJcrFsCommand {
 
-    //private Option optExclude;
+    // private Option optExclude;
     private Argument argLocalPath;
     private Argument argJcrPath;
 
@@ -88,11 +89,10 @@ public class CmdImport extends AbstractJcrFsCommand {
         return "Import a Vault filesystem";
     }
 
-
     public String getLongDescription() {
-        return "Import the local filesystem (starting at <local-path> to the " +
-                "Vault filesystem at <jcrl-path>. Both paths can be relative " +
-                "to their respective CWDs.";
+        return "Import the local filesystem (starting at <local-path> to the "
+                + "Vault filesystem at <jcrl-path>. Both paths can be relative "
+                + "to their respective CWDs.";
     }
 
     protected Command createCommand() {
@@ -111,23 +111,21 @@ public class CmdImport extends AbstractJcrFsCommand {
                                         .create())
                                 .create())
                         */
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("local-path")
-                                .withDescription("the local path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
+                        .withOption(
+                                argLocalPath = new ArgumentBuilder()
+                                        .withName("local-path")
+                                        .withDescription("the local path")
+                                        .withMinimum(0)
+                                        .withMaximum(1)
+                                        .create())
+                        .withOption(
+                                argJcrPath = new ArgumentBuilder()
+                                        .withName("jcr-path")
+                                        .withDescription("the jcr path")
+                                        .withMinimum(0)
+                                        .withMaximum(1)
+                                        .create())
+                        .create())
                 .create();
     }
-
 }

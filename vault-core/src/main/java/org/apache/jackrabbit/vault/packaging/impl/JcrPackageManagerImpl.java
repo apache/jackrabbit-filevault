@@ -1,23 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.impl;
 
-import static org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
+import javax.jcr.ItemExistsException;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,12 +38,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
-
-import javax.jcr.ItemExistsException;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
@@ -63,12 +62,13 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.impl.PackageEventDispatcher;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
-
 import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry.DEFAULT_PACKAGE_ROOT_PATH;
 
 /**
  * Extends the {@code PackageManager} by JCR specific methods
@@ -78,7 +78,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     /**
      * root path for packages
      */
-    public final static String ARCHIVE_PACKAGE_ROOT_PATH = "/jcr_root/etc/packages";
+    public static final String ARCHIVE_PACKAGE_ROOT_PATH = "/jcr_root/etc/packages";
 
     /**
      * internal package persistence
@@ -99,11 +99,21 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         this(new JcrPackageRegistry(session, roots));
     }
 
-    public JcrPackageManagerImpl(@NotNull Session session, @Nullable String[] roots, @Nullable String[] authIdsForHookExecution,
-            @Nullable String[] authIdsForRootInstallation, boolean isStrict, boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy idConflictPolicy) {
-        this(new JcrPackageRegistry(session,
-                new AbstractPackageRegistry.SecurityConfig(authIdsForHookExecution, authIdsForRootInstallation), isStrict,
-                overwritePrimaryTypesOfFoldersByDefault, idConflictPolicy, roots));
+    public JcrPackageManagerImpl(
+            @NotNull Session session,
+            @Nullable String[] roots,
+            @Nullable String[] authIdsForHookExecution,
+            @Nullable String[] authIdsForRootInstallation,
+            boolean isStrict,
+            boolean overwritePrimaryTypesOfFoldersByDefault,
+            IdConflictPolicy idConflictPolicy) {
+        this(new JcrPackageRegistry(
+                session,
+                new AbstractPackageRegistry.SecurityConfig(authIdsForHookExecution, authIdsForRootInstallation),
+                isStrict,
+                overwritePrimaryTypesOfFoldersByDefault,
+                idConflictPolicy,
+                roots));
     }
 
     protected JcrPackageManagerImpl(JcrPackageRegistry registry) {
@@ -185,8 +195,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * {@inheritDoc}
      */
     @Override
-    public JcrPackage upload(InputStream in, boolean replace, boolean strict)
-            throws RepositoryException, IOException {
+    public JcrPackage upload(InputStream in, boolean replace, boolean strict) throws RepositoryException, IOException {
         try {
             return registry.upload(in, replace);
         } catch (PackageExistsException e) {
@@ -219,7 +228,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
                     jcrPack.extract(options);
                     ids.add(pid);
                     if (spfArchive != null) {
-                        for (Archive.Entry e: spfArchive.getSubPackageEntries()) {
+                        for (Archive.Entry e : spfArchive.getSubPackageEntries()) {
                             try (InputStream in = spfArchive.openInputStream(e);
                                     Archive subArchive = new ZipStreamArchive(in)) {
                                 PackageId[] subIds = extract(subArchive, options, replace);
@@ -242,7 +251,6 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         return upload(file, isTmpFile, replace, nameHint, false);
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -260,8 +268,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * {@inheritDoc}
      */
     @Override
-    public JcrPackage create(Node folder, String name)
-            throws RepositoryException, IOException {
+    public JcrPackage create(Node folder, String name) throws RepositoryException, IOException {
         if (folder == null) {
             folder = getPackageRoot();
         }
@@ -272,8 +279,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * {@inheritDoc}
      */
     @Override
-    public JcrPackage create(String group, String name)
-            throws RepositoryException, IOException {
+    public JcrPackage create(String group, String name) throws RepositoryException, IOException {
         return create(group, name, null);
     }
 
@@ -281,8 +287,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * {@inheritDoc}
      */
     @Override
-    public JcrPackage create(String group, String name, String version)
-            throws RepositoryException, IOException {
+    public JcrPackage create(String group, String name, String version) throws RepositoryException, IOException {
         return registry.create(group, name, version);
     }
 
@@ -304,8 +309,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * {@inheritDoc}
      */
     @Override
-    public JcrPackage rename(JcrPackage pack, String group, String name)
-            throws PackageException, RepositoryException {
+    public JcrPackage rename(JcrPackage pack, String group, String name) throws PackageException, RepositoryException {
         return rename(pack, group, name, null);
     }
 
@@ -332,8 +336,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * {@inheritDoc}
      */
     @Override
-    public void assemble(Node packNode, JcrPackageDefinition definition,
-                         ProgressTrackerListener listener)
+    public void assemble(Node packNode, JcrPackageDefinition definition, ProgressTrackerListener listener)
             throws PackageException, RepositoryException, IOException {
         Calendar now = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT);
         JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) definition;
@@ -364,8 +367,8 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
 
         // update this content
         Node contentNode = packNode.getNode(JcrConstants.JCR_CONTENT);
-        
-        try (InputStream in = FileUtils.openInputStream(pack.getFile())){
+
+        try (InputStream in = FileUtils.openInputStream(pack.getFile())) {
             // stay jcr 1.0 compatible
             //noinspection deprecation
             contentNode.setProperty(JcrConstants.JCR_DATA, in);
@@ -382,8 +385,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     /**
      * {@inheritDoc}
      */
-    private void validateSubPackages(JcrPackageDefinitionImpl def)
-            throws RepositoryException, PackageException {
+    private void validateSubPackages(JcrPackageDefinitionImpl def) throws RepositoryException, PackageException {
         List<JcrPackage> subs = listPackages(def.getMetaInf().getFilter());
         PackageId id = def.getId();
         try {
@@ -393,7 +395,8 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
                     throw new PackageException("A package cannot include itself. Check filter definition.");
                 }
                 if (!p.isSealed()) {
-                    throw new PackageException("Only sealed (built) sub packages allowed: " + p.getDefinition().getId());
+                    throw new PackageException("Only sealed (built) sub packages allowed: "
+                            + p.getDefinition().getId());
                 }
             }
         } finally {
@@ -407,8 +410,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * {@inheritDoc}
      */
     @Override
-    public void assemble(JcrPackageDefinition definition,
-                         ProgressTrackerListener listener, OutputStream out)
+    public void assemble(JcrPackageDefinition definition, ProgressTrackerListener listener, OutputStream out)
             throws IOException, RepositoryException, PackageException {
         JcrPackageDefinitionImpl def = (JcrPackageDefinitionImpl) definition;
         validateSubPackages(def);
@@ -458,7 +460,6 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
         }
     }
 
-
     /**
      * yet another Convenience method to create intermediate nodes.
      * @param path path to create
@@ -500,7 +501,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     @Override
     public List<JcrPackage> listPackages(WorkspaceFilter filter) throws RepositoryException {
         List<JcrPackage> packages = new LinkedList<JcrPackage>();
-        for (Node root: registry.getPackageRoots()) {
+        for (Node root : registry.getPackageRoots()) {
             listPackages(root, packages, filter, false, false);
         }
         Collections.sort(packages);
@@ -513,7 +514,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
     @Override
     public List<JcrPackage> listPackages(String group, boolean built) throws RepositoryException {
         List<JcrPackage> packages = new LinkedList<JcrPackage>();
-        for (Node root: registry.getPackageRoots()) {
+        for (Node root : registry.getPackageRoots()) {
             listPackages(root, packages, group, built);
         }
         Collections.sort(packages);
@@ -528,7 +529,8 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * @param built if {@code true} only packages with size > 0 are returned
      * @throws RepositoryException if an error occurrs
      */
-    private void listPackages(Node pkgRoot, List<JcrPackage> packages, String group, boolean built) throws RepositoryException {
+    private void listPackages(Node pkgRoot, List<JcrPackage> packages, String group, boolean built)
+            throws RepositoryException {
         if (group == null || group.length() == 0) {
             listPackages(pkgRoot, packages, null, built, false);
         } else {
@@ -564,11 +566,11 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
      * @param shallow if {@code true} don't recurs
      * @throws RepositoryException if an error occurs
      */
-    private void listPackages(Node root, List<JcrPackage> packages,
-                              WorkspaceFilter filter, boolean built, boolean shallow)
+    private void listPackages(
+            Node root, List<JcrPackage> packages, WorkspaceFilter filter, boolean built, boolean shallow)
             throws RepositoryException {
         if (root != null) {
-            for (NodeIterator iter = root.getNodes(); iter.hasNext();) {
+            for (NodeIterator iter = root.getNodes(); iter.hasNext(); ) {
                 Node child = iter.nextNode();
                 if (".snapshot".equals(child.getName())) {
                     continue;

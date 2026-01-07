@@ -1,20 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,9 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
@@ -83,8 +85,7 @@ import org.slf4j.LoggerFactory;
 @Component(
         service = PackageRegistry.class,
         configurationPolicy = ConfigurationPolicy.REQUIRE,
-        property = {"service.vendor=The Apache Software Foundation"}
-)
+        property = {"service.vendor=The Apache Software Foundation"})
 @Designate(ocd = FSPackageRegistry.Config.class)
 public class FSPackageRegistry extends AbstractPackageRegistry {
 
@@ -96,7 +97,6 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     private static final Logger log = LoggerFactory.getLogger(FSPackageRegistry.class);
 
     private FSInstallStateCache stateCache;
-
 
     @Reference
     private PackageEventDispatcher dispatcher;
@@ -125,11 +125,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      */
     @Deprecated
     public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope) throws IOException {
-       this(homeDir, scope, null);
+        this(homeDir, scope, null);
     }
 
     /**
-     * 
+     *
      * @param homeDir
      * @param scope
      * @param securityConfig
@@ -137,13 +137,22 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @deprecated Use {@link #FSPackageRegistry(File, InstallationScope, SecurityConfig, boolean, boolean, IdConflictPolicy)} instead
      */
     @Deprecated
-    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig) throws IOException {
+    public FSPackageRegistry(
+            @NotNull File homeDir,
+            InstallationScope scope,
+            @Nullable AbstractPackageRegistry.SecurityConfig securityConfig)
+            throws IOException {
         this(homeDir, scope, securityConfig, false, true, IdConflictPolicy.FAIL);
     }
 
-    public FSPackageRegistry(@NotNull File homeDir, InstallationScope scope,
-            @Nullable AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrict,
-            boolean overwritePrimaryTypesOfFolders, IdConflictPolicy defaultIdConflictPolicy) throws IOException {
+    public FSPackageRegistry(
+            @NotNull File homeDir,
+            InstallationScope scope,
+            @Nullable AbstractPackageRegistry.SecurityConfig securityConfig,
+            boolean isStrict,
+            boolean overwritePrimaryTypesOfFolders,
+            IdConflictPolicy defaultIdConflictPolicy)
+            throws IOException {
         super(securityConfig, isStrict, overwritePrimaryTypesOfFolders, defaultIdConflictPolicy);
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", homeDir.getPath());
         this.scope = scope;
@@ -152,7 +161,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     /**
      * Default constructor for OSGi initialization (homeDir defined via activator)
-     * @throws IOException 
+     * @throws IOException
      */
     public FSPackageRegistry() throws IOException {
         super(null, false, true, IdConflictPolicy.FAIL); // set security config delayed (i.e. only after activate())
@@ -160,42 +169,49 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     @Activate
     public void activate(BundleContext context, Config config) throws IOException {
-        File homeDir = context.getProperty(REPOSITORY_HOME) != null ? ( 
-                new File(config.homePath()).isAbsolute() ? new File(config.homePath()) : new File(context.getProperty(REPOSITORY_HOME) + "/" + config.homePath())) : 
-                context.getDataFile(config.homePath());
+        File homeDir = context.getProperty(REPOSITORY_HOME) != null
+                ? (new File(config.homePath()).isAbsolute()
+                        ? new File(config.homePath())
+                        : new File(context.getProperty(REPOSITORY_HOME) + "/" + config.homePath()))
+                : context.getDataFile(config.homePath());
         if (!homeDir.exists()) {
             homeDir.mkdirs();
         }
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", homeDir.getPath());
         this.scope = InstallationScope.valueOf(config.scope());
-        this.securityConfig = new AbstractPackageRegistry.SecurityConfig(config.authIdsForHookExecution(), config.authIdsForRootInstallation());
+        this.securityConfig = new AbstractPackageRegistry.SecurityConfig(
+                config.authIdsForHookExecution(), config.authIdsForRootInstallation());
         this.stateCache = new FSInstallStateCache(homeDir.toPath());
     }
 
-    @ObjectClassDefinition(
-            name = "Apache Jackrabbit FS Package Registry Service"
-    )
+    @ObjectClassDefinition(name = "Apache Jackrabbit FS Package Registry Service")
     @interface Config {
 
         @AttributeDefinition
         String homePath() default "packageregistry";
-        
-        @AttributeDefinition(name = "Installation Scope",
-                description = "Allows to limit the installation scope of this Apache Jackrabbit FS Package Registry Service. "
-                        + "Packages installed from this registry may be unscoped (unfiltered), "
-                        + "application scoped (only content for /apps & /libs) "
-                        + "or content scoped (all content except for /libs & /apps)",
+
+        @AttributeDefinition(
+                name = "Installation Scope",
+                description =
+                        "Allows to limit the installation scope of this Apache Jackrabbit FS Package Registry Service. "
+                                + "Packages installed from this registry may be unscoped (unfiltered), "
+                                + "application scoped (only content for /apps & /libs) "
+                                + "or content scoped (all content except for /libs & /apps)",
                 options = {
                     @Option(label = "Unscoped", value = "UNSCOPED"),
                     @Option(label = "Application Scoped", value = "APPLICATION_SCOPED"),
                     @Option(label = "Content Scoped", value = "CONTENT_SCOPED")
-        })
+                })
         String scope() default "UNSCOPED";
-        
-        @AttributeDefinition(description = "The authorizable ids which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
+
+        @AttributeDefinition(
+                description =
+                        "The authorizable ids which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForHookExecution();
-        
-        @AttributeDefinition(description = "The authorizable ids which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
+
+        @AttributeDefinition(
+                description =
+                        "The authorizable ids which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForRootInstallation();
     }
 
@@ -231,10 +247,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     @Override
     public boolean contains(@NotNull PackageId id) throws IOException {
-        return getInstallState(id) != null; // don't use hasKey as otherwise there is no fallback for lazily loading metadata files
+        return getInstallState(id)
+                != null; // don't use hasKey as otherwise there is no fallback for lazily loading metadata files
     }
 
-    @Nullable 
+    @Nullable
     FSInstallState getInstallState(@NotNull PackageId id) throws IOException {
         try {
             return stateCache.get(id);
@@ -244,7 +261,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     /**
-     * 
+     *
      * @param id
      * @return the file pointing to an existing or new package with the given id
      * @throws IOException
@@ -285,7 +302,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      */
     @NotNull
     @Override
-    public DependencyReport analyzeDependencies(@NotNull PackageId id, boolean onlyInstalled) throws IOException, NoSuchPackageException {
+    public DependencyReport analyzeDependencies(@NotNull PackageId id, boolean onlyInstalled)
+            throws IOException, NoSuchPackageException {
         List<Dependency> unresolved = new LinkedList<>();
         List<PackageId> resolved = new LinkedList<>();
         FSInstallState state = stateCache.get(id);
@@ -293,7 +311,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             throw new NoSuchPackageException().setId(id);
         }
 
-        // Make sure that also dependencies of contained packages are considered as packages will be installed in a joined sequence.
+        // Make sure that also dependencies of contained packages are considered as packages will be installed in a
+        // joined sequence.
         Set<Dependency> allDependencies = new HashSet<>();
         allDependencies.addAll(state.getDependencies());
         for (PackageId subId : state.getSubPackages().keySet()) {
@@ -310,11 +329,11 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             }
         }
 
-        return new DependencyReportImpl(id, unresolved.toArray(new Dependency[unresolved.size()]),
-                resolved.toArray(new PackageId[resolved.size()])
-        );
+        return new DependencyReportImpl(
+                id,
+                unresolved.toArray(new Dependency[unresolved.size()]),
+                resolved.toArray(new PackageId[resolved.size()]));
     }
-
 
     /**
      * {@inheritDoc}
@@ -356,11 +375,12 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     @NotNull
     @Override
     public PackageId register(@NotNull InputStream in, boolean replace) throws IOException, PackageExistsException {
-      return register(in, replace, null);
+        return register(in, replace, null);
     }
 
     @NotNull
-    private PackageId register(@NotNull InputStream in, boolean replace, Dependency autoDependency) throws IOException, PackageExistsException {
+    private PackageId register(@NotNull InputStream in, boolean replace, Dependency autoDependency)
+            throws IOException, PackageExistsException {
         ZipVaultPackage pkg = upload(in, replace);
 
         Map<PackageId, SubPackageHandling.Option> subpackages = registerSubPackages(pkg, replace);
@@ -396,8 +416,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         Map<PackageId, SubPackageHandling.Option> subpackages = new HashMap<>();
 
         Archive.Entry packagesRoot = pkg.getArchive().getEntry(ARCHIVE_PACKAGE_ROOT_PATH);
-        if (packagesRoot != null) { 
-            // As for JcrPackageImpl subpackages need to get an implicit autoDependency to the parent in case they have own content
+        if (packagesRoot != null) {
+            // As for JcrPackageImpl subpackages need to get an implicit autoDependency to the parent in case they have
+            // own content
             boolean hasOwnContent = false;
             for (PathFilterSet root : pkg.getArchive().getMetaInf().getFilter().getFilterSets()) {
                 // todo: find better way to detect subpackages
@@ -410,7 +431,10 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             }
             Dependency autoDependency = hasOwnContent ? new Dependency(pkg.getId()) : null;
             registerSubPackages(pkg, packagesRoot, DEFAULT_PACKAGE_ROOT_PATH, replace, subpackages, autoDependency);
-            dispatch(Type.EXTRACT_SUB_PACKAGES, pkg.getId(), subpackages.keySet().toArray(new PackageId[subpackages.size()]));
+            dispatch(
+                    Type.EXTRACT_SUB_PACKAGES,
+                    pkg.getId(),
+                    subpackages.keySet().toArray(new PackageId[subpackages.size()]));
         }
         return subpackages;
     }
@@ -426,7 +450,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException
      * @throws PackageExistsException
      */
-    private void registerSubPackages(VaultPackage vltPkg, Archive.Entry directory, String parentPath, boolean replace, Map<PackageId, SubPackageHandling.Option> subpackages, Dependency autoDependency)
+    private void registerSubPackages(
+            VaultPackage vltPkg,
+            Archive.Entry directory,
+            String parentPath,
+            boolean replace,
+            Map<PackageId, SubPackageHandling.Option> subpackages,
+            Dependency autoDependency)
             throws IOException, PackageExistsException {
         Collection<? extends Archive.Entry> files = directory.getChildren();
 
@@ -437,13 +467,15 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             if (file.isDirectory()) {
                 registerSubPackages(vltPkg, file, repoPath, replace, subpackages, autoDependency);
             } else {
-                if (repoPath.startsWith(DEFAULT_PACKAGE_ROOT_PATH_PREFIX) && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
+                if (repoPath.startsWith(DEFAULT_PACKAGE_ROOT_PATH_PREFIX)
+                        && (repoPath.endsWith(".jar") || repoPath.endsWith(".zip"))) {
                     try (InputStream in = vltPkg.getArchive().openInputStream(file)) {
                         if (in == null) {
                             throw new IOException("Unable to open archive input stream of " + file);
                         }
                         PackageId id = register(in, replace);
-                        SubPackageHandling.Option option = vltPkg.getSubPackageHandling().getOption(id);
+                        SubPackageHandling.Option option =
+                                vltPkg.getSubPackageHandling().getOption(id);
                         subpackages.put(id, option);
                     } catch (PackageExistsException e) {
                         log.info("Subpackage already registered, skipping subpackage extraction.");
@@ -453,13 +485,12 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         }
     }
 
-    protected ZipVaultPackage upload(InputStream in, boolean replace)
-            throws IOException, PackageExistsException {
+    protected ZipVaultPackage upload(InputStream in, boolean replace) throws IOException, PackageExistsException {
 
         Path tempFile = Files.createTempFile("upload", ".zip");
         try {
             MemoryArchive archive = new MemoryArchive(false);
-    
+
             try (InputStreamPump pump = new InputStreamPump(in, archive)) {
                 // this will cause the input stream to be consumed and the memory
                 // archive being initialized.
@@ -474,10 +505,10 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 String msg = "Stream is not a content package. Missing 'jcr_root'.";
                 throw new IOException(msg);
             }
-    
+
             final MetaInf inf = archive.getMetaInf();
             PackageId pid = inf.getPackageProperties().getId();
-    
+
             // invalidate pid if path is unknown
             if (pid == null) {
                 throw new IllegalArgumentException("Unable to create package. No package pid set.");
@@ -485,10 +516,10 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             if (!pid.isValid()) {
                 throw new IllegalArgumentException("Unable to create package. Illegal package name.");
             }
-    
+
             Path pkgFile = getPackageFile(pid);
             FSInstallState state = getInstallState(pid);
-    
+
             if (Files.exists(pkgFile)) {
                 if (replace && !state.isExternal()) {
                     Files.delete(pkgFile);
@@ -498,7 +529,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             } else {
                 Files.createDirectories(pkgFile.getParent());
             }
-    
+
             ZipVaultPackage pkg = new ZipVaultPackage(archive, true);
             registerSubPackages(pkg, replace);
             Files.move(tempFile, pkgFile);
@@ -507,7 +538,6 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         } finally {
             Files.deleteIfExists(tempFile);
         }
-
     }
 
     /**
@@ -526,7 +556,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     @NotNull
-    private PackageId doRegister(@NotNull File file, boolean replace, boolean external) throws IOException, PackageExistsException {
+    private PackageId doRegister(@NotNull File file, boolean replace, boolean external)
+            throws IOException, PackageExistsException {
         // detect collisions without parsing the package to speed things up
         PackageId oldPackageId = stateCache.getIdForFile(file.toPath());
         if (!replace && oldPackageId != null) {
@@ -596,8 +627,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * {@inheritDoc}
      */
     @Override
-    public void installPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts,
-                               boolean extract) throws IOException, PackageException {
+    public void installPackage(
+            @NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts, boolean extract)
+            throws IOException, PackageException {
 
         // For now FS based persistence only supports extraction but no reversible installation
         if (!extract) {
@@ -607,19 +639,19 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         }
         try (VaultPackage vltPkg = pkg.getPackage()) {
             WorkspaceFilter filter = getInstallState(vltPkg.getId()).getFilter();
-            switch(scope) {
+            switch (scope) {
                 case APPLICATION_SCOPED:
-                   if (filter instanceof DefaultWorkspaceFilter) {
-                       opts.setFilter(ScopedWorkspaceFilter.createApplicationScoped((DefaultWorkspaceFilter)filter));
-                   } else {
-                       String msg = "Scoped only supports WorkspaceFilters extending DefaultWorkspaceFilter";
-                       log.error(msg);
-                       throw new PackageException(msg);
-                   }
-                   break;
+                    if (filter instanceof DefaultWorkspaceFilter) {
+                        opts.setFilter(ScopedWorkspaceFilter.createApplicationScoped((DefaultWorkspaceFilter) filter));
+                    } else {
+                        String msg = "Scoped only supports WorkspaceFilters extending DefaultWorkspaceFilter";
+                        log.error(msg);
+                        throw new PackageException(msg);
+                    }
+                    break;
                 case CONTENT_SCOPED:
                     if (filter instanceof DefaultWorkspaceFilter) {
-                        opts.setFilter(ScopedWorkspaceFilter.createContentScoped((DefaultWorkspaceFilter)filter));
+                        opts.setFilter(ScopedWorkspaceFilter.createContentScoped((DefaultWorkspaceFilter) filter));
                     } else {
                         String msg = "Scoped only supports WorkspaceFilters extending DefaultWorkspaceFilter";
                         log.error(msg);
@@ -627,15 +659,23 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                     }
                     break;
                 default:
-                    // no need to set filter in other cases
-                
+                // no need to set filter in other cases
+
             }
             if (vltPkg instanceof ZipVaultPackage) {
-                ((ZipVaultPackage)vltPkg).extract(session, opts, getSecurityConfig(), isStrictByDefault(), overwritePrimaryTypesOfFoldersByDefault(), getDefaultIdConflictPolicy());
+                ((ZipVaultPackage) vltPkg)
+                        .extract(
+                                session,
+                                opts,
+                                getSecurityConfig(),
+                                isStrictByDefault(),
+                                overwritePrimaryTypesOfFoldersByDefault(),
+                                getDefaultIdConflictPolicy());
                 dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
                 stateCache.updatePackageStatus(vltPkg.getId(), FSPackageStatus.EXTRACTED);
             } else {
-                throw new IllegalArgumentException("Only ZipVaultPackages can be installed but given package is " + vltPkg.getClass());
+                throw new IllegalArgumentException(
+                        "Only ZipVaultPackages can be installed but given package is " + vltPkg.getClass());
             }
 
         } catch (RepositoryException e) {
@@ -647,10 +687,10 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * Uninstallation not supported for FS based PackageRegistry
      */
     @Override
-    public void uninstallPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts) throws IOException, PackageException {
+    public void uninstallPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts)
+            throws IOException, PackageException {
         String msg = "Uninstallation not supported by FS based registry";
         log.error(msg);
         throw new PackageException(msg);
     }
-
 }

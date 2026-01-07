@@ -1,27 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
-
-import java.util.Locale;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.ConstraintViolationException;
+
+import java.util.Locale;
 
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.jetbrains.annotations.NotNull;
@@ -71,7 +72,7 @@ public class AutoSave {
     private boolean dryRun;
 
     /**
-     * debug setting that allows to simulate autosave failures. 
+     * debug setting that allows to simulate autosave failures.
      */
     private int debugFailEach;
 
@@ -80,8 +81,7 @@ public class AutoSave {
      */
     private int debugSaveCount;
 
-    public AutoSave() {
-    }
+    public AutoSave() {}
 
     public AutoSave(int threshold) {
         this.threshold = threshold;
@@ -118,7 +118,7 @@ public class AutoSave {
 
     /**
      * Debug settings to allows to produce failures after each {@code debugFailEach} save.
-     * @param debugFailEach cardinal indicating when to fail 
+     * @param debugFailEach cardinal indicating when to fail
      */
     public void setDebugFailEach(int debugFailEach) {
         this.debugFailEach = debugFailEach;
@@ -155,11 +155,11 @@ public class AutoSave {
         }
         int diff = numModified - lastSave;
         if (isIntermediate) {
-            log.debug("Threshold of {} reached. {} approx {} transient changes.", 
+            log.debug(
+                    "Threshold of {} reached. {} approx {} transient changes.",
                     threshold,
                     dryRun ? "dry run, reverting" : "saving",
-                    diff
-            );
+                    diff);
         }
         if (tracker != null) {
             if (dryRun) {
@@ -170,13 +170,14 @@ public class AutoSave {
         }
         // TODO: how can session be null here?
         if (session != null) {
-            if (debugFailEach > 0 && debugSaveCount > 0 && debugSaveCount%debugFailEach == 0) {
-                String msg = String.format(Locale.ENGLISH, "Debugging provoked failure after %s saves.", debugSaveCount);
+            if (debugFailEach > 0 && debugSaveCount > 0 && debugSaveCount % debugFailEach == 0) {
+                String msg =
+                        String.format(Locale.ENGLISH, "Debugging provoked failure after %s saves.", debugSaveCount);
                 log.error(msg);
                 throw new RepositoryException(msg);
             }
             if (!saveWithBackoff(session, isIntermediate)) {
-                // either retry after some more nodes have been modified or after throttle 
+                // either retry after some more nodes have been modified or after throttle
                 // retry with next save() after more nodes have been modified
                 failedSaveThreshold = (diff - threshold) + 10; // 10 more
                 log.warn("Retry auto-save after {} more modified nodes", 10);
@@ -188,7 +189,7 @@ public class AutoSave {
     }
 
     /**
-     * 
+     *
      * @param session
      * @return {@code true} in case was successful or {@code false} in case it failed with a potentially recoverable {@link RepositoryException}
      * @throws RepositoryException in case of unrecoverable exceptions
@@ -201,7 +202,9 @@ public class AutoSave {
                 try {
                     session.save();
                 } catch (RepositoryException e) {
-                    log.error("Error during auto save, retrying after refresh: {}", Importer.getExtendedThrowableMessage(e));
+                    log.error(
+                            "Error during auto save, retrying after refresh: {}",
+                            Importer.getExtendedThrowableMessage(e));
                     session.refresh(true);
                     session.save();
                 }
@@ -209,7 +212,9 @@ public class AutoSave {
             }
         } catch (RepositoryException e) {
             if (isPotentiallyTransientException(e) && isIntermediate) {
-                log.warn("Could not auto-save even after refresh due to potentially transient exception: {}", Importer.getExtendedThrowableMessage(e));
+                log.warn(
+                        "Could not auto-save even after refresh due to potentially transient exception: {}",
+                        Importer.getExtendedThrowableMessage(e));
                 log.debug("Auto save exception", e);
                 return false;
             } else {
@@ -248,7 +253,7 @@ public class AutoSave {
      * @return {@code true} if threshold is reached
      */
     public boolean modified(int num) {
-        numModified+= num;
+        numModified += num;
         return needsSave();
     }
 
@@ -257,21 +262,18 @@ public class AutoSave {
      * @param path
      */
     @Deprecated
-    public void markMissing(@NotNull String path) {
-    }
+    public void markMissing(@NotNull String path) {}
 
     /**
      * As not working reliably it is simply ignored.
      * @param path
      */
     @Deprecated
-    public void markResolved(@NotNull String path) {
-    }
+    public void markResolved(@NotNull String path) {}
 
     @Override
     public String toString() {
-        return "AutoSave [numModified=" + numModified + ", lastSave=" + lastSave + ", threshold=" + threshold + ", failedSaveThreshold="
-                + failedSaveThreshold + ", dryRun=" + dryRun + "]";
+        return "AutoSave [numModified=" + numModified + ", lastSave=" + lastSave + ", threshold=" + threshold
+                + ", failedSaveThreshold=" + failedSaveThreshold + ", dryRun=" + dryRun + "]";
     }
-
 }

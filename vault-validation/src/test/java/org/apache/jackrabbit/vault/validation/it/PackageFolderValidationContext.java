@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.it;
 
@@ -45,10 +47,12 @@ public class PackageFolderValidationContext extends AbstractValidationContext {
     public PackageFolderValidationContext(Path rootFolder) throws IOException, ConfigurationException {
         this.rootFolder = rootFolder;
         filter = new DefaultWorkspaceFilter();
-        try (InputStream input = Files.newInputStream(rootFolder.resolve(Paths.get(Constants.META_DIR,Constants.FILTER_XML)))) {
+        try (InputStream input =
+                Files.newInputStream(rootFolder.resolve(Paths.get(Constants.META_DIR, Constants.FILTER_XML)))) {
             filter.load(input);
         }
-        properties = DefaultPackageProperties.fromFile(rootFolder.resolve(Paths.get(Constants.META_DIR,Constants.PROPERTIES_XML)));
+        properties = DefaultPackageProperties.fromFile(
+                rootFolder.resolve(Paths.get(Constants.META_DIR, Constants.PROPERTIES_XML)));
     }
 
     @Override

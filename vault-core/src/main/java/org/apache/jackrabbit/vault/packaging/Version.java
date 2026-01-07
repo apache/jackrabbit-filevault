@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging;
 
 import java.util.ArrayList;
@@ -73,10 +74,10 @@ public class Version implements Comparable<Version> {
         if (segments == null || segments.length == 0) {
             return Version.EMPTY;
         }
-        ArrayList<String> segs = new ArrayList<String>(segments.length+1);
+        ArrayList<String> segs = new ArrayList<String>(segments.length + 1);
         StringBuilder str = new StringBuilder();
         boolean hasQualifier = false;
-        for (String s: segments) {
+        for (String s : segments) {
             // reconstruct version string
             if (str.length() > 0) {
                 str.append('.');
@@ -120,9 +121,7 @@ public class Version implements Comparable<Version> {
 
     @Override
     public boolean equals(Object o) {
-        return this == o ||
-                o instanceof Version && str.equals(((Version) o).str);
-
+        return this == o || o instanceof Version && str.equals(((Version) o).str);
     }
 
     @Override
@@ -172,7 +171,7 @@ public class Version implements Comparable<Version> {
 
     /**
      * Same as with {@link #compareTo(Version)}.
-     * 
+     *
      * @param o the other version
      * @return  a negative integer, zero, or a positive integer as this version is less than, equal to, or greater than the specified version.
      * @deprecated since 3.1.32. use {@link #compareTo(Version)}. See JCRVLT-146
@@ -183,7 +182,7 @@ public class Version implements Comparable<Version> {
     }
 
     /**
-     * 
+     *
      * @return {@code true} in case this version indicates a SNAPSHOT (i.e. mutable) version
      * @since 3.7.0
      */

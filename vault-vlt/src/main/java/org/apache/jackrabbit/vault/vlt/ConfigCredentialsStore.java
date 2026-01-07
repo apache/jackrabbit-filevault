@@ -1,25 +1,27 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt;
 
-import java.io.IOException;
-
 import javax.jcr.Credentials;
 import javax.jcr.SimpleCredentials;
+
+import java.io.IOException;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
@@ -67,7 +69,8 @@ public class ConfigCredentialsStore implements CredentialsStore {
         if (userPass != null) {
             int idx = userPass.indexOf(':');
             if (idx > 0) {
-                return new SimpleCredentials(userPass.substring(0, idx), userPass.substring(idx + 1).toCharArray());
+                return new SimpleCredentials(
+                        userPass.substring(0, idx), userPass.substring(idx + 1).toCharArray());
             } else {
                 return new SimpleCredentials(userPass, new char[0]);
             }
@@ -80,9 +83,7 @@ public class ConfigCredentialsStore implements CredentialsStore {
             return credentials;
         }
         Credentials creds = fetchCredentials(mountpoint);
-        return creds == null
-                ? defaultCreds
-                : creds;
+        return creds == null ? defaultCreds : creds;
     }
 
     private Credentials fetchCredentials(RepositoryAddress mountpoint) {
@@ -96,11 +97,12 @@ public class ConfigCredentialsStore implements CredentialsStore {
     private String getLookupId(RepositoryAddress mountpoint) {
         return mountpoint.getSpecificURI() + "/" + mountpoint.getWorkspace();
     }
-    
+
     public void storeCredentials(RepositoryAddress mountpoint, Credentials creds) {
         if (!(creds instanceof SimpleCredentials)) {
             if (creds != null) {
-                log.error("Unable to store non-simple credentials of type " + creds.getClass().getName());
+                log.error("Unable to store non-simple credentials of type "
+                        + creds.getClass().getName());
             }
             return;
         }
@@ -111,14 +113,18 @@ public class ConfigCredentialsStore implements CredentialsStore {
         }
 
         SimpleCredentials simpleCredentials = (SimpleCredentials) creds;
-        if (storeEnabled ||
-                "admin".equals(simpleCredentials.getUserID()) && "admin".equals(new String(simpleCredentials.getPassword()))) {
-            VaultAuthConfig.RepositoryConfig cfg  = new VaultAuthConfig.RepositoryConfig(getLookupId(mountpoint));
+        if (storeEnabled
+                || "admin".equals(simpleCredentials.getUserID())
+                        && "admin".equals(new String(simpleCredentials.getPassword()))) {
+            VaultAuthConfig.RepositoryConfig cfg = new VaultAuthConfig.RepositoryConfig(getLookupId(mountpoint));
             cfg.addCredsConfig(new SimpleCredentialsConfig(simpleCredentials));
             config.addRepositoryConfig(cfg);
             try {
                 config.save();
-                log.warn("Credentials for {} updated in {}.", mountpoint, config.getConfigFile().getPath());
+                log.warn(
+                        "Credentials for {} updated in {}.",
+                        mountpoint,
+                        config.getConfigFile().getPath());
             } catch (IOException e) {
                 log.error("Error while saving auth configuration: {} ", e.toString());
             }

@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.util;
 
 import java.util.Arrays;
@@ -44,31 +45,47 @@ public class MimeTypes {
 
     static {
         // add some default mappings
-        addMapping(false, "text/plain", "txt", "jsp", "jspx", "jspf", "ecma", "esp", "xsl", "xslt", "dtd", "properties", "tld" ,"php", "rb", "bnd");
-        addMapping(false, "text/cnd"  , "cnd");
-        addMapping(false, "text/x-java-source" , "java");
-        addMapping(true,  "application/java-vm" , "class");
-        addMapping(false, "text/html" , "html", "htm");
-        addMapping(false, "text/xml"  , "xml");
-        addMapping(false, "text/css"  , "css", "less");
+        addMapping(
+                false,
+                "text/plain",
+                "txt",
+                "jsp",
+                "jspx",
+                "jspf",
+                "ecma",
+                "esp",
+                "xsl",
+                "xslt",
+                "dtd",
+                "properties",
+                "tld",
+                "php",
+                "rb",
+                "bnd");
+        addMapping(false, "text/cnd", "cnd");
+        addMapping(false, "text/x-java-source", "java");
+        addMapping(true, "application/java-vm", "class");
+        addMapping(false, "text/html", "html", "htm");
+        addMapping(false, "text/xml", "xml");
+        addMapping(false, "text/css", "css", "less");
         addMapping(false, "text/calendar", "ics");
         addMapping(false, "image/svg+xml", "svg");
-        addMapping(false, "application/xliff+xml"  , "xliff");
-        addMapping(true,  "image/gif" , "gif");
-        addMapping(true,  "image/png" , "png");
-        addMapping(true,  "image/jpeg", "jpg", "jpeg");
-        addMapping(true,  "image/jpg" , "jpg", "jpeg"); // this is for compatibility reasons
+        addMapping(false, "application/xliff+xml", "xliff");
+        addMapping(true, "image/gif", "gif");
+        addMapping(true, "image/png", "png");
+        addMapping(true, "image/jpeg", "jpg", "jpeg");
+        addMapping(true, "image/jpg", "jpg", "jpeg"); // this is for compatibility reasons
         addMapping(false, "application/json", "json");
-        addMapping(true,  "application/java-archive", "jar");
+        addMapping(true, "application/java-archive", "jar");
         addMapping(false, "application/javascript", "js");
         addMapping(false, "application/ecmascript", "ecma");
         addMapping(false, "application/x-javascript", "js"); // discouraged per RFC-4329
-        addMapping(true,  "application/pdf", "pdf");
-        addMapping(true,  "application/x-shockwave-flash", "swf");
-        addMapping(true,  "application/zip", "zip");
-        addMapping(true,  "image/vnd.microsoft.icon", "ico");
-        addMapping(true,  "application/x-font-woff", "woff");
-        addMapping(true,  "application/vnd.ms-fontobject", "eot");
+        addMapping(true, "application/pdf", "pdf");
+        addMapping(true, "application/x-shockwave-flash", "swf");
+        addMapping(true, "application/zip", "zip");
+        addMapping(true, "image/vnd.microsoft.icon", "ico");
+        addMapping(true, "application/x-font-woff", "woff");
+        addMapping(true, "application/vnd.ms-fontobject", "eot");
     }
 
     /**
@@ -77,13 +94,13 @@ public class MimeTypes {
      * @param mimeType the content type
      * @param ext extensions
      */
-    private static void addMapping(boolean binary, String mimeType, String ... ext) {
+    private static void addMapping(boolean binary, String mimeType, String... ext) {
         if (byMimeType.containsKey(mimeType)) {
             throw new IllegalArgumentException("MimeType already registered:" + mimeType);
         }
         MimeType mt = new MimeType(mimeType, binary, ext);
         byMimeType.put(mimeType, mt);
-        for (String e: ext) {
+        for (String e : ext) {
             if (!byExtension.containsKey(e)) {
                 // only register default mime type
                 byExtension.put(e, mt);
@@ -202,7 +219,7 @@ public class MimeTypes {
          * @param binary binary flag
          * @param ext the extensions
          */
-        public MimeType(String mimeType, boolean binary, String ... ext) {
+        public MimeType(String mimeType, boolean binary, String... ext) {
             this.mimeType = mimeType;
             this.binary = binary;
             this.defaultExt = ext[0];

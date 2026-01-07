@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
@@ -33,13 +35,18 @@ import org.jetbrains.annotations.NotNull;
 
 public final class DependencyValidator implements PropertiesValidator {
 
-    static final String MESSAGE_DEPENDENCIES_WITH_OVERLAPPING_FILTERS = "Dependency '%s' defines same filter root '%s' as dependency '%s'";
-    static final String MESSAGE_UNRESOLVED_DEPENDENCY = "Dependency '%s' was not successfully resolved and can therefore not be used for analysis.";
+    static final String MESSAGE_DEPENDENCIES_WITH_OVERLAPPING_FILTERS =
+            "Dependency '%s' defines same filter root '%s' as dependency '%s'";
+    static final String MESSAGE_UNRESOLVED_DEPENDENCY =
+            "Dependency '%s' was not successfully resolved and can therefore not be used for analysis.";
     private final Collection<PackageInfo> dependenciesMetaInfo;
     private final ValidationMessageSeverity severity;
     private final ValidationMessageSeverity severityForUnresolvedDependencies;
-    
-    public DependencyValidator(@NotNull ValidationMessageSeverity severity, ValidationMessageSeverity severityForUnresolvedDependencies, Collection<PackageInfo> dependenciesMetaInfo) {
+
+    public DependencyValidator(
+            @NotNull ValidationMessageSeverity severity,
+            ValidationMessageSeverity severityForUnresolvedDependencies,
+            Collection<PackageInfo> dependenciesMetaInfo) {
         this.dependenciesMetaInfo = dependenciesMetaInfo;
         this.severity = severity;
         this.severityForUnresolvedDependencies = severityForUnresolvedDependencies;
@@ -52,12 +59,12 @@ public final class DependencyValidator implements PropertiesValidator {
 
     @Override
     public Collection<ValidationMessage> validate(@NotNull PackageProperties properties) {
-        
+
         // use resolved dependencies
         Collection<ValidationMessage> messages = new LinkedList<>();
-        
+
         Map<String, PackageInfo> roots = new HashMap<>();
-        
+
         // check for unresolved dependencies!
         for (Dependency dependency : properties.getDependencies()) {
             boolean isDependencyResolved = false;
@@ -67,8 +74,12 @@ public final class DependencyValidator implements PropertiesValidator {
                         String root = set.getRoot();
                         PackageInfo existing = roots.get(root);
                         if (existing != null) {
-                            String msg = String.format(Locale.ENGLISH, MESSAGE_DEPENDENCIES_WITH_OVERLAPPING_FILTERS,
-                                    resolvedDependency.getId(), root, existing.getId());
+                            String msg = String.format(
+                                    Locale.ENGLISH,
+                                    MESSAGE_DEPENDENCIES_WITH_OVERLAPPING_FILTERS,
+                                    resolvedDependency.getId(),
+                                    root,
+                                    existing.getId());
                             messages.add(new ValidationMessage(severity, msg));
                         }
                         roots.put(root, resolvedDependency);
@@ -86,5 +97,4 @@ public final class DependencyValidator implements PropertiesValidator {
         }
         return messages;
     }
-
 }

@@ -1,29 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.packaging.JcrPackage;
@@ -103,7 +104,8 @@ public class ImportModeIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testAllImportModesWithGenericArtifactHandler() throws RepositoryException, IOException, PackageException {
+    public void testAllImportModesWithGenericArtifactHandler()
+            throws RepositoryException, IOException, PackageException {
         // initial state
         Node parent = admin.getRootNode().addNode("testroot");
         setUpNode(parent, "replace");
@@ -112,14 +114,14 @@ public class ImportModeIT extends IntegrationTestBase {
         setUpNode(parent, "merge_properties");
         setUpNode(parent, "update_properties");
         admin.save();
-        
+
         assertProperty("/testroot/replace/propertyold", "old");
         assertProperty("/testroot/replace/propertyupdate", "old");
         assertNodeExists("/testroot/replace/old");
         assertProperty("/testroot/replace/existing/propertyold", "old");
-        
+
         extractVaultPackage("/test-packages/import_modes_test_generichandler_docview.zip");
-        
+
         // test update, creation and deletion of properties and nodes
         // Replace
         assertProperty("/testroot/replace/propertyupdate", "new");
@@ -145,7 +147,8 @@ public class ImportModeIT extends IntegrationTestBase {
         assertProperty("/testroot/merge/propertyold", "old");
         assertProperty("/testroot/merge/existing/propertynew", "new");
         assertProperty("/testroot/merge/existing/propertyold", "old");
-        assertNodeExists("/testroot/merge/new"); // works, because import mode for testroot (docview root level) is REPLACE
+        assertNodeExists(
+                "/testroot/merge/new"); // works, because import mode for testroot (docview root level) is REPLACE
         assertNodeExists("/testroot/merge/old");
 
         // Property Update (neither delete existing nodes nor properties, but update them and add new properties/nodes)
@@ -156,7 +159,7 @@ public class ImportModeIT extends IntegrationTestBase {
         assertProperty("/testroot/update_properties/existing/propertyold", "old");
         assertNodeExists("/testroot/update_properties/new");
         assertNodeExists("/testroot/update_properties/old");
-        
+
         // Property Merge (don't touch existing nodes nor properties, only add new properties/nodes)
         assertProperty("/testroot/merge_properties/propertyupdate", "old");
         assertProperty("/testroot/merge_properties/propertynew", "new");
@@ -168,7 +171,8 @@ public class ImportModeIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testAllImportModesFullCoverageWithGenericArtifactHandler() throws RepositoryException, IOException, PackageException {
+    public void testAllImportModesFullCoverageWithGenericArtifactHandler()
+            throws RepositoryException, IOException, PackageException {
         // initial state
         Node parent = admin.getRootNode().addNode("testroot");
         setUpNode(parent, "replace");
@@ -177,15 +181,15 @@ public class ImportModeIT extends IntegrationTestBase {
         setUpNode(parent, "merge_properties");
         setUpNode(parent, "update_properties");
         admin.save();
-        
+
         assertProperty("/testroot/replace/propertyold", "old");
         assertProperty("/testroot/replace/propertyupdate", "old");
         assertNodeExists("/testroot/replace/old");
         assertProperty("/testroot/replace/existing/propertyold", "old");
-        
+
         // full coverage nodes on another level
         extractVaultPackage("/test-packages/import_modes_test_generichandler2_docview.zip");
-        
+
         // test update, creation and deletion of properties and nodes
         // Replace
         assertProperty("/testroot/replace/propertyupdate", "new");
@@ -222,7 +226,7 @@ public class ImportModeIT extends IntegrationTestBase {
         assertProperty("/testroot/update_properties/existing/propertyold", "old");
         assertNodeExists("/testroot/update_properties/new");
         assertNodeExists("/testroot/update_properties/old");
-        
+
         // Property Merge (don't touch existing nodes nor properties, only add new properties/nodes)
         assertProperty("/testroot/merge_properties/propertyupdate", "old");
         assertProperty("/testroot/merge_properties/propertynew", "new");
@@ -235,7 +239,7 @@ public class ImportModeIT extends IntegrationTestBase {
 
     @Test
     public void testAllImportModesWithFileArtifactHandler() throws RepositoryException, IOException, PackageException {
-     // initial state
+        // initial state
         Node parent = admin.getRootNode().addNode("testroot");
         setUpFileNode(parent, "replace");
         setUpFileNode(parent, "merge");
@@ -243,11 +247,11 @@ public class ImportModeIT extends IntegrationTestBase {
         setUpFileNode(parent, "merge_properties");
         setUpFileNode(parent, "update_properties");
         admin.save();
-        
+
         assertProperty("/testroot/replace/jcr:content/jcr:data", "test");
-        
+
         extractVaultPackage("/test-packages/import_modes_test_filehandler.zip");
-        
+
         // test update, creation and deletion of properties and nodes
         // Replace
         assertProperty("/testroot/replace/jcr:content/jcr:data", "new");
@@ -260,7 +264,7 @@ public class ImportModeIT extends IntegrationTestBase {
 
         // Property Update (neither delete existing nodes nor properties, but update them and add new properties/nodes)
         assertProperty("/testroot/update_properties/jcr:content/jcr:data", "new");
-        
+
         // Property Merge (don't touch existing nodes nor properties, only add new properties/nodes)
         assertProperty("/testroot/merge_properties/jcr:content/jcr:data", "test");
     }
@@ -274,7 +278,7 @@ public class ImportModeIT extends IntegrationTestBase {
         setUpFileNode(parent, "merge_properties");
         setUpFileNode(parent, "update_properties");
         admin.save();
-        
+
         extractVaultPackageStrict("/test-packages/import_modes_test_generichandler_docview.zip");
 
         // Replace
@@ -305,7 +309,7 @@ public class ImportModeIT extends IntegrationTestBase {
         setUpNode(parent, "update");
         setUpNode(parent, "merge_properties");
         setUpNode(parent, "update_properties");
-        
+
         admin.save();
         extractVaultPackageStrict("/test-packages/import_modes_test_missing_artifacts.zip");
         // node in repo removed with replace, not removed for all other import modes
@@ -330,5 +334,4 @@ public class ImportModeIT extends IntegrationTestBase {
             JcrUtils.putFile(parent, name, MimeTypes.APPLICATION_OCTET_STREAM, input, Calendar.getInstance());
         }
     }
-
 }

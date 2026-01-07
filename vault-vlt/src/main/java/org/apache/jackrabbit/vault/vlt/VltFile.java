@@ -1,25 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -62,17 +63,17 @@ public class VltFile implements DocumentSource {
      * Possible state of this file
      */
     public enum State {
-        CLEAN (" "),
-        ADDED ("A"),
-        CONFLICTED ("C"),
-        DELETED ("D"),
-        IGNORED ("I"),
-        MODIFIED ("M"),
-        REPLACED ("R"),
+        CLEAN(" "),
+        ADDED("A"),
+        CONFLICTED("C"),
+        DELETED("D"),
+        IGNORED("I"),
+        MODIFIED("M"),
+        REPLACED("R"),
         UNKNOWN("?"),
-        MISSING ("!"),
-        OBSTRUCTED ("~"),
-        VOID (" ");
+        MISSING("!"),
+        OBSTRUCTED("~"),
+        VOID(" ");
 
         public final String letter;
 
@@ -93,8 +94,7 @@ public class VltFile implements DocumentSource {
 
     private VltEntry entry;
 
-    public VltFile(VltDirectory parent, String name, VltEntry entry)
-            throws VltException {
+    public VltFile(VltDirectory parent, String name, VltEntry entry) throws VltException {
         this.parent = parent;
         this.name = name;
         this.entry = entry;
@@ -141,7 +141,7 @@ public class VltFile implements DocumentSource {
             throw error("Generic properies not supported, yet");
         }
     }
-    
+
     public State getStatus() throws VltException {
         State state = State.VOID;
         if (entry == null) {
@@ -241,7 +241,6 @@ public class VltFile implements DocumentSource {
         return MimeTypes.isBinary(getContentType());
     }
 
-
     public MetaFile getTmpFile() throws VltException {
         try {
             return parent.getMetaDirectory().getTmpFile(name, true);
@@ -309,8 +308,12 @@ public class VltFile implements DocumentSource {
             out.write("===================================================================");
             out.writeNewLine();
 
-            try (Reader r0 = getBaseFile(false) == null ? null : getBaseFile(false).getReader();
-                 Reader r1 = file.exists() ? new InputStreamReader(FileUtils.openInputStream(file), Constants.ENCODING) : null) {
+            try (Reader r0 = getBaseFile(false) == null
+                            ? null
+                            : getBaseFile(false).getReader();
+                    Reader r1 = file.exists()
+                            ? new InputStreamReader(FileUtils.openInputStream(file), Constants.ENCODING)
+                            : null) {
                 Document d0 = new Document(this, LineElementsFactory.create(this, r0, false));
                 Document d1 = new Document(this, LineElementsFactory.create(this, r1, false));
                 DocumentDiff diff = d0.diff(d1);
@@ -320,7 +323,6 @@ public class VltFile implements DocumentSource {
         } catch (IOException e) {
             throw exception("Error while writing diff.", e);
         }
-
     }
 
     public FileAction delete(boolean force) throws VltException {
@@ -344,7 +346,8 @@ public class VltFile implements DocumentSource {
             case UNKNOWN:
             case VOID:
                 if (!force) {
-                    parent.getContext().printMessage(this, "is not under version control. use --force to delete anyway");
+                    parent.getContext()
+                            .printMessage(this, "is not under version control. use --force to delete anyway");
                     return FileAction.VOID;
                 }
                 break;
@@ -373,7 +376,7 @@ public class VltFile implements DocumentSource {
 
             case CONFLICTED:
                 resolved(true);
-                // no break;
+            // no break;
             case DELETED:
             case MISSING:
             case MODIFIED:
@@ -399,7 +402,7 @@ public class VltFile implements DocumentSource {
             // check if the file still contains the diff markers
             boolean mayContainMarker = false;
             try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file), Constants.ENCODING);
-                 BufferedReader in = new BufferedReader(reader)) {
+                    BufferedReader in = new BufferedReader(reader)) {
                 String line;
                 while ((line = in.readLine()) != null) {
                     if (line.startsWith(Hunk3.MARKER_B[0])
@@ -428,16 +431,15 @@ public class VltFile implements DocumentSource {
         return true;
     }
 
-    public FileAction update(VaultFile remoteFile, boolean force)
-            throws VltException {
-        State state  = getStatus();
+    public FileAction update(VaultFile remoteFile, boolean force) throws VltException {
+        State state = getStatus();
         switch (state) {
             case IGNORED:
             case OBSTRUCTED:
             case REPLACED:
                 if (!force || remoteFile == null) {
-                    throw error("update not possible. file is " + state.name().toLowerCase(Locale.ROOT) + ". " +
-                            "Specify --force to overwrite existing files.");
+                    throw error("update not possible. file is " + state.name().toLowerCase(Locale.ROOT) + ". "
+                            + "Specify --force to overwrite existing files.");
                 }
                 return doUpdate(remoteFile, false);
 
@@ -520,8 +522,8 @@ public class VltFile implements DocumentSource {
                 } else {
                     // do update
                     if (file.exists() && !force) {
-                        throw error("Failed to update: object of the same name already exists." +
-                                " Specify --force to overwrite existing files.");
+                        throw error("Failed to update: object of the same name already exists."
+                                + " Specify --force to overwrite existing files.");
                     }
                     return doUpdate(remoteFile, false);
                 }
@@ -536,7 +538,7 @@ public class VltFile implements DocumentSource {
     }
 
     public FileAction status(VaultFile remoteFile) throws VltException {
-        State state  = getStatus();
+        State state = getStatus();
         switch (state) {
             case IGNORED:
             case OBSTRUCTED:
@@ -558,9 +560,7 @@ public class VltFile implements DocumentSource {
                         // do nothing
                         return FileAction.VOID;
                     } else {
-                        return equalsToRemote(remoteFile)
-                                ? FileAction.VOID
-                                : FileAction.UPDATED;
+                        return equalsToRemote(remoteFile) ? FileAction.VOID : FileAction.UPDATED;
                     }
                 }
 
@@ -637,8 +637,7 @@ public class VltFile implements DocumentSource {
         return FileAction.ADDED;
     }
 
-    private FileAction doDelete(boolean keepFile)
-            throws VltException {
+    private FileAction doDelete(boolean keepFile) throws VltException {
         // small hack to remove meta directory. should actually be somewhere else
         if (file.isDirectory()) {
             VltDirectory dir = new VltDirectory(parent.getContext(), file);
@@ -659,8 +658,7 @@ public class VltFile implements DocumentSource {
         return FileAction.DELETED;
     }
 
-    private FileAction doMerge(VaultFile remoteFile, FileAction action)
-            throws VltException {
+    private FileAction doMerge(VaultFile remoteFile, FileAction action) throws VltException {
         if (remoteFile.isDirectory()) {
             throw exception("Error while merging. remote is a directory.", null);
         }
@@ -673,9 +671,7 @@ public class VltFile implements DocumentSource {
 
         VltEntryInfo base = entry.base();
         VltEntryInfo work = entry.work();
-        byte[] lineFeed = MimeTypes.isBinary(remoteFile.getContentType())
-                ? null
-                : LineOutputStream.LS_NATIVE;
+        byte[] lineFeed = MimeTypes.isBinary(remoteFile.getContentType()) ? null : LineOutputStream.LS_NATIVE;
 
         // get the remote file
         VaultFileCopy copy = null;
@@ -725,10 +721,13 @@ public class VltFile implements DocumentSource {
             // we currently do not use document sources, since we don't really have
             // a label to provide (like rev. num, etc).
             try (Reader r0 = baseFile.getReader();
-                 Reader r1 = tmpFile.getReader()) {
-                Document baseDoc = new Document(null, LineElementsFactory.create(new MetaFileDocSource(baseFile), r0, false));
-                Document leftDoc = new Document(null, LineElementsFactory.create(new FileDocumentSource(file), false, Constants.ENCODING));
-                Document rightDoc = new Document(null, LineElementsFactory.create(new MetaFileDocSource(tmpFile), r1, false));
+                    Reader r1 = tmpFile.getReader()) {
+                Document baseDoc =
+                        new Document(null, LineElementsFactory.create(new MetaFileDocSource(baseFile), r0, false));
+                Document leftDoc = new Document(
+                        null, LineElementsFactory.create(new FileDocumentSource(file), false, Constants.ENCODING));
+                Document rightDoc =
+                        new Document(null, LineElementsFactory.create(new MetaFileDocSource(tmpFile), r1, false));
                 diff = baseDoc.diff3(leftDoc, rightDoc);
             }
 
@@ -774,14 +773,17 @@ public class VltFile implements DocumentSource {
         // check if binary
         boolean remoteBT = MimeTypes.isBinary(remoteFile.getContentType());
         if (copy != null && remoteBT != copy.isBinary()) {
-            parent.getContext().printMessage(this, "Remote Binary type differs from actual data. Content Type: " + remoteFile.getContentType() + " Data is binary: " + copy.isBinary() + ". Using data type.");
-            remoteBT = copy.isBinary();                
+            parent.getContext()
+                    .printMessage(
+                            this,
+                            "Remote Binary type differs from actual data. Content Type: " + remoteFile.getContentType()
+                                    + " Data is binary: " + copy.isBinary() + ". Using data type.");
+            remoteBT = copy.isBinary();
         }
         return remoteBT;
     }
 
-    private FileAction mergeableWithRemote(VaultFile remoteFile)
-            throws VltException {
+    private FileAction mergeableWithRemote(VaultFile remoteFile) throws VltException {
         if (remoteFile.isDirectory() != file.isDirectory()) {
             return FileAction.CONFLICTED;
         }
@@ -794,9 +796,7 @@ public class VltFile implements DocumentSource {
         VltEntryInfo base = entry.base();
 
         // get the remote file
-        byte[] lineFeed = MimeTypes.isBinary(remoteFile.getContentType())
-                ? null
-                : LineOutputStream.LS_NATIVE;
+        byte[] lineFeed = MimeTypes.isBinary(remoteFile.getContentType()) ? null : LineOutputStream.LS_NATIVE;
         VaultFileCopy copy;
         try {
             File temp = tmpFile.openTempFile();
@@ -811,7 +811,7 @@ public class VltFile implements DocumentSource {
                     return FileAction.CONFLICTED;
                 }
             }
-            
+
             // if tmp is equal to the base one, there was not update on the server
             if (copy.getMd5().equals(base.getMd5())) {
                 tmpFile.closeTempFile(true);
@@ -832,14 +832,17 @@ public class VltFile implements DocumentSource {
 
         MetaFile baseFile = getBaseFile(false);
         try (Reader r0 = baseFile.getReader();
-            Reader r1 = tmpFile.getReader()) {
+                Reader r1 = tmpFile.getReader()) {
             // do a 3-way diff between the base, the local and the remote one.
             // we currently do not use document sources, since we don't really have
             // a label to provide (like rev. num, etc).
-            
-            Document baseDoc = new Document(null, LineElementsFactory.create(new MetaFileDocSource(baseFile), r0, false));
-            Document leftDoc = new Document(null, LineElementsFactory.create(new FileDocumentSource(file), false, Constants.ENCODING));
-            Document rightDoc = new Document(null, LineElementsFactory.create(new MetaFileDocSource(tmpFile), r1, false));
+
+            Document baseDoc =
+                    new Document(null, LineElementsFactory.create(new MetaFileDocSource(baseFile), r0, false));
+            Document leftDoc = new Document(
+                    null, LineElementsFactory.create(new FileDocumentSource(file), false, Constants.ENCODING));
+            Document rightDoc =
+                    new Document(null, LineElementsFactory.create(new MetaFileDocSource(tmpFile), r1, false));
 
             DocumentDiff3 diff = baseDoc.diff3(leftDoc, rightDoc);
 
@@ -867,14 +870,11 @@ public class VltFile implements DocumentSource {
         entry.put(base.copyAs(VltEntryInfo.Type.WORK));
     }
 
-    private boolean equalsToRemote(VaultFile remoteFile)
-            throws VltException {
+    private boolean equalsToRemote(VaultFile remoteFile) throws VltException {
         MetaFile tmpFile = getTmpFile();
 
         // copy file
-        byte[] lineFeed = MimeTypes.isBinary(remoteFile.getContentType())
-                ? null
-                : LineOutputStream.LS_NATIVE;
+        byte[] lineFeed = MimeTypes.isBinary(remoteFile.getContentType()) ? null : LineOutputStream.LS_NATIVE;
         VaultFileCopy copy;
         File temp = null;
         try {
@@ -896,8 +896,7 @@ public class VltFile implements DocumentSource {
         return copy.getMd5().equals(base.getMd5());
     }
 
-    private FileAction doUpdate(VaultFile remoteFile, boolean baseOnly)
-            throws VltException {
+    private FileAction doUpdate(VaultFile remoteFile, boolean baseOnly) throws VltException {
         FileAction action;
         VltEntryInfo base;
         if (entry == null || entry.base() == null) {
@@ -934,7 +933,9 @@ public class VltFile implements DocumentSource {
                 file.setLastModified(base.getDate());
                 VltDirectory dir = new VltDirectory(parent.getContext(), file);
                 if (!dir.isControlled()) {
-                    dir.control(remoteFile.getPath(), remoteFile.getControllingAggregate().getPath());
+                    dir.control(
+                            remoteFile.getPath(),
+                            remoteFile.getControllingAggregate().getPath());
                     action = FileAction.ADDED;
                 }
             }
@@ -942,9 +943,7 @@ public class VltFile implements DocumentSource {
             MetaFile baseFile = getBaseFile(true);
 
             // copy file
-            byte[] lineFeed = MimeTypes.isBinary(remoteFile.getContentType())
-                    ? null
-                    : LineOutputStream.LS_NATIVE;
+            byte[] lineFeed = MimeTypes.isBinary(remoteFile.getContentType()) ? null : LineOutputStream.LS_NATIVE;
             VaultFileCopy copy;
             try {
                 File temp = baseFile.openTempFile();
@@ -971,7 +970,9 @@ public class VltFile implements DocumentSource {
             base.setMd5(copy.getMd5());
             if (!baseOnly) {
                 // only copy if not equal
-                if (work == null || !work.getMd5().equals(copy.getMd5()) || !getFile().exists()) {
+                if (work == null
+                        || !work.getMd5().equals(copy.getMd5())
+                        || !getFile().exists()) {
                     try {
                         baseFile.copyTo(getFile(), true);
                         entry.put(base.copyAs(VltEntryInfo.Type.WORK));
@@ -992,7 +993,7 @@ public class VltFile implements DocumentSource {
         return parent.getContext().error(getPath(), msg);
     }
 
-    //-----------------------------------------------------< DocumentSource >---
+    // -----------------------------------------------------< DocumentSource >---
 
     public String getLabel() {
         return getName();

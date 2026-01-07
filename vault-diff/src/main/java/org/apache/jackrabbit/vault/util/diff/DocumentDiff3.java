@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.util.diff;
 
@@ -114,7 +116,7 @@ public class DocumentDiff3 {
             throw new IllegalStateException(e.toString());
         }
     }
-    
+
     /**
      * Writes the resulting document to the given write. this may include
      * conflicting regions.
@@ -135,10 +137,7 @@ public class DocumentDiff3 {
      * initializes the hunks
      */
     private void initHunks() {
-        MyChange[] changes = {
-                wrap(leftChanges),
-                wrap(rightChanges)
-        };
+        MyChange[] changes = {wrap(leftChanges), wrap(rightChanges)};
         int basePos = 0;
         Hunk3 hunk = hunks; // the last hunk
         while (changes[0] != null || changes[1] != null) {
@@ -162,7 +161,7 @@ public class DocumentDiff3 {
             changes[highIdx] = changes[highIdx].next;
             lastUsing[highIdx].next = null;
 
-            int otherIdx = highIdx^1;
+            int otherIdx = highIdx ^ 1;
             MyChange other = changes[otherIdx];
 
             // search for region that ends in a 'void' of changes
@@ -184,7 +183,7 @@ public class DocumentDiff3 {
                 // advance other and unchain it
                 changes[otherIdx] = changes[otherIdx].next;
                 other.next = null;
-                
+
                 // if the high mark is beyond the end of the other diff
                 // we're finished
                 if (other.high0 > highMark) {
@@ -192,7 +191,7 @@ public class DocumentDiff3 {
                     highIdx ^= 1;
                     highMark = other.high0;
                 }
-                otherIdx = highIdx^1;
+                otherIdx = highIdx ^ 1;
                 other = changes[otherIdx];
             }
 
@@ -200,23 +199,19 @@ public class DocumentDiff3 {
             // first deal with the stuff that was common before the first change
             int lowMark = using[baseIdx].low0;
             if (basePos < lowMark) {
-                hunk = new Hunk3(
-                        new Range(base, basePos, lowMark),
-                        null,
-                        null,
-                        hunk);
+                hunk = new Hunk3(new Range(base, basePos, lowMark), null, null, hunk);
                 basePos = lowMark;
-                //System.out.println(hunks.getLast().toString());
+                // System.out.println(hunks.getLast().toString());
             }
 
             // get the ranges for the changsets
-            int[] deltaLow = {0,0};
-            if (using[baseIdx^1] != null) {
-                deltaLow[baseIdx^1] = using[baseIdx^1].low0 - using[baseIdx].low0;
+            int[] deltaLow = {0, 0};
+            if (using[baseIdx ^ 1] != null) {
+                deltaLow[baseIdx ^ 1] = using[baseIdx ^ 1].low0 - using[baseIdx].low0;
             }
-            int[] deltaHigh = {0,0};
-            if (using[highIdx^1] != null) {
-                deltaHigh[highIdx^1] = using[highIdx].high0 - using[highIdx^1].high0;
+            int[] deltaHigh = {0, 0};
+            if (using[highIdx ^ 1] != null) {
+                deltaHigh[highIdx ^ 1] = using[highIdx].high0 - using[highIdx ^ 1].high0;
             }
             Range leftRange = null;
             Range rightRange = null;
@@ -230,7 +225,7 @@ public class DocumentDiff3 {
             boolean conflict = false;
             if (leftRange != null && rightRange != null) {
                 if (leftRange.len() == rightRange.len()) {
-                    for (int i=0; i< leftRange.len(); i++) {
+                    for (int i = 0; i < leftRange.len(); i++) {
                         if (!left.getElements()[leftRange.low + i].equals(right.getElements()[rightRange.low + i])) {
                             // yes, it is
                             conflict = true;
@@ -252,17 +247,13 @@ public class DocumentDiff3 {
             // and create new hunk
             hunk = new Hunk3(baseRange, leftRange, rightRange, hunk);
             hasConflicts |= conflict;
-            //System.out.println(hunks.getLast().toString());
+            // System.out.println(hunks.getLast().toString());
         } /* while */
 
         // deal with last hunk
         if (basePos < base.getElements().length) {
-            new Hunk3(
-                    new Range(base, basePos, base.getElements().length),
-                    null,
-                    null,
-                    hunk);
-            //System.out.println(hunks.getLast().toString());
+            new Hunk3(new Range(base, basePos, base.getElements().length), null, null, hunk);
+            // System.out.println(hunks.getLast().toString());
         }
     }
 
@@ -297,15 +288,15 @@ public class DocumentDiff3 {
     private void dump(MyChange c, Document left, Document right) {
         while (c != null) {
             if (c.isInsert()) {
-                for (int i=0; i<c.high1-c.low1; i++) {
+                for (int i = 0; i < c.high1 - c.low1; i++) {
                     dump(0, c.low0 + i, c.low1 + i, "+", c.low1 + i, right);
                 }
             } else if (c.isDelete()) {
-                for (int i=0; i<c.high0-c.low0; i++) {
+                for (int i = 0; i < c.high0 - c.low0; i++) {
                     dump(0, c.low0 + i, c.low1 + i, "-", c.low0 + i, left);
                 }
             } else {
-                for (int i=0; i<c.high1-c.low1; i++) {
+                for (int i = 0; i < c.high1 - c.low1; i++) {
                     dump(0, c.low0 + i, c.low1 + i, "~", c.low1 + i, right);
                 }
             }
@@ -406,5 +397,4 @@ public class DocumentDiff3 {
             return "(" + low0 + "-" + high0 + "),(" + low1 + "-" + high1 + ")";
         }
     }
-
 }

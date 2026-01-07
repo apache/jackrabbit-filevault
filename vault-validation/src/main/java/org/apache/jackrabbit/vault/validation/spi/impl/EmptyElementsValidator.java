@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
 
@@ -41,15 +43,15 @@ import org.jetbrains.annotations.Nullable;
  */
 public class EmptyElementsValidator implements DocumentViewXmlValidator, NodePathValidator {
 
-    protected static final String MESSAGE_EMPTY_NODES = "Found empty node (used for ordering only) without an accompanying folder which are included in the filter with mode=replace. Either remove the empty node or add at least the 'jcr:primaryType' attribute to make this node really get replaced.";
+    protected static final String MESSAGE_EMPTY_NODES =
+            "Found empty node (used for ordering only) without an accompanying folder which are included in the filter with mode=replace. Either remove the empty node or add at least the 'jcr:primaryType' attribute to make this node really get replaced.";
     private final ValidationMessageSeverity severity;
     private final List<NodeContext> emptyNodes;
     private final List<String> nonEmptyNodePaths;
     private final WorkspaceFilter filter;
-    
+
     private Collection<String> affectedFilterRoots;
-    
-    
+
     public EmptyElementsValidator(ValidationMessageSeverity severity, WorkspaceFilter filter) {
         this.severity = severity;
         this.emptyNodes = new LinkedList<>();
@@ -67,15 +69,19 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, NodePat
     @Override
     public Collection<ValidationMessage> done() {
         return emptyNodes.stream()
-            .filter(e -> nonEmptyNodePaths.stream().noneMatch(n -> n.equals(e.getNodePath())))
-            .map(e -> new ValidationMessage(severity, MESSAGE_EMPTY_NODES, e.getNodePath(), e.getFilePath(), e.getBasePath(), null))
-            .collect(Collectors.toList());
+                .filter(e -> nonEmptyNodePaths.stream().noneMatch(n -> n.equals(e.getNodePath())))
+                .map(e -> new ValidationMessage(
+                        severity, MESSAGE_EMPTY_NODES, e.getNodePath(), e.getFilePath(), e.getBasePath(), null))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
+    public Collection<ValidationMessage> validate(
+            @NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
         if (isBelowAffectedFilterRoots(nodeContext.getNodePath())) {
-            if (node.getProperties().isEmpty() && filter.contains(nodeContext.getNodePath()) && filter.getImportMode(nodeContext.getNodePath()) == ImportMode.REPLACE) {
+            if (node.getProperties().isEmpty()
+                    && filter.contains(nodeContext.getNodePath())
+                    && filter.getImportMode(nodeContext.getNodePath()) == ImportMode.REPLACE) {
                 // only relevant if no other merge mode
                 // ignore rep:policy nodes
                 if (!node.getName().equals(NameConstants.REP_POLICY)) {
@@ -104,5 +110,4 @@ public class EmptyElementsValidator implements DocumentViewXmlValidator, NodePat
         }
         return null;
     }
-
 }

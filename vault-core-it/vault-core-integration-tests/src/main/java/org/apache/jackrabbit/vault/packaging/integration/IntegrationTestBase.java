@@ -1,28 +1,37 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
+import javax.jcr.PropertyType;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
+import javax.jcr.Value;
+import javax.jcr.security.AccessControlEntry;
+import javax.jcr.security.AccessControlPolicy;
+import javax.jcr.security.AccessControlPolicyIterator;
+import javax.jcr.security.Privilege;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,21 +61,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.jar.JarFile;
-
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Property;
-import javax.jcr.PropertyType;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
-import javax.jcr.Value;
-import javax.jcr.security.AccessControlEntry;
-import javax.jcr.security.AccessControlPolicy;
-import javax.jcr.security.AccessControlPolicyIterator;
-import javax.jcr.security.Privilege;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -103,16 +97,23 @@ import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * {@code IntegrationTestBase}...
  */
-public class IntegrationTestBase  {
+public class IntegrationTestBase {
 
     /**
      * default logger
      */
     private static final Logger log = LoggerFactory.getLogger(IntegrationTestBase.class);
-    
+
     public static final PackageId TMP_PACKAGE_ID = new PackageId("my_packages", "tmp", "");
 
     public static final PackageId TMP_SNAPSHOT_PACKAGE_ID = PackageId.fromString("my_packages/.snapshot:tmp");
@@ -169,21 +170,30 @@ public class IntegrationTestBase  {
 
     private static RepositoryProvider getRepositoryProvider() {
         if (repositoryProvider == null) {
-            Iterator<RepositoryProvider> repositoryProviderIterator = ServiceLoader.load(RepositoryProvider.class, IntegrationTestBase.class.getClassLoader()).iterator();
+            Iterator<RepositoryProvider> repositoryProviderIterator = ServiceLoader.load(
+                            RepositoryProvider.class, IntegrationTestBase.class.getClassLoader())
+                    .iterator();
             if (!repositoryProviderIterator.hasNext()) {
-                throw new IllegalStateException("Haven't found any service implementation of " + RepositoryProvider.class.getName());
+                throw new IllegalStateException(
+                        "Haven't found any service implementation of " + RepositoryProvider.class.getName());
             }
             repositoryProvider = repositoryProviderIterator.next();
             if (repositoryProviderIterator.hasNext()) {
-                throw new IllegalStateException("Found more than one service implementation of " + RepositoryProvider.class.getName());
+                throw new IllegalStateException(
+                        "Found more than one service implementation of " + RepositoryProvider.class.getName());
             }
         }
         return repositoryProvider;
     }
-    public static void initRepository(boolean useFileStore, boolean enablePrincipalBasedAuthorization, String... cugEnabledPaths) throws RepositoryException, IOException {
-        repositoryWithMetadata = getRepositoryProvider().createRepository(useFileStore, enablePrincipalBasedAuthorization, cugEnabledPaths);
+
+    public static void initRepository(
+            boolean useFileStore, boolean enablePrincipalBasedAuthorization, String... cugEnabledPaths)
+            throws RepositoryException, IOException {
+        repositoryWithMetadata = getRepositoryProvider()
+                .createRepository(useFileStore, enablePrincipalBasedAuthorization, cugEnabledPaths);
         repository = repositoryWithMetadata.getRepository();
-        log.info("repository created: {} {}",
+        log.info(
+                "repository created: {} {}",
                 repository.getDescriptor(Repository.REP_NAME_DESC),
                 repository.getDescriptor(Repository.REP_VERSION_DESC));
     }
@@ -198,7 +208,8 @@ public class IntegrationTestBase  {
                     Thread.sleep(100);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
-                    IOException wrappedIOException = new IOException("Initially failed with IOException and waiting was interrupted", ioe);
+                    IOException wrappedIOException =
+                            new IOException("Initially failed with IOException and waiting was interrupted", ioe);
                     wrappedIOException.addSuppressed(ie);
                 }
                 FileUtils.deleteDirectory(directory);
@@ -230,7 +241,8 @@ public class IntegrationTestBase  {
         packMgr = new JcrPackageManagerImpl(admin, new String[0]);
 
         PackageEventDispatcherImpl dispatcher = new PackageEventDispatcherImpl();
-        dispatcher.bindPackageEventListener(new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));
+        dispatcher.bindPackageEventListener(
+                new ActivityLog(), Collections.singletonMap("component.id", (Object) "1234"));
         packMgr.setDispatcher(dispatcher);
 
         preTestAuthorizables = getAllAuthorizableIds();
@@ -243,7 +255,7 @@ public class IntegrationTestBase  {
             admin.refresh(false);
             // remove test authorizables
             UserManager mgr = ((JackrabbitSession) admin).getUserManager();
-            for (String id: getAllAuthorizableIds()) {
+            for (String id : getAllAuthorizableIds()) {
                 if (!preTestAuthorizables.remove(id)) {
                     removeAuthorizable(mgr, id);
                 }
@@ -289,11 +301,12 @@ public class IntegrationTestBase  {
     }
 
     public static InputStream getStream(Class<?> clazz, String name) {
-        return Objects.requireNonNull(clazz.getResourceAsStream(name), "Could not find class resource with name '" + name + "'");
+        return Objects.requireNonNull(
+                clazz.getResourceAsStream(name), "Could not find class resource with name '" + name + "'");
     }
 
     /**
-     * 
+     *
      * @param name
      * @return either a new tmp file (deleted automatically at the end of the unit test) or the original file name if not encapsulated in a JAR
      * @throws IOException
@@ -311,7 +324,9 @@ public class IntegrationTestBase  {
     public static File getFile(Class<?> clazz, String name, Supplier<File> tmpFileSupplier) throws IOException {
         URI uri;
         try {
-            uri = Objects.requireNonNull(clazz.getResource(name),  "Could not find class resource with name '" + name + "'").toURI();
+            uri = Objects.requireNonNull(
+                            clazz.getResource(name), "Could not find class resource with name '" + name + "'")
+                    .toURI();
         } catch (URISyntaxException e) {
             throw new IOException("Could not convert class resource URL to URI", e);
         }
@@ -340,30 +355,26 @@ public class IntegrationTestBase  {
     }
 
     /** Cannot use PathUtils.copyDirectory due to https://issues.apache.org/jira/browse/IO-719 */
-    public static void copyDirectory(Path source, Path target, CopyOption... options)
-            throws IOException {
+    public static void copyDirectory(Path source, Path target, CopyOption... options) throws IOException {
         if (Files.isRegularFile(target)) {
             Files.delete(target);
         }
         Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
 
             @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                    throws IOException {
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                 Files.createDirectories(target.resolve(source.relativize(dir).toString()));
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 Files.copy(file, target.resolve(source.relativize(file).toString()), options);
                 return FileVisitResult.CONTINUE;
             }
         });
     }
-    
-    
+
     public Archive getFileArchive(String name) throws IOException {
         final File file = getFile(name);
         if (file.isDirectory()) {
@@ -394,7 +405,7 @@ public class IntegrationTestBase  {
 
     /**
      * Returns an ZipVaultPackage which has been extracted in the repository.
-     * 
+     *
      * @param name either the name of a zip file or the name of a directory which contains an exploded package
      * @return an extracted vault package
      * @throws IOException
@@ -402,30 +413,33 @@ public class IntegrationTestBase  {
      * @throws RepositoryException
      */
     public VaultPackage extractVaultPackage(String name) throws IOException, PackageException, RepositoryException {
-        return extractVaultPackage(name, (ImportOptions)null);
+        return extractVaultPackage(name, (ImportOptions) null);
     }
 
     /**
      * Returns an ZipVaultPackage which has been extracted in the repository.
-     * 
+     *
      * @param name either the name of a zip file or the name of a directory which contains an exploded package
      * @return an extracted vault package
      * @throws IOException
      * @throws PackageException
      * @throws RepositoryException
      */
-    public VaultPackage extractVaultPackageStrict(String name) throws IOException, PackageException, RepositoryException {
-        ImportOptions  opts = getDefaultOptions();
+    public VaultPackage extractVaultPackageStrict(String name)
+            throws IOException, PackageException, RepositoryException {
+        ImportOptions opts = getDefaultOptions();
         return extractVaultPackage(name, opts);
     }
 
-    public VaultPackage extractVaultPackage(String name, AccessControlHandling acHandling) throws IOException, PackageException, RepositoryException {
+    public VaultPackage extractVaultPackage(String name, AccessControlHandling acHandling)
+            throws IOException, PackageException, RepositoryException {
         ImportOptions opts = getDefaultOptions();
         opts.setAccessControlHandling(acHandling);
         return extractVaultPackage(name, opts);
     }
 
-    public VaultPackage extractVaultPackage(String name, ImportOptions opts) throws IOException, PackageException, RepositoryException {
+    public VaultPackage extractVaultPackage(String name, ImportOptions opts)
+            throws IOException, PackageException, RepositoryException {
         if (opts == null) {
             opts = getDefaultOptions();
         }
@@ -451,7 +465,8 @@ public class IntegrationTestBase  {
         return installPackage(name, null);
     }
 
-    public JcrPackage installPackage(String name, ImportOptions opts) throws IOException, RepositoryException, PackageException {
+    public JcrPackage installPackage(String name, ImportOptions opts)
+            throws IOException, RepositoryException, PackageException {
         if (opts == null) {
             opts = getDefaultOptions();
         }
@@ -487,7 +502,7 @@ public class IntegrationTestBase  {
      */
     public String getInstallationPath(PackageId id) {
         // make sure we use the one from the test parameter
-        return ((JcrPackageRegistry)packMgr.getRegistry()).getInstallationPath(id) + ".zip";
+        return ((JcrPackageRegistry) packMgr.getRegistry()).getInstallationPath(id) + ".zip";
     }
 
     public void assertPackageNodeExists(PackageId id) throws RepositoryException {
@@ -507,23 +522,25 @@ public class IntegrationTestBase  {
     }
 
     public void assertProperty(String path, String value) throws RepositoryException {
-        assertEquals(path + " should contain " + value, value, admin.getProperty(path).getString());
+        assertEquals(
+                path + " should contain " + value,
+                value,
+                admin.getProperty(path).getString());
     }
 
-    public void assertProperty(String path,  boolean value) throws RepositoryException {
+    public void assertProperty(String path, boolean value) throws RepositoryException {
         Property property = admin.getProperty(path);
         assertEquals(path + " is no boolean property", PropertyType.BOOLEAN, property.getType());
         assertEquals(path + " should contain boolean value " + value, property.getBoolean(), value);
     }
- 
+
     public void assertPropertyExists(String path) throws RepositoryException {
         assertTrue(path + " should exist", admin.propertyExists(path));
     }
 
-
     public void assertProperty(String path, String[] values) throws RepositoryException {
         ArrayList<String> strings = new ArrayList<String>();
-        for (Value v: admin.getProperty(path).getValues()) {
+        for (Value v : admin.getProperty(path).getValues()) {
             strings.add(v.getString());
         }
         assertArrayEquals(path + " should contain " + values, values, strings.toArray(new String[strings.size()]));
@@ -545,14 +562,18 @@ public class IntegrationTestBase  {
         }
     }
 
-    public void assertNodeHasPrimaryType(String path, String primaryType) throws PathNotFoundException, RepositoryException {
+    public void assertNodeHasPrimaryType(String path, String primaryType)
+            throws PathNotFoundException, RepositoryException {
         Node node = admin.getNode(path);
         assertNotNull("Node at '" + path + "' must exist", node);
-        assertEquals("Node at '" + path + "' does not have the expected node type", primaryType, node.getPrimaryNodeType().getName());
+        assertEquals(
+                "Node at '" + path + "' does not have the expected node type",
+                primaryType,
+                node.getPrimaryNodeType().getName());
     }
 
     public void createNodes(Node parent, int maxDepth, int nodesPerFolder) throws RepositoryException {
-        for (int i=0; i<nodesPerFolder; i++) {
+        for (int i = 0; i < nodesPerFolder; i++) {
             Node n = parent.addNode("n" + i, "nt:folder");
             if (maxDepth > 0) {
                 createNodes(n, maxDepth - 1, nodesPerFolder);
@@ -573,10 +594,11 @@ public class IntegrationTestBase  {
             throws RepositoryException {
         Map<String, String[]> restrictions = new HashMap<String, String[]>();
         if (globRest != null) {
-            restrictions.put("rep:glob", new String[]{globRest});
+            restrictions.put("rep:glob", new String[] {globRest});
         }
         if (hasPermission(path, allow, privs, name, restrictions) >= 0) {
-            fail("Expected permission should not exist on path " + path + ". Actual permissions: " + dumpPermissions(path));
+            fail("Expected permission should not exist on path " + path + ". Actual permissions: "
+                    + dumpPermissions(path));
         }
     }
 
@@ -584,7 +606,7 @@ public class IntegrationTestBase  {
             throws RepositoryException {
         Map<String, String[]> restrictions = new HashMap<String, String[]>();
         if (globRest != null) {
-            restrictions.put("rep:glob", new String[]{globRest});
+            restrictions.put("rep:glob", new String[] {globRest});
         }
         if (hasPermission(path, allow, privs, name, restrictions) < 0) {
             fail("Expected permission missing on path " + path + ". Actual permissions: " + dumpPermissions(path));
@@ -594,24 +616,24 @@ public class IntegrationTestBase  {
     public String dumpPermissions(String path) throws RepositoryException {
         StringBuilder ret = new StringBuilder();
         AccessControlPolicy[] ap = admin.getAccessControlManager().getPolicies(path);
-        for (AccessControlPolicy p: ap) {
+        for (AccessControlPolicy p : ap) {
             if (p instanceof JackrabbitAccessControlList) {
                 JackrabbitAccessControlList acl = (JackrabbitAccessControlList) p;
-                for (AccessControlEntry ac: acl.getAccessControlEntries()) {
+                for (AccessControlEntry ac : acl.getAccessControlEntries()) {
                     if (ac instanceof JackrabbitAccessControlEntry) {
                         JackrabbitAccessControlEntry ace = (JackrabbitAccessControlEntry) ac;
                         ret.append(ace.isAllow() ? "\n- allow " : "deny ");
                         ret.append(ace.getPrincipal().getName());
                         char delim = '[';
-                        for (Privilege priv: ace.getPrivileges()) {
+                        for (Privilege priv : ace.getPrivileges()) {
                             ret.append(delim).append(priv.getName());
-                            delim=',';
+                            delim = ',';
                         }
                         ret.append(']');
-                        for (String restName: ace.getRestrictionNames()) {
+                        for (String restName : ace.getRestrictionNames()) {
                             Value[] values;
                             if ("rep:glob".equals(restName)) {
-                                values = new Value[]{ace.getRestriction(restName)};
+                                values = new Value[] {ace.getRestriction(restName)};
                             } else {
                                 values = ace.getRestrictions(restName);
                             }
@@ -626,14 +648,15 @@ public class IntegrationTestBase  {
         return ret.toString();
     }
 
-    public int hasPermission(String path, boolean allow, String[] privs, String name, Map<String, String[]> restrictions)
+    public int hasPermission(
+            String path, boolean allow, String[] privs, String name, Map<String, String[]> restrictions)
             throws RepositoryException {
         AccessControlPolicy[] ap = admin.getAccessControlManager().getPolicies(path);
         int idx = 0;
-        for (AccessControlPolicy p: ap) {
+        for (AccessControlPolicy p : ap) {
             if (p instanceof JackrabbitAccessControlList) {
                 JackrabbitAccessControlList acl = (JackrabbitAccessControlList) p;
-                for (AccessControlEntry ac: acl.getAccessControlEntries()) {
+                for (AccessControlEntry ac : acl.getAccessControlEntries()) {
                     if (ac instanceof JackrabbitAccessControlEntry) {
                         idx++;
                         JackrabbitAccessControlEntry ace = (JackrabbitAccessControlEntry) ac;
@@ -644,7 +667,7 @@ public class IntegrationTestBase  {
                             continue;
                         }
                         Set<String> expectedPrivs = new HashSet<String>(Arrays.asList(privs));
-                        for (Privilege priv: ace.getPrivileges()) {
+                        for (Privilege priv : ace.getPrivileges()) {
                             if (!expectedPrivs.remove(priv.getName())) {
                                 expectedPrivs.add("dummy");
                                 break;
@@ -655,19 +678,19 @@ public class IntegrationTestBase  {
                         }
                         Map<String, String[]> rests = new HashMap<String, String[]>(restrictions);
                         boolean restrictionExpected = true;
-                        for (String restName: ace.getRestrictionNames()) {
+                        for (String restName : ace.getRestrictionNames()) {
                             String[] expected = rests.remove(restName);
                             if (expected == null) {
                                 continue;
                             }
                             Value[] values;
                             if ("rep:glob".equals(restName)) {
-                                values = new Value[]{ace.getRestriction(restName)};
+                                values = new Value[] {ace.getRestriction(restName)};
                             } else {
                                 values = ace.getRestrictions(restName);
                             }
                             String[] actual = new String[values.length];
-                            for (int i=0; i<actual.length; i++) {
+                            for (int i = 0; i < actual.length; i++) {
                                 actual[i] = values[i].getString();
                             }
                             Arrays.sort(expected);
@@ -680,7 +703,7 @@ public class IntegrationTestBase  {
                         if (!restrictionExpected || !rests.isEmpty()) {
                             continue;
                         }
-                        return idx-1;
+                        return idx - 1;
                     }
                 }
             }
@@ -690,10 +713,10 @@ public class IntegrationTestBase  {
 
     public void removeRepoACL() throws RepositoryException {
         AccessControlPolicy[] ap = admin.getAccessControlManager().getPolicies(null);
-        for (AccessControlPolicy p: ap) {
+        for (AccessControlPolicy p : ap) {
             if (p instanceof JackrabbitAccessControlList) {
                 JackrabbitAccessControlList acl = (JackrabbitAccessControlList) p;
-                for (AccessControlEntry ac: acl.getAccessControlEntries()) {
+                for (AccessControlEntry ac : acl.getAccessControlEntries()) {
                     if (ac instanceof JackrabbitAccessControlEntry) {
                         acl.removeAccessControlEntry(ac);
                     }
@@ -705,14 +728,14 @@ public class IntegrationTestBase  {
 
     public void addACL(String path, boolean allow, String[] privs, String principal) throws RepositoryException {
         JackrabbitAccessControlList acl = null;
-        for (AccessControlPolicy p: admin.getAccessControlManager().getPolicies(path)) {
+        for (AccessControlPolicy p : admin.getAccessControlManager().getPolicies(path)) {
             if (p instanceof JackrabbitAccessControlList) {
                 acl = (JackrabbitAccessControlList) p;
                 break;
             }
         }
         if (acl == null) {
-            AccessControlPolicyIterator iter =  admin.getAccessControlManager().getApplicablePolicies(path);
+            AccessControlPolicyIterator iter = admin.getAccessControlManager().getApplicablePolicies(path);
             while (iter.hasNext()) {
                 AccessControlPolicy p = iter.nextAccessControlPolicy();
                 if (p instanceof JackrabbitAccessControlList) {
@@ -724,7 +747,7 @@ public class IntegrationTestBase  {
         assertNotNull(acl);
 
         Privilege[] ps = new Privilege[privs.length];
-        for (int i=0; i<privs.length; i++) {
+        for (int i = 0; i < privs.length; i++) {
             ps[i] = admin.getAccessControlManager().privilegeFromName(privs[i]);
         }
         acl.addEntry(new PrincipalImpl(principal), ps, allow);
@@ -766,7 +789,8 @@ public class IntegrationTestBase  {
     void verifyManifest(File testPackageFile, Set<String> ignoredEntries, String expected) throws IOException {
         try (JarFile jar = new JarFile(testPackageFile)) {
             List<String> entries = new ArrayList<String>();
-            for (Map.Entry<Object, Object> e: jar.getManifest().getMainAttributes().entrySet()) {
+            for (Map.Entry<Object, Object> e :
+                    jar.getManifest().getMainAttributes().entrySet()) {
                 String key = e.getKey().toString();
                 if (ignoredEntries.contains(key)) {
                     continue;
@@ -774,9 +798,8 @@ public class IntegrationTestBase  {
                 entries.add(e.getKey() + ":" + e.getValue());
             }
             Collections.sort(entries);
-            String result = Text.implode(entries.toArray(new String[entries.size()]),"\n");
+            String result = Text.implode(entries.toArray(new String[entries.size()]), "\n");
             assertEquals("Manifest", expected, result);
         }
     }
-
 }

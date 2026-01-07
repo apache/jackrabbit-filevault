@@ -1,29 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl.io;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.Node;
@@ -32,6 +25,14 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
@@ -111,6 +112,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      * Names of properties which should not be contained in the doc view serialization in case they are protected (in the underlying node definition).
      */
     private static final Set<String> IGNORED_POTENTIALLY_PROTECTED_PROPERTIES;
+
     static {
         Set<String> props = new HashSet<>();
         props.add(JcrConstants.JCR_CREATED);
@@ -121,8 +123,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
         IGNORED_POTENTIALLY_PROTECTED_PROPERTIES = Collections.unmodifiableSet(props);
     }
 
-    protected DocViewSAXFormatter(Aggregate aggregate, XMLStreamWriter writer)
-            throws RepositoryException {
+    protected DocViewSAXFormatter(Aggregate aggregate, XMLStreamWriter writer) throws RepositoryException {
 
         this.aggregate = aggregate;
         this.session = aggregate.getNode().getSession();
@@ -145,7 +146,8 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
             throw new RepositoryException(msg, e);
         }
 
-        useBinaryReferences = "true".equals(aggregate.getManager().getConfig().getProperty(VaultFsConfig.NAME_USE_BINARY_REFERENCES));
+        useBinaryReferences =
+                "true".equals(aggregate.getManager().getConfig().getProperty(VaultFsConfig.NAME_USE_BINARY_REFERENCES));
     }
 
     /**
@@ -176,8 +178,7 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      * {@inheritDoc}
      */
     @Override
-    public void onNodeBegin(Node node, boolean included, int level)
-            throws RepositoryException{
+    public void onNodeBegin(Node node, boolean included, int level) throws RepositoryException {
         // register used node types
         aggregate.getManager().addNodeTypes(node);
         props.clear();
@@ -226,7 +227,8 @@ public class DocViewSAXFormatter implements AggregateWalkListener {
      */
     @Override
     public void onProperty(Property prop, int level) throws RepositoryException {
-        if (IGNORED_POTENTIALLY_PROTECTED_PROPERTIES.contains(prop.getName()) && prop.getDefinition().isProtected()) {
+        if (IGNORED_POTENTIALLY_PROTECTED_PROPERTIES.contains(prop.getName())
+                && prop.getDefinition().isProtected()) {
             return;
         }
 

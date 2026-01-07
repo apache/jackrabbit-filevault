@@ -1,20 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.integration;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -23,9 +28,6 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.Random;
 import java.util.zip.Deflater;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -85,7 +87,7 @@ public class CompressionExportIT extends IntegrationTestBase {
 
     @Test
     public void test100KB_to_120KB() throws RepositoryException, IOException {
-        for (int size = 100 * 1024 ; size < 120 * 1024 ; size += 10 * 1024) {
+        for (int size = 100 * 1024; size < 120 * 1024; size += 10 * 1024) {
             runTestAndAssertGains(size);
         }
     }
@@ -100,47 +102,43 @@ public class CompressionExportIT extends IntegrationTestBase {
         runTestAndAssertGains(10 * 1024 * 1024);
     }
 
-    private void runTestAndAssertGains(int size)
-            throws RepositoryException, IOException {
+    private void runTestAndAssertGains(int size) throws RepositoryException, IOException {
         compareWithAndWithoutOptimization(storeFile(true, COMPRESSIBLE_MIME_TYPE, size));
         compareWithAndWithoutOptimization(storeFile(false, INCOMPRESSIBLE_MIME_TYPE, size));
         compareWithAndWithoutOptimization(storeFile(true, UNKNOWN_MIME_TYPE, size));
         compareWithAndWithoutOptimization(storeFile(false, UNKNOWN_MIME_TYPE, size));
     }
 
-    private void compareWithAndWithoutOptimization(String path)
-            throws IOException, RepositoryException {
+    private void compareWithAndWithoutOptimization(String path) throws IOException, RepositoryException {
         SizeDuration noOptimization = measureExportDuration(path, Deflater.DEFAULT_COMPRESSION);
-        SizeDuration withOptimization = measureExportDuration(path, 6); // level 6 is used for the DEFAULT_COMPRESSION strategy
+        SizeDuration withOptimization =
+                measureExportDuration(path, 6); // level 6 is used for the DEFAULT_COMPRESSION strategy
         float durationGain = (noOptimization.duration - withOptimization.duration) / (float) noOptimization.duration;
         float sizeGain = (noOptimization.size - withOptimization.size) / (float) noOptimization.size;
-        log.info("Path {} duration gain: {}, size gain: {}", new Object[]{path, durationGain, sizeGain});
+        log.info("Path {} duration gain: {}, size gain: {}", new Object[] {path, durationGain, sizeGain});
         // assert the optimization does not imply a decrease of throughput larger than 3%
         assertTrue(noOptimization.duration * 1.03f > withOptimization.duration);
     }
 
-    private SizeDuration measureExportDuration(String nodePath, int level)
-            throws IOException, RepositoryException {
+    private SizeDuration measureExportDuration(String nodePath, int level) throws IOException, RepositoryException {
         ExportOptions opts = buildExportOptions(nodePath, level);
-        log.info("Warmup for path {} and compression level {}",
-                new Object[]{nodePath, level});
+        log.info("Warmup for path {} and compression level {}", new Object[] {nodePath, level});
         exportMultipleTimes(opts, NB_WARMUP_ITERATIONS);
-        log.info("Run for path {} and compression level {}",
-                new Object[]{nodePath, level});
+        log.info("Run for path {} and compression level {}", new Object[] {nodePath, level});
         long start = System.nanoTime();
         long size = exportMultipleTimes(opts, NB_TEST_ITERATIONS);
         long stop = System.nanoTime();
         SizeDuration sd = new SizeDuration(size, stop - start);
-        float rate = (sd.size / (float)sd.duration * 1000);
-        log.info("Ran for path {} and compression level {} in {} ns produced {} B ({} MB/s)",
-                new Object[]{nodePath, level, sd.duration, sd.size, rate});
+        float rate = (sd.size / (float) sd.duration * 1000);
+        log.info(
+                "Ran for path {} and compression level {} in {} ns produced {} B ({} MB/s)",
+                new Object[] {nodePath, level, sd.duration, sd.size, rate});
         return sd;
     }
 
-    private long exportMultipleTimes(ExportOptions opts, int times)
-            throws IOException, RepositoryException {
+    private long exportMultipleTimes(ExportOptions opts, int times) throws IOException, RepositoryException {
         long size = 0;
-        for (int i = 0 ; i < times ; i++) {
+        for (int i = 0; i < times; i++) {
             WriteCountOutputStream outputStream = new WriteCountOutputStream();
             packMgr.assemble(admin, opts, outputStream);
             size += outputStream.size();
@@ -163,9 +161,7 @@ public class CompressionExportIT extends IntegrationTestBase {
         return opts;
     }
 
-
-    private String storeFile(boolean compressible, String mimeType, int size)
-            throws RepositoryException {
+    private String storeFile(boolean compressible, String mimeType, int size) throws RepositoryException {
         String path = String.format("%s/%s", TEST_PARENT_PATH, fileName(compressible, mimeType, size));
         Node node = JcrUtils.getOrCreateByPath(path, "nt:unstructured", admin);
         byte[] data = compressible ? compressibleData(size) : incompressibleData(size);
@@ -180,7 +176,7 @@ public class CompressionExportIT extends IntegrationTestBase {
 
     private byte[] compressibleData(int length) {
         byte[] data = new byte[length];
-        Arrays.fill(data, (byte)42); // low entropy data
+        Arrays.fill(data, (byte) 42); // low entropy data
         return data;
     }
 
@@ -225,5 +221,4 @@ public class CompressionExportIT extends IntegrationTestBase {
             this.size = size;
         }
     }
-
 }

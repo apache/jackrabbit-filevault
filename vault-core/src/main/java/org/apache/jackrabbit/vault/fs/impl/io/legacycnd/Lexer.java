@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl.io.legacycnd;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.io.StreamTokenizer;
 
 /**
  * This is copied from jackrabbit-spi-commons-1.6
- * 
+ *
  * Lexer
  */
 public class Lexer {
@@ -41,32 +42,34 @@ public class Lexer {
     public static final char CONSTRAINT = '<';
 
     public static final String[] ORDERABLE = new String[] {"orderable", "ord", "o"};
-    public static final String[] MIXIN = new String[]{"mixin", "mix", "m"};
+    public static final String[] MIXIN = new String[] {"mixin", "mix", "m"};
 
-    public static final String[] PRIMARY = new String[]{"primary", "pri", "!"};
-    public static final String[] AUTOCREATED = new String[]{"autocreated", "aut", "a"};
-    public static final String[] MANDATORY = new String[]{"mandatory", "man", "m"};
-    public static final String[] PROTECTED = new String[]{"protected", "pro", "p"};
-    public static final String[] MULTIPLE = new String[]{"multiple", "mul", "*"};
+    public static final String[] PRIMARY = new String[] {"primary", "pri", "!"};
+    public static final String[] AUTOCREATED = new String[] {"autocreated", "aut", "a"};
+    public static final String[] MANDATORY = new String[] {"mandatory", "man", "m"};
+    public static final String[] PROTECTED = new String[] {"protected", "pro", "p"};
+    public static final String[] MULTIPLE = new String[] {"multiple", "mul", "*"};
 
-    public static final String[] COPY = new String[]{"copy", "Copy", "COPY"};
-    public static final String[] VERSION = new String[]{"version", "Version", "VERSION"};
-    public static final String[] INITIALIZE = new String[]{"initialize", "Initialize", "INITIALIZE"};
-    public static final String[] COMPUTE = new String[]{"compute", "Compute", "COMPUTE"};
-    public static final String[] IGNORE = new String[]{"ignore", "Ignore", "IGNORE"};
-    public static final String[] ABORT = new String[]{"abort", "Abort", "ABORT"};
+    public static final String[] COPY = new String[] {"copy", "Copy", "COPY"};
+    public static final String[] VERSION = new String[] {"version", "Version", "VERSION"};
+    public static final String[] INITIALIZE = new String[] {"initialize", "Initialize", "INITIALIZE"};
+    public static final String[] COMPUTE = new String[] {"compute", "Compute", "COMPUTE"};
+    public static final String[] IGNORE = new String[] {"ignore", "Ignore", "IGNORE"};
+    public static final String[] ABORT = new String[] {"abort", "Abort", "ABORT"};
 
-    public static final String[] ATTRIBUTE = new String[]{"primary", "pri", "!",
-                                                          "autocreated", "aut", "a",
-                                                          "mandatory", "man", "m",
-                                                          "protected", "pro", "p",
-                                                          "multiple", "mul", "*",
-                                                          "copy", "Copy", "COPY",
-                                                          "version", "Version", "VERSION",
-                                                          "initialize", "Initialize", "INITIALIZE",
-                                                          "compute", "Compute", "COMPUTE",
-                                                          "ignore", "Ignore", "IGNORE",
-                                                          "abort", "Abort", "ABORT"};
+    public static final String[] ATTRIBUTE = new String[] {
+        "primary", "pri", "!",
+        "autocreated", "aut", "a",
+        "mandatory", "man", "m",
+        "protected", "pro", "p",
+        "multiple", "mul", "*",
+        "copy", "Copy", "COPY",
+        "version", "Version", "VERSION",
+        "initialize", "Initialize", "INITIALIZE",
+        "compute", "Compute", "COMPUTE",
+        "ignore", "Ignore", "IGNORE",
+        "abort", "Abort", "ABORT"
+    };
 
     public static final String[] STRING = {"string", "String", "STRING"};
     public static final String[] BINARY = {"binary", "Binary", "BINARY"};
@@ -78,7 +81,7 @@ public class Lexer {
     public static final String[] PATH = {"path", "Path", "PATH"};
     public static final String[] REFERENCE = {"reference", "Reference", "REFERENCE"};
 
-    public static final String[] UNDEFINED = new String[]{"undefined", "Undefined", "UNDEFINED", "*"};
+    public static final String[] UNDEFINED = new String[] {"undefined", "Undefined", "UNDEFINED", "*"};
 
     public static final String EOF = "eof";
 
@@ -122,9 +125,7 @@ public class Lexer {
             int tokenType = st.nextToken();
             if (tokenType == StreamTokenizer.TT_EOF) {
                 return EOF;
-            } else if (tokenType == StreamTokenizer.TT_WORD
-                    || tokenType == SINGLE_QUOTE
-                    || tokenType == DOUBLE_QUOTE) {
+            } else if (tokenType == StreamTokenizer.TT_WORD || tokenType == SINGLE_QUOTE || tokenType == DOUBLE_QUOTE) {
                 return st.sval;
             } else if (tokenType == StreamTokenizer.TT_NUMBER) {
                 return String.valueOf(st.nval);

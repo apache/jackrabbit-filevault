@@ -1,30 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
+
+import javax.jcr.ItemExistsException;
+import javax.jcr.RepositoryException;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.jcr.ItemExistsException;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -50,7 +51,7 @@ public class ArchiveExtractionIT extends IntegrationTestBase {
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{{0, false}, {1000, false}, {1024*1024, true}});
+        return Arrays.asList(new Object[][] {{0, false}, {1000, false}, {1024 * 1024, true}});
     }
 
     private final int streamBufferSize;
@@ -91,7 +92,8 @@ public class ArchiveExtractionIT extends IntegrationTestBase {
         assertNodeExists("/tmp/foo/bar/tobi");
         assertPackageNodeExists(TMP_PACKAGE_ID);
         // check if size is 0
-        long size = admin.getProperty(getInstallationPath(TMP_PACKAGE_ID) + "/jcr:content/jcr:data").getLength();
+        long size = admin.getProperty(getInstallationPath(TMP_PACKAGE_ID) + "/jcr:content/jcr:data")
+                .getLength();
         assertEquals("package binary size", 0, size);
 
         JcrPackage pack = packMgr.open(ids[0]);
@@ -99,9 +101,13 @@ public class ArchiveExtractionIT extends IntegrationTestBase {
         assertTrue("Package should be marked as empty", pack.isEmpty());
         assertNull("Package should not have a snapshot", pack.getSnapshot());
         assertNotNull("Package should have a definition", pack.getDefinition());
-        assertNotNull("Package should have a definition creation date", pack.getDefinition().getCreated());
+        assertNotNull(
+                "Package should have a definition creation date",
+                pack.getDefinition().getCreated());
         assertNotNull("Package should have properties", pack.getPackage().getProperties());
-        assertNotNull("Package should have a properties creation date", pack.getPackage().getCreated());
+        assertNotNull(
+                "Package should have a properties creation date",
+                pack.getPackage().getCreated());
 
         try {
             pack.install(getDefaultOptions());
@@ -112,7 +118,8 @@ public class ArchiveExtractionIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testDefaultArchiveInstallFailsWithoutReplace() throws RepositoryException, IOException, PackageException {
+    public void testDefaultArchiveInstallFailsWithoutReplace()
+            throws RepositoryException, IOException, PackageException {
         uploadPackage("/test-packages/tmp.zip");
         Archive a = getFileArchive("/test-packages/tmp.zip");
         ImportOptions opts = getDefaultOptions();
@@ -149,12 +156,14 @@ public class ArchiveExtractionIT extends IntegrationTestBase {
 
         // check for sub packages
         assertPackageNodeExists(PACKAGE_ID_SUB_A);
-        long size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_A)+ "/jcr:content/jcr:data").getLength();
+        long size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_A) + "/jcr:content/jcr:data")
+                .getLength();
         assertTrue("sub package must have data", size > 0);
         assertNodeMissing("/tmp/a");
 
         assertPackageNodeExists(PACKAGE_ID_SUB_B);
-        size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_B)+ "/jcr:content/jcr:data").getLength();
+        size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_B) + "/jcr:content/jcr:data")
+                .getLength();
         assertTrue("sub package must have data", size > 0);
         assertNodeMissing("/tmp/b");
     }
@@ -174,12 +183,14 @@ public class ArchiveExtractionIT extends IntegrationTestBase {
 
         // check for sub packages
         assertPackageNodeExists(PACKAGE_ID_SUB_A);
-        long size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_A)+ "/jcr:content/jcr:data").getLength();
+        long size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_A) + "/jcr:content/jcr:data")
+                .getLength();
         assertEquals("sub package must no data", 0, size);
         assertNodeExists("/tmp/a");
 
         assertPackageNodeExists(PACKAGE_ID_SUB_B);
-        size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_B)+ "/jcr:content/jcr:data").getLength();
+        size = admin.getProperty(getInstallationPath(PACKAGE_ID_SUB_B) + "/jcr:content/jcr:data")
+                .getLength();
         assertEquals("sub package must no data", 0, size);
         assertNodeExists("/tmp/b");
     }

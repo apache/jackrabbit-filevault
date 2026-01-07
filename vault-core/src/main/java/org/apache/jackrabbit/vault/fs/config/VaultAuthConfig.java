@@ -1,29 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.config;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.jackrabbit.vault.util.Constants;
 import org.slf4j.Logger;
@@ -33,7 +34,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * {@code VaultUserConfig}...
@@ -76,11 +76,12 @@ public class VaultAuthConfig extends AbstractConfig {
 
     @Deprecated
     protected void doWrite(ContentHandler handler) throws SAXException {
-        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+        throw new UnsupportedOperationException(
+                "No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
     }
 
     protected void doWrite(XMLStreamWriter writer) throws XMLStreamException {
-        for (RepositoryConfig cfg: repoConfigs.values()) {
+        for (RepositoryConfig cfg : repoConfigs.values()) {
             cfg.write(writer);
         }
     }
@@ -124,7 +125,7 @@ public class VaultAuthConfig extends AbstractConfig {
             }
             RepositoryConfig cfg = new RepositoryConfig(uri);
             NodeList nl = elem.getChildNodes();
-            for (int i=0; i<nl.getLength(); i++) {
+            for (int i = 0; i < nl.getLength(); i++) {
                 Node child = nl.item(i);
                 if (child.getNodeType() == Node.ELEMENT_NODE) {
                     if (child.getNodeName().equals(CredentialsConfig.ELEM_CREDETIALS)) {
@@ -142,7 +143,8 @@ public class VaultAuthConfig extends AbstractConfig {
 
         @Deprecated
         public void write(ContentHandler contentHandler) throws XMLStreamException {
-            throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+            throw new UnsupportedOperationException(
+                    "No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
         }
 
         public void write(XMLStreamWriter writer) throws XMLStreamException {
@@ -152,5 +154,4 @@ public class VaultAuthConfig extends AbstractConfig {
             writer.writeEndElement();
         }
     }
-
 }

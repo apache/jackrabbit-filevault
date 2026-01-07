@@ -1,20 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt.actions;
+
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.Value;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,12 +35,6 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
-
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.Value;
 
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.util.Text;
@@ -120,9 +122,12 @@ public class Sync extends AbstractAction {
     private void init(VltContext ctx, Session s) throws VltException, RepositoryException {
         // check if in vlt checkout
         if (ctx.getExportRoot().isValid()) {
-            ctx.getStdout().printf(Locale.ENGLISH, "Starting initialization of sync service in existing vlt checkout %s for %s%n",
-                    ctx.getExportRoot().getJcrRoot().getAbsolutePath(),
-                    mountPoint);
+            ctx.getStdout()
+                    .printf(
+                            Locale.ENGLISH,
+                            "Starting initialization of sync service in existing vlt checkout %s for %s%n",
+                            ctx.getExportRoot().getJcrRoot().getAbsolutePath(),
+                            mountPoint);
             // check if config is present, assume installed
             Config cfg = new Config(s);
             if (!cfg.load(ctx)) {
@@ -130,17 +135,20 @@ public class Sync extends AbstractAction {
                 install(ctx, s);
             }
             register(ctx, s, true);
-            ctx.getStdout().printf(
-                    Locale.ENGLISH, 
-                    "%nThe directory %1$s is now enabled for syncing.%n" +
-                    "You might perform a 'sync-once' by setting the%n" +
-                    "appropriate flag in the %1$s/.vlt-sync-config.properties file.%n%n",
-                    localDir.getAbsolutePath());
+            ctx.getStdout()
+                    .printf(
+                            Locale.ENGLISH,
+                            "%nThe directory %1$s is now enabled for syncing.%n"
+                                    + "You might perform a 'sync-once' by setting the%n"
+                                    + "appropriate flag in the %1$s/.vlt-sync-config.properties file.%n%n",
+                            localDir.getAbsolutePath());
         } else {
-            ctx.getStdout().printf(Locale.ENGLISH,
-                    "Starting initialization of sync service in a non vlt checkout directory %s for %s%n",
-                    localDir.getAbsolutePath(),
-                    mountPoint);
+            ctx.getStdout()
+                    .printf(
+                            Locale.ENGLISH,
+                            "Starting initialization of sync service in a non vlt checkout directory %s for %s%n",
+                            localDir.getAbsolutePath(),
+                            mountPoint);
             // check if empty
             if (localDir.listFiles().length > 0) {
                 throw new VltException("Aborting initialization since directory is not empty.");
@@ -152,13 +160,14 @@ public class Sync extends AbstractAction {
                 install(ctx, s);
             }
             register(ctx, s, true);
-            ctx.getStdout().printf(
-                    Locale.ENGLISH, 
-                    "%nThe directory %1$s is now enabled for syncing.%n" +
-                    "You need to configure the filter %1$s/.vlt-sync-filter.xml to setup the%n" +
-                    "proper paths. You might also perform a 'sync-once' by setting the%n" +
-                    "appropriate flag in the %1$s/.vlt-sync-config.properties file.%n%n",
-                    localDir.getAbsolutePath());
+            ctx.getStdout()
+                    .printf(
+                            Locale.ENGLISH,
+                            "%nThe directory %1$s is now enabled for syncing.%n"
+                                    + "You need to configure the filter %1$s/.vlt-sync-filter.xml to setup the%n"
+                                    + "proper paths. You might also perform a 'sync-once' by setting the%n"
+                                    + "appropriate flag in the %1$s/.vlt-sync-config.properties file.%n%n",
+                            localDir.getAbsolutePath());
         }
     }
 
@@ -185,7 +194,7 @@ public class Sync extends AbstractAction {
             ctx.getStdout().println("No sync-service configured at " + CFG_NODE_PATH);
             return;
         }
-        for (String path: cfg.roots) {
+        for (String path : cfg.roots) {
             // need to check canonical path
             try {
                 File f = new File(path).getCanonicalFile();
@@ -212,7 +221,7 @@ public class Sync extends AbstractAction {
             return;
         }
         boolean found = false;
-        for (String path: cfg.roots) {
+        for (String path : cfg.roots) {
             // need to check canonical path
             try {
                 File f = new File(path).getCanonicalFile();
@@ -237,7 +246,7 @@ public class Sync extends AbstractAction {
         // get sync jar
         URLClassLoader cl = (URLClassLoader) VaultSyncServiceImpl.class.getClassLoader();
         URL resource = null;
-        for (URL url: cl.getURLs()) {
+        for (URL url : cl.getURLs()) {
             if (url.getPath().matches(".*/vault-sync-.*\\.jar")) {
                 resource = url;
                 break;
@@ -250,17 +259,19 @@ public class Sync extends AbstractAction {
         ctx.getStdout().println("Preparing to install " + jarName + "...");
 
         Node root = s.getRootNode();
-        for (String name: INSTALL_ROOT) {
+        for (String name : INSTALL_ROOT) {
             root = JcrUtils.getOrAddFolder(root, name);
         }
         // check if already a bundle is installed
-        for (Node child: JcrUtils.getChildNodes(root)) {
+        for (Node child : JcrUtils.getChildNodes(root)) {
             if (child.getName().startsWith("vault-sync-")) {
                 if (force) {
                     ctx.getStdout().println("Detected existing bundle: " + child.getName() + ". Updating");
                     break;
                 } else {
-                    ctx.getStdout().println("Detected existing bundle: " + child.getName() + ". Aborting installation. Specify --force to update.");
+                    ctx.getStdout()
+                            .println("Detected existing bundle: " + child.getName()
+                                    + ". Aborting installation. Specify --force to update.");
                     return;
                 }
             }
@@ -271,7 +282,12 @@ public class Sync extends AbstractAction {
             if (root.hasNode(jarName)) {
                 root.getNode(jarName).remove();
             }
-            JcrUtils.putFile(root, jarName, "application/octet-stream", in, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
+            JcrUtils.putFile(
+                    root,
+                    jarName,
+                    "application/octet-stream",
+                    in,
+                    Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
         } catch (IOException e) {
             throw new VltException("Error while installing bundle", e);
         } finally {
@@ -331,8 +347,8 @@ public class Sync extends AbstractAction {
             Node cfgNode = s.getNode(CFG_NODE_PATH);
             cfgNode.setProperty(CFG_ENABLED, enabled);
             Value[] vals = new Value[roots.size()];
-            int i=0;
-            for (String path: roots) {
+            int i = 0;
+            for (String path : roots) {
                 vals[i++] = s.getValueFactory().createValue(path);
             }
             cfgNode.setProperty(CFG_ROOTS, vals);

@@ -1,25 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,6 +36,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class DocViewFormatTest {
 
     private File dir;
@@ -48,7 +49,10 @@ public class DocViewFormatTest {
     public void setup() throws IOException {
         String tempDir = System.getProperty("java.io.tmpdir");
         dir = new File(tempDir + File.separator + "DocViewFormatTest-"
-                + ISO8601.format(Calendar.getInstance()).replace(":", "").replace(".", "").replace("-", ""));
+                + ISO8601.format(Calendar.getInstance())
+                        .replace(":", "")
+                        .replace(".", "")
+                        .replace("-", ""));
         assert dir.mkdir();
         docViewFile = new File(dir, "malformed.xml");
         assert docViewFile.createNewFile();
@@ -78,12 +82,16 @@ public class DocViewFormatTest {
     public void testFormatting() throws IOException {
         List<Pattern> patterns = Collections.singletonList(Pattern.compile(".+\\.xml"));
         DocViewFormat format = new DocViewFormat();
-        assertFalse("malformed.xml is expected to be malformed", format.format(dir, patterns, false).isEmpty());
+        assertFalse(
+                "malformed.xml is expected to be malformed",
+                format.format(dir, patterns, false).isEmpty());
         try (InputStream input = this.getClass().getResourceAsStream("DocViewFormat/formatted.xml")) {
             final String expected = IOUtils.toString(input, StandardCharsets.UTF_8);
             final String result = FileUtils.readFileToString(docViewFile, StandardCharsets.UTF_8);
             assertEquals(expected, result);
         }
-        assertTrue("malformed.xml is expected to be formatted", format.format(dir, patterns, true).isEmpty());
+        assertTrue(
+                "malformed.xml is expected to be formatted",
+                format.format(dir, patterns, true).isEmpty());
     }
 }

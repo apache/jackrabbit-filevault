@@ -1,20 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
+
+import javax.jcr.Binary;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.nodetype.NodeType;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,13 +38,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
-
-import javax.jcr.Binary;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.jackrabbit.commons.JcrUtils;
@@ -89,7 +91,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     /**
      * suggested folder types
      */
-    private final static String[] FOLDER_TYPES = {"sling:Folder", "nt:folder", "nt:unstructured", null};
+    private static final String[] FOLDER_TYPES = {"sling:Folder", "nt:folder", "nt:unstructured", null};
 
     /**
      * internal session
@@ -119,24 +121,28 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @param session the JCR session that is used to access the repository.
      * @param roots the root paths to store the packages.
      */
-    public JcrPackageRegistry(@NotNull Session session, @Nullable String ... roots) {
+    public JcrPackageRegistry(@NotNull Session session, @Nullable String... roots) {
         this(session, null, false, true, IdConflictPolicy.FAIL, roots);
     }
 
-    public JcrPackageRegistry(@NotNull Session session, @Nullable AbstractPackageRegistry.SecurityConfig securityConfig,
-            boolean isStrict, boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy defaultIdConflictPolicy,
+    public JcrPackageRegistry(
+            @NotNull Session session,
+            @Nullable AbstractPackageRegistry.SecurityConfig securityConfig,
+            boolean isStrict,
+            boolean overwritePrimaryTypesOfFoldersByDefault,
+            IdConflictPolicy defaultIdConflictPolicy,
             @Nullable String... roots) {
         super(securityConfig, isStrict, overwritePrimaryTypesOfFoldersByDefault, defaultIdConflictPolicy);
         this.session = session;
         if (roots == null || roots.length == 0) {
-            packRootPaths = new String[]{DEFAULT_PACKAGE_ROOT_PATH};
+            packRootPaths = new String[] {DEFAULT_PACKAGE_ROOT_PATH};
         } else {
             packRootPaths = roots;
         }
         packRoots = new Node[packRootPaths.length];
         initNodeTypes();
     }
-    
+
     /**
      * Sets fallback PackageRegistry for dependency lookup
      * @param baseRegisry
@@ -179,7 +185,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         } catch (RepositoryException e) {
             // ignore
         }
-        try (InputStream in = JcrPackageManagerImpl.class.getResourceAsStream(DEFAULT_NODETYPES)){
+        try (InputStream in = JcrPackageManagerImpl.class.getResourceAsStream(DEFAULT_NODETYPES)) {
             if (in == null) {
                 throw new InternalError("Could not load " + DEFAULT_NODETYPES + " resource.");
             }
@@ -216,9 +222,11 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
                 packRoots[0] = session.getNode(packRootPaths[0]);
             } else if (autoCreate) {
                 if (session.hasPendingChanges()) {
-                    throw new RepositoryException("Unwilling to create package root folder while session has transient changes.");
+                    throw new RepositoryException(
+                            "Unwilling to create package root folder while session has transient changes.");
                 }
-                packRoots[0] = JcrUtils.getOrCreateByPath(packRootPaths[0], NodeType.NT_FOLDER, NodeType.NT_FOLDER, session, true);
+                packRoots[0] = JcrUtils.getOrCreateByPath(
+                        packRootPaths[0], NodeType.NT_FOLDER, NodeType.NT_FOLDER, session, true);
             }
         }
         return packRoots[0];
@@ -233,7 +241,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     @NotNull
     public List<Node> getPackageRoots() throws RepositoryException {
         List<Node> roots = new ArrayList<>(packRootPaths.length);
-        for (int i=0; i<packRootPaths.length; i++) {
+        for (int i = 0; i < packRootPaths.length; i++) {
             if (packRoots[i] == null) {
                 if (session.nodeExists(packRootPaths[i])) {
                     packRoots[i] = session.getNode(packRootPaths[i]);
@@ -282,10 +290,10 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     @Nullable
     private Node getPackageNode(@NotNull PackageId id) throws RepositoryException {
         String relPath = getRelativeInstallationPath(id);
-        for (String pfx: packRootPaths) {
+        for (String pfx : packRootPaths) {
             String path = pfx + "/" + relPath;
-            String[] exts = new String[]{"", ".zip", ".jar"};
-            for (String ext: exts) {
+            String[] exts = new String[] {"", ".zip", ".jar"};
+            for (String ext : exts) {
                 if (session.nodeExists(path + ext)) {
                     return session.getNode(path + ext);
                 }
@@ -317,7 +325,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     public PackageId resolve(Dependency dependency, boolean onlyInstalled) throws IOException {
         try {
             PackageId bestId = null;
-            for (Node root: getPackageRoots()) {
+            for (Node root : getPackageRoots()) {
                 if (!root.hasNode(dependency.getGroup())) {
                     continue;
                 }
@@ -342,7 +350,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
                         }
                     }
                 }
-            } 
+            }
             if (bestId == null && baseRegistry != null) {
                 bestId = baseRegistry.resolve(dependency, onlyInstalled);
             }
@@ -355,7 +363,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     @NotNull
     @Override
     public PackageId register(@NotNull InputStream in, boolean replace) throws IOException, PackageExistsException {
-        try (JcrPackage pkg = upload(in, replace)){
+        try (JcrPackage pkg = upload(in, replace)) {
             //noinspection resource
             return pkg.getPackage().getId();
         } catch (RepositoryException e) {
@@ -383,10 +391,10 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
 
     public JcrPackage upload(InputStream in, boolean replace)
             throws RepositoryException, IOException, PackageExistsException {
-    
+
         MemoryArchive archive = new MemoryArchive(true);
         final Binary bin;
-        try (InputStreamPump pump = new InputStreamPump(in , archive)) {
+        try (InputStreamPump pump = new InputStreamPump(in, archive)) {
             // this will cause the input stream to be consumed and the memory archive being initialized.
             bin = session.getValueFactory().createBinary(pump);
         }
@@ -407,7 +415,8 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException
      * @throws PackageExistsException
      */
-    public JcrPackage upload(@NotNull ZipVaultPackage pkg, boolean replace) throws RepositoryException, IOException, PackageExistsException {
+    public JcrPackage upload(@NotNull ZipVaultPackage pkg, boolean replace)
+            throws RepositoryException, IOException, PackageExistsException {
 
         final Binary binary;
         File file = pkg.getFile();
@@ -429,16 +438,17 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     }
 
     /**
-     * 
+     *
      * @param archive the source archive to upload
      * @param binary the binary value holding the actual package, is not disposed
      * @param replace whether to replace an existing package with the same id
      * @return the newly uploaded package
-     * @throws IOException 
-     * @throws RepositoryException 
-     * @throws PackageExistsException 
+     * @throws IOException
+     * @throws RepositoryException
+     * @throws PackageExistsException
      */
-    private JcrPackage upload(@NotNull Archive archive, Binary binary, boolean replace) throws RepositoryException, IOException, PackageExistsException {
+    private JcrPackage upload(@NotNull Archive archive, Binary binary, boolean replace)
+            throws RepositoryException, IOException, PackageExistsException {
         // open zip packages
         if (archive.getJcrRoot() == null) {
             String msg = "Given archive is not a content package. Missing 'jcr_root'.";
@@ -470,15 +480,17 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
                 try (JcrPackage oldPackage = new JcrPackageImpl(this, parent.getNode(name))) {
                     JcrPackageDefinitionImpl oldDef = (JcrPackageDefinitionImpl) oldPackage.getDefinition();
                     if (oldDef != null) {
-                        Calendar newCreateDate = archive.getMetaInf().getPackageProperties().getCreated();
+                        Calendar newCreateDate =
+                                archive.getMetaInf().getPackageProperties().getCreated();
                         Calendar oldCreatedDate = oldDef.getCreated();
-                        if (newCreateDate != null && oldCreatedDate != null && oldCreatedDate.compareTo(newCreateDate) == 0) {
+                        if (newCreateDate != null
+                                && oldCreatedDate != null
+                                && oldCreatedDate.compareTo(newCreateDate) == 0) {
                             // ... and only in case both packages have the same create date
                             state = oldDef.getState();
                         }
                     }
                 }
-                
             }
 
             if (replace) {
@@ -523,7 +535,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         Node parent = mkdir(parentPath, autoSave);
         Node node = null;
         RepositoryException lastError = null;
-        for (int i=0; node == null && i<FOLDER_TYPES.length; i++) {
+        for (int i = 0; node == null && i < FOLDER_TYPES.length; i++) {
             try {
                 node = parent.addNode(Text.getName(path), FOLDER_TYPES[i]);
             } catch (RepositoryException e) {
@@ -543,8 +555,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         return node;
     }
 
-    public JcrPackage create(String group, String name, String version)
-            throws RepositoryException, IOException {
+    public JcrPackage create(String group, String name, String version) throws RepositoryException, IOException {
         // sanitize name
         String ext = Text.getName(name, '.');
         if ("zip".equals(ext) || "jar".equals(ext)) {
@@ -572,10 +583,11 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @since 2.3.0
      */
     @NotNull
-    public JcrPackage createNew(@NotNull Node parent, @NotNull PackageId pid, @Nullable VaultPackage pack, boolean autoSave)
+    public JcrPackage createNew(
+            @NotNull Node parent, @NotNull PackageId pid, @Nullable VaultPackage pack, boolean autoSave)
             throws RepositoryException, IOException {
         final Binary binary;
-        File file = (pack!=null)?pack.getFile():null;
+        File file = (pack != null) ? pack.getFile() : null;
         if (file != null) {
             try (InputStream input = new FileInputStream(file)) {
                 binary = parent.getSession().getValueFactory().createBinary(input);
@@ -610,7 +622,8 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @since 3.1
      */
     @NotNull
-    private JcrPackage createNew(@NotNull Node parent, @NotNull PackageId pid, @NotNull Binary binary, @Nullable Archive archive)
+    private JcrPackage createNew(
+            @NotNull Node parent, @NotNull PackageId pid, @NotNull Binary binary, @Nullable Archive archive)
             throws RepositoryException, IOException {
         Node node = parent.addNode(Text.getName(getInstallationPath(pid) + ".zip"), JcrConstants.NT_FILE);
         Node content = node.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
@@ -621,7 +634,8 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         def.set(JcrPackageDefinition.PN_GROUP, pid.getGroup(), false);
         def.set(JcrPackageDefinition.PN_VERSION, pid.getVersionString(), false);
         def.touch(null, false);
-        content.setProperty(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
+        content.setProperty(
+                JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
         content.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
         content.setProperty(JcrConstants.JCR_DATA, binary);
         def.unwrap(archive, false);
@@ -668,8 +682,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
         PackageId newId = new PackageId(
                 group == null ? id.getGroup() : group,
                 name == null ? id.getName() : name,
-                version == null ? id.getVersion() : Version.create(version)
-        );
+                version == null ? id.getVersion() : Version.create(version));
         String dstPath = getInstallationPath(newId) + ".zip";
         if (id.equals(newId) && pack.getNode().getPath().equals(dstPath)) {
             log.debug("Package id not changed. won't rename.");
@@ -689,17 +702,16 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
 
         session.save();
         Node newNode = session.getNode(dstPath);
-        dispatch(PackageEvent.Type.RENAME, id, new PackageId[]{newId});
+        dispatch(PackageEvent.Type.RENAME, id, new PackageId[] {newId});
         return open(newNode, false);
     }
-
 
     @NotNull
     @Override
     public Set<PackageId> packages() throws IOException {
         try {
             Set<PackageId> packages = new TreeSet<PackageId>();
-            for (Node pRoot: getPackageRoots()) {
+            for (Node pRoot : getPackageRoots()) {
                 listPackages(pRoot, packages);
             }
             return packages;
@@ -717,7 +729,7 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
      * @throws RepositoryException if an error occurs
      */
     private void listPackages(Node root, Set<PackageId> packages) throws RepositoryException {
-        for (NodeIterator iter = root.getNodes(); iter.hasNext();) {
+        for (NodeIterator iter = root.getNodes(); iter.hasNext(); ) {
             Node child = iter.nextNode();
             if (".snapshot".equals(child.getName())) {
                 continue;
@@ -750,8 +762,9 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Override
-    public void installPackage(@NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts,
-            boolean extract) throws IOException, PackageException {
+    public void installPackage(
+            @NotNull Session session, @NotNull RegisteredPackage pkg, @NotNull ImportOptions opts, boolean extract)
+            throws IOException, PackageException {
         JcrRegisteredPackage registeredPackage = (JcrRegisteredPackage) pkg;
         try (JcrPackage jcrPkg = registeredPackage.getJcrPackage()) {
             if (extract) {
@@ -773,5 +786,4 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             throw new IOException(e);
         }
     }
-
 }

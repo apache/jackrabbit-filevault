@@ -1,20 +1,27 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt;
+
+import javax.jcr.Credentials;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,11 +31,6 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.jcr.Credentials;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.Mounter;
@@ -70,8 +72,7 @@ public class VltContext {
 
     private final ConnectionOptions connectionOptions;
 
-    private Map<RepositoryAddress, VaultFileSystem> fileSystems
-            = new HashMap<>();
+    private Map<RepositoryAddress, VaultFileSystem> fileSystems = new HashMap<>();
 
     private RepositoryAddress mountpoint;
 
@@ -92,7 +93,7 @@ public class VltContext {
     private PathFilter globalIgnored;
 
     /**
-     * 
+     *
      * @param cwd
      * @param localFile
      * @param repProvider
@@ -101,15 +102,13 @@ public class VltContext {
      * @deprecated Rather use {@link #VltContext(File, File, RepositoryProvider, CredentialsStore, PrintStream, ConnectionOptions)}
      */
     @Deprecated
-    public VltContext(File cwd, File localFile,
-            RepositoryProvider repProvider,
-            CredentialsStore credsProvider)
-                    throws IOException {
+    public VltContext(File cwd, File localFile, RepositoryProvider repProvider, CredentialsStore credsProvider)
+            throws IOException {
         this(cwd, localFile, repProvider, credsProvider, System.out, null);
     }
 
     /**
-     * 
+     *
      * @param cwd
      * @param localFile
      * @param repProvider
@@ -119,17 +118,19 @@ public class VltContext {
      * @deprecated Rather use {@link #VltContext(File, File, RepositoryProvider, CredentialsStore, PrintStream, ConnectionOptions)}
      */
     @Deprecated
-    public VltContext(File cwd, File localFile,
-            RepositoryProvider repProvider,
-            CredentialsStore credsProvider,
-            PrintStream out) throws IOException {
+    public VltContext(
+            File cwd, File localFile, RepositoryProvider repProvider, CredentialsStore credsProvider, PrintStream out)
+            throws IOException {
         this(cwd, localFile, repProvider, credsProvider, out, null);
     }
 
-    public VltContext(File cwd, File localFile,
-                        RepositoryProvider repProvider,
-                        CredentialsStore credsProvider,
-                        PrintStream out, ConnectionOptions connectionOptions)
+    public VltContext(
+            File cwd,
+            File localFile,
+            RepositoryProvider repProvider,
+            CredentialsStore credsProvider,
+            PrintStream out,
+            ConnectionOptions connectionOptions)
             throws IOException {
         if (!cwd.exists()) {
             throw new FileNotFoundException(cwd.getAbsolutePath());
@@ -169,9 +170,9 @@ public class VltContext {
     }
 
     public static MetaDirectory createMetaDirectory(File base) throws VltException {
-        //return new FileMetaDir(base);
+        // return new FileMetaDir(base);
         try {
-            //return new TarMetaDir(base);
+            // return new TarMetaDir(base);
             return new ZipMetaDir(base);
         } catch (IOException e) {
             throw new VltException("Error creating meta directory.", e);
@@ -238,8 +239,7 @@ public class VltContext {
         return s;
     }
 
-    public VaultFileSystem getFileSystem(RepositoryAddress mountpoint)
-            throws VltException {
+    public VaultFileSystem getFileSystem(RepositoryAddress mountpoint) throws VltException {
         VaultFileSystem fs = fileSystems.get(mountpoint);
         if (fs == null) {
             try {
@@ -252,7 +252,7 @@ public class VltContext {
                 }
                 if (filter == null && defaultFilterRoots.length > 0) {
                     filter = new DefaultWorkspaceFilter();
-                    for (String root: defaultFilterRoots) {
+                    for (String root : defaultFilterRoots) {
                         filter.add(new PathFilterSet(root));
                     }
                     stdout.printf(Locale.ENGLISH, "Created default filter:%n%s", filter.getSourceAsString());
@@ -272,7 +272,8 @@ public class VltContext {
                     }
                     filter.setGlobalIgnored(globalIgnored);
                 }
-                // override any import mode defined in the filter as this is not expected when committing files (GRANITE-XYZ)
+                // override any import mode defined in the filter as this is not expected when committing files
+                // (GRANITE-XYZ)
                 if (filter != null) {
                     filter.setImportMode(ImportMode.REPLACE);
                 }
@@ -318,7 +319,7 @@ public class VltContext {
     }
 
     public void close() {
-        for (RepositoryAddress addr: fileSystems.keySet()) {
+        for (RepositoryAddress addr : fileSystems.keySet()) {
             VaultFileSystem fs = fileSystems.get(addr);
             try {
                 fs.unmount();
@@ -385,7 +386,7 @@ public class VltContext {
             stdout.flush();
         }
     }
-    
+
     public void printMessage(String msg, VltFile file) {
         if (!quiet) {
             String path = getCwdRelativePath(file.getPath());
@@ -401,8 +402,7 @@ public class VltContext {
         }
     }
 
-    public void printStatus(VltFile file)
-            throws VltException {
+    public void printStatus(VltFile file) throws VltException {
         String path = getCwdRelativePath(file.getPath());
         VltFile.State state = file.getStatus();
         if (quiet && state == VltFile.State.UNKNOWN) {
@@ -418,8 +418,7 @@ public class VltContext {
         }
     }
 
-    public void printRemoteStatus(VltFile file, FileAction action)
-            throws VltException {
+    public void printRemoteStatus(VltFile file, FileAction action) throws VltException {
         String path = getCwdRelativePath(file.getPath());
         VltFile.State state = file.getStatus();
         if (quiet && state == VltFile.State.UNKNOWN && action == FileAction.VOID) {
@@ -454,5 +453,4 @@ public class VltContext {
     public void setQuiet(boolean quiet) {
         this.quiet = quiet;
     }
-
 }

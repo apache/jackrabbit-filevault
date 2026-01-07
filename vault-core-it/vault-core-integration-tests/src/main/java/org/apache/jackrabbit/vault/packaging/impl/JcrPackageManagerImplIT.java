@@ -1,27 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.impl;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.GuestCredentials;
@@ -32,6 +27,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.security.AccessControlEntry;
 import javax.jcr.security.AccessControlManager;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
@@ -70,11 +72,9 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
         try {
             jcrPackageManager.mkdir(path, true);
             fail("this should have thrown RepositoryException as the session always tells nodes don't exist");
-        }
-        catch (RepositoryException e) {
+        } catch (RepositoryException e) {
             // everything it's ok
         }
-
     }
 
     @Test
@@ -82,9 +82,15 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
     public void testMkDirWithAnonymousSession() throws Exception {
         Session session = repository.login(new GuestCredentials());
         JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(session, new String[0]);
-        jcrPackageManager.mkdir("/something/that/is/not/going/to/be/found/anywhere/in/this/repository/even/if/searching/in/very/long/paths/like/this", false);
-        jcrPackageManager.mkdir("/something/that/is/not/going/to/be/found/anywhere/in/this/repository/even/if/searching/in/very/long/paths/like/this", false);
-        jcrPackageManager.mkdir("/something/that/is/not/going/to/be/found/anywhere/in/this/repository/even/if/searching/in/very/long/paths/like/this", false);
+        jcrPackageManager.mkdir(
+                "/something/that/is/not/going/to/be/found/anywhere/in/this/repository/even/if/searching/in/very/long/paths/like/this",
+                false);
+        jcrPackageManager.mkdir(
+                "/something/that/is/not/going/to/be/found/anywhere/in/this/repository/even/if/searching/in/very/long/paths/like/this",
+                false);
+        jcrPackageManager.mkdir(
+                "/something/that/is/not/going/to/be/found/anywhere/in/this/repository/even/if/searching/in/very/long/paths/like/this",
+                false);
     }
 
     @Test
@@ -122,7 +128,8 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
 
     @Test
     public void testAlternativePackageRootCreatesOnlyOneNode() throws RepositoryException {
-        JcrPackageManagerImpl jcrPackageManager = new JcrPackageManagerImpl(admin, new String[]{"/var/packages", "/etc/packages"});
+        JcrPackageManagerImpl jcrPackageManager =
+                new JcrPackageManagerImpl(admin, new String[] {"/var/packages", "/etc/packages"});
         Node packageNode = jcrPackageManager.getPackageRoot(false);
         assertEquals("/var/packages", packageNode.getPath());
         assertNodeMissing("/etc/packages");
@@ -151,7 +158,10 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
         acMgr.removePolicy(acl.getPath(), acl);
 
         AccessControlUtils.getAccessControlList(acMgr, "/etc/packages");
-        AccessControlUtils.allow(packageRoot, org.apache.jackrabbit.oak.spi.security.principal.EveryonePrincipal.NAME, javax.jcr.security.Privilege.JCR_READ);
+        AccessControlUtils.allow(
+                packageRoot,
+                org.apache.jackrabbit.oak.spi.security.principal.EveryonePrincipal.NAME,
+                javax.jcr.security.Privilege.JCR_READ);
 
         admin.save();
 
@@ -176,7 +186,8 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
         for (AccessControlEntry ace : acl.getAccessControlEntries()) {
             acl.removeAccessControlEntry(ace);
         }
-        acl.addEntry(AccessControlUtils.getEveryonePrincipal(admin),
+        acl.addEntry(
+                AccessControlUtils.getEveryonePrincipal(admin),
                 AccessControlUtils.privilegesFromNames(admin, javax.jcr.security.Privilege.JCR_READ),
                 true,
                 Collections.singletonMap("rep:glob", admin.getValueFactory().createValue("etc/*")));
@@ -193,7 +204,7 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
             } catch (AccessDeniedException | PathNotFoundException e) {
                 // success
             }
-        }  finally {
+        } finally {
             anonymous.logout();
         }
     }
@@ -205,7 +216,8 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
     public void testListPackages() throws IOException, PackageException, RepositoryException {
         assertTrue("initially the packages set is empty", packMgr.listPackages().isEmpty());
         packMgr.upload(getStream("/test-packages/tmp.zip"), false);
-        assertEquals("package list contains 1 element", 1, packMgr.listPackages().size());
+        assertEquals(
+                "package list contains 1 element", 1, packMgr.listPackages().size());
         JcrPackage pkg = packMgr.listPackages().get(0);
         assertEquals("contains new package", TMP_PACKAGE_ID, pkg.getDefinition().getId());
     }
@@ -217,16 +229,23 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
     public void testListPackagesWithGroup() throws IOException, PackageException, RepositoryException {
         packMgr.upload(getStream("/test-packages/tmp.zip"), false);
         packMgr.create("foo", "test-package");
-        assertEquals("package list contains 2 elements", 2, packMgr.listPackages().size());
+        assertEquals(
+                "package list contains 2 elements", 2, packMgr.listPackages().size());
 
         JcrPackage pkg = packMgr.listPackages("my_packages", false).get(0);
         assertEquals("contains new package", TMP_PACKAGE_ID, pkg.getDefinition().getId());
 
         pkg = packMgr.listPackages("foo", false).get(0);
-        assertEquals("contains new package", "foo:test-package", pkg.getDefinition().getId().toString());
+        assertEquals(
+                "contains new package",
+                "foo:test-package",
+                pkg.getDefinition().getId().toString());
 
         // don't report the not-built one
-        assertEquals("package list contains 2 elements", 0, packMgr.listPackages("foo", true).size());
+        assertEquals(
+                "package list contains 2 elements",
+                0,
+                packMgr.listPackages("foo", true).size());
     }
 
     /**
@@ -237,17 +256,22 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
         assertTrue("initially the packages set is empty", packMgr.listPackages().isEmpty());
         packMgr.upload(getStream(TEST_PACKAGE_A_10), false);
         packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
-        assertEquals("package list contains 2 elements", 2, packMgr.listPackages().size());
+        assertEquals(
+                "package list contains 2 elements", 2, packMgr.listPackages().size());
 
-        JcrPackageManager multiRootMgr = new JcrPackageManagerImpl(admin, new String[]{"/var/packages" , "/etc/packages"});
-        assertEquals("package list contains 2 elements", 2, multiRootMgr.listPackages().size());
+        JcrPackageManager multiRootMgr =
+                new JcrPackageManagerImpl(admin, new String[] {"/var/packages", "/etc/packages"});
+        assertEquals(
+                "package list contains 2 elements",
+                2,
+                multiRootMgr.listPackages().size());
 
         // install 3rd package in /var
         multiRootMgr.upload(getStream(TEST_PACKAGE_C_10), false);
         List<JcrPackage> pkgs = multiRootMgr.listPackages();
         assertEquals("packages contains 3 elements", 3, pkgs.size());
         Set<PackageId> ids = new HashSet<PackageId>();
-        for (JcrPackage p: pkgs) {
+        for (JcrPackage p : pkgs) {
             ids.add(p.getDefinition().getId());
         }
 
@@ -265,10 +289,15 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
         packMgr.upload(getStream(TEST_PACKAGE_A_10), false);
         packMgr.upload(getStream(TEST_PACKAGE_B_10), false);
         packMgr.create("foo", "test-package");
-        assertEquals("package list contains 3 elements", 3, packMgr.listPackages().size());
+        assertEquals(
+                "package list contains 3 elements", 3, packMgr.listPackages().size());
 
-        JcrPackageManager multiRootMgr = new JcrPackageManagerImpl(admin, new String[]{"/var/packages" , "/etc/packages"});
-        assertEquals("package list contains 3 elements", 3, multiRootMgr.listPackages().size());
+        JcrPackageManager multiRootMgr =
+                new JcrPackageManagerImpl(admin, new String[] {"/var/packages", "/etc/packages"});
+        assertEquals(
+                "package list contains 3 elements",
+                3,
+                multiRootMgr.listPackages().size());
 
         // install 3rd package in /var
         multiRootMgr.upload(getStream(TEST_PACKAGE_C_10), false);
@@ -277,14 +306,13 @@ public class JcrPackageManagerImplIT extends IntegrationTestBase {
         List<JcrPackage> pkgs = multiRootMgr.listPackages("foo", false);
         assertEquals("packages contains 2 elements", 2, pkgs.size());
         Set<String> ids = new HashSet<String>();
-        for (JcrPackage p: pkgs) {
+        for (JcrPackage p : pkgs) {
             ids.add(p.getDefinition().getId().toString());
         }
 
         assertTrue("contains new packages", ids.contains("foo:test-package"));
         assertTrue("contains new packages", ids.contains("foo:var-test-package"));
     }
-
 
     private String getNextPath(String path) throws RepositoryException {
         Node currentNode = admin.getNode(path);

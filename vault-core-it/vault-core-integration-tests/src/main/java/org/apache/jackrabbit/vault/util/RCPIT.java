@@ -1,29 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.util;
-
-import java.io.IOException;
-import java.util.Calendar;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
+
+import java.io.IOException;
+import java.util.Calendar;
 
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
@@ -35,7 +37,6 @@ import org.junit.Test;
  */
 public class RCPIT extends IntegrationTestBase {
 
-
     public static final String SRC_PATH = "/testroot/src";
 
     public static final String SRC_TEST_NODE_PATH = "/testroot/src/a";
@@ -46,10 +47,11 @@ public class RCPIT extends IntegrationTestBase {
 
     @Test
     public void testSimple() throws IOException, RepositoryException, ConfigurationException {
-        Node a = JcrUtils.getOrCreateByPath(SRC_TEST_NODE_PATH, NodeType.NT_UNSTRUCTURED, NodeType.NT_UNSTRUCTURED, admin, true);
+        Node a = JcrUtils.getOrCreateByPath(
+                SRC_TEST_NODE_PATH, NodeType.NT_UNSTRUCTURED, NodeType.NT_UNSTRUCTURED, admin, true);
         a.setProperty("p0", "0");
         a.setProperty("p1", "1");
-        a.setProperty("m0", new String[]{"0", "1", "2"}, PropertyType.STRING);
+        a.setProperty("m0", new String[] {"0", "1", "2"}, PropertyType.STRING);
         admin.save();
 
         assertNodeExists(SRC_TEST_NODE_PATH);
@@ -59,7 +61,7 @@ public class RCPIT extends IntegrationTestBase {
 
         assertProperty(DST_TEST_NODE_PATH + "/p0", "0");
         assertProperty(DST_TEST_NODE_PATH + "/p1", "1");
-        assertProperty(DST_TEST_NODE_PATH + "/m0", new String[]{"0", "1", "2"});
+        assertProperty(DST_TEST_NODE_PATH + "/m0", new String[] {"0", "1", "2"});
     }
 
     @Test
@@ -72,7 +74,7 @@ public class RCPIT extends IntegrationTestBase {
 
         rcp.copy(admin, SRC_PATH, admin, DST_PATH, true);
         assertProperty(DST_TEST_NODE_PATH + "/jcr:title", "Hello");
-        assertProperty(DST_TEST_NODE_PATH + "/jcr:mixinTypes", new String[]{"mix:title"});
+        assertProperty(DST_TEST_NODE_PATH + "/jcr:mixinTypes", new String[] {"mix:title"});
     }
 
     @Test
@@ -94,7 +96,7 @@ public class RCPIT extends IntegrationTestBase {
         rcp.copy(admin, SRC_PATH, admin, DST_PATH, true);
 
         assertProperty(DST_TEST_NODE_PATH + "/jcr:title", "Hello");
-        assertProperty(DST_TEST_NODE_PATH + "/jcr:mixinTypes", new String[]{"mix:title"});
+        assertProperty(DST_TEST_NODE_PATH + "/jcr:mixinTypes", new String[] {"mix:title"});
     }
 
     @Test
@@ -107,8 +109,7 @@ public class RCPIT extends IntegrationTestBase {
 
         rcp.copy(admin, SRC_PATH, admin, DST_PATH, true);
         assertProperty(DST_TEST_NODE_PATH + "/jcr:title", "Hello");
-        assertProperty(DST_TEST_NODE_PATH + "/jcr:mixinTypes", new String[]{"mix:title"});
-
+        assertProperty(DST_TEST_NODE_PATH + "/jcr:mixinTypes", new String[] {"mix:title"});
 
         a.removeMixin(NodeType.MIX_TITLE);
         admin.save();
@@ -165,7 +166,6 @@ public class RCPIT extends IntegrationTestBase {
         rcp.copy(admin, SRC_PATH, admin, DST_PATH, true);
         // property should now be the new value, since src is now "newer"
         assertProperty(DST_TEST_NODE_PATH + "/jcr:content/p0", "1");
-
     }
 
     /**
@@ -199,7 +199,7 @@ public class RCPIT extends IntegrationTestBase {
         dst.setProperty(Property.JCR_TITLE, "Hello");
         admin.save();
         assertProperty(DST_TEST_NODE_PATH + "/jcr:title", "Hello");
-        assertProperty(DST_TEST_NODE_PATH + "/jcr:mixinTypes", new String[]{"mix:title"});
+        assertProperty(DST_TEST_NODE_PATH + "/jcr:mixinTypes", new String[] {"mix:title"});
 
         // now perform copy
         rcp = new RepositoryCopier();
@@ -224,6 +224,4 @@ public class RCPIT extends IntegrationTestBase {
         // property should now be the new value, since src is now "newer"
         assertProperty(DST_TEST_NODE_PATH + "/jcr:content/p0", "1");
     }
-
-
 }

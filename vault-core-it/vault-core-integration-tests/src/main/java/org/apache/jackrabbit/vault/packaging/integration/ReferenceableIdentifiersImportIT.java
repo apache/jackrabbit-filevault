@@ -1,29 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.PropertyIterator;
+import javax.jcr.ReferentialIntegrityException;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -32,13 +32,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.PropertyIterator;
-import javax.jcr.ReferentialIntegrityException;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jackrabbit.JcrConstants;
@@ -57,8 +50,15 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Installs a package with the filter: "/tmp/referenceable", mode="replace" The
@@ -79,8 +79,9 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
 
     @Test
     public void testOverwriteIdentifierOfReplacedNode() throws RepositoryException, IOException, PackageException {
-        // create referenceable node manually 
-        Node referenceableNode = JcrUtils.getOrCreateByPath("/tmp/referenceable", null, JcrConstants.NT_UNSTRUCTURED, admin, true);
+        // create referenceable node manually
+        Node referenceableNode =
+                JcrUtils.getOrCreateByPath("/tmp/referenceable", null, JcrConstants.NT_UNSTRUCTURED, admin, true);
         referenceableNode.addMixin(JcrConstants.MIX_REFERENCEABLE);
 
         // create (non-referenceable) child node
@@ -116,8 +117,11 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         admin.save();
 
         // install package again (with default policy IdConflictPolicy.FAIL)
-        Exception e = assertThrows(Exception.class, () -> extractVaultPackageStrict("/test-packages/referenceable.zip"));
-        assertEquals(ReferentialIntegrityException.class, ExceptionUtils.getRootCause(e).getClass());
+        Exception e =
+                assertThrows(Exception.class, () -> extractVaultPackageStrict("/test-packages/referenceable.zip"));
+        assertEquals(
+                ReferentialIntegrityException.class,
+                ExceptionUtils.getRootCause(e).getClass());
         admin.refresh(false);
 
         // now try to remove the referenced node (with policy IdConflictPolicy.CREATE_NEW_ID)
@@ -148,7 +152,8 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         admin.save();
 
         // now add a reference to the node (which is covered by the filter)
-        Node referenceNode = JcrUtils.getOrCreateByPath("/tmp/referenceable/reference", JcrConstants.NT_UNSTRUCTURED, admin);
+        Node referenceNode =
+                JcrUtils.getOrCreateByPath("/tmp/referenceable/reference", JcrConstants.NT_UNSTRUCTURED, admin);
         Node referenceableNode = admin.getNode("/tmp/referenceable/collision");
         referenceNode.setProperty(PROPERTY_NAME, referenceableNode);
         admin.save();
@@ -188,7 +193,8 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testIdentifierCollisionInsideFilterWithReferencesOutsideFilter() throws RepositoryException, IOException, PackageException {
+    public void testIdentifierCollisionInsideFilterWithReferencesOutsideFilter()
+            throws RepositoryException, IOException, PackageException {
         // initial installation
         extractVaultPackageStrict("/test-packages/referenceable.zip");
 
@@ -209,11 +215,13 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         assertProperty("/tmp/reference/" + PROPERTY_NAME, UUID_REFERENCEABLE_CHILD);
 
         // install package again (with default policy IdConflictPolicy.FAIL)
-        Exception e = assertThrows(Exception.class, () -> extractVaultPackageStrict("/test-packages/referenceable.zip"));
+        Exception e =
+                assertThrows(Exception.class, () -> extractVaultPackageStrict("/test-packages/referenceable.zip"));
         assertEquals(ReferentialIntegrityException.class, e.getClass());
         admin.refresh(false);
         assertProperty("/tmp/reference/" + PROPERTY_NAME, UUID_REFERENCEABLE_CHILD);
-        referenceableNode = admin.getNode("/tmp/reference").getProperty(PROPERTY_NAME).getNode();
+        referenceableNode =
+                admin.getNode("/tmp/reference").getProperty(PROPERTY_NAME).getNode();
         assertEquals("/tmp/referenceable/collision", referenceableNode.getPath());
 
         // now try to remove the referenced node (with policy IdConflictPolicy.CREATE_NEW_ID)
@@ -224,7 +232,8 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         assertEquals(ReferentialIntegrityException.class, e.getClass());
         admin.refresh(false);
         assertProperty("/tmp/reference/" + PROPERTY_NAME, UUID_REFERENCEABLE_CHILD);
-        referenceableNode = admin.getNode("/tmp/reference").getProperty(PROPERTY_NAME).getNode();
+        referenceableNode =
+                admin.getNode("/tmp/reference").getProperty(PROPERTY_NAME).getNode();
         assertEquals("/tmp/referenceable/collision", referenceableNode.getPath());
 
         // now try to remove the referenced node (with default policy IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID)
@@ -232,12 +241,14 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         extractVaultPackage("/test-packages/referenceable.zip", options);
         // make sure that reference does still exist but now again points to the original path
         assertProperty("/tmp/reference/" + PROPERTY_NAME, UUID_REFERENCEABLE_CHILD);
-        referenceableNode = admin.getNode("/tmp/reference").getProperty(PROPERTY_NAME).getNode();
+        referenceableNode =
+                admin.getNode("/tmp/reference").getProperty(PROPERTY_NAME).getNode();
         assertEquals("/tmp/referenceable/child", referenceableNode.getPath());
     }
 
     @Test
-    public void testReplaceReferencedNonConflictingIdentifier() throws RepositoryException, IOException, PackageException {
+    public void testReplaceReferencedNonConflictingIdentifier()
+            throws RepositoryException, IOException, PackageException {
         // create referenceable node manually (other identifier)
         Node referenceableNode = JcrUtils.getOrCreateByPath("/tmp/referenceable", JcrConstants.NT_UNSTRUCTURED, admin);
         referenceableNode.addMixin(JcrConstants.MIX_REFERENCEABLE);
@@ -251,8 +262,11 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         admin.save();
 
         // now try to remove the referenced node (with default policy IdConflictPolicy.FAIL)
-        Exception e = assertThrows(Exception.class, () -> extractVaultPackageStrict("/test-packages/referenceable.zip"));
-        assertEquals(ReferentialIntegrityException.class, ExceptionUtils.getRootCause(e).getClass());
+        Exception e =
+                assertThrows(Exception.class, () -> extractVaultPackageStrict("/test-packages/referenceable.zip"));
+        assertEquals(
+                ReferentialIntegrityException.class,
+                ExceptionUtils.getRootCause(e).getClass());
         admin.refresh(false);
 
         // now try to remove the referenced node (with policy IdConflictPolicy.CREATE_NEW_ID)
@@ -260,7 +274,9 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         options.setStrict(true);
         options.setIdConflictPolicy(IdConflictPolicy.CREATE_NEW_ID);
         e = assertThrows(Exception.class, () -> extractVaultPackage("/test-packages/referenceable.zip", options));
-        assertEquals(ReferentialIntegrityException.class, ExceptionUtils.getRootCause(e).getClass());
+        assertEquals(
+                ReferentialIntegrityException.class,
+                ExceptionUtils.getRootCause(e).getClass());
         admin.refresh(false);
 
         // now try to remove the referenced node (with default policy IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID)
@@ -310,7 +326,10 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         admin.save();
 
         // try to remove referenceable node -> fails with RIE
-        Assert.assertThrows(ReferentialIntegrityException.class, () -> { referenceableNode.remove();  admin.save();});
+        Assert.assertThrows(ReferentialIntegrityException.class, () -> {
+            referenceableNode.remove();
+            admin.save();
+        });
     }
 
     // tests that import the variant referenceable-dup, which contains a
@@ -327,7 +346,7 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
             assertEquals(UUID_REFERENCEABLE_CHILD, referenceableNode.getIdentifier());
         } else if (duplicateNode != null && referenceableNode == null) {
             assertTrue(duplicateNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
-            assertEquals(UUID_REFERENCEABLE_CHILD,duplicateNode.getIdentifier());
+            assertEquals(UUID_REFERENCEABLE_CHILD, duplicateNode.getIdentifier());
         } else {
             fail("both nodes imported");
         }
@@ -350,7 +369,9 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         // just observe the behavior (and the test ensures, that it doesn't
         // change without us noticing)
         if (isOak()) {
-            assertTrue("identifiers should be new", !UUID_REFERENCEABLE_CHILD.equals(refref) && !UUID_REFERENCEABLE_CHILD.equals(dupref));
+            assertTrue(
+                    "identifiers should be new",
+                    !UUID_REFERENCEABLE_CHILD.equals(refref) && !UUID_REFERENCEABLE_CHILD.equals(dupref));
         } else {
             int newUUIDs = 0;
             if (!UUID_REFERENCEABLE_CHILD.equals(refref)) {
@@ -382,7 +403,8 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
     @Test
     public void testImportDupPolicyLegacy() throws RepositoryException, IOException, PackageException {
         testImportDup(IdConflictPolicy.LEGACY);
-        // behaviour for same parent conflicts: remove the conflicting one (i.e. the first one) with the new one (references point to new one afterwards)
+        // behaviour for same parent conflicts: remove the conflicting one (i.e. the first one) with the new one
+        // (references point to new one afterwards)
         Node referenceableNode = getNodeOrNull("/tmp/sameparentconflicts/referenceable");
         Node duplicateNode = getNodeOrNull("/tmp/sameparentconflicts/duplicate");
         if (duplicateNode == null && referenceableNode != null) {
@@ -402,7 +424,8 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         assertNotNull(referenceableNode);
         assertNotNull(duplicateNode);
         assertTrue(referenceableNode.isNodeType(JcrConstants.MIX_REFERENCEABLE));
-        Set<String> uuids = new HashSet<>(Arrays.asList(referenceableNode.getIdentifier(), duplicateNode.getIdentifier()));
+        Set<String> uuids =
+                new HashSet<>(Arrays.asList(referenceableNode.getIdentifier(), duplicateNode.getIdentifier()));
         assertTrue(uuids.contains(UUID_REFERENCEABLE_CHILD)); // one must have kept the old id
         assertEquals(2, uuids.size());
 
@@ -422,7 +445,11 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
     // constants for behavior target state to be tested
 
     private enum TARGET_STATE {
-        CONFLICT_TARGET_MOVED, CONFLICT_TARGET_PRESENT, NO_CONFLICT_TARGET_GONE, CONFLICT_TARGET_UNCHANGED, NO_CONFLICT_TARGET_UNCHANGED
+        CONFLICT_TARGET_MOVED,
+        CONFLICT_TARGET_PRESENT,
+        NO_CONFLICT_TARGET_GONE,
+        CONFLICT_TARGET_UNCHANGED,
+        NO_CONFLICT_TARGET_UNCHANGED
     }
 
     // make boolean expectations readable
@@ -439,33 +466,36 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
 
     @Test
     public void testInstallPackageTargetMoved_CREATE_NEW_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.CONFLICT_TARGET_MOVED, ID_NEW,
-                RENAMED_NODE_KEPT);
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.CONFLICT_TARGET_MOVED, ID_NEW, RENAMED_NODE_KEPT);
     }
 
     @Test
     public void testInstallPackageTargetPresent_CREATE_NEW_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
     }
 
     @Test
     public void testInstallPackageNoConflictTargetGone_CREATE_NEW_ID() throws Exception {
         // CREATE_NEW_ID behavior is incorrect in Jackrabbit classic, see
         // https://issues.apache.org/jira/browse/OAK-1244
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.NO_CONFLICT_TARGET_GONE,
-                isOak() ? ID_NEW : ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.NO_CONFLICT_TARGET_GONE, isOak() ? ID_NEW : ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageNoConflictTargetUnchanged_CREATE_NEW_ID() throws Exception {
         // CREATE_NEW_ID behavior is incorrect in Jackrabbit classic, see
         // https://issues.apache.org/jira/browse/OAK-1244
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.CREATE_NEW_ID, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageTargetMoved_FAIL() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FAIL, TARGET_STATE.CONFLICT_TARGET_MOVED, RepositoryException.class, null);
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.FAIL, TARGET_STATE.CONFLICT_TARGET_MOVED, RepositoryException.class, null);
     }
 
     @Test
@@ -485,31 +515,37 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
 
     @Test
     public void testInstallPackageTargetMoved_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.CONFLICT_TARGET_MOVED, ID_KEPT,
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID,
+                TARGET_STATE.CONFLICT_TARGET_MOVED,
+                ID_KEPT,
                 RENAMED_NODE_GONE);
     }
 
     @Test
     public void testInstallPackageTargetPresent_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW,
-                NA);
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.CONFLICT_TARGET_PRESENT, ID_NEW, NA);
     }
 
     @Test
     public void testInstallPackageNoConflictTargetGone_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.NO_CONFLICT_TARGET_GONE, ID_KEPT,
-                NA);
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.NO_CONFLICT_TARGET_GONE, ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageNoConflictTargetUnchanged_FORCE_REMOVE_CONFLICTING_ID() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED,
-                ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.FORCE_REMOVE_CONFLICTING_ID, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
     }
 
     @Test
     public void testInstallPackageTargetMoved_LEGACY() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.CONFLICT_TARGET_MOVED, RepositoryException.class,
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.LEGACY,
+                TARGET_STATE.CONFLICT_TARGET_MOVED,
+                RepositoryException.class,
                 IllegalStateException.class);
     }
 
@@ -530,23 +566,32 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
 
     @Test
     public void testInstallPackageNoConflictTargetUnchanged_LEGACY() throws Exception {
-        assertIdConflictPolicyBehaviour(IdConflictPolicy.LEGACY, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
+        assertIdConflictPolicyBehaviour(
+                IdConflictPolicy.LEGACY, TARGET_STATE.NO_CONFLICT_TARGET_UNCHANGED, ID_KEPT, NA);
     }
 
     // postcondition: exception
-    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TARGET_STATE dstState, Class<?> expectedException,
-            Class<?> expectedRootCause) throws Exception {
+    private void assertIdConflictPolicyBehaviour(
+            IdConflictPolicy policy, TARGET_STATE dstState, Class<?> expectedException, Class<?> expectedRootCause)
+            throws Exception {
         assertIdConflictPolicyBehaviour(policy, dstState, expectedException, expectedRootCause, null, null);
     }
 
     // postcondition: no exception, check state after
-    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TARGET_STATE dstState, Boolean expectNewId,
-            Boolean expectRenamedNodeKept) throws Exception {
+    private void assertIdConflictPolicyBehaviour(
+            IdConflictPolicy policy, TARGET_STATE dstState, Boolean expectNewId, Boolean expectRenamedNodeKept)
+            throws Exception {
         assertIdConflictPolicyBehaviour(policy, dstState, null, null, expectNewId, expectRenamedNodeKept);
     }
 
-    private void assertIdConflictPolicyBehaviour(IdConflictPolicy policy, TARGET_STATE dstState, Class<?> expectedException,
-            Class<?> expectedRootCause, Boolean expectNewId, Boolean expectRenamedNodeKept) throws Exception {
+    private void assertIdConflictPolicyBehaviour(
+            IdConflictPolicy policy,
+            TARGET_STATE dstState,
+            Class<?> expectedException,
+            Class<?> expectedRootCause,
+            Boolean expectNewId,
+            Boolean expectRenamedNodeKept)
+            throws Exception {
 
         // create initial state and export
 
@@ -575,7 +620,6 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
         String dstPath = null;
 
         switch (dstState) {
-
             case CONFLICT_TARGET_MOVED:
                 dstPath = srcPath + "-renamed";
                 admin.move(srcPath, dstPath);
@@ -589,7 +633,8 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
                 assertNodeMissing(srcPath);
                 // same place, new ID
                 Node newAsset = testRoot.addNode(srcName, NodeType.NT_FOLDER);
-                JcrUtils.putFile(newAsset, "binary.txt", "text/plain", new ByteArrayInputStream("Hello, new world!".getBytes()));
+                JcrUtils.putFile(
+                        newAsset, "binary.txt", "text/plain", new ByteArrayInputStream("Hello, new world!".getBytes()));
                 newAsset.addMixin(NodeType.MIX_REFERENCEABLE);
                 admin.save();
                 assertNodeExists(srcPath);
@@ -625,10 +670,14 @@ public class ReferenceableIdentifiersImportIT extends IntegrationTestBase {
             if (expectedException == null) {
                 throw ex;
             } else {
-                assertTrue("expected: " + expectedException + ", but got: " + ex.getClass(), expectedException.isInstance(ex));
+                assertTrue(
+                        "expected: " + expectedException + ", but got: " + ex.getClass(),
+                        expectedException.isInstance(ex));
                 if (expectedRootCause != null) {
                     Throwable rc = ExceptionUtils.getRootCause(ex);
-                    assertTrue("expected: " + expectedRootCause + ", but got: " + rc.getClass(), expectedRootCause.isInstance(rc));
+                    assertTrue(
+                            "expected: " + expectedRootCause + ", but got: " + rc.getClass(),
+                            expectedRootCause.isInstance(rc));
                 }
                 // expected exception -> test done
                 return;

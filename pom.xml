@@ -357,8 +357,8 @@ file://${basedir}/target/vote.txt
           <plugin>
             <groupId>io.github.olamy.maven.plugins</groupId>
             <artifactId>jacoco-aggregator-maven-plugin</artifactId>
-            <inherited>false</inherited>
             <!--only execute on root level-->
+            <inherited>false</inherited>
           </plugin>
         </plugins>
       </build>

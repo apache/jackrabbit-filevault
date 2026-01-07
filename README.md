@@ -32,7 +32,7 @@ You can build FileVault like this:
 
     mvn clean install
 
-You need Maven 3.6.2 (or higher) with Java 17 (or higher) for the build.
+You need Maven 3.9 (or higher) with Java 17 (or higher) for the build.
 For more instructions, please see the documentation at:
 
    <https://jackrabbit.apache.org/building-jackrabbit.html>

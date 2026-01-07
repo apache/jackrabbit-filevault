@@ -1,20 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
+
+import javax.jcr.Session;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,12 +36,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import javax.jcr.Session;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -111,7 +113,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
             writer.writeStartDocument();
             writer.writeStartElement(TAG_EXECUTION_PLAN);
             writer.writeAttribute(ATTR_VERSION, String.valueOf(version));
-            for (PackageTask task: plan.getTasks()) {
+            for (PackageTask task : plan.getTasks()) {
                 writer.writeStartElement(TAG_TASK);
                 writer.writeAttribute(ATTR_CMD, task.getType().name().toLowerCase(Locale.ROOT));
                 writer.writeAttribute(ATTR_PACKAGE_ID, task.getPackageId().toString());
@@ -161,7 +163,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
 
     private void read(Element elem) throws IOException {
         NodeList nl = elem.getChildNodes();
-        for (int i=0; i<nl.getLength(); i++) {
+        for (int i = 0; i < nl.getLength(); i++) {
             Node child = nl.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 if (!TAG_TASK.equals(child.getNodeName())) {
@@ -173,9 +175,10 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     }
 
     private void readTask(Element elem) throws IOException {
-        PackageTask.Type type = PackageTask.Type.valueOf(elem.getAttribute(ATTR_CMD).toUpperCase(Locale.ROOT));
+        PackageTask.Type type =
+                PackageTask.Type.valueOf(elem.getAttribute(ATTR_CMD).toUpperCase(Locale.ROOT));
         PackageId id = PackageId.fromString(elem.getAttribute(ATTR_PACKAGE_ID));
-        
+
         PackageTaskBuilder packageTaskBuilder = addTask().with(id);
         PackageTaskOptions options = optionsSerializer.load(elem);
         if (options != null) {
@@ -214,7 +217,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         Map<PackageId, PackageTask> uninstallTasks = new HashMap<>();
         Map<PackageId, PackageTask> removeTasks = new HashMap<>();
         List<PackageTask> packageTasks = new ArrayList<>(tasks.size());
-        for (TaskBuilder task: tasks) {
+        for (TaskBuilder task : tasks) {
             if (task.id == null || task.type == null) {
                 throw new PackageException("task builder must have package id and type defined.");
             }
@@ -237,19 +240,24 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
             }
         }
 
-        for (PackageId id: uninstallTasks.keySet().toArray(new PackageId[uninstallTasks.size()])) {
-            resolveUninstall(id, packageTasks, uninstallTasks, new HashSet<>(), uninstallTasks.get(id).getOptions());
+        for (PackageId id : uninstallTasks.keySet().toArray(new PackageId[uninstallTasks.size()])) {
+            resolveUninstall(
+                    id,
+                    packageTasks,
+                    uninstallTasks,
+                    new HashSet<>(),
+                    uninstallTasks.get(id).getOptions());
         }
 
         // todo: validate remove
         packageTasks.addAll(removeTasks.values());
 
-        for (PackageId id: installTasks.keySet().toArray(new PackageId[installTasks.size()])) {
+        for (PackageId id : installTasks.keySet().toArray(new PackageId[installTasks.size()])) {
             PackageTask task = installTasks.get(id);
             resolveInstall(id, packageTasks, installTasks, new HashSet<>(), task.getType(), task.getOptions());
         }
 
-        for (PackageTask task: packageTasks) {
+        for (PackageTask task : packageTasks) {
             log.info("- {}", task);
         }
 
@@ -257,16 +265,24 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         return this;
     }
 
-    private void resolveInstall(PackageId id, List<PackageTask> packageTasks, Map<PackageId, PackageTask> installTasks, Set<PackageId> resolved, PackageTask.Type type, @Nullable PackageTaskOptions option) throws IOException, PackageException {
+    private void resolveInstall(
+            PackageId id,
+            List<PackageTask> packageTasks,
+            Map<PackageId, PackageTask> installTasks,
+            Set<PackageId> resolved,
+            PackageTask.Type type,
+            @Nullable PackageTaskOptions option)
+            throws IOException, PackageException {
         if (resolved.contains(id)) {
             throw new CyclicDependencyException("Package has cyclic dependencies: " + id);
         }
         resolved.add(id);
         DependencyReport report = registry.analyzeDependencies(id, false);
         if (report.getUnresolvedDependencies().length > 0) {
-            throw new DependencyException("Package " + id + " has unresolved dependencies: " + Dependency.toString(report.getUnresolvedDependencies()));
+            throw new DependencyException("Package " + id + " has unresolved dependencies: "
+                    + Dependency.toString(report.getUnresolvedDependencies()));
         }
-        for (PackageId depId: report.getResolvedDependencies()) {
+        for (PackageId depId : report.getResolvedDependencies()) {
             // if the package task is already present, continue resolution
             if (installTasks.get(depId) == PackageTaskImpl.MARKER) {
                 continue;
@@ -296,12 +312,18 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         installTasks.put(id, PackageTaskImpl.MARKER);
     }
 
-    private void resolveUninstall(PackageId id, List<PackageTask> packageTasks, Map<PackageId, PackageTask> uninstallTasks, Set<PackageId> resolved, @Nullable PackageTaskOptions option) throws IOException, PackageException {
+    private void resolveUninstall(
+            PackageId id,
+            List<PackageTask> packageTasks,
+            Map<PackageId, PackageTask> uninstallTasks,
+            Set<PackageId> resolved,
+            @Nullable PackageTaskOptions option)
+            throws IOException, PackageException {
         if (resolved.contains(id)) {
             throw new CyclicDependencyException("Package has cyclic dependencies: " + id);
         }
         resolved.add(id);
-        for (PackageId depId: registry.usage(id)) {
+        for (PackageId depId : registry.usage(id)) {
             // if the package task is already present, continue resolution
             if (uninstallTasks.get(depId) == PackageTaskImpl.MARKER) {
                 continue;
@@ -336,7 +358,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
         }
         // check if session is present or if no task needs it
         if (session == null) {
-            for (PackageTask task: plan.getTasks()) {
+            for (PackageTask task : plan.getTasks()) {
                 if (task.getType() != PackageTask.Type.REMOVE) {
                     throw new PackageException("Session not set in builder, but " + task + " task requires it.");
                 }
@@ -383,7 +405,7 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
             return Collections.emptySet();
         } else {
             Set<PackageId> packages = new HashSet<>();
-            for(PackageTask task : plan.getTasks()) {
+            for (PackageTask task : plan.getTasks()) {
                 packages.add(task.getPackageId());
             }
             return packages;

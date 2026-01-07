@@ -1,28 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.fs.impl.io;
-
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -31,6 +25,14 @@ import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
@@ -95,7 +97,8 @@ public class NodeStash {
             for (String rootPath : ROOTS) {
                 try {
                     Node root = session.getNode(rootPath);
-                    return tmpNode = root.addNode("filevault-tmp-" + System.currentTimeMillis(), JcrConstants.NT_UNSTRUCTURED);
+                    return tmpNode =
+                            root.addNode("filevault-tmp-" + System.currentTimeMillis(), JcrConstants.NT_UNSTRUCTURED);
                 } catch (RepositoryException e) {
                     log.debug("unable to create temporary stash location below {}.", rootPath);
                 }
@@ -146,8 +149,13 @@ public class NodeStash {
 
                     long now = System.currentTimeMillis();
                     if (childNodeCount > 0 && now - PROGRESS_LOG_INTERVAL > lastTimeStamp) {
-                        log.warn("Node stashing operation for node {} (last: {} into {}), still running after {}, nodes moved: {}",
-                                this.path, path, tmp.getPath(), Duration.ofMillis(now - start), childNodeCount);
+                        log.warn(
+                                "Node stashing operation for node {} (last: {} into {}), still running after {}, nodes moved: {}",
+                                this.path,
+                                path,
+                                tmp.getPath(),
+                                Duration.ofMillis(now - start),
+                                childNodeCount);
                         lastTimeStamp = now;
                         shouldWarn = true;
                     }
@@ -183,8 +191,15 @@ public class NodeStash {
             }
 
             String primaryType = parent.getPrimaryNodeType().getName();
-            String message = String.format(Locale.ENGLISH, "Stashed node %s of type %s as %s (%d child nodes, %d properties, elapsed %s).", path, primaryType,
-                    tmp.getPath(), childNodeCount, propertyCount, Duration.ofMillis(System.currentTimeMillis() - start));
+            String message = String.format(
+                    Locale.ENGLISH,
+                    "Stashed node %s of type %s as %s (%d child nodes, %d properties, elapsed %s).",
+                    path,
+                    primaryType,
+                    tmp.getPath(),
+                    childNodeCount,
+                    propertyCount,
+                    Duration.ofMillis(System.currentTimeMillis() - start));
             if (shouldWarn) {
                 log.warn(message);
             } else {
@@ -222,7 +237,10 @@ public class NodeStash {
                 String newPath = parent.getPath() + "/" + child.getName();
                 try {
                     if (session.nodeExists(newPath)) {
-                        log.debug("Skipping restore from temporary location {} as node already exists at {}", child.getPath(), newPath);
+                        log.debug(
+                                "Skipping restore from temporary location {} as node already exists at {}",
+                                child.getPath(),
+                                newPath);
                     } else {
                         String path = child.getPath();
                         session.move(path, newPath);
@@ -235,7 +253,11 @@ public class NodeStash {
                         if (childNodeCount > 0 && now - PROGRESS_LOG_INTERVAL > lastTimeStamp) {
                             log.warn(
                                     "Node stashing recovery operation for node {} (last: {} into {}), still running after {}, nodes recovered: {}",
-                                    this.path, path, newPath, Duration.ofMillis(now - start), childNodeCount);
+                                    this.path,
+                                    path,
+                                    newPath,
+                                    Duration.ofMillis(now - start),
+                                    childNodeCount);
                             lastTimeStamp = now;
                             shouldWarn = true;
                         }
@@ -243,7 +265,9 @@ public class NodeStash {
                 } catch (RepositoryException e) {
                     log.warn(
                             "Unable to move child back to new location at {} due to: {}. Node will remain in temporary location: {}",
-                            newPath, e.getMessage(), child.getPath());
+                            newPath,
+                            e.getMessage(),
+                            child.getPath());
                     if (importInfo != null) {
                         importInfo.onError(newPath, e);
                         hasErrors = true;
@@ -254,26 +278,38 @@ public class NodeStash {
             try {
                 recoverProperties(importMode == ImportMode.MERGE || importMode == ImportMode.MERGE_PROPERTIES);
             } catch (RepositoryException e) {
-                log.warn("Unable to restore properties at {} due to: {}. Properties will remain in temporary location: {}", path,
-                        e.getMessage(), tmpNode.getPath());
+                log.warn(
+                        "Unable to restore properties at {} due to: {}. Properties will remain in temporary location: {}",
+                        path,
+                        e.getMessage(),
+                        tmpNode.getPath());
                 if (importInfo != null) {
                     importInfo.onError(path, e);
                     hasErrors = true;
                 }
             }
 
-            log.debug("Restored properties and child nodes of {} from {} (mode: {}).", path, tmpNode.getPath(), importMode);
+            log.debug(
+                    "Restored properties and child nodes of {} from {} (mode: {}).",
+                    path,
+                    tmpNode.getPath(),
+                    importMode);
 
             if (shouldWarn) {
-                String message = String.format(Locale.ENGLISH, "Stashed node recovery for %s done (%d child nodes, elapsed %s).", path,
-                        childNodeCount, Duration.ofMillis(System.currentTimeMillis() - start));
+                String message = String.format(
+                        Locale.ENGLISH,
+                        "Stashed node recovery for %s done (%d child nodes, elapsed %s).",
+                        path,
+                        childNodeCount,
+                        Duration.ofMillis(System.currentTimeMillis() - start));
                 log.warn(message);
             }
 
             if (!hasErrors) {
                 tmpNode.remove();
             } else {
-                log.debug("Temporary node {} not removed due to errors while restoring child items.", tmpNode.getPath());
+                log.debug(
+                        "Temporary node {} not removed due to errors while restoring child items.", tmpNode.getPath());
             }
         }
     }
@@ -282,7 +318,9 @@ public class NodeStash {
         Node destNode = session.getNode(path);
 
         // restore mixins
-        Property mixinProperty = tmpNode.hasProperty(JcrConstants.JCR_MIXINTYPES + PROTECTED_PROPERTIES_SUFFIX) ? tmpNode.getProperty(JcrConstants.JCR_MIXINTYPES + PROTECTED_PROPERTIES_SUFFIX) : null;
+        Property mixinProperty = tmpNode.hasProperty(JcrConstants.JCR_MIXINTYPES + PROTECTED_PROPERTIES_SUFFIX)
+                ? tmpNode.getProperty(JcrConstants.JCR_MIXINTYPES + PROTECTED_PROPERTIES_SUFFIX)
+                : null;
         if (mixinProperty != null) {
             for (Value value : mixinProperty.getValues()) {
                 destNode.addMixin(value.getString());
@@ -301,7 +339,7 @@ public class NodeStash {
                 } else {
                     destNode.setProperty(property.getName(), property.getValue(), property.getType());
                 }
-            } 
+            }
         }
     }
 }

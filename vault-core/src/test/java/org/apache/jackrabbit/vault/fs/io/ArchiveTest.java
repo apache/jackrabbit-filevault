@@ -1,25 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.fs.io;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,27 +54,38 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+
 @RunWith(Parameterized.class)
 public class ArchiveTest {
 
     @ClassRule
     public static TemporaryFolder tempFolder = new TemporaryFolder();
 
-    @Parameters(name = "{2}" )
+    @Parameters(name = "{2}")
     public static Iterable<? extends Object[]> data() throws URISyntaxException, IOException {
-        Path zipPath = Paths.get(ArchiveTest.class.getResource("/test-packages/atomic-counter-test.zip").toURI());
-        Supplier<Archive> zsaSupplier = () -> new ZipStreamArchive(ArchiveTest.class.getResourceAsStream("/test-packages/atomic-counter-test.zip"));
+        Path zipPath = Paths.get(ArchiveTest.class
+                .getResource("/test-packages/atomic-counter-test.zip")
+                .toURI());
+        Supplier<Archive> zsaSupplier = () ->
+                new ZipStreamArchive(ArchiveTest.class.getResourceAsStream("/test-packages/atomic-counter-test.zip"));
         Supplier<Archive> zaSupplier = () -> new ZipArchive(zipPath.toFile());
         Supplier<Archive> znaSupplier = () -> new ZipNioArchive(zipPath);
         Supplier<Archive> faSupplier = () -> {
-                try {
-                    URI uri = Objects.requireNonNull(ArchiveTest.class.getResource("/test-packages/atomic-counter-test"),  "Could not find class resource with name '/test-packages/atomic-counter-test'").toURI();
-                    return new FileArchive(new File(uri));
-                } catch (URISyntaxException e) {
-                    throw new IllegalStateException("Cannot get URI to test resource", e);
-                }
+            try {
+                URI uri = Objects.requireNonNull(
+                                ArchiveTest.class.getResource("/test-packages/atomic-counter-test"),
+                                "Could not find class resource with name '/test-packages/atomic-counter-test'")
+                        .toURI();
+                return new FileArchive(new File(uri));
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException("Cannot get URI to test resource", e);
+            }
         };
-        Supplier<Archive> memArchiveSupplier = () -> { 
+        Supplier<Archive> memArchiveSupplier = () -> {
             MemoryArchive memoryArchive;
             try (InputStream input = ArchiveTest.class.getResourceAsStream("/test-packages/atomic-counter-test.zip")) {
                 memoryArchive = new MemoryArchive(false);
@@ -87,18 +95,20 @@ public class ArchiveTest {
             }
             return memoryArchive;
         };
-        Supplier<Archive> mappedArchiveSupplier = () -> new MappedArchive(new ZipArchive(zipPath.toFile()), PathMapping.IDENTITY);
+        Supplier<Archive> mappedArchiveSupplier =
+                () -> new MappedArchive(new ZipArchive(zipPath.toFile()), PathMapping.IDENTITY);
         Supplier<Archive> wrappedArchiveSupplier = () -> new ArchiveWrapper(new ZipArchive(zipPath.toFile()));
-        Supplier<Archive> subPackageFilterArchiveSupplier = () -> new SubPackageFilterArchive(new ZipArchive(zipPath.toFile()));
-        return Arrays.asList(new Object[][] { 
-            { zsaSupplier, true, "ZipStreamArchive" },
-            { zaSupplier, true, "ZipArchive" },
-            { znaSupplier, true, "ZipNioArchive" },
-            { memArchiveSupplier, false, "MemoryArchive" },
-            { faSupplier, false, "FileArchive" },
-            { mappedArchiveSupplier, true, "MappedArchive" },
-            { wrappedArchiveSupplier, true, "ArchiveWrapper" },
-            { subPackageFilterArchiveSupplier, true, "SubPackageFilterArchive" }
+        Supplier<Archive> subPackageFilterArchiveSupplier =
+                () -> new SubPackageFilterArchive(new ZipArchive(zipPath.toFile()));
+        return Arrays.asList(new Object[][] {
+            {zsaSupplier, true, "ZipStreamArchive"},
+            {zaSupplier, true, "ZipArchive"},
+            {znaSupplier, true, "ZipNioArchive"},
+            {memArchiveSupplier, false, "MemoryArchive"},
+            {faSupplier, false, "FileArchive"},
+            {mappedArchiveSupplier, true, "MappedArchive"},
+            {wrappedArchiveSupplier, true, "ArchiveWrapper"},
+            {subPackageFilterArchiveSupplier, true, "SubPackageFilterArchive"}
             // TODO: SubArchive, JcrArchive
         });
     }
@@ -136,27 +146,35 @@ public class ArchiveTest {
         assertEquals("Package Name", "atomic-counter-test", props.getProperty("name"));
     }
 
-    @Test 
+    @Test
     public void testReadEntries() throws IOException, ParseException {
         archive.open(true);
         Entry root = archive.getRoot();
         assertNotNull(root);
         assertEquals("", root.getName());
         assertTrue(root.isDirectory());
-        MatcherAssert.assertThat(root.getChildren().stream().map(Entry::getName).collect(Collectors.toList()), Matchers.containsInAnyOrder("META-INF", "jcr_root"));
+        MatcherAssert.assertThat(
+                root.getChildren().stream().map(Entry::getName).collect(Collectors.toList()),
+                Matchers.containsInAnyOrder("META-INF", "jcr_root"));
 
         Archive.Entry entry = archive.getEntry("META-INF/vault/properties.xml");
         try (InputStream i = archive.openInputStream(entry)) {
             DefaultMetaInf metaInf = new DefaultMetaInf();
             metaInf.loadProperties(i, "inputstream");
-            assertEquals("Package Name", "atomic-counter-test", metaInf.getProperties().getProperty("name"));
+            assertEquals(
+                    "Package Name",
+                    "atomic-counter-test",
+                    metaInf.getProperties().getProperty("name"));
         }
 
         VaultInputSource vaultInputSource = archive.getInputSource(entry);
         try (InputStream i = vaultInputSource.getByteStream()) {
             DefaultMetaInf metaInf = new DefaultMetaInf();
             metaInf.loadProperties(i, "inputstream");
-            assertEquals("Package Name", "atomic-counter-test", metaInf.getProperties().getProperty("name"));
+            assertEquals(
+                    "Package Name",
+                    "atomic-counter-test",
+                    metaInf.getProperties().getProperty("name"));
         }
         assertEquals("Wrong size of entry \"META-INF/vault/properties.xml\"", 747, vaultInputSource.getContentLength());
 
@@ -164,11 +182,13 @@ public class ArchiveTest {
             Calendar expectedCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.ENGLISH);
             expectedCalendar.setTime(sdf.parse("2017-02-14T09:33:22.000+00:00"));
-            
+
             Calendar actualCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-            // comparing getLastModified is tricky, as ZIP doesn't store normalized dates but just in MS-DOS format (https://docs.oracle.com/javase/8/docs/api/java/util/zip/ZipEntry.html#getTime--)
+            // comparing getLastModified is tricky, as ZIP doesn't store normalized dates but just in MS-DOS format
+            // (https://docs.oracle.com/javase/8/docs/api/java/util/zip/ZipEntry.html#getTime--)
             // normalize to UTC
-            actualCalendar.setTimeInMillis(vaultInputSource.getLastModified() + TimeZone.getDefault().getOffset(vaultInputSource.getLastModified()));
+            actualCalendar.setTimeInMillis(vaultInputSource.getLastModified()
+                    + TimeZone.getDefault().getOffset(vaultInputSource.getLastModified()));
             assertEquals(sdf.format(expectedCalendar.getTime()), sdf.format(actualCalendar.getTime()));
         }
     }
@@ -183,8 +203,8 @@ public class ArchiveTest {
     public void testNullParameters() throws IOException {
         archive.open(true);
         // FIXME: inconsistent handling in ZipStreamArchive
-        //assertNull(archive.getInputSource(null)); // ZipStreamArchive returns a wrapper on top of the null entry
-        //assertNull(archive.openInputStream(null));
+        // assertNull(archive.getInputSource(null)); // ZipStreamArchive returns a wrapper on top of the null entry
+        // assertNull(archive.openInputStream(null));
     }
 
     @Test

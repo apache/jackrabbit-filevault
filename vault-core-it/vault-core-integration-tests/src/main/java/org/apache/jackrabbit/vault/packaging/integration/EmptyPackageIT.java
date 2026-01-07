@@ -1,29 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
@@ -162,7 +163,6 @@ public class EmptyPackageIT extends IntegrationTestBase {
         assertNodeMissing("/tmp/foo/bar");
     }
 
-
     /**
      * Installs a package that contains /tmp, then and empty one, then unnstalls it.
      * expect the original /tmp/foo/bar/tobi remaining.
@@ -201,7 +201,6 @@ public class EmptyPackageIT extends IntegrationTestBase {
         assertNodeMissing("/tmp/foo/bar/test.txt");
     }
 
-
     /**
      * Installs a package that contains /tmp/foo/bar/test.txt but no filter for it.
      */
@@ -218,7 +217,6 @@ public class EmptyPackageIT extends IntegrationTestBase {
         assertNodeExists("/tmp/foo/bar/test.txt");
     }
 
-
     /**
      * Installs a package that contains no filter and no .content.xml files.
      */
@@ -229,12 +227,10 @@ public class EmptyPackageIT extends IntegrationTestBase {
         ImportOptions opts = getDefaultOptions();
         opts.setStrict(false);
         pack.install(opts);
-        
+
         assertNodeExists("/tmp/foo/bar/test.txt");
 
         pack.uninstall(opts);
         assertNodeExists("/tmp/foo/bar/test.txt");
     }
-
-
 }

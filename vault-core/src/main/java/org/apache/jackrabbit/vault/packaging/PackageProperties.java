@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging;
 
 import java.net.URI;
@@ -169,7 +170,7 @@ public interface PackageProperties {
      */
     String PREFIX_INSTALL_HOOK = "installhook.";
 
-    /** 
+    /**
      * The manifest header key which indicates the package type
      * @see #NAME_PACKAGE_TYPE
      */
@@ -188,7 +189,7 @@ public interface PackageProperties {
      * @see #NAME_DEPENDENCIES
      */
     String MF_KEY_PACKAGE_DEPENDENCIES = "Content-Package-Dependencies";
-    
+
     /**
      * The manifest header key for locations of package dependencies. Each location has the format {@code <packageId>=<uri>}.
      * Multiple locations are separated by ",".
@@ -291,7 +292,7 @@ public interface PackageProperties {
     Dependency[] getDependencies();
 
     /**
-     * 
+     *
      * @return all external hooks registered in a package (key = name, value = fully qualified class name)
      */
     Map<String, String> getExternalHooks();
@@ -334,7 +335,8 @@ public interface PackageProperties {
      * Returns a map of dependency locations where key = package id and value = uri of package dependency with that id.
      * @return dependencies locations as map
      */
-    @NotNull Map<PackageId, URI> getDependenciesLocations();
+    @NotNull
+    Map<PackageId, URI> getDependenciesLocations();
 
     /**
      * Returns the build count of this package

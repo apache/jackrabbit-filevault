@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.config;
 
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
@@ -53,9 +54,9 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
     }
 
     protected void process(Element elem) throws ConfigurationException {
-        for (Element child: getChildElements(elem)) {
+        for (Element child : getChildElements(elem)) {
             if (child.getNodeName().equals("aggregates")) {
-                for (Element agg: getChildElements(child)) {
+                for (Element agg : getChildElements(child)) {
                     if (agg.getNodeName().equals("aggregate")) {
                         processAggregate(agg);
                     } else {
@@ -64,7 +65,7 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
                 }
 
             } else if (child.getNodeName().equals("handlers")) {
-                for (Element handler: getChildElements(child)) {
+                for (Element handler : getChildElements(child)) {
                     if (handler.getNodeName().equals("handler")) {
                         processHandler(handler);
                     } else {
@@ -73,7 +74,7 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
                 }
 
             } else if ("properties".equals(child.getNodeName())) {
-                for (Element prop: getChildElements(child)) {
+                for (Element prop : getChildElements(child)) {
                     String value = prop.getTextContent();
                     getProperties().put(prop.getNodeName(), value == null ? "" : value.trim());
                 }
@@ -102,7 +103,7 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
             if ("true".equals(elem.getAttribute("isDefault"))) {
                 ga.setIsDefault("true");
             }
-            for (Element child: getChildElements(elem)) {
+            for (Element child : getChildElements(elem)) {
                 if (child.getNodeName().equals("matches")) {
                     processFilter(ga.getMatchFilter(), child);
                 } else if (child.getNodeName().equals("contains")) {
@@ -114,9 +115,8 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
         getAggregators().add(aggregator);
     }
 
-    private void processFilter(ItemFilterSet filterSet, Element elem)
-            throws ConfigurationException {
-        for (Element child: getChildElements(elem)) {
+    private void processFilter(ItemFilterSet filterSet, Element elem) throws ConfigurationException {
+        for (Element child : getChildElements(elem)) {
             Boolean isInclude = null;
             if (child.getNodeName().equals("include")) {
                 isInclude = true;
@@ -145,7 +145,7 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
                         }
                     }
                     if (filter != null) {
-                        for (int i=0; i<attrs.getLength(); i++) {
+                        for (int i = 0; i < attrs.getLength(); i++) {
                             Attr attr = (Attr) attrs.item(i);
                             if (ConfigHelper.hasSetter(filter, attr.getName())) {
                                 ConfigHelper.setField(filter, attr.getName(), attr.getValue());
@@ -178,6 +178,4 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
         // finally add handler
         getHandlers().add(handler);
     }
-
-
 }

@@ -1,31 +1,32 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging;
+
+import javax.jcr.ItemExistsException;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-
-import javax.jcr.ItemExistsException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
@@ -192,8 +193,7 @@ public interface JcrPackageManager extends PackageManager {
      * @throws IOException if an I/O exception occurs
      */
     @NotNull
-    JcrPackage create(@Nullable Node folder, @NotNull String name)
-            throws RepositoryException, IOException;
+    JcrPackage create(@Nullable Node folder, @NotNull String name) throws RepositoryException, IOException;
 
     /**
      * Creates a new package with the new group and name.
@@ -206,8 +206,7 @@ public interface JcrPackageManager extends PackageManager {
      * @since 2.2.5
      */
     @NotNull
-    JcrPackage create(@NotNull String group, @NotNull String name)
-            throws RepositoryException, IOException;
+    JcrPackage create(@NotNull String group, @NotNull String name) throws RepositoryException, IOException;
 
     /**
      * Creates a new package with the new group, name and version.
@@ -294,7 +293,8 @@ public interface JcrPackageManager extends PackageManager {
      * @since 2.3
      */
     @NotNull
-    JcrPackage rename(@NotNull JcrPackage pack, @Nullable String groupId, @Nullable String name, @Nullable String version)
+    JcrPackage rename(
+            @NotNull JcrPackage pack, @Nullable String groupId, @Nullable String name, @Nullable String version)
             throws PackageException, RepositoryException;
 
     /**
@@ -317,7 +317,10 @@ public interface JcrPackageManager extends PackageManager {
      * @throws RepositoryException if a repository error occurs
      * @throws IOException if an I/O error occurs
      */
-    void assemble(@NotNull Node packNode, @NotNull JcrPackageDefinition definition, @Nullable ProgressTrackerListener listener)
+    void assemble(
+            @NotNull Node packNode,
+            @NotNull JcrPackageDefinition definition,
+            @Nullable ProgressTrackerListener listener)
             throws PackageException, RepositoryException, IOException;
 
     /**
@@ -329,7 +332,10 @@ public interface JcrPackageManager extends PackageManager {
      * @throws IOException if an I/O error occurs
      * @throws PackageException if a package error occurs
      */
-    void assemble(@NotNull JcrPackageDefinition definition, @Nullable ProgressTrackerListener listener, @NotNull OutputStream out)
+    void assemble(
+            @NotNull JcrPackageDefinition definition,
+            @Nullable ProgressTrackerListener listener,
+            @NotNull OutputStream out)
             throws IOException, RepositoryException, PackageException;
 
     /**

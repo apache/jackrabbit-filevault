@@ -1,20 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt.meta.xml;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,12 +30,6 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
@@ -72,7 +74,7 @@ public class XmlEntries implements VltEntries {
     public String getPath() {
         return path;
     }
-    
+
     public static XmlEntries load(InputStream in) throws VltException {
         InputSource source = new InputSource(in);
         return load(source);
@@ -80,8 +82,7 @@ public class XmlEntries implements VltEntries {
 
     public static XmlEntries load(InputSource source) throws VltException {
         try {
-            DocumentBuilderFactory factory =
-                DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             // disable DTD loading (bug #36897)
             factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -96,7 +97,7 @@ public class XmlEntries implements VltEntries {
 
             // get entries
             NodeList nodes = doc.getChildNodes();
-            for (int i=0; i<nodes.getLength(); i++) {
+            for (int i = 0; i < nodes.getLength(); i++) {
                 Node node = nodes.item(i);
                 if (node instanceof Element) {
                     Element elem = (Element) node;
@@ -104,22 +105,18 @@ public class XmlEntries implements VltEntries {
                         XmlEntry entry = XmlEntry.load(elem);
                         entries.entries.put(entry.getName(), entry);
                     } else {
-                        throw new VltException(source.getSystemId(),
-                                "<entry> expected in <entries> element.");
+                        throw new VltException(source.getSystemId(), "<entry> expected in <entries> element.");
                     }
                 }
             }
             entries.dirty = false;
             return entries;
         } catch (ParserConfigurationException e) {
-            throw new VltException(source.getSystemId(),
-                    "Unable to create configuration XML parser", e);
+            throw new VltException(source.getSystemId(), "Unable to create configuration XML parser", e);
         } catch (SAXException e) {
-            throw new VltException(source.getSystemId(),
-                    "Configuration file syntax error.", e);
+            throw new VltException(source.getSystemId(), "Configuration file syntax error.", e);
         } catch (IOException e) {
-            throw new VltException(source.getSystemId(),
-                    "Configuration file could not be read.", e);
+            throw new VltException(source.getSystemId(), "Configuration file could not be read.", e);
         }
     }
 
@@ -150,7 +147,7 @@ public class XmlEntries implements VltEntries {
         writer.writeStartDocument();
         writer.writeStartElement(EN_ENTRIES);
         writer.writeAttribute(AN_PATH, path);
-        for (VltEntry e: entries.values()) {
+        for (VltEntry e : entries.values()) {
             ((XmlEntry) e).write(writer);
         }
         writer.writeEndElement();
@@ -203,12 +200,12 @@ public class XmlEntries implements VltEntries {
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
     }
-    
+
     public boolean isDirty() {
         if (dirty) {
             return true;
         }
-        for (VltEntry e: entries.values()) {
+        for (VltEntry e : entries.values()) {
             if (e.isDirty()) {
                 return dirty = true;
             }

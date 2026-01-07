@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.fs.impl;
 
@@ -23,10 +25,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.Archive;
-import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -123,7 +125,7 @@ public class SubPackageFilterArchive implements Archive {
     }
 
     private void findSubPackageEntries(@NotNull List<Entry> entries, @NotNull Entry folder) {
-        for (Archive.Entry e: folder.getChildren()) {
+        for (Archive.Entry e : folder.getChildren()) {
             final String name = e.getName();
             if (e.isDirectory()) {
                 if (!".snapshot".equals(name)) {
@@ -137,7 +139,6 @@ public class SubPackageFilterArchive implements Archive {
             }
         }
     }
-
 
     /**
      * Special entry that filters out /jcr_root/etc/packages
@@ -179,9 +180,9 @@ public class SubPackageFilterArchive implements Archive {
         @Override
         @NotNull
         public Collection<? extends Entry> getChildren() {
-            Collection<? extends Entry> children =  base.getChildren();
+            Collection<? extends Entry> children = base.getChildren();
             List<Entry> ret = new ArrayList<>(children.size());
-            for (Entry e: children) {
+            for (Entry e : children) {
                 e = filterChild(e);
                 if (e != null) {
                     ret.add(e);
@@ -196,6 +197,4 @@ public class SubPackageFilterArchive implements Archive {
             return filterChild(base.getChild(name));
         }
     }
-
-
 }

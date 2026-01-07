@@ -1,23 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.config;
-
-import java.io.ByteArrayOutputStream;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -27,6 +26,8 @@ import javax.jcr.Credentials;
 import javax.jcr.SimpleCredentials;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import java.io.ByteArrayOutputStream;
 
 import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
@@ -39,19 +40,19 @@ import org.xml.sax.SAXException;
 
 /**
  * {@code SimpleCredentialsConfig}...
-*
-*/
+ *
+ */
 public class SimpleCredentialsConfig extends CredentialsConfig {
 
     /**
      * key length
      */
-    private final static int KEY_LENGTH = 8;
+    private static final int KEY_LENGTH = 8;
 
     /**
      * encryption prefix
      */
-    private final static String PREFIX = "{DES}";
+    private static final String PREFIX = "{DES}";
 
     /**
      * default logger
@@ -76,7 +77,7 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
         assert elem.getNodeName().equals(ELEM_CREDETIALS);
 
         NodeList nl = elem.getChildNodes();
-        for (int i=0; i<nl.getLength(); i++) {
+        for (int i = 0; i < nl.getLength(); i++) {
             Node child = nl.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 if (child.getNodeName().equals(ELEM_USER)) {
@@ -84,9 +85,7 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
                     String name = e.getAttribute(ATTR_NAME);
                     String pass = decrypt(e.getAttribute(ATTR_PASSWORD));
                     return new SimpleCredentialsConfig(
-                            new SimpleCredentials(
-                                    name,
-                                    pass == null ? new char[0] : pass.toCharArray()));
+                            new SimpleCredentials(name, pass == null ? new char[0] : pass.toCharArray()));
                 }
             }
         }
@@ -95,10 +94,10 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
 
     @Deprecated
     public void writeInner(ContentHandler handler) throws SAXException {
-        throw new UnsupportedOperationException("No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
+        throw new UnsupportedOperationException(
+                "No longer supports write with a SAX contentHandler, user write with XMLStreamWriter instead!");
     }
 
-    
     @Override
     protected void writeInner(XMLStreamWriter writer) throws XMLStreamException {
         if (creds != null) {
@@ -116,7 +115,8 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
      * @param s string to encrypt
      * @return the encrypted string with a "{DES}" prefix.
      */
-    @SuppressWarnings({"java:S5547", "java:S5542"}) // DES is not secure but we are storing the keys anyways with the encrypted password, so it doesn't really matter
+    @SuppressWarnings({"java:S5547", "java:S5542"
+    }) // DES is not secure but we are storing the keys anyways with the encrypted password, so it doesn't really matter
     private static String encrypt(String s) {
         try {
             SecretKey key = KeyGenerator.getInstance("DES").generateKey();
@@ -129,8 +129,8 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
             out.write(cipher.update(data));
             out.write(cipher.doFinal());
             StringBuilder ret = new StringBuilder(PREFIX);
-            for (byte b: out.toByteArray()) {
-                ret.append(Text.hexTable[b>>4 & 0x0f]).append(Text.hexTable[b&0x0f]);
+            for (byte b : out.toByteArray()) {
+                ret.append(Text.hexTable[b >> 4 & 0x0f]).append(Text.hexTable[b & 0x0f]);
             }
             return ret.toString();
         } catch (Exception e) {
@@ -145,15 +145,16 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
      * @param s the data to decrypt
      * @return the string or {@code null} if an internal error occurred
      */
-    @SuppressWarnings({"java:S5547", "java:S5542"}) // DES is not secure but we are storing the keys anyways with the encrypted password, so it doesn't really matter
+    @SuppressWarnings({"java:S5547", "java:S5542"
+    }) // DES is not secure but we are storing the keys anyways with the encrypted password, so it doesn't really matter
     private static String decrypt(String s) {
         if (s == null || !s.startsWith(PREFIX)) {
             return s;
         }
         try {
-            byte[] data = new byte[(s.length() - PREFIX.length())/2];
-            for (int i=PREFIX.length(),b=0; i<s.length(); i+=2, b++) {
-                data[b] = (byte) (Integer.parseInt(s.substring(i, i+2), 16) &0xff);
+            byte[] data = new byte[(s.length() - PREFIX.length()) / 2];
+            for (int i = PREFIX.length(), b = 0; i < s.length(); i += 2, b++) {
+                data[b] = (byte) (Integer.parseInt(s.substring(i, i + 2), 16) & 0xff);
             }
             SecretKeySpec key = new SecretKeySpec(data, 0, KEY_LENGTH, "DES");
             Cipher cipher = Cipher.getInstance("DES");
@@ -168,5 +169,4 @@ public class SimpleCredentialsConfig extends CredentialsConfig {
             return null;
         }
     }
-
 }

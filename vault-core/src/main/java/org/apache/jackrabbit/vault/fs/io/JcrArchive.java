@@ -1,21 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
+
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,10 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
@@ -39,7 +41,6 @@ import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.JcrConstants;
-import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,12 +107,12 @@ public class JcrArchive extends AbstractArchive {
                     if (roots.length > 0) {
                         VirtualEntry newRoot = new VirtualEntry(jcrRoot.getName());
                         VirtualEntry entry = newRoot;
-                        for (String name: roots) {
+                        for (String name : roots) {
                             VirtualEntry newEntry = new VirtualEntry(name);
                             entry.children.put(name, newEntry);
                             entry = newEntry;
                         }
-                        for (Entry e: jcrRoot.getChildren()) {
+                        for (Entry e : jcrRoot.getChildren()) {
                             entry.children.put(e.getName(), e);
                         }
                         jcrRoot = newRoot;
@@ -123,11 +124,10 @@ public class JcrArchive extends AbstractArchive {
         }
     }
 
-    private DefaultMetaInf loadMetaInf(Entry dir)
-            throws IOException, ConfigurationException {
+    private DefaultMetaInf loadMetaInf(Entry dir) throws IOException, ConfigurationException {
         DefaultMetaInf inf = new DefaultMetaInf();
         // filter
-        for (Entry entry: dir.getChildren()) {
+        for (Entry entry : dir.getChildren()) {
             VaultInputSource src = getInputSource(entry);
             try (InputStream input = src.getByteStream()) {
                 inf.load(input, src.getSystemId());
@@ -223,7 +223,9 @@ public class JcrArchive extends AbstractArchive {
                 public InputStream getByteStream() {
                     try {
                         // todo: handle releasing of binary ?
-                        return content.getProperty(JcrConstants.JCR_DATA).getBinary().getStream();
+                        return content.getProperty(JcrConstants.JCR_DATA)
+                                .getBinary()
+                                .getStream();
                     } catch (RepositoryException e) {
                         log.error("Error while opening input stream of " + content, e);
                         return null;
@@ -247,13 +249,14 @@ public class JcrArchive extends AbstractArchive {
                  */
                 public long getLastModified() {
                     try {
-                        return content.getProperty(JcrConstants.JCR_LASTMODIFIED).getDate().getTimeInMillis();
+                        return content.getProperty(JcrConstants.JCR_LASTMODIFIED)
+                                .getDate()
+                                .getTimeInMillis();
                     } catch (RepositoryException e) {
                         log.error("Error while retrieving last modified of " + content, e);
                         return 0;
                     }
                 }
-
             };
 
         } catch (RepositoryException e) {
@@ -375,7 +378,10 @@ public class JcrArchive extends AbstractArchive {
                         } else if (child.isNodeType("nt:file")) {
                             isDir = false;
                         } else {
-                            log.debug("Skipping node {} with unknown type {}.", child.getPath(), child.getPrimaryNodeType().getName());
+                            log.debug(
+                                    "Skipping node {} with unknown type {}.",
+                                    child.getPath(),
+                                    child.getPrimaryNodeType().getName());
                             continue;
                         }
                         ret.add(new JcrEntry(child, name, isDir));
@@ -403,7 +409,10 @@ public class JcrArchive extends AbstractArchive {
                     } else if (child.isNodeType("nt:file")) {
                         isDir = false;
                     } else {
-                        log.debug("Skipping node {} with unknown type {}.", child.getPath(), child.getPrimaryNodeType().getName());
+                        log.debug(
+                                "Skipping node {} with unknown type {}.",
+                                child.getPath(),
+                                child.getPrimaryNodeType().getName());
                         return null;
                     }
                     return new JcrEntry(child, name, isDir);
@@ -415,5 +424,4 @@ public class JcrArchive extends AbstractArchive {
             }
         }
     }
-
 }

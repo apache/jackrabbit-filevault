@@ -1,25 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
 
-import java.io.IOException;
-
 import javax.jcr.RepositoryException;
+
+import java.io.IOException;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Group;
@@ -119,7 +120,6 @@ public class GroupMergePackageIT extends IntegrationTestBase {
         assertABC(mgr);
     }
 
-
     private void assertABC(UserManager mgr) throws RepositoryException {
         // check if group exists
         Group grp = (Group) mgr.getAuthorizable("test-group");
@@ -136,7 +136,6 @@ public class GroupMergePackageIT extends IntegrationTestBase {
         assertTrue("test-user-c is member of test-group", grp.isMember(userC));
     }
 
-
     /**
      * Installs a package that contains a "test-group" and a "test-user-a" as member of the group.
      */
@@ -151,8 +150,8 @@ public class GroupMergePackageIT extends IntegrationTestBase {
         User firstUser = mgr.createUser("test-user-0", "123");
         grp.addMember(firstUser);
 
-        for (int i=1; i<100; i++) {
-            User user = mgr.createUser("test-user-"+i, "123");
+        for (int i = 1; i < 100; i++) {
+            User user = mgr.createUser("test-user-" + i, "123");
             grp.addMember(user);
         }
 
@@ -194,6 +193,5 @@ public class GroupMergePackageIT extends IntegrationTestBase {
         assertFalse("test-user-0 is not member of test-group", grp.isMember(firstUser));
         assertTrue("test-user-1 is member of test-group", grp.isMember(user1));
         assertTrue("test-user-101 is member of test-group", grp.isMember(lastUser));
-
     }
 }

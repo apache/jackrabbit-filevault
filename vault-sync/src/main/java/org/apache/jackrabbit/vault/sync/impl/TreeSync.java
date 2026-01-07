@@ -1,20 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.sync.impl;
+
+import javax.jcr.Binary;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -27,13 +36,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-
-import javax.jcr.Binary;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -83,14 +85,14 @@ public class TreeSync {
 
     // currently hard coded
     private final String[] FULL_COVERAGE_NTS = {
-            "rep:AccessControl",
-            "rep:Policy",
-            "cq:Widget",
-            "cq:EditConfig",
-            "cq:WorkflowModel",
-            "vlt:FullCoverage",
-            "mix:language",
-            "sling:OsgiConfig"
+        "rep:AccessControl",
+        "rep:Policy",
+        "cq:Widget",
+        "cq:EditConfig",
+        "cq:WorkflowModel",
+        "vlt:FullCoverage",
+        "mix:language",
+        "sling:OsgiConfig"
     };
 
     public TreeSync(SyncLog syncLog, FileFilter fileFilter, WorkspaceFilter wspFilter) {
@@ -114,7 +116,8 @@ public class TreeSync {
         return result;
     }
 
-    public SyncResult syncSingle(Node parentNode, Node node, File file, boolean recursive) throws RepositoryException, IOException {
+    public SyncResult syncSingle(Node parentNode, Node node, File file, boolean recursive)
+            throws RepositoryException, IOException {
         Entry e;
         if (node == null) {
             e = new Entry(parentNode, file);
@@ -157,7 +160,7 @@ public class TreeSync {
             }
             return Type.UNSUPPORTED;
         }
-        for (String nt: FULL_COVERAGE_NTS) {
+        for (String nt : FULL_COVERAGE_NTS) {
             try {
                 if (node.isNodeType(nt)) {
                     return Type.FULL_COVERAGE;
@@ -213,7 +216,7 @@ public class TreeSync {
             fsEntries.put(e.file.getName(), e);
         }
         if (dir.isDirectory()) {
-            for (File file: dir.listFiles(fileFilter)) {
+            for (File file : dir.listFiles(fileFilter)) {
                 Entry e = fsEntries.get(file.getName());
                 if (e == null) {
                     e = new Entry(node, file);
@@ -225,7 +228,7 @@ public class TreeSync {
             }
         }
         // process
-        for (Entry e: jcrEntries.values()) {
+        for (Entry e : jcrEntries.values()) {
             sync(res, e, true);
         }
     }
@@ -300,7 +303,10 @@ public class TreeSync {
                 } else {
                     if (syncMode == SyncMode.FS2JCR) {
                         // create intermediate node???
-                        log.warn("Creation of unknown intermediate nodes not supported yet. fsPath={} jcrPath={}", e.getFsPath(), e.getJcrPath());
+                        log.warn(
+                                "Creation of unknown intermediate nodes not supported yet. fsPath={} jcrPath={}",
+                                e.getFsPath(),
+                                e.getJcrPath());
                     }
                 }
 
@@ -391,7 +397,8 @@ public class TreeSync {
             out = FileUtils.openOutputStream(e.file);
             IOUtils.copy(in, out);
             if (preserveFileDate) {
-                Calendar lastModified = e.node.getProperty("jcr:content/jcr:lastModified").getDate();
+                Calendar lastModified =
+                        e.node.getProperty("jcr:content/jcr:lastModified").getDate();
                 e.file.setLastModified(lastModified.getTimeInMillis());
             }
             syncLog.log("%s file://%s", action, e.file.getAbsolutePath());
@@ -425,7 +432,8 @@ public class TreeSync {
             content.setProperty(Property.JCR_DATA, bin);
         }
         content.setProperty(Property.JCR_LAST_MODIFIED, cal);
-        content.setProperty(Property.JCR_MIMETYPE, MimeTypes.getMimeType(e.file.getName(), MimeTypes.APPLICATION_OCTET_STREAM));
+        content.setProperty(
+                Property.JCR_MIMETYPE, MimeTypes.getMimeType(e.file.getName(), MimeTypes.APPLICATION_OCTET_STREAM));
         syncLog.log("%s jcr://%s", action, ntFile.getPath());
         res.addEntry(e.getJcrPath(), e.getFsPath(), SyncResult.Operation.UPDATE_JCR);
     }
@@ -489,11 +497,8 @@ public class TreeSync {
             if (parentNode == null && node == null) {
                 return null;
             }
-            
-            return node == null
-                    ? PathUtil.append(parentNode.getPath(), jcrName)
-                    : node.getPath();
 
+            return node == null ? PathUtil.append(parentNode.getPath(), jcrName) : node.getPath();
         }
     }
 }

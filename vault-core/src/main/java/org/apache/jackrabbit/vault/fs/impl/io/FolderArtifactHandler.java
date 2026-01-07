@@ -1,21 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl.io;
+
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -23,12 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
@@ -55,7 +56,8 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
     /**
      * qualified names of those default node types which should not be used for intermediate nodes (as they come with too many restrictions)
      */
-    private static final List<String> DISALLOWED_PRIMARY_NODE_TYPE_NAMES = Arrays.asList(JcrConstants.NT_BASE, JcrConstants.NT_HIERARCHYNODE);
+    private static final List<String> DISALLOWED_PRIMARY_NODE_TYPE_NAMES =
+            Arrays.asList(JcrConstants.NT_BASE, JcrConstants.NT_HIERARCHYNODE);
 
     /**
      * node type to use for the folders
@@ -91,9 +93,11 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
 
     private Node createIntermediateNode(Node parent, String intermediateNodeName) throws RepositoryException {
         // preferably use default (=primary) node type for intermediate nodes
-        Optional<String> defaultPrimaryChildNodeType = EffectiveNodeType.ofNode(parent).getDefaultPrimaryChildNodeTypeName(parent, intermediateNodeName);
+        Optional<String> defaultPrimaryChildNodeType =
+                EffectiveNodeType.ofNode(parent).getDefaultPrimaryChildNodeTypeName(parent, intermediateNodeName);
         final Node node;
-        if (defaultPrimaryChildNodeType.isPresent() && !DISALLOWED_PRIMARY_NODE_TYPE_NAMES.contains(defaultPrimaryChildNodeType.get())) {
+        if (defaultPrimaryChildNodeType.isPresent()
+                && !DISALLOWED_PRIMARY_NODE_TYPE_NAMES.contains(defaultPrimaryChildNodeType.get())) {
             node = parent.addNode(intermediateNodeName);
         } else {
             node = parent.addNode(intermediateNodeName, nodeType);
@@ -107,8 +111,13 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
      * Handles generic artifact sets
      */
     @Override
-    public ImportInfoImpl accept(@NotNull ImportOptions options, boolean isStrictByDefault, WorkspaceFilter wspFilter, Node parent, String name,
-                             ArtifactSetImpl artifacts)
+    public ImportInfoImpl accept(
+            @NotNull ImportOptions options,
+            boolean isStrictByDefault,
+            WorkspaceFilter wspFilter,
+            Node parent,
+            String name,
+            ArtifactSetImpl artifacts)
             throws RepositoryException, IOException {
         Artifact dir = artifacts.getDirectory();
         if (dir == null || artifacts.size() != 1) {
@@ -134,13 +143,15 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
             if (!rootPath.equals("/")) {
                 rootPath += "/";
             }
-            for (Artifact a: artifacts.values(ArtifactType.HINT)) {
+            for (Artifact a : artifacts.values(ArtifactType.HINT)) {
                 hints.add(rootPath + a.getRelativePath());
             }
 
             Node node = parent.getNode(dir.getRelativePath());
             if (overwritePrimaryTypesOfFolders
-                    && wspFilter.contains(node.getPath()) && wspFilter.getImportMode(node.getPath()) == ImportMode.REPLACE && !nodeType.equals(node.getPrimaryNodeType().getName())) {
+                    && wspFilter.contains(node.getPath())
+                    && wspFilter.getImportMode(node.getPath()) == ImportMode.REPLACE
+                    && !nodeType.equals(node.getPrimaryNodeType().getName())) {
                 modifyPrimaryType(node, info);
             }
             NodeIterator iter = node.getNodes();
@@ -168,7 +179,6 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
                     }
                 }
             }
-
         }
         return info;
     }

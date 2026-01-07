@@ -1,4 +1,5 @@
-<?xml version="1.0"?><!--
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -15,66 +16,66 @@
   limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <!-- ====================================================================== -->
-    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
-    <!-- ====================================================================== -->
-    <parent>
-        <groupId>org.apache.jackrabbit.vault</groupId>
-        <artifactId>parent</artifactId>
-        <relativePath>../parent/pom.xml</relativePath>
-        <version>${revision}</version>
-    </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <!-- ====================================================================== -->
+  <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
+  <!-- ====================================================================== -->
+  <parent>
+    <groupId>org.apache.jackrabbit.vault</groupId>
+    <artifactId>parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
 
-    <!-- ====================================================================== -->
-    <!-- P R O J E C T  D E S C R I P T I O N                                   -->
-    <!-- ====================================================================== -->
-    <artifactId>vault-core-it</artifactId>
-    <packaging>pom</packaging>
+  <!-- ====================================================================== -->
+  <!-- P R O J E C T  D E S C R I P T I O N                                   -->
+  <!-- ====================================================================== -->
+  <artifactId>vault-core-it</artifactId>
+  <packaging>pom</packaging>
 
-    <name>Apache Jackrabbit FileVault Core IT</name>
+  <name>Apache Jackrabbit FileVault Core IT</name>
+  <!-- ====================================================================== -->
+  <!-- M O D U L E S                                                          -->
+  <!-- ====================================================================== -->
+  <modules>
+    <module>vault-core-integration-tests</module>
+    <module>vault-core-it-support</module>
+    <module>vault-core-it-execution</module>
+  </modules>
 
-    <properties>
-        <!-- skip all modules inside this tree from Sonarcloud analysis -->
-        <sonar.skip>true</sonar.skip>
-    </properties>
-    <!-- ====================================================================== -->
-    <!-- M O D U L E S                                                          -->
-    <!-- ====================================================================== -->
-    <modules>
-        <module>vault-core-integration-tests</module>
-        <module>vault-core-it-support</module>
-        <module>vault-core-it-execution</module>
-    </modules>
+  <properties>
+    <!-- skip all modules inside this tree from Sonarcloud analysis -->
+    <sonar.skip>true</sonar.skip>
+  </properties>
 
-    <!-- ====================================================================== -->
-    <!-- B U I L D                                                              -->
-    <!-- ====================================================================== -->
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>de.thetaphi</groupId>
-                    <artifactId>forbiddenapis</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
+  <!-- ====================================================================== -->
+  <!-- B U I L D                                                              -->
+  <!-- ====================================================================== -->
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>de.thetaphi</groupId>
+          <artifactId>forbiddenapis</artifactId>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

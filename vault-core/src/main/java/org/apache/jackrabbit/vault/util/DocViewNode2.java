@@ -1,33 +1,22 @@
-/*************************************************************************
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ************************************************************************/
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.jackrabbit.vault.util;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.Node;
@@ -35,6 +24,19 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.spi.Name;
@@ -71,12 +73,13 @@ public class DocViewNode2 {
         }
         this.index = index;
         Objects.requireNonNull(properties, "properties must not be null");
-        this.properties = properties.stream().collect(Collectors.toMap(
-                DocViewProperty2::getName, 
-                Function.identity(),
-                (existing, replacement) -> existing,
-                LinkedHashMap::new // keep order of properties in the map
-                ));
+        this.properties = properties.stream()
+                .collect(Collectors.toMap(
+                        DocViewProperty2::getName,
+                        Function.identity(),
+                        (existing, replacement) -> existing,
+                        LinkedHashMap::new // keep order of properties in the map
+                        ));
     }
 
     public @NotNull DocViewNode2 cloneWithDifferentProperties(@NotNull Collection<DocViewProperty2> properties) {
@@ -84,12 +87,16 @@ public class DocViewNode2 {
     }
 
     @SuppressWarnings("unchecked")
-    public static @NotNull DocViewNode2 fromNode(@NotNull Node node, boolean isRoot, boolean useBinaryReferences) throws RepositoryException {
-        return fromNode(node, isRoot, JcrUtils.in((Iterator<Property>)node.getProperties()), useBinaryReferences);
+    public static @NotNull DocViewNode2 fromNode(@NotNull Node node, boolean isRoot, boolean useBinaryReferences)
+            throws RepositoryException {
+        return fromNode(node, isRoot, JcrUtils.in((Iterator<Property>) node.getProperties()), useBinaryReferences);
     }
 
-    public static @NotNull DocViewNode2 fromNode(@NotNull Node node, boolean isRoot, @NotNull Iterable<Property> properties, boolean useBinaryReferences) throws RepositoryException {
-        NameResolver nameResolver = new ParsingNameResolver(NameFactoryImpl.getInstance(), new SessionNamespaceResolver(node.getSession()));
+    public static @NotNull DocViewNode2 fromNode(
+            @NotNull Node node, boolean isRoot, @NotNull Iterable<Property> properties, boolean useBinaryReferences)
+            throws RepositoryException {
+        NameResolver nameResolver =
+                new ParsingNameResolver(NameFactoryImpl.getInstance(), new SessionNamespaceResolver(node.getSession()));
         final Name nodeName;
         if (isRoot) {
             nodeName = NameConstants.JCR_ROOT;
@@ -98,7 +105,7 @@ public class DocViewNode2 {
         }
         Collection<DocViewProperty2> docViewProps = new ArrayList<>();
         for (Property property : properties) {
-            Name propertyName =  nameResolver.getQName(property.getName());
+            Name propertyName = nameResolver.getQName(property.getName());
             boolean sort = propertyName.equals(NameConstants.JCR_MIXINTYPES);
             docViewProps.add(DocViewProperty2.fromProperty(property, sort, useBinaryReferences));
         }
@@ -109,8 +116,8 @@ public class DocViewNode2 {
         return new DocViewNode2(nodeName, index, docViewProps);
     }
 
-    /** 
-     * 
+    /**
+     *
      * @return the name of the {@link Node} represented by this class
      */
     public @NotNull Name getName() {
@@ -118,7 +125,7 @@ public class DocViewNode2 {
     }
 
     /**
-     * 
+     *
      * @return 0, except if there is a same-name sibling in the docview. In that case the index gives the 1-based order of the SNS nodes.
      * @see <a href="https://s.apache.org/jcr-2.0-spec/22_Same-Name_Siblings.html#22.2%20Addressing%20Same-Name%20Siblings%20by%20Path">Same-Name Siblings</a>
      */
@@ -127,19 +134,20 @@ public class DocViewNode2 {
     }
 
     /**
-     * 
+     *
      * @return the name suffixed by an index as outlined in <a href="https://s.apache.org/jcr-2.0-spec/22_Same-Name_Siblings.html#22.2%20Addressing%20Same-Name%20Siblings%20by%20Path">Addressing Same-Name Siblings by Path</a> in case there is a same-name sibling, otherwise the same value as for {@link #getName()}.
      */
     public @NotNull Name getSnsAwareName() {
         if (index > 0) {
-            return NameFactoryImpl.getInstance().create(name.getNamespaceURI(), name.getLocalName() + "[" + getIndex() + "]");
+            return NameFactoryImpl.getInstance()
+                    .create(name.getNamespaceURI(), name.getLocalName() + "[" + getIndex() + "]");
         } else {
             return name;
         }
     }
 
     /**
-     * 
+     *
      * @return all direct properties of the node represented by this object
      */
     public @NotNull Collection<DocViewProperty2> getProperties() {
@@ -193,25 +201,23 @@ public class DocViewNode2 {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         DocViewNode2 other = (DocViewNode2) obj;
         return index == other.index && areNamesEqual(name, other.name) && Objects.equals(properties, other.properties);
     }
 
     static boolean areNamesEqual(@NotNull Name name, @NotNull Name otherName) {
-        return Objects.equals(name.getLocalName(), otherName.getLocalName()) && Objects.equals(name.getNamespaceURI(), otherName.getNamespaceURI());
+        return Objects.equals(name.getLocalName(), otherName.getLocalName())
+                && Objects.equals(name.getNamespaceURI(), otherName.getNamespaceURI());
     }
 
     /**
      * Writes the node's start tag (including the attributes for the properties and optionally the namespace declarations) to the given {@link XMLStreamWriter}.
      * Use the following writer for properly formatting the output according to FileVault standards:
      * {@code FormattingXmlStreamWriter.create(out, new DocViewFormat().getXmlOutputFormat())}.
-     * 
+     *
      * @param writer the XMLStreamWriter to write to
      * @param nsResolver the namespace resolver to use for retrieving prefixes for namespace URIs of {@link #getName()} and {@link DocViewProperty2#getName()}
      * @param namespacePrefixes the namespace prefixes for which to emit namespace declarations in this node
@@ -219,7 +225,11 @@ public class DocViewNode2 {
      * @throws XMLStreamException
      * @since 3.6.2
      */
-    public void writeStart(@NotNull XMLStreamWriter writer, @NotNull NamespaceResolver nsResolver, @NotNull Iterable<String> namespacePrefixes) throws NamespaceException, XMLStreamException {
+    public void writeStart(
+            @NotNull XMLStreamWriter writer,
+            @NotNull NamespaceResolver nsResolver,
+            @NotNull Iterable<String> namespacePrefixes)
+            throws NamespaceException, XMLStreamException {
         // sort properties
         Set<DocViewProperty2> props = new TreeSet<>(new DocViewProperty2Comparator(nsResolver));
         props.addAll(properties.values());
@@ -231,8 +241,8 @@ public class DocViewNode2 {
             localName += "[" + getIndex() + "]";
         }
         String encodedLocalName = ISO9075.encode(localName);
-       
-        if (namespaceUri.length()>0) {
+
+        if (namespaceUri.length() > 0) {
             writer.writeStartElement(nsResolver.getPrefix(namespaceUri), encodedLocalName, namespaceUri);
         } else {
             writer.writeStartElement(encodedLocalName);
@@ -244,11 +254,14 @@ public class DocViewNode2 {
             }
             writer.writeNamespace(namespacePrefix, nsResolver.getURI(namespacePrefix));
         }
-        for (DocViewProperty2 prop: props) {
+        for (DocViewProperty2 prop : props) {
             String attributeLocalName = ISO9075.encode(prop.getName().getLocalName());
             String attributeNamespaceUri = prop.getName().getNamespaceURI();
-            if (attributeNamespaceUri.length()>0) {
-                writer.writeAttribute(nsResolver.getPrefix(attributeNamespaceUri), attributeNamespaceUri, attributeLocalName, 
+            if (attributeNamespaceUri.length() > 0) {
+                writer.writeAttribute(
+                        nsResolver.getPrefix(attributeNamespaceUri),
+                        attributeNamespaceUri,
+                        attributeLocalName,
                         prop.formatValue());
             } else {
                 writer.writeAttribute(attributeLocalName, prop.formatValue());

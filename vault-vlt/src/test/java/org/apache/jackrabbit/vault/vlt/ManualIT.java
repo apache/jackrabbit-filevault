@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.vlt;
 
 import java.io.BufferedOutputStream;
@@ -37,29 +38,28 @@ import org.apache.jackrabbit.vault.vlt.meta.xml.zip.UpdateableZipFile;
  */
 public class ManualIT {
 
-    public static final String TEXT = "/*\n" +
-            " * Licensed to the Apache Software Foundation (ASF) under one or more\n" +
-            " * contributor license agreements.  See the NOTICE file distributed with\n" +
-            " * this work for additional information regarding copyright ownership.\n" +
-            " * The ASF licenses this file to You under the Apache License, Version 2.0\n" +
-            " * (the \"License\"); you may not use this file except in compliance with\n" +
-            " * the License.  You may obtain a copy of the License at\n" +
-            " *\n" +
-            " *      http://www.apache.org/licenses/LICENSE-2.0\n" +
-            " *\n" +
-            " * Unless required by applicable law or agreed to in writing, software\n" +
-            " * distributed under the License is distributed on an \"AS IS\" BASIS,\n" +
-            " * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n" +
-            " * See the License for the specific language governing permissions and\n" +
-            " * limitations under the License.\n" +
-            " */\n";
-    
+    public static final String TEXT = "/*\n" + " * Licensed to the Apache Software Foundation (ASF) under one or more\n"
+            + " * contributor license agreements.  See the NOTICE file distributed with\n"
+            + " * this work for additional information regarding copyright ownership.\n"
+            + " * The ASF licenses this file to You under the Apache License, Version 2.0\n"
+            + " * (the \"License\"); you may not use this file except in compliance with\n"
+            + " * the License.  You may obtain a copy of the License at\n"
+            + " *\n"
+            + " *      http://www.apache.org/licenses/LICENSE-2.0\n"
+            + " *\n"
+            + " * Unless required by applicable law or agreed to in writing, software\n"
+            + " * distributed under the License is distributed on an \"AS IS\" BASIS,\n"
+            + " * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n"
+            + " * See the License for the specific language governing permissions and\n"
+            + " * limitations under the License.\n"
+            + " */\n";
+
     public static void main(String[] args) throws IOException {
         File testFile = new File("test.dat");
         FileUtils.writeStringToFile(testFile, TEXT);
 
         UpdateableZipFile testZip = new UpdateableZipFile(new File("test.zip"));
-        for (int i=0; i<100; i++) {
+        for (int i = 0; i < 100; i++) {
             String name = testFile.getName() + i;
             System.out.println("adding " + name);
             testZip.update(name, new FileInputStream(testFile));
@@ -73,8 +73,7 @@ public class ManualIT {
     public static void putFile(File zip, File file, String name) throws IOException {
         // create tmp file
         File newZip = new File(zip.getName() + "." + System.currentTimeMillis());
-        ZipOutputStream out = new ZipOutputStream(
-                new BufferedOutputStream(new FileOutputStream(newZip)));
+        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(newZip)));
         out.setLevel(Deflater.NO_COMPRESSION);
         if (zip.exists()) {
             ZipFile zipFile = new ZipFile(zip, ZipFile.OPEN_DELETE | ZipFile.OPEN_READ);

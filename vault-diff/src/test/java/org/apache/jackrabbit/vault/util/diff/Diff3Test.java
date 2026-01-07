@@ -1,24 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.util.diff;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * {@code Diff3Test}...
@@ -89,7 +91,7 @@ public class Diff3Test {
 
     @Test
     public void testModifyDifferent() {
-        String left  = "a,b,c1,d1,e,f,g,";
+        String left = "a,b,c1,d1,e,f,g,";
         String right = "a,b,c2,d2,e,f,g,";
         String result = "a,b," + conflict("c,d,", "c1,d1,", "c2,d2,") + "e,f,g,";
         doTest(base, left, right, result, true);
@@ -97,7 +99,7 @@ public class Diff3Test {
 
     @Test
     public void testInsertLeftModifyRight() {
-        String left  = "a,b,b1,c,d,e,f,g,";
+        String left = "a,b,b1,c,d,e,f,g,";
         String right = "a,b,c2,d,e,f,g,";
         String result = "a,b," + conflict("c,", "b1,c,", "c2,") + "d,e,f,g,";
         doTest(base, left, right, result, true);
@@ -139,13 +141,13 @@ public class Diff3Test {
         base = base.replaceAll(",", "\n");
         left = left.replaceAll(",", "\n");
         right = right.replaceAll(",", "\n");
-        return Hunk3.getMarker(Hunk3.MARKER_L, null) + "\n" +
-                left +
-                Hunk3.getMarker(Hunk3.MARKER_B, null) + "\n" +
-                base +
-                Hunk3.getMarker(Hunk3.MARKER_M, null) + "\n" +
-                right +
-                Hunk3.getMarker(Hunk3.MARKER_R, null) + "\n";
+        return Hunk3.getMarker(Hunk3.MARKER_L, null) + "\n" + left
+                + Hunk3.getMarker(Hunk3.MARKER_B, null)
+                + "\n" + base
+                + Hunk3.getMarker(Hunk3.MARKER_M, null)
+                + "\n" + right
+                + Hunk3.getMarker(Hunk3.MARKER_R, null)
+                + "\n";
     }
 
     private void doTest(String base, String left, String right, String result, boolean hasConflicts) {

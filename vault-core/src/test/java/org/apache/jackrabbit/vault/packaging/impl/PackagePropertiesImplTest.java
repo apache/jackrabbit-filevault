@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.impl;
 
@@ -49,34 +51,56 @@ public class PackagePropertiesImplTest {
 
     @Test
     public void testGetDependenciesLocations() throws URISyntaxException {
-        PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0=maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
-        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.singletonMap(PackageId.fromString("group1:name1:1.0"), new URI("maven:com.example.mygroupid:myartifactId:1.0.0:zip"))));
+        PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(
+                PackageProperties.NAME_DEPENDENCIES_LOCATIONS,
+                "group1:name1:1.0=maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
+        MatcherAssert.assertThat(
+                packageProperties.getDependenciesLocations(),
+                Matchers.equalTo(Collections.singletonMap(
+                        PackageId.fromString("group1:name1:1.0"),
+                        new URI("maven:com.example.mygroupid:myartifactId:1.0.0:zip"))));
 
-        packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0=maven:com.example.mygroupid:myartifactId:1.0.0:zip,group2:name2:2.0=maven:com.example.mygroupid2:myartifactId2:2.0.0:zip,"));
+        packageProperties = new SimplePackageProperties(
+                Collections.singletonMap(
+                        PackageProperties.NAME_DEPENDENCIES_LOCATIONS,
+                        "group1:name1:1.0=maven:com.example.mygroupid:myartifactId:1.0.0:zip,group2:name2:2.0=maven:com.example.mygroupid2:myartifactId2:2.0.0:zip,"));
         Map<PackageId, URI> expectedDependenciesLocations = new HashMap<>();
-        expectedDependenciesLocations.put(PackageId.fromString("group1:name1:1.0"), new URI("maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
-        expectedDependenciesLocations.put(PackageId.fromString("group2:name2:2.0"), new URI("maven:com.example.mygroupid2:myartifactId2:2.0.0:zip"));
+        expectedDependenciesLocations.put(
+                PackageId.fromString("group1:name1:1.0"),
+                new URI("maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
+        expectedDependenciesLocations.put(
+                PackageId.fromString("group2:name2:2.0"),
+                new URI("maven:com.example.mygroupid2:myartifactId2:2.0.0:zip"));
 
-        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(expectedDependenciesLocations));
+        MatcherAssert.assertThat(
+                packageProperties.getDependenciesLocations(), Matchers.equalTo(expectedDependenciesLocations));
     }
 
     @Test
     public void testGetInvalidDependenciesLocations() throws URISyntaxException {
-        PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
+        PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(
+                PackageProperties.NAME_DEPENDENCIES_LOCATIONS,
+                "group1:name1:1.0maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
         // no key=value format
-        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        MatcherAssert.assertThat(
+                packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
         // invalid key (pid)
-        packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "=maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
-        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        packageProperties = new SimplePackageProperties(Collections.singletonMap(
+                PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "=maven:com.example.mygroupid:myartifactId:1.0.0:zip"));
+        MatcherAssert.assertThat(
+                packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
         // invalid value (uri)
-        packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0=maven:invalid uri"));
-        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        packageProperties = new SimplePackageProperties(Collections.singletonMap(
+                PackageProperties.NAME_DEPENDENCIES_LOCATIONS, "group1:name1:1.0=maven:invalid uri"));
+        MatcherAssert.assertThat(
+                packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
     }
 
     @Test
     public void testGetNotSetDependenciesLocations() throws URISyntaxException {
         PackageProperties packageProperties = new SimplePackageProperties(Collections.emptyMap());
-        MatcherAssert.assertThat(packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
+        MatcherAssert.assertThat(
+                packageProperties.getDependenciesLocations(), Matchers.equalTo(Collections.emptyMap()));
     }
 
     /**
@@ -85,29 +109,33 @@ public class PackagePropertiesImplTest {
      */
     @Test
     public void testDateFormat() {
-        checkDateParsing("2021-05-26T15:12:21.673+02:00","2021-05-26T13:12:21.673Z");
+        checkDateParsing("2021-05-26T15:12:21.673+02:00", "2021-05-26T13:12:21.673Z");
 
         // these are not parsed by org.apache.jackrabbit.util.ISO8601.parse but generated by the maven plugin(s)
-        checkDateParsing("2021-05-26T15:12:21.673+02","2021-05-26T13:12:21.673Z");
-        checkDateParsing("2021-05-26T15:12:21.673-02","2021-05-26T17:12:21.673Z");
+        checkDateParsing("2021-05-26T15:12:21.673+02", "2021-05-26T13:12:21.673Z");
+        checkDateParsing("2021-05-26T15:12:21.673-02", "2021-05-26T17:12:21.673Z");
 
-        checkDateParsing("2021-05-26T15:12:21.673+0200","2021-05-26T13:12:21.673Z");
-        checkDateParsing("2021-05-26T15:12:21.673-0230","2021-05-26T17:42:21.673Z");
+        checkDateParsing("2021-05-26T15:12:21.673+0200", "2021-05-26T13:12:21.673Z");
+        checkDateParsing("2021-05-26T15:12:21.673-0230", "2021-05-26T17:42:21.673Z");
 
         // check that some edge cases don't break
-        checkDateParsing("nonsense",null);
-        checkDateParsing("",null);
-        MatcherAssert.assertThat(new SimplePackageProperties(Collections.emptyMap()).getCreated(), Matchers.nullValue());
+        checkDateParsing("nonsense", null);
+        checkDateParsing("", null);
+        MatcherAssert.assertThat(
+                new SimplePackageProperties(Collections.emptyMap()).getCreated(), Matchers.nullValue());
     }
 
-    protected void checkDateParsing(String original, String expected){
-        PackageProperties packageProperties = new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_CREATED, original));
+    protected void checkDateParsing(String original, String expected) {
+        PackageProperties packageProperties =
+                new SimplePackageProperties(Collections.singletonMap(PackageProperties.NAME_CREATED, original));
         Calendar created = packageProperties.getCreated();
         if (expected != null) {
             MatcherAssert.assertThat("Date could not be parsed: " + original, created, Matchers.notNullValue());
-            MatcherAssert.assertThat(created.toInstant().atOffset(ZoneOffset.UTC).toString(), Matchers.equalTo(expected));
+            MatcherAssert.assertThat(
+                    created.toInstant().atOffset(ZoneOffset.UTC).toString(), Matchers.equalTo(expected));
         } else {
-            MatcherAssert.assertThat("Invalid date must return null when parsing: " + original, created, Matchers.nullValue());
+            MatcherAssert.assertThat(
+                    "Invalid date must return null when parsing: " + original, created, Matchers.nullValue());
         }
     }
 }

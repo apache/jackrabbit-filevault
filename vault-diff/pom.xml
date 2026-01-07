@@ -15,76 +15,74 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <!-- ====================================================================== -->
-    <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
-    <!-- ====================================================================== -->
-    <parent>
-        <groupId>org.apache.jackrabbit.vault</groupId>
-        <artifactId>parent</artifactId>
-        <relativePath>../parent/pom.xml</relativePath>
-        <version>${revision}</version>
-    </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <!-- ====================================================================== -->
+  <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
+  <!-- ====================================================================== -->
+  <parent>
+    <groupId>org.apache.jackrabbit.vault</groupId>
+    <artifactId>parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
 
-    <!-- ====================================================================== -->
-    <!-- P R O J E C T  D E S C R I P T I O N                                   -->
-    <!-- ====================================================================== -->
-    <artifactId>vault-diff</artifactId>
-    <name>Apache Jackrabbit FileVault Diff (Diff utilities)</name>
-    <description>Provides Classes for diff and diff3.
-    </description>
+  <!-- ====================================================================== -->
+  <!-- P R O J E C T  D E S C R I P T I O N                                   -->
+  <!-- ====================================================================== -->
+  <artifactId>vault-diff</artifactId>
+  <name>Apache Jackrabbit FileVault Diff (Diff utilities)</name>
+  <description>Provides Classes for diff and diff3.</description>
 
-    <!-- ====================================================================== -->
-    <!-- D E P E N D E N C I E S                                                -->
-    <!-- ====================================================================== -->
-    <dependencies>
-        <dependency>
-            <groupId>com.googlecode.java-diff-utils</groupId>
-            <artifactId>diffutils</artifactId>
-            <version>1.2.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-              <artifactId>commons-io</artifactId>
-              <scope>test</scope>
-        </dependency>
-        <dependency>
-              <groupId>junit</groupId>
-              <artifactId>junit</artifactId>
-              <scope>test</scope>
-        </dependency>
-    </dependencies>
+  <!-- ====================================================================== -->
+  <!-- D E P E N D E N C I E S                                                -->
+  <!-- ====================================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>com.googlecode.java-diff-utils</groupId>
+      <artifactId>diffutils</artifactId>
+      <version>1.2.1</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-    <!-- ====================================================================== -->
-    <!-- B U I L D   D E F I N I T I O N                                        -->
-    <!-- ====================================================================== -->
-    <build>
-        <pluginManagement>
-            <plugins>
-                 <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <configuration>
-                        <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
-                    </configuration>
-                 </plugin>
-            </plugins>
-        </pluginManagement>
-        <plugins>
-            <!-- exclude test resources from rat-check -->
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>src/test/resources/**</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+  <!-- ====================================================================== -->
+  <!-- B U I L D   D E F I N I T I O N                                        -->
+  <!-- ====================================================================== -->
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <configuration>
+            <suppressionFile>${project.basedir}/../suppressions.xml</suppressionFile>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <!-- exclude test resources from rat-check -->
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>src/test/resources/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

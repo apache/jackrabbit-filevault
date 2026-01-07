@@ -1,29 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl;
+
+import javax.jcr.RepositoryException;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
-import javax.jcr.RepositoryException;
-
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.AccessType;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -32,7 +34,6 @@ import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
 import org.apache.jackrabbit.vault.util.PlatformNameFormat;
-import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,14 +92,13 @@ public class VaultFileImpl implements VaultFile {
      * @param node the node
      * @throws RepositoryException if an error occurs
      */
-    protected VaultFileImpl(VaultFileSystem fs, String rootPath, VaultFileNode node)
-            throws RepositoryException {
+    protected VaultFileImpl(VaultFileSystem fs, String rootPath, VaultFileNode node) throws RepositoryException {
         this.fs = fs;
         this.node = node;
         if (rootPath.equals("")) {
             this.name = rootPath;
             // bit of a hack since we know how the root artifacts look like
-            for (Artifact a: node.getAggregate().getArtifacts().values()) {
+            for (Artifact a : node.getAggregate().getArtifacts().values()) {
                 if (a.getType() == ArtifactType.DIRECTORY) {
                     this.artifact = a;
                     node.getFiles().add(this);
@@ -111,14 +111,14 @@ public class VaultFileImpl implements VaultFile {
         } else {
             this.name = rootPath;
             // special case when mounted deeply
-            for (Artifact a: node.getAggregate().getArtifacts().values()) {
+            for (Artifact a : node.getAggregate().getArtifacts().values()) {
                 if (a.getType() == ArtifactType.DIRECTORY) {
                     this.artifact = a;
                     node.getFiles().add(this);
                 } else {
                     String p[] = Text.explode(a.getPlatformPath(), '/');
                     VaultFileImpl entry = null;
-                    for (String cName: p) {
+                    for (String cName : p) {
                         if (entry == null) {
                             entry = this;
                         } else {
@@ -132,13 +132,11 @@ public class VaultFileImpl implements VaultFile {
                     node.getFiles().add(entry);
                 }
             }
-
         }
-        for (VaultFileNode child: node.getChildren()) {
+        for (VaultFileNode child : node.getChildren()) {
             addPendingNode(child);
         }
     }
-
 
     /**
      * Internal constructor
@@ -149,8 +147,7 @@ public class VaultFileImpl implements VaultFile {
      * @param artifact the underlying artifact. can be {@code null}
      * @throws RepositoryException if an error occurs
      */
-    protected VaultFileImpl(VaultFileSystem fs, String name, VaultFileNode node,
-                      Artifact artifact)
+    protected VaultFileImpl(VaultFileSystem fs, String name, VaultFileNode node, Artifact artifact)
             throws RepositoryException {
         this.fs = fs;
         this.name = name;
@@ -169,11 +166,10 @@ public class VaultFileImpl implements VaultFile {
         this.node = node;
         this.artifact = a;
         if (node != null && a != null && a.getType() == ArtifactType.DIRECTORY) {
-            for (VaultFileNode child: node.getChildren()) {
+            for (VaultFileNode child : node.getChildren()) {
                 addPendingNode(child);
             }
         }
-
     }
 
     protected void attach(VaultFileNode node, Artifact a) {
@@ -203,9 +199,7 @@ public class VaultFileImpl implements VaultFile {
     }
 
     public String getAggregatePath() {
-        return node == null 
-                ? parent.getAggregatePath()
-                : node.getPath();
+        return node == null ? parent.getAggregatePath() : node.getPath();
     }
 
     /**
@@ -235,7 +229,7 @@ public class VaultFileImpl implements VaultFile {
     public boolean isTransient() {
         return node == null;
     }
-    
+
     public VaultFileImpl getParent() throws IOException, RepositoryException {
         return parent;
     }
@@ -327,15 +321,15 @@ public class VaultFileImpl implements VaultFile {
         String aggName = n.getAggregate().getRelPath();
         if (aggName.indexOf('/') > 0) {
             String[] p = Text.explode(aggName, '/');
-            for (int i=0; i<p.length-1; i++) {
+            for (int i = 0; i < p.length - 1; i++) {
                 parent = parent.getOrAddChild(PlatformNameFormat.getPlatformName(p[i]));
             }
         }
 
-        for (Artifact a: n.getAggregate().getArtifacts().values()) {
+        for (Artifact a : n.getAggregate().getArtifacts().values()) {
             String p[] = Text.explode(a.getPlatformPath(), '/');
             VaultFileImpl entry = parent;
-            for (String cName: p) {
+            for (String cName : p) {
                 entry = entry.getOrAddChild(cName);
             }
             entry.init(n, a);
@@ -379,8 +373,7 @@ public class VaultFileImpl implements VaultFile {
     }
 
     public boolean canRead() {
-        return artifact != null
-                && artifact.getPreferredAccess() != AccessType.NONE;
+        return artifact != null && artifact.getPreferredAccess() != AccessType.NONE;
     }
 
     public long lastModified() {
@@ -406,7 +399,7 @@ public class VaultFileImpl implements VaultFile {
         if (parent == null) {
             // bit of a hack since we know how the root artifacts look like
             node.invalidate();
-            for (Artifact a: node.getAggregate().getArtifacts().values()) {
+            for (Artifact a : node.getAggregate().getArtifacts().values()) {
                 if (a.getType() == ArtifactType.DIRECTORY) {
                     this.artifact = a;
                     node.getFiles().add(this);
@@ -416,20 +409,20 @@ public class VaultFileImpl implements VaultFile {
                     this.addChild(child);
                 }
             }
-            for (VaultFileNode child: node.getChildren()) {
+            for (VaultFileNode child : node.getChildren()) {
                 addPendingNode(child);
             }
         } else {
             // get the directory artifact of this file
-            for (VaultFileImpl f: node.getFiles()) {
+            for (VaultFileImpl f : node.getFiles()) {
                 if (f.parent != null && f.parent.artifact.getType() == ArtifactType.DIRECTORY) {
                     f.parent.node.invalidate();
                     f.parent.init(f.parent.node, f.parent.artifact);
                     break;
                 }
             }
-            //node.invalidate();
-            //init(node, artifact);
+            // node.invalidate();
+            // init(node, artifact);
         }
     }
 
@@ -455,6 +448,4 @@ public class VaultFileImpl implements VaultFile {
         }
         ctx.outdent();
     }
-
-
 }

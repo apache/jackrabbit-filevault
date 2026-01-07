@@ -1,29 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.api;
-
-import java.io.InputStream;
-import java.util.List;
-import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+
+import java.io.InputStream;
+import java.util.List;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -72,8 +73,8 @@ public interface WorkspaceFilter extends Dumpable {
      * It returns {@code true} if any of the filter sets contain the path
      * and it's not globally ignored.
      * <p>
-     * If {@link #contains(String)} returns {@code true} for one path, 
-     * also {@link #covers(String)} would return {@code true} for the same path, 
+     * If {@link #contains(String)} returns {@code true} for one path,
+     * also {@link #covers(String)} would return {@code true} for the same path,
      * but not vice-versa.
      *
      * @param path to check
@@ -130,7 +131,7 @@ public interface WorkspaceFilter extends Dumpable {
     /**
      * Returns the source xml that constructs this filter
      * It is the obligation of the caller to close the returned input stream.
-     * 
+     *
      * @return the source xml
      */
     @NotNull
@@ -159,8 +160,7 @@ public interface WorkspaceFilter extends Dumpable {
      * @param listener listener which receives coverage information
      * @throws RepositoryException if an error occurs
      */
-    void dumpCoverage(@NotNull Node rootNode, @NotNull ProgressTrackerListener listener)
-            throws RepositoryException;
+    void dumpCoverage(@NotNull Node rootNode, @NotNull ProgressTrackerListener listener) throws RepositoryException;
 
     /**
      * Dumps the coverage of this filter using the given session. If {@code skipJcrContent} is {@code true}

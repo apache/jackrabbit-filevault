@@ -1,32 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.jcr.Credentials;
 import javax.jcr.LoginException;
@@ -38,6 +28,16 @@ import javax.jcr.Session;
 import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.jackrabbit.vault.fs.api.AggregateManager;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
@@ -67,8 +67,7 @@ public class AggregateManagerImpl implements AggregateManager {
     /**
      * the name of the (internal) default config
      */
-    private static final String DEFAULT_CONFIG =
-            "org/apache/jackrabbit/vault/fs/config/defaultConfig-1.1.xml";
+    private static final String DEFAULT_CONFIG = "org/apache/jackrabbit/vault/fs/config/defaultConfig-1.1.xml";
 
     /**
      * the name of the (internal) default config
@@ -79,14 +78,12 @@ public class AggregateManagerImpl implements AggregateManager {
     /**
      * the name of the (internal) default workspace filter
      */
-    private static final String DEFAULT_WSP_FILTER = "" +
-            "org/apache/jackrabbit/vault/fs/config/defaultFilter-1.0.xml";
+    private static final String DEFAULT_WSP_FILTER = "" + "org/apache/jackrabbit/vault/fs/config/defaultFilter-1.0.xml";
 
     /**
      * name of node types resource
      */
-    private static final String DEFAULT_NODETYPES = "" +
-            "org/apache/jackrabbit/vault/fs/config/nodetypes.cnd";
+    private static final String DEFAULT_NODETYPES = "" + "org/apache/jackrabbit/vault/fs/config/nodetypes.cnd";
 
     /**
      * the repository session for this manager
@@ -147,10 +144,8 @@ public class AggregateManagerImpl implements AggregateManager {
      * @return an artifact manager
      * @throws RepositoryException if an error occurs.
      */
-    public static AggregateManager mount(VaultFsConfig config,
-                                         WorkspaceFilter wspFilter,
-                                         RepositoryAddress mountpoint,
-                                         Session session)
+    public static AggregateManager mount(
+            VaultFsConfig config, WorkspaceFilter wspFilter, RepositoryAddress mountpoint, Session session)
             throws RepositoryException {
         if (config == null) {
             config = getDefaultConfig();
@@ -175,12 +170,13 @@ public class AggregateManagerImpl implements AggregateManager {
      * @return an artifact manager
      * @throws RepositoryException if an error occurs.
      */
-    public static AggregateManager mount(VaultFsConfig config,
-                                         WorkspaceFilter wspFilter,
-                                         Repository rep,
-                                         Credentials credentials,
-                                         RepositoryAddress mountpoint)
-    throws RepositoryException {
+    public static AggregateManager mount(
+            VaultFsConfig config,
+            WorkspaceFilter wspFilter,
+            Repository rep,
+            Credentials credentials,
+            RepositoryAddress mountpoint)
+            throws RepositoryException {
         if (config == null) {
             config = getDefaultConfig();
         }
@@ -208,8 +204,7 @@ public class AggregateManagerImpl implements AggregateManager {
      * @return the default config
      */
     public static VaultFsConfig getDefaultConfig() {
-        try (InputStream in = AggregateManagerImpl.class.getClassLoader()
-                    .getResourceAsStream(DEFAULT_CONFIG)) {
+        try (InputStream in = AggregateManagerImpl.class.getClassLoader().getResourceAsStream(DEFAULT_CONFIG)) {
             if (in == null) {
                 throw new InternalError("Default config not in classpath: " + DEFAULT_CONFIG);
             }
@@ -226,8 +221,8 @@ public class AggregateManagerImpl implements AggregateManager {
      * @return the default config
      */
     public static VaultFsConfig getDefaultBinaryReferencesConfig() {
-        try (InputStream in = AggregateManagerImpl.class.getClassLoader()
-                    .getResourceAsStream(DEFAULT_BINARY_REFERENCES_CONFIG)) {
+        try (InputStream in =
+                AggregateManagerImpl.class.getClassLoader().getResourceAsStream(DEFAULT_BINARY_REFERENCES_CONFIG)) {
             if (in == null) {
                 throw new InternalError("Default config not in classpath: " + DEFAULT_BINARY_REFERENCES_CONFIG);
             }
@@ -244,8 +239,7 @@ public class AggregateManagerImpl implements AggregateManager {
      * @return the default workspace filter
      */
     public static DefaultWorkspaceFilter getDefaultWorkspaceFilter() {
-        try (InputStream in = AggregateManagerImpl.class.getClassLoader()
-                    .getResourceAsStream(DEFAULT_WSP_FILTER)) {
+        try (InputStream in = AggregateManagerImpl.class.getClassLoader().getResourceAsStream(DEFAULT_WSP_FILTER)) {
             if (in == null) {
                 throw new InternalError("Default filter not in classpath: " + DEFAULT_WSP_FILTER);
             }
@@ -258,7 +252,6 @@ public class AggregateManagerImpl implements AggregateManager {
             throw new IllegalArgumentException("Internal error while parsing config.", e);
         }
     }
-
 
     public void unmount() throws RepositoryException {
         assertMounted();
@@ -287,9 +280,12 @@ public class AggregateManagerImpl implements AggregateManager {
      * @param ownSession indicates if the session can be logged out in unmount.
      * @throws RepositoryException if an error occurs.
      */
-    private AggregateManagerImpl(VaultFsConfig config, WorkspaceFilter wspFilter,
-                             RepositoryAddress mountpoint, Node rootNode,
-                             boolean ownSession)
+    private AggregateManagerImpl(
+            VaultFsConfig config,
+            WorkspaceFilter wspFilter,
+            RepositoryAddress mountpoint,
+            Node rootNode,
+            boolean ownSession)
             throws RepositoryException {
         session = rootNode.getSession();
         this.mountpoint = mountpoint;
@@ -300,9 +296,7 @@ public class AggregateManagerImpl implements AggregateManager {
         artifactHandlers = Collections.unmodifiableList(config.getHandlers());
 
         // init root node
-        Aggregator rootAggregator = rootNode.getDepth() == 0
-                ? new RootAggregator()
-                : getAggregator(rootNode, null);
+        Aggregator rootAggregator = rootNode.getDepth() == 0 ? new RootAggregator() : getAggregator(rootNode, null);
         root = new AggregateImpl(this, rootNode.getPath(), rootAggregator);
 
         // setup node types
@@ -321,7 +315,7 @@ public class AggregateManagerImpl implements AggregateManager {
      */
     public void addNodeTypes(Node node) throws RepositoryException {
         internalAddNodeType(node.getPrimaryNodeType());
-        for (NodeType nt: node.getMixinNodeTypes()) {
+        for (NodeType nt : node.getMixinNodeTypes()) {
             internalAddNodeType(nt);
         }
     }
@@ -368,16 +362,16 @@ public class AggregateManagerImpl implements AggregateManager {
         if (nodeType != null && !nodeTypes.contains(nodeType.getName())) {
             nodeTypes.add(nodeType.getName());
             NodeType[] superTypes = nodeType.getSupertypes();
-            for (NodeType superType: superTypes) {
+            for (NodeType superType : superTypes) {
                 nodeTypes.add(superType.getName());
             }
             NodeDefinition[] nodeDefs = nodeType.getChildNodeDefinitions();
             if (nodeDefs != null) {
-                for (NodeDefinition nodeDef: nodeDefs) {
+                for (NodeDefinition nodeDef : nodeDefs) {
                     internalAddNodeType(nodeDef.getDefaultPrimaryType());
                     NodeType[] reqs = nodeDef.getRequiredPrimaryTypes();
                     if (reqs != null) {
-                        for (NodeType req: reqs) {
+                        for (NodeType req : reqs) {
                             internalAddNodeType(req);
                         }
                     }
@@ -387,14 +381,16 @@ public class AggregateManagerImpl implements AggregateManager {
             // check reference constraints, too (bug #33367)
             PropertyDefinition[] propDefs = nodeType.getPropertyDefinitions();
             if (propDefs != null) {
-                for (PropertyDefinition propDef: propDefs) {
-                    if (propDef.getRequiredType() == PropertyType.REFERENCE ||
-                            propDef.getRequiredType() == PropertyType.WEAKREFERENCE) {
+                for (PropertyDefinition propDef : propDefs) {
+                    if (propDef.getRequiredType() == PropertyType.REFERENCE
+                            || propDef.getRequiredType() == PropertyType.WEAKREFERENCE) {
                         String[] vcs = propDef.getValueConstraints();
                         if (vcs != null) {
-                            for (String vc: vcs) {
+                            for (String vc : vcs) {
                                 try {
-                                    internalAddNodeType(session.getWorkspace().getNodeTypeManager().getNodeType(vc));
+                                    internalAddNodeType(session.getWorkspace()
+                                            .getNodeTypeManager()
+                                            .getNodeType(vc));
                                 } catch (RepositoryException e) {
                                     // ignore
                                 }
@@ -404,9 +400,8 @@ public class AggregateManagerImpl implements AggregateManager {
                 }
             }
         }
-
     }
-    
+
     /**
      * Initializes vlt node types (might not be the correct location)
      * @throws RepositoryException if an error occurs
@@ -420,9 +415,8 @@ public class AggregateManagerImpl implements AggregateManager {
         } catch (RepositoryException e) {
             // ignore
         }
-        
-        try (InputStream in = getClass().getClassLoader()
-                .getResourceAsStream(DEFAULT_NODETYPES)) {
+
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(DEFAULT_NODETYPES)) {
             NodeTypeInstaller installer = ServiceProviderFactory.getProvider().getDefaultNodeTypeInstaller(session);
             CNDReader types = ServiceProviderFactory.getProvider().getCNDReader();
             types.read(new InputStreamReader(in, "utf8"), DEFAULT_NODETYPES, null);
@@ -450,8 +444,7 @@ public class AggregateManagerImpl implements AggregateManager {
      * @throws RepositoryException if an error occurs.
      * @throws IOException if an I/O error occurs.
      */
-    public ImportInfo writeAggregate(AggregateImpl node, String reposName,
-                                        ArtifactSetImpl artifacts)
+    public ImportInfo writeAggregate(AggregateImpl node, String reposName, ArtifactSetImpl artifacts)
             throws RepositoryException, IOException {
         assertMounted();
         if (reposName == null) {
@@ -506,7 +499,6 @@ public class AggregateManagerImpl implements AggregateManager {
         return session;
     }
 
-
     public void dumpConfig(PrintWriter out) throws IOException {
         DumpContext ctx = new DumpContext(out);
         ctx.println(false, "workspace filter");
@@ -516,7 +508,7 @@ public class AggregateManagerImpl implements AggregateManager {
         aggregatorProvider.dump(ctx, false);
         ctx.println(true, "handlers");
         ctx.indent(true);
-        for (Iterator<ArtifactHandler> iter = artifactHandlers.iterator(); iter.hasNext();) {
+        for (Iterator<ArtifactHandler> iter = artifactHandlers.iterator(); iter.hasNext(); ) {
             ArtifactHandler h = iter.next();
             h.dump(ctx, !iter.hasNext());
         }
@@ -566,20 +558,24 @@ public class AggregateManagerImpl implements AggregateManager {
         }
 
         public void log(boolean flush) {
-            if (tracker == null &&  !log.isInfoEnabled()) {
+            if (tracker == null && !log.isInfoEnabled()) {
                 return;
             }
             long now = System.currentTimeMillis();
             if (lastLogged == 0) {
                 lastLogged = now;
 
-            // updated each 5 seconds
-             } else  if (now-lastLogged > 5000 || flush) {
+                // updated each 5 seconds
+            } else if (now - lastLogged > 5000 || flush) {
                 lastLogged = now;
                 String str = new StringBuilder("Aggregation status: ")
-                        .append(numPrepared).append(" of ")
-                        .append(numCreated).append(" prepared, ")
-                        .append(numCollected).append(" collected").toString();
+                        .append(numPrepared)
+                        .append(" of ")
+                        .append(numCreated)
+                        .append(" prepared, ")
+                        .append(numCollected)
+                        .append(" collected")
+                        .toString();
                 log.trace("- {}", str);
                 if (tracker != null) {
                     tracker.onMessage(ProgressTrackerListener.Mode.TEXT, "-", str);

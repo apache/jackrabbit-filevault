@@ -1,30 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.integration;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
@@ -33,6 +25,11 @@ import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.jackrabbit.api.JackrabbitRepository;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -49,16 +46,21 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
 /**
  * Tests namespace aware node/property imports
  */
 public class NamespaceImportIT extends IntegrationTestBase {
 
-    private final static String PREFIX = "prefix";
+    private static final String PREFIX = "prefix";
 
-    private final static String URI1 = "http://one.namespace.io";
+    private static final String URI1 = "http://one.namespace.io";
 
-    private final static String URI2 = "http://two.namespace.io";
+    private static final String URI2 = "http://two.namespace.io";
 
     private Instance sourceOakRepository = null;
 
@@ -121,7 +123,12 @@ public class NamespaceImportIT extends IntegrationTestBase {
             io.setStrict(true);
             packMgr.extract(archive, io, true);
 
-            assertEquals(admin.getRootNode().getNode("tmp").getProperty("{" + URI1 + "}prop1").getString(), "value1");
+            assertEquals(
+                    admin.getRootNode()
+                            .getNode("tmp")
+                            .getProperty("{" + URI1 + "}prop1")
+                            .getString(),
+                    "value1");
         } finally {
             tmpFile.delete();
         }
@@ -131,7 +138,11 @@ public class NamespaceImportIT extends IntegrationTestBase {
     public void importClashingNamespaceOnPath() throws RepositoryException, IOException, PackageException {
 
         // Set a property with the namespace prefix on instance i1
-        sourceOakRepository.getRootNode().addNode("tmp").addNode("{" + URI1 + "}node1").setProperty("test", "value1");
+        sourceOakRepository
+                .getRootNode()
+                .addNode("tmp")
+                .addNode("{" + URI1 + "}node1")
+                .setProperty("test", "value1");
         sourceOakRepository.admin.save();
 
         // Export the property from instance i1 in a content package archive
@@ -156,7 +167,11 @@ public class NamespaceImportIT extends IntegrationTestBase {
             io.setStrict(true);
             packMgr.extract(archive, io, true);
 
-            assertEquals(admin.getRootNode().getProperty("tmp/{" + URI1 + "}node1/test").getString(), "value1");
+            assertEquals(
+                    admin.getRootNode()
+                            .getProperty("tmp/{" + URI1 + "}node1/test")
+                            .getString(),
+                    "value1");
 
             Session admin2 = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
             assertNotEquals(PREFIX, admin2.getNamespacePrefix(URI1));
@@ -190,7 +205,9 @@ public class NamespaceImportIT extends IntegrationTestBase {
         // assert node were created, checking the qualified name syntax
         assertNodeExists("/tmp/badnamespacenames/" + prefixFoo + ":child");
         assertNodeExists("/tmp/badnamespacenames/" + prefixFoo + ":child/" + prefixBar + ":child");
-        assertProperty("/tmp/badnamespacenames/" + prefixFoo + ":child/" + prefixBar + ":child/" + prefixQux + ":someproperty", "xyz");
+        assertProperty(
+                "/tmp/badnamespacenames/" + prefixFoo + ":child/" + prefixBar + ":child/" + prefixQux + ":someproperty",
+                "xyz");
 
         // retry with a fresh session and explicitly set namespace mappings
         Session secondSession = admin.impersonate(new SimpleCredentials("admin", "admin".toCharArray()));
@@ -202,8 +219,7 @@ public class NamespaceImportIT extends IntegrationTestBase {
             Node n1 = secondSession.getNode("/tmp/badnamespacenames/t_foo:child");
             Node n2 = n1.getNode("t_bar:child");
             n2.getProperty("t_qux:someproperty");
-        }
-        finally {
+        } finally {
             secondSession.logout();
         }
     }
@@ -219,21 +235,18 @@ public class NamespaceImportIT extends IntegrationTestBase {
 
         final JcrPackageManagerImpl packMgr;
 
-        private Instance()
-                throws RepositoryException, IOException {
+        private Instance() throws RepositoryException, IOException {
             repositoryWithMetadata = repositoryProvider.createRepository(false, false);
             repository = repositoryWithMetadata.getRepository();
             admin = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
             packMgr = new JcrPackageManagerImpl(admin, new String[0]);
         }
 
-        Node getRootNode()
-                throws RepositoryException {
+        Node getRootNode() throws RepositoryException {
             return admin.getRootNode();
         }
 
-        void registerNamespace(String prefix, String uri)
-                throws RepositoryException {
+        void registerNamespace(String prefix, String uri) throws RepositoryException {
             admin.getWorkspace().getNamespaceRegistry().registerNamespace(prefix, uri);
         }
 
@@ -246,7 +259,5 @@ public class NamespaceImportIT extends IntegrationTestBase {
                 throw new IOException(e);
             }
         }
-
     }
-
 }

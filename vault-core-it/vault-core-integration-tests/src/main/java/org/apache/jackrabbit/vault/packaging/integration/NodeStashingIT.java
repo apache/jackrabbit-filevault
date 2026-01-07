@@ -1,32 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
 
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -35,21 +32,28 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.junit.Test;
 
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+
 public class NodeStashingIT extends IntegrationTestBase {
 
     private static final String TESTNS = "https://issues.apache.org/jira/browse/JCRVLT-684";
 
     @Test
-    public void testStashMixinMandatoryChildNodeModeReplace() throws RepositoryException, IOException, PackageException {
+    public void testStashMixinMandatoryChildNodeModeReplace()
+            throws RepositoryException, IOException, PackageException {
         testStashMixinMandatoryChildNode(ImportMode.REPLACE);
     }
 
     @Test
-    public void testStashMixinMandatoryChildNodeModeMergeProperties() throws RepositoryException, IOException, PackageException {
+    public void testStashMixinMandatoryChildNodeModeMergeProperties()
+            throws RepositoryException, IOException, PackageException {
         testStashMixinMandatoryChildNode(ImportMode.MERGE_PROPERTIES);
     }
 
-    private void testStashMixinMandatoryChildNode(ImportMode mode) throws RepositoryException, IOException, PackageException {
+    private void testStashMixinMandatoryChildNode(ImportMode mode)
+            throws RepositoryException, IOException, PackageException {
 
         assumeTrue(isOak());
 
@@ -101,7 +105,6 @@ public class NodeStashingIT extends IntegrationTestBase {
             }
         }
 
-        public void onError(Mode mode, String path, Exception e) {
-        }
+        public void onError(Mode mode, String path, Exception e) {}
     }
 }

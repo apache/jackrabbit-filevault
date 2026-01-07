@@ -1,28 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.spi;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.RepositoryException;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.QNodeTypeDefinition;
@@ -44,8 +45,7 @@ public class DefaultNodeTypeSet implements NodeTypeSet {
     /**
      * the list of nodetype templates
      */
-    private Map<Name, QNodeTypeDefinition> nodeTypes =
-            new TreeMap<Name, QNodeTypeDefinition>();
+    private Map<Name, QNodeTypeDefinition> nodeTypes = new TreeMap<Name, QNodeTypeDefinition>();
 
     /**
      * the current namespace mapping
@@ -55,9 +55,7 @@ public class DefaultNodeTypeSet implements NodeTypeSet {
     /**
      * the list of removed nodetype templates
      */
-    private Map<Name, QNodeTypeDefinition> removed =
-            new TreeMap<Name, QNodeTypeDefinition>();
-
+    private Map<Name, QNodeTypeDefinition> removed = new TreeMap<Name, QNodeTypeDefinition>();
 
     public DefaultNodeTypeSet(String systemId) {
         this.systemId = systemId;
@@ -67,18 +65,16 @@ public class DefaultNodeTypeSet implements NodeTypeSet {
         this(set.getSystemId(), set.getNodeTypes().values(), set.getNamespaceMapping());
     }
 
-    public DefaultNodeTypeSet(String systemId,
-                              Collection<QNodeTypeDefinition> nodeTypes,
-                              NamespaceMapping nsMapping) {
+    public DefaultNodeTypeSet(String systemId, Collection<QNodeTypeDefinition> nodeTypes, NamespaceMapping nsMapping) {
         this.systemId = systemId;
-        for (QNodeTypeDefinition t: nodeTypes) {
+        for (QNodeTypeDefinition t : nodeTypes) {
             this.nodeTypes.put(t.getName(), t);
         }
         this.nsMapping = nsMapping;
     }
 
     public void add(NodeTypeSet set) {
-        for (QNodeTypeDefinition tpl: set.getNodeTypes().values()) {
+        for (QNodeTypeDefinition tpl : set.getNodeTypes().values()) {
             log.trace("adding {}", tpl.getName());
             nodeTypes.put(tpl.getName(), tpl);
         }
@@ -86,7 +82,7 @@ public class DefaultNodeTypeSet implements NodeTypeSet {
     }
 
     public void add(Collection<QNodeTypeDefinition> set, NamespaceMapping nsMapping) {
-        for (QNodeTypeDefinition tpl: set) {
+        for (QNodeTypeDefinition tpl : set) {
             log.trace("adding {}", tpl.getName());
             nodeTypes.put(tpl.getName(), tpl);
         }
@@ -105,8 +101,7 @@ public class DefaultNodeTypeSet implements NodeTypeSet {
         }
     }
 
-    public QNodeTypeDefinition remove(Name name)
-            throws RepositoryException {
+    public QNodeTypeDefinition remove(Name name) throws RepositoryException {
         QNodeTypeDefinition tpl = nodeTypes.remove(name);
         if (tpl != null) {
             removed.put(tpl.getName(), tpl);

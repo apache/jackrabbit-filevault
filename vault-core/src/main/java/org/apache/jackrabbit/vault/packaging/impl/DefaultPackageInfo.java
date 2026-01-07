@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.impl;
 
@@ -47,7 +49,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /** Very simple class that reads basic package info from a file.
- * 
+ *
  * TODO: take over some logic from {@link DefaultMetaInf#load} */
 public class DefaultPackageInfo implements PackageInfo {
     private static final File PROPERTIES_FILE = new File(Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
@@ -67,7 +69,7 @@ public class DefaultPackageInfo implements PackageInfo {
     }
 
     /** Reads the package info from a given file
-     * 
+     *
      * @param file the package file as zip or an exploded directory containing metadata.
      * @return the package info if the package is valid, otherwise {@code null}.
      * @throws IOException if an error occurs. */
@@ -77,16 +79,22 @@ public class DefaultPackageInfo implements PackageInfo {
             throw new FileNotFoundException("Could not find file " + file);
         }
         if (file.isDirectory()) {
-            for (File directoryFile : FileUtils.listFiles(file, new NameFileFilter(new String[] { "MANIFEST.MF", Constants.PROPERTIES_XML, Constants.FILTER_XML}),
-                    new SuffixFileFilter(new String[] { Constants.META_INF, Constants.VAULT_DIR }))) {
+            for (File directoryFile : FileUtils.listFiles(
+                    file,
+                    new NameFileFilter(new String[] {"MANIFEST.MF", Constants.PROPERTIES_XML, Constants.FILTER_XML}),
+                    new SuffixFileFilter(new String[] {Constants.META_INF, Constants.VAULT_DIR}))) {
                 try (InputStream input = new BufferedInputStream(new FileInputStream(directoryFile))) {
-                    info = readFromInputStream(new File(file.toURI().relativize(directoryFile.toURI()).getPath()), input, info);
+                    info = readFromInputStream(
+                            new File(file.toURI()
+                                    .relativize(directoryFile.toURI())
+                                    .getPath()),
+                            input,
+                            info);
                     // bail out as soon as all info was found
                     if (info.getId() != null && info.getFilter() != null) {
                         break;
                     }
                 }
-
             }
             if (info.getId() == null || info.getFilter() == null) {
                 return null;
@@ -114,11 +122,13 @@ public class DefaultPackageInfo implements PackageInfo {
                 return info;
             }
         } else {
-            throw new IOException("Only metadata from zip files could be extracted but the given file is not a zip:" + file);
+            throw new IOException(
+                    "Only metadata from zip files could be extracted but the given file is not a zip:" + file);
         }
     }
 
-    private static DefaultPackageInfo readFromInputStream(File file, InputStream input, PackageInfo alreadyFoundInfo) throws IOException {
+    private static DefaultPackageInfo readFromInputStream(File file, InputStream input, PackageInfo alreadyFoundInfo)
+            throws IOException {
         PackageId id = alreadyFoundInfo.getId();
         WorkspaceFilter filter = alreadyFoundInfo.getFilter();
         DefaultWorkspaceFilter defaultFilter = new DefaultWorkspaceFilter();
@@ -172,21 +182,21 @@ public class DefaultPackageInfo implements PackageInfo {
     }
 
     /** Returns the package id.
-     * 
+     *
      * @return the package id. */
     public PackageId getId() {
         return id;
     }
 
     /** Returns the workspace filter
-     * 
+     *
      * @return the filter */
     public WorkspaceFilter getFilter() {
         return filter;
     }
 
     /** Returns the package type.
-     * 
+     *
      * @return the package type */
     public PackageType getPackageType() {
         return packageType;

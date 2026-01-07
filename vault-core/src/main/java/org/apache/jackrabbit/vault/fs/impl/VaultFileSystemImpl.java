@@ -1,25 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl;
 
-import java.io.IOException;
-
 import javax.jcr.RepositoryException;
+
+import java.io.IOException;
 
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.AggregateManager;
@@ -70,7 +71,6 @@ public class VaultFileSystemImpl implements VaultFileSystem {
      * Pattern that matches the root path
      */
     private final String rootPattern;
-
 
     public void unmount() throws RepositoryException {
         assertMounted();
@@ -129,8 +129,7 @@ public class VaultFileSystemImpl implements VaultFileSystem {
         return mgr;
     }
 
-    public VaultFile getFile(String path)
-            throws IOException, RepositoryException {
+    public VaultFile getFile(String path) throws IOException, RepositoryException {
         if (path.charAt(0) != '/') {
             throw new IOException("Only absolute paths allowed");
         }
@@ -143,15 +142,14 @@ public class VaultFileSystemImpl implements VaultFileSystem {
         return getFile(root, path);
     }
 
-    public VaultFile getFile(VaultFile parent, String path)
-            throws IOException, RepositoryException {
+    public VaultFile getFile(VaultFile parent, String path) throws IOException, RepositoryException {
         if (path == null || path.equals("") || path.equals(".")) {
             return parent;
         } else if (path.equals("/")) {
             return getRoot();
         }
-        String[] pathElems = PathUtil.makePath((String[])null, path);
-        for (int i=0; i<pathElems.length && parent != null; i++) {
+        String[] pathElems = PathUtil.makePath((String[]) null, path);
+        for (int i = 0; i < pathElems.length && parent != null; i++) {
             String elem = pathElems[i];
             if (elem.equals("/")) {
                 parent = getRoot();

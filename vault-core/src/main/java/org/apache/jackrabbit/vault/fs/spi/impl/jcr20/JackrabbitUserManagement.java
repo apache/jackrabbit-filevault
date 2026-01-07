@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.spi.impl.jcr20;
 
 import javax.jcr.ItemNotFoundException;
@@ -42,13 +43,13 @@ import org.slf4j.LoggerFactory;
 public class JackrabbitUserManagement implements UserManagement {
 
     // https://issues.apache.org/jira/browse/OAK-9584
-    public static final Name NAME_REP_AUTHORIZABLE_ID = NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "authorizableId");
+    public static final Name NAME_REP_AUTHORIZABLE_ID =
+            NameFactoryImpl.getInstance().create(Name.NS_REP_URI, "authorizableId");
 
     /**
      * default logger
      */
     private static final Logger log = LoggerFactory.getLogger(JackrabbitUserManagement.class);
-
 
     /**
      * {@inheritDoc}
@@ -73,7 +74,6 @@ public class JackrabbitUserManagement implements UserManagement {
             log.warn("Unable to get authorizable path of {}: {}", id, e.getMessage(), e);
             return null;
         }
-       
     }
 
     @Override
@@ -96,14 +96,16 @@ public class JackrabbitUserManagement implements UserManagement {
         DocViewProperty2 idProp = node.getProperty(NAME_REP_AUTHORIZABLE_ID).orElse(null);
         if (idProp == null || idProp.isMultiValue()) {
             // jackrabbit 2.x or Oak with migrated Jackrabbit 2.x content
-            return org.apache.jackrabbit.util.Text.unescapeIllegalJcrChars(node.getName().getLocalName());
+            return org.apache.jackrabbit.util.Text.unescapeIllegalJcrChars(
+                    node.getName().getLocalName());
         } else {
             // oak 1.x
-            return idProp.getStringValue().orElseThrow(() -> new IllegalStateException("No single value available for property 'rep:authorizableId'"));
+            return idProp.getStringValue()
+                    .orElseThrow(() ->
+                            new IllegalStateException("No single value available for property 'rep:authorizableId'"));
         }
     }
 
-    
     /**
      * {@inheritDoc}
      */
@@ -126,13 +128,16 @@ public class JackrabbitUserManagement implements UserManagement {
             return;
         }
         Group grp = (Group) auth;
-        for (String uuid: membersUUID) {
+        for (String uuid : membersUUID) {
             try {
                 Node authNode = session.getNodeByIdentifier(uuid);
                 String authPath = authNode.getPath();
                 Authorizable member = uMgr.getAuthorizableByPath(authPath);
                 if (member == null) {
-                    log.warn("unable to add authorizable '{}' to group '{}'. Node at {} is not an authorizable.", uuid, authPath);
+                    log.warn(
+                            "unable to add authorizable '{}' to group '{}'. Node at {} is not an authorizable.",
+                            uuid,
+                            authPath);
                 } else {
                     String memberId = member.getID();
                     try {
@@ -143,13 +148,16 @@ public class JackrabbitUserManagement implements UserManagement {
                             log.debug("added authorizable '{}' to group '{}'.", memberId, id);
                         }
                     } catch (RepositoryException e) {
-                        log.error("Error while adding authorizable '{}' to group '{}': {}", new Object[]{memberId, id, e});
+                        log.error(
+                                "Error while adding authorizable '{}' to group '{}': {}",
+                                new Object[] {memberId, id, e});
                     }
                 }
             } catch (ItemNotFoundException e) {
                 log.warn("unable to add authorizable '{}' to group '{}'. No such node.", uuid, id);
             } catch (RepositoryException e) {
-                log.warn("unable to add authorizable '{}' to group '{}'. Internal Error: {}", new Object[]{uuid, id, e});
+                log.warn("unable to add authorizable '{}' to group '{}'. Internal Error: {}", new Object[] {uuid, id, e
+                });
             }
         }
     }

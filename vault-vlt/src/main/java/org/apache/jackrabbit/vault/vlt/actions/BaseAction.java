@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt.actions;
 
@@ -61,11 +63,11 @@ public class BaseAction extends AbstractAction {
 
     public void run(VltContext ctx, VltTree infos) throws VltException {
         if (withRemote) {
-            for (VltTree.Info i: infos.infos()) {
+            for (VltTree.Info i : infos.infos()) {
                 i.dir.applyWithRemote(this, i.names, nonRecursive);
             }
         } else {
-            for (VltTree.Info i: infos.infos()) {
+            for (VltTree.Info i : infos.infos()) {
                 // special check for jcr_root
                 if (!ctx.getExportRoot().getJcrRoot().getParentFile().equals(i.dir.getDirectory())) {
                     i.dir.assertControlled();
@@ -74,7 +76,7 @@ public class BaseAction extends AbstractAction {
             }
         }
     }
-    
+
     public void run(VltContext ctx) throws VltException {
         VltTree infos = new VltTree(ctx, nonRecursive);
         infos.setDirsAsFiles(dirsAsFiles);
@@ -98,5 +100,4 @@ public class BaseAction extends AbstractAction {
 
         run(ctx, infos);
     }
-
 }

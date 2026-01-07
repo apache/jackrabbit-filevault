@@ -1,21 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.impl;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.io.Closeable;
 import java.io.File;
@@ -24,9 +28,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.PatternSyntaxException;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
@@ -56,24 +57,28 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
 
     private static final Logger log = LoggerFactory.getLogger(ZipVaultPackage.class);
 
-    private static final String PROP_USE_NIO_ARCHIVE = "vault.useNioArchive"; // system or framework property, indicating that ZipNioArchive should be used instead of ZipArchive
+    private static final String PROP_USE_NIO_ARCHIVE =
+            "vault.useNioArchive"; // system or framework property, indicating that ZipNioArchive should be used instead
+    // of ZipArchive
     private Archive archive;
 
     public ZipVaultPackage(File file, boolean isTmpFile) throws IOException {
         this(file, isTmpFile, false);
     }
 
-    public ZipVaultPackage(File file, boolean isTmpFile, boolean strict)
-            throws IOException {
+    public ZipVaultPackage(File file, boolean isTmpFile, boolean strict) throws IOException {
         this(file.toPath(), isTmpFile, strict);
     }
 
     public ZipVaultPackage(Path file, boolean isTmpFile, boolean strict) throws IOException {
-        this(OsgiAwarePropertiesUtil.getBooleanProperty(PROP_USE_NIO_ARCHIVE) ? new ZipNioArchive(file, isTmpFile) : new ZipArchive(file.toFile(), isTmpFile), strict);
+        this(
+                OsgiAwarePropertiesUtil.getBooleanProperty(PROP_USE_NIO_ARCHIVE)
+                        ? new ZipNioArchive(file, isTmpFile)
+                        : new ZipArchive(file.toFile(), isTmpFile),
+                strict);
     }
 
-    public ZipVaultPackage(Archive archive, boolean strict)
-            throws IOException {
+    public ZipVaultPackage(Archive archive, boolean strict) throws IOException {
         this.archive = archive;
         if (strict) {
             try {
@@ -163,9 +168,23 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws PackageException if an error during packaging occurs
      * @throws RepositoryException if a repository error during installation occurs.
      */
-    public void extract(Session session, ImportOptions opts, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig,
-            boolean isStrict, boolean isOverwritePrimaryTypesOfFolders, IdConflictPolicy defaultIdConflictPolicy) throws PackageException, RepositoryException {
-        extract(prepareExtract(session, opts, securityConfig, isStrict, isOverwritePrimaryTypesOfFolders,defaultIdConflictPolicy), null);
+    public void extract(
+            Session session,
+            ImportOptions opts,
+            @NotNull AbstractPackageRegistry.SecurityConfig securityConfig,
+            boolean isStrict,
+            boolean isOverwritePrimaryTypesOfFolders,
+            IdConflictPolicy defaultIdConflictPolicy)
+            throws PackageException, RepositoryException {
+        extract(
+                prepareExtract(
+                        session,
+                        opts,
+                        securityConfig,
+                        isStrict,
+                        isOverwritePrimaryTypesOfFolders,
+                        defaultIdConflictPolicy),
+                null);
     }
 
     /**
@@ -197,29 +216,35 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws IllegalStateException if the package is not valid.
      * @return installation context
      */
-    protected InstallContextImpl prepareExtract(Session session, ImportOptions opts,
-            @NotNull AbstractPackageRegistry.SecurityConfig securityConfig, boolean isStrictByDefault,
-            boolean overwritePrimaryTypesOfFoldersByDefault, IdConflictPolicy defaultIdConflictPolicy) throws PackageException, RepositoryException {
+    protected InstallContextImpl prepareExtract(
+            Session session,
+            ImportOptions opts,
+            @NotNull AbstractPackageRegistry.SecurityConfig securityConfig,
+            boolean isStrictByDefault,
+            boolean overwritePrimaryTypesOfFoldersByDefault,
+            IdConflictPolicy defaultIdConflictPolicy)
+            throws PackageException, RepositoryException {
         if (!isValid()) {
             throw new IllegalStateException("Package not valid.");
         }
         // try to find any hooks
-        InstallHookProcessor hooks = opts instanceof InstallHookProcessorFactory ?
-                ((InstallHookProcessorFactory) opts).createInstallHookProcessor()
+        InstallHookProcessor hooks = opts instanceof InstallHookProcessorFactory
+                ? ((InstallHookProcessorFactory) opts).createInstallHookProcessor()
                 : new InstallHookProcessorImpl();
         try {
             if (!opts.isDryRun()) {
                 hooks.registerHooks(archive, opts.getHookClassLoader());
             }
             checkAllowanceToInstallPackage(session, hooks, securityConfig);
-    
+
             // check for disable intermediate saves (JCRVLT-520)
             if (Boolean.parseBoolean(getProperty(PackageProperties.NAME_DISABLE_INTERMEDIATE_SAVE))) {
                 // MAX_VALUE disables saving completely, therefore we have to use a lower value!
                 opts.setAutoSaveThreshold(Integer.MAX_VALUE - 1);
             }
-    
-            Importer importer = new Importer(opts, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault, defaultIdConflictPolicy);
+
+            Importer importer = new Importer(
+                    opts, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault, defaultIdConflictPolicy);
             AccessControlHandling ac = getACHandling();
             if (opts.getAccessControlHandling() == null) {
                 opts.setAccessControlHandling(ac);
@@ -232,9 +257,9 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                     throw new PackageException("Specified CND pattern not valid.", e);
                 }
             }
-    
+
             return new InstallContextImpl(session, "/", this, importer, hooks);
-        } catch (RepositoryException|PackageException e) {
+        } catch (RepositoryException | PackageException e) {
             try {
                 hooks.close();
             } catch (IOException exceptionDuringClose) {
@@ -244,18 +269,27 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         }
     }
 
-    protected void checkAllowanceToInstallPackage(@NotNull Session session, @NotNull InstallHookProcessor hookProcessor, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig) throws PackageException, RepositoryException {
-       if (requiresRoot()) {
-           if (!AdminPermissionChecker.hasAdministrativePermissions(session, securityConfig.getAuthIdsForRootInstallation())) {
-               throw new PackageException("Package extraction requires admin session as it has the 'requiresRoot' flag (userid '" + session.getUserID() + "' not allowed).");
-           }
-       }
-       if (hookProcessor.hasHooks()) {
-           if (!AdminPermissionChecker.hasAdministrativePermissions(session, securityConfig.getAuthIdsForHookExecution())) {
-               throw new PackageException("Package extraction requires admin session as it has a hook (userid '" + session.getUserID() + "' not allowed).");
-           }
-       }
-   }
+    protected void checkAllowanceToInstallPackage(
+            @NotNull Session session,
+            @NotNull InstallHookProcessor hookProcessor,
+            @NotNull AbstractPackageRegistry.SecurityConfig securityConfig)
+            throws PackageException, RepositoryException {
+        if (requiresRoot()) {
+            if (!AdminPermissionChecker.hasAdministrativePermissions(
+                    session, securityConfig.getAuthIdsForRootInstallation())) {
+                throw new PackageException(
+                        "Package extraction requires admin session as it has the 'requiresRoot' flag (userid '"
+                                + session.getUserID() + "' not allowed).");
+            }
+        }
+        if (hookProcessor.hasHooks()) {
+            if (!AdminPermissionChecker.hasAdministrativePermissions(
+                    session, securityConfig.getAuthIdsForHookExecution())) {
+                throw new PackageException("Package extraction requires admin session as it has a hook (userid '"
+                        + session.getUserID() + "' not allowed).");
+            }
+        }
+    }
 
     /**
      * Same as above but the given subPackages argument receives a list of
@@ -268,8 +302,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws org.apache.jackrabbit.vault.packaging.PackageException if an error during packaging occurs
      * @throws IllegalStateException if the package is not valid.
      */
-    protected void extract(InstallContextImpl ctx,
-                           List<String> subPackages)
+    protected void extract(InstallContextImpl ctx, List<String> subPackages)
             throws RepositoryException, PackageException {
         log.debug("Extracting {}", getId());
         InstallHookProcessor hooks = ctx.getHooks();
@@ -287,7 +320,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 ctx.setPhase(InstallContext.Phase.INSTALL_FAILED);
                 hooks.execute(ctx);
                 if (e instanceof RepositoryException) {
-                    throw (RepositoryException)e;
+                    throw (RepositoryException) e;
                 } else {
                     throw new PackageException(e);
                 }
@@ -322,5 +355,4 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
     protected Properties getPropertiesMap() {
         return getMetaInf().getProperties();
     }
-
 }

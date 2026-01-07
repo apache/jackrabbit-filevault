@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
@@ -43,7 +45,7 @@ public class PackageTaskImpl implements PackageTask {
      */
     private static final Logger log = LoggerFactory.getLogger(PackageTaskImpl.class);
 
-    final static PackageTaskImpl MARKER = new PackageTaskImpl(new PackageId("", "" ,""), Type.INSTALL, null);
+    static final PackageTaskImpl MARKER = new PackageTaskImpl(new PackageId("", "", ""), Type.INSTALL, null);
 
     private final PackageId id;
 
@@ -121,7 +123,7 @@ public class PackageTaskImpl implements PackageTask {
             state = State.COMPLETED;
         } catch (Exception e) {
             log.info("error during package task {} on {}: {}", type, id, e.toString());
-            error  = e;
+            error = e;
             state = State.ERROR;
         }
     }
@@ -162,7 +164,7 @@ public class PackageTaskImpl implements PackageTask {
             }
             PackageRegistry registry = plan.getRegistry();
             if (registry instanceof InternalPackageRegistry) {
-              ((InternalPackageRegistry)registry).uninstallPackage(plan.getSession(), pkg, opts);
+                ((InternalPackageRegistry) registry).uninstallPackage(plan.getSession(), pkg, opts);
             }
         }
     }
@@ -190,7 +192,7 @@ public class PackageTaskImpl implements PackageTask {
             }
             PackageRegistry registry = plan.getRegistry();
             if (registry instanceof InternalPackageRegistry) {
-              ((InternalPackageRegistry)registry).installPackage(plan.getSession(), pkg, opts, extract);
+                ((InternalPackageRegistry) registry).installPackage(plan.getSession(), pkg, opts, extract);
             }
         }
     }
@@ -209,33 +211,21 @@ public class PackageTaskImpl implements PackageTask {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         PackageTaskImpl other = (PackageTaskImpl) obj;
         if (error == null) {
-            if (other.error != null)
-                return false;
-        } else if (!error.equals(other.error))
-            return false;
+            if (other.error != null) return false;
+        } else if (!error.equals(other.error)) return false;
         if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
+            if (other.id != null) return false;
+        } else if (!id.equals(other.id)) return false;
         if (options == null) {
-            if (other.options != null)
-                return false;
-        } else if (!options.equals(other.options))
-            return false;
-        if (state != other.state)
-            return false;
-        if (type != other.type)
-            return false;
+            if (other.options != null) return false;
+        } else if (!options.equals(other.options)) return false;
+        if (state != other.state) return false;
+        if (type != other.type) return false;
         return true;
     }
-
 }

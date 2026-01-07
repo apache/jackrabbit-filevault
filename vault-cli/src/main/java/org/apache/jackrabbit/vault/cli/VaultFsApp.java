@@ -1,21 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.cli;
+
+import javax.jcr.Credentials;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,12 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.jcr.Credentials;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
 
 import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.Option;
@@ -101,10 +102,10 @@ public class VaultFsApp extends AbstractApplication {
 
     private VaultFileSystem fs;
 
-    //private Option optURI;
-    //private Option optWorkspace;
+    // private Option optURI;
+    // private Option optWorkspace;
     private Option optCreds;
-    //private Option optMountpoint;
+    // private Option optMountpoint;
     private Option optConfig;
     private Option optUpdateCreds;
     // connection options
@@ -120,10 +121,7 @@ public class VaultFsApp extends AbstractApplication {
     private Option optProxyUsername;
     private Option optProxyPassword;
 
-    private ExtendedOption[] xOpts = new ExtendedOption[]{
-            new XJcrLog(),
-            new XDavEx()
-    };
+    private ExtendedOption[] xOpts = new ExtendedOption[] {new XJcrLog(), new XDavEx()};
 
     private ExecutionContext ctxDefault;
 
@@ -134,13 +132,11 @@ public class VaultFsApp extends AbstractApplication {
 
     private Console console;
 
-
     public static void main(String[] args) {
         new VaultFsApp().run(args);
     }
 
-    public VaultFsApp() {
-    }
+    public VaultFsApp() {}
 
     public VltContext createVaultContext(File localFile) {
         try {
@@ -180,7 +176,8 @@ public class VaultFsApp extends AbstractApplication {
         Credentials defaultCreds;
         int idx = creds.indexOf(':');
         if (idx > 0) {
-            defaultCreds = new SimpleCredentials(creds.substring(0, idx), creds.substring(idx + 1).toCharArray());
+            defaultCreds = new SimpleCredentials(
+                    creds.substring(0, idx), creds.substring(idx + 1).toCharArray());
         } else {
             defaultCreds = new SimpleCredentials(creds, new char[0]);
         }
@@ -202,10 +199,12 @@ public class VaultFsApp extends AbstractApplication {
 
         setProperty(KEY_WORKSPACE, session.getWorkspace().getName());
         setProperty(KEY_USER, session.getUserID());
-        setProperty(KEY_PROMPT,
-                "[${" + KEY_USER + "}@${" + KEY_WORKSPACE + "} ${" + KEY_PATH  +"}]$ ");
+        setProperty(KEY_PROMPT, "[${" + KEY_USER + "}@${" + KEY_WORKSPACE + "} ${" + KEY_PATH + "}]$ ");
 
-        log.info("Logged into repository as {} on workspace {}", session.getUserID(), session.getWorkspace().getName());
+        log.info(
+                "Logged into repository as {} on workspace {}",
+                session.getUserID(),
+                session.getWorkspace().getName());
     }
 
     protected void logout() {
@@ -234,8 +233,7 @@ public class VaultFsApp extends AbstractApplication {
         return fs;
     }
 
-    protected void mount(String creds, String wsp, String root, String config,
-                         String filter, boolean remount) {
+    protected void mount(String creds, String wsp, String root, String config, String filter, boolean remount) {
         if (!isConnected()) {
             throw new ExecutionException("Not connected to repository.");
         }
@@ -266,8 +264,7 @@ public class VaultFsApp extends AbstractApplication {
             if (root != null && !"/".equals(root)) {
                 uri.append(root);
             }
-            RepositoryAddress mp =
-                    new RepositoryAddress(uri.toString());
+            RepositoryAddress mp = new RepositoryAddress(uri.toString());
             log.info("Mounting JcrFs on {}", mp.toString());
 
             ExportRoot exportRoot = ExportRoot.findRoot(getPlatformFile("", true));
@@ -317,7 +314,8 @@ public class VaultFsApp extends AbstractApplication {
 
         try {
             // install aggregate context
-            ctxAfct = new AggregateExecutionContext(this, "agg", fs.getAggregateManager().getRoot());
+            ctxAfct = new AggregateExecutionContext(
+                    this, "agg", fs.getAggregateManager().getRoot());
             console.addContext(ctxAfct);
         } catch (RepositoryException e) {
             log.error("Internal error during mount. unmounting.");
@@ -377,7 +375,7 @@ public class VaultFsApp extends AbstractApplication {
 
     protected List<File> getPlatformFiles(List<String> paths, boolean mustExist) {
         List<File> files = new ArrayList<File>(paths.size());
-        for (String path: paths) {
+        for (String path : paths) {
             files.add((File) ctxPlatform.getFile(path, mustExist).unwrap());
         }
         return files;
@@ -386,7 +384,6 @@ public class VaultFsApp extends AbstractApplication {
     protected Aggregate getArtifactsNode(String path, boolean mustExist) {
         return (Aggregate) ctxAfct.getFile(path, mustExist).unwrap();
     }
-
 
     protected void assertMounted() {
         if (fs == null) {
@@ -523,9 +520,9 @@ public class VaultFsApp extends AbstractApplication {
         final String vltSep = System.getProperty("vlt.line.separator");
         if (vltSep != null) {
             if ("LF".equals(vltSep)) {
-                System.setProperty("line.separator","\n");
+                System.setProperty("line.separator", "\n");
             } else if ("CRLF".equals(vltSep)) {
-                System.setProperty("line.separator","\r\n");
+                System.setProperty("line.separator", "\r\n");
             } else {
                 log.warn("Warning, invalid vtl.line.separator value '{}' ignored", vltSep);
             }
@@ -541,8 +538,7 @@ public class VaultFsApp extends AbstractApplication {
         }
     }
 
-    //------------------------------------------------------------< Command >---
-
+    // ------------------------------------------------------------< Command >---
 
     public GroupBuilder addApplicationOptions(GroupBuilder gbuilder) {
         /*
@@ -572,12 +568,11 @@ public class VaultFsApp extends AbstractApplication {
                 .withLongName("credentials")
                 .withDescription("The default credentials to use")
                 .withArgument(new ArgumentBuilder()
-                        .withDescription("Format: <user:pass>. If missing an anonymous login is used. " +
-                                "If the password is not specified it is prompted via console.")
+                        .withDescription("Format: <user:pass>. If missing an anonymous login is used. "
+                                + "If the password is not specified it is prompted via console.")
                         .withMinimum(0)
                         .withMaximum(1)
-                        .create()
-                )
+                        .create())
                 .create();
         optUpdateCreds = new DefaultOptionBuilder()
                 .withLongName("update-credentials")
@@ -602,8 +597,7 @@ public class VaultFsApp extends AbstractApplication {
                         .withDescription("If missing the default config is used.")
                         .withMinimum(0)
                         .withMaximum(1)
-                        .create()
-                )
+                        .create())
                 .create();
         optUseSystemProperties = new DefaultOptionBuilder()
                 .withLongName("useSystemProperties")
@@ -620,84 +614,61 @@ public class VaultFsApp extends AbstractApplication {
         optConnectionTimeoutMs = new DefaultOptionBuilder()
                 .withLongName("connectionTimeoutMs")
                 .withDescription("The connection timeout in milliseconds.")
-                .withArgument(new ArgumentBuilder()
-                        .withMinimum(1)
-                        .withMaximum(1)
-                        .create()
-                )
+                .withArgument(
+                        new ArgumentBuilder().withMinimum(1).withMaximum(1).create())
                 .create();
         optRequestTimeoutMs = new DefaultOptionBuilder()
                 .withLongName("requestTimeoutMs")
                 .withDescription("The request timeout in milliseconds.")
-                .withArgument(new ArgumentBuilder()
-                        .withMinimum(1)
-                        .withMaximum(1)
-                        .create()
-                )
+                .withArgument(
+                        new ArgumentBuilder().withMinimum(1).withMaximum(1).create())
                 .create();
         optSocketTimeoutMs = new DefaultOptionBuilder()
                 .withLongName("socketTimeoutMs")
                 .withDescription("The socket timeout in milliseconds.")
-                .withArgument(new ArgumentBuilder()
-                        .withMinimum(1)
-                        .withMaximum(1)
-                        .create()
-                )
+                .withArgument(
+                        new ArgumentBuilder().withMinimum(1).withMaximum(1).create())
                 .create();
         optProxyHost = new DefaultOptionBuilder()
                 .withLongName("proxyHost")
                 .withDescription("The host of the proxy to use.")
-                .withArgument(new ArgumentBuilder()
-                        .withMinimum(1)
-                        .withMaximum(1)
-                        .create()
-                )
+                .withArgument(
+                        new ArgumentBuilder().withMinimum(1).withMaximum(1).create())
                 .create();
         optProxyPort = new DefaultOptionBuilder()
                 .withLongName("proxyPort")
                 .withDescription("The port where the proxy is running (requires proxyHost as well).")
-                .withArgument(new ArgumentBuilder()
-                        .withMinimum(1)
-                        .withMaximum(1)
-                        .create()
-                )
+                .withArgument(
+                        new ArgumentBuilder().withMinimum(1).withMaximum(1).create())
                 .create();
         optProxyProtocol = new DefaultOptionBuilder()
                 .withLongName("proxyProtocol")
-                .withDescription("The protocol for which to use the proxy (requires proxyHost as well). If not set proxy is used for both HTTP and HTTPS.")
-                .withArgument(new ArgumentBuilder()
-                        .withMinimum(1)
-                        .withMaximum(1)
-                        .create()
-                )
+                .withDescription(
+                        "The protocol for which to use the proxy (requires proxyHost as well). If not set proxy is used for both HTTP and HTTPS.")
+                .withArgument(
+                        new ArgumentBuilder().withMinimum(1).withMaximum(1).create())
                 .create();
         optProxyUsername = new DefaultOptionBuilder()
                 .withLongName("proxyUsername")
                 .withDescription("The username to use for authentication at the proxy (requires proxyHost as well).")
-                .withArgument(new ArgumentBuilder()
-                        .withMinimum(1)
-                        .withMaximum(1)
-                        .create()
-                )
+                .withArgument(
+                        new ArgumentBuilder().withMinimum(1).withMaximum(1).create())
                 .create();
         optProxyPassword = new DefaultOptionBuilder()
                 .withLongName("proxyPassword")
                 .withDescription("The password to use for authentication at the proxy (requires proxyUsername as well)")
-                .withArgument(new ArgumentBuilder()
-                        .withMinimum(1)
-                        .withMaximum(1)
-                        .create()
-                )
+                .withArgument(
+                        new ArgumentBuilder().withMinimum(1).withMaximum(1).create())
                 .create();
         // register extended options
-        for (ExtendedOption x: xOpts) {
+        for (ExtendedOption x : xOpts) {
             gbuilder.withOption(x.getOption());
         }
-        //gbuilder.withOption(optURI);
-        //gbuilder.withOption(optWorkspace);
+        // gbuilder.withOption(optURI);
+        // gbuilder.withOption(optWorkspace);
         gbuilder.withOption(optCreds);
         gbuilder.withOption(optUpdateCreds);
-        //gbuilder.withOption(optMountpoint);
+        // gbuilder.withOption(optMountpoint);
         gbuilder.withOption(optConfig);
         gbuilder.withOption(optUseSystemProperties);
         gbuilder.withOption(optAllowSelfSignedCertificate);
@@ -705,13 +676,17 @@ public class VaultFsApp extends AbstractApplication {
         gbuilder.withOption(optConnectionTimeoutMs);
         gbuilder.withOption(optRequestTimeoutMs);
         gbuilder.withOption(optSocketTimeoutMs);
-        gbuilder.withOption(optProxyHost).withOption(optProxyPort).withOption(optProxyProtocol).withOption(optProxyUsername).withOption(optProxyPassword);
+        gbuilder.withOption(optProxyHost)
+                .withOption(optProxyPort)
+                .withOption(optProxyProtocol)
+                .withOption(optProxyUsername)
+                .withOption(optProxyPassword);
         return super.addApplicationOptions(gbuilder);
     }
 
     public void execute(CommandLine commandLine) throws ExecutionException {
         // TODO: move extended options support the commons-cli2
-        for (ExtendedOption x: xOpts) {
+        for (ExtendedOption x : xOpts) {
             if (commandLine.hasOption(x.getOption())) {
                 List l = commandLine.getValues(x.getOption());
                 if (l.isEmpty()) {
@@ -750,7 +725,7 @@ public class VaultFsApp extends AbstractApplication {
         if (cl.getValue(optConfig) != null) {
             setProperty(KEY_DEFAULT_CONFIG_XML, (String) cl.getValue(optConfig));
         }
-        
+
         parseConnectionOptions(cl);
     }
 
@@ -758,9 +733,12 @@ public class VaultFsApp extends AbstractApplication {
         ConnectionOptions.Builder builder = ConnectionOptions.builder();
         builder.allowSelfSignedCertificates(cl.hasOption(optAllowSelfSignedCertificate));
         builder.disableHostnameVerification(cl.hasOption(optDisableHostnameValidation));
-        builder.connectionTimeoutMs(Integer.parseInt(cl.getValue(optConnectionTimeoutMs, -1).toString()));
-        builder.requestTimeoutMs(Integer.parseInt(cl.getValue(optRequestTimeoutMs, -1).toString()));
-        builder.socketTimeoutMs(Integer.parseInt(cl.getValue(optSocketTimeoutMs, -1).toString()));
+        builder.connectionTimeoutMs(
+                Integer.parseInt(cl.getValue(optConnectionTimeoutMs, -1).toString()));
+        builder.requestTimeoutMs(
+                Integer.parseInt(cl.getValue(optRequestTimeoutMs, -1).toString()));
+        builder.socketTimeoutMs(
+                Integer.parseInt(cl.getValue(optSocketTimeoutMs, -1).toString()));
         builder.useSystemProperties(cl.hasOption(optUseSystemProperties));
         if (cl.getValue(optProxyHost) != null) {
             builder.proxyHost(cl.getValue(optProxyHost).toString());
@@ -781,7 +759,6 @@ public class VaultFsApp extends AbstractApplication {
         }
     }
 
-
     private static class PasswordPromptingCredentialsStore implements CredentialsStore {
 
         private CredentialsStore base;
@@ -795,8 +772,11 @@ public class VaultFsApp extends AbstractApplication {
             if (creds instanceof SimpleCredentials) {
                 SimpleCredentials simpleCredentials = (SimpleCredentials) creds;
                 if (simpleCredentials.getPassword().length == 0) {
-                    System.out.printf(Locale.ENGLISH, "Please enter password for user %s connecting to %s: ",
-                            simpleCredentials.getUserID(), mountpoint);
+                    System.out.printf(
+                            Locale.ENGLISH,
+                            "Please enter password for user %s connecting to %s: ",
+                            simpleCredentials.getUserID(),
+                            mountpoint);
                     // ensure JLine is initialized
                     String password = LineReaderBuilder.builder().build().readLine('*');
                     creds = new SimpleCredentials(simpleCredentials.getUserID(), password.toCharArray());
@@ -809,5 +789,4 @@ public class VaultFsApp extends AbstractApplication {
             base.storeCredentials(mountpoint, creds);
         }
     }
-
 }

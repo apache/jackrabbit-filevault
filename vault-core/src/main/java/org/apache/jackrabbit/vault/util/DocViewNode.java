@@ -1,27 +1,29 @@
-/*************************************************************************
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ************************************************************************/
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.jackrabbit.vault.util;
+
+import javax.jcr.NamespaceException;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import javax.jcr.NamespaceException;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.NamePathResolver;
@@ -43,6 +45,7 @@ public class DocViewNode {
     public final @NotNull String name; // always use expanded names here
     /** usually equal to {@link #name} except when this node has a same name sibling, in that case label has format {@code <name>[index]}, https://docs.adobe.com/content/docs/en/spec/jcr/2.0/22_Same-Name_Siblings.html#22.2%20Addressing%20Same-Name%20Siblings%20by%20Path */
     public final @NotNull String label;
+
     public final @NotNull Map<String, DocViewProperty> props = new HashMap<>();
     public @Nullable String uuid;
     public final @Nullable String[] mixins;
@@ -53,10 +56,23 @@ public class DocViewNode {
         if (node.getIndex() > 0) {
             label += "[" + node.getIndex() + "]";
         }
-        return new DocViewNode(node.getName().toString(), label, node.getIdentifier().orElse(null), node.getProperties().stream().collect(Collectors.toMap(p -> p.getName().toString(),  DocViewProperty::fromDocViewProperty2)), node.getMixinTypes().toArray(new String[0]), node.getPrimaryType().orElse(null));
+        return new DocViewNode(
+                node.getName().toString(),
+                label,
+                node.getIdentifier().orElse(null),
+                node.getProperties().stream()
+                        .collect(Collectors.toMap(p -> p.getName().toString(), DocViewProperty::fromDocViewProperty2)),
+                node.getMixinTypes().toArray(new String[0]),
+                node.getPrimaryType().orElse(null));
     }
 
-    public DocViewNode(@NotNull String name, @NotNull String label, String uuid, Map<String, DocViewProperty> props, String[] mixins, String primary) {
+    public DocViewNode(
+            @NotNull String name,
+            @NotNull String label,
+            String uuid,
+            Map<String, DocViewProperty> props,
+            String[] mixins,
+            String primary) {
         this.name = name;
         this.label = label;
         this.uuid = uuid;
@@ -71,8 +87,7 @@ public class DocViewNode {
         this(name, label, attributes);
     }
 
-    public DocViewNode(@NotNull String name, @NotNull String label, Attributes attributes)
-            throws NamespaceException {
+    public DocViewNode(@NotNull String name, @NotNull String label, Attributes attributes) throws NamespaceException {
         this.name = name;
         this.label = label;
         String uuid = null;
@@ -83,12 +98,9 @@ public class DocViewNode {
             if (!attributes.getType(i).equals("CDATA")) {
                 continue;
             }
-            Name pName = NameFactoryImpl.getInstance().create(
-                    attributes.getURI(i),
-                    ISO9075.decode(attributes.getLocalName(i)));
-            DocViewProperty info = DocViewProperty.parse(
-                    pName.toString(),
-                    attributes.getValue(i));
+            Name pName = NameFactoryImpl.getInstance()
+                    .create(attributes.getURI(i), ISO9075.decode(attributes.getLocalName(i)));
+            DocViewProperty info = DocViewProperty.parse(pName.toString(), attributes.getValue(i));
             props.put(info.name, info);
             if (pName.equals(NameConstants.JCR_UUID)) {
                 uuid = info.values[0];
@@ -128,37 +140,24 @@ public class DocViewNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         DocViewNode other = (DocViewNode) obj;
         if (label == null) {
-            if (other.label != null)
-                return false;
-        } else if (!label.equals(other.label))
-            return false;
-        if (!Arrays.equals(mixins, other.mixins))
-            return false;
+            if (other.label != null) return false;
+        } else if (!label.equals(other.label)) return false;
+        if (!Arrays.equals(mixins, other.mixins)) return false;
         if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
+            if (other.name != null) return false;
+        } else if (!name.equals(other.name)) return false;
         if (primary == null) {
-            if (other.primary != null)
-                return false;
-        } else if (!primary.equals(other.primary))
-            return false;
-        if (!props.equals(other.props))
-            return false;
+            if (other.primary != null) return false;
+        } else if (!primary.equals(other.primary)) return false;
+        if (!props.equals(other.props)) return false;
         if (uuid == null) {
-            if (other.uuid != null)
-                return false;
-        } else if (!uuid.equals(other.uuid))
-            return false;
+            if (other.uuid != null) return false;
+        } else if (!uuid.equals(other.uuid)) return false;
         return true;
     }
 
@@ -167,5 +166,4 @@ public class DocViewNode {
         return "DocViewNode [name=" + name + ", label=" + label + ", props=" + props + ", uuid=" + uuid + ", mixins="
                 + Arrays.toString(mixins) + ", primary=" + primary + "]";
     }
-
 }

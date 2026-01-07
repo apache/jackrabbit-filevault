@@ -1,31 +1,33 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.util.xml.serialize;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
 import com.ctc.wstx.api.WstxOutputProperties;
 import com.ctc.wstx.stax.WstxOutputFactory;
@@ -36,7 +38,7 @@ import com.sun.xml.txw2.output.IndentingXMLStreamWriter;
  * <li>optional line break before each attribute</li>
  * <li>new line at end</li>
  * <li>indentation for elements and comments</li>
- * </ul> 
+ * </ul>
  */
 public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable {
 
@@ -76,7 +78,8 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
 
     @Override
     public void writeEndDocument() throws XMLStreamException {
-        // nothing can be written after writeEndDocument() has been called, therefore call the additional new line before
+        // nothing can be written after writeEndDocument() has been called, therefore call the additional new line
+        // before
         elementIndentingXmlWriter.writeEndDocument();
         addLineBreak(true);
     }
@@ -101,7 +104,7 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
 
     @Override
     public void writeEndElement() throws XMLStreamException {
-        // is it new element or 
+        // is it new element or
         flushBufferedAttribute();
         depth--;
         elementIndentingXmlWriter.writeEndElement();
@@ -128,7 +131,8 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
     }
 
     @Override
-    public void writeAttribute(String prefix, String namespaceURI, String localName, String value) throws XMLStreamException {
+    public void writeAttribute(String prefix, String namespaceURI, String localName, String value)
+            throws XMLStreamException {
         if (onAttribute(prefix, namespaceURI, localName, value)) {
             elementIndentingXmlWriter.writeAttribute(prefix, namespaceURI, localName, value);
         }
@@ -168,7 +172,8 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
         }
     }
 
-    private boolean onAttribute(String prefix, String namespaceURI, String localName, String value) throws XMLStreamException {
+    private boolean onAttribute(String prefix, String namespaceURI, String localName, String value)
+            throws XMLStreamException {
         numAttributes++;
         if (output.isSplitAttributesByLineBreaks()) {
             // if the amount of namespace declarations + attributes is bigger than 1
@@ -208,8 +213,10 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
                 for (int i = 0; i < depth; i++) {
                     final String indent;
                     if (isAttribute && i == depth - 1) {
-                        // leave out one space as that is automatically added by any XMLStreamWriter between any two attributes
-                        indent = output.getIndent().substring(0, output.getIndent().length() - 1);
+                        // leave out one space as that is automatically added by any XMLStreamWriter between any two
+                        // attributes
+                        indent = output.getIndent()
+                                .substring(0, output.getIndent().length() - 1);
                     } else {
                         indent = output.getIndent();
                     }
@@ -221,7 +228,7 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
             throw new XMLStreamException("Could not indent attribute", e);
         }
     }
-    
+
     private void addLineBreak(boolean keepState) throws XMLStreamException {
         if (keepState) {
             try {
@@ -339,5 +346,4 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
     public String toString() {
         return elementIndentingXmlWriter.toString();
     }
-
 }

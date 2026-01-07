@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.vlt.meta;
 
 import java.io.File;
@@ -74,7 +75,7 @@ public class Ignored implements PathFilter {
             ignored = new LinkedList<PathFilter>();
             try {
                 scan(scanRoot);
-            } catch (VltException|IOException|ConfigurationException e) {
+            } catch (VltException | IOException | ConfigurationException e) {
                 log.error("Error while scanning for " + FILE_NAME, e);
             }
             log.info("scanned for .vltignore files below {} in {}ms", scanRoot, System.currentTimeMillis() - now);
@@ -82,9 +83,8 @@ public class Ignored implements PathFilter {
         return ignored;
     }
 
-
     public boolean matches(@NotNull String path) {
-        for (PathFilter p: getIgnored()) {
+        for (PathFilter p : getIgnored()) {
             if (p.matches(path)) {
                 return true;
             }
@@ -93,7 +93,7 @@ public class Ignored implements PathFilter {
     }
 
     public Ignored scan(File dir) throws VltException, IOException, ConfigurationException {
-        for (File file: dir.listFiles()) {
+        for (File file : dir.listFiles()) {
             String name = file.getName();
             if (settings != null && settings.isIgnored(name)) {
                 continue;
@@ -115,7 +115,7 @@ public class Ignored implements PathFilter {
             root = PlatformNameFormat.getRepositoryPath(root);
             log.info("Unable to detect correct repository path for {}. guessed: {}", dir.getPath(), root);
         }
-        for (Object o: FileUtils.readLines(file, "utf-8")) {
+        for (Object o : FileUtils.readLines(file, "utf-8")) {
             addIgnored(root, o.toString());
         }
     }
@@ -127,13 +127,13 @@ public class Ignored implements PathFilter {
         root = root.replace('\\', '/');
         StringBuffer reg = new StringBuffer("^");
         reg.append(root).append("/");
-        for (int i=0; i<pattern.length(); i++) {
+        for (int i = 0; i < pattern.length(); i++) {
             char c = pattern.charAt(i);
-            if (c=='*') {
+            if (c == '*') {
                 reg.append(".*");
-            } else if (c=='?') {
+            } else if (c == '?') {
                 reg.append(".");
-            } else if (c=='.') {
+            } else if (c == '.') {
                 reg.append("\\.");
             } else {
                 reg.append(c);

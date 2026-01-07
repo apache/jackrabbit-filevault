@@ -1,21 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.config;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -28,10 +33,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
@@ -68,8 +69,7 @@ public abstract class AbstractVaultFsConfig implements VaultFsConfig {
 
     private String name = "";
 
-    public static VaultFsConfig load(File file)
-            throws ConfigurationException, IOException {
+    public static VaultFsConfig load(File file) throws ConfigurationException, IOException {
         try (InputStream input = new FileInputStream(file)) {
             return load(input, file.getName());
         }
@@ -83,8 +83,7 @@ public abstract class AbstractVaultFsConfig implements VaultFsConfig {
      * @throws ConfigurationException
      * @throws IOException
      */
-    public static VaultFsConfig load(InputStream in, String name)
-            throws ConfigurationException, IOException {
+    public static VaultFsConfig load(InputStream in, String name) throws ConfigurationException, IOException {
         byte[] source = IOUtils.toByteArray(in);
         Document document = parse(new ByteArrayInputStream(source));
 
@@ -148,28 +147,24 @@ public abstract class AbstractVaultFsConfig implements VaultFsConfig {
         return handlers;
     }
 
-    private static Document parse(InputStream xml)
-            throws ConfigurationException, IOException {
+    private static Document parse(InputStream xml) throws ConfigurationException, IOException {
         try {
-            DocumentBuilderFactory factory =
-                DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             // disable DTD loading (bug #36897)
             builder.setEntityResolver(new RejectingEntityResolver());
             return builder.parse(xml);
         } catch (ParserConfigurationException e) {
-            throw new ConfigurationException(
-                    "Unable to create configuration XML parser", e);
+            throw new ConfigurationException("Unable to create configuration XML parser", e);
         } catch (SAXException e) {
-            throw new ConfigurationException(
-                    "Configuration file syntax error.", e);
+            throw new ConfigurationException("Configuration file syntax error.", e);
         }
     }
 
     protected static Collection<Element> getChildElements(Node elem) {
         NodeList nodeList = elem.getChildNodes();
         List<Element> nodes = new ArrayList<Element>(nodeList.getLength());
-        for (int i=0; i<nodeList.getLength(); i++) {
+        for (int i = 0; i < nodeList.getLength(); i++) {
             Node child = nodeList.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 nodes.add((Element) child);
@@ -186,5 +181,4 @@ public abstract class AbstractVaultFsConfig implements VaultFsConfig {
         }
         throw new ConfigurationException(msg + ". Location: " + name + path);
     }
-
 }

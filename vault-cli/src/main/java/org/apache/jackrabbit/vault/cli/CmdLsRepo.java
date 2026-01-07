@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.cli;
 
 import javax.jcr.Node;
@@ -49,7 +50,6 @@ public class CmdLsRepo extends AbstractCmdLs {
 
     private Option optUUID;
 
-
     protected int getFormatFlags(VaultFsConsoleExecutionContext ctx, CommandLine cl) {
         int fmtFlag = 0;
         fmtFlag |= cl.hasOption(optNodeType) ? F_FLAG_NT : 0;
@@ -64,23 +64,25 @@ public class CmdLsRepo extends AbstractCmdLs {
                 .withDescription(getShortDescription())
                 .withChildren(new GroupBuilder()
                         .withName("Options:")
-                        .withOption(optNodeType = new DefaultOptionBuilder()
-                                .withShortName("n")
-                                .withDescription("display the node type of the nodes")
-                                .create())
-                        .withOption(optUUID = new DefaultOptionBuilder()
-                                .withShortName("u")
-                                .withDescription("display the uuid of the referenceable nodes")
-                                .create())
-                        .withOption(optLong = new DefaultOptionBuilder()
-                                .withShortName("l")
-                                .withDescription("combines the flags 'n' and 'u'")
-                                .create())
+                        .withOption(
+                                optNodeType = new DefaultOptionBuilder()
+                                        .withShortName("n")
+                                        .withDescription("display the node type of the nodes")
+                                        .create())
+                        .withOption(
+                                optUUID = new DefaultOptionBuilder()
+                                        .withShortName("u")
+                                        .withDescription("display the uuid of the referenceable nodes")
+                                        .create())
+                        .withOption(
+                                optLong = new DefaultOptionBuilder()
+                                        .withShortName("l")
+                                        .withDescription("combines the flags 'n' and 'u'")
+                                        .create())
                         .withOption(argPath)
                         .create())
                 .create();
     }
-
 
     protected void formatFile(ConsoleFile file, Table.Row row, int flags) {
         Object item = file.unwrap();
@@ -184,5 +186,4 @@ public class CmdLsRepo extends AbstractCmdLs {
         }
         */
     }
-
 }

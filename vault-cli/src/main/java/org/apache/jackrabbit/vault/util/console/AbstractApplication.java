@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.util.console;
 
@@ -20,12 +22,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoField;
 import java.util.Iterator;
 import java.util.Properties;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.DisplaySetting;
 import org.apache.commons.cli2.Group;
@@ -41,9 +42,6 @@ import org.apache.jackrabbit.vault.util.console.util.CliHelpFormatter;
 import org.apache.jackrabbit.vault.util.console.util.PomProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
 
 /**
  * {@code Console}...
@@ -68,7 +66,7 @@ public abstract class AbstractApplication {
      */
     private Properties globalEnv = new Properties();
 
-    //private Option optPropertyFile;
+    // private Option optPropertyFile;
     private Option optLogLevel;
     private Option optVersion;
     private Option optHelp;
@@ -80,11 +78,11 @@ public abstract class AbstractApplication {
     public PomProperties getPomProperties() {
         return new PomProperties("org.apache.jackrabbit.vault", "vault-cli");
     }
-    
+
     public String getCopyrightLine() {
         return "copyright 2013 by Apache Software Foundation. See LICENSE.txt for more information.";
     }
-    
+
     public String getVersionString() {
         return getApplicationName() + " [version " + getVersion() + "] " + getCopyrightLine();
     }
@@ -99,7 +97,6 @@ public abstract class AbstractApplication {
      * @return the name of this application
      */
     public abstract String getApplicationName();
-
 
     /**
      * Returns the name of the shell command
@@ -173,37 +170,22 @@ public abstract class AbstractApplication {
                         .withDescription("runs this application in an interactive mode.")
                         .create();
         */
-        optVersion =
-                obuilder
-                        .withLongName("version")
-                        .withDescription("print the version information and exit")
-                        .create();
-        optHelp =
-                obuilder
-                        .withShortName("h")
-                        .withLongName("help")
-                        .withDescription("print this help")
-                        .withArgument(abuilder
-                                .withName("command")
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create();
+        optVersion = obuilder.withLongName("version")
+                .withDescription("print the version information and exit")
+                .create();
+        optHelp = obuilder.withShortName("h")
+                .withLongName("help")
+                .withDescription("print this help")
+                .withArgument(abuilder.withName("command").withMaximum(1).create())
+                .create();
 
-        optLogLevel =
-                obuilder
-                        .withLongName("log-level")
-                        .withDescription("the logback log level")
-                        .withArgument(abuilder
-                                .withName("level")
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create();
+        optLogLevel = obuilder.withLongName("log-level")
+                .withDescription("the logback log level")
+                .withArgument(abuilder.withName("level").withMaximum(1).create())
+                .create();
 
-        gbuilder
-                .withName("Global options:")
-                //.withOption(optPropertyFile)
+        gbuilder.withName("Global options:")
+                // .withOption(optPropertyFile)
                 .withOption(CliCommand.OPT_VERBOSE)
                 .withOption(CliCommand.OPT_QUIET)
                 .withOption(optVersion)
@@ -219,8 +201,7 @@ public abstract class AbstractApplication {
     }
 
     protected void init() {
-        globalEnv.setProperty(KEY_PROMPT,
-                "[${" + KEY_USER + "}@${" + KEY_HOST + "} ${" + KEY_PATH  +"}]$ ");
+        globalEnv.setProperty(KEY_PROMPT, "[${" + KEY_USER + "}@${" + KEY_HOST + "} ${" + KEY_PATH + "}]$ ");
     }
 
     protected void run(String[] args) {
@@ -280,8 +261,8 @@ public abstract class AbstractApplication {
     public void execute(CommandLine cl) throws ExecutionException {
         if (cl.hasOption(optVersion)) {
             printVersion();
-        //} else if (cl.hasOption(optInteractive)) {
-        //    getConsole().run();
+            // } else if (cl.hasOption(optInteractive)) {
+            //    getConsole().run();
         } else if (cl.hasOption(optHelp)) {
             String cmd = (String) cl.getValue(optHelp);
             if (cmd == null) {
@@ -289,7 +270,7 @@ public abstract class AbstractApplication {
                 // eg: vlt checkout --help
                 Iterator iter = cl.getOptions().iterator();
                 while (iter.hasNext()) {
-                    Object o = iter.next();                    
+                    Object o = iter.next();
                     if (o instanceof Command) {
                         cmd = ((Command) o).getPreferredName();
                         break;
@@ -344,8 +325,7 @@ public abstract class AbstractApplication {
         log.info("Configuration loaded from {}", file.getCanonicalPath());
     }
 
-    protected void close() {
-    }
+    protected void close() {}
 
     public Properties getEnv() {
         return globalEnv;

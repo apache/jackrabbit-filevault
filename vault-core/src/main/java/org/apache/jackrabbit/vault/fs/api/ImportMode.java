@@ -1,26 +1,27 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.api;
 
 /**
  * {@code ImportMode} is used to define how importing content is applied
  * to the existing content in the repository.
- * 
+ *
  * <table border="1">
  * <caption>"Import Mode Effects"</caption>
  * <tr><th rowspan="2">Import Mode</th><th colspan="3">Property/Node (at a specific path)</th></tr>
@@ -55,14 +56,14 @@ public enum ImportMode {
      * <li>Simple files: i.e. they will never be imported in case the repo has this file already.
      * <li>Other docview files: It will ignore them in case the docview's root node does already exist in the repo (both full coverage and .content.xml). It skips non-existing child nodes/properties in the docview as well.</li>
      * </ul>
-     * 
+     *
      * @deprecated As this behaves inconsistently for the different serialization formats, rather use {@link #MERGE_PROPERTIES}.
      */
     @Deprecated()
     MERGE,
 
     /**
-     * Existing properties are replaced (except for {@code jcr:primaryType}), new properties and nodes are added and no existing properties or nodes are deleted. 
+     * Existing properties are replaced (except for {@code jcr:primaryType}), new properties and nodes are added and no existing properties or nodes are deleted.
      * <strong>Only affects authorizable nodes (not their child nodes). Other nodes are imported in mode {@link #REPLACE}.</strong>
      * @deprecated As this behaves inconsistently for the different serialization formats, rather use {@link #UPDATE_PROPERTIES}
      */
@@ -71,7 +72,7 @@ public enum ImportMode {
 
     /**
      * Existing properties are not touched, new nodes/properties are added, no existing nodes/properties are deleted.
-     * The only existing property potentially touched is the multi-value property {@code jcr:mixinType} which is extended with the values from the imported content. 
+     * The only existing property potentially touched is the multi-value property {@code jcr:mixinType} which is extended with the values from the imported content.
      * As the primary type is never changed
      * import will skip new properties/nodes which are not allowed by the node type definition of primary + mixin types.
      * Authorizable nodes: only {@code rep:members} of existing authorizables is updated, no other property on those node types is added/modified.

@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.sync.impl;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -26,10 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -47,8 +49,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
-* {@code SyncHandler}...
-*/
+ * {@code SyncHandler}...
+ */
 public class SyncHandler implements FilesystemAlterationListener {
 
     /**
@@ -64,7 +66,8 @@ public class SyncHandler implements FilesystemAlterationListener {
 
     private final Set<String> pendingJcrChanges = new HashSet<String>();
 
-    private final Map<String, File> pendingFsChanges = new TreeMap<String, File>(new PathComparator(Constants.FS_NATIVE.charAt(0)));
+    private final Map<String, File> pendingFsChanges =
+            new TreeMap<String, File>(new PathComparator(Constants.FS_NATIVE.charAt(0)));
 
     private final SyncLog syncLog;
 
@@ -80,11 +83,8 @@ public class SyncHandler implements FilesystemAlterationListener {
 
     private FStat configStat;
 
-
     // default to exclude all hidden files and directories
-    private Pattern[] excluded = new Pattern[]{
-            Pattern.compile("\\..*")
-    };
+    private Pattern[] excluded = new Pattern[] {Pattern.compile("\\..*")};
 
     private FileFilter fileFilter = new FileFilter() {
         public boolean accept(File file) {
@@ -92,7 +92,7 @@ public class SyncHandler implements FilesystemAlterationListener {
             if (file.isHidden()) {
                 return false;
             }
-            for (Pattern p:excluded) {
+            for (Pattern p : excluded) {
                 if (p.matcher(name).matches()) {
                     return false;
                 }
@@ -100,7 +100,6 @@ public class SyncHandler implements FilesystemAlterationListener {
             return true;
         }
     };
-
 
     public SyncHandler(File fileRoot) {
         this.fileRoot = fileRoot;
@@ -116,7 +115,10 @@ public class SyncHandler implements FilesystemAlterationListener {
         }
         filterStat = new FStat();
         updateFilter();
-        syncLog.log("Syncing in %s is %s by " + SyncConstants.CONFIG_FILE_NAME, fileRoot.getAbsolutePath(), cfg.isDisabled() ? "disabled" : "enabled");
+        syncLog.log(
+                "Syncing in %s is %s by " + SyncConstants.CONFIG_FILE_NAME,
+                fileRoot.getAbsolutePath(),
+                cfg.isDisabled() ? "disabled" : "enabled");
 
         observer = new FilesystemAlterationObserverImpl(fileRoot);
         // "initialize" internal structure of observer (need dummy listener, otherwise events are not processed)
@@ -236,7 +238,10 @@ public class SyncHandler implements FilesystemAlterationListener {
                 boolean wasDisabled = cfg.isDisabled();
                 cfg.load();
                 if (wasDisabled != cfg.isDisabled()) {
-                    syncLog.log("Syncing in %s is %s by " + SyncConstants.CONFIG_FILE_NAME, fileRoot.getAbsolutePath(), cfg.isDisabled() ? "disabled" : "enabled");
+                    syncLog.log(
+                            "Syncing in %s is %s by " + SyncConstants.CONFIG_FILE_NAME,
+                            fileRoot.getAbsolutePath(),
+                            cfg.isDisabled() ? "disabled" : "enabled");
                 }
             }
         } catch (IOException e) {
@@ -261,7 +266,7 @@ public class SyncHandler implements FilesystemAlterationListener {
 
     private SyncResult syncToDisk(Session session) throws RepositoryException, IOException {
         SyncResult res = new SyncResult();
-        for (String path: preparedJcrChanges) {
+        for (String path : preparedJcrChanges) {
             boolean recursive = path.endsWith("/");
             if (recursive) {
                 path = path.substring(0, path.length() - 1);
@@ -281,9 +286,7 @@ public class SyncHandler implements FilesystemAlterationListener {
             } else {
                 node = null;
                 String parentPath = Text.getRelativeParent(path, 1);
-                parentNode = session.nodeExists(parentPath)
-                        ? session.getNode(parentPath)
-                        : null;
+                parentNode = session.nodeExists(parentPath) ? session.getNode(parentPath) : null;
                 operation = "deleted";
             }
             log.debug("**** about sync jcr:/{} -> file://{} ({})", path, file.getAbsolutePath(), operation);
@@ -294,7 +297,7 @@ public class SyncHandler implements FilesystemAlterationListener {
     }
 
     private void syncToJcr(Session session, SyncResult res) throws RepositoryException, IOException {
-        for (String filePath: pendingFsChanges.keySet()) {
+        for (String filePath : pendingFsChanges.keySet()) {
             if (res.getByFsPath(filePath) != null) {
                 log.debug("ignoring change triggered by previous JCR->FS update. {}", filePath);
                 return;
@@ -314,9 +317,7 @@ public class SyncHandler implements FilesystemAlterationListener {
             } else {
                 node = null;
                 String parentPath = Text.getRelativeParent(path, 1);
-                parentNode = session.nodeExists(parentPath)
-                        ? session.getNode(parentPath)
-                        : null;
+                parentNode = session.nodeExists(parentPath) ? session.getNode(parentPath) : null;
             }
             TreeSync tree = createTreeSync(SyncMode.FS2JCR);
             tree.setSyncMode(SyncMode.FS2JCR);
@@ -344,7 +345,7 @@ public class SyncHandler implements FilesystemAlterationListener {
 
     private void onChange(File file, String type) {
         boolean accept = fileFilter.accept(file);
-        log.debug("{}({}), accepted={}", new Object[]{type, file.getAbsolutePath(), accept});
+        log.debug("{}({}), accepted={}", new Object[] {type, file.getAbsolutePath(), accept});
         if (!accept) {
             return;
         }
@@ -367,16 +368,15 @@ public class SyncHandler implements FilesystemAlterationListener {
         onChange(file, "onDirectoryCreate");
     }
 
-
     public void onDirectoryDelete(File file) {
         onChange(file, "onDirectoryDelete");
     }
 
-    public void onStart(FilesystemAlterationObserver filesystemAlterationObserver) { }
+    public void onStart(FilesystemAlterationObserver filesystemAlterationObserver) {}
 
-    public void onStop(FilesystemAlterationObserver filesystemAlterationObserver) { }
+    public void onStop(FilesystemAlterationObserver filesystemAlterationObserver) {}
 
-    public void onDirectoryChange(File file) { }
+    public void onDirectoryChange(File file) {}
 
     @Override
     public String toString() {
@@ -420,14 +420,20 @@ public class SyncHandler implements FilesystemAlterationListener {
     }
 
     private static final class DummyListener implements FilesystemAlterationListener {
-        public void onStart(FilesystemAlterationObserver filesystemAlterationObserver) { }
-        public void onFileCreate(File file) { }
-        public void onFileChange(File file) { }
-        public void onFileDelete(File file) { }
-        public void onDirectoryCreate(File file) { }
-        public void onDirectoryChange(File file) { }
-        public void onDirectoryDelete(File file) { }
-        public void onStop(FilesystemAlterationObserver filesystemAlterationObserver) { }
-    }
+        public void onStart(FilesystemAlterationObserver filesystemAlterationObserver) {}
 
+        public void onFileCreate(File file) {}
+
+        public void onFileChange(File file) {}
+
+        public void onFileDelete(File file) {}
+
+        public void onDirectoryCreate(File file) {}
+
+        public void onDirectoryChange(File file) {}
+
+        public void onDirectoryDelete(File file) {}
+
+        public void onStop(FilesystemAlterationObserver filesystemAlterationObserver) {}
+    }
 }

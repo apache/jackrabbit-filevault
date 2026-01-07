@@ -1,20 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.sync.impl;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.observation.Event;
+import javax.jcr.observation.EventIterator;
+import javax.jcr.observation.EventListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,13 +37,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.UnsupportedRepositoryOperationException;
-import javax.jcr.observation.Event;
-import javax.jcr.observation.EventIterator;
-import javax.jcr.observation.EventListener;
 
 import org.apache.jackrabbit.util.Text;
 import org.apache.sling.jcr.api.SlingRepository;
@@ -54,8 +55,7 @@ import org.slf4j.LoggerFactory;
  */
 @Component(
         immediate = true,
-        property = {"service.vendor=The Apache Software Foundation"}
-)
+        property = {"service.vendor=The Apache Software Foundation"})
 @Designate(ocd = VaultSyncServiceImpl.Config.class)
 public class VaultSyncServiceImpl implements EventListener, Runnable {
 
@@ -82,38 +82,31 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
 
     private final Condition waitCondition = waitLock.newCondition();
 
-    @ObjectClassDefinition(
-            name = "Vault Sync Service"
-    )
+    @ObjectClassDefinition(name = "Vault Sync Service")
     @interface Config {
 
-        @AttributeDefinition(
-                name = "Sync filesystem directories"
-        )
+        @AttributeDefinition(name = "Sync filesystem directories")
         String[] vault_sync_syncroots() default {};
 
-        @AttributeDefinition(
-                name = "FS check interval (seconds)"
-        )
+        @AttributeDefinition(name = "FS check interval (seconds)")
         int vault_sync_fscheckinterval() default 5;
 
-        @AttributeDefinition(
-                name = "Enabled"
-        )
+        @AttributeDefinition(name = "Enabled")
         boolean vault_sync_enabled() default false;
-
-
     }
 
     @Activate
     public VaultSyncServiceImpl(@Reference SlingRepository slingRepository, Config config) throws RepositoryException {
-        this(slingRepository.loginAdministrative(null), 
-                config.vault_sync_enabled(), 
-                config.vault_sync_fscheckinterval() * 1000l, 
+        this(
+                slingRepository.loginAdministrative(null),
+                config.vault_sync_enabled(),
+                config.vault_sync_fscheckinterval() * 1000l,
                 Arrays.stream(config.vault_sync_syncroots()).map(File::new).collect(Collectors.toList()));
     }
 
-    VaultSyncServiceImpl(Session session, boolean isEnabled, long fsCheckIntervalMilliseconds, Collection<File> syncRoots) throws RepositoryException {
+    VaultSyncServiceImpl(
+            Session session, boolean isEnabled, long fsCheckIntervalMilliseconds, Collection<File> syncRoots)
+            throws RepositoryException {
         List<SyncHandler> newSyncSpecs = new LinkedList<>();
         for (File syncRoot : syncRoots) {
             SyncHandler spec = new SyncHandler(syncRoot);
@@ -128,20 +121,24 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
         log.info("Vault Sync service is {}", enabled ? "enabled" : "disabled");
         if (enabled) {
             // set up observation listener
-            session.getWorkspace().getObservationManager().addEventListener(
-                    this,
-                    Event.NODE_ADDED | Event.NODE_REMOVED | Event.PROPERTY_CHANGED | Event.PROPERTY_ADDED | Event.PROPERTY_REMOVED,
-                    "/",
-                    true /* isDeep */,
-                    null /* uuid */,
-                    null /* nodeTypeName */,
-                    true /* noLocal */
-            );
+            session.getWorkspace()
+                    .getObservationManager()
+                    .addEventListener(
+                            this,
+                            Event.NODE_ADDED
+                                    | Event.NODE_REMOVED
+                                    | Event.PROPERTY_CHANGED
+                                    | Event.PROPERTY_ADDED
+                                    | Event.PROPERTY_REMOVED,
+                            "/",
+                            true /* isDeep */,
+                            null /* uuid */,
+                            null /* nodeTypeName */,
+                            true /* noLocal */);
             fsCheckThread = new Thread(this, "Vault Sync Thread");
             fsCheckThread.setDaemon(true);
             fsCheckThread.start();
         }
-
     }
 
     @Deactivate
@@ -233,11 +230,14 @@ public class VaultSyncServiceImpl implements EventListener, Runnable {
                 } else {
                     modified.add(path);
                 }
-                log.debug("Received JCR event {} leading to the following modifications: {}", evt, String.join(",", modified));
+                log.debug(
+                        "Received JCR event {} leading to the following modifications: {}",
+                        evt,
+                        String.join(",", modified));
             }
             waitLock.lock();
             try {
-                for (String path: modified) {
+                for (String path : modified) {
                     SyncHandler spec = getSyncHandler(path);
                     if (spec != null) {
                         spec.registerPendingJcrChange(path);

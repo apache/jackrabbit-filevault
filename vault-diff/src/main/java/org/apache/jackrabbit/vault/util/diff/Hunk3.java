@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.util.diff;
 
@@ -32,22 +34,22 @@ public class Hunk3 {
     /**
      * the left document marker pattern
      */
-    public static final String[] MARKER_L  = new String[]{"<<<<<<< ", ".mine"};
+    public static final String[] MARKER_L = new String[] {"<<<<<<< ", ".mine"};
 
     /**
      * the right document marker pattern
      */
-    public static final String[] MARKER_R  = new String[]{">>>>>>> ", ".theirs"};
+    public static final String[] MARKER_R = new String[] {">>>>>>> ", ".theirs"};
 
     /**
      * the base document marker pattern
      */
-    public static final String[] MARKER_B  = new String[]{"||||||| ", ".base"};
+    public static final String[] MARKER_B = new String[] {"||||||| ", ".base"};
 
     /**
      * the separation marker pattern
      */
-    public static final String[] MARKER_M  = new String[]{"=======", ""};
+    public static final String[] MARKER_M = new String[] {"=======", ""};
 
     /**
      * the base range. never {@code null}.
@@ -176,7 +178,13 @@ public class Hunk3 {
      */
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        buf.append("@@ =").append(base).append(" -").append(left).append(" +").append(right).append(" @@\n");
+        buf.append("@@ =")
+                .append(base)
+                .append(" -")
+                .append(left)
+                .append(" +")
+                .append(right)
+                .append(" @@\n");
         if (left != null) {
             for (int i = 0; i < left.len(); i++) {
                 addLineNumbers(buf, i);
@@ -232,5 +240,4 @@ public class Hunk3 {
         }
         return buf.toString();
     }
-
 }

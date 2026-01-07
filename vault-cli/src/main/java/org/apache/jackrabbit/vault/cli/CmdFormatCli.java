@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
@@ -43,7 +44,6 @@ public class CmdFormatCli extends AbstractVaultCommand {
     private Option optCheckOnly;
     private Option optPatterns;
     private Option argPaths;
-
 
     @Override
     protected void doExecute(VaultFsApp app, CommandLine cl) throws Exception {
@@ -77,11 +77,11 @@ public class CmdFormatCli extends AbstractVaultCommand {
 
         List<String> formattedFiles = new LinkedList<>();
         DocViewFormat format = new DocViewFormat();
-        for (File file: localFiles) {
+        for (File file : localFiles) {
             if (file.isDirectory()) {
                 if (verbose) {
                     System.out.printf(Locale.ENGLISH, "traversing: %s%n", file);
-                    for (Pattern p: parsedPatterns) {
+                    for (Pattern p : parsedPatterns) {
                         System.out.printf(Locale.ENGLISH, "scanning for files matching: %s%n", p);
                     }
                 }
@@ -103,12 +103,12 @@ public class CmdFormatCli extends AbstractVaultCommand {
         final Path cwd = Paths.get(new File("").getAbsolutePath());
         if (checkOnly) {
             System.out.println("The following files are not properly formatted:\n");
-            for (String path: formattedFiles) {
+            for (String path : formattedFiles) {
                 System.out.println(cwd.relativize(Paths.get(path)));
             }
         } else {
             System.out.println("reformatted files:\n");
-            for (String path: formattedFiles) {
+            for (String path : formattedFiles) {
                 System.out.println(cwd.relativize(Paths.get(path)));
             }
         }
@@ -121,27 +121,29 @@ public class CmdFormatCli extends AbstractVaultCommand {
                 .withDescription(getShortDescription())
                 .withChildren(new GroupBuilder()
                         .withOption(CliCommand.OPT_VERBOSE)
-                        .withOption(optCheckOnly = new DefaultOptionBuilder()
-                            .withShortName("c")
-                            .withLongName("check-only")
-                            .withDescription("Only check the format.")
-                            .create()
-                        )
-                        .withOption(optPatterns = new DefaultOptionBuilder()
-                                .withShortName("p")
-                                .withLongName("pattern")
-                                .withDescription("pattern for recursive format. defaults to match all xml files.")
-                                .withArgument(new ArgumentBuilder()
-                                        .withMinimum(0)
-                                        .withConsumeRemaining("**dummy**")
+                        .withOption(
+                                optCheckOnly = new DefaultOptionBuilder()
+                                        .withShortName("c")
+                                        .withLongName("check-only")
+                                        .withDescription("Only check the format.")
                                         .create())
-                                .create())
-                        .withOption(argPaths = new ArgumentBuilder()
-                                .withName("paths")
-                                .withDescription("files or directories to format.")
-                                .withMinimum(0)
-                                .create()
-                        )
+                        .withOption(
+                                optPatterns = new DefaultOptionBuilder()
+                                        .withShortName("p")
+                                        .withLongName("pattern")
+                                        .withDescription(
+                                                "pattern for recursive format. defaults to match all xml files.")
+                                        .withArgument(new ArgumentBuilder()
+                                                .withMinimum(0)
+                                                .withConsumeRemaining("**dummy**")
+                                                .create())
+                                        .create())
+                        .withOption(
+                                argPaths = new ArgumentBuilder()
+                                        .withName("paths")
+                                        .withDescription("files or directories to format.")
+                                        .withMinimum(0)
+                                        .create())
                         .create())
                 .create();
     }
@@ -153,12 +155,11 @@ public class CmdFormatCli extends AbstractVaultCommand {
 
     @Override
     public String getLongDescription() {
-        return  "Formats the file specified by <path> according to the vault specific docview format." +
-                "If the <path> points at a directory, the files matching the patterns are processed recursively.\n\n" +
-                "Examples:\n" +
-                "  vlt format -c -p '\\.content\\.xml' content/jcr_root\n\n" +
-                "" +
-                "  vlt format -p \\.content\\.xml -p _jcr_content\\.xml -- apps/";
+        return "Formats the file specified by <path> according to the vault specific docview format."
+                + "If the <path> points at a directory, the files matching the patterns are processed recursively.\n\n"
+                + "Examples:\n"
+                + "  vlt format -c -p '\\.content\\.xml' content/jcr_root\n\n"
+                + ""
+                + "  vlt format -p \\.content\\.xml -p _jcr_content\\.xml -- apps/";
     }
-
 }

@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.config;
 
 import java.lang.reflect.InvocationTargetException;
@@ -63,8 +64,7 @@ public class ConfigHelper {
         return defaultClasses.get(name);
     }
 
-    public Object create(Element elem)
-            throws ConfigurationException {
+    public Object create(Element elem) throws ConfigurationException {
 
         String className = elem.getAttribute("class");
         if (className == null || className.equals("")) {
@@ -76,7 +76,7 @@ public class ConfigHelper {
         }
         String field = null;
         int pos = className.indexOf('#');
-        if (pos>0) {
+        if (pos > 0) {
             field = className.substring(pos + 1);
             className = className.substring(0, pos);
         }
@@ -93,7 +93,8 @@ public class ConfigHelper {
             if (className.indexOf('.') < 0) {
                 String pack = defaultPackages.get(elem.getNodeName());
                 if (pack == null) {
-                    throw new ConfigurationException("Default package for class attribute of " + elem.getNodeName() + " missing.");
+                    throw new ConfigurationException(
+                            "Default package for class attribute of " + elem.getNodeName() + " missing.");
                 }
                 className = pack + "." + className;
             }
@@ -108,7 +109,6 @@ public class ConfigHelper {
             } catch (ClassNotFoundException e) {
                 throw new ConfigurationException("Error while creating instance for " + elem.getNodeName(), e);
             }
-
         }
         try {
             if (field == null) {
@@ -116,7 +116,13 @@ public class ConfigHelper {
             } else {
                 return clazz.getField(field).get(null);
             }
-        } catch (InstantiationException|IllegalAccessException|NoSuchFieldException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+        } catch (InstantiationException
+                | IllegalAccessException
+                | NoSuchFieldException
+                | IllegalArgumentException
+                | InvocationTargetException
+                | NoSuchMethodException
+                | SecurityException e) {
             throw new ConfigurationException("Error while creating instance for " + elem.getNodeName(), e);
         }
     }
@@ -125,7 +131,7 @@ public class ConfigHelper {
         return prefix + name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
     }
 
-    public static Method getMethod(Object obj, String name, Class<?> ... params) {
+    public static Method getMethod(Object obj, String name, Class<?>... params) {
         Method[] ms = obj.getClass().getMethods();
         for (Method m : ms) {
             if (m.getName().equals(name)) {
@@ -146,20 +152,18 @@ public class ConfigHelper {
         return null;
     }
 
-    public static boolean hasSetter(Object obj, String name)
-            throws ConfigurationException {
+    public static boolean hasSetter(Object obj, String name) throws ConfigurationException {
         String setter = getMethodName("set", name);
         if (getMethod(obj, setter, Object.class) != null) {
-            log.trace("Has setter {} on {}" , name, obj);
+            log.trace("Has setter {} on {}", name, obj);
             return true;
         } else {
-            log.trace("{} has no setter for {}" , obj, name);
+            log.trace("{} has no setter for {}", obj, name);
             return false;
         }
     }
 
-    public static boolean setField(Object obj, String name, Object value)
-            throws ConfigurationException {
+    public static boolean setField(Object obj, String name, Object value) throws ConfigurationException {
         // ignore 'class' setters
         if (name.equals("class")) {
             return false;
@@ -168,22 +172,21 @@ public class ConfigHelper {
         try {
             Method m = getMethod(obj, setter, Object.class);
             if (m == null) {
-                log.error("{} has no setter for {}" , obj, name);
+                log.error("{} has no setter for {}", obj, name);
                 throw new ConfigurationException(obj + " has not setter for " + name);
             }
             m.invoke(obj, value);
-            log.trace("Setting {} on {}" , name, obj);
+            log.trace("Setting {} on {}", name, obj);
             return true;
         } catch (IllegalAccessException e) {
-            throw new ConfigurationException("Unable to set " + setter + " of " + obj , e);
+            throw new ConfigurationException("Unable to set " + setter + " of " + obj, e);
         } catch (InvocationTargetException e) {
-            throw new ConfigurationException("Unable to set " + setter + " of " + obj , e);
+            throw new ConfigurationException("Unable to set " + setter + " of " + obj, e);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T invokeGetter(Object obj, String name, Class<T> T)
-            throws ConfigurationException {
+    public static <T> T invokeGetter(Object obj, String name, Class<T> T) throws ConfigurationException {
         try {
             String getter = getMethodName("get", name);
             Method m = obj.getClass().getMethod(getter);
@@ -195,9 +198,8 @@ public class ConfigHelper {
         } catch (NoSuchMethodException e) {
             log.trace("{} has no field {} or type " + T, obj, name);
             return null;
-        } catch (IllegalAccessException|InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             throw new ConfigurationException("Unable to get list " + name + " of " + obj);
         }
     }
-
 }

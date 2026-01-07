@@ -1,21 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.impl;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,9 +31,6 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -81,7 +82,7 @@ public class PackageManagerImpl implements PackageManager {
     public @NotNull VaultPackage open(@NotNull Archive archive, boolean strict) throws IOException {
         return new ZipVaultPackage(archive, strict);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -102,8 +103,7 @@ public class PackageManagerImpl implements PackageManager {
      * {@inheritDoc}
      */
     @Override
-    public VaultPackage assemble(Session s, ExportOptions opts, File file)
-            throws IOException, RepositoryException {
+    public VaultPackage assemble(Session s, ExportOptions opts, File file) throws IOException, RepositoryException {
         OutputStream out = null;
         boolean isTmp = false;
         boolean success = false;
@@ -129,8 +129,7 @@ public class PackageManagerImpl implements PackageManager {
      * {@inheritDoc}
      */
     @Override
-    public void assemble(Session s, ExportOptions opts, OutputStream out)
-            throws IOException, RepositoryException {
+    public void assemble(Session s, ExportOptions opts, OutputStream out) throws IOException, RepositoryException {
         try (JarExporter exporter = new JarExporter(out, opts.getCompressionLevel())) {
             RepositoryAddress addr;
             try {
@@ -179,10 +178,10 @@ public class PackageManagerImpl implements PackageManager {
             file = File.createTempFile("filevault", ".zip");
             isTmp = true;
         }
-        try (OutputStream out = FileUtils.openOutputStream(file);){
+        try (OutputStream out = FileUtils.openOutputStream(file); ) {
             rewrap(opts, src, out);
             success = true;
-            VaultPackage pack =  new ZipVaultPackage(file, isTmp);
+            VaultPackage pack = new ZipVaultPackage(file, isTmp);
             dispatch(PackageEvent.Type.REWRAPP, pack.getId(), null);
             return pack;
         } finally {
@@ -196,8 +195,7 @@ public class PackageManagerImpl implements PackageManager {
      * {@inheritDoc}
      */
     @Override
-    public void rewrap(ExportOptions opts, VaultPackage src, OutputStream out)
-            throws IOException {
+    public void rewrap(ExportOptions opts, VaultPackage src, OutputStream out) throws IOException {
         try (JarExporter exporter = new JarExporter(out, opts.getCompressionLevel())) {
             MetaInf metaInf = opts.getMetaInf();
             if (metaInf == null) {
@@ -224,7 +222,7 @@ public class PackageManagerImpl implements PackageManager {
                 metaInfIncludes = Collections.emptySet();
                 metaInfExcludes.add(Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
             } else {
-                
+
                 metaInfIncludes = new HashSet<>();
                 metaInfIncludes.add(Constants.META_DIR + "/");
                 metaInfIncludes.add(Constants.META_DIR + "/" + Constants.NODETYPES_CND);
@@ -243,7 +241,9 @@ public class PackageManagerImpl implements PackageManager {
             // write updated properties
             ByteArrayOutputStream tmpOut = new ByteArrayOutputStream();
             inf.getProperties().storeToXML(tmpOut, "FileVault Package Properties", "utf-8");
-            exporter.writeFile(new ByteArrayInputStream(tmpOut.toByteArray()), Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
+            exporter.writeFile(
+                    new ByteArrayInputStream(tmpOut.toByteArray()),
+                    Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
             if (tracker != null) {
                 tracker.track("A", Constants.META_DIR + "/" + Constants.PROPERTIES_XML);
             }
@@ -260,7 +260,14 @@ public class PackageManagerImpl implements PackageManager {
         }
     }
 
-    private static void addArchiveEntryToExporter(AbstractExporter exporter, Archive archive, String parentPath, Archive.Entry entry, Set<String> metaInfIncludes, Set<String> metaInfExcludes) throws IOException {
+    private static void addArchiveEntryToExporter(
+            AbstractExporter exporter,
+            Archive archive,
+            String parentPath,
+            Archive.Entry entry,
+            Set<String> metaInfIncludes,
+            Set<String> metaInfExcludes)
+            throws IOException {
         String path = parentPath + entry.getName();
         if (path.startsWith(Constants.META_INF + "/")) {
             if ((!metaInfIncludes.isEmpty() && !metaInfIncludes.contains(path)) || metaInfExcludes.contains(path)) {
@@ -270,7 +277,8 @@ public class PackageManagerImpl implements PackageManager {
         if (entry.isDirectory()) {
             exporter.createDirectory(path);
             for (Archive.Entry child : entry.getChildren()) {
-                addArchiveEntryToExporter(exporter, archive, path.isEmpty() ? path : path + "/", child, metaInfIncludes, metaInfExcludes);
+                addArchiveEntryToExporter(
+                        exporter, archive, path.isEmpty() ? path : path + "/", child, metaInfIncludes, metaInfExcludes);
             }
         } else {
             try (InputStream input = archive.openInputStream(entry)) {
@@ -294,5 +302,4 @@ public class PackageManagerImpl implements PackageManager {
         }
         dispatcher.dispatch(type, id, related);
     }
-
 }

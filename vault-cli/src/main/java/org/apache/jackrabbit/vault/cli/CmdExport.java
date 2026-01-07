@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.cli;
 
 import java.io.File;
@@ -92,11 +93,10 @@ public class CmdExport extends AbstractJcrFsCommand {
         return "Export the Vault filesystem";
     }
 
-
     public String getLongDescription() {
-        return  "Export the Vault filesystem (starting at <jcr-path> to the " +
-                "local filesystem at <local-path>. Both paths can be relative " +
-                "to their respective CWDs.";
+        return "Export the Vault filesystem (starting at <jcr-path> to the "
+                + "local filesystem at <local-path>. Both paths can be relative "
+                + "to their respective CWDs.";
     }
 
     protected Command createCommand() {
@@ -106,35 +106,36 @@ public class CmdExport extends AbstractJcrFsCommand {
                 .withChildren(new GroupBuilder()
                         .withName("Options:")
                         .withOption(OPT_VERBOSE)
-                        .withOption(optType = new DefaultOptionBuilder()
-                                .withShortName("t")
-                                .withDescription("specifies the export type. either 'platform' or 'jar'.")
-                                .withArgument(new ArgumentBuilder()
+                        .withOption(
+                                optType = new DefaultOptionBuilder()
+                                        .withShortName("t")
+                                        .withDescription("specifies the export type. either 'platform' or 'jar'.")
+                                        .withArgument(new ArgumentBuilder()
+                                                .withMinimum(0)
+                                                .withMaximum(1)
+                                                .create())
+                                        .create())
+                        .withOption(
+                                optPrune = new DefaultOptionBuilder()
+                                        .withShortName("P")
+                                        .withLongName("prune-missing")
+                                        .withDescription("specifies if missing local files should be deleted.")
+                                        .create())
+                        .withOption(
+                                argJcrPath = new ArgumentBuilder()
+                                        .withName("jcr-path")
+                                        .withDescription("the jcr path")
                                         .withMinimum(0)
                                         .withMaximum(1)
                                         .create())
-                                .create())
-                        .withOption(optPrune = new DefaultOptionBuilder()
-                                .withShortName("P")
-                                .withLongName("prune-missing")
-                                .withDescription("specifies if missing local files should be deleted.")
-                                .create())
-                        .withOption(argJcrPath = new ArgumentBuilder()
-                                .withName("jcr-path")
-                                .withDescription("the jcr path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .withOption(argLocalPath = new ArgumentBuilder()
-                                .withName("local-path")
-                                .withDescription("the local path")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create()
-                        )
-                        .create()
-                )
+                        .withOption(
+                                argLocalPath = new ArgumentBuilder()
+                                        .withName("local-path")
+                                        .withDescription("the local path")
+                                        .withMinimum(0)
+                                        .withMaximum(1)
+                                        .create())
+                        .create())
                 .create();
     }
 }

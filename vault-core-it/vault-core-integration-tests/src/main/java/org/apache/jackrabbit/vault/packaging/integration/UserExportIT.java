@@ -1,23 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.integration;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,9 +28,6 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.zip.Deflater;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.User;
@@ -50,12 +49,16 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 public class UserExportIT extends IntegrationTestBase {
     private static final Logger log = LoggerFactory.getLogger(UserExportIT.class);
     private static final String TEST_USER_INTERMEDIATE_PATH = "/home/users/_";
     private static final String TEST_USER_REP_USER_NAME = "_6k_test"; // node name which requires filename escaping
     private static final String TEST_USER_ID = "user1";
-    private static final String TEST_USER_PATH = String.format("%s/%s", TEST_USER_INTERMEDIATE_PATH, TEST_USER_REP_USER_NAME);
+    private static final String TEST_USER_PATH =
+            String.format("%s/%s", TEST_USER_INTERMEDIATE_PATH, TEST_USER_REP_USER_NAME);
 
     @Before
     public void setUp() throws Exception {
@@ -64,9 +67,16 @@ public class UserExportIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testFileNameEscapingWithModifiedRootPath() throws RepositoryException, ConfigurationException, IOException, PackageException {
+    public void testFileNameEscapingWithModifiedRootPath()
+            throws RepositoryException, ConfigurationException, IOException, PackageException {
         assertNull("Test user must not exist prior test execution", getTestUser());
-        User test = ((JackrabbitSession) admin).getUserManager().createUser(TEST_USER_ID, UUID.randomUUID().toString(), new PrincipalImpl(TEST_USER_ID), TEST_USER_INTERMEDIATE_PATH);
+        User test = ((JackrabbitSession) admin)
+                .getUserManager()
+                .createUser(
+                        TEST_USER_ID,
+                        UUID.randomUUID().toString(),
+                        new PrincipalImpl(TEST_USER_ID),
+                        TEST_USER_INTERMEDIATE_PATH);
         admin.move(test.getPath(), TEST_USER_PATH);
         admin.save();
         assertNotNull("Test user must exist now but it doesn't", getTestUser());
@@ -81,7 +91,8 @@ public class UserExportIT extends IntegrationTestBase {
         return (User) ((JackrabbitSession) admin).getUserManager().getAuthorizable(TEST_USER_ID);
     }
 
-    private void importPackage(Session session, InputStream is) throws IOException, ConfigurationException, RepositoryException, PackageException {
+    private void importPackage(Session session, InputStream is)
+            throws IOException, ConfigurationException, RepositoryException, PackageException {
         ImportOptions opts = new ImportOptions();
         opts.setAccessControlHandling(AccessControlHandling.OVERWRITE);
         opts.setCugHandling(AccessControlHandling.OVERWRITE);
@@ -99,7 +110,8 @@ public class UserExportIT extends IntegrationTestBase {
         }
     }
 
-    private byte[] export(Session session, String authorizablePath) throws IOException, RepositoryException, ConfigurationException {
+    private byte[] export(Session session, String authorizablePath)
+            throws IOException, RepositoryException, ConfigurationException {
 
         PathFilterSet nodeFilters = new PathFilterSet(authorizablePath);
         PathFilterSet propertyFilters = new PathFilterSet(authorizablePath);

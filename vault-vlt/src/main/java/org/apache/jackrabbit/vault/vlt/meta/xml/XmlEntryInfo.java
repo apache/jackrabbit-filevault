@@ -1,21 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.vlt.meta.xml;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,9 +27,6 @@ import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
@@ -76,8 +77,7 @@ public class XmlEntryInfo implements VltEntryInfo {
     }
 
     public void setName(String name) {
-        if (this.name == null && name != null
-                || this.name != null && !this.name.equals(name)) {
+        if (this.name == null && name != null || this.name != null && !this.name.equals(name)) {
             this.name = name;
             dirty = true;
         }
@@ -105,8 +105,7 @@ public class XmlEntryInfo implements VltEntryInfo {
     }
 
     public void setMd5(MD5 md5) {
-        if (this.md5 == null && md5 != null
-                || this.md5 != null && !this.md5.equals(md5)) {
+        if (this.md5 == null && md5 != null || this.md5 != null && !this.md5.equals(md5)) {
             this.md5 = md5;
             dirty = true;
         }
@@ -149,8 +148,8 @@ public class XmlEntryInfo implements VltEntryInfo {
     public boolean checkModified(VaultFile remoteFile) {
         long rTime = remoteFile.lastModified();
         rTime -= rTime % 1000;
-        
-        if (date <=0 || rTime <= 0 || rTime > date) {
+
+        if (date <= 0 || rTime <= 0 || rTime > date) {
             return true;
         }
         long rSize = remoteFile.length();
@@ -160,7 +159,6 @@ public class XmlEntryInfo implements VltEntryInfo {
         String ct = remoteFile.getContentType();
         return ct == null || !ct.equals(contentType);
     }
-
 
     public void update(VltEntryInfo base) {
         setName(((XmlEntryInfo) base).getName());
@@ -208,8 +206,7 @@ public class XmlEntryInfo implements VltEntryInfo {
 
     public boolean isSame(VltEntryInfo base) {
         return size == base.getSize()
-                && ((md5 == null && base.getMd5() == null)
-                    || md5 != null && md5.equals(base.getMd5()));
+                && ((md5 == null && base.getMd5() == null) || md5 != null && md5.equals(base.getMd5()));
     }
 
     public void write(XMLStreamWriter writer) throws XMLStreamException {
@@ -239,8 +236,7 @@ public class XmlEntryInfo implements VltEntryInfo {
         }
     }
 
-    protected static VltEntryInfo load(Element elem)
-            throws VltException {
+    protected static VltEntryInfo load(Element elem) throws VltException {
         Type type;
         try {
             type = Type.valueOf(elem.getNodeName().toUpperCase(Locale.ROOT));
@@ -274,6 +270,4 @@ public class XmlEntryInfo implements VltEntryInfo {
         entry.dirty = false;
         return entry;
     }
-
-
 }

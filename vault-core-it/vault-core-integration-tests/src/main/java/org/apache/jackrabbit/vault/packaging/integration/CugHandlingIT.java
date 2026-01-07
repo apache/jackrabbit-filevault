@@ -1,21 +1,41 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.Value;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.apache.jackrabbit.api.JackrabbitSession;
+import org.apache.jackrabbit.api.security.user.UserManager;
+import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import static org.apache.jackrabbit.vault.fs.io.AccessControlHandling.IGNORE;
 import static org.apache.jackrabbit.vault.fs.io.AccessControlHandling.MERGE;
@@ -25,25 +45,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.Value;
-
-import org.apache.jackrabbit.api.JackrabbitSession;
-import org.apache.jackrabbit.api.security.user.UserManager;
-import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
-import org.apache.jackrabbit.vault.fs.io.ImportOptions;
-import org.apache.jackrabbit.vault.packaging.VaultPackage;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public final class CugHandlingIT extends IntegrationTestBase {
 
@@ -59,7 +60,6 @@ public final class CugHandlingIT extends IntegrationTestBase {
      */
     private static final String CUG_PACKAGE_2 = "/test-packages/cug-test-2.zip";
 
-    
     @BeforeClass
     public static void initRepository() throws RepositoryException, IOException {
         assumeTrue(isOak());
@@ -71,13 +71,13 @@ public final class CugHandlingIT extends IntegrationTestBase {
      */
     @Test
     public void testCugIgnore() throws Exception {
-       try (VaultPackage vp1 = extractVaultPackage(CUG_PACKAGE_1, IGNORE)) {
-           Node testRoot = admin.getNode(TEST_ROOT);
-           assertNodeExists(testRoot, "node_with_cug");
-           Node nodeWithCug = testRoot.getNode("node_with_cug");
-           assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
-           assertNodeMissing(nodeWithCug, "rep:cugPolicy");
-       }
+        try (VaultPackage vp1 = extractVaultPackage(CUG_PACKAGE_1, IGNORE)) {
+            Node testRoot = admin.getNode(TEST_ROOT);
+            assertNodeExists(testRoot, "node_with_cug");
+            Node nodeWithCug = testRoot.getNode("node_with_cug");
+            assertProperty(nodeWithCug, "jcr:mixinTypes", asSet("rep:CugMixin"));
+            assertNodeMissing(nodeWithCug, "rep:cugPolicy");
+        }
     }
 
     /**
@@ -155,9 +155,9 @@ public final class CugHandlingIT extends IntegrationTestBase {
         }
     }
 
-    //*********************************************
+    // *********************************************
     // Custom assertions
-    //*********************************************
+    // *********************************************
 
     private static void assertHasProperty(Node node, String propName) throws RepositoryException {
         if (!node.hasProperty(propName)) {
@@ -167,12 +167,15 @@ public final class CugHandlingIT extends IntegrationTestBase {
 
     private static void assertProperty(Node node, String propName, String value) throws RepositoryException {
         assertHasProperty(node, propName);
-        assertEquals(node.getPath() + "/" + propName + " should contain " + value, value, node.getProperty(propName).getString());
+        assertEquals(
+                node.getPath() + "/" + propName + " should contain " + value,
+                value,
+                node.getProperty(propName).getString());
     }
 
     public static void assertProperty(Node node, String name, Set<String> values) throws RepositoryException {
         Set<String> strings = new HashSet<String>();
-        for (Value v: node.getProperty(name).getValues()) {
+        for (Value v : node.getProperty(name).getValues()) {
             strings.add(v.getString());
         }
         assertEquals(node.getPath() + "/" + name + " should contain " + values, values, strings);
@@ -186,7 +189,7 @@ public final class CugHandlingIT extends IntegrationTestBase {
         assertFalse(parent.getPath() + "/" + relPath + " should not exist", parent.hasNode(relPath));
     }
 
-    private static Set<String> asSet(String ... values) {
+    private static Set<String> asSet(String... values) {
         return new TreeSet<>(Arrays.asList(values));
     }
 
@@ -196,6 +199,4 @@ public final class CugHandlingIT extends IntegrationTestBase {
         userManager.createUser("principal-2", "pwd-2");
         userManager.createUser("principal-3", "pwd-3");
     }
-
-
 }

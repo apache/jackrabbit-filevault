@@ -1,34 +1,32 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
 
-import static org.junit.Assert.assertNotNull;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
@@ -47,13 +45,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static org.junit.Assert.assertNotNull;
+
 /**
  * Covers testing the filtering of properties both during export and import
  */
 public class FilteredPropertiesIT extends IntegrationTestBase {
 
     @Rule
-    public TemporaryFolder folder= new TemporaryFolder();
+    public TemporaryFolder folder = new TemporaryFolder();
 
     @Before
     public void setUp() throws Exception {
@@ -101,7 +101,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyP1OnFoo_deprecated() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterPropertyP1OnFoo_deprecated()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p1"));
 
@@ -124,7 +125,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyP1OnFoo() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterPropertyP1OnFoo()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));
 
@@ -147,7 +149,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyPxOnFoo_deprecated() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterPropertyPxOnFoo_deprecated()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));
 
@@ -169,7 +172,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyPxOnFoo() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterPropertyPxOnFoo()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
 
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
@@ -192,7 +196,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyWithTwoRoots() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterPropertyWithTwoRoots()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter("/tmp/foo/p.*"));
 
@@ -215,7 +220,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyWithTwoRoots_deprecated() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterPropertyWithTwoRoots_deprecated()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/foo"));
@@ -241,14 +247,14 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyFromSource() throws IOException, RepositoryException, PackageException, ConfigurationException {
-        String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<workspaceFilter version=\"1.0\">\n" +
-                "    <filter root=\"/foo\"/>\n" +
-                "    <filter root=\"/tmp\">\n" +
-                "        <exclude pattern=\"/tmp/foo/p.*\" matchProperties=\"true\"/>\n" +
-                "    </filter>\n" +
-                "</workspaceFilter>";
+    public void filterPropertyFromSource()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
+        String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<workspaceFilter version=\"1.0\">\n"
+                + "    <filter root=\"/foo\"/>\n"
+                + "    <filter root=\"/tmp\">\n"
+                + "        <exclude pattern=\"/tmp/foo/p.*\" matchProperties=\"true\"/>\n"
+                + "    </filter>\n"
+                + "</workspaceFilter>";
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.load(new ByteArrayInputStream(src.getBytes("utf-8")));
@@ -268,13 +274,13 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterPropertyFromSourceWithRelativePropertyFilter() throws IOException, RepositoryException, PackageException, ConfigurationException {
-        String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<workspaceFilter version=\"1.0\">\n" +
-                "    <filter root=\"/tmp/foo\">\n" +
-                "        <exclude pattern=\".*/p1\" matchProperties=\"true\"/>\n" +
-                "    </filter>\n" +
-                "</workspaceFilter>";
+    public void filterPropertyFromSourceWithRelativePropertyFilter()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
+        String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<workspaceFilter version=\"1.0\">\n"
+                + "    <filter root=\"/tmp/foo\">\n"
+                + "        <exclude pattern=\".*/p1\" matchProperties=\"true\"/>\n"
+                + "    </filter>\n"
+                + "</workspaceFilter>";
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.load(new ByteArrayInputStream(src.getBytes("utf-8")));
@@ -295,7 +301,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativeProperties_deprecated() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterRelativeProperties_deprecated()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet("/tmp"));
 
@@ -320,7 +327,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativeProperties() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterRelativeProperties()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet properties = new PathFilterSet("/tmp");
         properties.addExclude(new DefaultPathFilter(".*/p1"));
 
@@ -345,7 +353,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativePropertiesDeepNoPropertyFilter() throws IOException, RepositoryException, PackageException {
+    public void filterRelativePropertiesDeepNoPropertyFilter()
+            throws IOException, RepositoryException, PackageException {
         PathFilterSet props = new PathFilterSet("/tmp");
         PathFilterSet nodes = new PathFilterSet("/tmp");
 
@@ -366,7 +375,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativePropertiesShallowNoPropertyFilter() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterRelativePropertiesShallowNoPropertyFilter()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet nodes = new PathFilterSet("/tmp");
         nodes.addInclude(new DefaultPathFilter("/tmp"));
 
@@ -388,7 +398,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativePropertiesShallowWithPropertyFilter() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterRelativePropertiesShallowWithPropertyFilter()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet props = new PathFilterSet("/tmp");
         props.addExclude(new DefaultPathFilter(".*/p1"));
 
@@ -412,7 +423,8 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativePropertiesSingleSet_NotDeep_no_propertyFilter_addNodes() throws IOException, RepositoryException, PackageException, ConfigurationException {
+    public void filterRelativePropertiesSingleSet_NotDeep_no_propertyFilter_addNodes()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
         PathFilterSet nodes = new PathFilterSet("/tmp");
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
@@ -435,13 +447,13 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void filterRelativePropertiesSingleSet_NotDeep_with_xml() throws IOException, RepositoryException, PackageException, ConfigurationException {
-        String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<workspaceFilter version=\"1.0\">\n" +
-                "    <filter root=\"/tmp\">\n" +
-                "        <include pattern=\"/tmp\"/>\n" +
-                "    </filter>\n" +
-                "</workspaceFilter>\n";
+    public void filterRelativePropertiesSingleSet_NotDeep_with_xml()
+            throws IOException, RepositoryException, PackageException, ConfigurationException {
+        String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<workspaceFilter version=\"1.0\">\n"
+                + "    <filter root=\"/tmp\">\n"
+                + "        <include pattern=\"/tmp\"/>\n"
+                + "    </filter>\n"
+                + "</workspaceFilter>\n";
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.load(new ByteArrayInputStream(src.getBytes("utf-8")));
@@ -461,20 +473,20 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
     }
 
     @Test
-    public void importWithExcludedPropertiesContainedInSerializationNew() throws IOException, PackageException, RepositoryException, ConfigurationException {
+    public void importWithExcludedPropertiesContainedInSerializationNew()
+            throws IOException, PackageException, RepositoryException, ConfigurationException {
         clean("/testroot2");
         clean("/testroot3");
-        
+
         // the package itself contains more properties than are supposed to be installed during import
-        String filterSrc = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<workspaceFilter version=\"1.0\">\n" +
-                "    <filter root=\"/testroot3\">\n" +
-                "        <exclude pattern=\"/testroot3/jcr:mixinTypes\" matchProperties=\"true\"/>\n" +
-                "        <exclude pattern=\"/testroot3/jcr:lastModified.*\" matchProperties=\"true\"/>\n" +
-                "        <exclude pattern=\"/testroot3/jcr:title\" matchProperties=\"true\"/>\n" +
-                "        <exclude pattern=\"/testroot3/someUnprotectedStringProperty\" matchProperties=\"true\"/>\n" +
-                "    </filter>\n" +
-                "</workspaceFilter>";
+        String filterSrc = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<workspaceFilter version=\"1.0\">\n"
+                + "    <filter root=\"/testroot3\">\n"
+                + "        <exclude pattern=\"/testroot3/jcr:mixinTypes\" matchProperties=\"true\"/>\n"
+                + "        <exclude pattern=\"/testroot3/jcr:lastModified.*\" matchProperties=\"true\"/>\n"
+                + "        <exclude pattern=\"/testroot3/jcr:title\" matchProperties=\"true\"/>\n"
+                + "        <exclude pattern=\"/testroot3/someUnprotectedStringProperty\" matchProperties=\"true\"/>\n"
+                + "    </filter>\n"
+                + "</workspaceFilter>";
 
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.load(new ByteArrayInputStream(filterSrc.getBytes(StandardCharsets.UTF_8)));
@@ -501,35 +513,31 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
                     // install again
                     uploadedPackage.install(getDefaultOptions());
                     // make sure excluded properties are not extended or overwritten
-                    assertProperty("/testroot3/jcr:mixinTypes", new String[] { JcrConstants.MIX_LAST_MODIFIED } );
+                    assertProperty("/testroot3/jcr:mixinTypes", new String[] {JcrConstants.MIX_LAST_MODIFIED});
                     assertProperty("/testroot3/jcr:title", "title");
                 }
             }
         }
     }
 
-    
     /**
      * Setup the path /tmp/foo/bar with properties set at each level
      */
-    private void setupTmpFooBarWithProperties(Session session)
-            throws RepositoryException {
+    private void setupTmpFooBarWithProperties(Session session) throws RepositoryException {
         Node root = session.getRootNode();
         Node tmp = setupProperties(root.addNode("tmp"));
         Node foo = setupProperties(tmp.addNode("foo"));
         setupProperties(foo.addNode("bar"));
     }
 
-    private Node setupProperties(Node node)
-            throws RepositoryException {
+    private Node setupProperties(Node node) throws RepositoryException {
         node.setProperty("p1", "v1");
         node.setProperty("p2", "v2");
         node.setProperty("p3", "v3");
         return node;
     }
 
-    private File assemblePackage(WorkspaceFilter filter)
-            throws IOException, RepositoryException {
+    private File assemblePackage(WorkspaceFilter filter) throws IOException, RepositoryException {
 
         File tmpFile = File.createTempFile("vaulttest", ".zip");
         packMgr.assemble(admin, createExportOptions(filter), tmpFile).close();
@@ -550,20 +558,17 @@ public class FilteredPropertiesIT extends IntegrationTestBase {
         return options;
     }
 
-    private void assertPropertiesExist(String rootPath, String... propNames)
-            throws RepositoryException {
+    private void assertPropertiesExist(String rootPath, String... propNames) throws RepositoryException {
         for (String propName : propNames) {
             String propPath = String.format("%s/%s", rootPath, propName);
             assertPropertyExists(propPath);
         }
     }
 
-    private void assertPropertiesMissg(String rootPath, String... propNames)
-            throws RepositoryException {
+    private void assertPropertiesMissg(String rootPath, String... propNames) throws RepositoryException {
         for (String propName : propNames) {
             String propPath = String.format("%s/%s", rootPath, propName);
             assertPropertyMissing(propPath);
         }
     }
-
 }

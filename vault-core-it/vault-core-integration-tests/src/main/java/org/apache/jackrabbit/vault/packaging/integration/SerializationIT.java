@@ -1,33 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.integration;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.ISO9075;
@@ -39,6 +36,10 @@ import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class SerializationIT extends IntegrationTestBase {
 
@@ -68,16 +69,15 @@ public class SerializationIT extends IntegrationTestBase {
         Archive.Entry e = pkg.getArchive().getEntry("/jcr_root/testroot/.content.xml");
         assertNotNull("entry should exist", e);
         String src = IOUtils.toString(pkg.getArchive().getInputSource(e).getByteStream(), "utf-8");
-        String expected =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                        "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
-                        "    jcr:primaryType=\"nt:unstructured\">\n" +
-                        "    <a jcr:primaryType=\"nt:unstructured\">\n" +
-                        "        <jcr:xmltext\n" +
-                        "            jcr:primaryType=\"nt:unstructured\"\n" +
-                        "            jcr:xmlcharacters=\"Hello, World.\"/>\n" +
-                        "    </a>\n" +
-                        "</jcr:root>\n";
+        String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n"
+                + "    jcr:primaryType=\"nt:unstructured\">\n"
+                + "    <a jcr:primaryType=\"nt:unstructured\">\n"
+                + "        <jcr:xmltext\n"
+                + "            jcr:primaryType=\"nt:unstructured\"\n"
+                + "            jcr:xmlcharacters=\"Hello, World.\"/>\n"
+                + "    </a>\n"
+                + "</jcr:root>\n";
         assertEquals("content.xml must be correct", expected, src);
         pkg.close();
         tmpFile.delete();
@@ -92,8 +92,7 @@ public class SerializationIT extends IntegrationTestBase {
             Node testRoot = admin.getRootNode().addNode("testroot", NodeType.NT_UNSTRUCTURED);
             testRoot.addNode(testName, NodeType.NT_UNSTRUCTURED);
             admin.save();
-        }
-        catch (RepositoryException ex) {
+        } catch (RepositoryException ex) {
             // if we can't add that node, there's nothing to test
             return;
         }
@@ -118,12 +117,11 @@ public class SerializationIT extends IntegrationTestBase {
             Archive.Entry e = pkg.getArchive().getEntry("/jcr_root/testroot/.content.xml");
             assertNotNull("entry should exist", e);
             String src = IOUtils.toString(pkg.getArchive().getInputSource(e).getByteStream(), "utf-8");
-            String expected =
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                            "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n" +
-                            "    jcr:primaryType=\"nt:unstructured\">\n" +
-                            "    <" + encodedName + "/>\n" +
-                            "</jcr:root>\n";
+            String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                    + "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n"
+                    + "    jcr:primaryType=\"nt:unstructured\">\n"
+                    + "    <"
+                    + encodedName + "/>\n" + "</jcr:root>\n";
             assertEquals("content.xml must be correct, containing '" + encodedName + "'", expected, src);
             pkg.close();
         } catch (RepositoryException ex) {

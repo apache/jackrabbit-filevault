@@ -1,4 +1,5 @@
-<?xml version="1.0"?><!--
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
     Licensed to the Apache Software Foundation (ASF) under one or more
     contributor license agreements. See the NOTICE file distributed with
     this work for additional information regarding copyright ownership.
@@ -15,70 +16,70 @@
     limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <!-- ====================================================================== -->
-    <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
-    <!-- ====================================================================== -->
-    <parent>
-        <groupId>org.apache.jackrabbit.vault</groupId>
-        <artifactId>parent</artifactId>
-        <relativePath>../parent/pom.xml</relativePath>
-        <version>${revision}</version>
-    </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <!-- ====================================================================== -->
+  <!-- P A R E N T P R O J E C T D E S C R I P T I O N -->
+  <!-- ====================================================================== -->
+  <parent>
+    <groupId>org.apache.jackrabbit.vault</groupId>
+    <artifactId>parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
 
-    <!-- ====================================================================== -->
-    <!-- P R O J E C T D E S C R I P T I O N -->
-    <!-- ====================================================================== -->
-    <artifactId>org.apache.jackrabbit.vault.target-osgi-environment</artifactId>
-    <packaging>pom</packaging>
-    <name>Apache Jackrabbit FileVault Target OSGi Environments</name>
-    <!-- ====================================================================== -->
-    <!-- B U I L D -->
-    <!-- ====================================================================== -->
-    <build>
-        <plugins>
-            <!-- exclude test resources from rat-check -->
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>src/test/resources/*.json</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
+  <!-- ====================================================================== -->
+  <!-- P R O J E C T D E S C R I P T I O N -->
+  <!-- ====================================================================== -->
+  <artifactId>org.apache.jackrabbit.vault.target-osgi-environment</artifactId>
+  <packaging>pom</packaging>
+  <name>Apache Jackrabbit FileVault Target OSGi Environments</name>
+  <modules>
+    <module>max-target-osgi-environment</module>
+    <module>min-target-osgi-environment</module>
+  </modules>
+  <!-- ====================================================================== -->
+  <!-- B U I L D -->
+  <!-- ====================================================================== -->
+  <build>
+    <plugins>
+      <!-- exclude test resources from rat-check -->
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>src/test/resources/*.json</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
 
-            <!-- create OSGi repo index for target container -->
-            <plugin>
-                <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-indexer-maven-plugin</artifactId>
-                <version>${bnd.version}</version>
-                <executions>
-                    <execution>
-                        <id>index</id>
-                        <goals>
-                            <goal>index</goal>
-                        </goals>
-                        <configuration>
-                            <attach>false</attach>
-                            <includeGzip>false</includeGzip>
-                            <scopes>provided</scopes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- never do vulnerabilities check for any surrounding OSGi bundles provided by a distribution -->
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    <modules>
-        <module>max-target-osgi-environment</module>
-        <module>min-target-osgi-environment</module>
-    </modules>
+      <!-- create OSGi repo index for target container -->
+      <plugin>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-indexer-maven-plugin</artifactId>
+        <version>${bnd.version}</version>
+        <executions>
+          <execution>
+            <id>index</id>
+            <goals>
+              <goal>index</goal>
+            </goals>
+            <configuration>
+              <attach>false</attach>
+              <includeGzip>false</includeGzip>
+              <scopes>provided</scopes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- never do vulnerabilities check for any surrounding OSGi bundles provided by a distribution -->
+      <plugin>
+        <groupId>org.owasp</groupId>
+        <artifactId>dependency-check-maven</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

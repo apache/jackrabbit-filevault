@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
 
 import java.io.ByteArrayInputStream;
@@ -32,6 +33,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
@@ -39,7 +41,6 @@ import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.config.VaultSettings;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.h2.util.CloseWatcher;
-import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,7 @@ public class ZipStreamArchive extends AbstractArchive {
     /**
      * max allowed package size for using a memory archive
      */
-    private static final int DEFAULT_BUFFER_SIZE = 1024*1024;
+    private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024;
 
     /**
      * the input stream that is consumed in this archive
@@ -145,8 +146,8 @@ public class ZipStreamArchive extends AbstractArchive {
                 String[] names = Text.explode(name, '/');
                 EntryImpl je = root;
                 if (names.length > 0) {
-                    for (int i=0; i<names.length; i++) {
-                        if (i == names.length -1 && !entry.isDirectory()) {
+                    for (int i = 0; i < names.length; i++) {
+                        if (i == names.length - 1 && !entry.isDirectory()) {
                             // copy stream
                             long pos = getPosition();
                             long len = copy(zin);
@@ -279,7 +280,7 @@ public class ZipStreamArchive extends AbstractArchive {
             IOUtils.closeQuietly(in);
         }
         if (watcher != null) {
-           CloseWatcher.unregister(watcher);
+            CloseWatcher.unregister(watcher);
         }
         if (raf != null) {
             try {
@@ -380,7 +381,7 @@ public class ZipStreamArchive extends AbstractArchive {
             if (pos >= end) {
                 return -1;
             }
-            len = Math.min(len, (int) (end-pos));
+            len = Math.min(len, (int) (end - pos));
             raf.seek(pos);
             int read = raf.read(b, off, len);
             if (read < 0) {
@@ -401,7 +402,7 @@ public class ZipStreamArchive extends AbstractArchive {
                 return -1;
             }
             n = Math.min(n, end - pos);
-            pos+= n;
+            pos += n;
             return n;
         }
 
@@ -495,16 +496,13 @@ public class ZipStreamArchive extends AbstractArchive {
 
         @Override
         public Collection<? extends Entry> getChildren() {
-            return children == null
-                    ? Collections.<EntryImpl>emptyList()
-                    : children.values();
+            return children == null ? Collections.<EntryImpl>emptyList() : children.values();
         }
 
         @Override
         public Entry getChild(String name) {
             return children == null ? null : children.get(name);
         }
-
     }
 
     /**

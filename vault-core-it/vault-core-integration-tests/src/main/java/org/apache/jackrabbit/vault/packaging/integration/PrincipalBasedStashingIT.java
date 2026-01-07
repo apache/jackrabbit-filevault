@@ -1,33 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.integration;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
-import java.io.IOException;
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.PropertyType;
@@ -41,6 +30,19 @@ import javax.jcr.security.AccessControlException;
 import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.security.Privilege;
 
+import java.io.IOException;
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
@@ -60,6 +62,7 @@ import org.apache.jackrabbit.vault.util.UncheckedRepositoryException;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
 import org.hamcrest.Description;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -68,18 +71,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.hamcrest.Matchers;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 public class PrincipalBasedStashingIT extends IntegrationTestBase {
 
     private static final String EFFECTIVE_PATH = "/testroot/secured";
     private static final String SYSTEM_USER_ID = "testSystemUser";
-    
+
     @ClassRule
     public static final OsgiContext context = new OsgiContext();
 
@@ -106,9 +107,17 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
         for (AccessControlPolicy policy : acMgr.getApplicablePolicies(testUser.getPrincipal())) {
             if (policy instanceof PrincipalAccessControlList) {
                 PrincipalAccessControlList pacl = (PrincipalAccessControlList) policy;
-                Map<String, Value[]> mvRestrictions = ImmutableMap.of(AccessControlConstants.REP_ITEM_NAMES, new Value[]{vf.createValue(JcrConstants.JCR_CONTENT, PropertyType.NAME)});
-                pacl.addEntry(EFFECTIVE_PATH, AccessControlUtils.privilegesFromNames(acMgr, Privilege.JCR_READ), ImmutableMap.<String, Value>of(), mvRestrictions);
-                pacl.addEntry(null, AccessControlUtils.privilegesFromNames(acMgr, PrivilegeConstants.JCR_NAMESPACE_MANAGEMENT));
+                Map<String, Value[]> mvRestrictions = ImmutableMap.of(
+                        AccessControlConstants.REP_ITEM_NAMES,
+                        new Value[] {vf.createValue(JcrConstants.JCR_CONTENT, PropertyType.NAME)});
+                pacl.addEntry(
+                        EFFECTIVE_PATH,
+                        AccessControlUtils.privilegesFromNames(acMgr, Privilege.JCR_READ),
+                        ImmutableMap.<String, Value>of(),
+                        mvRestrictions);
+                pacl.addEntry(
+                        null,
+                        AccessControlUtils.privilegesFromNames(acMgr, PrivilegeConstants.JCR_NAMESPACE_MANAGEMENT));
                 acMgr.setPolicy(pacl.getPath(), pacl);
                 existingEntries = pacl.getAccessControlEntries();
                 break;
@@ -116,15 +125,35 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
         }
         admin.save();
 
-        User testUser2 = userManager.createSystemUser(SYSTEM_USER_ID+"_2", serviceUserPath);
+        User testUser2 = userManager.createSystemUser(SYSTEM_USER_ID + "_2", serviceUserPath);
         for (AccessControlPolicy policy : acMgr.getApplicablePolicies(testUser2.getPrincipal())) {
             if (policy instanceof PrincipalAccessControlList) {
                 PrincipalAccessControlList pacl = (PrincipalAccessControlList) policy;
 
-                pacl.addEntry(EFFECTIVE_PATH, AccessControlUtils.privilegesFromNames(acMgr, Privilege.JCR_WRITE), ImmutableMap.of("rep:glob", vf.createValue("*")), ImmutableMap.<String, Value[]>of());
-                pacl.addEntry(EFFECTIVE_PATH, AccessControlUtils.privilegesFromNames(acMgr, Privilege.JCR_LOCK_MANAGEMENT), ImmutableMap.of("rep:glob", vf.createValue("*/foo")), ImmutableMap.of("rep:itemNames", new Value[] {vf.createValue("jcr:content", PropertyType.NAME), vf.createValue("jcr:data", PropertyType.NAME)}));
-                pacl.addEntry("/content", AccessControlUtils.privilegesFromNames(acMgr, Privilege.JCR_READ), ImmutableMap.<String, Value>of(), ImmutableMap.<String, Value[]>of());
-                pacl.addEntry(null, AccessControlUtils.privilegesFromNames(acMgr, PrivilegeConstants.JCR_WORKSPACE_MANAGEMENT, PrivilegeConstants.JCR_NAMESPACE_MANAGEMENT));
+                pacl.addEntry(
+                        EFFECTIVE_PATH,
+                        AccessControlUtils.privilegesFromNames(acMgr, Privilege.JCR_WRITE),
+                        ImmutableMap.of("rep:glob", vf.createValue("*")),
+                        ImmutableMap.<String, Value[]>of());
+                pacl.addEntry(
+                        EFFECTIVE_PATH,
+                        AccessControlUtils.privilegesFromNames(acMgr, Privilege.JCR_LOCK_MANAGEMENT),
+                        ImmutableMap.of("rep:glob", vf.createValue("*/foo")),
+                        ImmutableMap.of("rep:itemNames", new Value[] {
+                            vf.createValue("jcr:content", PropertyType.NAME),
+                            vf.createValue("jcr:data", PropertyType.NAME)
+                        }));
+                pacl.addEntry(
+                        "/content",
+                        AccessControlUtils.privilegesFromNames(acMgr, Privilege.JCR_READ),
+                        ImmutableMap.<String, Value>of(),
+                        ImmutableMap.<String, Value[]>of());
+                pacl.addEntry(
+                        null,
+                        AccessControlUtils.privilegesFromNames(
+                                acMgr,
+                                PrivilegeConstants.JCR_WORKSPACE_MANAGEMENT,
+                                PrivilegeConstants.JCR_NAMESPACE_MANAGEMENT));
                 packageEntries = pacl.getAccessControlEntries();
                 break;
             }
@@ -154,13 +183,18 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
         initRepository(false, true);
     }
 
-    private void assertPolicy(@NotNull Principal principal, @NotNull AccessControlEntry... expectedEntries) throws RepositoryException {
+    private void assertPolicy(@NotNull Principal principal, @NotNull AccessControlEntry... expectedEntries)
+            throws RepositoryException {
         for (AccessControlPolicy policy : acMgr.getPolicies(principal)) {
             // disregard the order
             if (policy instanceof PrincipalAccessControlList) {
                 PrincipalAccessControlList pacl = (PrincipalAccessControlList) policy;
                 AccessControlEntry[] aces = pacl.getAccessControlEntries();
-                MatcherAssert.assertThat(Arrays.asList(aces), Matchers.containsInAnyOrder(Arrays.stream(aces).map(e -> new PrincipalAccessControlEntryMatcher(e, pacl)).collect(Collectors.toList())));
+                MatcherAssert.assertThat(
+                        Arrays.asList(aces),
+                        Matchers.containsInAnyOrder(Arrays.stream(aces)
+                                .map(e -> new PrincipalAccessControlEntryMatcher(e, pacl))
+                                .collect(Collectors.toList())));
                 return;
             }
         }
@@ -169,7 +203,9 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
 
     static String toString(PrincipalAccessControlList.Entry entry) {
         try {
-            return "PrincipalAccessControlList.Entry[effectivePath="+entry.getEffectivePath() +", privileges=" + Arrays.toString(entry.getPrivileges()) + ", restrictionNames = " + Arrays.toString(entry.getRestrictionNames()) + "]";
+            return "PrincipalAccessControlList.Entry[effectivePath=" + entry.getEffectivePath() + ", privileges="
+                    + Arrays.toString(entry.getPrivileges()) + ", restrictionNames = "
+                    + Arrays.toString(entry.getRestrictionNames()) + "]";
         } catch (RepositoryException e) {
             throw new UncheckedRepositoryException(e);
         }
@@ -179,7 +215,9 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
 
         private final PrincipalAccessControlList.Entry expectedEntry;
         private final JackrabbitAccessControlList containerACL;
-        public PrincipalAccessControlEntryMatcher(AccessControlEntry accessControlEntry, JackrabbitAccessControlList containerACL) {
+
+        public PrincipalAccessControlEntryMatcher(
+                AccessControlEntry accessControlEntry, JackrabbitAccessControlList containerACL) {
             this.expectedEntry = PrincipalAccessControlList.Entry.class.cast(accessControlEntry);
             this.containerACL = containerACL;
         }
@@ -191,7 +229,8 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
 
         @Override
         protected void describeMismatchSafely(AccessControlEntry item, Description mismatchDescription) {
-            mismatchDescription.appendText(PrincipalBasedStashingIT.toString(PrincipalAccessControlList.Entry.class.cast(item)));
+            mismatchDescription.appendText(
+                    PrincipalBasedStashingIT.toString(PrincipalAccessControlList.Entry.class.cast(item)));
         }
 
         @Override
@@ -203,11 +242,13 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
             if (!Objects.equals(expectedEntry.getEffectivePath(), actualEntry.getEffectivePath())) {
                 return false;
             }
-            if (!ImmutableSet.copyOf(expectedEntry.getPrivileges()).equals(ImmutableSet.copyOf(actualEntry.getPrivileges()))) {
+            if (!ImmutableSet.copyOf(expectedEntry.getPrivileges())
+                    .equals(ImmutableSet.copyOf(actualEntry.getPrivileges()))) {
                 return false;
             }
             try {
-                if (!ImmutableSet.copyOf(expectedEntry.getRestrictionNames()).equals(ImmutableSet.copyOf(actualEntry.getRestrictionNames()))) {
+                if (!ImmutableSet.copyOf(expectedEntry.getRestrictionNames())
+                        .equals(ImmutableSet.copyOf(actualEntry.getRestrictionNames()))) {
                     return false;
                 }
                 for (String rName : expectedEntry.getRestrictionNames()) {
@@ -226,10 +267,11 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
             }
             return true;
         }
-        
     }
 
-    private void assertNoPolicy(@NotNull Principal principal) throws AccessDeniedException, AccessControlException, UnsupportedRepositoryOperationException, RepositoryException {
+    private void assertNoPolicy(@NotNull Principal principal)
+            throws AccessDeniedException, AccessControlException, UnsupportedRepositoryOperationException,
+                    RepositoryException {
         assertEquals("Expected no policy for principal " + principal.getName(), 0, acMgr.getPolicies(principal).length);
     }
 
@@ -280,8 +322,8 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
         extractVaultPackage("/test-packages/principalbasedstashing.zip", opts);
         // user may have been moved due to 'replace' mode -> need to retrieve again
         Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
-        assertPolicy(newUser.getPrincipal(),
-                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
+        assertPolicy(
+                newUser.getPrincipal(), filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
     }
 
     @Test
@@ -295,8 +337,8 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
         extractVaultPackage("/test-packages/principalbasedstashing_nopolicy.zip", opts);
         // user may have been moved due to 'replace' mode -> need to retrieve again
         Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
-        assertPolicy(newUser.getPrincipal(),
-                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
+        assertPolicy(
+                newUser.getPrincipal(), filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
     }
 
     @Test
@@ -415,8 +457,8 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
         // user may have been moved due to 'replace' mode -> need to retrieve again
         Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
 
-        List<AccessControlEntry> expected = Lists.newArrayList(
-                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
+        List<AccessControlEntry> expected =
+                Lists.newArrayList(filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
         expected.addAll(ImmutableList.copyOf(packageEntries));
 
         assertPolicy(newUser.getPrincipal(), expected.toArray(new AccessControlEntry[0]));
@@ -434,8 +476,8 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
 
         // user may have been moved due to 'replace' mode -> need to retrieve again
         Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
-        assertPolicy(newUser.getPrincipal(),
-                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
+        assertPolicy(
+                newUser.getPrincipal(), filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
     }
 
     @Test
@@ -488,8 +530,8 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
         extractVaultPackage("/test-packages/principalbasedstashing.zip", opts);
         // user may have been moved due to 'replace' mode -> need to retrieve again
         Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
-        assertPolicy(newUser.getPrincipal(),
-                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
+        assertPolicy(
+                newUser.getPrincipal(), filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
     }
 
     @Test
@@ -503,33 +545,35 @@ public class PrincipalBasedStashingIT extends IntegrationTestBase {
         extractVaultPackage("/test-packages/principalbasedstashing_nopolicy.zip", opts);
         // user may have been moved due to 'replace' mode -> need to retrieve again
         Authorizable newUser = userManager.getAuthorizable(SYSTEM_USER_ID);
-        assertPolicy(newUser.getPrincipal(),
-                filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
+        assertPolicy(
+                newUser.getPrincipal(), filterEffectivePathForMovedSelf(existingEntries, oldPath, newUser.getPath()));
     }
 
-    static AccessControlEntry[] filterEffectivePathForMovedSelf(final AccessControlEntry[] entries,
-                                                                      final String oldPath,
-                                                                      final String newPath) {
-        return Stream.of(entries).map(ace -> {
-            if (ace instanceof PrincipalAccessControlList.Entry) {
-                PrincipalAccessControlList.Entry pace = (PrincipalAccessControlList.Entry) ace;
-                final String effectivePath = pace.getEffectivePath();
-                if (effectivePath != null
-                        && (oldPath.equals(effectivePath) || effectivePath.startsWith(oldPath + "/"))) {
-                    return new EffectivePathEntryWrapper(pace, newPath +
-                            pace.getEffectivePath().substring(oldPath.length()));
-                } else {
-                    return ace;
-                }
-            } else {
-                return ace;
-            }
-        }).toArray(AccessControlEntry[]::new);
+    static AccessControlEntry[] filterEffectivePathForMovedSelf(
+            final AccessControlEntry[] entries, final String oldPath, final String newPath) {
+        return Stream.of(entries)
+                .map(ace -> {
+                    if (ace instanceof PrincipalAccessControlList.Entry) {
+                        PrincipalAccessControlList.Entry pace = (PrincipalAccessControlList.Entry) ace;
+                        final String effectivePath = pace.getEffectivePath();
+                        if (effectivePath != null
+                                && (oldPath.equals(effectivePath) || effectivePath.startsWith(oldPath + "/"))) {
+                            return new EffectivePathEntryWrapper(
+                                    pace, newPath + pace.getEffectivePath().substring(oldPath.length()));
+                        } else {
+                            return ace;
+                        }
+                    } else {
+                        return ace;
+                    }
+                })
+                .toArray(AccessControlEntry[]::new);
     }
 
     static class EffectivePathEntryWrapper implements PrincipalAccessControlList.Entry {
 
         private final PrincipalAccessControlList.Entry pace;
+
         @Nullable
         private final String effectivePath;
 

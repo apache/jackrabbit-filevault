@@ -1,21 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl;
+
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -26,9 +30,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactIterator;
@@ -60,7 +61,7 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
      * the list of removed
      */
     private List<Artifact> removed;
-    
+
     /**
      * Set of artifacts that are only allowed once
      */
@@ -90,12 +91,12 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
     }
 
     public void addAll(Collection<? extends Artifact> artifacts) {
-         for (Artifact artifact: artifacts) {
-             add(artifact);
-         }
-     }
+        for (Artifact artifact : artifacts) {
+            add(artifact);
+        }
+    }
 
-     public void addAll(ArtifactSet artifacts) {
+    public void addAll(ArtifactSet artifacts) {
         addAll(((ArtifactSetImpl) artifacts).artifacts);
     }
 
@@ -129,9 +130,8 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
      * @param lastModified the last modified date
      * @return the added artifact
      */
-    public SerializerArtifact add(Artifact parent, String name, String ext,
-                                  ArtifactType type, Serializer ser,
-                                  long lastModified) {
+    public SerializerArtifact add(
+            Artifact parent, String name, String ext, ArtifactType type, Serializer ser, long lastModified) {
         SerializerArtifact a = new SerializerArtifact(parent, name, ext, type, ser, lastModified);
         add(a);
         return a;
@@ -151,15 +151,14 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
      * @return a collection of artifacts
      * @throws RepositoryException if an error occurs.
      */
-    public Collection<PropertyValueArtifact> add(Artifact parent, String relPath,
-                 String ext, ArtifactType type, Property prop, long lastModified)
+    public Collection<PropertyValueArtifact> add(
+            Artifact parent, String relPath, String ext, ArtifactType type, Property prop, long lastModified)
             throws RepositoryException {
         Collection<PropertyValueArtifact> a =
                 PropertyValueArtifact.create(parent, relPath, ext, type, prop, lastModified);
         addAll(a);
         return a;
     }
-
 
     public Artifact getPrimaryData() {
         return single.get(ArtifactType.PRIMARY);
@@ -208,7 +207,7 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
     public Artifact put(Artifact a) {
         Artifact prev = null;
         int idx = artifacts.indexOf(a);
-        if (idx >=0) {
+        if (idx >= 0) {
             prev = artifacts.remove(idx);
         }
         single.put(a.getType(), a);
@@ -226,7 +225,7 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
         if (type == ArtifactType.HINT) {
             num = hints == null ? 0 : hints.size();
         } else {
-            for (Artifact a: artifacts) {
+            for (Artifact a : artifacts) {
                 if (a.getType() == type) {
                     num++;
                 }
@@ -247,7 +246,7 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
                 ret.addAll(hints);
             }
         } else {
-            for (Artifact a: artifacts) {
+            for (Artifact a : artifacts) {
                 if (type == null || a.getType() == type) {
                     ret.add(a);
                 }
@@ -299,7 +298,7 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
      * @return the desired artifact or {@code null}
      */
     public Artifact getArtifact(String path) {
-        for (Artifact a: artifacts) {
+        for (Artifact a : artifacts) {
             if (a.getRelativePath().equals(path)) {
                 return a;
             }
@@ -313,7 +312,7 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
     public void dump(DumpContext ctx, boolean isLast) {
         ctx.println(isLast, "Artifacts");
         ctx.indent(isLast);
-        for (Artifact a: artifacts) {
+        for (Artifact a : artifacts) {
             a.dump(ctx, false);
         }
         ctx.println(true, "Coverage");
@@ -322,5 +321,4 @@ public class ArtifactSetImpl implements Dumpable, ArtifactSet {
         ctx.outdent();
         ctx.outdent();
     }
-
 }

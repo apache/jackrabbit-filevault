@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.impl.aggregator;
 
 import javax.jcr.Node;
@@ -23,6 +24,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
@@ -41,7 +43,6 @@ import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.PathUtil;
-import org.apache.jackrabbit.util.Text;
 
 /**
  * A file aggregate contains nt:file or nt:resource nodes.
@@ -73,8 +74,7 @@ public class FileAggregator implements Aggregator, Dumpable {
     /**
      * {@inheritDoc}
      */
-    public boolean includes(Node root, Node node, Property prop, String path)
-            throws RepositoryException {
+    public boolean includes(Node root, Node node, Property prop, String path) throws RepositoryException {
         // we reject auto-generated properties so that they don't get
         // included in the .dir/.content.xml
         if (node.getName().equals(JcrConstants.JCR_CONTENT)) {
@@ -165,7 +165,8 @@ public class FileAggregator implements Aggregator, Dumpable {
         long lastModified = 0;
         String encoding = null;
         try {
-            lastModified = content.getProperty(JcrConstants.JCR_LASTMODIFIED).getDate().getTimeInMillis();
+            lastModified =
+                    content.getProperty(JcrConstants.JCR_LASTMODIFIED).getDate().getTimeInMillis();
         } catch (RepositoryException e) {
             // ignore
         }
@@ -195,7 +196,7 @@ public class FileAggregator implements Aggregator, Dumpable {
         if (!needsDir) {
             // suppress mix:lockable (todo: make configurable)
             if (node.hasProperty(JcrConstants.JCR_MIXINTYPES)) {
-                for (Value v: node.getProperty(JcrConstants.JCR_MIXINTYPES).getValues()) {
+                for (Value v : node.getProperty(JcrConstants.JCR_MIXINTYPES).getValues()) {
                     if (!v.getString().equals(JcrConstants.MIX_LOCKABLE)) {
                         needsDir = true;
                         break;
@@ -208,7 +209,7 @@ public class FileAggregator implements Aggregator, Dumpable {
         }
         if (!needsDir) {
             if (content.hasProperty(JcrConstants.JCR_MIXINTYPES)) {
-                for (Value v: content.getProperty(JcrConstants.JCR_MIXINTYPES).getValues()) {
+                for (Value v : content.getProperty(JcrConstants.JCR_MIXINTYPES).getValues()) {
                     if (!v.getString().equals(JcrConstants.MIX_LOCKABLE)) {
                         needsDir = true;
                         break;
@@ -225,8 +226,7 @@ public class FileAggregator implements Aggregator, Dumpable {
 
         // create file artifact
         String name = aggregate.getName();
-        artifacts.add(null, name, "", ArtifactType.FILE,
-                content.getProperty(JcrConstants.JCR_DATA), lastModified);
+        artifacts.add(null, name, "", ArtifactType.FILE, content.getProperty(JcrConstants.JCR_DATA), lastModified);
 
         // create .dir artifact
         if (needsDir) {
@@ -244,8 +244,7 @@ public class FileAggregator implements Aggregator, Dumpable {
     /**
      * {@inheritDoc}
      */
-    public ImportInfo remove(Node node, boolean recursive, boolean trySave)
-            throws RepositoryException {
+    public ImportInfo remove(Node node, boolean recursive, boolean trySave) throws RepositoryException {
         ImportInfo info = new ImportInfoImpl();
         info.onDeleted(node.getPath());
         Session s = node.getSession();
@@ -262,5 +261,4 @@ public class FileAggregator implements Aggregator, Dumpable {
     public void dump(DumpContext ctx, boolean isLast) {
         ctx.println(isLast, getClass().getSimpleName());
     }
-
 }

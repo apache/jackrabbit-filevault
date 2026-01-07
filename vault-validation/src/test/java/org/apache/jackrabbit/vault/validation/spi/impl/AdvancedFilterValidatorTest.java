@@ -1,20 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.validation.spi.impl;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,9 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -103,10 +105,8 @@ public class AdvancedFilterValidatorTest {
         Mockito.when(filterValidator2.validate(Mockito.any()))
                 .thenReturn(Collections.singleton(new ValidationMessage(ValidationMessageSeverity.ERROR, "error1")));
         Mockito.when(filterValidator1.validate(Mockito.any())).thenReturn(null);
-        try (InputStream input = this.getClass()
-                .getResourceAsStream("/simple-package/META-INF/vault/filter.xml");
-                InputStream input2 = this.getClass()
-                        .getResourceAsStream("/simple-package/META-INF/vault/filter.xml")) {
+        try (InputStream input = this.getClass().getResourceAsStream("/simple-package/META-INF/vault/filter.xml");
+                InputStream input2 = this.getClass().getResourceAsStream("/simple-package/META-INF/vault/filter.xml")) {
 
             DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
             filter.load(input);
@@ -127,17 +127,20 @@ public class AdvancedFilterValidatorTest {
             validatorsById.put("myself", validator);
             validator.setFilterValidators(validatorsById);
 
-            Collection<ValidationMessage> messages = validator.validateMetaInfData(input2, Paths.get("vault/filter.xml"), Paths.get(""));
-            ValidationExecutorTest.assertViolation(messages,
-                    new ValidationViolation("id2", ValidationMessageSeverity.ERROR, "error1"));
-            // all contained FilterSets are sealed (due to the call of AdvancedFilterValidator.validate(...) -> FilterSet.getEntries())
+            Collection<ValidationMessage> messages =
+                    validator.validateMetaInfData(input2, Paths.get("vault/filter.xml"), Paths.get(""));
+            ValidationExecutorTest.assertViolation(
+                    messages, new ValidationViolation("id2", ValidationMessageSeverity.ERROR, "error1"));
+            // all contained FilterSets are sealed (due to the call of AdvancedFilterValidator.validate(...) ->
+            // FilterSet.getEntries())
             sealFilterSet(filter.getFilterSets());
             sealFilterSet(filter.getPropertyFilterSets());
             Mockito.verify(filterValidator1).validate(filter);
             Mockito.verify(filterValidator2).validate(filter);
 
             // as this is a cleanup filter no orphaned entries should be there
-            MatcherAssert.assertThat(validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
+            MatcherAssert.assertThat(
+                    validator.done(), AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         }
     }
 
@@ -157,17 +160,23 @@ public class AdvancedFilterValidatorTest {
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
-        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test/huhu"), false, false),
+        MatcherAssert.assertThat(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test/huhu"), false, false),
                 AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
-        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test"), false, false),
+        MatcherAssert.assertThat(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test"), false, false),
                 AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
-        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test2/valid"), false, false),
+        MatcherAssert.assertThat(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test2/valid"), false, false),
                 AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         // cleanup node should not appear in package
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test3/valid"), false, false),
-                new ValidationMessage(ValidationMessageSeverity.WARN,
+        ValidationExecutorTest.assertViolation(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test3/valid"), false, false),
+                new ValidationMessage(
+                        ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_BELOW_CLEANUP_FILTER, "/apps/test3/valid")));
-        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test4/test/valid"), false, false),
+        MatcherAssert.assertThat(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test4/test/valid"), false, false),
                 AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
 
@@ -188,33 +197,47 @@ public class AdvancedFilterValidatorTest {
                 filter, // this is per test
                 validRoots);
 
-        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps"), true, false),
+        MatcherAssert.assertThat(
+                validator.validateJcrPath(getStandardNodeContext("/apps"), true, false),
                 AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/notcontained"), false, false),
-                new ValidationMessage(ValidationMessageSeverity.WARN,
+        ValidationExecutorTest.assertViolation(
+                validator.validateJcrPath(getStandardNodeContext("/apps/notcontained"), false, false),
+                new ValidationMessage(
+                        ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/notcontained")));
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test3/invalid"), false, false),
-                new ValidationMessage(ValidationMessageSeverity.WARN,
+        ValidationExecutorTest.assertViolation(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test3/invalid"), false, false),
+                new ValidationMessage(
+                        ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/test3/invalid")));
 
         // docview nodes root node should be skipped
-        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, Arrays.asList(
-        		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
-        		new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
-        MatcherAssert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained"), true),
+        DocViewNode2 node = new DocViewNode2(
+                NameConstants.JCR_ROOT,
+                Arrays.asList(
+                        new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
+                        new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
+        MatcherAssert.assertThat(
+                validator.validate(node, getStandardNodeContext("/apps/notcontained"), true),
                 AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         // order nodes should be skipped
         node = new DocViewNode2(NameConstants.JCR_CONTENT, Collections.emptySet());
-        MatcherAssert.assertThat(validator.validate(node, getStandardNodeContext("/apps/notcontained/ordernode"), false),
+        MatcherAssert.assertThat(
+                validator.validate(node, getStandardNodeContext("/apps/notcontained/ordernode"), false),
                 AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         // regular nodes should not be skipped
-        node = new DocViewNode2(NameConstants.JCR_CONTENT, Arrays.asList(
-        		new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
-        		new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
+        node = new DocViewNode2(
+                NameConstants.JCR_CONTENT,
+                Arrays.asList(
+                        new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
+                        new DocViewProperty2(NameConstants.JCR_TITLE, "title")));
 
-        ValidationExecutorTest.assertViolation(validator.validate(node, getStandardNodeContext("/apps/notcontained/regularnode"), false),
-                new ValidationMessage(ValidationMessageSeverity.WARN,
-                        String.format(AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/notcontained/regularnode")));
+        ValidationExecutorTest.assertViolation(
+                validator.validate(node, getStandardNodeContext("/apps/notcontained/regularnode"), false),
+                new ValidationMessage(
+                        ValidationMessageSeverity.WARN,
+                        String.format(
+                                AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/notcontained/regularnode")));
     }
 
     @Test
@@ -235,13 +258,18 @@ public class AdvancedFilterValidatorTest {
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps"), false, false),
+        ValidationExecutorTest.assertViolation(
+                validator.validateJcrPath(getStandardNodeContext("/apps"), false, false),
                 ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.WARN,
-                        String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT, "/apps")));
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test4"), false, false),
+                new ValidationMessage(
+                        ValidationMessageSeverity.WARN,
+                        String.format(
+                                AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED_BUT_VALID_ROOT, "/apps")));
+        ValidationExecutorTest.assertViolation(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test4"), false, false),
                 ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.WARN,
+                new ValidationMessage(
+                        ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps/test4")));
 
         // severity ERROR
@@ -256,9 +284,11 @@ public class AdvancedFilterValidatorTest {
                 filter, // this is per test
                 validRoots);
 
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps/test4"), false, false),
+        ValidationExecutorTest.assertViolation(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test4"), false, false),
                 ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.ERROR,
+                new ValidationMessage(
+                        ValidationMessageSeverity.ERROR,
                         String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps/test4")));
 
         // set valid roots
@@ -274,9 +304,11 @@ public class AdvancedFilterValidatorTest {
                 dependenciesMetaInfo,
                 filter, // this is per test
                 Collections.emptyList());
-        ValidationExecutorTest.assertViolation(validator.validateJcrPath(getStandardNodeContext("/apps"), false, false),
+        ValidationExecutorTest.assertViolation(
+                validator.validateJcrPath(getStandardNodeContext("/apps"), false, false),
                 ValidationMessageSeverity.WARN,
-                new ValidationMessage(ValidationMessageSeverity.WARN,
+                new ValidationMessage(
+                        ValidationMessageSeverity.WARN,
                         String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps")));
     }
 
@@ -292,8 +324,8 @@ public class AdvancedFilterValidatorTest {
             filter.load(input);
         }
         validRoots.add("/customroot");
-        dependenciesMetaInfo
-                .add(new DefaultPackageInfo(PackageId.fromString("group:dependency1"), dependencyFilter, PackageType.APPLICATION));
+        dependenciesMetaInfo.add(new DefaultPackageInfo(
+                PackageId.fromString("group:dependency1"), dependencyFilter, PackageType.APPLICATION));
         validator = new AdvancedFilterValidator(
                 factory,
                 ValidationMessageSeverity.ERROR,
@@ -305,13 +337,21 @@ public class AdvancedFilterValidatorTest {
                 filter, // this is per test
                 validRoots);
         Collection<ValidationMessage> messages = validator.validate(filter);
-        ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, "/apps/uncovered")),
-                new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED, "/apps/covered2/excluded",
+        ValidationExecutorTest.assertViolation(
+                messages,
+                ValidationMessageSeverity.INFO,
+                new ValidationMessage(
+                        ValidationMessageSeverity.ERROR,
+                        String.format(
+                                AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, "/apps/uncovered")),
+                new ValidationMessage(
+                        ValidationMessageSeverity.ERROR,
+                        String.format(
+                                AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_COVERED_BUT_EXCLUDED,
+                                "/apps/covered2/excluded",
                                 "group:dependency1")),
-                new ValidationMessage(ValidationMessageSeverity.ERROR,
+                new ValidationMessage(
+                        ValidationMessageSeverity.ERROR,
                         String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, "/invalidroot")));
     }
 
@@ -333,26 +373,42 @@ public class AdvancedFilterValidatorTest {
                 validRoots);
 
         Collection<ValidationMessage> messages = validator.validate(filter);
-        ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.INFO,
-                String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, "/apps/test4")));
+        ValidationExecutorTest.assertViolation(
+                messages,
+                ValidationMessageSeverity.INFO,
+                new ValidationMessage(
+                        ValidationMessageSeverity.INFO,
+                        String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, "/apps/test4")));
 
         messages = validator.validateJcrPath(getStandardNodeContext("/apps/test3"), false, false);
-        ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.ERROR,
+        ValidationExecutorTest.assertViolation(
+                messages,
+                ValidationMessageSeverity.INFO,
+                new ValidationMessage(
+                        ValidationMessageSeverity.ERROR,
                         String.format(AdvancedFilterValidator.MESSAGE_NODE_BELOW_CLEANUP_FILTER, "/apps/test3")));
 
-        messages = validator.validateJcrPath(getStandardNodeContext("/apps/test2/something/anothervalid"), false, false);
-        ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.ERROR,
-                        String.format(AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps/test2/something")));
+        messages =
+                validator.validateJcrPath(getStandardNodeContext("/apps/test2/something/anothervalid"), false, false);
+        ValidationExecutorTest.assertViolation(
+                messages,
+                ValidationMessageSeverity.INFO,
+                new ValidationMessage(
+                        ValidationMessageSeverity.ERROR,
+                        String.format(
+                                AdvancedFilterValidator.MESSAGE_ANCESTOR_NODE_NOT_COVERED, "/apps/test2/something")));
 
-        MatcherAssert.assertThat(validator.validateJcrPath(getStandardNodeContext("/apps/test4/test"), true, false),
+        MatcherAssert.assertThat(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test4/test"), true, false),
                 AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
         messages = validator.done();
-        ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.WARN,
-                        String.format(AdvancedFilterValidator.MESSAGE_ORPHANED_FILTER_ENTRIES,
+        ValidationExecutorTest.assertViolation(
+                messages,
+                ValidationMessageSeverity.INFO,
+                new ValidationMessage(
+                        ValidationMessageSeverity.WARN,
+                        String.format(
+                                AdvancedFilterValidator.MESSAGE_ORPHANED_FILTER_ENTRIES,
                                 "entry with root '/apps/test', includes [regex: .*/valid] below root '/apps/test2'")));
     }
 
@@ -373,16 +429,18 @@ public class AdvancedFilterValidatorTest {
                 filter, // this is per test
                 validRoots);
         Collection<ValidationMessage> messages = validator.validate(filter);
-        ValidationExecutorTest.assertViolation(messages, ValidationMessageSeverity.INFO,
-                new ValidationMessage(ValidationMessageSeverity.INFO,
+        ValidationExecutorTest.assertViolation(
+                messages,
+                ValidationMessageSeverity.INFO,
+                new ValidationMessage(
+                        ValidationMessageSeverity.INFO,
                         String.format(AdvancedFilterValidator.MESSAGE_FILTER_ROOT_ANCESTOR_UNDEFINED, "/apps/test4")));
     }
 
     @Test
     public void testFilterWithInvalidElements()
             throws URISyntaxException, IOException, SAXException, ParserConfigurationException, ConfigurationException {
-        try (InputStream input = this.getClass()
-                .getResourceAsStream("/invalid-package/META-INF/vault/filter.xml")) {
+        try (InputStream input = this.getClass().getResourceAsStream("/invalid-package/META-INF/vault/filter.xml")) {
             validator = new AdvancedFilterValidator(
                     factory,
                     ValidationMessageSeverity.WARN,
@@ -393,36 +451,64 @@ public class AdvancedFilterValidatorTest {
                     dependenciesMetaInfo,
                     filter,
                     validRoots);
-            Collection<ValidationMessage> messages = validator.validateMetaInfData(input, Paths.get("vault/filter.xml"), Paths.get(""));
-            ValidationExecutorTest.assertViolation(messages,
-                    new ValidationMessage(ValidationMessageSeverity.WARN,
-                            "cvc-enumeration-valid: Value 'invalid' is not facet-valid with respect to enumeration '[replace, merge, merge_properties, update, update_properties]'. It must be a value from the enumeration.", 19, 49, null),
-                    new ValidationMessage(ValidationMessageSeverity.WARN,
-                        "cvc-attribute.3: The value 'invalid' of attribute 'mode' on element 'filter' is not valid with respect to its type, 'mode'.", 19, 49, null), // unclear why type is 'null'
-                    new ValidationMessage(ValidationMessageSeverity.WARN,
-                            "cvc-complex-type.3.2.2: Attribute 'mode' is not allowed to appear in element 'exclude'.", 20, 51, null),
-                    new ValidationMessage(ValidationMessageSeverity.WARN,
+            Collection<ValidationMessage> messages =
+                    validator.validateMetaInfData(input, Paths.get("vault/filter.xml"), Paths.get(""));
+            ValidationExecutorTest.assertViolation(
+                    messages,
+                    new ValidationMessage(
+                            ValidationMessageSeverity.WARN,
+                            "cvc-enumeration-valid: Value 'invalid' is not facet-valid with respect to enumeration '[replace, merge, merge_properties, update, update_properties]'. It must be a value from the enumeration.",
+                            19,
+                            49,
+                            null),
+                    new ValidationMessage(
+                            ValidationMessageSeverity.WARN,
+                            "cvc-attribute.3: The value 'invalid' of attribute 'mode' on element 'filter' is not valid with respect to its type, 'mode'.",
+                            19,
+                            49,
+                            null), // unclear why type is 'null'
+                    new ValidationMessage(
+                            ValidationMessageSeverity.WARN,
+                            "cvc-complex-type.3.2.2: Attribute 'mode' is not allowed to appear in element 'exclude'.",
+                            20,
+                            51,
+                            null),
+                    new ValidationMessage(
+                            ValidationMessageSeverity.WARN,
                             "cvc-complex-type.2.4.a: Invalid content was found starting with element 'invalidelement'. One of '{exclude, include}' is expected.",
-                            22, 27, null),
-                    new ValidationMessage(ValidationMessageSeverity.WARN,
+                            22,
+                            27,
+                            null),
+                    new ValidationMessage(
+                            ValidationMessageSeverity.WARN,
                             "cvc-complex-type.4: Attribute 'root' must appear on element 'filter'.",
-                            24, 13, null),
-                    new ValidationMessage(ValidationMessageSeverity.WARN,
+                            24,
+                            13,
+                            null),
+                    new ValidationMessage(
+                            ValidationMessageSeverity.WARN,
                             "cvc-complex-type.3.2.2: Attribute 'root' is not allowed to appear in element 'include'.",
-                            25, 27, null),
-                    new ValidationMessage(ValidationMessageSeverity.WARN,
+                            25,
+                            27,
+                            null),
+                    new ValidationMessage(
+                            ValidationMessageSeverity.WARN,
                             "cvc-complex-type.4: Attribute 'pattern' must appear on element 'include'.",
-                            25, 27, null),
-                    new ValidationMessage(ValidationMessageSeverity.WARN, AdvancedFilterValidator.MESSAGE_INVALID_FILTER_XML)); // because
-                                                                                                                                // of
-                                                                                                                                // invalid
-                                                                                                                                // mode value
+                            25,
+                            27,
+                            null),
+                    new ValidationMessage(
+                            ValidationMessageSeverity.WARN,
+                            AdvancedFilterValidator.MESSAGE_INVALID_FILTER_XML)); // because
+            // of
+            // invalid
+            // mode value
         }
     }
 
     @Test
-    public void testFilterWithNonMatchingRegex() throws URISyntaxException, IOException, SAXException,
-            ParserConfigurationException, ConfigurationException {
+    public void testFilterWithNonMatchingRegex()
+            throws URISyntaxException, IOException, SAXException, ParserConfigurationException, ConfigurationException {
         validator = new AdvancedFilterValidator(
                 factory,
                 ValidationMessageSeverity.WARN,
@@ -434,15 +520,20 @@ public class AdvancedFilterValidatorTest {
                 filter, // this is per test
                 validRoots);
         validator.setFilterValidators(Collections.singletonMap("filterid", validator));
-        try (InputStream input = this.getClass()
-                .getResourceAsStream("/invalid-package/META-INF/vault/filter-non-matching-regex.xml")) {
-            Collection<ValidationMessage> messages = validator.validateMetaInfData(input, Paths.get("vault/filter-non-matching-regex.xml"),
-                    Paths.get(""));
-            ValidationExecutorTest.assertViolation(messages,
-                    new ValidationViolation("filterid", ValidationMessageSeverity.WARN,
-                            String.format(AdvancedFilterValidator.MESSAGE_INVALID_PATTERN,
-                                    "/some/other", "/etc/project1")),
-                    new ValidationViolation("filterid", ValidationMessageSeverity.WARN,
+        try (InputStream input =
+                this.getClass().getResourceAsStream("/invalid-package/META-INF/vault/filter-non-matching-regex.xml")) {
+            Collection<ValidationMessage> messages = validator.validateMetaInfData(
+                    input, Paths.get("vault/filter-non-matching-regex.xml"), Paths.get(""));
+            ValidationExecutorTest.assertViolation(
+                    messages,
+                    new ValidationViolation(
+                            "filterid",
+                            ValidationMessageSeverity.WARN,
+                            String.format(
+                                    AdvancedFilterValidator.MESSAGE_INVALID_PATTERN, "/some/other", "/etc/project1")),
+                    new ValidationViolation(
+                            "filterid",
+                            ValidationMessageSeverity.WARN,
                             String.format(AdvancedFilterValidator.MESSAGE_ROOT_PATH_NOT_ABSOLUTE, "invalidroot")));
         }
     }
@@ -482,10 +573,14 @@ public class AdvancedFilterValidatorTest {
                 dependenciesMetaInfo,
                 filter, // this is per test
                 validRoots);
-        Assert.assertNull(validator.getDanglingAncestorNodePath("/var/acs-commons/on-deploy-scripts-status/README.txt", filter));
-        Assert.assertEquals("/var/acs-commons/mcp", validator.getDanglingAncestorNodePath("/var/acs-commons/mcp/rep:policy", filter));
+        Assert.assertNull(
+                validator.getDanglingAncestorNodePath("/var/acs-commons/on-deploy-scripts-status/README.txt", filter));
+        Assert.assertEquals(
+                "/var/acs-commons/mcp",
+                validator.getDanglingAncestorNodePath("/var/acs-commons/mcp/rep:policy", filter));
         // https://issues.apache.org/jira/browse/JCRVLT-378
-        Assert.assertNull(validator.getDanglingAncestorNodePath("/var/acs-commons/on-deploy-scripts-status/rep:policy", filter));
+        Assert.assertNull(
+                validator.getDanglingAncestorNodePath("/var/acs-commons/on-deploy-scripts-status/rep:policy", filter));
         // make sure it is returned only once
         Assert.assertNull(validator.getDanglingAncestorNodePath("/var/acs-commons/mcp/rep:policy/allow", filter));
     }

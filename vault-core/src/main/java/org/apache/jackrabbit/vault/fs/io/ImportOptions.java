@@ -1,28 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
+
+import javax.jcr.Session;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import javax.jcr.Session;
 
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
@@ -210,7 +211,9 @@ public class ImportOptions {
     @Deprecated(since = "4.2.0", forRemoval = true)
     public void setPatchParentPath(String patchParentPath) {
         // noop
-        LOG.warn("Patch files are no longer supported for security reasons. Ignoring patch parent path {}", patchParentPath);
+        LOG.warn(
+                "Patch files are no longer supported for security reasons. Ignoring patch parent path {}",
+                patchParentPath);
     }
 
     /**
@@ -232,7 +235,9 @@ public class ImportOptions {
      */
     @Deprecated(since = "4.2.0", forRemoval = true)
     public void setPatchDirectory(File patchDirectory) throws IOException {
-        LOG.warn("Patch files are no longer supported for security reasons. Ignoring patch directory {}", patchDirectory);
+        LOG.warn(
+                "Patch files are no longer supported for security reasons. Ignoring patch directory {}",
+                patchDirectory);
         // noop
     }
 
@@ -254,7 +259,9 @@ public class ImportOptions {
     @Deprecated(since = "4.2.0", forRemoval = true)
     public void setPatchKeepInRepo(boolean patchKeepInRepo) {
         // noop
-        LOG.warn("Patch files are no longer supported for security reasons. Ignoring setPatchKeepInRepo({})", patchKeepInRepo);
+        LOG.warn(
+                "Patch files are no longer supported for security reasons. Ignoring setPatchKeepInRepo({})",
+                patchKeepInRepo);
     }
 
     /**
@@ -459,7 +466,7 @@ public class ImportOptions {
     }
 
     /**
-     * 
+     *
      * @return the id conflict policy if one is set, otherwise {@link IdConflictPolicy#FAIL}
      * @since 3.5.1
      */
@@ -509,61 +516,37 @@ public class ImportOptions {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         ImportOptions other = (ImportOptions) obj;
-        if (acHandling != other.acHandling)
-            return false;
-        if (autoSaveThreshold != other.autoSaveThreshold)
-            return false;
+        if (acHandling != other.acHandling) return false;
+        if (autoSaveThreshold != other.autoSaveThreshold) return false;
         if (cndPattern == null) {
-            if (other.cndPattern != null)
-                return false;
-        } else if (!cndPattern.pattern().equals(other.cndPattern.pattern()))
-            return false;
-        if (cugHandling != other.cugHandling)
-            return false;
-        if (dependencyHandling != other.dependencyHandling)
-            return false;
-        if (dryRun != other.dryRun)
-            return false;
+            if (other.cndPattern != null) return false;
+        } else if (!cndPattern.pattern().equals(other.cndPattern.pattern())) return false;
+        if (cugHandling != other.cugHandling) return false;
+        if (dependencyHandling != other.dependencyHandling) return false;
+        if (dryRun != other.dryRun) return false;
         if (filter == null) {
-            if (other.filter != null)
-                return false;
-        } else if (!filter.equals(other.filter))
-            return false;
+            if (other.filter != null) return false;
+        } else if (!filter.equals(other.filter)) return false;
         if (hookClassLoader == null) {
-            if (other.hookClassLoader != null)
-                return false;
-        } else if (!hookClassLoader.equals(other.hookClassLoader))
-            return false;
-        if (importMode != other.importMode)
-            return false;
+            if (other.hookClassLoader != null) return false;
+        } else if (!hookClassLoader.equals(other.hookClassLoader)) return false;
+        if (importMode != other.importMode) return false;
         if (listener == null) {
-            if (other.listener != null)
-                return false;
-        } else if (!listener.equals(other.listener))
-            return false;
-        if (nonRecursive != other.nonRecursive)
-            return false;
+            if (other.listener != null) return false;
+        } else if (!listener.equals(other.listener)) return false;
+        if (nonRecursive != other.nonRecursive) return false;
         if (pathMapping == null) {
-            if (other.pathMapping != null)
-                return false;
-        } else if (!pathMapping.equals(other.pathMapping))
-            return false;
-        if (strict != other.strict)
-            return false;
-        if (overwritePrimaryTypesOfFolders != other.overwritePrimaryTypesOfFolders)
-            return false;
+            if (other.pathMapping != null) return false;
+        } else if (!pathMapping.equals(other.pathMapping)) return false;
+        if (strict != other.strict) return false;
+        if (overwritePrimaryTypesOfFolders != other.overwritePrimaryTypesOfFolders) return false;
         if (idConflictPolicy == null) {
-            if (other.idConflictPolicy != null)
-                return false;
-        } else if (!idConflictPolicy.equals(other.idConflictPolicy))
-            return false;
+            if (other.idConflictPolicy != null) return false;
+        } else if (!idConflictPolicy.equals(other.idConflictPolicy)) return false;
         return true;
     }
 
@@ -574,7 +557,8 @@ public class ImportOptions {
                 + (acHandling != null ? "acHandling=" + acHandling + ", " : "")
                 + (cugHandling != null ? "cugHandling=" + cugHandling + ", " : "")
                 + (importMode != null ? "importMode=" + importMode + ", " : "")
-                + (cndPattern != null ? "cndPattern=" + cndPattern + ", " : "") + (filter != null ? "filter=" + filter + ", " : "")
+                + (cndPattern != null ? "cndPattern=" + cndPattern + ", " : "")
+                + (filter != null ? "filter=" + filter + ", " : "")
                 + (hookClassLoader != null ? "hookClassLoader=" + hookClassLoader + ", " : "")
                 + (pathMapping != null ? "pathMapping=" + pathMapping + ", " : "")
                 + (dependencyHandling != null ? "dependencyHandling=" + dependencyHandling + ", " : "")

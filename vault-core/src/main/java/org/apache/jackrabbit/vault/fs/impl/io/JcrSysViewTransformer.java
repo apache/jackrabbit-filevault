@@ -1,27 +1,22 @@
-/*************************************************************************
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ************************************************************************/
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.jackrabbit.vault.fs.impl.io;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.InvalidSerializedDataException;
@@ -30,6 +25,13 @@ import javax.jcr.NodeIterator;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.conversion.DefaultNamePathResolver;
@@ -48,11 +50,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
-* {@code JcrSysViewTransformer} transforms a docview importer hierarchy to a jcr sysview one by translating the
+ * {@code JcrSysViewTransformer} transforms a docview importer hierarchy to a jcr sysview one by translating the
  * vault specific docview nodes and properties into SAX events for the JCR sysview import content handler.
  *
  * @see Session#getImportContentHandler(String, int)
-*/
+ */
 public class JcrSysViewTransformer implements DocViewAdapter {
 
     /**
@@ -92,24 +94,26 @@ public class JcrSysViewTransformer implements DocViewAdapter {
     // from sysview conversion
     private Map<String, List<DocViewProperty2>> skippedProps = new HashMap<>();
 
-    public JcrSysViewTransformer(@NotNull Node node, @NotNull ImportMode importMode, boolean keepAcPolicies) throws RepositoryException {
+    public JcrSysViewTransformer(@NotNull Node node, @NotNull ImportMode importMode, boolean keepAcPolicies)
+            throws RepositoryException {
         this(node, null, importMode, keepAcPolicies);
     }
 
-    JcrSysViewTransformer(@NotNull Node node, @Nullable String existingPath, @NotNull ImportMode importMode, boolean keepAcPolicies) throws RepositoryException {
+    JcrSysViewTransformer(
+            @NotNull Node node, @Nullable String existingPath, @NotNull ImportMode importMode, boolean keepAcPolicies)
+            throws RepositoryException {
         Session session = node.getSession();
         parent = node;
         handler = session.getImportContentHandler(
                 node.getPath(),
                 existingPath != null
                         ? ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING
-                        : ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING
-        );
+                        : ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
         // first define the current namespaces
         String[] prefixes = session.getNamespacePrefixes();
         try {
             handler.startDocument();
-            for (String prefix: prefixes) {
+            for (String prefix : prefixes) {
                 handler.startPrefixMapping(prefix, session.getNamespaceURI(prefix));
             }
         } catch (SAXException e) {
@@ -121,7 +125,8 @@ public class JcrSysViewTransformer implements DocViewAdapter {
             // check if there is an existing node with the name
             recovery = new NodeStash(session, existingPath).excludeName("rep:cache");
             if (!keepAcPolicies) {
-                recovery.excludeName(JackrabbitACLManagement.REP_POLICY).excludeName(JackrabbitACLManagement.REP_PRINCIPAL_POLICY);
+                recovery.excludeName(JackrabbitACLManagement.REP_POLICY)
+                        .excludeName(JackrabbitACLManagement.REP_PRINCIPAL_POLICY);
             }
             recovery.stash(null);
         }
@@ -212,12 +217,13 @@ public class JcrSysViewTransformer implements DocViewAdapter {
             handler.startElement(Name.NS_SV_URI, "node", "sv:node", attrs);
 
             // add the properties
-            for (DocViewProperty2 p: ni.getProperties()) {
+            for (DocViewProperty2 p : ni.getProperties()) {
                 if (p.getStringValue().isPresent()) {
                     attrs = new AttributesImpl();
                     // use qualified name due to https://issues.apache.org/jira/browse/OAK-9586
                     attrs.addAttribute(Name.NS_SV_URI, "name", "sv:name", "CDATA", resolver.getJCRName(p.getName()));
-                    attrs.addAttribute(Name.NS_SV_URI, "type", "sv:type", "CDATA", PropertyType.nameFromValue(p.getType()));
+                    attrs.addAttribute(
+                            Name.NS_SV_URI, "type", "sv:type", "CDATA", PropertyType.nameFromValue(p.getType()));
                     if (p.isMultiValue()) {
                         attrs.addAttribute(Name.NS_SV_URI, "multiple", "sv:multiple", "CDATA", "true");
                     }
@@ -236,14 +242,18 @@ public class JcrSysViewTransformer implements DocViewAdapter {
                             skippedProps.put(path, skipped);
                         }
                         skipped.add(p);
-                        DocViewSAXHandler.log.trace("On node '{}': '{}' is a binary reference property (not supported by sysview import)",
-                                path, resolver.getJCRName(ni.getName()), resolver.getJCRName(p.getName()));
+                        DocViewSAXHandler.log.trace(
+                                "On node '{}': '{}' is a binary reference property (not supported by sysview import)",
+                                path,
+                                resolver.getJCRName(ni.getName()),
+                                resolver.getJCRName(p.getName()));
                         handler.startElement(Name.NS_SV_URI, "value", "sv:value", DocViewSAXHandler.EMPTY_ATTRIBUTES);
                         handler.characters(new char[0], 0, 0);
                         handler.endElement(Name.NS_SV_URI, "value", "sv:value");
                     } else {
-                        for (String v: p.getStringValues()) {
-                            handler.startElement(Name.NS_SV_URI, "value", "sv:value", DocViewSAXHandler.EMPTY_ATTRIBUTES);
+                        for (String v : p.getStringValues()) {
+                            handler.startElement(
+                                    Name.NS_SV_URI, "value", "sv:value", DocViewSAXHandler.EMPTY_ATTRIBUTES);
                             handler.characters(v.toCharArray(), 0, v.length());
                             handler.endElement(Name.NS_SV_URI, "value", "sv:value");
                         }

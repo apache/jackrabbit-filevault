@@ -1,29 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging;
+
+import javax.jcr.RepositoryException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.jcr.RepositoryException;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -48,12 +49,12 @@ public class DependencyUtil {
     public static <T extends VaultPackage> void sort(Collection<T> packages) throws CyclicDependencyException {
         Map<PackageId, Dependency[]> list = new LinkedHashMap<PackageId, Dependency[]>();
         Map<PackageId, VaultPackage> byId = new LinkedHashMap<PackageId, VaultPackage>();
-        for (VaultPackage pack: packages) {
+        for (VaultPackage pack : packages) {
             list.put(pack.getId(), pack.getDependencies());
             byId.put(pack.getId(), pack);
         }
         packages.clear();
-        for (PackageId id: resolve(list)) {
+        for (PackageId id : resolve(list)) {
             packages.add((T) byId.remove(id));
         }
     }
@@ -69,16 +70,15 @@ public class DependencyUtil {
             throws CyclicDependencyException, RepositoryException {
         Map<PackageId, Dependency[]> list = new LinkedHashMap<PackageId, Dependency[]>();
         Map<PackageId, JcrPackage> byId = new LinkedHashMap<PackageId, JcrPackage>();
-        for (JcrPackage pack: packages) {
+        for (JcrPackage pack : packages) {
             PackageId id = pack.getDefinition().getId();
             list.put(id, pack.getDefinition().getDependencies());
             byId.put(id, pack);
         }
         packages.clear();
-        for (PackageId id: resolve(list)) {
+        for (PackageId id : resolve(list)) {
             packages.add((T) byId.remove(id));
         }
-
     }
 
     /**
@@ -90,8 +90,8 @@ public class DependencyUtil {
     public static List<PackageId> resolve(Map<PackageId, Dependency[]> list) throws CyclicDependencyException {
         // create fake deplist
         Dependency[] fake = new Dependency[list.size()];
-        int i=0;
-        for (Map.Entry<PackageId, Dependency[]> entry: list.entrySet()) {
+        int i = 0;
+        for (Map.Entry<PackageId, Dependency[]> entry : list.entrySet()) {
             fake[i++] = new Dependency(entry.getKey());
         }
         Map<PackageId, Boolean> result = new LinkedHashMap<PackageId, Boolean>(list.size());
@@ -102,8 +102,8 @@ public class DependencyUtil {
     private static void resolve(Dependency[] deps, Map<PackageId, Dependency[]> list, Map<PackageId, Boolean> result)
             throws CyclicDependencyException {
         // find the dep in the list
-        for (Dependency dep: deps) {
-            for (Map.Entry<PackageId, Dependency[]> entry: list.entrySet()) {
+        for (Dependency dep : deps) {
+            for (Map.Entry<PackageId, Dependency[]> entry : list.entrySet()) {
                 PackageId id = entry.getKey();
                 if (dep.matches(id)) {
                     Boolean res = result.get(id);
@@ -131,7 +131,7 @@ public class DependencyUtil {
      * @return {@code true} if matches
      */
     public static boolean matches(@NotNull Dependency[] deps, @NotNull PackageId id) {
-        for (Dependency dep: deps) {
+        for (Dependency dep : deps) {
             if (dep.matches(id)) {
                 return true;
             }
@@ -164,7 +164,7 @@ public class DependencyUtil {
      * @return the new array of dependencies, or {@code deps} if nothing changed.
      */
     public static Dependency[] add(@NotNull Dependency[] deps, @NotNull Dependency dep) {
-        for (Dependency d: deps) {
+        for (Dependency d : deps) {
             if (d.getName().equals(dep.getName()) && d.getGroup().equals(dep.getGroup())) {
                 return deps;
             }
@@ -174,5 +174,4 @@ public class DependencyUtil {
         newDeps[deps.length] = dep;
         return newDeps;
     }
-
 }

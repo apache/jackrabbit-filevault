@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.vlt;
 
@@ -51,8 +53,8 @@ public class FileList {
     public FileList(VltDirectory dir, VltEntries entries) throws VltException {
         this.dir = dir;
         this.entries = entries;
-        globalIgnores = new HashSet<String>(
-                dir.getContext().getMetaInf().getSettings().getIgnoredNames());
+        globalIgnores =
+                new HashSet<String>(dir.getContext().getMetaInf().getSettings().getIgnoredNames());
         globalIgnores.add(Ignored.FILE_NAME);
         loadIgnored(dir.getDirectory());
         scanDirectory(dir.getDirectory());
@@ -63,7 +65,7 @@ public class FileList {
         try {
             File file = new File(directory, Ignored.FILE_NAME);
             if (file.isFile() && file.canRead()) {
-                for (Object o: FileUtils.readLines(file, "utf-8")) {
+                for (Object o : FileUtils.readLines(file, "utf-8")) {
                     ignored.add(createPatternFromGlob(o.toString()));
                 }
             }
@@ -81,7 +83,7 @@ public class FileList {
     }
 
     public boolean isVltIgnored(String name) {
-        for (Pattern p: ignored) {
+        for (Pattern p : ignored) {
             if (p.matcher(name).matches()) {
                 return true;
             }
@@ -90,7 +92,7 @@ public class FileList {
     }
 
     private void scanEntries() throws VltException {
-        for (VltEntry entry: entries.entries()) {
+        for (VltEntry entry : entries.entries()) {
             if (!files.containsKey(entry.getName())) {
                 VltFile file = new VltFile(dir, entry.getName(), entry);
                 files.put(file.getName(), file);
@@ -115,8 +117,7 @@ public class FileList {
     public boolean isIgnored(File file) {
         // currently only check for extension for conflict files
         String name = file.getName();
-        return name.equals(VltDirectory.META_DIR_NAME)
-                || globalIgnores.contains(name) || isVltIgnored(name);
+        return name.equals(VltDirectory.META_DIR_NAME) || globalIgnores.contains(name) || isVltIgnored(name);
     }
 
     public VltFile getFile(String name) {

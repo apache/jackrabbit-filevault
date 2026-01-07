@@ -1,21 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.impl;
+
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.Value;
+import javax.jcr.ValueFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -32,14 +40,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.Value;
-import javax.jcr.ValueFactory;
-
 import org.apache.jackrabbit.util.ISO8601;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.Mounter;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
@@ -61,7 +63,6 @@ import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.util.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -169,8 +170,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     public boolean isUnwrapped() {
         try {
             // backward compat check
-            return defNode.hasProperty("unwrapped")
-                    || defNode.hasProperty(PN_LAST_UNWRAPPED);
+            return defNode.hasProperty("unwrapped") || defNode.hasProperty(PN_LAST_UNWRAPPED);
         } catch (RepositoryException e) {
             log.warn("Error during isUnwrapped()", e);
             return false;
@@ -206,16 +206,14 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         return mod.after(uw);
     }
 
-    public void unwrap(VaultPackage pack, boolean force)
-            throws RepositoryException, IOException {
+    public void unwrap(VaultPackage pack, boolean force) throws RepositoryException, IOException {
         unwrap(pack, force, true);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void unwrap(VaultPackage pack, boolean force, boolean autoSave)
-            throws RepositoryException, IOException {
+    public void unwrap(VaultPackage pack, boolean force, boolean autoSave) throws RepositoryException, IOException {
         if (!force && isUnwrapped()) {
             return;
         }
@@ -227,8 +225,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         }
     }
 
-    public void unwrap(Archive archive, boolean autoSave)
-            throws RepositoryException, IOException {
+    public void unwrap(Archive archive, boolean autoSave) throws RepositoryException, IOException {
         if (archive != null) {
             MetaInf inf = archive.getMetaInf();
             // explode definition if present
@@ -256,8 +253,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      * @param packArchive the archive of the package
      * @throws RepositoryException if an error occurs
      */
-    private void extractDefinition(Archive packArchive)
-            throws RepositoryException {
+    private void extractDefinition(Archive packArchive) throws RepositoryException {
         Archive archive = null;
         try {
             archive = packArchive.getSubArchive("META-INF/vault/definition", true);
@@ -314,7 +310,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
                 Property p = defNode.getProperty(PN_DEPENDENCIES);
                 List<Dependency> deps = new LinkedList<>();
                 if (p.getDefinition().isMultiple()) {
-                    for (Value v: p.getValues()) {
+                    for (Value v : p.getValues()) {
                         Dependency dep = Dependency.fromString(v.getString());
                         if (dep != null) {
                             deps.add(dep);
@@ -341,7 +337,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         try {
             final List<Value> values = new ArrayList<>(dependencies.length);
             final ValueFactory fac = defNode.getSession().getValueFactory();
-            for (Dependency d: dependencies) {
+            for (Dependency d : dependencies) {
                 if (d != null) {
                     values.add(fac.createValue(d.toString()));
                 }
@@ -365,7 +361,8 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             // lastMod value
             final String lastModifiedBy;
             if (props.getProperty(VaultPackage.NAME_LAST_MODIFIED) != null
-                    && props.getProperty(VaultPackage.NAME_LAST_MODIFIED).equals(props.getProperty(VaultPackage.NAME_LAST_MODIFIED_BY))) {
+                    && props.getProperty(VaultPackage.NAME_LAST_MODIFIED)
+                            .equals(props.getProperty(VaultPackage.NAME_LAST_MODIFIED_BY))) {
                 lastModifiedBy = "unknown";
             } else {
                 lastModifiedBy = props.getLastModifiedBy();
@@ -386,7 +383,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             }
             if (deps != null) {
                 List<String> ds = new ArrayList<>();
-                for (Dependency d: Dependency.parse(deps)) {
+                for (Dependency d : Dependency.parse(deps)) {
                     if (d != null) {
                         ds.add(d.toString());
                     }
@@ -401,21 +398,20 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
             defNode.setProperty(PN_CREATED, props.getCreated());
             defNode.setProperty(PN_CREATED_BY, props.getCreatedBy());
             defNode.setProperty(PN_LAST_WRAPPED, props.getLastWrapped());
-            defNode.setProperty(PN_LAST_WRAPPED_BY,props.getLastWrappedBy());
+            defNode.setProperty(PN_LAST_WRAPPED_BY, props.getLastWrappedBy());
             defNode.setProperty(PN_AC_HANDLING, props.getProperty(VaultPackage.NAME_AC_HANDLING));
             defNode.setProperty(PN_CND_PATTERN, props.getProperty(VaultPackage.NAME_CND_PATTERN));
-            defNode.setProperty(PN_DISABLE_INTERMEDIATE_SAVE, props.getProperty(VaultPackage.NAME_DISABLE_INTERMEDIATE_SAVE));
+            defNode.setProperty(
+                    PN_DISABLE_INTERMEDIATE_SAVE, props.getProperty(VaultPackage.NAME_DISABLE_INTERMEDIATE_SAVE));
         } catch (RepositoryException e) {
             log.error("error while saving properties.", e);
         }
     }
 
-
     /**
      * {@inheritDoc}
      */
-    public void dumpCoverage(ProgressTrackerListener listener)
-            throws RepositoryException {
+    public void dumpCoverage(ProgressTrackerListener listener) throws RepositoryException {
         WorkspaceFilter filter = getMetaInf().getFilter();
         if (filter != null) {
             filter.dumpCoverage(defNode.getSession(), listener, false);
@@ -505,7 +501,8 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      */
     public void touch(Calendar now, boolean autoSave) {
         try {
-            defNode.setProperty(PN_LASTMODIFIED,
+            defNode.setProperty(
+                    PN_LASTMODIFIED,
                     now == null ? Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT) : now);
             defNode.setProperty(PN_LASTMODIFIED_BY, getUserId());
             if (autoSave) {
@@ -593,7 +590,8 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      */
     void touchLastUnpacked() {
         try {
-            defNode.setProperty(PN_LAST_UNPACKED, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
+            defNode.setProperty(
+                    PN_LAST_UNPACKED, Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC), Locale.ROOT));
             defNode.setProperty(PN_LAST_UNPACKED_BY, getUserId());
             defNode.getSession().save();
         } catch (RepositoryException e) {
@@ -740,7 +738,6 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         }
     }
 
-
     /**
      * Load the given properties from the content
      * @param props the properties to load
@@ -854,8 +851,8 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
      */
     void setSubPackages(Collection<PackageId> subPackageIds) throws RepositoryException {
         String[] subIds = new String[subPackageIds.size()];
-        int i =0;
-        for (PackageId subId: subPackageIds) {
+        int i = 0;
+        for (PackageId subId : subPackageIds) {
             subIds[i++] = subId.toString();
         }
         defNode.setProperty(PN_SUB_PACKAGES, subIds);
@@ -880,13 +877,13 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     public static class State {
 
         private final String[] PROPERTY_NAMES = {
-                PN_LAST_UNPACKED,    PN_LAST_UNWRAPPED,    PN_LASTMODIFIED,    PN_LAST_WRAPPED,
-                PN_LAST_UNPACKED_BY, PN_LAST_UNWRAPPED_BY, PN_LASTMODIFIED_BY, PN_LAST_WRAPPED_BY
+            PN_LAST_UNPACKED, PN_LAST_UNWRAPPED, PN_LASTMODIFIED, PN_LAST_WRAPPED,
+            PN_LAST_UNPACKED_BY, PN_LAST_UNWRAPPED_BY, PN_LASTMODIFIED_BY, PN_LAST_WRAPPED_BY
         };
         private final Value[] values = new Value[PROPERTY_NAMES.length];
 
         private State load(JcrPackageDefinitionImpl def) {
-            for (int i=0; i<PROPERTY_NAMES.length; i++) {
+            for (int i = 0; i < PROPERTY_NAMES.length; i++) {
                 try {
                     if (def.defNode.hasProperty(PROPERTY_NAMES[i])) {
                         values[i] = def.defNode.getProperty(PROPERTY_NAMES[i]).getValue();
@@ -901,7 +898,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         }
 
         private void save(JcrPackageDefinitionImpl def) {
-            for (int i=0; i<PROPERTY_NAMES.length; i++) {
+            for (int i = 0; i < PROPERTY_NAMES.length; i++) {
                 if (values[i] != null) {
                     try {
                         def.defNode.setProperty(PROPERTY_NAMES[i], values[i]);
@@ -937,8 +934,8 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
                 filter.add(new PathFilterSet(rootPath));
                 RepositoryAddress addr;
                 try {
-                    addr = new RepositoryAddress(
-                            Text.escapePath("/" + defNode.getSession().getWorkspace().getName() + rootPath));
+                    addr = new RepositoryAddress(Text.escapePath(
+                            "/" + defNode.getSession().getWorkspace().getName() + rootPath));
                 } catch (URISyntaxException e) {
                     throw new IllegalArgumentException(e);
                 }
@@ -971,9 +968,7 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
     public AccessControlHandling getACHandling() {
         String acHandling = get(PN_AC_HANDLING);
         try {
-            return acHandling == null
-                    ? null
-                    : AccessControlHandling.valueOf(acHandling.toUpperCase(Locale.ROOT));
+            return acHandling == null ? null : AccessControlHandling.valueOf(acHandling.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             log.warn("invalid access control handling in definition: {} of {}", acHandling, getId());
             return null;
@@ -1007,5 +1002,4 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         // not stored
         return Collections.emptyMap();
     }
-
 }

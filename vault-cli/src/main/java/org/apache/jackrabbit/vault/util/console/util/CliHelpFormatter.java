@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.util.console.util;
 
@@ -33,7 +35,7 @@ import org.apache.jackrabbit.vault.util.console.CliCommand;
 public class CliHelpFormatter extends HelpFormatter {
 
     public static final String SYS_PROP_TERM_WIDTH = "env.term.width";
-    
+
     private String description;
 
     private String example;
@@ -44,20 +46,22 @@ public class CliHelpFormatter extends HelpFormatter {
 
     private boolean skipToplevel = false;
 
-
-    public CliHelpFormatter(final String gutterLeft, final String gutterCenter, final String gutterRight, final int fullWidth) {
+    public CliHelpFormatter(
+            final String gutterLeft, final String gutterCenter, final String gutterRight, final int fullWidth) {
         super(gutterLeft, gutterCenter, gutterRight, fullWidth);
     }
 
     public static CliHelpFormatter create() {
-        return new CliHelpFormatter(HelpFormatter.DEFAULT_GUTTER_LEFT,
+        return new CliHelpFormatter(
+                HelpFormatter.DEFAULT_GUTTER_LEFT,
                 HelpFormatter.DEFAULT_GUTTER_CENTER,
                 HelpFormatter.DEFAULT_GUTTER_RIGHT,
                 getDefaultWidth());
     }
 
     private static int getDefaultWidth() {
-        int w = Integer.getInteger(SYS_PROP_TERM_WIDTH, HelpFormatter.DEFAULT_FULL_WIDTH).intValue();
+        int w = Integer.getInteger(SYS_PROP_TERM_WIDTH, HelpFormatter.DEFAULT_FULL_WIDTH)
+                .intValue();
         return Math.max(w, HelpFormatter.DEFAULT_FULL_WIDTH);
     }
 
@@ -69,12 +73,12 @@ public class CliHelpFormatter extends HelpFormatter {
         this.cmd = cmd;
         setDescription(cmd.getLongDescription());
         setExample(cmd.getExample());
-        //setShellCommand(cmd.getName());
+        // setShellCommand(cmd.getName());
         // we need a fake group for the command
         setGroup(new GroupBuilder().withOption(cmd.getCommand()).create());
         getFullUsageSettings().remove(DisplaySetting.DISPLAY_OPTIONAL);
         setSkipToplevel(true);
-        //getDisplaySettings().remove(DisplaySetting.DISPLAY_PARENT_ARGUMENT);
+        // getDisplaySettings().remove(DisplaySetting.DISPLAY_PARENT_ARGUMENT);
     }
 
     public void printUsage() {
@@ -135,16 +139,15 @@ public class CliHelpFormatter extends HelpFormatter {
         }
 
         // grab the HelpLines to display
-        final List helpLines = option.helpLines(
-                skipToplevel ? -1 : 0, getDisplaySettings(), getComparator());
+        final List helpLines = option.helpLines(skipToplevel ? -1 : 0, getDisplaySettings(), getComparator());
         if (skipToplevel) {
             helpLines.remove(0);
         }
-        
+
         // calculate the maximum width of the usage strings
         int usageWidth = 0;
 
-        for (final Iterator i = helpLines.iterator(); i.hasNext();) {
+        for (final Iterator i = helpLines.iterator(); i.hasNext(); ) {
             final HelpLine helpLine = (HelpLine) i.next();
             final String usage = helpLine.usage(getLineUsageSettings(), getComparator());
             usageWidth = Math.max(usageWidth, usage.length());
@@ -159,12 +162,13 @@ public class CliHelpFormatter extends HelpFormatter {
 
         // print a blank line
         out.println();
-        
+
         // determine the width available for descriptions
-        final int descriptionWidth = Math.max(1, getPageWidth() - getGutterCenter().length() - usageWidth);
+        final int descriptionWidth =
+                Math.max(1, getPageWidth() - getGutterCenter().length() - usageWidth);
 
         // display each HelpLine
-        for (final Iterator i = helpLines.iterator(); i.hasNext();) {
+        for (final Iterator i = helpLines.iterator(); i.hasNext(); ) {
             // grab the HelpLine
             final HelpLine helpLine = (HelpLine) i.next();
 
@@ -184,7 +188,7 @@ public class CliHelpFormatter extends HelpFormatter {
             while (descriptionIterator.hasNext()) {
                 printGutterLeft();
 
-                //pad(helpLine.getUsage(),usageWidth,out);
+                // pad(helpLine.getUsage(),usageWidth,out);
                 out.print(blankBuffer);
                 out.print(getGutterCenter());
                 pad((String) descriptionIterator.next(), descriptionWidth, out);
@@ -193,7 +197,7 @@ public class CliHelpFormatter extends HelpFormatter {
             }
         }
         printExample();
-        
+
         printDivider();
     }
 
@@ -201,10 +205,10 @@ public class CliHelpFormatter extends HelpFormatter {
         if (description != null) {
             getPrintWriter().println();
             getPrintWriter().println("Description:");
-            for (final Iterator i = wrap(description, getPageWidth() - 2).iterator(); i.hasNext();) {
+            for (final Iterator i = wrap(description, getPageWidth() - 2).iterator(); i.hasNext(); ) {
                 printGutterLeft();
                 getPrintWriter().print("  ");
-                pad((String) i.next(), getPageWidth()-2, getPrintWriter());
+                pad((String) i.next(), getPageWidth() - 2, getPrintWriter());
                 printGutterRight();
                 getPrintWriter().println();
             }
@@ -215,10 +219,10 @@ public class CliHelpFormatter extends HelpFormatter {
         if (example != null) {
             getPrintWriter().println();
             getPrintWriter().println("Example:");
-            for (final Iterator i = wrap(example, getPageWidth() - 2).iterator(); i.hasNext();) {
+            for (final Iterator i = wrap(example, getPageWidth() - 2).iterator(); i.hasNext(); ) {
                 printGutterLeft();
                 getPrintWriter().print("  ");
-                pad((String) i.next(), getPageWidth()-2, getPrintWriter());
+                pad((String) i.next(), getPageWidth() - 2, getPrintWriter());
                 printGutterRight();
                 getPrintWriter().println();
             }

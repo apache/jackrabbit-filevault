@@ -1,27 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging;
-
-import java.io.IOException;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+
+import java.io.IOException;
 
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.jetbrains.annotations.NotNull;
@@ -90,7 +91,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * This is potentially a costly operation as this requires uncompressing the ZIP stream
      * (and potentially creating temporary files) therefore prefer using {@link #getDefinition()} whenever possible
      * to access meta data.
-     * 
+     *
      * @return the package, this is closed when {@link #close} is called on this package
      * @throws RepositoryException if an error occurs
      * @throws IOException if an I/O error occurs
@@ -109,8 +110,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      * @throws IOException if an I/O error occurs
      * @since 2.3.14
      */
-    void extract(@NotNull ImportOptions opts)
-            throws RepositoryException, PackageException, IOException;
+    void extract(@NotNull ImportOptions opts) throws RepositoryException, PackageException, IOException;
 
     /**
      * Installs the package contents to the repository but creates a snapshot if
@@ -125,8 +125,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      *
      * @since 2.3.14
      */
-    void install(@NotNull ImportOptions opts)
-            throws RepositoryException, PackageException, IOException;
+    void install(@NotNull ImportOptions opts) throws RepositoryException, PackageException, IOException;
 
     /**
      * Processes this package and extracts all sub packages. No content of this package or its sub packages is extracted
@@ -205,8 +204,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      *
      * @since 2.3.14
      */
-    void uninstall(@NotNull ImportOptions opts)
-            throws RepositoryException, PackageException, IOException;
+    void uninstall(@NotNull ImportOptions opts) throws RepositoryException, PackageException, IOException;
 
     /**
      * Checks if the package id is correct in respect to the installation path
@@ -273,5 +271,4 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      */
     @Nullable
     Node getDefNode() throws RepositoryException;
-
 }

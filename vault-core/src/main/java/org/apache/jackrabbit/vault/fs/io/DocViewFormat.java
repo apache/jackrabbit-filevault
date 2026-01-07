@@ -1,21 +1,34 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.fs.io;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stax.StAXResult;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -40,18 +53,6 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.Checksum;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stax.StAXResult;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
@@ -110,7 +111,8 @@ public class DocViewFormat {
      * @return a list of relative paths of those files which are not formatted correctly according to {@link #format(File, boolean)}
      * @throws IOException in case there is an exception during traversal or formatting. That means formatting will fail on the first error
      *             that appeared */
-    public List<String> format(File directory, List<Pattern> filenamePatterns, final boolean dryRun) throws IOException {
+    public List<String> format(File directory, List<Pattern> filenamePatterns, final boolean dryRun)
+            throws IOException {
         final List<String> changed = new LinkedList<>();
         Files.walkFileTree(directory.toPath(), new AbstractFormattingVisitor(filenamePatterns) {
             @Override
@@ -124,7 +126,7 @@ public class DocViewFormat {
     }
 
     /** internally formats the given file and computes their checksum
-     * 
+     *
      * @param file the file
      * @param original checksum of the original file
      * @param formatted checksum of the formatted file
@@ -142,7 +144,7 @@ public class DocViewFormat {
             }
 
             try (OutputStream out = new CheckedOutputStream(buffer, formatted);
-                 FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, format)) {
+                    FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, format)) {
                 // cannot use XMlStreamReader due to comment handling:
                 // https://stackoverflow.com/questions/15792007/why-does-xmlstreamreader-staxsource-strip-comments-from-xml
                 TransformerFactory tf = TransformerFactory.newInstance();
@@ -161,7 +163,11 @@ public class DocViewFormat {
                 t.transform(saxSource, result);
             }
             return buffer.toByteArray();
-        } catch (TransformerException | XMLStreamException | FactoryConfigurationError | ParserConfigurationException | SAXException ex) {
+        } catch (TransformerException
+                | XMLStreamException
+                | FactoryConfigurationError
+                | ParserConfigurationException
+                | SAXException ex) {
             throw new IOException(ex);
         }
     }

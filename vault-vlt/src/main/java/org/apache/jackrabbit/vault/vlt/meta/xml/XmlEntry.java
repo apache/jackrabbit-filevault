@@ -1,29 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.vlt.meta.xml;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.util.MimeTypes;
@@ -58,7 +59,7 @@ public class XmlEntry implements VltEntry {
     private final String repoRelPath;
 
     private final String aggregatePath;
-    
+
     private boolean dirty;
 
     private Map<VltEntryInfo.Type, VltEntryInfo> infos =
@@ -127,9 +128,7 @@ public class XmlEntry implements VltEntry {
         return State.CLEAN;
     }
 
-
-    public void resolved(MetaFile fileTmp, File fileWork, MetaFile fileBase)
-            throws IOException {
+    public void resolved(MetaFile fileTmp, File fileWork, MetaFile fileBase) throws IOException {
         // cleanup files
         XmlEntryInfo mine = (XmlEntryInfo) mine();
         XmlEntryInfo base = (XmlEntryInfo) base();
@@ -214,8 +213,7 @@ public class XmlEntry implements VltEntry {
         return true;
     }
 
-    public void conflict(File work, MetaFile base, MetaFile tmp)
-            throws IOException {
+    public void conflict(File work, MetaFile base, MetaFile tmp) throws IOException {
         File dir = work.getParentFile();
         File fileMine = new File(dir, name + CONFLICT_NAME_MINE);
         File fileBase = new File(dir, name + CONFLICT_NAME_BASE);
@@ -247,14 +245,14 @@ public class XmlEntry implements VltEntry {
 
     public void write(XMLStreamWriter writer) throws XMLStreamException {
         writer.writeStartElement(EN_ENTRY);
-        writer.writeAttribute(AN_NAME,  name);
+        writer.writeAttribute(AN_NAME, name);
         if (repoRelPath != null) {
             writer.writeAttribute(AN_PATH, repoRelPath);
         }
         if (aggregatePath != null) {
             writer.writeAttribute(AN_AGGREGATE_PATH, aggregatePath);
         }
-        for (VltEntryInfo info: infos.values()) {
+        for (VltEntryInfo info : infos.values()) {
             ((XmlEntryInfo) info).write(writer);
         }
         writer.writeEndElement();
@@ -265,7 +263,7 @@ public class XmlEntry implements VltEntry {
         if (dirty) {
             return true;
         }
-        for (VltEntryInfo info: infos.values()) {
+        for (VltEntryInfo info : infos.values()) {
             if (((XmlEntryInfo) info).isDirty()) {
                 return dirty = true;
             }
@@ -282,8 +280,7 @@ public class XmlEntry implements VltEntry {
         return work != null && work.isDirectory();
     }
 
-    protected static XmlEntry load(Element elem)
-            throws VltException {
+    protected static XmlEntry load(Element elem) throws VltException {
         assert elem.getNodeName().equals(EN_ENTRY);
         String name = elem.getAttribute(AN_NAME);
         if (name == null) {
@@ -296,7 +293,7 @@ public class XmlEntry implements VltEntry {
 
         // add infos
         NodeList nodes = elem.getChildNodes();
-        for (int i=0; i<nodes.getLength(); i++) {
+        for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             if (node instanceof Element) {
                 entry.put(XmlEntryInfo.load((Element) node));

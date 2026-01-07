@@ -1,21 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging.impl;
+
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.security.Principal;
 import java.util.Arrays;
@@ -23,10 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -59,8 +60,12 @@ public class AdminPermissionChecker {
      * @return whether the passed session is an admin session
      * @throws RepositoryException If an error occurrs.
      */
-    public static boolean hasAdministrativePermissions(@NotNull Session session, String... additionalAdminAuthorizableIdsOrPrincipalNames) throws RepositoryException {
-        List<String> additionalAdminIdsOrPrincipalNames = Arrays.asList(Optional.ofNullable(additionalAdminAuthorizableIdsOrPrincipalNames).orElse(new String[0]));
+    public static boolean hasAdministrativePermissions(
+            @NotNull Session session, String... additionalAdminAuthorizableIdsOrPrincipalNames)
+            throws RepositoryException {
+        List<String> additionalAdminIdsOrPrincipalNames =
+                Arrays.asList(Optional.ofNullable(additionalAdminAuthorizableIdsOrPrincipalNames)
+                        .orElse(new String[0]));
         final JackrabbitSession jackrabbitSession;
         if (session instanceof JackrabbitSession) {
             jackrabbitSession = (JackrabbitSession) session;
@@ -82,7 +87,7 @@ public class AdminPermissionChecker {
             if (authorizable == null) {
                 return false;
             }
-    
+
             Iterator<Group> groupIterator = authorizable.memberOf();
             while (groupIterator.hasNext()) {
                 String groupId = groupIterator.next().getID();
@@ -95,9 +100,10 @@ public class AdminPermissionChecker {
         }
         return false;
     }
-    
-    static boolean hasAdministrativePermissionsWithPrincipals(@NotNull Session session, List<String> additionalAdminPrincipalNames) {
-        Set<Principal> boundPrincipals = (Set<Principal>)session.getAttribute("oak.bound-principals");
+
+    static boolean hasAdministrativePermissionsWithPrincipals(
+            @NotNull Session session, List<String> additionalAdminPrincipalNames) {
+        Set<Principal> boundPrincipals = (Set<Principal>) session.getAttribute("oak.bound-principals");
         if (boundPrincipals != null) {
             for (Principal principal : boundPrincipals) {
                 if (additionalAdminPrincipalNames.contains(principal.getName())) {
@@ -108,8 +114,11 @@ public class AdminPermissionChecker {
         return false;
     }
 
-    static boolean hasAdministrativePermissionsWithAuthorizableId(@NotNull String authorizableId, List<String> additionalAdminIds) {
-        if (ADMIN_USER.equals(authorizableId) || SYSTEM_USER.equals(authorizableId) || ADMINISTRATORS_GROUP.equals(authorizableId)) {
+    static boolean hasAdministrativePermissionsWithAuthorizableId(
+            @NotNull String authorizableId, List<String> additionalAdminIds) {
+        if (ADMIN_USER.equals(authorizableId)
+                || SYSTEM_USER.equals(authorizableId)
+                || ADMINISTRATORS_GROUP.equals(authorizableId)) {
             return true;
         }
         if (additionalAdminIds.contains(authorizableId)) {

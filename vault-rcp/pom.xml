@@ -195,7 +195,6 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>3.3.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -213,7 +212,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.10</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -289,18 +287,6 @@
       <plugin>
         <groupId>biz.aQute.bnd</groupId>
         <artifactId>bnd-resolver-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>de.thetaphi</groupId>
-        <artifactId>forbiddenapis</artifactId>
-        <configuration>
-          <excludes>
-            <!-- excluded embedded 3rd party libraries -->
-            <exclude>org/apache/jackrabbit/jcr2spi/**/*.class</exclude>
-            <exclude>org/apache/jackrabbit/spi2dav/**/*.class</exclude>
-            <exclude>org/apache/felix/utils/json/**/*.class</exclude>
-          </excludes>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>de.thetaphi</groupId>

@@ -96,7 +96,7 @@
             <windowtitle>Apache Jackrabbit FileVault ${project.version} API</windowtitle>
             <doctitle>Apache Jackrabbit FileVault ${project.version} API</doctitle>
             <excludePackageNames>org.apache.jackrabbit.vault.cli*,org.apache.jackrabbit.vault.davex,*.impl*,org.apache.jackrabbit.vault.util.xml,org.apache.jackrabbit.vault.vlt.actions,org.apache.jackrabbit.vault.vlt.meta.*,org.apache.jackrabbit.vault.packaging.hotfix,org.apache.jackrabbit.vault.validation.impl*,org.apache.jackrabbit.vault.validation.spi.impl</excludePackageNames>
-            <reportOutputDirectory>${basedir}/vault-doc/target/site</reportOutputDirectory>
+            <outputDirectory>${basedir}/vault-doc/target/site</outputDirectory>
             <detectLinks>true</detectLinks>
             <detectJavaApiLink>true</detectJavaApiLink>
             <links>
@@ -125,7 +125,7 @@
         <configuration>
           <generateReports>true</generateReports>
           <skip>false</skip>
-          <relativizeDecorationLinks>false</relativizeDecorationLinks>
+          <relativizeSiteLinks>false</relativizeSiteLinks>
         </configuration>
       </plugin>
       <plugin>

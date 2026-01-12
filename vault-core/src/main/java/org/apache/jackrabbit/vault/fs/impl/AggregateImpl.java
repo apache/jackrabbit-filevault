@@ -29,7 +29,6 @@ import javax.jcr.Value;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -104,7 +103,7 @@ public class AggregateImpl implements Aggregate {
 
     private List<AggregateImpl> leaves;
 
-    private Set<String> namespacePrefixes = new HashSet<>();
+    private String[] namespacePrefixes;
 
     private char state = STATE_INITIAL;
 
@@ -179,7 +178,7 @@ public class AggregateImpl implements Aggregate {
         includes = null;
         binaries = null;
         leaves = null;
-        namespacePrefixes = new HashSet<>();
+        namespacePrefixes = null;
         nodeRef = null;
         relPath = null;
         state = STATE_INITIAL;
@@ -401,7 +400,10 @@ public class AggregateImpl implements Aggregate {
     }
 
     public String[] getNamespacePrefixes() {
-        return namespacePrefixes.toArray(new String[namespacePrefixes.size()]);
+        if (namespacePrefixes == null) {
+            loadNamespaces();
+        }
+        return namespacePrefixes;
     }
 
     public String getNamespaceURI(String prefix) throws RepositoryException {
@@ -450,7 +452,6 @@ public class AggregateImpl implements Aggregate {
             Iterable<Property> properties = new PropertyIterable(node.getProperties());
             for (Property prop : properties) {
                 if (includes(relativePath + "/" + prop.getName())) {
-                    addNamespaceForProperty(prop);
                     aggregateWalkListener.onProperty(prop, depth + 1);
                 }
             }
@@ -535,28 +536,28 @@ public class AggregateImpl implements Aggregate {
         }
     }
 
-    private void addNamespaceForProperty(Property prop) throws RepositoryException {
+    private void addNamespace(Set<String> prefixes, Property prop) throws RepositoryException {
         String propName = prop.getName();
-        addNamespaceForName(propName);
+        addNamespace(prefixes, propName);
         switch (prop.getType()) {
             case PropertyType.NAME:
                 if ("jcr:mixinTypes".equals(propName) || prop.getDefinition().isMultiple()) {
                     Value[] values = prop.getValues();
                     for (Value value : values) {
-                        addNamespaceForName(value.getString());
+                        addNamespace(prefixes, value.getString());
                     }
                 } else {
-                    addNamespaceForName(prop.getValue().getString());
+                    addNamespace(prefixes, prop.getValue().getString());
                 }
                 break;
             case PropertyType.PATH:
                 if (prop.getDefinition().isMultiple()) {
                     Value[] values = prop.getValues();
                     for (Value value : values) {
-                        addNamespacesForPath(value.getString());
+                        addNamespacePath(prefixes, value.getString());
                     }
                 } else {
-                    addNamespacesForPath(prop.getValue().getString());
+                    addNamespacePath(prefixes, prop.getValue().getString());
                 }
                 break;
         }
@@ -600,20 +601,58 @@ public class AggregateImpl implements Aggregate {
         }
     }
 
-    private void addNamespaceForName(String name) {
+    private void addNamespace(Set<String> prefixes, String name) throws RepositoryException {
         int idx = name.indexOf(':');
         if (idx > 0) {
             String pfx = name.substring(0, idx);
-            if (!namespacePrefixes.contains(pfx)) {
-                namespacePrefixes.add(pfx);
+            if (!prefixes.contains(pfx)) {
+                prefixes.add(pfx);
             }
         }
     }
 
-    private void addNamespacesForPath(String path) {
+    private void addNamespacePath(Set<String> prefixes, String path) throws RepositoryException {
         String[] names = path.split("/");
         for (String name : names) {
-            addNamespaceForName(name);
+            addNamespace(prefixes, name);
+        }
+    }
+
+    private void loadNamespaces() {
+        if (namespacePrefixes == null) {
+            if (log.isDebugEnabled()) {
+                log.trace("loading namespaces of aggregate {}", path);
+            }
+            try {
+                load();
+                Set<String> prefixes = new HashSet<String>();
+                // need to traverse the nodes to get all namespaces
+                loadNamespaces(prefixes, "", getNode());
+                namespacePrefixes = prefixes.toArray(new String[prefixes.size()]);
+            } catch (RepositoryException e) {
+                throw new IllegalStateException("Internal error while loading namespaces", e);
+            }
+        }
+    }
+
+    private void loadNamespaces(Set<String> prefixes, String parentPath, Node node) throws RepositoryException {
+        String name = node.getName();
+        addNamespace(prefixes, name);
+        for (PropertyIterator iter = node.getProperties(); iter.hasNext(); ) {
+            Property p = iter.nextProperty();
+            String relPath = parentPath + "/" + p.getName();
+            if (includes(relPath)) {
+                addNamespace(prefixes, p);
+            }
+        }
+        for (NodeIterator iter = node.getNodes(); iter.hasNext(); ) {
+            Node c = iter.nextNode();
+            String relPath = parentPath + "/" + c.getName();
+            if (includes(relPath)) {
+                loadNamespaces(prefixes, relPath, c);
+            } else if (node.getPrimaryNodeType().hasOrderableChildNodes()) {
+                addNamespace(prefixes, c.getName());
+            }
         }
     }
 
@@ -674,17 +713,12 @@ public class AggregateImpl implements Aggregate {
         // get a node iterator suitable for the current node and the applicable filters
         NodeIterator nIter = getNodeIteratorFor(node, filter);
 
-        int visited = 0;
-        long startTime = System.nanoTime();
-
         // include "our" nodes to the include set and delegate the others to the
         // respective aggregator building sub aggregates
         while (nIter.hasNext()) {
             Node n = nIter.nextNode();
-            visited += 1;
             String path = n.getPath();
             log.trace("checking {}", path);
-            addNamespacesForPath(path);
 
             PathFilterSet coverSet = filter.getCoveringFilterSet(path);
             boolean isAncestor = filter.isAncestor(path);
@@ -740,9 +774,6 @@ public class AggregateImpl implements Aggregate {
                 }
             }
         }
-
-        Duration duration = Duration.ofNanos(System.nanoTime() - startTime);
-        log.debug("In {}, visited {} siblings in {}ms ({})", node.getPath(), visited, duration.toMillis(), duration);
     }
 
     private static NodeIterator getNodeIteratorFor(Node node, WorkspaceFilter filter) throws RepositoryException {

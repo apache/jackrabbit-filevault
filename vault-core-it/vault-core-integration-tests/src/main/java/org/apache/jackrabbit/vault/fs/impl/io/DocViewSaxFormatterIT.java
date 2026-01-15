@@ -19,21 +19,15 @@
 package org.apache.jackrabbit.vault.fs.impl.io;
 
 import javax.jcr.GuestCredentials;
-import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
-import javax.jcr.lock.LockException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.security.AccessControlManager;
 import javax.jcr.security.Privilege;
-import javax.jcr.version.VersionException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -210,26 +204,30 @@ public class DocViewSaxFormatterIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testEmptyOrderNodes()
-            throws ItemExistsException, PathNotFoundException, NoSuchNodeTypeException, LockException, VersionException,
-                    ConstraintViolationException, RepositoryException, URISyntaxException, IOException {
+    public void testEmptyOrderNodes() throws RepositoryException, URISyntaxException, IOException {
+
+        NamespaceHelper nh = new NamespaceHelper(admin);
+        nh.registerNamespace("foo1", "bar1:");
+
         // orderable child nodes
+        // two sibling nodes, one of which in a custom namespace not used anywhere else
         Node node = JcrUtils.getOrCreateByPath("/testroot", NodeType.NT_UNSTRUCTURED, admin);
         node.addNode("child1", NodeType.NT_UNSTRUCTURED);
         node.addNode("child2", NodeType.NT_UNSTRUCTURED);
-        node.addNode("child3", NodeType.NT_UNSTRUCTURED);
+        node.addNode("foo1:child3", NodeType.NT_UNSTRUCTURED);
         admin.save();
 
         String serialization = getSerializedAggregate(admin, "/testroot/child2", "testroot");
 
+        // sibling nodes of child2 need to appear as empty nodes even when outside the filter(s)
         assertEquals(
                 "valid xml",
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                        + "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\"\n"
+                        + "<jcr:root xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" xmlns:foo1=\"bar1:\"\n"
                         + "    jcr:primaryType=\"nt:unstructured\">\n"
                         + "    <child1/>\n"
                         + "    <child2 jcr:primaryType=\"nt:unstructured\"/>\n"
-                        + "    <child3/>\n"
+                        + "    <foo1:child3/>\n"
                         + "</jcr:root>\n",
                 serialization);
     }

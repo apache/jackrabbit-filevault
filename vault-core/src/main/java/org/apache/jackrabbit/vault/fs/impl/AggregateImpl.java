@@ -645,7 +645,10 @@ public class AggregateImpl implements Aggregate {
                 addNamespace(prefixes, p);
             }
         }
-        for (NodeIterator iter = node.getNodes(); iter.hasNext(); ) {
+        NodeIterator iter = node.getPrimaryNodeType().hasOrderableChildNodes()
+                ? node.getNodes()
+                : getNodeIteratorFor(node, mgr.getWorkspaceFilter());
+        while (iter.hasNext()) {
             Node c = iter.nextNode();
             String relPath = parentPath + "/" + c.getName();
             if (includes(relPath)) {

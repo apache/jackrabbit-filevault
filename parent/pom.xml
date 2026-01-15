@@ -104,7 +104,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.</des
     <commons-io.version>2.18.0</commons-io.version>
     <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
     <test.oak>true</test.oak>
-    <bnd.version>6.4.0</bnd.version>
+    <bnd.version>7.2.1</bnd.version>
     <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
     <javaVersion>11</javaVersion>
     <sling.url>http://localhost:4502</sling.url>

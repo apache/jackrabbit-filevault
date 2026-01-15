@@ -647,7 +647,7 @@ public class AggregateImpl implements Aggregate {
         }
         boolean hasOrderableChildNodes = node.getPrimaryNodeType().hasOrderableChildNodes();
         // use the node iterator optimized for the workspace filter if and only if the node is not orderable,
-        // in which case we still need to visit all sibling nodes, as their prefixes wil be needed in the
+        // in which case we still need to visit all sibling nodes, as their prefixes will be needed in the
         // serialization (as empty nodes)
         NodeIterator iter =
                 hasOrderableChildNodes ? node.getNodes() : getNodeIteratorFor(node, mgr.getWorkspaceFilter());

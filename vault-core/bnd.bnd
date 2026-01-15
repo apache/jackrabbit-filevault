@@ -29,3 +29,5 @@ DynamicImport-Package: *
 -fixupmessages:"Export org.apache.jackrabbit.vault.packaging,  has 1,  private references [org.apache.jackrabbit.vault.packaging.registry.impl]"; \
     restrict:=warning; \
     is:=warn
+# don't generate OSGi service loader metadata (from embedded Woodstox) as not used
+-metainf-services: none

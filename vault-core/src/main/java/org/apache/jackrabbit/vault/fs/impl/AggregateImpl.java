@@ -645,12 +645,18 @@ public class AggregateImpl implements Aggregate {
                 addNamespace(prefixes, p);
             }
         }
-        for (NodeIterator iter = node.getNodes(); iter.hasNext(); ) {
+        boolean hasOrderableChildNodes = node.getPrimaryNodeType().hasOrderableChildNodes();
+        // use the node iterator optimized for the workspace filter if and only if the node is not orderable,
+        // in which case we still need to visit all sibling nodes, as their prefixes wil be needed in the
+        // serialization (as empty nodes)
+        NodeIterator iter =
+                hasOrderableChildNodes ? node.getNodes() : getNodeIteratorFor(node, mgr.getWorkspaceFilter());
+        while (iter.hasNext()) {
             Node c = iter.nextNode();
             String relPath = parentPath + "/" + c.getName();
             if (includes(relPath)) {
                 loadNamespaces(prefixes, relPath, c);
-            } else if (node.getPrimaryNodeType().hasOrderableChildNodes()) {
+            } else if (hasOrderableChildNodes) {
                 addNamespace(prefixes, c.getName());
             }
         }

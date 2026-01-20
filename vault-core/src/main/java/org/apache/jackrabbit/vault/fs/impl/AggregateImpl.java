@@ -29,6 +29,7 @@ import javax.jcr.Value;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -104,6 +105,8 @@ public class AggregateImpl implements Aggregate {
     private List<AggregateImpl> leaves;
 
     private String[] namespacePrefixes;
+    private long nodesVisitedForPrefixScanning;
+    private long siblingNodesInOrderedCollectionVisitedForPrefixScanning;
 
     private char state = STATE_INITIAL;
 
@@ -625,10 +628,21 @@ public class AggregateImpl implements Aggregate {
             }
             try {
                 load();
+                log.debug("starting namespace prefix walk of '{}'", this.path);
+                long start = System.nanoTime();
                 Set<String> prefixes = new HashSet<String>();
                 // need to traverse the nodes to get all namespaces
                 loadNamespaces(prefixes, "", getNode());
                 namespacePrefixes = prefixes.toArray(new String[prefixes.size()]);
+                Duration duration = Duration.ofNanos(System.nanoTime() - start);
+                log.debug(
+                        "namespace prefix walk of '{}', visited {} nodes (of which {} siblings in ordered collections), prefixes: {}, elapsed {}ms, ({})",
+                        this.path,
+                        this.nodesVisitedForPrefixScanning,
+                        this.siblingNodesInOrderedCollectionVisitedForPrefixScanning,
+                        this.namespacePrefixes,
+                        duration.toMillis(),
+                        duration);
             } catch (RepositoryException e) {
                 throw new IllegalStateException("Internal error while loading namespaces", e);
             }
@@ -637,6 +651,7 @@ public class AggregateImpl implements Aggregate {
 
     private void loadNamespaces(Set<String> prefixes, String parentPath, Node node) throws RepositoryException {
         String name = node.getName();
+        nodesVisitedForPrefixScanning += 1;
         addNamespace(prefixes, name);
         for (PropertyIterator iter = node.getProperties(); iter.hasNext(); ) {
             Property p = iter.nextProperty();
@@ -655,8 +670,11 @@ public class AggregateImpl implements Aggregate {
             Node c = iter.nextNode();
             String relPath = parentPath + "/" + c.getName();
             if (includes(relPath)) {
+                nodesVisitedForPrefixScanning += 1;
                 loadNamespaces(prefixes, relPath, c);
             } else if (hasOrderableChildNodes) {
+                nodesVisitedForPrefixScanning += 1;
+                siblingNodesInOrderedCollectionVisitedForPrefixScanning += 1;
                 addNamespace(prefixes, c.getName());
             }
         }
@@ -719,10 +737,15 @@ public class AggregateImpl implements Aggregate {
         // get a node iterator suitable for the current node and the applicable filters
         NodeIterator nIter = getNodeIteratorFor(node, filter);
 
+        log.debug("starting aggregate walk of '{}'", this.path);
+        int visited = 0;
+        long startTime = System.nanoTime();
+
         // include "our" nodes to the include set and delegate the others to the
         // respective aggregator building sub aggregates
         while (nIter.hasNext()) {
             Node n = nIter.nextNode();
+            visited += 1;
             String path = n.getPath();
             log.trace("checking {}", path);
 
@@ -780,6 +803,14 @@ public class AggregateImpl implements Aggregate {
                 }
             }
         }
+
+        Duration duration = Duration.ofNanos(System.nanoTime() - startTime);
+        log.debug(
+                "aggregate walk of '{}', visited {} siblings in {}ms ({})",
+                node.getPath(),
+                visited,
+                duration.toMillis(),
+                duration);
     }
 
     private static NodeIterator getNodeIteratorFor(Node node, WorkspaceFilter filter) throws RepositoryException {

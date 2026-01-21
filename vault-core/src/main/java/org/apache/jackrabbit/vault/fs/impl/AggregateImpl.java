@@ -629,20 +629,24 @@ public class AggregateImpl implements Aggregate {
             try {
                 load();
                 log.debug("starting namespace prefix walk of '{}'", this.path);
-                long start = System.nanoTime();
+                long start = log.isDebugEnabled() ? System.nanoTime() : -1;
                 Set<String> prefixes = new HashSet<String>();
                 // need to traverse the nodes to get all namespaces
                 loadNamespaces(prefixes, "", getNode());
                 namespacePrefixes = prefixes.toArray(new String[prefixes.size()]);
-                Duration duration = Duration.ofNanos(System.nanoTime() - start);
-                log.debug(
-                        "namespace prefix walk of '{}', visited {} nodes (of which {} siblings in ordered collections), prefixes: {}, elapsed {}ms, ({})",
-                        this.path,
-                        this.nodesVisitedForPrefixScanning,
-                        this.siblingNodesInOrderedCollectionVisitedForPrefixScanning,
-                        this.namespacePrefixes,
-                        duration.toMillis(),
-                        duration);
+
+                // set if and only if in DEBUG level
+                if (start >= 0) {
+                    Duration duration = Duration.ofNanos(System.nanoTime() - start);
+                    log.debug(
+                            "namespace prefix walk of '{}', visited {} nodes (of which {} siblings in ordered collections), prefixes: {}, elapsed {}ms, ({})",
+                            this.path,
+                            this.nodesVisitedForPrefixScanning,
+                            this.siblingNodesInOrderedCollectionVisitedForPrefixScanning,
+                            this.namespacePrefixes,
+                            duration.toMillis(),
+                            duration);
+                }
             } catch (RepositoryException e) {
                 throw new IllegalStateException("Internal error while loading namespaces", e);
             }
@@ -739,7 +743,7 @@ public class AggregateImpl implements Aggregate {
 
         log.debug("starting aggregate walk of '{}'", this.path);
         int visited = 0;
-        long startTime = System.nanoTime();
+        long startTime = log.isDebugEnabled() ? System.nanoTime() : -1;
 
         // include "our" nodes to the include set and delegate the others to the
         // respective aggregator building sub aggregates
@@ -804,13 +808,16 @@ public class AggregateImpl implements Aggregate {
             }
         }
 
-        Duration duration = Duration.ofNanos(System.nanoTime() - startTime);
-        log.debug(
-                "aggregate walk of '{}', visited {} siblings in {}ms ({})",
-                node.getPath(),
-                visited,
-                duration.toMillis(),
-                duration);
+        // set if and only if in DEBUG level
+        if (startTime >= 0) {
+            Duration duration = Duration.ofNanos(System.nanoTime() - startTime);
+            log.debug(
+                    "aggregate walk of '{}', visited {} siblings in {}ms ({})",
+                    node.getPath(),
+                    visited,
+                    duration.toMillis(),
+                    duration);
+        }
     }
 
     private static NodeIterator getNodeIteratorFor(Node node, WorkspaceFilter filter) throws RepositoryException {

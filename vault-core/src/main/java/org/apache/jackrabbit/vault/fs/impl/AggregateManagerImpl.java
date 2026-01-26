@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.jackrabbit.vault.fs.api.AggregateManager;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
@@ -86,6 +87,11 @@ public class AggregateManagerImpl implements AggregateManager {
     private static final String DEFAULT_NODETYPES = "" + "org/apache/jackrabbit/vault/fs/config/nodetypes.cnd";
 
     /**
+     * default logger
+     */
+    private static final Logger log = LoggerFactory.getLogger(AggregateManagerImpl.class);
+
+    /**
      * the repository session for this manager
      */
     private Session session;
@@ -123,6 +129,18 @@ public class AggregateManagerImpl implements AggregateManager {
      * the aggregates
      */
     private final Set<String> nodeTypes = new HashSet<String>();
+
+    /**
+     * Cache of namespace prefixes to URIs. This cache is shared across all aggregates
+     * to avoid expensive JCR tree traversals for namespace discovery.
+     */
+    private final ConcurrentHashMap<String, String> namespacePrefixCache = new ConcurrentHashMap<>();
+
+    /**
+     * Cache of namespace prefixes per aggregate path. This cache stores the discovered prefixes
+     * for each aggregate path to avoid re-walking the same subtrees.
+     */
+    private final ConcurrentHashMap<String, String[]> aggregateNamespaceCache = new ConcurrentHashMap<>();
 
     /**
      * config
@@ -301,6 +319,9 @@ public class AggregateManagerImpl implements AggregateManager {
 
         // setup node types
         initNodeTypes();
+
+        // pre-populate namespace cache with standard JCR namespaces
+        initNamespaceCache();
     }
 
     public Set<String> getNodeTypes() {
@@ -322,6 +343,100 @@ public class AggregateManagerImpl implements AggregateManager {
 
     public String getNamespaceURI(String prefix) throws RepositoryException {
         return session.getNamespaceURI(prefix);
+    }
+
+    /**
+     * Gets a namespace URI from the cache or from the session if not cached.
+     * This method caches the prefix-to-URI mapping to avoid repeated JCR lookups.
+     *
+     * @param prefix the namespace prefix
+     * @return the namespace URI
+     * @throws RepositoryException if an error occurs
+     */
+    public String getCachedNamespaceURI(String prefix) throws RepositoryException {
+        return namespacePrefixCache.computeIfAbsent(prefix, p -> {
+            try {
+                return session.getNamespaceURI(p);
+            } catch (RepositoryException e) {
+                throw new RuntimeException("Failed to get namespace URI for prefix: " + p, e);
+            }
+        });
+    }
+
+    /**
+     * Adds a namespace prefix to the cache.
+     *
+     * @param prefix the namespace prefix to cache
+     */
+    public void cacheNamespacePrefix(String prefix) {
+        if (prefix != null && !prefix.isEmpty() && !namespacePrefixCache.containsKey(prefix)) {
+            try {
+                String uri = session.getNamespaceURI(prefix);
+                namespacePrefixCache.put(prefix, uri);
+            } catch (RepositoryException e) {
+                // Log but don't fail - the prefix might be checked later
+                log.debug("Could not resolve namespace URI for prefix: {}", prefix, e);
+            }
+        }
+    }
+
+    /**
+     * Gets the cached namespace prefixes.
+     *
+     * @return a set of all cached namespace prefixes
+     */
+    public Set<String> getCachedNamespacePrefixes() {
+        return namespacePrefixCache.keySet();
+    }
+
+    /**
+     * Gets cached namespace prefixes for a specific aggregate path.
+     *
+     * @param path the aggregate path
+     * @return the cached prefixes, or null if not cached
+     */
+    public String[] getCachedAggregatePrefixes(String path) {
+        return aggregateNamespaceCache.get(path);
+    }
+
+    /**
+     * Caches namespace prefixes for a specific aggregate path.
+     *
+     * @param path the aggregate path
+     * @param prefixes the namespace prefixes to cache
+     */
+    public void cacheAggregatePrefixes(String path, String[] prefixes) {
+        if (path != null && prefixes != null) {
+            aggregateNamespaceCache.put(path, prefixes);
+        }
+    }
+
+    /**
+     * Invalidates the namespace caches. This should be called if namespace
+     * definitions are added or modified in the repository.
+     */
+    public void invalidateNamespaceCaches() {
+        log.info(
+                "Invalidating namespace caches ({} prefix mappings, {} aggregate caches)",
+                namespacePrefixCache.size(),
+                aggregateNamespaceCache.size());
+        namespacePrefixCache.clear();
+        aggregateNamespaceCache.clear();
+        // Re-initialize the prefix cache with current repository namespaces
+        initNamespaceCache();
+    }
+
+    /**
+     * Invalidates the aggregate namespace cache for a specific path.
+     * This should be called when content at that path is modified.
+     *
+     * @param path the aggregate path to invalidate
+     */
+    public void invalidateAggregatePrefixes(String path) {
+        if (path != null) {
+            aggregateNamespaceCache.remove(path);
+            log.debug("Invalidated namespace cache for path: {}", path);
+        }
     }
 
     public void startTracking(ProgressTrackerListener pTracker) {
@@ -423,6 +538,27 @@ public class AggregateManagerImpl implements AggregateManager {
             installer.install(null, types);
         } catch (Exception e) {
             throw new RepositoryException("Error while importing nodetypes.", e);
+        }
+    }
+
+    /**
+     * Pre-populates the namespace cache with all namespaces registered in the repository.
+     * This optimization reduces expensive JCR tree traversals during namespace discovery.
+     */
+    private void initNamespaceCache() {
+        try {
+            String[] prefixes = session.getNamespacePrefixes();
+            for (String prefix : prefixes) {
+                try {
+                    String uri = session.getNamespaceURI(prefix);
+                    namespacePrefixCache.put(prefix, uri);
+                } catch (RepositoryException e) {
+                    log.debug("Could not cache namespace prefix '{}': {}", prefix, e.getMessage());
+                }
+            }
+            log.info("Initialized namespace cache with {} prefixes", namespacePrefixCache.size());
+        } catch (RepositoryException e) {
+            log.warn("Could not initialize namespace cache", e);
         }
     }
 

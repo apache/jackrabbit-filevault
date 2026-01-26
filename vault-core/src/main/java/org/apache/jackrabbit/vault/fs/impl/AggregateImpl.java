@@ -185,6 +185,8 @@ public class AggregateImpl implements Aggregate {
         nodeRef = null;
         relPath = null;
         state = STATE_INITIAL;
+        // Invalidate the cached namespace prefixes for this aggregate
+        mgr.invalidateAggregatePrefixes(path);
     }
 
     public Aggregate getParent() {
@@ -410,7 +412,7 @@ public class AggregateImpl implements Aggregate {
     }
 
     public String getNamespaceURI(String prefix) throws RepositoryException {
-        return mgr.getNamespaceURI(prefix);
+        return mgr.getCachedNamespaceURI(prefix);
     }
 
     public Collection<Property> getBinaries() {
@@ -610,6 +612,8 @@ public class AggregateImpl implements Aggregate {
             String pfx = name.substring(0, idx);
             if (!prefixes.contains(pfx)) {
                 prefixes.add(pfx);
+                // Cache the prefix in the manager to avoid repeated JCR lookups
+                mgr.cacheNamespacePrefix(pfx);
             }
         }
     }
@@ -623,6 +627,14 @@ public class AggregateImpl implements Aggregate {
 
     private void loadNamespaces() {
         if (namespacePrefixes == null) {
+            // Check if this aggregate's namespaces are already cached
+            String[] cachedPrefixes = mgr.getCachedAggregatePrefixes(path);
+            if (cachedPrefixes != null) {
+                log.debug("Using cached namespace prefixes for '{}': {}", path, cachedPrefixes);
+                namespacePrefixes = cachedPrefixes;
+                return;
+            }
+
             if (log.isDebugEnabled()) {
                 log.trace("loading namespaces of aggregate {}", path);
             }
@@ -634,6 +646,9 @@ public class AggregateImpl implements Aggregate {
                 // need to traverse the nodes to get all namespaces
                 loadNamespaces(prefixes, "", getNode());
                 namespacePrefixes = prefixes.toArray(new String[prefixes.size()]);
+
+                // Cache the discovered prefixes for this aggregate path
+                mgr.cacheAggregatePrefixes(path, namespacePrefixes);
 
                 // set if and only if in DEBUG level
                 if (start >= 0) {

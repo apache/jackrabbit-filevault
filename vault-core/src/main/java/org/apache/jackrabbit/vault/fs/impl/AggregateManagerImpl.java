@@ -36,7 +36,9 @@ import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -137,10 +139,17 @@ public class AggregateManagerImpl implements AggregateManager {
     private final ConcurrentHashMap<String, String> namespacePrefixCache = new ConcurrentHashMap<>();
 
     /**
-     * Cache of namespace prefixes per aggregate path. This cache stores the discovered prefixes
-     * for each aggregate path to avoid re-walking the same subtrees.
+     * Default maximum size for the aggregate namespace prefix cache.
+     * This limits memory usage while still providing performance benefits for frequently accessed paths.
      */
-    private final ConcurrentHashMap<String, String[]> aggregateNamespaceCache = new ConcurrentHashMap<>();
+    private static final int DEFAULT_AGGREGATE_CACHE_SIZE = 1000;
+
+    /**
+     * Bounded LRU cache of namespace prefixes per aggregate path.
+     * This cache stores the discovered prefixes for frequently accessed aggregate paths
+     * to avoid re-walking the same subtrees, while limiting memory usage through LRU eviction.
+     */
+    private final Map<String, String[]> aggregateNamespaceCache;
 
     /**
      * config
@@ -313,6 +322,16 @@ public class AggregateManagerImpl implements AggregateManager {
         aggregatorProvider = new AggregatorProvider(config.getAggregators());
         artifactHandlers = Collections.unmodifiableList(config.getHandlers());
 
+        // Initialize bounded LRU cache for aggregate namespace prefixes
+        int cacheSize = getAggregateCacheSizeFromConfig();
+        this.aggregateNamespaceCache =
+                Collections.synchronizedMap(new LinkedHashMap<String, String[]>(cacheSize + 1, 0.75f, true) {
+                    @Override
+                    protected boolean removeEldestEntry(Map.Entry<String, String[]> eldest) {
+                        return size() > cacheSize;
+                    }
+                });
+
         // init root node
         Aggregator rootAggregator = rootNode.getDepth() == 0 ? new RootAggregator() : getAggregator(rootNode, null);
         root = new AggregateImpl(this, rootNode.getPath(), rootAggregator);
@@ -390,7 +409,32 @@ public class AggregateManagerImpl implements AggregateManager {
     }
 
     /**
+     * Gets the cache size configuration for the aggregate namespace cache.
+     *
+     * @return the maximum cache size, defaulting to {@link #DEFAULT_AGGREGATE_CACHE_SIZE}
+     */
+    private int getAggregateCacheSizeFromConfig() {
+        String cacheSizeStr = config.getProperty("aggregateNamespaceCacheSize");
+        if (cacheSizeStr != null) {
+            try {
+                int size = Integer.parseInt(cacheSizeStr);
+                if (size > 0) {
+                    log.info("Using configured aggregate namespace cache size: {}", size);
+                    return size;
+                }
+            } catch (NumberFormatException e) {
+                log.warn(
+                        "Invalid aggregate cache size '{}', using default: {}",
+                        cacheSizeStr,
+                        DEFAULT_AGGREGATE_CACHE_SIZE);
+            }
+        }
+        return DEFAULT_AGGREGATE_CACHE_SIZE;
+    }
+
+    /**
      * Gets cached namespace prefixes for a specific aggregate path.
+     * Uses a bounded LRU cache to prevent unbounded memory growth.
      *
      * @param path the aggregate path
      * @return the cached prefixes, or null if not cached
@@ -401,6 +445,7 @@ public class AggregateManagerImpl implements AggregateManager {
 
     /**
      * Caches namespace prefixes for a specific aggregate path.
+     * Uses a bounded LRU cache with automatic eviction of least recently used entries.
      *
      * @param path the aggregate path
      * @param prefixes the namespace prefixes to cache
@@ -408,11 +453,33 @@ public class AggregateManagerImpl implements AggregateManager {
     public void cacheAggregatePrefixes(String path, String[] prefixes) {
         if (path != null && prefixes != null) {
             aggregateNamespaceCache.put(path, prefixes);
+            if (log.isTraceEnabled()) {
+                log.trace(
+                        "Cached namespace prefixes for path '{}': {} (cache size: {})",
+                        path,
+                        prefixes,
+                        aggregateNamespaceCache.size());
+            }
         }
     }
 
     /**
-     * Invalidates the namespace caches. This should be called if namespace
+     * Invalidates the aggregate namespace cache for a specific path.
+     * This should be called when content at that path is modified.
+     *
+     * @param path the aggregate path to invalidate
+     */
+    public void invalidateAggregatePrefixes(String path) {
+        if (path != null) {
+            String[] removed = aggregateNamespaceCache.remove(path);
+            if (removed != null) {
+                log.debug("Invalidated namespace cache for path: {}", path);
+            }
+        }
+    }
+
+    /**
+     * Invalidates all namespace caches. This should be called if namespace
      * definitions are added or modified in the repository.
      */
     public void invalidateNamespaceCaches() {
@@ -424,19 +491,6 @@ public class AggregateManagerImpl implements AggregateManager {
         aggregateNamespaceCache.clear();
         // Re-initialize the prefix cache with current repository namespaces
         initNamespaceCache();
-    }
-
-    /**
-     * Invalidates the aggregate namespace cache for a specific path.
-     * This should be called when content at that path is modified.
-     *
-     * @param path the aggregate path to invalidate
-     */
-    public void invalidateAggregatePrefixes(String path) {
-        if (path != null) {
-            aggregateNamespaceCache.remove(path);
-            log.debug("Invalidated namespace cache for path: {}", path);
-        }
     }
 
     public void startTracking(ProgressTrackerListener pTracker) {

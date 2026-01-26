@@ -627,7 +627,7 @@ public class AggregateImpl implements Aggregate {
 
     private void loadNamespaces() {
         if (namespacePrefixes == null) {
-            // Check if this aggregate's namespaces are already cached
+            // Check if this aggregate's namespaces are already cached (bounded LRU cache)
             String[] cachedPrefixes = mgr.getCachedAggregatePrefixes(path);
             if (cachedPrefixes != null) {
                 log.debug("Using cached namespace prefixes for '{}': {}", path, cachedPrefixes);
@@ -647,7 +647,7 @@ public class AggregateImpl implements Aggregate {
                 loadNamespaces(prefixes, "", getNode());
                 namespacePrefixes = prefixes.toArray(new String[prefixes.size()]);
 
-                // Cache the discovered prefixes for this aggregate path
+                // Cache the discovered prefixes for this aggregate path (bounded LRU cache)
                 mgr.cacheAggregatePrefixes(path, namespacePrefixes);
 
                 // set if and only if in DEBUG level

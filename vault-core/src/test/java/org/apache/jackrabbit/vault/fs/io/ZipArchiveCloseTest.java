@@ -94,7 +94,7 @@ public class ZipArchiveCloseTest {
      * Test demonstrating the exact bug from the stack trace by following
      * the exact call chain from JcrPackageManagerImpl.assemble().
      */
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testExactCallChainFromAssemble() throws IOException {
         File zipFile = createZipWithMalformedProperties();
 
@@ -116,7 +116,7 @@ public class ZipArchiveCloseTest {
     /**
      * Simpler test showing the same bug at the ZipArchive level directly.
      */
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCloseAfterPartiallyFailedOpen() throws IOException {
         File zipFile = createZipWithMalformedProperties();
         ZipArchive archive = new ZipArchive(zipFile, false);
@@ -136,7 +136,7 @@ public class ZipArchiveCloseTest {
      * Test demonstrating that subsequent open() calls don't fix the problem.
      *
      */
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testSecondOpenDoesNotFixWatcher() throws IOException {
         File zipFile = createZipWithMalformedProperties();
         ZipArchive archive = new ZipArchive(zipFile, false);

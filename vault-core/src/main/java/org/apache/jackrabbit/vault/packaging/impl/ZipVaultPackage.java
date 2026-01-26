@@ -149,6 +149,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         try {
             return getArchive().getMetaInf();
         } catch (Exception e) {
+            log.warn("Failed to read meta information:", e);
             return null;
         }
     }

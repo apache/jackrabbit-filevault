@@ -200,7 +200,9 @@ public class ZipNioArchive extends AbstractArchive {
     @Override
     public void close() {
         if (zipFileSystem != null) {
-            CloseWatcher.unregister(watcher);
+            if (watcher != null) {
+                CloseWatcher.unregister(watcher);
+            }
             try {
                 zipFileSystem.close();
             } catch (IOException e) {

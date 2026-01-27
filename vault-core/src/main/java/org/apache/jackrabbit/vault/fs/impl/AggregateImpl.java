@@ -462,7 +462,9 @@ public class AggregateImpl implements Aggregate {
             aggregateWalkListener.onChildren(node, depth);
 
             boolean hasOrderableChildNodes = node.getPrimaryNodeType().hasOrderableChildNodes();
-            Iterable<Node> children = new NodeIterable(node.getNodes());
+            NodeIterator nit =
+                    hasOrderableChildNodes ? node.getNodes() : getNodeIteratorFor(node, mgr.getWorkspaceFilter());
+            Iterable<Node> children = new NodeIterable(nit);
 
             // if children not ordered: find included children, sort alphabetically
             if (!hasOrderableChildNodes) {

@@ -90,8 +90,6 @@ public class ZipArchiveCloseTest {
     @Test
     public void testExactCallChainFromAssemble() throws IOException {
         File zipFile = createZipWithMalformedProperties();
-
-        // create the ZipVaultPackage
         ZipVaultPackage pack = new ZipVaultPackage(zipFile, false, false);
 
         // This triggers the full call chain:
@@ -102,7 +100,7 @@ public class ZipArchiveCloseTest {
         PackageId id = pack.getId();
         assertNull(id);
 
-        // This throws NPE because the archive's jar is not null but watcher is null
+        // ensure that close() works even when the watcher is null
         pack.close();
     }
 
@@ -114,12 +112,10 @@ public class ZipArchiveCloseTest {
         File zipFile = createZipWithMalformedProperties();
         ZipArchive archive = new ZipArchive(zipFile, false);
 
-        // Try to open - this will partially succeed (jar created)
-        // but fail during entry processing (before watcher registration)
         try {
             archive.open(false);
         } catch (IOException e) {
-            // Expected - malformed XML during entry processing
+            // Expected
         }
 
         archive.close();
@@ -127,7 +123,6 @@ public class ZipArchiveCloseTest {
 
     /**
      * Test demonstrating that subsequent open() calls don't fix the problem.
-     *
      */
     @Test
     public void testSecondOpenDoesNotFixWatcher() throws IOException {
@@ -141,12 +136,11 @@ public class ZipArchiveCloseTest {
             // jar is now set, but watcher is null
         }
 
-        // Try to open again - this just returns immediately because jar != null
-        // The watcher is NOT fixed!
+        // Try to open again
         try {
             archive.open(false);
         } catch (Exception e) {
-            // Might not even throw - just returns at line 105
+            // Might not even throw
         }
 
         // Still: jar != null, watcher == null
@@ -154,7 +148,7 @@ public class ZipArchiveCloseTest {
     }
 
     /**
-     * Test showing that ZipStreamArchive handles this correctly with a null check.
+     * Test to show that ZipStreamArchive is handling it correctly
      */
     @Test
     public void testZipStreamArchiveHandlesFailedOpenCorrectly() throws IOException {
@@ -166,9 +160,6 @@ public class ZipArchiveCloseTest {
         } catch (IOException e) {
             // Expected exception
         }
-
-        // This does NOT throw NPE because ZipStreamArchive has:
-        // if (watcher != null) { CloseWatcher.unregister(watcher); }
         archive.close();
     }
 
@@ -183,7 +174,6 @@ public class ZipArchiveCloseTest {
                 .toFile();
         ZipArchive archive = new ZipArchive(zipFile, false);
 
-        // Close without open - jar is null, so no NPE
         archive.close();
         archive.close(); // Multiple closes also safe
     }

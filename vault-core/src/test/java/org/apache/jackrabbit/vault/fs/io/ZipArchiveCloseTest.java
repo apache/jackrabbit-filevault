@@ -28,7 +28,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -48,12 +47,6 @@ public class ZipArchiveCloseTest {
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    @BeforeClass
-    public static void setUpOnce() throws URISyntaxException {
-        // Disable stack traces for cleaner output
-        System.setProperty(AbstractArchive.PROPERTY_ENABLE_STACK_TRACES, "false");
-    }
 
     /**
      * Creates a ZIP file with malformed XML in META-INF/vault/properties.xml.

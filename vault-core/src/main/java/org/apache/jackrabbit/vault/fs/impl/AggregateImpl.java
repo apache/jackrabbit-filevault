@@ -853,7 +853,7 @@ public class AggregateImpl implements Aggregate {
                 }
 
                 log.debug("getNodeIteratorFor: iterating over filter-supplied children: {}", children);
-                nIter = children;
+                nIter = new NodeIteratorAdapter(children);
             } catch (Exception ex) {
                 log.debug(
                         "getNodeIteratorFor: exception while retrieving child nodes, falling back to simple iteration.",

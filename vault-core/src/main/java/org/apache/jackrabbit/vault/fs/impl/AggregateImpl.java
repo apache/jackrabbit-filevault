@@ -822,12 +822,20 @@ public class AggregateImpl implements Aggregate {
         }
     }
 
+    /**
+     * Given a node and the workspace filter, tries to return a minimal node iterator, only containing the child nodes
+     * which really need to be visisted
+     * @param node
+     * @param filter
+     * @return "optimal" iterator
+     * @throws RepositoryException
+     */
     private static NodeIterator getNodeIteratorFor(Node node, WorkspaceFilter filter) throws RepositoryException {
 
         Set<String> childNamesOfInterest = filter.getDirectChildNamesTowardsFilterRoots(node.getPath());
-        log.debug("childNamesOfInterest for {} -> {}", node.getPath(), childNamesOfInterest);
+        log.debug("getNodeIteratorFor: childNamesOfInterest for {} -> {}", node.getPath(), childNamesOfInterest);
 
-        NodeIterator nIter = null;
+        Iterable<Node> nIter = null;
 
         if (childNamesOfInterest != null) {
             // if filters can provide names of relevant child names, try to use them
@@ -840,20 +848,22 @@ public class AggregateImpl implements Aggregate {
                         children.add(node.getNode(name));
                     } catch (PathNotFoundException ignored) {
                         // go on
-                        log.debug("Node not found in {}: {}, skipping...", node.getPath(), name);
+                        log.debug("getNodeIteratorFor: node not found in {}: {}, skipping...", node.getPath(), name);
                     }
                 }
 
-                log.debug("iterating over filter-supplied children: {}", children);
-                nIter = new NodeIteratorAdapter(children);
+                log.debug("getNodeIteratorFor: iterating over filter-supplied children: {}", children);
+                nIter = children;
             } catch (Exception ex) {
-                log.debug("Exception while retrieving child nodes, falling back to simple iteration.", ex);
+                log.debug(
+                        "getNodeIteratorFor: exception while retrieving child nodes, falling back to simple iteration.",
+                        ex);
             }
         }
 
         // otherwise (unknown or exception while getting nodes) fallback to classic child node iteration
         if (nIter == null) {
-            log.debug("iterating over all child nodes of: {}", node.getPath());
+            log.debug("getNodeIteratorFor: iterating over all child nodes of: {}", node.getPath());
             nIter = node.getNodes();
         }
 

@@ -223,7 +223,9 @@ public class ZipArchive extends AbstractArchive {
             if (jar != null) {
                 jar.close();
                 jar = null;
-                CloseWatcher.unregister(watcher);
+                if (watcher != null) {
+                    CloseWatcher.unregister(watcher);
+                }
             }
             if (file != null && isTempFile) {
                 FileUtils.deleteQuietly(file);

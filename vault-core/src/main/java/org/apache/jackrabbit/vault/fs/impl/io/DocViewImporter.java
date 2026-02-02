@@ -703,7 +703,7 @@ public class DocViewImporter implements DocViewParserHandler {
 
     private boolean isIncluded(Item item, int depth) throws RepositoryException {
         String path = importInfo.getRemapped().map(item.getPath());
-        return wspFilter.contains(path) && (depth == 0 || filter.contains(item, path, depth));
+        return wspFilter.contains(path) && filter.contains(item, path, depth);
     }
 
     public ImportInfoImpl getInfo() {

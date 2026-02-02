@@ -379,6 +379,7 @@ public class DocViewImporter implements DocViewParserHandler {
             throws IOException, RepositoryException {
         stack.addName(docViewNode.getSnsAwareName());
         Node node = stack.getNode();
+        log.debug("startDocViewNode(), nodePath= {}, node={}", nodePath, node.getPath());
         if (node == null) {
             stack = stack.push();
             DocViewAdapter xform = stack.getAdapter();
@@ -494,6 +495,7 @@ public class DocViewImporter implements DocViewParserHandler {
                 log.trace("Sysview transformation complete.");
             }
         } else {
+            log.debug("endDocViewNode(), nodePath= {}, node={}", nodePath, node.getPath());
             NodeIterator iter = node.getNodes();
             EffectiveNodeType entParent = null; // initialize once when required
             while (iter.hasNext()) {

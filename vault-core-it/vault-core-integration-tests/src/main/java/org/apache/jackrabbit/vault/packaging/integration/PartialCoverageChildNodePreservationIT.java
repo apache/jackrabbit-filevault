@@ -1,20 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.jackrabbit.vault.packaging.integration;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -23,9 +28,6 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.commons.cnd.CndImporter;
@@ -50,32 +52,31 @@ import static org.junit.Assert.assertTrue;
 /**
  * Integration tests to demonstrate the problem of JCRVLT-830
  */
-
 public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase {
 
     private static final List<String[]> NODES = Arrays.asList(
-            new String[] { "/content", "sling:Folder" },
-            new String[] { "/content/dam", "sling:Folder" },
-            new String[] { "/content/dam/qcom", "sling:Folder" },
-            new String[] { "/content/dam/qcom/content-fragments", "sling:Folder" },
-            new String[] { "/content/dam/qcom/content-fragments/en", "sling:Folder" },
-            new String[] { "/content/dam/qcom/content-fragments/en/test1", "sling:OrderedFolder" },
-            new String[] { "/content/dam/qcom/content-fragments/en/test1/jcr:content", "nt:unstructured" });
+            new String[] {"/content", "sling:Folder"},
+            new String[] {"/content/dam", "sling:Folder"},
+            new String[] {"/content/dam/qcom", "sling:Folder"},
+            new String[] {"/content/dam/qcom/content-fragments", "sling:Folder"},
+            new String[] {"/content/dam/qcom/content-fragments/en", "sling:Folder"},
+            new String[] {"/content/dam/qcom/content-fragments/en/test1", "sling:OrderedFolder"},
+            new String[] {"/content/dam/qcom/content-fragments/en/test1/jcr:content", "nt:unstructured"});
 
     private static final String ADDITIONAL_PATH = "/content/dam/qcom/content-fragments/en/test1";
 
     private static final String NODETYPES = "<'cq'='http://www.day.com/jcr/cq/1.0'>\n"
-            + "<'sling'='http://sling.apache.org/jcr/sling/1.0'>\n" 
+            + "<'sling'='http://sling.apache.org/jcr/sling/1.0'>\n"
             + "<'nt'='http://www.jcp.org/jcr/nt/1.0'>\n"
-            + "<'rep'='internal'>\n" 
-            + "\n" + "[sling:OrderedFolder] > sling:Folder\n" 
+            + "<'rep'='internal'>\n"
+            + "\n" + "[sling:OrderedFolder] > sling:Folder\n"
             + "  orderable\n"
-            + "  + * (nt:base) = sling:OrderedFolder version\n" + "\n" 
+            + "  + * (nt:base) = sling:OrderedFolder version\n" + "\n"
             + "[sling:Folder] > nt:folder\n"
-            + "  - * (undefined) multiple\n" 
-            + "  - * (undefined)\n" 
+            + "  - * (undefined) multiple\n"
+            + "  - * (undefined)\n"
             + "  + * (nt:base) = sling:Folder version\n" + "\n"
-            + "[rep:RepoAccessControllable]\n" 
+            + "[rep:RepoAccessControllable]\n"
             + "  mixin\n" + "  + rep:repoPolicy (rep:Policy) protected ignore";
 
     @Before
@@ -87,7 +88,7 @@ public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase 
 
         // create the necessary repository structure (only if not already exists)
         for (String[] elem : NODES) {
-            createNode(elem[0],elem[1]);
+            createNode(elem[0], elem[1]);
         }
 
         // Add abc node for the first test
@@ -107,13 +108,12 @@ public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase 
 
         assertNodeExists(ADDITIONAL_PATH);
         assertNodeExists(ADDITIONAL_PATH + "/abc");
-
     }
 
     /**
      * Tests the complete export→import cycle demonstrating the coverage filter
      * problem.
-     * 
+     *
      * Without the fix, step 4 fails because the coverage filter is lost during
      * import, causing the importer to incorrectly delete "abc" as an "uncovered"
      * child.
@@ -132,19 +132,19 @@ public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase 
 
         try {
             // Step 2a: Verify the exported package doesn't include "abc"
-            try (Archive exportedArchive = new ZipArchive(exportedFile);) {
+            try (Archive exportedArchive = new ZipArchive(exportedFile); ) {
                 exportedArchive.open(true);
-                String test1Xml = readArchiveEntry(exportedArchive,
-                        "jcr_root/content/dam/qcom/content-fragments/en/test1/.content.xml");
+                String test1Xml = readArchiveEntry(
+                        exportedArchive, "jcr_root/content/dam/qcom/content-fragments/en/test1/.content.xml");
 
                 // Verify "abc" is NOT in the export
-                assertTrue("Exported package should not contain 'abc' child node (it didn't exist yet)",
+                assertTrue(
+                        "Exported package should not contain 'abc' child node (it didn't exist yet)",
                         !test1Xml.contains("<abc"));
-
             }
 
             // Step 2b: Compare exported package with reference AggregationJCRVLT830IT.zip
-            try (Archive referenceArchive = getFileArchive("/test-packages/AggregationJCRVLT830IT.zip");) {
+            try (Archive referenceArchive = getFileArchive("/test-packages/AggregationJCRVLT830IT.zip"); ) {
                 referenceArchive.open(true);
                 compareArchives(exportedFile, referenceArchive);
             }
@@ -157,7 +157,7 @@ public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase 
             assertNodeExists(ADDITIONAL_PATH + "/abc");
 
             // Step 4: Re-import the original package (which doesn't have "abc")
-            try (Archive reimportArchive = new ZipArchive(exportedFile);) {
+            try (Archive reimportArchive = new ZipArchive(exportedFile); ) {
                 reimportArchive.open(true);
                 ImportOptions opts = getDefaultOptions();
                 opts.setImportMode(ImportMode.REPLACE);
@@ -251,7 +251,7 @@ public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase 
             // Note: We don't compare filter.xml because it may have different formatting
             // (escaped patterns, default excludes, etc.) but represents the same logical
             // filter
-            String[] contentPaths = { "jcr_root/content/dam/qcom/content-fragments/en/test1/.content.xml" };
+            String[] contentPaths = {"jcr_root/content/dam/qcom/content-fragments/en/test1/.content.xml"};
 
             for (String path : contentPaths) {
                 String exportedContent = readArchiveEntry(exportedArchive, path);
@@ -262,8 +262,11 @@ public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase 
                 String normalizedExported = normalizeXml(exportedContent);
                 String normalizedReference = normalizeXml(referenceContent);
 
-                assertEquals("Content mismatch for " + path + ".\nExported:\n" + normalizedExported + "\n\nReference:\n"
-                        + normalizedReference, normalizedReference, normalizedExported);
+                assertEquals(
+                        "Content mismatch for " + path + ".\nExported:\n" + normalizedExported + "\n\nReference:\n"
+                                + normalizedReference,
+                        normalizedReference,
+                        normalizedExported);
             }
 
             // Verify the filter covers the same root path (logical equivalence, not string
@@ -317,7 +320,9 @@ public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase 
      */
     private String normalizeXml(String xml) {
         // Remove leading/trailing whitespace from each line and normalize line endings
-        String normalized = xml.replaceAll("(?m)^\\s+", "").replaceAll("(?m)\\s+$", "").replaceAll("\\r\\n", "\n")
+        String normalized = xml.replaceAll("(?m)^\\s+", "")
+                .replaceAll("(?m)\\s+$", "")
+                .replaceAll("\\r\\n", "\n")
                 .trim();
 
         // Remove xmlns:nt namespace declaration if present (cosmetic difference)
@@ -326,10 +331,9 @@ public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase 
         // Normalize jcr:content element - remove explicit primaryType if it's
         // nt:unstructured (default)
         // Replace <jcr:content jcr:primaryType="nt:unstructured"/> with <jcr:content/>
-        normalized = normalized.replaceAll("<jcr:content\\s+jcr:primaryType=\"nt:unstructured\"\\s*/>",
-                "<jcr:content/>");
+        normalized =
+                normalized.replaceAll("<jcr:content\\s+jcr:primaryType=\"nt:unstructured\"\\s*/>", "<jcr:content/>");
 
         return normalized;
     }
-
 }

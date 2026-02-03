@@ -44,6 +44,7 @@ import org.apache.jackrabbit.vault.packaging.ExportOptions;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -52,6 +53,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Integration tests to demonstrate the problem of JCRVLT-830
  */
+@FixMethodOrder
 public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase {
 
     private static final List<String[]> NODES = Arrays.asList(
@@ -92,11 +94,7 @@ public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase 
         }
 
         // Add abc node for the first test
-        Node additional = admin.getNode(ADDITIONAL_PATH);
-        if (!additional.hasNode("abc")) {
-            additional.addNode("abc");
-            additional.getSession().save();
-        }
+        createNode("/content/dam/qcom/content-fragments/en/test1/abc", "sling:Folder");
     }
 
     @Test
@@ -183,8 +181,13 @@ public class PartialCoverageChildNodePreservationIT extends IntegrationTestBase 
         }
         String nodeName = path.substring(path.lastIndexOf("/") + 1, path.length());
         Node parentNode = admin.getNode(parentPath);
-        Node child = parentNode.addNode(nodeName, nodeType);
-        admin.save();
+        Node child = null;
+        if (parentNode.hasNode(nodeName)) {
+            child = parentNode.getNode(nodeName);
+        } else {
+            child = parentNode.addNode(nodeName, nodeType);
+            admin.save();
+        }
         return child;
     }
 

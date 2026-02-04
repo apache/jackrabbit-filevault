@@ -48,21 +48,21 @@ import org.apache.jackrabbit.spi.commons.namespace.NamespaceMapping;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
 import org.apache.jackrabbit.util.Text;
+import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.ArtifactType;
 import org.apache.jackrabbit.vault.fs.api.IdConflictPolicy;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
+import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
 import org.apache.jackrabbit.vault.fs.api.NodeNameList;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.SerializationType;
+import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
-import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
-import org.apache.jackrabbit.vault.fs.api.Aggregator;
-import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
@@ -1042,15 +1042,15 @@ public class Importer {
     /**
      * Restores the coverage filter on the artifact set from the aggregator configuration.
      * This is necessary because the coverage filter metadata is lost during the archive→import flow.
-     * 
+     *
      * The coverage filter determines which child nodes are "covered" by this aggregate and should
      * be removed if not present in the package. Aggregators with partial coverage (e.g., folder
      * aggregates with {@code <exclude isNode="true" />}) should preserve child nodes that are
      * outside their coverage.
-     * 
+     *
      * This method only applies the filter when there are child aggregates (hints), which indicates
      * that we're dealing with a parent aggregate that has nested content.
-     * 
+     *
      * See also JCRVLT-830
      *
      * @param session the JCR session
@@ -1061,8 +1061,12 @@ public class Importer {
         // Only apply when there are child aggregates (hints), indicating partial
         // coverage scenario
         boolean hasChildAggregates = info.children != null && !info.children.isEmpty();
-        if (!hasChildAggregates || info.artifacts == null || info.artifacts.isEmpty() || archive == null
-                || info.path == null || info.path.isEmpty()) {
+        if (!hasChildAggregates
+                || info.artifacts == null
+                || info.artifacts.isEmpty()
+                || archive == null
+                || info.path == null
+                || info.path.isEmpty()) {
             return;
         }
 
@@ -1077,7 +1081,9 @@ public class Importer {
             Node nodeToMatch = null;
             if (session.nodeExists(info.path)) {
                 nodeToMatch = session.getNode(info.path);
-            } else if (info.parent != null && info.parent.path != null && !info.parent.path.isEmpty()
+            } else if (info.parent != null
+                    && info.parent.path != null
+                    && !info.parent.path.isEmpty()
                     && session.nodeExists(info.parent.path)) {
                 nodeToMatch = session.getNode(info.parent.path);
             }
@@ -1097,12 +1103,15 @@ public class Importer {
 
                 // Only GenericAggregator provides coverage filter information
                 if (!(aggregator instanceof org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator)) {
-                    log.debug("Matched aggregator {} for {} but it's not a GenericAggregator",
-                            aggregator.getClass().getSimpleName(), info.path);
+                    log.debug(
+                            "Matched aggregator {} for {} but it's not a GenericAggregator",
+                            aggregator.getClass().getSimpleName(),
+                            info.path);
                     break;
                 }
 
-                org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator genAgg = (org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator) aggregator;
+                org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator genAgg =
+                        (org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator) aggregator;
 
                 // Skip non-default aggregators with empty matchFilters (they match everything)
                 if (genAgg.getMatchFilter().getEntries().isEmpty() && !genAgg.isDefault()) {
@@ -1122,7 +1131,10 @@ public class Importer {
                     info.artifacts.setCoverage(contentFilter);
                     log.debug(
                             "Set coverage filter for {} from aggregator {} (matched against {}), has {} child aggregates",
-                            info.path, genAgg.getName(), nodeToMatch.getPath(), info.children.size());
+                            info.path,
+                            genAgg.getName(),
+                            nodeToMatch.getPath(),
+                            info.children.size());
                 }
                 break;
             }
@@ -1130,12 +1142,16 @@ public class Importer {
             // If only default aggregator matched, use it as fallback
             if (matchedDefaultAggregator != null
                     && info.artifacts.getCoverage() == org.apache.jackrabbit.vault.fs.api.ItemFilter.ALL) {
-                org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator defaultAgg = (org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator) matchedDefaultAggregator;
+                org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator defaultAgg =
+                        (org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator) matchedDefaultAggregator;
                 ItemFilterSet contentFilter = defaultAgg.getContentFilter();
                 if (contentFilter != null) {
                     info.artifacts.setCoverage(contentFilter);
-                    log.debug("Set coverage filter for {} from DEFAULT aggregator {}, has {} child aggregates",
-                            info.path, defaultAgg.getName(), info.children.size());
+                    log.debug(
+                            "Set coverage filter for {} from DEFAULT aggregator {}, has {} child aggregates",
+                            info.path,
+                            defaultAgg.getName(),
+                            info.children.size());
                 }
             }
         } catch (Exception e) {

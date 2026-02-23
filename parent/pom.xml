@@ -91,7 +91,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.</des
 
   <properties>
     <!-- CI-friendly version, https://maven.apache.org/maven-ci-friendly.html -->
-    <revision>4.2.0</revision>
+    <revision>4.2.1-SNAPSHOT</revision>
     <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
     <jackrabbit.min.version>2.20.17</jackrabbit.min.version>
     <!-- for embedded dependencies the newest version should be used -->
@@ -112,7 +112,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.</des
     <sling.api.version>2.27.6</sling.api.version>
     <!-- is overwritten by https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
     <jacoco.command />
-    <project.build.outputTimestamp>2026-02-23T13:39:01Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-02-23T13:52:50Z</project.build.outputTimestamp>
   </properties>
 
   <!-- ====================================================================== -->

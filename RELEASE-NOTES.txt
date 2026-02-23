@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 3.8.4
+Release Notes -- Apache Jackrabbit FileVault -- Version 4.2.0
 
 Introduction
 ------------
@@ -9,6 +9,28 @@ create portable packages of repository content.
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
 
+
+Changes in Jackrabbit FileVault 4.2.0
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 4.2.0
+This version requires Java 11 or above
+The OSGi bundles depend on Jackrabbit 2.20.17+ (JCR Commons, SPI, SPI Commons), Oak JR API 1.22.4+, Commons IO 2.18+, Commons Collections 4.1+ and SLF4J 1.7+
+
+** Improvement
+    * [JCRVLT-782] - Introduce spotless-maven-plugin
+    * [JCRVLT-825] - Remove Patch Support (extracting files from packages to filesystem)
+    * [JCRVLT-831] - For collection of namespace prefixes, avoid iterating over sibling nodes not contained in the filter(s)
+    * [JCRVLT-832] - No test coverage for handling namespace information in PATH typed property values
+    * [JCRVLT-839] - Unconditional child node iteration in AggregateImpl.walk()
+
+** Test
+    * [JCRVLT-834] - add test coverage for namespace prefixes on sibling nodes in ordered collections
+
+
+** Task
+    * [JCRVLT-823] - add .DS_Store to .gitignore
+    * [JCRVLT-836] - log durations and number of nodes in AggregateImpl node walk
 
 
 Changes in Jackrabbit FileVault 4.1.4

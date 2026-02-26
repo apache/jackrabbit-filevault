@@ -507,9 +507,12 @@ public class DocViewImporter implements DocViewParserHandler {
                 if (!childNames.contains(label)
                         && !hints.contains(path)
                         && isIncluded(child, child.getDepth() - rootDepth)) {
-                    // if the child is in the filter, it belongs to
-                    // this aggregate and needs to be removed
-                    if (aclManagement.isACLNode(child)) {
+                    // Only remove or clear when the parent's subtree is fully overwritten by the filter (JCRVLT-830)
+                    if (!wspFilter.isSubtreeFullyOverwritten(session, node.getPath())) {
+                        log.debug(
+                                "Skipping removal of child node {} because parent's subtree is not fully overwritten",
+                                path);
+                    } else if (aclManagement.isACLNode(child)) {
                         if (acHandling == AccessControlHandling.OVERWRITE
                                 || acHandling == AccessControlHandling.CLEAR) {
                             importInfo.onDeleted(path);

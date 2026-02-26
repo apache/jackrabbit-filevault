@@ -19,6 +19,8 @@
 package org.apache.jackrabbit.vault.fs.config;
 
 import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.xml.parsers.DocumentBuilder;
@@ -60,6 +62,7 @@ import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -276,6 +279,46 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isSubtreeFullyOverwritten(@NotNull Session session, @NotNull String path)
+            throws RepositoryException {
+        if (isGloballyIgnored(path)) {
+            return false;
+        }
+        if (getCoveringFilterSet(path) == null) {
+            return false;
+        }
+        if (getImportMode(path) != ImportMode.REPLACE) {
+            return false;
+        }
+        if (!session.nodeExists(path)) {
+            return false;
+        }
+        javax.jcr.Node node = session.getNode(path);
+        return isSubtreeFullyOverwrittenRecursive(node);
+    }
+
+    private boolean isSubtreeFullyOverwrittenRecursive(javax.jcr.Node node) throws RepositoryException {
+        String nodePath = node.getPath();
+        if (!contains(nodePath)) {
+            return false;
+        }
+        PropertyIterator props = node.getProperties();
+        while (props.hasNext()) {
+            Property prop = props.nextProperty();
+            if (!includesProperty(prop.getPath())) {
+                return false;
+            }
+        }
+        NodeIterator children = node.getNodes();
+        while (children.hasNext()) {
+            if (!isSubtreeFullyOverwrittenRecursive((javax.jcr.Node) children.nextNode())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

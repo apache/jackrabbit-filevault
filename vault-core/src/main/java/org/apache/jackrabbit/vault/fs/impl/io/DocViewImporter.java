@@ -379,7 +379,7 @@ public class DocViewImporter implements DocViewParserHandler {
             throws IOException, RepositoryException {
         stack.addName(docViewNode.getSnsAwareName());
         Node node = stack.getNode();
-        log.debug("startDocViewNode(), nodePath= {}, node={}", nodePath, node.getPath());
+        log.debug("startDocViewNode(), nodePath= {}, node={}", nodePath, node != null ? node.getPath() : null);
         if (node == null) {
             stack = stack.push();
             DocViewAdapter xform = stack.getAdapter();

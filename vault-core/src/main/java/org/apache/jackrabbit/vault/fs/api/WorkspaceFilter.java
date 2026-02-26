@@ -182,4 +182,25 @@ public interface WorkspaceFilter extends Dumpable {
      * @return {@code true} if the property is included in the filter
      */
     boolean includesProperty(String propertyPath);
+
+    /**
+     * Returns whether the given path's subtree is supposed to be fully overwritten during import,
+     * by traversing the repository and checking that every node and property in the subtree is
+     * included by this filter. Returns {@code true} only when:
+     * <ul>
+     *   <li>the path is covered by this filter and import mode is {@link ImportMode#REPLACE},</li>
+     *   <li>the node at {@code path} exists in the repository, and</li>
+     *   <li>for every descendant node, {@link #contains(String)} is {@code true}, and</li>
+     *   <li>for every property in the subtree, {@link #includesProperty(String)} is {@code true}.</li>
+     * </ul>
+     * When this method returns {@code true}, an importer may safely remove the existing node at
+     * the path and replace it and its children with the package content. When it returns {@code false},
+     * removal should be avoided or done selectively.
+     *
+     * @param session the session to use for traversing the subtree
+     * @param path    the node path to check (subtree root, must exist)
+     * @return {@code true} if every node and property in the subtree is included and mode is REPLACE
+     * @throws RepositoryException if the path does not exist or traversal fails
+     */
+    boolean isSubtreeFullyOverwritten(@NotNull Session session, @NotNull String path) throws RepositoryException;
 }

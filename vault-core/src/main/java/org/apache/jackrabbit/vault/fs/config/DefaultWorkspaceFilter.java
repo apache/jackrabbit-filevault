@@ -282,7 +282,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     }
 
     @Override
-    public boolean isSubtreeFullyOverwritten(@NotNull Session session, @NotNull String path)
+    public boolean isSubtreeFullyCovered(@NotNull Session session, @NotNull String path)
             throws RepositoryException {
         if (isGloballyIgnored(path)) {
             return false;

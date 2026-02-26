@@ -184,7 +184,7 @@ public interface WorkspaceFilter extends Dumpable {
     boolean includesProperty(String propertyPath);
 
     /**
-     * Returns whether the given path's subtree is supposed to be fully overwritten during import,
+     * Returns whether the given path's subtree is supposed to be fully covered during import,
      * by traversing the repository and checking that every node and property in the subtree is
      * included by this filter. Returns {@code true} only when:
      * <ul>
@@ -202,5 +202,5 @@ public interface WorkspaceFilter extends Dumpable {
      * @return {@code true} if every node and property in the subtree is included and mode is REPLACE
      * @throws RepositoryException if the path does not exist or traversal fails
      */
-    boolean isSubtreeFullyOverwritten(@NotNull Session session, @NotNull String path) throws RepositoryException;
+    boolean isSubtreeFullyCovered(@NotNull Session session, @NotNull String path) throws RepositoryException;
 }

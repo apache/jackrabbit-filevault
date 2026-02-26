@@ -62,7 +62,7 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         Node root = JcrUtils.getOrCreateByPath(TEST_ROOT + "/content", JcrConstants.NT_UNSTRUCTURED, admin);
         admin.save();
 
-        assertFalse(filter.isSubtreeFullyOverwritten(admin, root.getPath()));
+        assertFalse(filter.isSubtreeFullyCovered(admin, root.getPath()));
     }
 
     /**
@@ -76,7 +76,7 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         set.addInclude(new DefaultPathFilter(TEST_ROOT + "(/.*)?"));
         filter.add(set);
 
-        assertFalse(filter.isSubtreeFullyOverwritten(admin, TEST_ROOT + "/nonexistent"));
+        assertFalse(filter.isSubtreeFullyCovered(admin, TEST_ROOT + "/nonexistent"));
     }
 
     /**
@@ -94,7 +94,7 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         JcrUtils.getOrCreateByPath(TEST_ROOT + "/node", JcrConstants.NT_UNSTRUCTURED, admin);
         admin.save();
 
-        assertFalse(filter.isSubtreeFullyOverwritten(admin, TEST_ROOT + "/node"));
+        assertFalse(filter.isSubtreeFullyCovered(admin, TEST_ROOT + "/node"));
     }
 
     /**
@@ -112,7 +112,7 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         JcrUtils.getOrCreateByPath(TEST_ROOT + "/node", JcrConstants.NT_UNSTRUCTURED, admin);
         admin.save();
 
-        assertFalse(filter.isSubtreeFullyOverwritten(admin, TEST_ROOT + "/node"));
+        assertFalse(filter.isSubtreeFullyCovered(admin, TEST_ROOT + "/node"));
     }
 
     /**
@@ -131,7 +131,7 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         JcrUtils.getOrCreateByPath(TEST_ROOT + "/parent/excluded", JcrConstants.NT_UNSTRUCTURED, admin);
         admin.save();
 
-        assertFalse(filter.isSubtreeFullyOverwritten(admin, TEST_ROOT + "/parent"));
+        assertFalse(filter.isSubtreeFullyCovered(admin, TEST_ROOT + "/parent"));
     }
 
     /**
@@ -149,7 +149,7 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         JcrUtils.getOrCreateByPath(TEST_ROOT + "/parent/child", JcrConstants.NT_UNSTRUCTURED, admin);
         admin.save();
 
-        assertTrue(filter.isSubtreeFullyOverwritten(admin, TEST_ROOT + "/parent"));
+        assertTrue(filter.isSubtreeFullyCovered(admin, TEST_ROOT + "/parent"));
     }
 
     /**
@@ -166,7 +166,7 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         JcrUtils.getOrCreateByPath(TEST_ROOT + "/leaf", JcrConstants.NT_UNSTRUCTURED, admin);
         admin.save();
 
-        assertTrue(filter.isSubtreeFullyOverwritten(admin, TEST_ROOT + "/leaf"));
+        assertTrue(filter.isSubtreeFullyCovered(admin, TEST_ROOT + "/leaf"));
     }
 
     /**
@@ -184,7 +184,7 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         JcrUtils.getOrCreateByPath(TEST_ROOT + "/node", JcrConstants.NT_UNSTRUCTURED, admin);
         admin.save();
 
-        assertTrue(filter.isSubtreeFullyOverwritten(admin, TEST_ROOT + "/node"));
+        assertTrue(filter.isSubtreeFullyCovered(admin, TEST_ROOT + "/node"));
     }
 
     /**
@@ -205,7 +205,7 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         node.setProperty("customProp", "value");
         admin.save();
 
-        assertFalse(filter.isSubtreeFullyOverwritten(admin, TEST_ROOT + "/withProp"));
+        assertFalse(filter.isSubtreeFullyCovered(admin, TEST_ROOT + "/withProp"));
     }
 
     /**
@@ -228,6 +228,6 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         JcrUtils.getOrCreateByPath(contentRoot + "/en/page", JcrConstants.NT_UNSTRUCTURED, admin);
         admin.save();
 
-        assertFalse(filter.isSubtreeFullyOverwritten(admin, contentRoot + "/en"));
+        assertFalse(filter.isSubtreeFullyCovered(admin, contentRoot + "/en"));
     }
 }

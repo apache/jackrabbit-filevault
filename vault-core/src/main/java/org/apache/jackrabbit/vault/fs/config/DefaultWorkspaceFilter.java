@@ -19,6 +19,8 @@
 package org.apache.jackrabbit.vault.fs.config;
 
 import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.xml.parsers.DocumentBuilder;
@@ -276,6 +278,45 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isSubtreeFullyCovered(javax.jcr.Node subTree) throws RepositoryException {
+        if (subTree == null) {
+            return false;
+        }
+        String path = subTree.getPath();
+        if (isGloballyIgnored(path)) {
+            return false;
+        }
+        if (getCoveringFilterSet(path) == null) {
+            return false;
+        }
+        if (getImportMode(path) != ImportMode.REPLACE) {
+            return false;
+        }
+        return isSubtreeFullyOverwrittenRecursive(subTree);
+    }
+
+    private boolean isSubtreeFullyOverwrittenRecursive(javax.jcr.Node node) throws RepositoryException {
+        String nodePath = node.getPath();
+        if (!contains(nodePath)) {
+            return false;
+        }
+        PropertyIterator props = node.getProperties();
+        while (props.hasNext()) {
+            Property prop = props.nextProperty();
+            if (!includesProperty(prop.getPath())) {
+                return false;
+            }
+        }
+        NodeIterator children = node.getNodes();
+        while (children.hasNext()) {
+            if (!isSubtreeFullyOverwrittenRecursive((javax.jcr.Node) children.nextNode())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

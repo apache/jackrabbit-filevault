@@ -62,7 +62,6 @@ import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
 import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -282,7 +281,11 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     }
 
     @Override
-    public boolean isSubtreeFullyCovered(@NotNull Session session, @NotNull String path) throws RepositoryException {
+    public boolean isSubtreeFullyCovered(javax.jcr.Node subTree) throws RepositoryException {
+        if (subTree == null) {
+            return false;
+        }
+        String path = subTree.getPath();
         if (isGloballyIgnored(path)) {
             return false;
         }
@@ -292,11 +295,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         if (getImportMode(path) != ImportMode.REPLACE) {
             return false;
         }
-        if (!session.nodeExists(path)) {
-            return false;
-        }
-        javax.jcr.Node node = session.getNode(path);
-        return isSubtreeFullyOverwrittenRecursive(node);
+        return isSubtreeFullyOverwrittenRecursive(subTree);
     }
 
     private boolean isSubtreeFullyOverwrittenRecursive(javax.jcr.Node node) throws RepositoryException {

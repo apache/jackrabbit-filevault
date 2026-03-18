@@ -508,7 +508,7 @@ public class DocViewImporter implements DocViewParserHandler {
                         && !hints.contains(path)
                         && isIncluded(child, child.getDepth() - rootDepth)) {
                     // Only remove or clear when the parent's subtree is fully overwritten by the filter (JCRVLT-830)
-                    if (!wspFilter.isSubtreeFullyCovered(child)) {
+                    if (!wspFilter.isSubtreeFullyCovered(node)) {
                         log.debug(
                                 "Skipping removal of child node {} because parent's subtree is not fully overwritten",
                                 path);

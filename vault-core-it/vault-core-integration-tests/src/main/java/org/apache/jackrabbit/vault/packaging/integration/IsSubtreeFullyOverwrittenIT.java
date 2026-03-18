@@ -21,6 +21,8 @@ package org.apache.jackrabbit.vault.packaging.integration;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
+import java.io.IOException;
+
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
@@ -29,6 +31,9 @@ import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
+import org.apache.jackrabbit.vault.fs.io.Archive;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.fs.io.Importer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -212,11 +217,110 @@ public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
         set.addInclude(new DefaultPathFilter(contentRoot + "(/.*)?"));
         set.addExclude(new DefaultPathFilter(contentRoot + "/en/page(/.*)?"));
         filter.add(set);
+        filter.setExtraValidationBeforeSubtreeRemoval(true);
 
         Node n = JcrUtils.getOrCreateByPath(contentRoot + "/en", JcrConstants.NT_UNSTRUCTURED, admin);
         JcrUtils.getOrCreateByPath(contentRoot + "/en/page", JcrConstants.NT_UNSTRUCTURED, admin);
         admin.save();
 
         assertFalse(filter.isSubtreeFullyCovered(n));
+    }
+
+    /**
+     * Same tree as {@link #jcrvlt830ReturnsFalseWhenExistingChildInRepoIsExcludedByFilter} but with extra validation
+     * disabled: {@link DefaultWorkspaceFilter#setExtraValidationBeforeSubtreeRemoval(boolean)} {@code false}.
+     */
+    @Test
+    public void whenExtraValidationBeforeSubtreeRemovalDisabled_excludedChildReportsSubtreeCovered()
+            throws RepositoryException, ConfigurationException {
+        String contentRoot = TEST_ROOT + "/content/mysite/disabled";
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(contentRoot);
+        set.addInclude(new DefaultPathFilter(contentRoot + "(/.*)?"));
+        set.addExclude(new DefaultPathFilter(contentRoot + "/en/page(/.*)?"));
+        filter.add(set);
+        filter.setExtraValidationBeforeSubtreeRemoval(false);
+
+        Node n = JcrUtils.getOrCreateByPath(contentRoot + "/en", JcrConstants.NT_UNSTRUCTURED, admin);
+        JcrUtils.getOrCreateByPath(contentRoot + "/en/page", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        assertTrue(filter.isSubtreeFullyCovered(n));
+    }
+
+    /**
+     * JCRVLT-830: When extra validation before subtree removal is disabled, a full import run must actually remove
+     * nodes that are no longer in the package, even if a sibling is excluded by the filter (legacy behavior).
+     */
+    @Test
+    public void whenExtraValidationBeforeSubtreeRemovalDisabled_subtreeIsRemovedOnReimport()
+            throws IOException, RepositoryException, ConfigurationException {
+        String importRoot = "/tmp";
+        clean(importRoot);
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(importRoot);
+        set.addInclude(new DefaultPathFilter(importRoot + "(/.*)?"));
+        set.addExclude(new DefaultPathFilter(importRoot + "/foo/bar/excluded(/.*)?"));
+        filter.add(set);
+        filter.setExtraValidationBeforeSubtreeRemoval(false);
+
+        ImportOptions opts = getDefaultOptions();
+        opts.setFilter(filter);
+        Importer importer = new Importer(opts);
+        Node rootNode = admin.getRootNode();
+
+        try (Archive archive = getFileArchive("/test-packages/tmp.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
+        }
+        assertNodeExists("/tmp/foo/bar/tobi");
+
+        JcrUtils.getOrCreateByPath("/tmp/foo/bar/excluded", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        try (Archive archive = getFileArchive("/test-packages/tmp_less.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
+        }
+        assertNodeMissing("/tmp/foo/bar/tobi");
+    }
+
+    /**
+     * JCRVLT-830: When extra validation before subtree removal is enabled (default), a full import run must not remove
+     * nodes when a sibling is excluded by the filter (subtree not fully covered).
+     */
+    @Test
+    public void whenExtraValidationBeforeSubtreeRemovalEnabled_subtreeIsPreservedOnReimport()
+            throws IOException, RepositoryException, ConfigurationException {
+        String importRoot = "/tmp";
+        clean(importRoot);
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(importRoot);
+        set.addInclude(new DefaultPathFilter(importRoot + "(/.*)?"));
+        set.addExclude(new DefaultPathFilter(importRoot + "/foo/bar/excluded(/.*)?"));
+        filter.add(set);
+        filter.setExtraValidationBeforeSubtreeRemoval(true);
+
+        ImportOptions opts = getDefaultOptions();
+        opts.setFilter(filter);
+        Importer importer = new Importer(opts);
+        Node rootNode = admin.getRootNode();
+
+        try (Archive archive = getFileArchive("/test-packages/tmp.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
+        }
+        assertNodeExists("/tmp/foo/bar/tobi");
+
+        JcrUtils.getOrCreateByPath("/tmp/foo/bar/excluded", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        try (Archive archive = getFileArchive("/test-packages/tmp_less.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
+        }
+        assertNodeExists("/tmp/foo/bar/tobi");
     }
 }

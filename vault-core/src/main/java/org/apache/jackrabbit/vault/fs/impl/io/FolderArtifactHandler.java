@@ -161,7 +161,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
                 // Only remove when parent's subtree is fully overwritten (JCRVLT-830)
                 if (wspFilter.contains(path)
                         && wspFilter.getImportMode(path) == ImportMode.REPLACE
-                        && wspFilter.isSubtreeFullyCovered(child)) {
+                        && wspFilter.isSubtreeFullyCovered(node)) {
                     if (!hints.contains(path)) {
                         // if the child is in the filter, it belongs to
                         // this aggregate and needs to be removed

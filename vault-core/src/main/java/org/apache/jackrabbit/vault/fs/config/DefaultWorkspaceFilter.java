@@ -109,6 +109,13 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     private ImportMode importMode;
 
     /**
+     * When {@code true} (default), {@link #isSubtreeFullyCovered(javax.jcr.Node)} performs the full subtree check
+     * (JCRVLT-830). When {@code false}, that method always returns {@code true} so importers behave as before the
+     * extra validation. Not persisted; external configuration will be wired in a later step.
+     */
+    private boolean extraValidationBeforeSubtreeRemoval = true;
+
+    /**
      * Add a #PathFilterSet for nodes items.
      * @param set the set of filters to add.
      */
@@ -280,8 +287,20 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         return false;
     }
 
+    /**
+     * Enables or disables extra validation reflected by {@link #isSubtreeFullyCovered(javax.jcr.Node)} (JCRVLT-830).
+     * @param extraValidationBeforeSubtreeRemoval {@code true} to perform the subtree check; {@code false} to always
+     * report fully covered (legacy behavior for removal gating)
+     */
+    public void setExtraValidationBeforeSubtreeRemoval(boolean extraValidationBeforeSubtreeRemoval) {
+        this.extraValidationBeforeSubtreeRemoval = extraValidationBeforeSubtreeRemoval;
+    }
+
     @Override
     public boolean isSubtreeFullyCovered(javax.jcr.Node subTree) throws RepositoryException {
+        if (!extraValidationBeforeSubtreeRemoval) {
+            return true;
+        }
         if (subTree == null) {
             return false;
         }
@@ -374,6 +393,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         for (PathFilterSet set : propsFilterSets) {
             mapped.propsFilterSets.add(set.translate(mapping));
         }
+        mapped.setExtraValidationBeforeSubtreeRemoval(extraValidationBeforeSubtreeRemoval);
         return mapped;
     }
 

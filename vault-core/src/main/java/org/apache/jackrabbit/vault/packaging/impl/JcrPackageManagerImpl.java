@@ -107,12 +107,33 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             boolean isStrict,
             boolean overwritePrimaryTypesOfFoldersByDefault,
             IdConflictPolicy idConflictPolicy) {
+        this(
+                session,
+                roots,
+                authIdsForHookExecution,
+                authIdsForRootInstallation,
+                isStrict,
+                overwritePrimaryTypesOfFoldersByDefault,
+                idConflictPolicy,
+                true);
+    }
+
+    public JcrPackageManagerImpl(
+            @NotNull Session session,
+            @Nullable String[] roots,
+            @Nullable String[] authIdsForHookExecution,
+            @Nullable String[] authIdsForRootInstallation,
+            boolean isStrict,
+            boolean overwritePrimaryTypesOfFoldersByDefault,
+            IdConflictPolicy idConflictPolicy,
+            boolean extraValidationBeforeSubtreeRemovalByDefault) {
         this(new JcrPackageRegistry(
                 session,
                 new AbstractPackageRegistry.SecurityConfig(authIdsForHookExecution, authIdsForRootInstallation),
                 isStrict,
                 overwritePrimaryTypesOfFoldersByDefault,
                 idConflictPolicy,
+                extraValidationBeforeSubtreeRemovalByDefault,
                 roots));
     }
 

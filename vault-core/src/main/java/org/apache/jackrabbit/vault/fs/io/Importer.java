@@ -286,6 +286,12 @@ public class Importer {
     private final boolean overwritePrimaryTypesOfFoldersByDefault;
 
     /**
+     * When non-null, applied to {@link DefaultWorkspaceFilter} during import (JCRVLT-830 / OSGi). {@code null} leaves the
+     * filter unchanged (e.g. direct {@code Importer} use with {@link ImportOptions#setFilter}).
+     */
+    private final Boolean extraValidationBeforeSubtreeRemoval;
+
+    /**
      * JCRVLT-683 feature flag. This variable is used to enable the new behavior of stashing principal policies when an
      * Archive's package properties do not specify a {@code vault.feature.stashPrincipalPolicies} property.
      * Initially false by default, with the ability to set a global override using the key as a System property.
@@ -341,10 +347,23 @@ public class Importer {
             boolean isStrictByDefault,
             boolean overwritePrimaryTypesOfFoldersByDefault,
             IdConflictPolicy defaultIdConflictPolicy) {
+        this(opts, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault, defaultIdConflictPolicy, null);
+    }
+
+    /**
+     * @param extraValidationBeforeSubtreeRemoval if non-null, applied to the workspace filter (OSGi / package install path)
+     */
+    public Importer(
+            ImportOptions opts,
+            boolean isStrictByDefault,
+            boolean overwritePrimaryTypesOfFoldersByDefault,
+            IdConflictPolicy defaultIdConflictPolicy,
+            Boolean extraValidationBeforeSubtreeRemoval) {
         this.opts = opts;
         this.isStrict = opts.isStrict(isStrictByDefault);
         this.isStrictByDefault = isStrictByDefault;
         this.overwritePrimaryTypesOfFoldersByDefault = overwritePrimaryTypesOfFoldersByDefault;
+        this.extraValidationBeforeSubtreeRemoval = extraValidationBeforeSubtreeRemoval;
         if (!this.opts.hasIdConflictPolicyBeenSet() && defaultIdConflictPolicy != null) {
             this.opts.setIdConflictPolicy(defaultIdConflictPolicy);
         }
@@ -491,6 +510,10 @@ public class Importer {
                         "Unable to override import mode, incompatible filter: {}",
                         filter.getClass().getName());
             }
+        }
+        if (filter instanceof DefaultWorkspaceFilter && extraValidationBeforeSubtreeRemoval != null) {
+            ((DefaultWorkspaceFilter) filter)
+                    .setExtraValidationBeforeSubtreeRemoval(extraValidationBeforeSubtreeRemoval);
         }
         // build filter tree
         for (PathFilterSet set : filter.getFilterSets()) {

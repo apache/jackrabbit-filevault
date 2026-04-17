@@ -17,7 +17,7 @@
 
 # Referenceable Nodes
 
-<!-- MACRO{toc} -->
+<!-- MACRO{toc|fromDepth=2} -->
 
 ## Overview
 

@@ -18,7 +18,7 @@
 FileVault Document View (DocView) Format
 =================
 
-<!-- MACRO{toc} -->
+<!-- MACRO{toc|fromDepth=2} -->
 
 Overview
 ----------

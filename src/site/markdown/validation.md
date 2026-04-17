@@ -17,7 +17,7 @@
 -->
 # Validation
 
-<!-- MACRO{toc} -->
+<!-- MACRO{toc|fromDepth=2} -->
 
 ## Overview
 

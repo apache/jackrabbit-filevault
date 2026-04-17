@@ -21,7 +21,7 @@ The import mode defines how imported content affects existing content in the rep
 
 Details on how node ids are treated during import are outlined at [Referenceable Nodes](referenceablenodes.html)
 
-<!-- MACRO{toc} -->
+<!-- MACRO{toc|fromDepth=2} -->
 
 Regular content
 ----------------

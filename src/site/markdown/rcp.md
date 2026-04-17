@@ -21,7 +21,7 @@ Vault Remote Copy (rcp)
 
 Jackrabbit Vault offers a simple method to copy nodes between repositories with Vault Remote Copy (RCP). It uses standard JCR API to create/update nodes at the destination repository and falls back to JCR SysView import for protected nodes. Protected properties in standard JCR API import mode are silently skipped. It internally relies on the class [`RepositoryCopier`](https://github.com/apache/jackrabbit-filevault/blob/master/vault-core/src/main/java/org/apache/jackrabbit/vault/util/RepositoryCopier.java).
 
-<!-- MACRO{toc} -->
+<!-- MACRO{toc|fromDepth=2} -->
 
 Prerequisites
 ---------

@@ -22,7 +22,7 @@ the `META-INF/vault` directory. The `filter.xml` is used to load and initialize
 the [WorkspaceFilter][api.WorkspaceFilter]. The workspace filter defines what parts of the JCR repository are
 imported or exported during the respective operations through `vlt` or package management.
 
-<!-- MACRO{toc} -->
+<!-- MACRO{toc|fromDepth=2} -->
 
 General Structure
 -----------------

@@ -18,7 +18,7 @@
 Configuration
 ===========
 
-<!-- MACRO{toc} -->
+<!-- MACRO{toc|fromDepth=2} -->
 
 ## FileVault Core Bundle
 

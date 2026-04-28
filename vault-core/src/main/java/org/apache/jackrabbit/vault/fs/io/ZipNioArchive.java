@@ -223,6 +223,7 @@ public class ZipNioArchive extends AbstractArchive {
 
         private VaultInputSourceImpl(EntryImpl entryImpl) {
             this.entryImpl = entryImpl;
+            setSystemId(entryImpl.getName());
         }
 
         @Override

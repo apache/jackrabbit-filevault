@@ -26,6 +26,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.jar.JarFile;
@@ -38,6 +40,7 @@ import org.apache.jackrabbit.vault.packaging.InstallContext;
 import org.apache.jackrabbit.vault.packaging.InstallHook;
 import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
 import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.slf4j.Logger;
@@ -68,6 +71,9 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                 log.warn("Archive {} does not have a {} directory.", archive, Constants.VAULT_DIR);
                 return;
             }
+            PackageId packageId = archive.getMetaInf() != null
+                    ? archive.getMetaInf().getPackageProperties().getId()
+                    : null;
             root = root.getChild(Constants.HOOKS_DIR);
             if (root == null) {
                 log.debug("Archive {} does not have a {} directory.", archive, Constants.HOOKS_DIR);
@@ -93,7 +99,8 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                             throw new PackageException("Invalid installhook property: " + name);
                         }
                         Hook hook = new Hook(segs[0], props.getProperty(name), classLoader);
-                        initHook(hook);
+
+                        initHook(hook, packageId);
                     }
                 }
             }
@@ -117,14 +124,13 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             }
             throw e;
         }
-        initHook(hook);
+        initHook(hook, null);
     }
 
-    private void initHook(Hook hook) throws IOException, PackageException {
+    private void initHook(Hook hook, PackageId packageId) throws IOException, PackageException {
         try {
-            hook.init();
+            hook.init(packageId);
         } catch (IOException | PackageException e) {
-            log.error("Error while initializing hook: {}", e.toString());
             try {
                 hook.destroy();
             } catch (IOException ioeDuringDestroy) {
@@ -133,7 +139,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             throw e;
         }
         hooks.put(hook.name, hook);
-        log.info("Hook {} registered.", hook.name);
+        log.info("Hook {} registered for package {}.", hook.name, packageId);
     }
 
     public boolean hasHooks() {
@@ -178,6 +184,9 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
 
     private class Hook {
 
+        /**
+         * The install hook's name, either derived from the jar file name or from the property name.
+         */
         private final String name;
 
         private final Path jarFile;
@@ -214,18 +223,21 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
             }
         }
 
-        private void init() throws IOException, PackageException {
+        private void init(PackageId packageId) throws IOException, PackageException {
+            List<Throwable> suppressedExceptions = new LinkedList<>();
             try {
                 if (jarFile != null) {
                     // open jar file and extract classname from manifest
                     try (JarFile jar = new JarFile(jarFile.toFile())) {
                         Manifest mf = jar.getManifest();
                         if (mf == null) {
-                            throw new PackageException("hook jar file does not have a manifest: " + name);
+                            throw new PackageException(
+                                    "Hook JAR file does not have a manifest: " + name + " in package " + packageId);
                         }
                         mainClassName = mf.getMainAttributes().getValue("Main-Class");
                         if (mainClassName == null) {
-                            throw new PackageException("hook manifest file does not have a Main-Class entry: " + name);
+                            throw new PackageException("Hook manifest file does not have a Main-Class entry: " + name
+                                    + " in package " + packageId);
                         }
                     }
                     // create classloader
@@ -236,19 +248,20 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                             urlClassLoader = URLClassLoader.newInstance(
                                     new URL[] {jarFile.toUri().toURL()},
                                     this.getClass().getClassLoader());
-                            loadMainClass(urlClassLoader);
+                            loadMainClass(urlClassLoader, packageId);
                         } catch (ClassNotFoundException cnfe) {
+                            suppressedExceptions.add(cnfe);
                             urlClassLoader.close();
                             // 2nd fallback is the thread context classloader
                             urlClassLoader = URLClassLoader.newInstance(
                                     new URL[] {jarFile.toUri().toURL()},
                                     Thread.currentThread().getContextClassLoader());
-                            loadMainClass(urlClassLoader);
+                            loadMainClass(urlClassLoader, packageId);
                         }
                     } else {
                         urlClassLoader = URLClassLoader.newInstance(
                                 new URL[] {jarFile.toUri().toURL()}, parentClassLoader);
-                        loadMainClass(urlClassLoader);
+                        loadMainClass(urlClassLoader, packageId);
                     }
                 } else {
                     // create classloader
@@ -256,34 +269,41 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                         try {
                             // 1st fallback is the current classes classloader (the bundle classloader in the OSGi
                             // context)
-                            loadMainClass(this.getClass().getClassLoader());
+                            loadMainClass(this.getClass().getClassLoader(), packageId);
                         } catch (ClassNotFoundException cnfe) {
+                            suppressedExceptions.add(cnfe);
                             // 2nd fallback is the thread context classloader
-                            loadMainClass(Thread.currentThread().getContextClassLoader());
+                            loadMainClass(Thread.currentThread().getContextClassLoader(), packageId);
                         }
                     } else {
-                        loadMainClass(parentClassLoader);
+                        loadMainClass(parentClassLoader, packageId);
                     }
                 }
             } catch (ClassNotFoundException cnfe) {
-                throw new PackageException("hook's main class " + mainClassName + " not found: " + name, cnfe);
+                PackageException pe = new PackageException(
+                        "Hook's main class " + mainClassName + " not found: " + name + " for package " + packageId,
+                        cnfe);
+                suppressedExceptions.forEach(pe::addSuppressed);
             }
         }
 
-        private void loadMainClass(ClassLoader classLoader) throws PackageException, ClassNotFoundException {
-            log.info("Loading Hook {}: Main-Class = {}", name, mainClassName);
+        private void loadMainClass(ClassLoader classLoader, PackageId packageId)
+                throws PackageException, ClassNotFoundException {
+            log.info("Loading Hook {}: Main-Class = {} for package {}", name, mainClassName, packageId);
 
             // find main class
             Class<?> clazz = classLoader.loadClass(mainClassName);
             if (!InstallHook.class.isAssignableFrom(clazz)) {
-                throw new PackageException("hook's main class " + mainClassName
-                        + " does not implement the InstallHook interface: " + name);
+                throw new PackageException("Hook's main class " + mainClassName
+                        + " does not implement the InstallHook interface: " + name + " for package " + packageId);
             }
             // create instance
             try {
                 hook = (InstallHook) clazz.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
-                throw new PackageException("hook's main class " + mainClassName + " could not be instantiated.", e);
+                throw new PackageException(
+                        "Hook's main class " + mainClassName + " could not be instantiated for package " + packageId,
+                        e);
             }
         }
 

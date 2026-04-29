@@ -391,7 +391,8 @@ public class JcrPackageImpl implements JcrPackage {
                 mgr.getSecurityConfig(),
                 mgr.isStrictByDefault(),
                 mgr.overwritePrimaryTypesOfFoldersByDefault(),
-                mgr.getDefaultIdConflictPolicy());
+                mgr.getDefaultIdConflictPolicy(),
+                mgr.isExtraValidationBeforeSubtreeRemovalByDefault());
         JcrPackage snap = null;
         if (!opts.isDryRun() && createSnapshot) {
             ExportOptions eOpts = new ExportOptions();

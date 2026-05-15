@@ -85,8 +85,8 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.</des
   </issueManagement>
 
   <ciManagement>
-    <system>Jenkins</system>
-    <url>https://ci-builds.apache.org/blue/organizations/jenkins/Jackrabbit%2Ffilevault/activity</url>
+    <system>github</system>
+    <url>https://github.com/apache/jackrabbit-filevault/actions/workflows/build.yml</url>
   </ciManagement>
 
   <properties>

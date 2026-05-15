@@ -14,7 +14,7 @@ github:
     - JCR
     - SLING
     - FELIX
-  dependabot_alerts:  true
+  dependabot_alerts:  false
   dependabot_updates: false
   protected_branches:
     master: {}

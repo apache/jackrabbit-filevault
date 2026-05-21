@@ -20,18 +20,19 @@ package org.apache.jackrabbit.vault.util.xml.serialize;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
 import com.ctc.wstx.api.WstxOutputProperties;
 import com.ctc.wstx.stax.WstxOutputFactory;
 import com.sun.xml.txw2.output.IndentingXMLStreamWriter;
+import org.codehaus.stax2.XMLOutputFactory2;
+import org.codehaus.stax2.XMLStreamWriter2;
 
 /** StAX XML Stream Writer filter. Adds the following functionality:
  * <ul>
@@ -42,8 +43,7 @@ import com.sun.xml.txw2.output.IndentingXMLStreamWriter;
  */
 public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable {
 
-    private final Writer rawWriter;
-    private final XMLStreamWriter writer;
+    private final XMLStreamWriter2 writer;
     private final OutputFormat output;
     private final IndentingXMLStreamWriter elementIndentingXmlWriter;
 
@@ -54,24 +54,26 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
 
     public static FormattingXmlStreamWriter create(OutputStream output, OutputFormat format)
             throws XMLStreamException, FactoryConfigurationError {
-        // always use WoodstoX
-        XMLOutputFactory factory = new WstxOutputFactory();
-        factory.setProperty(WstxOutputProperties.P_USE_DOUBLE_QUOTES_IN_XML_DECL, true);
-        return new FormattingXmlStreamWriter(factory, output, format);
+        // always UTF-8 encoding
+        return create(new OutputStreamWriter(output, StandardCharsets.UTF_8), format);
     }
 
-    private FormattingXmlStreamWriter(XMLOutputFactory factory, OutputStream output, OutputFormat format)
+    public static FormattingXmlStreamWriter create(Writer writer, OutputFormat format)
             throws XMLStreamException, FactoryConfigurationError {
-        this(factory.createXMLStreamWriter(output, StandardCharsets.UTF_8.name()), format);
+        // always use WoodstoX
+        XMLOutputFactory2 factory = new WstxOutputFactory();
+        factory.setProperty(WstxOutputProperties.P_USE_DOUBLE_QUOTES_IN_XML_DECL, true);
+        return new FormattingXmlStreamWriter(factory, writer, format);
     }
 
-    private FormattingXmlStreamWriter(XMLStreamWriter writer, OutputFormat output) {
+    private FormattingXmlStreamWriter(XMLOutputFactory2 factory, Writer writer, OutputFormat format)
+            throws XMLStreamException, FactoryConfigurationError {
+        this(factory.createXMLStreamWriter(writer, StandardCharsets.UTF_8.name()), format);
+    }
+
+    private FormattingXmlStreamWriter(XMLStreamWriter2 writer, OutputFormat output) {
         this.output = output;
         this.writer = writer;
-        this.rawWriter = (Writer) writer.getProperty(WstxOutputProperties.P_OUTPUT_UNDERLYING_WRITER);
-        if (this.rawWriter == null) {
-            throw new IllegalStateException("Could not get underlying writer!");
-        }
         this.elementIndentingXmlWriter = new IndentingXMLStreamWriter(writer);
         this.elementIndentingXmlWriter.setIndentStep(output.getIndent());
     }
@@ -80,8 +82,8 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
     public void writeEndDocument() throws XMLStreamException {
         // nothing can be written after writeEndDocument() has been called, therefore call the additional new line
         // before
+        addLineBreak();
         elementIndentingXmlWriter.writeEndDocument();
-        addLineBreak(true);
     }
 
     @Override
@@ -179,11 +181,11 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
             // if the amount of namespace declarations + attributes is bigger than 1
             if (numNamespaceDeclarations + numAttributes > 1) {
                 if (bufferedAttribute != null) {
-                    addLineBreak(true);
+                    addLineBreak();
                     indent(true);
                     flushBufferedAttribute();
                 }
-                addLineBreak(true);
+                addLineBreak();
                 indent(true);
             } else {
                 bufferedAttribute = new Attribute(prefix, namespaceURI, localName, value);
@@ -204,49 +206,31 @@ public class FormattingXmlStreamWriter implements XMLStreamWriter, AutoCloseable
     }
 
     private void indent(boolean isAttribute) throws XMLStreamException {
-        // writeCharacters does close the current element and changes the state!
-        // Stax2.writeSpace cannot be used either due to https://github.com/FasterXML/woodstox/issues/95
-        // instead write directly to underlying writer
-        try {
-            writer.flush();
-            if (depth > 0) {
-                for (int i = 0; i < depth; i++) {
-                    final String indent;
-                    if (isAttribute && i == depth - 1) {
-                        // leave out one space as that is automatically added by any XMLStreamWriter between any two
-                        // attributes
-                        indent = output.getIndent()
-                                .substring(0, output.getIndent().length() - 1);
-                    } else {
-                        indent = output.getIndent();
-                    }
-                    rawWriter.write(indent);
+        if (depth > 0) {
+            for (int i = 0; i < depth; i++) {
+                final String indent;
+                if (isAttribute && i == depth - 1) {
+                    // leave out one space as that is automatically added by any XMLStreamWriter between any two
+                    // attributes
+                    indent = output.getIndent().substring(0, output.getIndent().length() - 1);
+                } else {
+                    indent = output.getIndent();
                 }
+                writer.writeSpace(indent);
             }
-            rawWriter.flush();
-        } catch (IOException e) {
-            throw new XMLStreamException("Could not indent attribute", e);
         }
     }
 
-    private void addLineBreak(boolean keepState) throws XMLStreamException {
-        if (keepState) {
-            try {
-                writer.flush();
-                rawWriter.write('\n');
-                rawWriter.flush();
-            } catch (IOException e) {
-                throw new XMLStreamException("Could not add line break", e);
-            }
-        } else {
-            writeCharacters("\n");
-        }
+    private void addLineBreak() throws XMLStreamException {
+        writer.writeSpace("\n");
     }
 
     @Override
     public void writeComment(String data) throws XMLStreamException {
         flushBufferedAttribute();
-        addLineBreak(false);
+        // force closing previous element due to https://github.com/FasterXML/woodstox/issues/290
+        writeCharacters("");
+        addLineBreak();
         indent(false);
         elementIndentingXmlWriter.writeComment(data);
     }

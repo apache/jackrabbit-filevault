@@ -95,7 +95,6 @@ If the attribute `matchProperties` is not set or `false` all properties directly
 ### Evaluating filters
 To determine which filter applies for a specific path, the path is evaluated against each of the filters of the package, in order, comparing it against the root of each filter (the include and exclude patterns are not considered for this). The first found match is used.
 
-This is important if you have two or more filter entries with overlapping content.
 e.g.
 ```
 <filter root="/conf/app" mode="merge_properties">
@@ -103,7 +102,8 @@ e.g.
 </filter>
 <filter root="/conf/app/settings/conf1"  mode="replace"/>
 ```
-Using these two entries, the content under /conf/app/settings/conf1 will be ignored since the first filter came first, even if the exclude rule will omit the node during installation. Put the most specific first for it to apply.
+Using these two entries, the content under /conf/app/settings/conf1 will be ignored since the first filter came first, even if the exclude rule will omit the node during installation. 
+Since this can cause confusion, it is recommended to avoid overlapping filter roots. If overlapping roots are actually needed, the most specific one can be put first so it applies.
 
 
 ### XML Schema

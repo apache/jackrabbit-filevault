@@ -93,7 +93,7 @@ Then the `pattern` is matched against property paths instead of node paths.
 If the attribute `matchProperties` is not set or `false` all properties directly below the given node paths are included/excluded, otherwise the pattern is compared with the full property path (in case properties are written/read) allowing to include/exclude only specific properties below an included node.
 
 ### Evaluating filters
-To determine which filter applies for a specific path, the path is evaluated against each of the filters of the package, in order, comparing it against the root of each filter (the include and exclude patterns are not considered for this). The first found match is used.
+To determine which filter applies for a specific path, the path is evaluated against each of the filters of the package, in order, comparing it against the root of each filter. The include and exclude patterns are not considered for this. The first found match is used. (see [JCRVLT-96]( https://issues.apache.org/jira/browse/JCRVLT-96) )
 
 e.g.
 ```

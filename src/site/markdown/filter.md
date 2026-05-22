@@ -92,6 +92,20 @@ Since FileVault 3.1.28 ([JCRVLT-120](https://issues.apache.org/jira/browse/JCRVL
 Then the `pattern` is matched against property paths instead of node paths.
 If the attribute `matchProperties` is not set or `false` all properties directly below the given node paths are included/excluded, otherwise the pattern is compared with the full property path (in case properties are written/read) allowing to include/exclude only specific properties below an included node.
 
+### Evaluating filters
+To determine which filter applies for a specific path, the path is evaluated against each of the filters of the package, in order, comparing it against the root of each filter. The include and exclude patterns are not considered for this. The first found match is used. (see [JCRVLT-96]( https://issues.apache.org/jira/browse/JCRVLT-96) )
+
+e.g.
+```
+<filter root="/conf/app" mode="merge_properties">
+    <exclude pattern="/conf/app/settings/conf1(/.*)?"/>
+</filter>
+<filter root="/conf/app/settings/conf1"  mode="replace"/>
+```
+Using these two entries, the content under /conf/app/settings/conf1 will be ignored since the first filter came first, even if the exclude rule will omit the node during installation. 
+Since this can cause confusion, it is recommended to avoid overlapping filter roots. If overlapping roots are actually needed, the most specific one can be put first so it applies.
+
+
 ### XML Schema
 
 One can leverage the [XML schema][xml.schema] provided at <https://jackrabbit.apache.org/filevault/xsd/workspacefilter-1.0.xsd> to validate a `filter.xml` of a content package. This schema also provides some documentation on the elements and attributes, so in most IDEs some help is exposed on hovering those.

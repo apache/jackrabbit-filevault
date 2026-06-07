@@ -71,9 +71,7 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
                 log.warn("Archive {} does not have a {} directory.", archive, Constants.VAULT_DIR);
                 return;
             }
-            PackageId packageId = archive.getMetaInf() != null
-                    ? archive.getMetaInf().getPackageProperties().getId()
-                    : null;
+            PackageId packageId = archive.getMetaInf().getPackageProperties().getId();
             root = root.getChild(Constants.HOOKS_DIR);
             if (root == null) {
                 log.debug("Archive {} does not have a {} directory.", archive, Constants.HOOKS_DIR);

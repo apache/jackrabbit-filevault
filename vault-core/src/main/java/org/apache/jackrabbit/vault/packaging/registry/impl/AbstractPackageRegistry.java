@@ -90,11 +90,22 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
 
     private final IdConflictPolicy defaultIdConflictPolicy;
 
+    private final boolean extraValidationBeforeSubtreeRemovalByDefault;
+
     public AbstractPackageRegistry(
             SecurityConfig securityConfig,
             boolean isStrictByDefault,
             boolean overwritePrimaryTypesOfFoldersByDefault,
             IdConflictPolicy defaultIdConflictPolicy) {
+        this(securityConfig, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault, defaultIdConflictPolicy, true);
+    }
+
+    public AbstractPackageRegistry(
+            SecurityConfig securityConfig,
+            boolean isStrictByDefault,
+            boolean overwritePrimaryTypesOfFoldersByDefault,
+            IdConflictPolicy defaultIdConflictPolicy,
+            boolean extraValidationBeforeSubtreeRemovalByDefault) {
         if (securityConfig != null) {
             this.securityConfig = securityConfig;
         } else {
@@ -103,6 +114,7 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
         this.isStrictByDefault = isStrictByDefault;
         this.overwritePrimaryTypesOfFoldersByDefault = overwritePrimaryTypesOfFoldersByDefault;
         this.defaultIdConflictPolicy = defaultIdConflictPolicy;
+        this.extraValidationBeforeSubtreeRemovalByDefault = extraValidationBeforeSubtreeRemovalByDefault;
     }
 
     public boolean isStrictByDefault() {
@@ -115,6 +127,10 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
 
     public IdConflictPolicy getDefaultIdConflictPolicy() {
         return defaultIdConflictPolicy;
+    }
+
+    public boolean isExtraValidationBeforeSubtreeRemovalByDefault() {
+        return extraValidationBeforeSubtreeRemovalByDefault;
     }
 
     /**

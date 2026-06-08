@@ -18,6 +18,9 @@
  */
 package org.apache.jackrabbit.vault.fs.filter;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +39,7 @@ import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -309,5 +313,26 @@ public class WorkspaceFilterTest {
             diff2.removeAll(expected);
             assertTrue("Sets differ: " + diff2 + " unexpected", diff2.isEmpty());
         }
+    }
+
+    @Test
+    public void extraValidationBeforeSubtreeRemovalDisabled_shortCircuitsIsSubtreeFullyCovered()
+            throws RepositoryException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.setExtraValidationBeforeSubtreeRemoval(false);
+        Node anyNode = Mockito.mock(Node.class);
+        assertTrue(filter.isSubtreeFullyCovered(anyNode));
+    }
+
+    @Test
+    public void translatePreservesExtraValidationBeforeSubtreeRemovalFlag()
+            throws ConfigurationException, RepositoryException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet("/a");
+        filter.add(set);
+        filter.setExtraValidationBeforeSubtreeRemoval(false);
+        DefaultWorkspaceFilter mapped = (DefaultWorkspaceFilter) filter.translate(new SimplePathMapping("/a", "/b"));
+        Node anyNode = Mockito.mock(Node.class);
+        assertTrue(mapped.isSubtreeFullyCovered(anyNode));
     }
 }

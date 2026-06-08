@@ -19,6 +19,8 @@
 package org.apache.jackrabbit.vault.fs.config;
 
 import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.xml.parsers.DocumentBuilder;
@@ -105,6 +107,13 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
      * global import mode override (e.g. for snapshot restores)
      */
     private ImportMode importMode;
+
+    /**
+     * When {@code true} (default), {@link #isSubtreeFullyCovered(javax.jcr.Node)} performs the full subtree check
+     * (JCRVLT-830). When {@code false}, that method always returns {@code true} so importers behave as before the
+     * extra validation. Not persisted; external configuration will be wired in a later step.
+     */
+    private boolean extraValidationBeforeSubtreeRemoval = true;
 
     /**
      * Add a #PathFilterSet for nodes items.
@@ -279,6 +288,57 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     }
 
     /**
+     * Enables or disables extra validation reflected by {@link #isSubtreeFullyCovered(javax.jcr.Node)} (JCRVLT-830).
+     * @param extraValidationBeforeSubtreeRemoval {@code true} to perform the subtree check; {@code false} to always
+     * report fully covered (legacy behavior for removal gating)
+     */
+    public void setExtraValidationBeforeSubtreeRemoval(boolean extraValidationBeforeSubtreeRemoval) {
+        this.extraValidationBeforeSubtreeRemoval = extraValidationBeforeSubtreeRemoval;
+    }
+
+    @Override
+    public boolean isSubtreeFullyCovered(javax.jcr.Node subTree) throws RepositoryException {
+        if (!extraValidationBeforeSubtreeRemoval) {
+            return true;
+        }
+        if (subTree == null) {
+            return false;
+        }
+        String path = subTree.getPath();
+        if (isGloballyIgnored(path)) {
+            return false;
+        }
+        if (getCoveringFilterSet(path) == null) {
+            return false;
+        }
+        if (getImportMode(path) != ImportMode.REPLACE) {
+            return false;
+        }
+        return isSubtreeFullyOverwrittenRecursive(subTree);
+    }
+
+    private boolean isSubtreeFullyOverwrittenRecursive(javax.jcr.Node node) throws RepositoryException {
+        String nodePath = node.getPath();
+        if (!contains(nodePath)) {
+            return false;
+        }
+        PropertyIterator props = node.getProperties();
+        while (props.hasNext()) {
+            Property prop = props.nextProperty();
+            if (!includesProperty(prop.getPath())) {
+                return false;
+            }
+        }
+        NodeIterator children = node.getNodes();
+        while (children.hasNext()) {
+            if (!isSubtreeFullyOverwrittenRecursive((javax.jcr.Node) children.nextNode())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public boolean isAncestor(String path) {
@@ -333,6 +393,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         for (PathFilterSet set : propsFilterSets) {
             mapped.propsFilterSets.add(set.translate(mapping));
         }
+        mapped.setExtraValidationBeforeSubtreeRemoval(extraValidationBeforeSubtreeRemoval);
         return mapped;
     }
 

@@ -38,7 +38,7 @@ External install hooks are loaded through the class loader by their fully qualif
 
 The following class loaders are used by default to load the given class:
 
-1. The class loader which loaded the `InstallHookProcessorImpl` class (in an OSGi container this is the bundle class loader of the FileVault bundle)
+1. The class loader which loaded the `InstallHookProcessorImpl` class (in an OSGi runtime this is the bundle class loader of the FileVault bundle)
 2. The [context class loader of the current thread](https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#getContextClassLoader--).
 
 The class loader can be overridden by calling [`ImportOptions.setHookClassLoader(...)`][api.ImportOptions] and pass the import options then to the package importer.

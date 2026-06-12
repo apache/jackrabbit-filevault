@@ -78,8 +78,8 @@ jobs:
         env: 
           # secrets were provided in https://issues.apache.org/jira/browse/INFRA-27930?
           NVD_API_KEY: ${{ secrets.NIST_NVD_API_KEY }}
-          MAVEN_USERNAME: ${{ secrets.NEXUS_USER }}
-          MAVEN_PASSWORD: ${{ secrets.NEXUS_PW }}
+          MAVEN_APACHE_NEXUS_USERNAME: ${{ secrets.NEXUS_USER }}
+          MAVEN_APACHE_NEXUS_PASSWORD: ${{ secrets.NEXUS_PW }}
         shell: bash
         # executing ITs requires installing artifacts to the local repository
         run: mvn -B ${{ env.MVN_GOAL }} ${{ env.MVN_ADDITIONAL_OPTS }} -Pjacoco-report -Dlogback.configurationFile=vault-core/src/test/resources/logback-only-errors.xml

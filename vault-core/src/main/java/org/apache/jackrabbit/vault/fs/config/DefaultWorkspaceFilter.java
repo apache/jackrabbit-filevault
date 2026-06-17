@@ -110,8 +110,8 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
     /**
      * When {@code true} (default), {@link #isSubtreeFullyCovered(javax.jcr.Node)} performs the full subtree check
-     * (JCRVLT-830). When {@code false}, that method always returns {@code true} so importers behave as before the
-     * extra validation. Not persisted; external configuration will be wired in a later step.
+     * (JCRVLT-830). When {@code false}, {@link #isSubtreeFullyCovered(javax.jcr.Node)} always returns {@code true} so importers behave as before the
+     * extra validation. This value is not persisted.
      */
     private boolean extraValidationBeforeSubtreeRemoval = true;
 
@@ -298,6 +298,10 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
 
     @Override
     public boolean isSubtreeFullyCovered(javax.jcr.Node subTree) throws RepositoryException {
+        /**
+         * if this validation is explicitly disabled, just assume that the subtree is fully covered,
+         * which is the default behavior before this check was introduced with JCRVLT-830
+         */
         if (!extraValidationBeforeSubtreeRemoval) {
             return true;
         }

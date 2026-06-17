@@ -196,9 +196,10 @@ public interface WorkspaceFilter extends Dumpable {
      * When this method returns {@code true}, an importer may safely remove the existing node at
      * the path and replace it and its children with the package content. When it returns {@code false},
      * removal should be avoided or done selectively.
-     * @param subTree TODO
+     * @param subTree the subtree to validate
      *
-     * @return {@code true} if every node and property on the node {subTree} and its children is included and mode is REPLACE
+     * @return {@code true} if every node and property on the node {subTree} and its children is included and mode is REPLACE,
+     * {@code false} otherwise.
      * @throws RepositoryException if the path does not exist or traversal fails
      */
     boolean isSubtreeFullyCovered(@NotNull Node subTree) throws RepositoryException;

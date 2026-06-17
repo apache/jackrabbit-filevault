@@ -325,8 +325,7 @@ public class WorkspaceFilterTest {
     }
 
     @Test
-    public void translatePreservesExtraValidationBeforeSubtreeRemovalFlag()
-            throws ConfigurationException, RepositoryException {
+    public void translatePreservesExtraValidationBeforeSubtreeRemovalFlag() throws RepositoryException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         PathFilterSet set = new PathFilterSet("/a");
         filter.add(set);

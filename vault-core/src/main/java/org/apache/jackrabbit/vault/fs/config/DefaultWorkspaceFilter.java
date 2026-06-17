@@ -335,7 +335,7 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
         }
         NodeIterator children = node.getNodes();
         while (children.hasNext()) {
-            if (!isSubtreeFullyOverwrittenRecursive((javax.jcr.Node) children.nextNode())) {
+            if (!isSubtreeFullyOverwrittenRecursive(children.nextNode())) {
                 return false;
             }
         }

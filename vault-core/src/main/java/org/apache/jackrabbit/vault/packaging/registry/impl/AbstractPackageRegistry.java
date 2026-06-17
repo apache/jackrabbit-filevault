@@ -100,7 +100,7 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
         this(securityConfig, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault, defaultIdConflictPolicy, true);
     }
 
-    public AbstractPackageRegistry(
+    AbstractPackageRegistry(
             SecurityConfig securityConfig,
             boolean isStrictByDefault,
             boolean overwritePrimaryTypesOfFoldersByDefault,

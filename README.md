@@ -25,14 +25,14 @@ Please refer to the documentation at
 <https://jackrabbit.apache.org/filevault/>
 
 
-Prerequisites
+Runtime Prerequisites
 ===========================================
 
-Runtime
--------
 Java 11 or higher
 
-### Runtime Dependencies
+Runtime Dependencies
+--------------------
+
 - Jackrabbit 2.20.17+ (JCR Commons, SPI, SPI Commons)
 - Oak Jackrabbit API 1.22.4+
 - Commons IO 2.18.0+
@@ -40,7 +40,7 @@ Java 11 or higher
 - SLF4J 1.7+
 
 Build
-------
+=========
 
 You can build FileVault like this:
 
@@ -51,7 +51,8 @@ For more instructions, please see the documentation at:
 
    <https://jackrabbit.apache.org/building-jackrabbit.html>
 
-### Building FileVault Site
+Building FileVault Site
+-----------------------
 
 The FileVault documentation lives as Markdown files in `src/site/markdown` such
 that it easy to view e.g. from GitHub. The Maven site plugin

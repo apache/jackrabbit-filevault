@@ -1,4 +1,4 @@
-# https://cwiki.apache.org/confluence/display/INFRA/git+-+.asf.yaml+features#Git.asf.yamlfeatures-GitHubsettings
+# https://github.com/apache/infrastructure-asfyaml/blob/main/README.md
 github:
   description: "Apache Jackrabbit FileVault"
   homepage: https://jackrabbit.apache.org/filevault/index.html
@@ -18,3 +18,6 @@ github:
   dependabot_updates: false
   protected_branches:
     master: {}
+  pull_requests:
+    # auto-delete head branches after being merged
+    del_branch_on_merge: true

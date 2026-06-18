@@ -361,7 +361,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.</des
               <goals>
                 <goal>${spotless.action}</goal>
               </goals>
-              <phase>process-sources</phase>
+              <phase>verify</phase>
             </execution>
           </executions>
         </plugin>

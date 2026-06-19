@@ -357,6 +357,9 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.</des
           </dependencies>
           <executions>
             <execution>
+              <?m2e ignore?>
+              <!-- explicit ignore necessary for m2e due to https://github.com/eclipse-m2e/m2e-core/issues/2193,
+                   syntax described in https://eclipse.dev/m2e/documentation/release-notes-17.html#new-syntax-for-specifying-lifecycle-mapping-metadata-->
               <id>spotless-format</id>
               <goals>
                 <goal>${spotless.action}</goal>
@@ -530,6 +533,29 @@ Bundle-Category: jackrabbit
             </execution>
           </executions>
         </plugin>
+        <!--        <plugin>-->
+        <!--          <groupId>org.eclipse.m2e</groupId>-->
+        <!--          <artifactId>lifecycle-mapping</artifactId>-->
+        <!--          <version>1.0.0</version>-->
+        <!--          <configuration>-->
+        <!--            <lifecycleMappingMetadata>-->
+        <!--              <pluginExecutions>-->
+        <!--                <pluginExecution>-->
+        <!--                  <pluginExecutionFilter>-->
+        <!--                    <groupId>com.diffplug.spotless</groupId>-->
+        <!--                    <artifactId>spotless-maven-plugin</artifactId>-->
+        <!--                    <goals>-->
+        <!--                      <goal>apply</goal>-->
+        <!--                    </goals>-->
+        <!--                  </pluginExecutionFilter>-->
+        <!--                  <action>-->
+        <!--                    <ignore />-->
+        <!--                  </action>-->
+        <!--                </pluginExecution>-->
+        <!--              </pluginExecutions>-->
+        <!--            </lifecycleMappingMetadata>-->
+        <!--          </configuration>-->
+        <!--        </plugin>-->
       </plugins>
     </pluginManagement>
     <plugins>

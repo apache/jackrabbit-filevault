@@ -41,12 +41,16 @@ import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.util.EffectiveNodeType;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles artifact sets with just a directory.
  *
  */
 public class FolderArtifactHandler extends AbstractArtifactHandler {
+
+    static final Logger log = LoggerFactory.getLogger(FolderArtifactHandler.class);
 
     /**
      * whether primary type of folders should be overwritten
@@ -169,6 +173,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
                                 getAclManagement().clearACL(node);
                             }
                         } else {
+                            log.warn("Replace path: {}", child.getPath());
                             info.onDeleted(path);
                             child.remove();
                         }

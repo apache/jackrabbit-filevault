@@ -552,6 +552,7 @@ public class DocViewImporter implements DocViewParserHandler {
                             }
 
                             if (shouldRemoveChild) {
+                                log.warn("Replacing path {}", path);
                                 stashPrincipalAcls(child);
                                 importInfo.onDeleted(path);
                                 child.remove();

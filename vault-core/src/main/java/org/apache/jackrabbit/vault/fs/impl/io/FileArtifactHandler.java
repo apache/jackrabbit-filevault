@@ -48,6 +48,8 @@ import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 
 /**
@@ -56,6 +58,8 @@ import org.xml.sax.InputSource;
  *
  */
 public class FileArtifactHandler extends AbstractArtifactHandler {
+
+        static final Logger log = LoggerFactory.getLogger(FileArtifactHandler.class);
 
     /**
      * The node type for xml deserialization
@@ -137,6 +141,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler {
                         info = new ImportInfoImpl();
                     }
                     if (wspFilter.getImportMode(path) == ImportMode.REPLACE) {
+                        log.info("Removing node at path: {}", path);
                         info.onDeleted(path);
                         file.remove();
                     } else {

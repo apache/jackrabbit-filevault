@@ -173,7 +173,7 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
                                 getAclManagement().clearACL(node);
                             }
                         } else {
-                            log.warn("Replace path: {}", child.getPath());
+                            log.info("Removing node at path: {}", child.getPath());
                             info.onDeleted(path);
                             child.remove();
                         }

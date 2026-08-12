@@ -46,6 +46,7 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,13 +179,33 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
             IdConflictPolicy defaultIdConflictPolicy)
             throws PackageException, RepositoryException {
         extract(
+                session,
+                opts,
+                securityConfig,
+                isStrict,
+                isOverwritePrimaryTypesOfFolders,
+                defaultIdConflictPolicy,
+                null);
+    }
+
+    public void extract(
+            Session session,
+            ImportOptions opts,
+            @NotNull AbstractPackageRegistry.SecurityConfig securityConfig,
+            boolean isStrict,
+            boolean isOverwritePrimaryTypesOfFolders,
+            IdConflictPolicy defaultIdConflictPolicy,
+            @Nullable Boolean extraValidationBeforeSubtreeRemoval)
+            throws PackageException, RepositoryException {
+        extract(
                 prepareExtract(
                         session,
                         opts,
                         securityConfig,
                         isStrict,
                         isOverwritePrimaryTypesOfFolders,
-                        defaultIdConflictPolicy),
+                        defaultIdConflictPolicy,
+                        extraValidationBeforeSubtreeRemoval),
                 null);
     }
 
@@ -211,6 +232,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @param isStrictByDefault is true if packages should be installed in strict mode by default (if not set otherwise in {@code opts})
      * @param overwritePrimaryTypesOfFoldersByDefault if folder aggregates' JCR primary type should be changed if the node is already existing or not
      * @param defaultIdConflictPolicy the default {@link IdConflictPolicy} to use if no policy is set in {@code opts}. May be {@code null}.
+     * @param extraValidationBeforeSubtreeRemoval JCRVLT-830 from OSGi when non-null; {@code null} leaves filter default
      *
      * @throws javax.jcr.RepositoryException if a repository error during installation occurs.
      * @throws org.apache.jackrabbit.vault.packaging.PackageException if an error during packaging occurs
@@ -223,7 +245,8 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
             @NotNull AbstractPackageRegistry.SecurityConfig securityConfig,
             boolean isStrictByDefault,
             boolean overwritePrimaryTypesOfFoldersByDefault,
-            IdConflictPolicy defaultIdConflictPolicy)
+            IdConflictPolicy defaultIdConflictPolicy,
+            @Nullable Boolean extraValidationBeforeSubtreeRemoval)
             throws PackageException, RepositoryException {
         if (!isValid()) {
             throw new IllegalStateException("Package not valid.");
@@ -245,7 +268,11 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
             }
 
             Importer importer = new Importer(
-                    opts, isStrictByDefault, overwritePrimaryTypesOfFoldersByDefault, defaultIdConflictPolicy);
+                    opts,
+                    isStrictByDefault,
+                    overwritePrimaryTypesOfFoldersByDefault,
+                    defaultIdConflictPolicy,
+                    extraValidationBeforeSubtreeRemoval);
             AccessControlHandling ac = getACHandling();
             if (opts.getAccessControlHandling() == null) {
                 opts.setAccessControlHandling(ac);

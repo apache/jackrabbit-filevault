@@ -103,6 +103,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
 
     private InstallationScope scope = InstallationScope.UNSCOPED;
 
+    private boolean extraValidationBeforeSubtreeRemoval = true;
+
     /**
      * Creates a new FSPackageRegistry based on the given home directory.
      *
@@ -179,6 +181,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         }
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", homeDir.getPath());
         this.scope = InstallationScope.valueOf(config.scope());
+        this.extraValidationBeforeSubtreeRemoval = config.extraValidationBeforeSubtreeRemoval();
         this.securityConfig = new AbstractPackageRegistry.SecurityConfig(
                 config.authIdsForHookExecution(), config.authIdsForRootInstallation());
         this.stateCache = new FSInstallStateCache(homeDir.toPath());
@@ -213,6 +216,13 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 description =
                         "The authorizable ids which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForRootInstallation();
+
+        @AttributeDefinition(
+                name = "Extra Validation Before Subtree Removal",
+                description =
+                        "When enabled (default), nodes are only removed during import if the parent's subtree is fully "
+                                + "covered by the filter (JCRVLT-830). When disabled, legacy behavior applies.")
+        boolean extraValidationBeforeSubtreeRemoval() default true;
     }
 
     /**
@@ -670,7 +680,8 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                                 getSecurityConfig(),
                                 isStrictByDefault(),
                                 overwritePrimaryTypesOfFoldersByDefault(),
-                                getDefaultIdConflictPolicy());
+                                getDefaultIdConflictPolicy(),
+                                extraValidationBeforeSubtreeRemoval);
                 dispatch(PackageEvent.Type.EXTRACT, pkg.getId(), null);
                 stateCache.updatePackageStatus(vltPkg.getId(), FSPackageStatus.EXTRACTED);
             } else {

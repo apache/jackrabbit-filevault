@@ -155,10 +155,20 @@ public class FolderArtifactHandler extends AbstractArtifactHandler {
                 modifyPrimaryType(node, info);
             }
             NodeIterator iter = node.getNodes();
+            // JCRVLT-830: parent's subtree coverage doesn't change across children of the same parent,
+            // so evaluate the (potentially expensive) recursive check at most once, and only if actually needed
+            SubtreeCoverage subtreeCoverage = SubtreeCoverage.UNKNOWN;
             while (iter.hasNext()) {
                 Node child = iter.nextNode();
                 String path = child.getPath();
                 if (wspFilter.contains(path) && wspFilter.getImportMode(path) == ImportMode.REPLACE) {
+                    // Only remove when parent's subtree is fully overwritten (JCRVLT-830)
+                    if (subtreeCoverage == SubtreeCoverage.UNKNOWN) {
+                        subtreeCoverage = SubtreeCoverage.of(wspFilter.isSubtreeFullyCovered(node));
+                    }
+                    if (subtreeCoverage == SubtreeCoverage.NOT_FULLY_COVERED) {
+                        continue;
+                    }
                     if (!hints.contains(path)) {
                         // if the child is in the filter, it belongs to
                         // this aggregate and needs to be removed

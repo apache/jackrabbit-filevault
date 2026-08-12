@@ -123,6 +123,14 @@ public class PackagingImpl implements Packaging {
                 name = "Default ID Conflict Policy",
                 description = "Default node id conflict policy to use during import")
         IdConflictPolicy defaultIdConflictPolicy() default IdConflictPolicy.FAIL;
+
+        @AttributeDefinition(
+                name = "Extra Validation Before Subtree Removal",
+                description =
+                        "When enabled (default), nodes are only removed during import if the parent's subtree is fully "
+                                + "covered by the filter (JCRVLT-830). When disabled, legacy behavior: remove when path is in "
+                                + "filter and in REPLACE mode.")
+        boolean extraValidationBeforeSubtreeRemoval() default true;
     }
 
     @Activate
@@ -150,7 +158,8 @@ public class PackagingImpl implements Packaging {
                 config.authIdsForRootInstallation(),
                 config.isStrict(),
                 config.overwritePrimaryTypesOfFolders(),
-                config.defaultIdConflictPolicy());
+                config.defaultIdConflictPolicy(),
+                config.extraValidationBeforeSubtreeRemoval());
         mgr.setDispatcher(eventDispatcher);
         setBaseRegistry(mgr.getInternalRegistry(), registries);
         return mgr;
@@ -212,6 +221,7 @@ public class PackagingImpl implements Packaging {
                 config.isStrict(),
                 config.overwritePrimaryTypesOfFolders(),
                 config.defaultIdConflictPolicy(),
+                config.extraValidationBeforeSubtreeRemoval(),
                 config.packageRoots());
         registry.setDispatcher(eventDispatcher);
         if (useBaseRegistry) {

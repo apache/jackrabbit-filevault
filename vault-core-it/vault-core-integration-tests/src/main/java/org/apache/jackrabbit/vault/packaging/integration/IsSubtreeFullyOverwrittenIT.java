@@ -1,0 +1,326 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.jackrabbit.vault.packaging.integration;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
+import java.io.IOException;
+
+import org.apache.jackrabbit.JcrConstants;
+import org.apache.jackrabbit.commons.JcrUtils;
+import org.apache.jackrabbit.vault.fs.api.ImportMode;
+import org.apache.jackrabbit.vault.fs.api.PathFilter;
+import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
+import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
+import org.apache.jackrabbit.vault.fs.io.Archive;
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
+import org.apache.jackrabbit.vault.fs.io.Importer;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Integration tests for WorkspaceFilter#isSubtreeFullyOverwritten()
+ */
+public class IsSubtreeFullyOverwrittenIT extends IntegrationTestBase {
+
+    private static final String TEST_ROOT = "/tmp/isSubtreeFullyOverwritten";
+    private Node rootNode;
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        clean(TEST_ROOT);
+
+        rootNode = JcrUtils.getOrCreateByPath(TEST_ROOT, JcrConstants.NT_UNSTRUCTURED, admin);
+    }
+
+    /**
+     * Path is outside all filter roots: no covering filter set.
+     * Expects false (early exit, no repository traversal).
+     */
+    @Test
+    public void returnsFalseWhenPathNotCoveredByAnyFilter() throws RepositoryException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet("/other/root");
+        set.addInclude(new DefaultPathFilter("/other/root(/.*)?"));
+        filter.add(set);
+
+        Node root = JcrUtils.getOrCreateByPath(TEST_ROOT + "/content", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        assertFalse(filter.isSubtreeFullyCovered(rootNode));
+    }
+
+    /**
+     * Filter has MERGE_PROPERTIES (not REPLACE). Subtree must not be considered fully overwritten.
+     * Expects false (import mode check).
+     */
+    @Test
+    public void returnsFalseWhenImportModeIsNotReplace() throws RepositoryException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(TEST_ROOT);
+        set.addInclude(new DefaultPathFilter(TEST_ROOT + "(/.*)?"));
+        set.setImportMode(ImportMode.MERGE_PROPERTIES);
+        filter.add(set);
+
+        Node n = JcrUtils.getOrCreateByPath(TEST_ROOT + "/node", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        assertFalse(filter.isSubtreeFullyCovered(n));
+    }
+
+    /**
+     * Path matches global-ignored filter. Must not traverse or consider overwritten.
+     * Expects false (global ignored check).
+     */
+    @Test
+    public void returnsFalseWhenPathIsGloballyIgnored() throws RepositoryException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(TEST_ROOT);
+        set.addInclude(new DefaultPathFilter(TEST_ROOT + "(/.*)?"));
+        filter.add(set);
+        filter.setGlobalIgnored(PathFilter.ALL);
+
+        Node n = JcrUtils.getOrCreateByPath(TEST_ROOT + "/node", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        assertFalse(filter.isSubtreeFullyCovered(n));
+    }
+
+    /**
+     * Parent is included, but a child is excluded by filter. Recursive check finds child not contained.
+     * Expects false (contains() fails for excluded descendant).
+     */
+    @Test
+    public void returnsFalseWhenChildNodeIsExcludedByFilter() throws RepositoryException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(TEST_ROOT);
+        set.addInclude(new DefaultPathFilter(TEST_ROOT + "(/.*)?"));
+        set.addExclude(new DefaultPathFilter(TEST_ROOT + "/parent/excluded(/.*)?"));
+        filter.add(set);
+
+        Node p = JcrUtils.getOrCreateByPath(TEST_ROOT + "/parent", JcrConstants.NT_UNSTRUCTURED, admin);
+        JcrUtils.getOrCreateByPath(TEST_ROOT + "/parent/excluded", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        assertFalse(filter.isSubtreeFullyCovered(p));
+    }
+
+    /**
+     * Subtree exists, REPLACE mode, all nodes and properties included. Recursive traversal succeeds.
+     * Expects true (full overwrite allowed).
+     */
+    @Test
+    public void returnsTrueWhenSubtreeExistsAndFullyIncluded() throws RepositoryException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(TEST_ROOT);
+        set.addInclude(new DefaultPathFilter(TEST_ROOT + "(/.*)?"));
+        filter.add(set);
+
+        Node p = JcrUtils.getOrCreateByPath(TEST_ROOT + "/parent", JcrConstants.NT_UNSTRUCTURED, admin);
+        JcrUtils.getOrCreateByPath(TEST_ROOT + "/parent/child", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        assertTrue(filter.isSubtreeFullyCovered(p));
+    }
+
+    /**
+     * Single node, no children. All properties (e.g. jcr:primaryType) included. Edge case for recursion.
+     * Expects true.
+     */
+    @Test
+    public void returnsTrueWhenLeafNodeHasNoChildren() throws RepositoryException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(TEST_ROOT);
+        set.addInclude(new DefaultPathFilter(TEST_ROOT + "(/.*)?"));
+        filter.add(set);
+
+        Node l = JcrUtils.getOrCreateByPath(TEST_ROOT + "/leaf", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        assertTrue(filter.isSubtreeFullyCovered(l));
+    }
+
+    /**
+     * Global-ignored filter matches a different path; test path is not ignored. Check proceeds normally.
+     * Expects true (global ignored does not apply).
+     */
+    @Test
+    public void returnsTrueWhenGlobalIgnoredDoesNotMatchPath() throws RepositoryException, ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(TEST_ROOT);
+        set.addInclude(new DefaultPathFilter(TEST_ROOT + "(/.*)?"));
+        filter.add(set);
+        filter.setGlobalIgnored(new DefaultPathFilter("/other/ignored(/.*)?"));
+
+        Node n = JcrUtils.getOrCreateByPath(TEST_ROOT + "/node", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        assertTrue(filter.isSubtreeFullyCovered(n));
+    }
+
+    /**
+     * Property filter excludes a property on the node. includesProperty() fails during traversal.
+     * Expects false (property exclusion prevents full overwrite).
+     */
+    @Test
+    public void returnsFalseWhenPropertyIsExcludedByFilter() throws RepositoryException, ConfigurationException {
+        PathFilterSet nodeSet = new PathFilterSet(TEST_ROOT);
+        nodeSet.addInclude(new DefaultPathFilter(TEST_ROOT + "(/.*)?"));
+        PathFilterSet propSet = new PathFilterSet(TEST_ROOT);
+        propSet.addInclude(new DefaultPathFilter(TEST_ROOT + "(/.*)?"));
+        propSet.addExclude(new DefaultPathFilter(".*/customProp"));
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(nodeSet, propSet);
+
+        Node node = JcrUtils.getOrCreateByPath(TEST_ROOT + "/withProp", JcrConstants.NT_UNSTRUCTURED, admin);
+        node.setProperty("customProp", "value");
+        admin.save();
+
+        assertFalse(filter.isSubtreeFullyCovered(node));
+    }
+
+    /**
+     * JCRVLT-830: Repo has a parent (e.g. content/mysite/en) and a child (page) that is excluded by the filter.
+     * When importing a package that does not contain that child, the importer may only remove it if the subtree
+     * is fully overwritten. Here the child is excluded, so the subtree is not fully overwritten.
+     * Expects false so the importer keeps the existing child instead of removing it.
+     */
+    @Test
+    public void jcrvlt830ReturnsFalseWhenExistingChildInRepoIsExcludedByFilter()
+            throws RepositoryException, ConfigurationException {
+        String contentRoot = TEST_ROOT + "/content/mysite";
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(contentRoot);
+        set.addInclude(new DefaultPathFilter(contentRoot + "(/.*)?"));
+        set.addExclude(new DefaultPathFilter(contentRoot + "/en/page(/.*)?"));
+        filter.add(set);
+        filter.setExtraValidationBeforeSubtreeRemoval(true);
+
+        Node n = JcrUtils.getOrCreateByPath(contentRoot + "/en", JcrConstants.NT_UNSTRUCTURED, admin);
+        JcrUtils.getOrCreateByPath(contentRoot + "/en/page", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        assertFalse(filter.isSubtreeFullyCovered(n));
+    }
+
+    /**
+     * Same tree as {@link #jcrvlt830ReturnsFalseWhenExistingChildInRepoIsExcludedByFilter} but with extra validation
+     * disabled: {@link DefaultWorkspaceFilter#setExtraValidationBeforeSubtreeRemoval(boolean)} {@code false}.
+     */
+    @Test
+    public void whenExtraValidationBeforeSubtreeRemovalDisabled_excludedChildReportsSubtreeCovered()
+            throws RepositoryException, ConfigurationException {
+        String contentRoot = TEST_ROOT + "/content/mysite/disabled";
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(contentRoot);
+        set.addInclude(new DefaultPathFilter(contentRoot + "(/.*)?"));
+        set.addExclude(new DefaultPathFilter(contentRoot + "/en/page(/.*)?"));
+        filter.add(set);
+        filter.setExtraValidationBeforeSubtreeRemoval(false);
+
+        Node n = JcrUtils.getOrCreateByPath(contentRoot + "/en", JcrConstants.NT_UNSTRUCTURED, admin);
+        JcrUtils.getOrCreateByPath(contentRoot + "/en/page", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        assertTrue(filter.isSubtreeFullyCovered(n));
+    }
+
+    /**
+     * JCRVLT-830: When extra validation before subtree removal is disabled, a full import run must actually remove
+     * nodes that are no longer in the package, even if a sibling is excluded by the filter (legacy behavior).
+     */
+    @Test
+    public void whenExtraValidationBeforeSubtreeRemovalDisabled_subtreeIsRemovedOnReimport()
+            throws IOException, RepositoryException, ConfigurationException {
+        String importRoot = "/tmp";
+        clean(importRoot);
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(importRoot);
+        set.addInclude(new DefaultPathFilter(importRoot + "(/.*)?"));
+        set.addExclude(new DefaultPathFilter(importRoot + "/foo/bar/excluded(/.*)?"));
+        filter.add(set);
+        filter.setExtraValidationBeforeSubtreeRemoval(false);
+
+        ImportOptions opts = getDefaultOptions();
+        opts.setFilter(filter);
+        Importer importer = new Importer(opts);
+        Node rootNode = admin.getRootNode();
+
+        try (Archive archive = getFileArchive("/test-packages/tmp.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
+        }
+        assertNodeExists("/tmp/foo/bar/tobi");
+
+        JcrUtils.getOrCreateByPath("/tmp/foo/bar/excluded", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        try (Archive archive = getFileArchive("/test-packages/tmp_less.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
+        }
+        assertNodeMissing("/tmp/foo/bar/tobi");
+    }
+
+    /**
+     * JCRVLT-830: When extra validation before subtree removal is enabled (default), a full import run must not remove
+     * nodes when a sibling is excluded by the filter (subtree not fully covered).
+     */
+    @Test
+    public void whenExtraValidationBeforeSubtreeRemovalEnabled_subtreeIsPreservedOnReimport()
+            throws IOException, RepositoryException, ConfigurationException {
+        String importRoot = "/tmp";
+        clean(importRoot);
+
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet set = new PathFilterSet(importRoot);
+        set.addInclude(new DefaultPathFilter(importRoot + "(/.*)?"));
+        set.addExclude(new DefaultPathFilter(importRoot + "/foo/bar/excluded(/.*)?"));
+        filter.add(set);
+        filter.setExtraValidationBeforeSubtreeRemoval(true);
+
+        ImportOptions opts = getDefaultOptions();
+        opts.setFilter(filter);
+        Importer importer = new Importer(opts);
+        Node rootNode = admin.getRootNode();
+
+        try (Archive archive = getFileArchive("/test-packages/tmp.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
+        }
+        assertNodeExists("/tmp/foo/bar/tobi");
+
+        JcrUtils.getOrCreateByPath("/tmp/foo/bar/excluded", JcrConstants.NT_UNSTRUCTURED, admin);
+        admin.save();
+
+        try (Archive archive = getFileArchive("/test-packages/tmp_less.zip")) {
+            archive.open(true);
+            importer.run(archive, rootNode);
+        }
+        assertNodeExists("/tmp/foo/bar/tobi");
+    }
+}

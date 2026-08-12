@@ -132,7 +132,30 @@ public class JcrPackageRegistry extends AbstractPackageRegistry {
             boolean overwritePrimaryTypesOfFoldersByDefault,
             IdConflictPolicy defaultIdConflictPolicy,
             @Nullable String... roots) {
-        super(securityConfig, isStrict, overwritePrimaryTypesOfFoldersByDefault, defaultIdConflictPolicy);
+        this(
+                session,
+                securityConfig,
+                isStrict,
+                overwritePrimaryTypesOfFoldersByDefault,
+                defaultIdConflictPolicy,
+                true,
+                roots);
+    }
+
+    public JcrPackageRegistry(
+            @NotNull Session session,
+            @Nullable AbstractPackageRegistry.SecurityConfig securityConfig,
+            boolean isStrict,
+            boolean overwritePrimaryTypesOfFoldersByDefault,
+            IdConflictPolicy defaultIdConflictPolicy,
+            boolean extraValidationBeforeSubtreeRemovalByDefault,
+            @Nullable String... roots) {
+        super(
+                securityConfig,
+                isStrict,
+                overwritePrimaryTypesOfFoldersByDefault,
+                defaultIdConflictPolicy,
+                extraValidationBeforeSubtreeRemovalByDefault);
         this.session = session;
         if (roots == null || roots.length == 0) {
             packRootPaths = new String[] {DEFAULT_PACKAGE_ROOT_PATH};

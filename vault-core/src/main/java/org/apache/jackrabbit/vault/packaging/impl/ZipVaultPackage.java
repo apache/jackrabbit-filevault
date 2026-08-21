@@ -25,6 +25,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.PatternSyntaxException;
@@ -45,6 +46,7 @@ import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry;
+import org.apache.jackrabbit.vault.util.Constants;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -234,8 +236,16 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 : new InstallHookProcessorImpl();
         try {
             if (!opts.isDryRun()) {
+                // consult the allowance gate on hook *presence* determined by pure archive
+                // listing before any hook class is spooled, loaded or instantiated: the gate
+                // must decide whether this session may install a hooked package at all before
+                // package-supplied code (static initializers, constructors) runs in this JVM
+                checkAllowanceToInstallPackage(session, hasHookEntries(archive), securityConfig);
                 hooks.registerHooks(archive, opts.getHookClassLoader());
             }
+            // re-check against the actually registered hooks: a custom
+            // InstallHookProcessorFactory implementation may register hooks that are not
+            // detectable by listing the archive
             checkAllowanceToInstallPackage(session, hooks, securityConfig);
 
             // check for disable intermediate saves (JCRVLT-520)
@@ -270,10 +280,56 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         }
     }
 
+    /**
+     * Detects whether the given archive declares install hooks, by pure archive listing:
+     * an entry below {@code META-INF/vault/hooks} ending with {@code .jar}, or a package
+     * property starting with {@code installhook.}. Deliberately loads no class and creates
+     * no class loader. The package properties have already been parsed when the archive was
+     * opened, so this only consults cached metadata and triggers no additional MetaInf
+     * processing.
+     *
+     * @param archive the archive to check
+     * @return {@code true} if the archive declares at least one install hook
+     * @throws PackageException if an I/O error occurs while listing the archive
+     */
+    static boolean hasHookEntries(@NotNull Archive archive) throws PackageException {
+        try {
+            Archive.Entry metaInf = archive.getRoot().getChild(Constants.META_INF);
+            Archive.Entry vaultDir = metaInf == null ? null : metaInf.getChild(Constants.VAULT_DIR);
+            Archive.Entry hooksDir = vaultDir == null ? null : vaultDir.getChild(Constants.HOOKS_DIR);
+            if (hooksDir != null) {
+                for (Archive.Entry entry : hooksDir.getChildren()) {
+                    // only respect .jar files (same rule as InstallHookProcessorImpl.registerHooks)
+                    if (entry.getName().endsWith(".jar")) {
+                        return true;
+                    }
+                }
+            }
+            Properties props = archive.getMetaInf().getProperties();
+            if (props != null) {
+                Enumeration<?> names = props.propertyNames();
+                while (names.hasMoreElements()) {
+                    if (names.nextElement().toString().startsWith(VaultPackage.PREFIX_INSTALL_HOOK)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (IOException e) {
+            throw new PackageException("I/O Error while detecting install hooks", e);
+        }
+    }
+
     protected void checkAllowanceToInstallPackage(
             @NotNull Session session,
             @NotNull InstallHookProcessor hookProcessor,
             @NotNull AbstractPackageRegistry.SecurityConfig securityConfig)
+            throws PackageException, RepositoryException {
+        checkAllowanceToInstallPackage(session, hookProcessor.hasHooks(), securityConfig);
+    }
+
+    private void checkAllowanceToInstallPackage(
+            @NotNull Session session, boolean hasHooks, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig)
             throws PackageException, RepositoryException {
         if (requiresRoot()) {
             if (!AdminPermissionChecker.hasAdministrativePermissions(
@@ -283,7 +339,7 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                                 + session.getUserID() + "' not allowed).");
             }
         }
-        if (hookProcessor.hasHooks()) {
+        if (hasHooks) {
             if (!AdminPermissionChecker.hasAdministrativePermissions(
                     session, securityConfig.getAuthIdsForHookExecution())) {
                 throw new PackageException("Package extraction requires admin session as it has a hook (userid '"

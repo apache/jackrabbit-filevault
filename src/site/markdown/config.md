@@ -75,7 +75,7 @@ Type | Used Class | Description
 Every type except for the first can be restricted via `matches` and `contains` child elements. The former applies a given filter to the current item, while the latter must match ones of the children.
 Both contain arbitrarily many `include` or `exclude` nodes. 
 
-Each have either an element `class` for a fully qualified class name or consists of one of the following attributes (which implicitly sets a class)
+Each has either an attribute `class` specifying a fully qualified class name (implementing `org.apache.jackrabbit.vault.fs.api.ItemFilter`) or consists of one of the following attributes (which implicitly sets a class)
 
 Filter attribute | Values | Additional attributes | Used Filter Class | Description
 --- | --- | --- | --- | ---

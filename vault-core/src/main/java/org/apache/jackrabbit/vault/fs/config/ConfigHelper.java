@@ -65,6 +65,28 @@ public class ConfigHelper {
     }
 
     public Object create(Element elem) throws ConfigurationException {
+        return create(elem, Object.class);
+    }
+
+    /**
+     * Creates an instance for the given config element, requiring the configured class to be of
+     * the given expected type. Configurations are frequently read from untrusted sources (e.g.
+     * {@code META-INF/vault/config.xml} inside a content package, parsed when the package is
+     * opened), so the class named by the {@code class} attribute must never be instantiated -
+     * and its static initializer therefore never triggered - unless it is of the type the
+     * caller will actually use. For the same reason the historic {@code Class#FIELD} static
+     * field access syntax is rejected: reading an arbitrary static field of an arbitrary class
+     * is not a configuration mechanism but a code-execution primitive.
+     *
+     * @param elem the config element
+     * @param expectedType the type the configured class must be assignable to
+     * @return the new instance (or the element's text content if no class is configured)
+     * @throws ConfigurationException if the class cannot be resolved, is not assignable to
+     *         {@code expectedType}, uses the rejected {@code #} field syntax, or cannot be
+     *         instantiated
+     * @since 2.10.0 (Bundle version 4.3.0)
+     */
+    public Object create(Element elem, Class<?> expectedType) throws ConfigurationException {
 
         String className = elem.getAttribute("class");
         if (className == null || className.equals("")) {
@@ -74,13 +96,11 @@ public class ConfigHelper {
             // create string object
             return elem.getFirstChild().getNodeValue();
         }
-        String field = null;
-        int pos = className.indexOf('#');
-        if (pos > 0) {
-            field = className.substring(pos + 1);
-            className = className.substring(0, pos);
-        }
 
+        if (className.indexOf('#') >= 0) {
+            throw new ConfigurationException("Static field access syntax in class attribute of " + elem.getNodeName()
+                    + " is not allowed: " + className);
+        }
         // try to get class without prepending package
         Class<?> clazz = null;
         try {
@@ -110,15 +130,17 @@ public class ConfigHelper {
                 throw new ConfigurationException("Error while creating instance for " + elem.getNodeName(), e);
             }
         }
+        // verify the type BEFORE instantiation: loading a class does not run its static
+        // initializer, but constructing it does - so an attacker-supplied class name must
+        // never reach newInstance() unless it is of the expected type
+        if (!expectedType.isAssignableFrom(clazz)) {
+            throw new ConfigurationException("Class " + clazz.getName() + " configured for " + elem.getNodeName()
+                    + " is not of expected type " + expectedType.getName());
+        }
         try {
-            if (field == null) {
-                return clazz.getDeclaredConstructor().newInstance();
-            } else {
-                return clazz.getField(field).get(null);
-            }
+            return clazz.getDeclaredConstructor().newInstance();
         } catch (InstantiationException
                 | IllegalAccessException
-                | NoSuchFieldException
                 | IllegalArgumentException
                 | InvocationTargetException
                 | NoSuchMethodException

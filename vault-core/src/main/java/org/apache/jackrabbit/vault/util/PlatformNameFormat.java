@@ -134,9 +134,19 @@ public class PlatformNameFormat {
 
     /**
      * Returns the repository name for a given platform name.
+     * <p>
+     * The returned name is validated to still address a single repository path segment:
+     * a platform name whose percent-escapes decode to {@code '/'} (e.g. {@code a%2fb}) or
+     * to a {@code '.'}/{@code '..'} segment (e.g. {@code %2e%2e}) is rejected, because the
+     * repository would resolve the decoded result to a different path than every
+     * string-level check (workspace filter coverage, subpackage detection, validation)
+     * has seen. {@link #getPlatformName(String)} escapes {@code '/'} and {@code '%'}, so no
+     * legitimately exported platform name ever decodes to one of the rejected forms.
      *
      * @param platformName the platform name
      * @return the (unescaped) repository name.
+     * @throws IllegalArgumentException if the decoded name is empty, {@code "."},
+     *         {@code ".."} or contains a {@code '/'}
      */
     public static String getRepositoryName(String platformName) {
         StringBuilder buffer = new StringBuilder("_");
@@ -169,12 +179,22 @@ public class PlatformNameFormat {
             }
             buffer.append(c);
         }
+        final String repositoryName;
         if (firstUnderscore) {
             // pending underscore
-            return buffer.toString();
+            repositoryName = buffer.toString();
         } else {
-            return buffer.substring(1);
+            repositoryName = buffer.substring(1);
         }
+        if (repositoryName.isEmpty()
+                || ".".equals(repositoryName)
+                || "..".equals(repositoryName)
+                || repositoryName.indexOf('/') >= 0) {
+            throw new IllegalArgumentException("Platform name '" + platformName
+                    + "' decodes to the illegal repository name '" + repositoryName
+                    + "' (empty, '.', '..' or containing '/')");
+        }
+        return repositoryName;
     }
 
     /**

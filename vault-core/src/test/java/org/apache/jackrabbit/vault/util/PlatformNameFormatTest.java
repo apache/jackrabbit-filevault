@@ -27,9 +27,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
-public class PlatformNameTest {
+public class PlatformNameFormatTest {
 
     @Parameters(name = "platform: {0}, repo: {1}")
     public static Collection<Object[]> data() {
@@ -54,7 +55,7 @@ public class PlatformNameTest {
     private final String repoName;
     private final String platformName;
 
-    public PlatformNameTest(String repoName, String platformName) {
+    public PlatformNameFormatTest(String repoName, String platformName) {
         this.repoName = repoName;
         this.platformName = platformName;
     }
@@ -67,5 +68,52 @@ public class PlatformNameTest {
     @Test
     public void toRepo() {
         assertEquals(repoName, PlatformNameFormat.getRepositoryName(platformName));
+    }
+
+    private static void assertRejected(String platformName) {
+        try {
+            String decoded = PlatformNameFormat.getRepositoryName(platformName);
+            fail("platform name '" + platformName + "' must be rejected but decoded to '" + decoded + "'");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+    }
+
+    @Test
+    public void testSlashInjectionIsRejected() {
+        assertRejected("a%2fb");
+        assertRejected("a%2Fb");
+        assertRejected("%2f");
+        assertRejected("x%2f..%2f..%2fconf");
+    }
+
+    @Test
+    public void testDotSegmentsAreRejected() {
+        assertRejected("..");
+        assertRejected(".");
+        assertRejected("%2e");
+        assertRejected("%2e%2e");
+        assertRejected("%2e.");
+        assertRejected(".%2e");
+        assertRejected("");
+    }
+
+    @Test
+    public void testLegitimateEscapesStillDecode() {
+        assertEquals("jcr:content", PlatformNameFormat.getRepositoryName("_jcr_content"));
+        assertEquals("cq:test:image.jpg", PlatformNameFormat.getRepositoryName("_cq_test%3aimage.jpg"));
+        assertEquals(".content.xml", PlatformNameFormat.getRepositoryName(".content.xml"));
+        assertEquals("...", PlatformNameFormat.getRepositoryName("..."));
+        assertEquals("..a", PlatformNameFormat.getRepositoryName("..a"));
+    }
+
+    @Test
+    public void testRepositoryPathRejectsTraversalElements() {
+        try {
+            String decoded = PlatformNameFormat.getRepositoryPath("/apps/vendor/x%2f..%2f..%2f..%2fconf");
+            fail("traversal path must be rejected but decoded to '" + decoded + "'");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 }

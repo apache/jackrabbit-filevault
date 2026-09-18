@@ -28,6 +28,7 @@ This validation framework is supposed to be used as
 1. dependency for custom validators (SPI)
 2. library for build tools which want to call validation on FileVault packages (API and Implementation)
 
+Validation is agnostic of a concrete repository (with its existing nodes) and can therefore be executed without establishing a connection to a JCR. 
 
 ## Validators
 

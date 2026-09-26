@@ -45,4 +45,19 @@ public class OsgiAwarePropertiesUtil {
     public static boolean getBooleanProperty(String key) {
         return Boolean.parseBoolean(getProperty(key));
     }
+
+    /**
+     * Retrieve a boolean parameter either via bundle context or via system properties. If the value
+     * is not defined, return the provided defaultValue
+     * @param key the name of the property
+     * @param defaultValue the default value to use
+     * @return
+     */
+    public static boolean getBooleanProperty(String key, boolean defaultValue) {
+        String propertyValue = getProperty(key);
+        if (propertyValue == null) {
+            return defaultValue;
+        }
+        return Boolean.parseBoolean(getProperty(key));
+    }
 }

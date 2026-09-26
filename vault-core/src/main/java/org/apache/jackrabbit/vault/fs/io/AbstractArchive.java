@@ -41,11 +41,11 @@ abstract class AbstractArchive implements Archive {
 
     /**
      * Determines whether stack traces should be created for each register call of {@link CloseWatcher}.
-     * This is false by default.
-     * Enable via system or OSGi framework property {@code vault.enableStackTraces}.
+     * This is true by default.
+     * Disable via system or OSGi framework property {@code vault.enableStackTraces}.
      */
     protected static final boolean SHOULD_CREATE_STACK_TRACE =
-            OsgiAwarePropertiesUtil.getBooleanProperty(PROPERTY_ENABLE_STACK_TRACES);
+            OsgiAwarePropertiesUtil.getBooleanProperty(PROPERTY_ENABLE_STACK_TRACES, true);
 
     @Override
     public Entry getEntry(String path) throws IOException {

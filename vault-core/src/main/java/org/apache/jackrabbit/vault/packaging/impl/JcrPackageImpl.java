@@ -322,22 +322,14 @@ public class JcrPackageImpl implements JcrPackage {
                 }
             } else {
                 File tmpFile = File.createTempFile("vaultpack", ".zip");
-                // make sure the temp file is removed at the latest when the JVM terminates,
-                // in case it is never explicitly closed via ZipArchive.close()/ZipVaultPackage.close()
-                tmpFile.deleteOnExit();
-                try {
-                    Binary bin = getData().getBinary();
-                    try (FileOutputStream out = FileUtils.openOutputStream(tmpFile);
-                            InputStream in = bin.getStream()) {
-                        IOUtils.copy(in, out);
-                    } finally {
-                        bin.dispose();
-                    }
-                    pack = new ZipVaultPackage(tmpFile, true);
-                } catch (RepositoryException | IOException | RuntimeException e) {
-                    FileUtils.deleteQuietly(tmpFile);
-                    throw e;
+                Binary bin = getData().getBinary();
+                try (FileOutputStream out = FileUtils.openOutputStream(tmpFile);
+                        InputStream in = bin.getStream()) {
+                    IOUtils.copy(in, out);
+                } finally {
+                    bin.dispose();
                 }
+                pack = new ZipVaultPackage(tmpFile, true);
             }
         }
         return pack;

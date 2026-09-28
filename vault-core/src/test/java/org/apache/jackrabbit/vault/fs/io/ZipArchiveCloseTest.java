@@ -18,10 +18,16 @@
  */
 package org.apache.jackrabbit.vault.fs.io;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -31,8 +37,6 @@ import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import static org.junit.Assert.assertNull;
 
 /**
  *  Test to demonstrate JCRVLT-838.
@@ -176,5 +180,37 @@ public class ZipArchiveCloseTest {
 
         archive.close();
         archive.close(); // Multiple closes also safe
+    }
+
+    @Test
+    public void testDumpUnclosedArchivesClosesTmpFile() throws IOException, InterruptedException, URISyntaxException {
+        Path tmpFile = createTempPackage();
+        new ZipArchive(tmpFile.toFile(), true);
+        System.gc();
+        Thread.sleep(100);
+        // Now dump unclosed archives
+        assertTrue("Couldn't find unclosed archives", AbstractArchive.dumpUnclosedArchives());
+        assertFalse("Temp file should have been deleted but still exists", Files.exists(tmpFile));
+    }
+
+    @Test
+    public void testDumpUnclosedArchivesClosesTmpFileAfterOpen() throws IOException, InterruptedException, URISyntaxException {
+        Path tmpFile = createTempPackage();
+        new ZipArchive(tmpFile.toFile(), true).open(true);
+        System.gc();
+        Thread.sleep(100);
+        // Now dump unclosed archives
+        assertTrue("Couldn't find unclosed archives", AbstractArchive.dumpUnclosedArchives());
+        assertFalse("Temp file should have been deleted but still exists", Files.exists(tmpFile));
+    }
+
+    private Path createTempPackage() throws URISyntaxException, IOException {
+        Path zipFile = Paths.get(ZipArchiveCloseTest.class
+                .getResource("/test-packages/atomic-counter-test.zip")
+                .toURI());
+        // copy to tmpFile
+        Path tmpFile = tempFolder.newFile().toPath();
+        Files.copy(zipFile, tmpFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        return tmpFile;
     }
 }

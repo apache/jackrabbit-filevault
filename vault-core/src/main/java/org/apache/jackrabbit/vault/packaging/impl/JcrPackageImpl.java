@@ -336,6 +336,9 @@ public class JcrPackageImpl implements JcrPackage {
                 } catch (IOException e) {
                     tmpFile.delete();
                     throw e;
+                } catch (RepositoryException e) {
+                    tmpFile.delete();
+                    throw e;
                 }
             }
         }

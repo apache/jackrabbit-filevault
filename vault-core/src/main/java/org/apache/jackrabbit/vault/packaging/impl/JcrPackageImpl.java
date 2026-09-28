@@ -326,6 +326,9 @@ public class JcrPackageImpl implements JcrPackage {
                 try (FileOutputStream out = FileUtils.openOutputStream(tmpFile);
                         InputStream in = bin.getStream()) {
                     IOUtils.copy(in, out);
+                } catch (IOException e) {
+                    tmpFile.delete();
+                    throw e;
                 } finally {
                     bin.dispose();
                 }

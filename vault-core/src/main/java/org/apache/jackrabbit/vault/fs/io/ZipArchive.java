@@ -111,6 +111,11 @@ public class ZipArchive extends AbstractArchive {
             return;
         }
         jar = new JarFile(file);
+        if (watcher != null) {
+            CloseWatcher.unregister(watcher);
+        }
+        watcher =
+                CloseWatcher.register(this, new Closer(isTempFile ? this.file : null, jar), SHOULD_CREATE_STACK_TRACE);
         root = new EntryImpl("", true);
         inf = new DefaultMetaInf();
 
@@ -158,11 +163,6 @@ public class ZipArchive extends AbstractArchive {
         if (inf.getNodeTypes().isEmpty()) {
             log.debug("Zip {} does not contain nodetypes.", file.getPath());
         }
-        if (watcher != null) {
-            CloseWatcher.unregister(watcher);
-        }
-        watcher =
-                CloseWatcher.register(this, new Closer(isTempFile ? this.file : null, jar), SHOULD_CREATE_STACK_TRACE);
     }
 
     @Override
@@ -234,6 +234,7 @@ public class ZipArchive extends AbstractArchive {
                 // should not happen
             }
             CloseWatcher.unregister(watcher);
+            jar = null;
         }
     }
 

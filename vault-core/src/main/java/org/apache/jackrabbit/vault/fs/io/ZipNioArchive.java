@@ -214,6 +214,7 @@ public class ZipNioArchive extends AbstractArchive {
                 // should not happen
             }
             CloseWatcher.unregister(watcher);
+            zipFileSystem = null;
         }
     }
 

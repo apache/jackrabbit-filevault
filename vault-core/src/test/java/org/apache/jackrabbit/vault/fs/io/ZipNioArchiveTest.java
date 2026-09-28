@@ -18,8 +18,6 @@
  */
 package org.apache.jackrabbit.vault.fs.io;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -30,8 +28,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** 
- * Most tests in {@link ArchiveTest} are also applicable to {@link ZipNioArchive}. 
+import static org.junit.Assert.*;
+
+/**
+ * Most tests in {@link ArchiveTest} are also applicable to {@link ZipNioArchive}.
  * This class contains additional tests specific to {@link ZipNioArchive}.
  */
 public class ZipNioArchiveTest {
@@ -51,7 +51,8 @@ public class ZipNioArchiveTest {
     }
 
     @Test
-    public void testDumpUnclosedArchivesClosesTmpFileAfterOpen() throws IOException, InterruptedException, URISyntaxException {
+    public void testDumpUnclosedArchivesClosesTmpFileAfterOpen()
+            throws IOException, InterruptedException, URISyntaxException {
         Path tmpFile = createTempPackage();
         new ZipNioArchive(tmpFile, true).open(true);
         System.gc();
@@ -70,5 +71,4 @@ public class ZipNioArchiveTest {
         Files.copy(zipFile, tmpFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         return tmpFile;
     }
-
 }

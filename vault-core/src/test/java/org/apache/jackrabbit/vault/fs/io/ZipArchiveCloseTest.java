@@ -18,10 +18,6 @@
  */
 package org.apache.jackrabbit.vault.fs.io;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,6 +33,10 @@ import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *  Test to demonstrate JCRVLT-838.
@@ -194,7 +194,8 @@ public class ZipArchiveCloseTest {
     }
 
     @Test
-    public void testDumpUnclosedArchivesClosesTmpFileAfterOpen() throws IOException, InterruptedException, URISyntaxException {
+    public void testDumpUnclosedArchivesClosesTmpFileAfterOpen()
+            throws IOException, InterruptedException, URISyntaxException {
         Path tmpFile = createTempPackage();
         new ZipArchive(tmpFile.toFile(), true).open(true);
         System.gc();

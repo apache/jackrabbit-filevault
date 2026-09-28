@@ -63,7 +63,7 @@ public class ZipNioArchiveTest {
     }
 
     private Path createTempPackage() throws URISyntaxException, IOException {
-        Path zipFile = Paths.get(ZipArchiveCloseTest.class
+        Path zipFile = Paths.get(ZipNioArchiveTest.class
                 .getResource("/test-packages/atomic-counter-test.zip")
                 .toURI());
         // copy to tmpFile

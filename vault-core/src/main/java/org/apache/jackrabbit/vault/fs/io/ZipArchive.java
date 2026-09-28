@@ -239,7 +239,7 @@ public class ZipArchive extends AbstractArchive {
     }
 
     /**
-     * This class is used to close the zip file system and delete the zip file if requested.
+     * This class is used to close the {@link JarFile} and delete the zip file if requested.
      * Needs to be a separate class to avoid a circular reference between the ZipArchive and the CloseWatcher.
      */
     private static final class Closer implements Closeable {

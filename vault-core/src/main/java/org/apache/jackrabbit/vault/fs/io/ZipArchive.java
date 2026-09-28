@@ -234,6 +234,7 @@ public class ZipArchive extends AbstractArchive {
                 // should not happen
             }
             CloseWatcher.unregister(watcher);
+            watcher = null;
             jar = null;
         }
     }

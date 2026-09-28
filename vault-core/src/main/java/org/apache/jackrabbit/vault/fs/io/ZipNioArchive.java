@@ -214,6 +214,7 @@ public class ZipNioArchive extends AbstractArchive {
                 // should not happen
             }
             CloseWatcher.unregister(watcher);
+            watcher = null;
             zipFileSystem = null;
         }
     }
@@ -235,7 +236,6 @@ public class ZipNioArchive extends AbstractArchive {
 
         @Override
         public void close() {
-
             if (zipFileSystem != null) {
                 try {
                     zipFileSystem.close();

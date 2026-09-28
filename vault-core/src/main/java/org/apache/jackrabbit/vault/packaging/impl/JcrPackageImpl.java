@@ -323,7 +323,8 @@ public class JcrPackageImpl implements JcrPackage {
             } else {
                 File tmpFile = File.createTempFile("vaultpack", ".zip");
                 try {
-                    // used as last resort, usually tmpFile is deleted via ZipVaultPackage.close() or the enclosed CloseWatcher
+                    // used as last resort, usually tmpFile is deleted via ZipVaultPackage.close() or the enclosed
+                    // CloseWatcher
                     tmpFile.deleteOnExit();
                     Binary bin = getData().getBinary();
                     try (FileOutputStream out = FileUtils.openOutputStream(tmpFile);

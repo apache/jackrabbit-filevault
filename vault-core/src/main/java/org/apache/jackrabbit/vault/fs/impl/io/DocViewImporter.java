@@ -227,6 +227,8 @@ public class DocViewImporter implements DocViewParserHandler {
      */
     private final boolean isSnsSupported;
 
+    private final boolean dryRun;
+
     /**
      * Creates a new importer that will imports the
      * items below the given root.
@@ -256,6 +258,33 @@ public class DocViewImporter implements DocViewParserHandler {
             AccessControlHandling aclHandling,
             AccessControlHandling cugHandling)
             throws RepositoryException {
+        this(parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, aclHandling, cugHandling, false);
+    }
+
+    /**
+     * Creates an importer that suppresses persistent namespace registration during a dry run.
+     *
+     * @param parentNode the parent of the imported content
+     * @param rootNodeName the name of the imported root node
+     * @param artifacts the artifacts and binary attachments to import
+     * @param wspFilter the workspace filter restricting imported content
+     * @param idConflictPolicy the policy for identifier conflicts
+     * @param aclHandling the access control handling
+     * @param cugHandling the closed user group handling
+     * @param dryRun whether persistent namespace registration must be suppressed
+     * @throws RepositoryException if repository state cannot be read
+     */
+    public DocViewImporter(
+            Node parentNode,
+            String rootNodeName,
+            ArtifactSetImpl artifacts,
+            WorkspaceFilter wspFilter,
+            IdConflictPolicy idConflictPolicy,
+            AccessControlHandling aclHandling,
+            AccessControlHandling cugHandling,
+            boolean dryRun)
+            throws RepositoryException {
+        this.dryRun = dryRun;
         this.filter = artifacts.getCoverage();
         this.wspFilter = wspFilter;
         this.rootDepth = parentNode.getDepth() + 1;
@@ -311,6 +340,13 @@ public class DocViewImporter implements DocViewParserHandler {
             oldPrefix = session.getNamespacePrefix(uri);
         } catch (NamespaceException e) {
             // assume uri never registered
+            if (dryRun) {
+                log.warn(
+                        "Dry run: skipping registration of namespace {} ({}). Register it before simulating content that uses it.",
+                        prefix,
+                        uri);
+                return;
+            }
             try {
                 oldPrefix = nsHelper.registerNamespace(prefix, uri);
             } catch (RepositoryException e1) {

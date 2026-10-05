@@ -243,8 +243,10 @@ public class FileArtifactHandler extends AbstractArtifactHandler {
                                 newParent,
                                 newName,
                                 newSet,
+                                true,
                                 wspFilter,
-                                options.getIdConflictPolicy()));
+                                options.getIdConflictPolicy(),
+                                options.isDryRun()));
                     } else {
                         info.onNop(path);
                     }
@@ -338,7 +340,15 @@ public class FileArtifactHandler extends AbstractArtifactHandler {
         if (idx > 0) {
             rootName = rootName.substring(0, idx);
         }
-        return importDocView(source, parent, rootName, artifacts, wspFilter, options.getIdConflictPolicy());
+        return importDocView(
+                source,
+                parent,
+                rootName,
+                artifacts,
+                true,
+                wspFilter,
+                options.getIdConflictPolicy(),
+                options.isDryRun());
     }
 
     private boolean importNtResource(ImportInfo info, Node content, Artifact artifact)

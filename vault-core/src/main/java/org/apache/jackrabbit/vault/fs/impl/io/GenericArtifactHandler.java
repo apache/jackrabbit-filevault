@@ -97,7 +97,8 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
                     artifacts,
                     options.isStrict(isStrictByDefault),
                     wspFilter,
-                    options.getIdConflictPolicy()));
+                    options.getIdConflictPolicy(),
+                    options.isDryRun()));
         }
         return info;
     }

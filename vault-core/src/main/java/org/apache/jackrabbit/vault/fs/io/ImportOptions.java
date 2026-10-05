@@ -346,6 +346,9 @@ public class ImportOptions {
 
     /**
      * Sets the dry run flag.
+     * Dry runs do not register namespaces or nested packages, unwrap raw sub-packages,
+     * or relocate and rewrite existing sub-packages. Content that requires an unregistered
+     * namespace may report simulation errors; register the namespace before simulating it.
      * @param dryRun the dry run flag.
      * @since 2.2.14
      */

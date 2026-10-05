@@ -190,8 +190,28 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
             WorkspaceFilter wspFilter,
             IdConflictPolicy idConflictPolicy)
             throws IOException, RepositoryException {
+        return importDocView(source, parentNode, rootNodeName, artifacts, isStrict, wspFilter, idConflictPolicy, false);
+    }
+
+    protected ImportInfoImpl importDocView(
+            InputSource source,
+            Node parentNode,
+            String rootNodeName,
+            ArtifactSetImpl artifacts,
+            boolean isStrict,
+            WorkspaceFilter wspFilter,
+            IdConflictPolicy idConflictPolicy,
+            boolean dryRun)
+            throws IOException, RepositoryException {
         DocViewImporter handler = new DocViewImporter(
-                parentNode, rootNodeName, artifacts, wspFilter, idConflictPolicy, getAcHandling(), getCugHandling());
+                parentNode,
+                rootNodeName,
+                artifacts,
+                wspFilter,
+                idConflictPolicy,
+                getAcHandling(),
+                getCugHandling(),
+                dryRun);
         String rootNodePath = parentNode.getPath();
         if (!rootNodePath.equals("/")) {
             rootNodePath += "/";

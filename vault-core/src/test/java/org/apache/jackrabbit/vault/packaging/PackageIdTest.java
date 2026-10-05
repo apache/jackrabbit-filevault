@@ -21,6 +21,8 @@ package org.apache.jackrabbit.vault.packaging;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * {@code PackageIdTest}...
@@ -211,5 +213,47 @@ public class PackageIdTest {
         assertEquals(p1.getName(), p2.getName());
         assertEquals(p1.getGroup(), p2.getGroup());
         assertEquals(p1.getVersion(), p2.getVersion());
+    }
+
+    @Test
+    public void testIsValidAcceptsRegularNames() {
+        // positive control: ordinary names/groups/versions must keep validating
+        // after the backslash/control-character fix is applied.
+        assertTrue(PackageId.isValid("my_company/sub-group", "my-package.name", "1.0.0-SNAPSHOT"));
+        assertTrue(PackageId.isValid("", "name", ""));
+        assertTrue(PackageId.isValid("group", "name", null));
+    }
+
+    @Test
+    public void testIsValidRejectsBackslashInName() {
+        // '..\..\evil' shaped ids must not validate: on Windows, Path.resolve
+        // treats '\' as a separator, so an id containing it can escape the
+        // FS registry's home directory.
+        assertFalse(PackageId.isValid("group", "..\\..\\evil", "1.0"));
+        assertFalse(PackageId.isValid("group", "evil\\name", "1.0"));
+    }
+
+    @Test
+    public void testIsValidRejectsBackslashInGroupSegment() {
+        // group segments are split on '/' and each segment re-validated, so a
+        // backslash hidden inside one segment must be rejected too.
+        assertFalse(PackageId.isValid("evil\\group", "name", "1.0"));
+        assertFalse(PackageId.isValid("outer/evil\\group", "name", "1.0"));
+    }
+
+    @Test
+    public void testIsValidRejectsBackslashInVersion() {
+        assertFalse(PackageId.isValid("group", "name", "..\\..\\evil"));
+    }
+
+    @Test
+    public void testIsValidRejectsControlCharacters() {
+        // control characters have no legitimate use in package ids and enable
+        // log/name spoofing; every id part must reject them.
+        assertFalse(PackageId.isValid("group", "name\u0000evil", "1.0"));
+        assertFalse(PackageId.isValid("group", "name\u001Fevil", "1.0"));
+        assertFalse(PackageId.isValid("group", "name\u007Fevil", "1.0"));
+        assertFalse(PackageId.isValid("evil\u0000group", "name", "1.0"));
+        assertFalse(PackageId.isValid("group", "name", "1.0\u0000evil"));
     }
 }

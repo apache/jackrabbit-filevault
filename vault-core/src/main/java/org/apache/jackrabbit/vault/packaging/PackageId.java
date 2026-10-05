@@ -560,6 +560,13 @@ public class PackageId implements Comparable<PackageId> {
                     nameStart = i;
                 }
                 trailingSpaces = false;
+            } else if (c == '\\' || Character.isISOControl(c)) {
+                // '\' is a path separator on Windows, and control characters have no
+                // legitimate use in a name — both would let an id escape the FS
+                // registry's home directory or spoof logs/names once used as a path
+                // segment (see PackageId's isValid() callers in FSPackageRegistry).
+                throw new IllegalArgumentException("'" + c + "' not allowed in name '" + jcrName
+                        + "'; remove the backslash" + " or control character from the group, name, or version");
             } else {
                 if (state == STATE_PREFIX_START) {
                     state = STATE_PREFIX; // prefix start

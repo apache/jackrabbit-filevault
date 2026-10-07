@@ -30,7 +30,9 @@ import org.xml.sax.SAXException;
 /**
  * Entity resolver that handles all entity resolution requests by returning an empty input source.
  * This is to prevent "Arbitrary DTD inclusion in XML parsing".
+ * @deprecated use <a href="https://commons.apache.org/proper/commons-secure-xml">Apache Commons Secure XML</a> instead
  */
+@Deprecated(since = "4.2.0")
 public class RejectingEntityResolver implements EntityResolver {
 
     /**

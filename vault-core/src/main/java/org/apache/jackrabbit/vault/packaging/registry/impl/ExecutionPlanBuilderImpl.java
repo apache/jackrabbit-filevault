@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
 import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.packaging.CyclicDependencyException;
 import org.apache.jackrabbit.vault.packaging.Dependency;
@@ -53,7 +54,6 @@ import org.apache.jackrabbit.vault.packaging.registry.PackageTask;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTaskBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageTaskOptions;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
-import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.jetbrains.annotations.NotNull;
@@ -133,10 +133,9 @@ public class ExecutionPlanBuilderImpl implements ExecutionPlanBuilder {
     public ExecutionPlanBuilder load(@NotNull InputStream in) throws IOException {
         tasks.clear();
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = SecureDocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setEntityResolver(new RejectingEntityResolver());
             Document document = builder.parse(in);
             Element doc = document.getDocumentElement();
             if (!TAG_EXECUTION_PLAN.equals(doc.getNodeName())) {

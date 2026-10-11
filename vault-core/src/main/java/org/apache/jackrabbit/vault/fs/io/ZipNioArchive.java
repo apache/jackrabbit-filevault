@@ -18,6 +18,7 @@
  */
 package org.apache.jackrabbit.vault.fs.io;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileSystem;
@@ -90,6 +91,10 @@ public class ZipNioArchive extends AbstractArchive {
         this.path = path;
         zipFileSystem = null;
         this.deleteAtClose = deleteAtClose;
+        if (deleteAtClose) {
+            watcher = CloseWatcher.register(this, new Closer(this.path, null), SHOULD_CREATE_STACK_TRACE);
+        }
+        dumpUnclosedArchives();
     }
 
     @Override
@@ -103,8 +108,11 @@ public class ZipNioArchive extends AbstractArchive {
         } catch (ProviderNotFoundException e) {
             throw new IOException("Can not open zip file '" + path + "'", e);
         }
-        dumpUnclosedArchives();
-        watcher = CloseWatcher.register(this, zipFileSystem, SHOULD_CREATE_STACK_TRACE);
+        if (watcher != null) {
+            CloseWatcher.unregister(watcher);
+        }
+        watcher = CloseWatcher.register(
+                this, new Closer(deleteAtClose ? this.path : null, zipFileSystem), SHOULD_CREATE_STACK_TRACE);
     }
 
     @Override
@@ -199,21 +207,48 @@ public class ZipNioArchive extends AbstractArchive {
 
     @Override
     public void close() {
-        if (zipFileSystem != null) {
-            if (watcher != null) {
-                CloseWatcher.unregister(watcher);
-            }
+        if (watcher != null) {
             try {
-                zipFileSystem.close();
-            } catch (IOException e) {
-                log.warn("Error during close.", e);
+                watcher.getCloseable().close();
+            } catch (Exception e) {
+                // should not happen
             }
+            CloseWatcher.unregister(watcher);
+            watcher = null;
+            zipFileSystem = null;
         }
-        if (deleteAtClose) {
-            try {
-                Files.delete(path);
-            } catch (IOException e) {
-                log.warn("Could not delete " + path, e);
+    }
+
+    /**
+     * This class is used to close the zip file system and delete the zip file if requested.
+     * Needs to be a separate class to avoid a circular reference between the ZipNioArchive and the CloseWatcher.
+     */
+    private static final class Closer implements Closeable {
+
+        private final Path pathToDelete;
+
+        private final FileSystem zipFileSystem;
+
+        public Closer(Path pathToDelete, FileSystem zipFileSystem) {
+            this.pathToDelete = pathToDelete;
+            this.zipFileSystem = zipFileSystem;
+        }
+
+        @Override
+        public void close() {
+            if (zipFileSystem != null) {
+                try {
+                    zipFileSystem.close();
+                } catch (IOException e) {
+                    log.warn("Error during close.", e);
+                }
+            }
+            if (pathToDelete != null) {
+                try {
+                    Files.delete(pathToDelete);
+                } catch (IOException e) {
+                    log.warn("Could not delete " + pathToDelete, e);
+                }
             }
         }
     }

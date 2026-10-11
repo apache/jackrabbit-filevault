@@ -115,7 +115,7 @@ public interface Archive extends Closeable {
     Archive getSubArchive(@NotNull String root, boolean asJcrRoot) throws IOException;
 
     /**
-     * Closes the archive. Only necessary to call if the archive has been opened.
+     * Closes the archive. Only necessary to call if the archive has been opened or it is based on a tmp file which is supposed to be deleted.
      */
     void close();
 

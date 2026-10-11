@@ -18,6 +18,7 @@
  */
 package org.apache.jackrabbit.vault.fs.io;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,6 +99,10 @@ public class ZipArchive extends AbstractArchive {
     public ZipArchive(@NotNull File zipFile, boolean isTempFile) {
         this.file = zipFile;
         this.isTempFile = isTempFile;
+        if (isTempFile) {
+            watcher = CloseWatcher.register(this, new Closer(file, null), SHOULD_CREATE_STACK_TRACE);
+        }
+        dumpUnclosedArchives();
     }
 
     @Override
@@ -106,6 +111,11 @@ public class ZipArchive extends AbstractArchive {
             return;
         }
         jar = new JarFile(file);
+        if (watcher != null) {
+            CloseWatcher.unregister(watcher);
+        }
+        watcher =
+                CloseWatcher.register(this, new Closer(isTempFile ? this.file : null, jar), SHOULD_CREATE_STACK_TRACE);
         root = new EntryImpl("", true);
         inf = new DefaultMetaInf();
 
@@ -153,8 +163,6 @@ public class ZipArchive extends AbstractArchive {
         if (inf.getNodeTypes().isEmpty()) {
             log.debug("Zip {} does not contain nodetypes.", file.getPath());
         }
-        dumpUnclosedArchives();
-        watcher = CloseWatcher.register(this, jar, SHOULD_CREATE_STACK_TRACE);
     }
 
     @Override
@@ -219,19 +227,45 @@ public class ZipArchive extends AbstractArchive {
 
     @Override
     public void close() {
-        try {
-            if (jar != null) {
-                jar.close();
-                jar = null;
-                if (watcher != null) {
-                    CloseWatcher.unregister(watcher);
+        if (watcher != null) {
+            try {
+                watcher.getCloseable().close();
+            } catch (Exception e) {
+                // should not happen
+            }
+            CloseWatcher.unregister(watcher);
+            watcher = null;
+            jar = null;
+        }
+    }
+
+    /**
+     * This class is used to close the {@link JarFile} and delete the zip file if requested.
+     * Needs to be a separate class to avoid a circular reference between the ZipArchive and the CloseWatcher.
+     */
+    private static final class Closer implements Closeable {
+
+        private final File fileToDelete;
+
+        private final JarFile jarFile;
+
+        public Closer(File fileToDelete, JarFile jarFile) {
+            this.fileToDelete = fileToDelete;
+            this.jarFile = jarFile;
+        }
+
+        @Override
+        public void close() {
+            try {
+                if (jarFile != null) {
+                    jarFile.close();
                 }
+                if (fileToDelete != null) {
+                    FileUtils.deleteQuietly(fileToDelete);
+                }
+            } catch (IOException e) {
+                log.warn("Error during close.", e);
             }
-            if (file != null && isTempFile) {
-                FileUtils.deleteQuietly(file);
-            }
-        } catch (IOException e) {
-            log.warn("Error during close.", e);
         }
     }
 

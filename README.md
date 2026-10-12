@@ -36,7 +36,7 @@ Runtime Dependencies
 - Jackrabbit 2.20.17+ (JCR Commons, SPI, SPI Commons)
 - Oak Jackrabbit API 1.22.4+
 - Commons IO 2.18.0+
-- Commons Collections 4.1+
+- Commons Collections 4.5.0+
 - SLF4J 1.7+
 
 Build

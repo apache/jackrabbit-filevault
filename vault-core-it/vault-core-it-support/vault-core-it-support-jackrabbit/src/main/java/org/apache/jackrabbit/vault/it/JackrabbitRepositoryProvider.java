@@ -45,7 +45,8 @@ public class JackrabbitRepositoryProvider implements RepositoryProvider {
             new File("target", "repository-jr2-" + System.getProperty("repoSuffix", "fork1"));
 
     @Override
-    public RepositoryWithMetadata createRepository(boolean arg0, boolean arg1, String... arg2)
+    public RepositoryWithMetadata createRepository(
+            boolean useFileStore, boolean enablePrincipalBasedAuthorization, String... cugEnabledPaths)
             throws RepositoryException, IOException {
         Repository repository;
         try (InputStream in = JackrabbitRepositoryProvider.class.getResourceAsStream("/repository.xml")) {

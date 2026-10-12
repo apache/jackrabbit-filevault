@@ -91,15 +91,15 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.</des
 
   <properties>
     <!-- CI-friendly version, https://maven.apache.org/maven-ci-friendly.html -->
-    <revision>4.2.1-SNAPSHOT</revision>
+    <revision>4.3.0-SNAPSHOT</revision>
     <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
     <jackrabbit.min.version>2.20.17</jackrabbit.min.version>
-    <!-- for embedded dependencies the newest version should be used -->
-    <jackrabbit.max.version>2.22.1</jackrabbit.max.version>
+    <!-- for embedded dependencies the newest version should be used (also used for testing) -->
+    <jackrabbit.max.version>2.22.5</jackrabbit.max.version>
     <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
     <oak.min.version>1.22.4</oak.min.version>
-    <!-- for embedded dependencies the newest version should be used -->
-    <oak.max.version>1.82.0</oak.max.version>
+    <!-- only used for testing (and refererencing constant values which are inlined at compile time) -->
+    <oak.max.version>2.6.0</oak.max.version>
     <slf4j.version>1.7.25</slf4j.version>
     <commons-io.version>2.18.0</commons-io.version>
     <!-- passed to integration test as property "oak", set to true to test with Oak, false means test with Jackrabbit 2 -->
@@ -253,10 +253,11 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.</des
         <artifactId>commons-lang3</artifactId>
         <version>3.18.0</version>
       </dependency>
+      <!-- this version is required through the embedded jcr2spi (https://issues.apache.org/jira/browse/JCR-5177, https://github.com/apache/jackrabbit/blob/f1830d0aeb113cd658407d66ec9974a3fb91b98d/jackrabbit-jcr2spi/pom.xml#L134 and https://github.com/apache/jackrabbit/blob/f1830d0aeb113cd658407d66ec9974a3fb91b98d/jackrabbit-parent/pom.xml#L459)-->
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-collections4</artifactId>
-        <version>4.1</version>
+        <version>4.5.0</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>

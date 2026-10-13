@@ -312,8 +312,52 @@ public class PackageInstallIT extends IntegrationTestBase {
     }
 
     /**
-     * Installs a package with an install hook and an explicitly allowed user
+     * Installs a package with an install hook as a not-allowed (non-admin) user and verifies that
+     * the hook class is never loaded or instantiated, i.e. the admin-session authorization check
+     * runs before any hook constructor executes (regression test for the instantiate-before-check
+     * ordering that allowed non-admin code execution via a hook constructor).
      */
+    @Test
+    public void testHookNotInstantiatedForNotAllowedNonAdminUser() throws RepositoryException, IOException, PackageException {
+        if (admin.nodeExists("/testroot")) {
+            admin.getNode("/testroot").remove();
+        }
+        admin.getRootNode().addNode("testroot", "nt:unstructured").addNode("testnode", "nt:unstructured");
+        admin.save();
+
+        // Create test user
+        UserManager userManager = ((JackrabbitSession)admin).getUserManager();
+        String userId = "user1";
+        String userPwd = "pwd1";
+        User user1 = userManager.createUser(userId, userPwd);
+        Principal principal1 = user1.getPrincipal();
+
+        // Setup test user ACLs that there are no restrictions
+        AccessControlUtils.addAccessControlEntry(admin, null, principal1, new String[]{"jcr:namespaceManagement","jcr:nodeTypeDefinitionManagement"}, true);
+        AccessControlUtils.addAccessControlEntry(admin, "/", principal1, new String[]{"jcr:all"}, true);
+        admin.save();
+
+        ExternalTestHookConstructorMarker.reset();
+        Session userSession = repository.login(new SimpleCredentials(userId, userPwd.toCharArray()));
+        try {
+            packMgr = new JcrPackageManagerImpl(userSession, new String[0]);
+
+            JcrPackage pack = packMgr.upload(getStream("/test-packages/constructor_marker_hook.zip"), false);
+            assertNotNull(pack);
+            try {
+                packMgr.getInternalRegistry().installPackage(userSession, new JcrRegisteredPackage(pack), getDefaultOptions(), true);
+                fail("installing a hook-bearing package as a not-allowed user must fail");
+            } catch (PackageException e) {
+                assertTrue("unexpected failure message: " + e.getMessage(),
+                        e.getMessage().contains("Package extraction requires admin session as it has a hook"));
+            }
+            assertFalse("hook constructor must not be invoked for a not-allowed non-admin user",
+                    ExternalTestHookConstructorMarker.constructed);
+        } finally {
+            userSession.logout();
+        }
+    }
+
     @Test
     public void testHookWithAllowedNonAdminUser() throws RepositoryException, IOException, PackageException {
         if (admin.nodeExists("/testroot")) {

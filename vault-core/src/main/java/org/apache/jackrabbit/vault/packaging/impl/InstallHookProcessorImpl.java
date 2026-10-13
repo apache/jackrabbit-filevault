@@ -138,6 +138,48 @@ public class InstallHookProcessorImpl implements InstallHookProcessor {
     public boolean hasHooks() {
         return !hooks.isEmpty();
     }
+
+    /**
+     * Detects whether the given archive declares any install hooks without loading or
+     * instantiating the hook classes. Mirrors the detection branches of
+     * {@link #registerHooks(Archive, ClassLoader)} (hook jar entries and
+     * {@code installhook.{name}.class} properties) but performs no class loading,
+     * so callers can enforce authorization before any attacker-supplied bytecode runs.
+     */
+    @Override
+    public boolean hasHooks(Archive archive) throws PackageException {
+        try {
+            Archive.Entry root = archive.getRoot();
+            root = root.getChild(Constants.META_INF);
+            if (root != null) {
+                root = root.getChild(Constants.VAULT_DIR);
+            }
+            Archive.Entry hooksDir = root == null ? null : root.getChild(Constants.HOOKS_DIR);
+            if (hooksDir != null) {
+                for (Archive.Entry entry : hooksDir.getChildren()) {
+                    if (entry.getName().endsWith(".jar")) {
+                        return true;
+                    }
+                }
+            }
+
+            // also look for external hooks in properties
+            // currently only the format: "installhook.{name}.class" is supported
+            Properties props = archive.getMetaInf().getProperties();
+            if (props != null) {
+                Enumeration<?> names = props.propertyNames();
+                while (names.hasMoreElements()) {
+                    String name = names.nextElement().toString();
+                    if (name.startsWith(VaultPackage.PREFIX_INSTALL_HOOK)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new PackageException("I/O Error while inspecting archive for hooks", e);
+        }
+        return false;
+    }
     
     public boolean execute(InstallContext context) {
         for (Hook hook : hooks.values()) {

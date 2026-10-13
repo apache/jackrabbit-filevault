@@ -209,6 +209,10 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 : new InstallHookProcessorImpl();
         try {
             if (!opts.isDryRun()) {
+                // enforce hook authorization BEFORE loading or instantiating any hook class:
+                // detecting hook presence must not run attacker-supplied bytecode, so the admin-session check
+                // happens up front and only authorized sessions proceed to register (and thereby instantiate) hooks.
+                checkHookAllowance(session, hooks.hasHooks(archive), securityConfig);
                 hooks.registerHooks(archive, opts.getHookClassLoader());
             }
             checkAllowanceToInstallPackage(session, hooks, securityConfig);
@@ -268,6 +272,14 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
      * @throws org.apache.jackrabbit.vault.packaging.PackageException if an error during packaging occurs
      * @throws IllegalStateException if the package is not valid.
      */
+    protected void checkHookAllowance(@NotNull Session session, boolean hasHooks, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig) throws PackageException, RepositoryException {
+       if (hasHooks) {
+           if (!AdminPermissionChecker.hasAdministrativePermissions(session, securityConfig.getAuthIdsForHookExecution())) {
+               throw new PackageException("Package extraction requires admin session as it has a hook (userid '" + session.getUserID() + "' not allowed).");
+           }
+       }
+    }
+
     protected void extract(InstallContextImpl ctx,
                            List<String> subPackages)
             throws RepositoryException, PackageException {

@@ -51,6 +51,20 @@ public interface InstallHookProcessor extends Closeable {
     boolean hasHooks();
 
     /**
+     * Checks whether the given archive declares any install hooks without loading or
+     * instantiating the hook classes. This allows callers to enforce authorization
+     * (e.g. an admin session check) <em>before</em> any hook class is loaded or
+     * instantiated via {@link #registerHooks(Archive, ClassLoader)}.
+     *
+     * @param archive the archive to inspect
+     * @return {@code true} if the archive declares at least one install hook.
+     * @throws PackageException if an error occurs while inspecting the archive.
+     */
+    default boolean hasHooks(Archive archive) throws PackageException {
+        return false;
+    }
+
+    /**
      * Executes the registered hooks with the current {@link InstallContext.Phase}.
      * @param context the context
      * @return {@code true} if successful.

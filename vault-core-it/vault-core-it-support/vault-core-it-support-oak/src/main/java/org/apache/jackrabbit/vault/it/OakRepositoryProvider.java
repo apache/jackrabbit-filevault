@@ -26,16 +26,16 @@ import javax.jcr.SimpleCredentials;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.jackrabbit.commons.jackrabbit.authorization.AccessControlUtils;
-import org.apache.jackrabbit.core.data.FileDataStore;
 import org.apache.jackrabbit.oak.commons.PathUtils;
 import org.apache.jackrabbit.oak.jcr.Jcr;
-import org.apache.jackrabbit.oak.plugins.blob.datastore.DataStoreBlobStore;
 import org.apache.jackrabbit.oak.plugins.tree.impl.RootProviderService;
 import org.apache.jackrabbit.oak.plugins.tree.impl.TreeProviderService;
 import org.apache.jackrabbit.oak.security.internal.SecurityProviderBuilder;
@@ -96,8 +96,8 @@ public class OakRepositoryProvider implements RepositoryProvider {
         final Jcr jcr;
         final FileStore fileStore;
         if (useFileStore) {
-            BlobStore blobStore = createBlobStore();
             DIR_OAK_FILE_STORE.mkdirs();
+            BlobStore blobStore = getOakBlobStoreFactory().createBlobStore(DIR_OAK_REPO_HOME, DIR_OAK_BLOB_STORE);
             try {
                 fileStore = FileStoreBuilder.fileStoreBuilder(DIR_OAK_FILE_STORE)
                         .withBlobStore(blobStore)
@@ -126,13 +126,20 @@ public class OakRepositoryProvider implements RepositoryProvider {
         return new RepositoryWithMetadata(repository, Collections.singletonMap(KEY_FILESTORE, fileStore));
     }
 
-    private static BlobStore createBlobStore() throws IOException {
-        DIR_OAK_BLOB_STORE.mkdirs();
-        FileDataStore fds = new FileDataStore();
-        fds.setMinRecordLength(4092);
-        fds.setPath(DIR_OAK_BLOB_STORE.getAbsolutePath());
-        fds.init(DIR_OAK_REPO_HOME.getAbsolutePath());
-        return new DataStoreBlobStore(fds);
+    private OakBlobStoreFactory getOakBlobStoreFactory() {
+        Iterator<OakBlobStoreFactory> oakBlobStoreFactoryIterator = ServiceLoader.load(
+                        OakBlobStoreFactory.class, this.getClass().getClassLoader())
+                .iterator();
+        if (!oakBlobStoreFactoryIterator.hasNext()) {
+            throw new IllegalStateException(
+                    "Haven't found any service implementation of " + OakBlobStoreFactory.class.getName());
+        }
+        OakBlobStoreFactory oakBlobStoreFactory = oakBlobStoreFactoryIterator.next();
+        if (oakBlobStoreFactoryIterator.hasNext()) {
+            throw new IllegalStateException(
+                    "Found more than one service implementation of " + OakBlobStoreFactory.class.getName());
+        }
+        return oakBlobStoreFactory;
     }
 
     private static ConfigurationParameters getSecurityConfigurationParameters() {

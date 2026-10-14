@@ -30,14 +30,19 @@ jobs:
     name: ${{ matrix.namePrefix }} Maven build (${{ matrix.os }}, JDK ${{ matrix.jdk }})
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        jdk: [17, 21, 25]
         include:
+          # use multiple JDKs with toolchain (https://github.com/actions/setup-java#multiple-jdks-and-maven-toolchains)
+          - os: ubuntu-latest
+            jdk: | 
+              11
+              17
           # lengthy build steps should only be performed on linux with Java 21 (deployment)
           - os: ubuntu-latest
             jdk: 21
             isMainBuildEnv: true
             namePrefix: 'Main '
+          - os: ubuntu-latest
+            jdk: 25
           # just build on latest LTS JDK with windows/mac os
           - os: windows-latest
             jdk: 25
@@ -77,6 +82,11 @@ jobs:
             fi
             echo "MVN_GOAL=install site" >> $GITHUB_ENV
           fi
+      - name: Enable Oak min IT for JDK 11 toolchain
+        if: ${{ contains(matrix.jdk, '11') && contains(matrix.jdk, '17') }}
+        shell: bash
+        run: |
+          echo "MVN_ADDITIONAL_OPTS=${MVN_ADDITIONAL_OPTS:+$MVN_ADDITIONAL_OPTS }-Dtoolchain-version=11" >> $GITHUB_ENV
       - name: Build
         env: 
           # secrets were provided in https://issues.apache.org/jira/browse/INFRA-27930?

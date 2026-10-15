@@ -853,6 +853,56 @@ Bundle-Category: jackrabbit
         <spotless.action>apply</spotless.action>
       </properties>
     </profile>
+    <profile>
+      <id>apache-release</id>
+      <build>
+        <plugins>
+          <!-- this should happen first in an aggregator build, therefore must be executed in this module (only) -->
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>parse-version</id>
+                <goals>
+                  <goal>parse-version</goal>
+                </goals>
+                <phase>validate</phase>
+                <configuration>
+                  <propertyPrefix>parsedVersion</propertyPrefix>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <!-- make sure that the RELEASE-NOTES are containing entries for the upcoming release -->
+              <execution>
+                <id>check-release-notes-updated</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <phase>validate</phase>
+                <configuration>
+                  <target>
+                    <fail message="../RELEASE-NOTES.txt doesn't contain the version to be released (${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}), it needs to be updated prior to each release manually!">
+                      <condition>
+                        <not>
+                          <resourcecontains resource="${basedir}/../RELEASE-NOTES.txt" substring="${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}" />
+                        </not>
+                      </condition>
+                    </fail>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
 </project>

@@ -2,6 +2,8 @@
 Welcome to Apache Jackrabbit FileVault <http://jackrabbit.apache.org/>
 =======================================================================
 
+THIS IS THE MAINTENANCE BRANCH FOR JAVA 8
+
 The FileVault introduces a JCR repository to filesystem mapping. The mapping is exposed by and API and used by the 
 _CRX Content Packaging_  that allows to create portable packages of repository content.
 The Vault Command Line Interface aka _vlt_ that provides a subversion like utility to work and develop with repository content.
@@ -15,7 +17,10 @@ You can build FileVault like this:
 
     mvn clean install
 
-You need Maven 2.0.9 (or higher) with Java 5 (or higher) for the build.
+You need Maven 2.0.9 (or higher) with Java 8 up to (incl) Java 11 for the build.
+
+
+
 For more instructions, please see the documentation at:
 
    http://jackrabbit.apache.org/building-jackrabbit.html

@@ -18,7 +18,7 @@
 Node Types and Namespaces
 ===========
 
-Packages can register custom [JCR node types](https://s.apache.org/jcr-2.0-spec/8_Node_Type_Discovery.html) and [Namespaces](https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.2.1%20Namespaces) during import by carrying arbitrarily many `.cnd` files. All files names matching the regular expression pattern set in [package property](properties.html) `cndPattern` as well as all `*.cnd` files below `META-INF/vault` are considered. Details around the CND file format can be found at <https://jackrabbit.apache.org/jcr/node-type-notation.html>.
+Packages can register custom [JCR node types](https://s.apache.org/jcr-2.0-spec/8_Node_Type_Discovery.html) and [namespaces](https://s.apache.org/jcr-2.0-spec/3_Repository_Model.html#3.2.1%20Namespaces) during import by carrying arbitrarily many `.cnd` files. All files names matching the regular expression pattern set in [package property](properties.html) `cndPattern` as well as all `*.cnd` files below `META-INF/vault` are considered. Details around the CND file format can be found at <https://jackrabbit.apache.org/jcr/node-type-notation.html>.
 Node types and namespaces whose qualified name/prefix/uri is already registered are not touched. This also means that existing namespaces and node types are never modified but only once initially installed in case they are not yet there. Also remapping an existing namespace URI to another prefix is not supported.
 
 Implicit Namespace Registration

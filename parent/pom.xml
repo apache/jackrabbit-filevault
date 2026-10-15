@@ -464,6 +464,8 @@ Bundle-Category: jackrabbit
           <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <projectVersionPolicyId>OddEvenVersionPolicy</projectVersionPolicyId>
+            <!-- skip rebuilding the release with GitHub actions (https://github.blog/changelog/2021-02-08-github-actions-skip-pull-request-and-push-workflows-with-skip-ci/) -->
+            <scmReleaseCommitComment>@{prefix} prepare release @{releaseLabel} [skip ci]</scmReleaseCommitComment>
           </configuration>
           <dependencies>
             <dependency>

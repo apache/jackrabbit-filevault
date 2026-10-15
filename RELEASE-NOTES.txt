@@ -1,4 +1,4 @@
-Release Notes -- Apache Jackrabbit FileVault -- Version 4.2.0
+Release Notes -- Apache Jackrabbit FileVault -- Version 4.3.0
 
 Introduction
 ------------
@@ -8,6 +8,30 @@ create portable packages of repository content.
 
 The Vault Command Line Interface aka "vlt" provides a subversion like
 utility to work and develop with repository content.
+
+Changes in Jackrabbit FileVault 4.3.0
+--------------------------------------
+
+Release Notes - Jackrabbit FileVault - Version 4.3.0
+This version requires Java 11 or above
+The OSGi bundles depend on Jackrabbit 2.20.18+ (JCR Commons, SPI, SPI Commons), Oak JR API 1.22.4+, Commons IO 2.18+, Commons Collections 4.5+ and SLF4J 1.7+
+
+Bug
+    [JCRVLT-856] - Install Hooks do not properly validate admin access
+    [JCRVLT-858] - Prevent persistent writes during dry runs
+    [JCRVLT-859] - Binary files resembling Docview XML may not survive export/import roundtrip
+    [JCRVLT-860] - Reject package ids containing "/" or control characters
+    [JCRVLT-861] - Reject platform names containing traversal characters (.., or /)
+    [JCRVLT-862] - Restrict "config.xml" includes/excludes to ItemFilter's only
+
+Improvement
+    [JCRVLT-844] - Improve logging for CNFE when loading install hook
+    [JCRVLT-847] - Defer spotless execution to "verify" phase
+    [JCRVLT-851] - Unclosed package can leave tempfiles behind
+    [JCRVLT-855] - Upgrade embedded JR2 versions to 2.22.5
+    [JCRVLT-857] - Upgrade embedded Woodstox and TXW to 4.3.0/4.0.9
+    [JCRVLT-863] - Bump minimum required JR2 version to 2.20.18
+    [JCRVLT-864] - Bump JLine to 3.30.17
 
 
 Changes in Jackrabbit FileVault 4.2.0

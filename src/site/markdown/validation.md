@@ -93,6 +93,7 @@ Sling Repoinit Validator | Validates Sling Repoinit statements | <https://sling.
 AEM Cloud Validator | Prevents invalid usage patterns for AEM as a Cloud Service | <https://github.com/Netcentric/aem-cloud-validator>
 AEM Replication Medata Validator | Enforces correct replication metadata for certain nodes | <https://github.com/Netcentric/aem-replication-metadata-validator>
 AEM Content Classification Validator | Validates usage of nodes according to AEM Content Classification | <https://github.com/Netcentric/aem-classification/tree/master/aem-classification-validator>
+AEM Clientlib FileVault Validator | Validates that FileVault content packages contain only Javascript files inside AEM Client-Side libraries which can be minified without issues according to their (or the default) minification configuration | <https://github.com/Netcentric/aem-clientlib-validator>
 
 Please raise a PR to get other 3rd party validators listed above.
 

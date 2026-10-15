@@ -19,7 +19,6 @@
 package org.apache.jackrabbit.vault.fs.io;
 
 import javax.jcr.Session;
-import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -35,6 +34,7 @@ import java.util.Objects;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.xml.secure.SecureSAXParserFactory;
 import org.apache.jackrabbit.spi.commons.namespace.NamespaceResolver;
 import org.apache.jackrabbit.spi.commons.namespace.SessionNamespaceResolver;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewSAXHandler;
@@ -230,13 +230,9 @@ public final class DocViewParser {
     }
 
     private SAXParser createSaxParser() throws ParserConfigurationException, SAXException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
+        SAXParserFactory factory = SecureSAXParserFactory.newNSInstance();
         factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
-        SAXParser parser = factory.newSAXParser();
-        parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-        return parser;
+        return factory.newSAXParser();
     }
 
     /**

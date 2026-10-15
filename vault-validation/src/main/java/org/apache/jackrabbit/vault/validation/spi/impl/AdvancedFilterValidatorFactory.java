@@ -34,6 +34,8 @@ import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
+import org.apache.commons.xml.secure.SecureSchemaFactory;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
@@ -83,11 +85,11 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
     }
 
     static @NotNull DocumentBuilderFactory createFilterXsdAwareDocumentBuilder(Locale locale) throws IOException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = SecureDocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         try (InputStream xsdInput =
                 AdvancedFilterValidatorFactory.class.getResourceAsStream("/workspacefilter-1.0.xsd")) {
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            SchemaFactory schemaFactory = SecureSchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             // load a WXS schema, represented by a Schema instance
             Source schemaFile = new StreamSource(xsdInput);
             Schema schema = schemaFactory.newSchema(schemaFile);
@@ -95,8 +97,6 @@ public final class AdvancedFilterValidatorFactory implements ValidatorFactory {
             if (xsdInput == null) {
                 throw new IllegalStateException("Can not load workspacefilter-1.0.xsd");
             }
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             // optionally adjust locale, https://stackoverflow.com/a/18745978
             if (locale != null) {
                 factory.setAttribute("http://apache.org/xml/properties/locale", locale);

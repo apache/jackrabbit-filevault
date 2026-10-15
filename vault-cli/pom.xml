@@ -271,6 +271,10 @@
                     <exclude>org.osgi:org.osgi.annotation.versioning</exclude>
                     <exclude>org.osgi:org.osgi.service.metatype.annotations</exclude>
                     <exclude>org.osgi:org.osgi.service.component.annotations</exclude>
+                    <!-- embedded in core and validation, using some provided deps for constants -->
+                    <exclude>org.apache.commons:commons-secure-xml</exclude>
+                    <exclude>net.sf.saxon:Saxon-HE</exclude>
+                    <exclude>org.xmlresolver:xmlresolver</exclude>
                   </excludes>
                 </requireProvidedDependenciesInRuntimeClasspath>
               </rules>

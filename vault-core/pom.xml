@@ -95,7 +95,12 @@
       <artifactId>org.osgi.framework</artifactId>
       <scope>provided</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-secure-xml</artifactId>
+      <!-- embedded, therefore not transitively relevant -->
+      <scope>provided</scope>
+    </dependency>
     <!-- StaX implementation for indentation -->
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
@@ -324,6 +329,7 @@
             <exclude>org/codehaus/stax/**/*.class</exclude>
             <exclude>org/codehaus/stax2/**/*.class</exclude>
             <exclude>org/h2/**/*.class</exclude>
+            <exclude>org/apache/commons/xml/secure/**/*.class</exclude>
           </excludes>
         </configuration>
       </plugin>

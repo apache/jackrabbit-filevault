@@ -22,7 +22,7 @@ the `META-INF/vault` directory. It defines defines several meta data around the 
 which are just used for informational purpose (like `lastModifiedBy`) and other properties which actually influence how the package
 is installed (like `subPackageHandling`). In addition to that there is the `MANIFEST.MF` within `META-INF` which contains only informational metadata.
 
-<!-- MACRO{toc} -->
+<!-- MACRO{toc|fromDepth=2} -->
 
 properties.xml
 -----------------

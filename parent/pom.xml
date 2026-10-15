@@ -93,7 +93,7 @@ Apache Jackrabbit FileVault is a project of the Apache Software Foundation.</des
     <!-- CI-friendly version, https://maven.apache.org/maven-ci-friendly.html -->
     <revision>4.3.0-SNAPSHOT</revision>
     <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
-    <jackrabbit.min.version>2.20.17</jackrabbit.min.version>
+    <jackrabbit.min.version>2.20.18</jackrabbit.min.version>
     <!-- for embedded dependencies the newest version should be used (also used for testing) -->
     <jackrabbit.max.version>2.22.5</jackrabbit.max.version>
     <!-- for dependencies used for calculating OSGi import-package version ranges the minimally supported version should be used to be backwards compatible in OSGi containers -->
@@ -518,7 +518,7 @@ Bundle-Category: jackrabbit
         <plugin>
           <groupId>org.owasp</groupId>
           <artifactId>dependency-check-maven</artifactId>
-          <version>12.2.2</version>
+          <version>13.0.0</version>
           <executions>
             <execution>
               <goals>

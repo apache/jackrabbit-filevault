@@ -60,7 +60,7 @@ Containers may be nested which means they may contain themselves packages of typ
 Mixed Package
 -------
 
-This legacy package type imposes no restrictions and is only defined for backwards-compatibility reasons. For new packages rather one of the other types should be used as mixed packages may not deployable in certain scenarios.
+This legacy package type imposes no restrictions and is only defined for backwards-compatibility reasons. For new packages rather one of the other types should be used as mixed packages may not be deployable in certain scenarios.
 
 
 [validators]: validation.html#Standard_Validators

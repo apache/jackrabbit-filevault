@@ -30,7 +30,7 @@ The base of the Jackrabbit FileVault is the [VaultFs](vaultfs.html) which provid
 
 ![Vault API](vault_api.png?raw=true)
 
-<!-- MACRO{toc} -->
+<!-- MACRO{toc|fromDepth=2} -->
 
 How it works
 ------------

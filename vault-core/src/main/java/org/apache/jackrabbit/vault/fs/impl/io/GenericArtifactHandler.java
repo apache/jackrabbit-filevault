@@ -90,7 +90,7 @@ public class GenericArtifactHandler extends AbstractArtifactHandler {
                 }
             }
             try {
-                DocViewSAXImporter handler = new DocViewSAXImporter(parent, name, artifacts, wspFilter);
+                DocViewSAXImporter handler = new DocViewSAXImporter(parent, name, artifacts, wspFilter, dryRun);
                 handler.setAclHandling(getAcHandling());
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 factory.setNamespaceAware(true);

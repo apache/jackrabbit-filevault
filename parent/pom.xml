@@ -153,6 +153,10 @@
                             </goals>
                             <configuration>
                                 <failOnError>true</failOnError>
+                                <filters>
+                                    <!-- Avoid version increase for continued consistency with master branch -->
+                                    <filter>!org.apache.jackrabbit.vault.fs.confi</filter>
+                                </filters>
                             </configuration>
                         </execution>
                     </executions>

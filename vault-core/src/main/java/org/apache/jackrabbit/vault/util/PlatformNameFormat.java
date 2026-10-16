@@ -17,18 +17,20 @@
 
 package org.apache.jackrabbit.vault.util;
 
+import org.apache.jackrabbit.util.Text;
+
 /**
- * Implements a repository to platform name formatter. 
- * 
+ * Implements a repository to platform name formatter.
+ *
  * <p>Illegal characters a
  * generally escaped using the url escaping format, i.e. replacing the char
- * by a '%' hex(char) sequence. special treatment is used for the ':' char
- * since it's used quite often as namespace prefix separator. the
- * PREFIX ':' NAME sequence is replaced by '_' PREFIX '_' NAME. item names
+ * by a '%' hex(char) sequence. Special treatment is used for the ':' char
+ * since it's used quite often as namespace prefix separator. The
+ * PREFIX ':' NAME sequence is replaced by '_' PREFIX '_' NAME. Item names
  * that would generate the same pattern are escaped with an extra leading '_'.
- * 
+ *
  * <p>Examples:
- * 
+ *
  * <pre>
  * +-------------------+----------------------+----+----+
  * | repository name   | platform name        | pp | sp |
@@ -46,8 +48,8 @@ package org.apache.jackrabbit.vault.util;
  * | cq_:test.jpg      | cq_%3atest.jpg       |  3 |  2 |
  * +-------------------+----------------------+----+----+
  * </pre>
- * 
- * note for the 2nd set of examples the cases are very rare and justify the
+ *
+ * Note for the 2nd set of examples the cases are very rare and justify the
  * ugly '%' escaping.
  *
  */
@@ -64,47 +66,48 @@ public class PlatformNameFormat {
      * @return the (escaped) platform name.
      */
     public static String getPlatformName(String repositoryName) {
-        StringBuffer buf = new StringBuffer("_");
+        StringBuilder buf = new StringBuilder("_");
         boolean escapeColon = false;
         boolean useUnderscore = false;
         int numUnderscore = 0;
-        for (int i=0; i<repositoryName.length(); i++) {
+        for (int i = 0; i < repositoryName.length(); i++) {
             char c = repositoryName.charAt(i);
             switch (c) {
-                 case':':
-                     if (!escapeColon && i>0) {
-                         // pure prefix
-                         escapeColon = true;
-                         useUnderscore = true;
-                         numUnderscore = 2;
-                         buf.append('_');
-                     } else {
-                         buf.append("%3a");
-                     }
-                     break;
-                 case '_':
-                     if (i==0) {
-                         useUnderscore = true;
-                     }
-                     numUnderscore++;
-                     escapeColon=true;
-                     buf.append(c);
-                     break;
-                 case'\\':
-                 case'<':
-                 case'>':
-                 case'|':
-                 case'\"':
-                 case '/':
-                 case'?':
-                 case'%':
-                     buf.append('%');
-                     buf.append(Character.forDigit(c / 16, 16));
-                     buf.append(Character.forDigit(c % 16, 16));
-                     break;
-                 default:
-                     buf.append(c);
-             }
+                case ':':
+                    if (!escapeColon && i > 0) {
+                        // pure prefix
+                        escapeColon = true;
+                        useUnderscore = true;
+                        numUnderscore = 2;
+                        buf.append('_');
+                    } else {
+                        buf.append("%3a");
+                        escapeColon = true;
+                    }
+                    break;
+                case '_':
+                    if (i == 0) {
+                        useUnderscore = true;
+                    }
+                    numUnderscore++;
+                    escapeColon = true;
+                    buf.append(c);
+                    break;
+                case '\\':
+                case '<':
+                case '>':
+                case '|':
+                case '\"':
+                case '/':
+                case '?':
+                case '%':
+                    buf.append('%');
+                    buf.append(Character.forDigit(c / 16, 16));
+                    buf.append(Character.forDigit(c % 16, 16));
+                    break;
+                default:
+                    buf.append(c);
+            }
         }
         if (useUnderscore && numUnderscore > 1) {
             return buf.toString();
@@ -120,7 +123,7 @@ public class PlatformNameFormat {
      */
     public static String getPlatformPath(String repoPath) {
         String[] elems = Text.explode(repoPath, '/', true);
-        for (int i=0; i<elems.length; i++) {
+        for (int i = 0; i < elems.length; i++) {
             if (elems[i].length() > 0) {
                 elems[i] = getPlatformName(elems[i]);
             }
@@ -130,25 +133,35 @@ public class PlatformNameFormat {
 
     /**
      * Returns the repository name for a given platform name.
+     * <p>
+     * The returned name is validated to still address a single repository path segment:
+     * a platform name whose percent-escapes decode to {@code '/'} (e.g. {@code a%2fb}) or
+     * to a {@code '.'}/{@code '..'} segment (e.g. {@code %2e%2e}) is rejected, because the
+     * repository would resolve the decoded result to a different path than every
+     * string-level check (workspace filter coverage, subpackage detection, validation)
+     * has seen. {@link #getPlatformName(String)} escapes {@code '/'} and {@code '%'}, so no
+     * legitimately exported platform name ever decodes to one of the rejected forms.
      *
      * @param platformName the platform name
      * @return the (unescaped) repository name.
+     * @throws IllegalArgumentException if the decoded name is empty, {@code "."},
+     *         {@code ".."} or contains a {@code '/'}
      */
     public static String getRepositoryName(String platformName) {
-        StringBuffer buffer = new StringBuffer("_");
+        StringBuilder buffer = new StringBuilder("_");
         boolean firstUnderscore = false;
-        for (int i=0; i<platformName.length(); i++) {
+        for (int i = 0; i < platformName.length(); i++) {
             char c = platformName.charAt(i);
             if (c == '%') {
-                if (platformName.length() > i+2) {
+                if (platformName.length() > i + 2) {
                     int a = Character.digit(platformName.charAt(++i), 16);
                     int b = Character.digit(platformName.charAt(++i), 16);
                     c = (char) (a * 16 + b);
                 }
             } else if (c == '_') {
-                if (i==0) {
+                if (i == 0) {
                     firstUnderscore = true;
-                    if (platformName.length()>1) {
+                    if (platformName.length() > 1) {
                         c = platformName.charAt(++i);
                         if (c == '_') {
                             buffer.append('_');
@@ -165,12 +178,22 @@ public class PlatformNameFormat {
             }
             buffer.append(c);
         }
+        final String repositoryName;
         if (firstUnderscore) {
             // pending underscore
-            return buffer.toString();
+            repositoryName = buffer.toString();
         } else {
-            return buffer.substring(1);
+            repositoryName = buffer.substring(1);
         }
+        if (repositoryName.isEmpty()
+                || ".".equals(repositoryName)
+                || "..".equals(repositoryName)
+                || repositoryName.indexOf('/') >= 0) {
+            throw new IllegalArgumentException("Platform name '" + platformName
+                    + "' decodes to the illegal repository name '" + repositoryName
+                    + "' (empty, '.', '..' or containing '/')");
+        }
+        return repositoryName;
     }
 
     /**
@@ -180,7 +203,7 @@ public class PlatformNameFormat {
      */
     public static String getRepositoryPath(String path) {
         String[] elems = Text.explode(path, '/', true);
-        for (int i=0; i<elems.length; i++) {
+        for (int i = 0; i < elems.length; i++) {
             if (elems[i].length() > 0) {
                 elems[i] = getRepositoryName(elems[i]);
             }
@@ -196,7 +219,7 @@ public class PlatformNameFormat {
      */
     public static String getRepositoryPath(String path, boolean respectDotDir) {
         String[] elems = Text.explode(path, '/', true);
-        for (int i=0; i<elems.length; i++) {
+        for (int i = 0; i < elems.length; i++) {
             if (elems[i].length() > 0) {
                 if (respectDotDir && elems[i].endsWith(".dir")) {
                     elems[i] = getRepositoryName(elems[i].substring(0, elems[i].length() - 4));
@@ -207,6 +230,4 @@ public class PlatformNameFormat {
         }
         return Text.implode(elems, "/");
     }
-
-
 }

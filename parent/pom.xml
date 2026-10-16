@@ -155,7 +155,7 @@
                                 <failOnError>true</failOnError>
                                 <filters>
                                     <!-- Avoid version increase for continued consistency with master branch -->
-                                    <filter>!org.apache.jackrabbit.vault.fs.confi</filter>
+                                    <filter>!org.apache.jackrabbit.vault.fs.config</filter>
                                 </filters>
                             </configuration>
                         </execution>

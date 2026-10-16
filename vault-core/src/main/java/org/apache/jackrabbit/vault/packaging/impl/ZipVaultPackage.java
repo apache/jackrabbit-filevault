@@ -19,6 +19,7 @@ package org.apache.jackrabbit.vault.packaging.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -39,6 +40,7 @@ import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,14 +181,16 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
                 ((InstallHookProcessorFactory) opts).createInstallHookProcessor()
                 : new InstallHookProcessorImpl();
         if (!opts.isDryRun()) {
+            // Check archive metadata before hook registration can load package-supplied code.
+            if (requiresRoot() || hasHookEntries(archive)) {
+                checkAdministrativePermissions(session);
+            }
             hooks.registerHooks(archive, opts.getHookClassLoader());
         }
 
+        // Custom processors may register hooks that are not declared in the archive.
         if (requiresRoot() || hooks.hasHooks()) {
-            if (!AdminPermissionChecker.hasAdministrativePermissions(session)) {
-                log.error("Package extraction requires admin session.");
-                throw new PackageException("Package extraction requires admin session (userid not allowed).");
-            }
+            checkAdministrativePermissions(session);
         }
 
         Importer importer = new Importer(opts);
@@ -204,6 +208,54 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         }
 
         return new InstallContextImpl(session, "/", this, importer, hooks);
+    }
+
+    /**
+     * Detects whether the given archive declares install hooks, by pure archive listing:
+     * an entry below {@code META-INF/vault/hooks} ending with {@code .jar}, or a package
+     * property starting with {@code installhook.}. Deliberately loads no class and creates
+     * no class loader. The package properties have already been parsed when the archive was
+     * opened, so this only consults cached metadata and triggers no additional MetaInf
+     * processing.
+     *
+     * @param archive the archive to check
+     * @return {@code true} if the archive declares at least one install hook
+     * @throws PackageException if an I/O error occurs while listing the archive
+     */
+    static boolean hasHookEntries(Archive archive) throws PackageException {
+        try {
+            Archive.Entry metaInf = archive.getRoot().getChild(Constants.META_INF);
+            Archive.Entry vaultDir = metaInf == null ? null : metaInf.getChild(Constants.VAULT_DIR);
+            Archive.Entry hooksDir = vaultDir == null ? null : vaultDir.getChild(Constants.HOOKS_DIR);
+            if (hooksDir != null) {
+                for (Archive.Entry entry : hooksDir.getChildren()) {
+                    // only respect .jar files (same rule as InstallHookProcessorImpl.registerHooks)
+                    if (entry.getName().endsWith(".jar")) {
+                        return true;
+                    }
+                }
+            }
+            Properties props = archive.getMetaInf().getProperties();
+            if (props != null) {
+                Enumeration<?> names = props.propertyNames();
+                while (names.hasMoreElements()) {
+                    if (names.nextElement().toString().startsWith(VaultPackage.PREFIX_INSTALL_HOOK)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (IOException e) {
+            throw new PackageException("I/O Error while detecting install hooks", e);
+        }
+    }
+
+    private static void checkAdministrativePermissions(Session session)
+            throws PackageException, RepositoryException {
+        if (!AdminPermissionChecker.hasAdministrativePermissions(session)) {
+            log.error("Package extraction requires admin session.");
+            throw new PackageException("Package extraction requires admin session (userid not allowed).");
+        }
     }
 
     /**

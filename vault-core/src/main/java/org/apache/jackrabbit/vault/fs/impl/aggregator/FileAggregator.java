@@ -17,6 +17,9 @@
 
 package org.apache.jackrabbit.vault.fs.impl.aggregator;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
@@ -33,15 +36,20 @@ import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.Dumpable;
 import org.apache.jackrabbit.vault.fs.api.ImportInfo;
 import org.apache.jackrabbit.vault.fs.api.ItemFilterSet;
+import org.apache.jackrabbit.vault.fs.api.SerializationType;
 import org.apache.jackrabbit.vault.fs.impl.ArtifactSetImpl;
 import org.apache.jackrabbit.vault.fs.impl.io.DocViewSerializer;
 import org.apache.jackrabbit.vault.fs.impl.io.ImportInfoImpl;
+import org.apache.jackrabbit.vault.fs.impl.io.XmlAnalyzer;
 import org.apache.jackrabbit.vault.fs.io.Serializer;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.jackrabbit.vault.util.MimeTypes;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.jackrabbit.vault.util.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.InputSource;
 
 /**
  * A file aggregate contains nt:file or nt:resource nodes.
@@ -53,6 +61,8 @@ import org.apache.jackrabbit.vault.util.Text;
  * is created.
  */
 public class FileAggregator implements Aggregator, Dumpable {
+
+    private static final Logger log = LoggerFactory.getLogger(FileAggregator.class);
 
     /**
      * filter that regulates what to be included in the aggregate
@@ -223,22 +233,66 @@ public class FileAggregator implements Aggregator, Dumpable {
             needsDir = !"utf-8".equals(encoding) || MimeTypes.isBinary(mimeType);
         }
 
-        // create file artifact
         String name = aggregate.getName();
-        artifacts.add(null, name, "", ArtifactType.FILE,
-                content.getProperty(JcrConstants.JCR_DATA), lastModified);
-
-        // create .dir artifact
-        if (needsDir) {
-            // in this case, we create a directory artifact
+        Property data = content.getProperty(JcrConstants.JCR_DATA);
+        if (needsContentEscape(name, data)) {
+            // Keep colliding file content opaque so the importer cannot treat it as docview.
             Artifact parent = new DirectoryArtifact(name, ".dir");
             artifacts.add(parent);
-            // and extra
             Serializer ser = new DocViewSerializer(aggregate);
-            // hack: do better
             artifacts.add(parent, "", Constants.DOT_CONTENT_XML, ArtifactType.PRIMARY, ser, 0);
+            artifacts.add(
+                    parent,
+                    JcrConstants.JCR_CONTENT + "/" + JcrConstants.JCR_DATA,
+                    ".binary",
+                    ArtifactType.BINARY,
+                    data,
+                    lastModified);
+        } else {
+            // create file artifact
+            artifacts.add(null, name, "", ArtifactType.FILE, data, lastModified);
+
+            // create .dir artifact
+            if (needsDir) {
+                // in this case, we create a directory artifact
+                Artifact parent = new DirectoryArtifact(name, ".dir");
+                artifacts.add(parent);
+                // and extra
+                Serializer ser = new DocViewSerializer(aggregate);
+                // hack: do better
+                artifacts.add(parent, "", Constants.DOT_CONTENT_XML, ArtifactType.PRIMARY, ser, 0);
+            }
         }
         return artifacts;
+    }
+
+    /**
+     * Determines whether the raw bytes of a stored file would be indistinguishable from
+     * a docview serialization on import, and must therefore be escaped into the
+     * {@code .dir}/{@code .content.xml} + binary-sidecar shape instead of being written
+     * out verbatim under {@code name}.
+     *
+     * @param name the repository name of the file (e.g. {@code "evil.xml"})
+     * @param data the file's {@code jcr:data} property
+     * @return {@code true} if the file's name or content collides with the docview
+     *         serialization conventions
+     * @throws RepositoryException if the property cannot be read
+     */
+    private static boolean needsContentEscape(String name, Property data) throws RepositoryException {
+        if (Constants.DOT_CONTENT_XML.equals(name)) {
+            // always collides: this entry is consumed as the containing folder's own
+            // docview on import (see Importer#prepare), regardless of its content.
+            return true;
+        }
+        if (!name.endsWith(".xml")) {
+            return false;
+        }
+        try (InputStream in = data.getBinary().getStream()) {
+            return XmlAnalyzer.analyze(new InputSource(in)) == SerializationType.XML_DOCVIEW;
+        } catch (IOException e) {
+            log.warn("Unable to analyze file {}; escaping its content to prevent docview promotion", name, e);
+            return true;
+        }
     }
 
     /**

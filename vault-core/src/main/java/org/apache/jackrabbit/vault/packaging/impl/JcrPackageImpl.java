@@ -411,6 +411,13 @@ public class JcrPackageImpl implements JcrPackage {
         for (String path: subPackages) {
             if (s.nodeExists(path)) {
                 JcrPackageImpl p = new JcrPackageImpl(mgr, s.getNode(path));
+                if (!p.isValid() && opts.isDryRun()) {
+                    log.info(
+                            "Dry run: skipping unwrapping of sub-package at {}. Install it before simulating its contents.",
+                            path);
+                    p.close();
+                    continue;
+                }
                 if (!p.isValid()) {
                     // check if package was included as pure .zip or .jar
                     try {
@@ -426,29 +433,38 @@ public class JcrPackageImpl implements JcrPackage {
                     // check if package is at the correct location
                     String expectedPath = mgr.getInstallationPath(pId) + ".zip";
                     if (!expectedPath.equals(path)) {
-                        if (s.nodeExists(expectedPath)) {
-                            log.info("(Removed duplicated sub-package in {}. Still present at {}", path, expectedPath);
-                            s.getNode(path).remove();
-                            s.save();
+                        if (opts.isDryRun()) {
+                            log.info("Dry run: would move sub-package in place: {} -> {}", path, expectedPath);
                         } else {
-                            log.info("Moving sub-package in place: {} -> {}", path, expectedPath);
-                            s.getWorkspace().move(path, expectedPath);
+                            if (s.nodeExists(expectedPath)) {
+                                log.info(
+                                        "(Removed duplicated sub-package in {}. Still present at {}",
+                                        path,
+                                        expectedPath);
+                                s.getNode(path).remove();
+                                s.save();
+                            } else {
+                                log.info("Moving sub-package in place: {} -> {}", path, expectedPath);
+                                s.getWorkspace().move(path, expectedPath);
+                            }
+                            path = expectedPath;
+                            // re-acquire the package and definition
+                            p.close();
+                            p = new JcrPackageImpl(mgr, s.getNode(path));
+                            def = (JcrPackageDefinitionImpl) p.getDefinition();
                         }
-                        path = expectedPath;
-                        // re-acquire the package and definition
-                        p.close();
-                        p = new JcrPackageImpl(mgr, s.getNode(path));
-                        def = (JcrPackageDefinitionImpl) p.getDefinition();
                     }
 
-                    // ensure that sub package is marked as not-installed. it might contain wrong data in vlt:definition (JCRVLT-114)
-                    def.clearLastUnpacked(false);
+                    if (!opts.isDryRun()) {
+                        // ensure that sub package is marked as not-installed. it might contain wrong data in vlt:definition (JCRVLT-114)
+                        def.clearLastUnpacked(false);
 
-                    // add dependency to the parent package if required
-                    Dependency[] oldDeps = def.getDependencies();
-                    Dependency[] newDeps = DependencyUtil.addExact(oldDeps, pack.getId());
-                    if (oldDeps != newDeps) {
-                        def.setDependencies(newDeps, false);
+                        // add dependency to the parent package if required
+                        Dependency[] oldDeps = def.getDependencies();
+                        Dependency[] newDeps = DependencyUtil.addExact(oldDeps, pack.getId());
+                        if (oldDeps != newDeps) {
+                            def.setDependencies(newDeps, false);
+                        }
                     }
 
                     String pName = pId.getName();
@@ -536,13 +552,15 @@ public class JcrPackageImpl implements JcrPackage {
                 p.close();
             }
             // register sub packages in snapshot and on package for uninstall
-            if (snap != null) {
-                ((JcrPackageDefinitionImpl) snap.getDefinition()).setSubPackages(subIds);
+            if (!opts.isDryRun()) {
+                if (snap != null) {
+                    ((JcrPackageDefinitionImpl) snap.getDefinition()).setSubPackages(subIds);
+                }
+                if (def != null) {
+                    def.setSubPackages(subIds);
+                }
+                s.save();
             }
-            if (def != null) {
-                def.setSubPackages(subIds);
-            }
-            s.save();
         }
 
         if (createSnapshot) {
@@ -619,6 +637,11 @@ public class JcrPackageImpl implements JcrPackage {
 
         // process the discovered sub-packages
         for (Archive.Entry e: entries) {
+            if (opts.isDryRun()) {
+                log.info("Dry run: skipping registration and extraction of sub-package {} from {}. Extract it before simulating its contents.",
+                        e.getName(), pId);
+                continue;
+            }
             VaultInputSource in = a.getInputSource(e);
             InputStream ins = null;
             try {

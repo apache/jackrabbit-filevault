@@ -374,6 +374,8 @@ public class Importer {
         fileHandler.setAcHandling(opts.getAccessControlHandling());
         genericHandler.setAcHandling(opts.getAccessControlHandling());
         folderHandler.setAcHandling(opts.getAccessControlHandling());
+        fileHandler.setDryRun(opts.isDryRun());
+        genericHandler.setDryRun(opts.isDryRun());
 
         filter = opts.getFilter();
         if (filter == null) {

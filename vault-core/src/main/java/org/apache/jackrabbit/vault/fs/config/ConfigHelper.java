@@ -78,7 +78,6 @@ public class ConfigHelper {
      *         {@code expectedType}, uses the rejected {@code #} field syntax, or cannot be
      *         instantiated
      * @throws IllegalArgumentException if either argument is {@code null}
-     * @since 2.6.0 (Bundle version 3.2.9)
      */
     public Object create(Element elem, Class<?> expectedType)
             throws ConfigurationException {

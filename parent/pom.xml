@@ -40,7 +40,10 @@
     </description>
 
     <properties>
-        <jackrabbit.version>2.16.3</jackrabbit.version>
+        <jackrabbit.version>2.20.18</jackrabbit.version>
+        <!-- Keep the legacy API and test repository compatible with Oak 1.6. -->
+        <jackrabbit.api.version>2.16.3</jackrabbit.api.version>
+        <jackrabbit.test.version>2.16.3</jackrabbit.test.version>
         <oak.version>1.6.1</oak.version>
         <slf4j.version>1.7.6</slf4j.version>
         <test.oak>false</test.oak>
@@ -259,7 +262,7 @@
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>jackrabbit-api</artifactId>
-                <version>${jackrabbit.version}</version>
+                <version>${jackrabbit.api.version}</version>
             </dependency>
 
             <dependency>

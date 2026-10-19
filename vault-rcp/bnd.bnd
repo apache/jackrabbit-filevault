@@ -22,7 +22,6 @@
                   @jackrabbit-spi2dav-*.jar,\
                   @vault-davex-*.jar,\
                   @oak-jackrabbit-api-*.jar,
--conditionalpackage: org.apache.felix.utils.json
 # make sure to only export the relevant packages (https://github.com/bndtools/bnd/issues/4219)
 -exportcontents: org.apache.jackrabbit.vault.rcp
 # prevent false positive due to https://github.com/bndtools/bnd/issues/1943

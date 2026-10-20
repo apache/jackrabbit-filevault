@@ -25,15 +25,20 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.felix.utils.json.JSONParser;
-import org.apache.felix.utils.json.JSONWriter;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
@@ -89,19 +94,24 @@ public class RcpServlet extends SlingAllMethodsServlet {
     public static final String PARAM_PROXY_USERNAME = "proxyUsername";
     public static final String PARAM_PROXY_PASSWORD = "proxyPassword";
 
+    private static final JsonFactory JSON_FACTORY = new JsonFactory();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(JSON_FACTORY);
+    private static final TypeReference<Map<String, Object>> MAP_TYPE_REFERENCE =
+            new TypeReference<Map<String, Object>>() {};
+
     /**
      * default logger
      */
     protected final Logger log = LoggerFactory.getLogger(RcpServlet.class);
 
-    @Reference
-    private RcpTaskManager taskMgr;
+    private final RcpTaskManager taskMgr;
 
     private Bundle bundle;
 
     @Activate
-    protected void activate(BundleContext context) {
+    public RcpServlet(BundleContext context, @Reference RcpTaskManager taskMgr) {
         bundle = context.getBundle();
+        this.taskMgr = taskMgr;
     }
 
     @Override
@@ -117,40 +127,48 @@ public class RcpServlet extends SlingAllMethodsServlet {
                 writeInfoJson(response.getWriter());
             } else {
                 String taskId = request.getRequestPathInfo().getSuffix();
-                JSONWriter w = new JSONWriter(response.getWriter());
-
-                if (taskId != null) {
-                    taskId = taskId.substring(1);
-                    RcpTask task = taskMgr.getTask(taskId);
-
-                    if (task != null) {
-                        write(w, task);
-                    } else {
-                        // return empty object
-                        w.object().endObject();
-                    }
-                } else {
-                    w.object();
-                    w.key("tasks").array();
-                    for (RcpTask task : taskMgr.getTasks().values()) {
-                        write(w, task);
-                    }
-                    w.endArray();
-                    w.endObject();
-                }
+                writeTaskJson(response.getWriter(), taskId);
             }
         } catch (IOException e) {
             throw new ServletException("Error writing JSON", e);
         }
     }
 
-    private void writeInfoJson(Writer writer) throws IOException {
-        JSONWriter w = new JSONWriter(writer);
-        w.object();
-        w.key(Constants.BUNDLE_SYMBOLICNAME).value(bundle.getSymbolicName());
-        w.key(Constants.BUNDLE_VERSION).value(bundle.getVersion().toString());
-        w.key(Constants.BUNDLE_VENDOR).value(bundle.getHeaders().get(Constants.BUNDLE_VENDOR));
-        w.endObject();
+    void writeTaskJson(Writer writer, String taskId) throws IOException {
+        try (JsonGenerator generator = JSON_FACTORY.createGenerator(writer)) {
+            if (taskId != null) {
+                taskId = taskId.substring(1);
+                RcpTask task = taskMgr.getTask(taskId);
+
+                if (task != null) {
+                    write(generator, task);
+                } else {
+                    // return empty object
+                    generator.writeStartObject();
+                    generator.writeEndObject();
+                }
+            } else {
+                generator.writeStartObject();
+                generator.writeArrayFieldStart("tasks");
+                for (RcpTask task : taskMgr.getTasks().values()) {
+                    write(generator, task);
+                }
+                generator.writeEndArray();
+                generator.writeEndObject();
+            }
+        }
+    }
+
+    void writeInfoJson(Writer writer) throws IOException {
+        try (JsonGenerator generator = JSON_FACTORY.createGenerator(writer)) {
+            generator.writeStartObject();
+            generator.writeStringField(Constants.BUNDLE_SYMBOLICNAME, bundle.getSymbolicName());
+            generator.writeStringField(
+                    Constants.BUNDLE_VERSION, bundle.getVersion().toString());
+            generator.writeStringField(
+                    Constants.BUNDLE_VENDOR, bundle.getHeaders().get(Constants.BUNDLE_VENDOR));
+            generator.writeEndObject();
+        }
     }
 
     @Override
@@ -158,7 +176,11 @@ public class RcpServlet extends SlingAllMethodsServlet {
             throws ServletException, IOException {
         TypedMapWrapper data;
         try {
-            data = new TypedMapWrapper(new JSONParser(request.getInputStream()).getParsed());
+            Map<String, Object> parsed;
+            try (JsonParser parser = JSON_FACTORY.createParser(request.getInputStream())) {
+                parsed = OBJECT_MAPPER.readValue(parser, MAP_TYPE_REFERENCE);
+            }
+            data = new TypedMapWrapper(parsed);
         } catch (IOException e) {
             log.error("Error while reading json", e);
             response.setStatus(500);
@@ -254,7 +276,10 @@ public class RcpServlet extends SlingAllMethodsServlet {
                     final WorkspaceFilter filter;
                     if (data.containsKey(PARAM_FILTER)) {
                         DefaultWorkspaceFilter filterImpl = new DefaultWorkspaceFilter();
-                        filterImpl.load(IOUtils.toInputStream(data.getString(PARAM_FILTER), StandardCharsets.UTF_8));
+                        try (InputStream is = new ByteArrayInputStream(
+                                data.getString(PARAM_FILTER).getBytes(StandardCharsets.UTF_8))) {
+                            filterImpl.load(is);
+                        }
                         filter = filterImpl;
                     } else {
                         filter = null;
@@ -349,23 +374,29 @@ public class RcpServlet extends SlingAllMethodsServlet {
             // default response
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
-            JSONWriter w = new JSONWriter(response.getWriter());
-            w.object();
-            w.key("status").value("ok");
-            w.key("id").value(id);
-            w.endObject();
+            try (JsonGenerator generator = JSON_FACTORY.createGenerator(response.getWriter())) {
+                generator.writeStartObject();
+                generator.writeStringField("status", "ok");
+                if (id == null) {
+                    generator.writeNullField("id");
+                } else {
+                    generator.writeStringField("id", id);
+                }
+                generator.writeEndObject();
+            }
 
         } catch (Exception e) {
             log.error("Error while executing command {}", cmd, e);
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
             response.setStatus(500);
-            JSONWriter w = new JSONWriter(response.getWriter());
             try {
-                w.object();
-                w.key("status").value("error");
-                w.key("message").value("Error while executing '" + cmd + "': " + e.getMessage());
-                w.endObject();
+                try (JsonGenerator generator = JSON_FACTORY.createGenerator(response.getWriter())) {
+                    generator.writeStartObject();
+                    generator.writeStringField("status", "error");
+                    generator.writeStringField("message", "Error while executing '" + cmd + "': " + e.getMessage());
+                    generator.writeEndObject();
+                }
             } catch (IOException e1) {
                 // ignore
             }
@@ -385,63 +416,90 @@ public class RcpServlet extends SlingAllMethodsServlet {
         return creds;
     }
 
-    private static void write(JSONWriter w, RcpTask rcpTask) throws IOException {
-        w.object();
-        w.key(RcpServlet.PARAM_ID).value(rcpTask.getId());
-        w.key(RcpServlet.PARAM_SRC).value(rcpTask.getSource().toString());
-        w.key(RcpServlet.PARAM_DST).value(rcpTask.getDestination());
-        w.key(RcpServlet.PARAM_RECURSIVE).value(rcpTask.isRecursive());
-        w.key(RcpServlet.PARAM_BATCHSIZE).value(rcpTask.getRcp().getBatchSize());
-        w.key(RcpServlet.PARAM_UPDATE).value(rcpTask.getRcp().isUpdate());
-        w.key(RcpServlet.PARAM_ONLY_NEWER).value(rcpTask.getRcp().isOnlyNewer());
-        w.key(RcpServlet.PARAM_NO_ORDERING).value(rcpTask.getRcp().isNoOrdering());
-        w.key(RcpServlet.PARAM_THROTTLE).value(rcpTask.getRcp().getThrottle());
-        w.key(RcpServlet.PARAM_RESUME_FROM).value(rcpTask.getRcp().getResumeFrom());
+    private static void write(JsonGenerator generator, RcpTask rcpTask) throws IOException {
+        generator.writeStartObject();
+        generator.writeStringField(RcpServlet.PARAM_ID, rcpTask.getId());
+        generator.writeStringField(RcpServlet.PARAM_SRC, rcpTask.getSource().toString());
+        generator.writeStringField(RcpServlet.PARAM_DST, rcpTask.getDestination());
+        generator.writeBooleanField(RcpServlet.PARAM_RECURSIVE, rcpTask.isRecursive());
+        generator.writeNumberField(RcpServlet.PARAM_BATCHSIZE, rcpTask.getRcp().getBatchSize());
+        generator.writeBooleanField(RcpServlet.PARAM_UPDATE, rcpTask.getRcp().isUpdate());
+        generator.writeBooleanField(
+                RcpServlet.PARAM_ONLY_NEWER, rcpTask.getRcp().isOnlyNewer());
+        generator.writeBooleanField(
+                RcpServlet.PARAM_NO_ORDERING, rcpTask.getRcp().isNoOrdering());
+        generator.writeNumberField(RcpServlet.PARAM_THROTTLE, rcpTask.getRcp().getThrottle());
+        if (rcpTask.getRcp().getResumeFrom() == null) {
+            generator.writeNullField(RcpServlet.PARAM_RESUME_FROM);
+        } else {
+            generator.writeStringField(
+                    RcpServlet.PARAM_RESUME_FROM, rcpTask.getRcp().getResumeFrom());
+        }
         if (rcpTask.getExcludes() != null) {
             if (rcpTask.getExcludes().size() > 0) {
-                w.key(RcpServlet.PARAM_EXCLUDES).array();
+                generator.writeArrayFieldStart(RcpServlet.PARAM_EXCLUDES);
                 for (String exclude : rcpTask.getExcludes()) {
-                    w.value(exclude);
+                    generator.writeString(exclude);
                 }
-                w.endArray();
+                generator.writeEndArray();
             }
         } else {
             if (rcpTask.getFilter() != null) {
-                w.key(RcpServlet.PARAM_FILTER).value(rcpTask.getFilter().getSourceAsString());
+                generator.writeStringField(
+                        RcpServlet.PARAM_FILTER, rcpTask.getFilter().getSourceAsString());
             }
         }
-        w.key(PARAM_USE_SYSTEM_PROPERTIES).value(rcpTask.getConnectionOptions().isUseSystemPropertes());
-        w.key(PARAM_DISABLE_HOSTNAME_VERIFICATION)
-                .value(rcpTask.getConnectionOptions().isDisableHostnameVerification());
-        w.key(PARAM_ALLOW_SELF_SIGNED_CERTIFICATE)
-                .value(rcpTask.getConnectionOptions().isAllowSelfSignedCertificates());
-        w.key(PARAM_CONNECTION_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getConnectionTimeoutMs());
-        w.key(PARAM_REQUEST_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getRequestTimeoutMs());
-        w.key(PARAM_SOCKET_TIMEOUT_MS).value(rcpTask.getConnectionOptions().getSocketTimeoutMs());
+        generator.writeBooleanField(
+                PARAM_USE_SYSTEM_PROPERTIES, rcpTask.getConnectionOptions().isUseSystemPropertes());
+        generator.writeBooleanField(
+                PARAM_DISABLE_HOSTNAME_VERIFICATION,
+                rcpTask.getConnectionOptions().isDisableHostnameVerification());
+        generator.writeBooleanField(
+                PARAM_ALLOW_SELF_SIGNED_CERTIFICATE,
+                rcpTask.getConnectionOptions().isAllowSelfSignedCertificates());
+        generator.writeNumberField(
+                PARAM_CONNECTION_TIMEOUT_MS, rcpTask.getConnectionOptions().getConnectionTimeoutMs());
+        generator.writeNumberField(
+                PARAM_REQUEST_TIMEOUT_MS, rcpTask.getConnectionOptions().getRequestTimeoutMs());
+        generator.writeNumberField(
+                PARAM_SOCKET_TIMEOUT_MS, rcpTask.getConnectionOptions().getSocketTimeoutMs());
         if (rcpTask.getConnectionOptions().getProxyHost() != null) {
-            w.key(PARAM_PROXY_HOST).value(rcpTask.getConnectionOptions().getProxyHost());
-            w.key(PARAM_PROXY_PORT).value(rcpTask.getConnectionOptions().getProxyPort());
+            generator.writeStringField(
+                    PARAM_PROXY_HOST, rcpTask.getConnectionOptions().getProxyHost());
+            generator.writeNumberField(
+                    PARAM_PROXY_PORT, rcpTask.getConnectionOptions().getProxyPort());
             if (rcpTask.getConnectionOptions().getProxyProtocol() != null) {
-                w.key(PARAM_PROXY_HOST).value(rcpTask.getConnectionOptions().getProxyProtocol());
+                generator.writeStringField(
+                        PARAM_PROXY_HOST, rcpTask.getConnectionOptions().getProxyProtocol());
             }
             if (rcpTask.getConnectionOptions().getProxyUsername() != null) {
-                w.key(PARAM_PROXY_USERNAME).value(rcpTask.getConnectionOptions().getProxyUsername());
+                generator.writeStringField(
+                        PARAM_PROXY_USERNAME, rcpTask.getConnectionOptions().getProxyUsername());
             }
         }
-        w.key("status").object();
-        w.key(RcpServlet.PARAM_STATE).value(rcpTask.getResult().getState().name());
-        w.key("currentPath").value(rcpTask.getRcp().getCurrentPath());
-        w.key("lastSavedPath").value(rcpTask.getRcp().getLastKnownGood());
-        w.key("totalNodes").value(rcpTask.getRcp().getTotalNodes());
-        w.key("totalSize").value(rcpTask.getRcp().getTotalSize());
-        w.key("currentSize").value(rcpTask.getRcp().getCurrentSize());
-        w.key("currentNodes").value(rcpTask.getRcp().getCurrentNumNodes());
-        w.key("error")
-                .value(
-                        rcpTask.getResult().getThrowable() == null
-                                ? ""
-                                : rcpTask.getResult().getThrowable().toString());
-        w.endObject();
-        w.endObject();
+        generator.writeObjectFieldStart("status");
+        generator.writeStringField(
+                RcpServlet.PARAM_STATE, rcpTask.getResult().getState().name());
+        if (rcpTask.getRcp().getCurrentPath() == null) {
+            generator.writeNullField("currentPath");
+        } else {
+            generator.writeStringField("currentPath", rcpTask.getRcp().getCurrentPath());
+        }
+        if (rcpTask.getRcp().getLastKnownGood() == null) {
+            generator.writeNullField("lastSavedPath");
+        } else {
+            generator.writeStringField("lastSavedPath", rcpTask.getRcp().getLastKnownGood());
+        }
+        generator.writeNumberField("totalNodes", rcpTask.getRcp().getTotalNodes());
+        generator.writeNumberField("totalSize", rcpTask.getRcp().getTotalSize());
+        generator.writeNumberField("currentSize", rcpTask.getRcp().getCurrentSize());
+        generator.writeNumberField("currentNodes", rcpTask.getRcp().getCurrentNumNodes());
+        generator.writeStringField(
+                "error",
+                rcpTask.getResult().getThrowable() == null
+                        ? ""
+                        : rcpTask.getResult().getThrowable().toString());
+        generator.writeEndObject();
+        generator.writeEndObject();
     }
 }

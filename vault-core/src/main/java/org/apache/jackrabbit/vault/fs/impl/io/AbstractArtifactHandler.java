@@ -47,6 +47,8 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
      */
     protected AccessControlHandling acHandling = AccessControlHandling.OVERWRITE;
 
+    protected boolean dryRun;
+
     /**
      * acl management
      */
@@ -66,6 +68,15 @@ public abstract class AbstractArtifactHandler implements ArtifactHandler, Dumpab
      */
     public void setAcHandling(AccessControlHandling acHandling) {
         this.acHandling = acHandling;
+    }
+
+    /**
+     * Suppresses persistent namespace registration while simulating an import.
+     *
+     * @param dryRun whether the import is a simulation
+     */
+    public void setDryRun(boolean dryRun) {
+        this.dryRun = dryRun;
     }
 
     /**

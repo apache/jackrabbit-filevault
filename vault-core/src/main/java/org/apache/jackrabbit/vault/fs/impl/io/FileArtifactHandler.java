@@ -225,7 +225,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
                     }
                     if (mode != ImportMode.MERGE) {
                         try {
-                            DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter);
+                            DocViewSAXImporter handler = new DocViewSAXImporter(newParent, newName, newSet, wspFilter, dryRun);
                             handler.setAclHandling(getAcHandling());
                             SAXParserFactory factory = SAXParserFactory.newInstance();
                             factory.setNamespaceAware(true);
@@ -323,7 +323,7 @@ public class FileArtifactHandler extends AbstractArtifactHandler  {
         if (idx > 0) {
             rootName = rootName.substring(0, idx);
         }
-        DocViewSAXImporter handler = new DocViewSAXImporter(parent, rootName, artifacts, wspFilter);
+        DocViewSAXImporter handler = new DocViewSAXImporter(parent, rootName, artifacts, wspFilter, dryRun);
         handler.setAclHandling(getAcHandling());
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();

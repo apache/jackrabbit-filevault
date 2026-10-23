@@ -230,6 +230,8 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
      */
     private final JcrNamespaceHelper nsHelper;
 
+    private final boolean dryRun;
+
     /**
      * Creates a new importer that will receive SAX events and imports the
      * items below the given root.
@@ -243,6 +245,23 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
     public DocViewSAXImporter(Node parentNode, String rootNodeName,
                               ArtifactSetImpl artifacts, WorkspaceFilter wspFilter)
             throws RepositoryException {
+        this(parentNode, rootNodeName, artifacts, wspFilter, false);
+    }
+
+    /**
+     * Creates an importer that can suppress persistent namespace registration during simulation.
+     *
+     * @param parentNode the parent of the imported content
+     * @param rootNodeName the name of the imported root
+     * @param artifacts the artifacts and binary attachments to import
+     * @param wspFilter the workspace filter restricting imported content
+     * @param dryRun whether namespace registration must be suppressed
+     * @throws RepositoryException if repository state cannot be read
+     */
+    public DocViewSAXImporter(Node parentNode, String rootNodeName,
+                              ArtifactSetImpl artifacts, WorkspaceFilter wspFilter, boolean dryRun)
+            throws RepositoryException {
+        this.dryRun = dryRun;
         this.filter = artifacts.getCoverage();
         this.wspFilter = wspFilter;
         this.parentNode = parentNode;
@@ -512,6 +531,11 @@ public class DocViewSAXImporter extends RejectingEntityDefaultHandler implements
             oldPrefix = session.getNamespacePrefix(uri);
         } catch (NamespaceException e) {
             // assume uri never registered
+            if (dryRun) {
+                log.warn("Dry run: skipping registration of namespace {} ({}). Register it before simulating content that uses it.",
+                        prefix, uri);
+                return;
+            }
             try {
                 oldPrefix = nsHelper.registerNamespace(prefix, uri);
             } catch (RepositoryException e1) {

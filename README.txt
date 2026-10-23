@@ -10,6 +10,12 @@ The Vault Command Line Interface aka _vlt_ that provides a subversion like utili
 
 Apache Jackrabbit FileVault is a project of the Apache Software Foundation.
 
+Runtime Dependencies
+====================
+
+Jackrabbit 2.20.18 or higher (JCR Commons, SPI and SPI Commons).
+The legacy Jackrabbit API remains at version 2.16.3.
+
 Building FileVault
 ===================
 

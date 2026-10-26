@@ -20,6 +20,6 @@
 // use the shared library from https://github.com/apache/jackrabbit-filevault-jenkins-lib
 @Library('filevault@master') _
 
-vaultPipeline('ubuntu', 11, '3', {
-    vaultStageBuild([], [11], ['3.6.3'])
+vaultPipeline('ubuntu', 8, '3', {
+    vaultStageBuild([], [8], ['3.6.3'], 'apache_jackrabbit-filevault')
 })

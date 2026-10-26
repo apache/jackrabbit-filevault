@@ -64,6 +64,29 @@ public class ConfigHelper {
 
     public Object create(Element elem)
             throws ConfigurationException {
+        return create(elem, Object.class);
+    }
+
+    /**
+     * Creates a configured instance after checking its type without initializing the class.
+     * Static field access using {@code Class#FIELD} is not allowed.
+     *
+     * @param elem the config element, must not be {@code null}
+     * @param expectedType the required class type, must not be {@code null}
+     * @return the new instance, or the element's text content if no class is configured
+     * @throws ConfigurationException if the class cannot be resolved, is not assignable to
+     *         {@code expectedType}, uses the rejected {@code #} field syntax, or cannot be
+     *         instantiated
+     * @throws IllegalArgumentException if either argument is {@code null}
+     */
+    public Object create(Element elem, Class<?> expectedType)
+            throws ConfigurationException {
+        if (elem == null) {
+            throw new IllegalArgumentException("Config element must not be null.");
+        }
+        if (expectedType == null) {
+            throw new IllegalArgumentException("Expected config class type must not be null.");
+        }
 
         String className = elem.getAttribute("class");
         if (className == null || className.equals("")) {
@@ -73,15 +96,12 @@ public class ConfigHelper {
             // create string object
             return elem.getFirstChild().getNodeValue();
         }
-        String field = null;
-        int pos = className.indexOf('#');
-        if (pos>0) {
-            field = className.substring(pos + 1);
-            className = className.substring(0, pos);
+        if (className.indexOf('#') >= 0) {
+            throw new ConfigurationException("Static field access syntax in class attribute of " + elem.getNodeName()
+                    + " is not allowed: " + className);
         }
-
         // try to get class without prepending package
-        Class clazz = null;
+        Class<?> clazz = null;
         try {
             clazz = getClass().getClassLoader().loadClass(className);
         } catch (ClassNotFoundException e) {
@@ -109,15 +129,14 @@ public class ConfigHelper {
             }
 
         }
+        // Class loading does not initialize the class; instantiation does.
+        if (!expectedType.isAssignableFrom(clazz)) {
+            throw new ConfigurationException("Class " + clazz.getName() + " configured for " + elem.getNodeName()
+                    + " is not of expected type " + expectedType.getName());
+        }
         try {
-            if (field == null) {
-                return clazz.newInstance();
-            } else {
-                return clazz.getField(field).get(null);
-            }
+            return clazz.newInstance();
         } catch (InstantiationException e) {
-            throw new ConfigurationException("Error while creating instance for " + elem.getNodeName(), e);
-        } catch (NoSuchFieldException e) {
             throw new ConfigurationException("Error while creating instance for " + elem.getNodeName(), e);
         } catch (IllegalAccessException e) {
             throw new ConfigurationException("Error while creating instance for " + elem.getNodeName(), e);

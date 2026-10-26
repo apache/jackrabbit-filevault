@@ -131,7 +131,9 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
                     ItemFilter filter = null;
                     String clazz = child.getAttribute("class");
                     if (clazz != null && clazz.length() > 0) {
-                        filter = (ItemFilter) helper.create(child);
+                        // config.xml may stem from an untrusted package (parsed at archive open):
+                        // require the configured class to be an ItemFilter before instantiating it
+                        filter = (ItemFilter) helper.create(child, ItemFilter.class);
                     } else {
                         // create filter based on some attributes
                         if (attrs.getNamedItem("nodeType") != null) {

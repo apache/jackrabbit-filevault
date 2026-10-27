@@ -220,10 +220,10 @@
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
-          <excludes>
+          <inputExcludes>
             <exclude>src/main/appassembler/unix-template.sh</exclude>
             <exclude>src/main/appassembler/windows-template.bat</exclude>
-          </excludes>
+          </inputExcludes>
         </configuration>
       </plugin>
       <!-- validate that all necessary dependencies are part of the application -->

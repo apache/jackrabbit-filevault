@@ -77,9 +77,9 @@
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
-          <excludes>
+          <inputExcludes>
             <exclude>src/test/resources/**</exclude>
-          </excludes>
+          </inputExcludes>
         </configuration>
       </plugin>
     </plugins>

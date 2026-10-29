@@ -306,7 +306,7 @@
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
-          <excludesFile>${project.basedir}/.ratignore</excludesFile>
+          <inputExcludeFile>${project.basedir}/.ratignore</inputExcludeFile>
         </configuration>
       </plugin>
       <plugin>

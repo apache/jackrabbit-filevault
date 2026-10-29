@@ -280,7 +280,8 @@ public final class AdvancedFilterValidator
      */
     private Collection<ValidationMessage> validateNodePath(@NotNull String nodePath) {
         // now go through all includes
-        if (!filter.contains(nodePath)) {
+        PathFilterSet pathFilterSet = filter.getCoveringFilterSet(nodePath);
+        if (pathFilterSet == null || !pathFilterSet.contains(nodePath)) {
             if (filter.isAncestor(nodePath)) {
                 // consider valid roots
                 if (validRoots.contains(nodePath)) {
@@ -299,13 +300,9 @@ public final class AdvancedFilterValidator
             }
         } else {
             // is it a cleanup filter?
-            PathFilterSet pathFilterSet = filter.getCoveringFilterSet(nodePath);
-            if (pathFilterSet != null) {
-                if (PathFilterSet.TYPE_CLEANUP.equals(pathFilterSet.getType())) {
-                    return Collections.singleton(new ValidationMessage(
-                            defaultSeverity,
-                            String.format(Locale.ENGLISH, MESSAGE_NODE_BELOW_CLEANUP_FILTER, nodePath)));
-                }
+            if (PathFilterSet.TYPE_CLEANUP.equals(pathFilterSet.getType())) {
+                return Collections.singleton(new ValidationMessage(
+                        defaultSeverity, String.format(Locale.ENGLISH, MESSAGE_NODE_BELOW_CLEANUP_FILTER, nodePath)));
             }
         }
         // check that all ancestor nodes till the root node are contained as well
@@ -438,17 +435,16 @@ public final class AdvancedFilterValidator
             return null;
         }
         // check that all ancestor nodes till the filter root node are contained as well
-        for (PathFilterSet pathFilterSet : filter.getFilterSets()) {
-            if (pathFilterSet.contains(nodePath)) {
-                String parentNodePath = Text.getRelativeParent(nodePath, 1);
-                // make sure that all ancestors till the root node are contained as well
-                if (!nodePath.equals(pathFilterSet.getRoot()) && !parentNodePath.equals(pathFilterSet.getRoot())) {
-                    // ancestor might also be contained in another filter
-                    return getDanglingAncestorNodePath(parentNodePath, filter);
-                } else {
-                    // once the root level is reached this node path is contained
-                    return null;
-                }
+        PathFilterSet pathFilterSet = filter.getCoveringFilterSet(nodePath);
+        if (pathFilterSet != null && pathFilterSet.contains(nodePath)) {
+            String parentNodePath = Text.getRelativeParent(nodePath, 1);
+            // make sure that all ancestors till the root node are contained as well
+            if (!nodePath.equals(pathFilterSet.getRoot()) && !parentNodePath.equals(pathFilterSet.getRoot())) {
+                // ancestor might also be contained in another filter
+                return getDanglingAncestorNodePath(parentNodePath, filter);
+            } else {
+                // once the root level is reached this node path is contained
+                return null;
             }
         }
         danglingNodePaths.add(nodePath);

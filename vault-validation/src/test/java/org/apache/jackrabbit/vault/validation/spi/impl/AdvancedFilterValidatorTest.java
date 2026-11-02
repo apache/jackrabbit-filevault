@@ -39,6 +39,7 @@ import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
@@ -238,6 +239,35 @@ public class AdvancedFilterValidatorTest {
                         ValidationMessageSeverity.WARN,
                         String.format(
                                 AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/notcontained/regularnode")));
+    }
+
+    @Test
+    public void testOnlyFirstMatchingRootIsEvaluated() throws ConfigurationException {
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        PathFilterSet firstFilterSet = new PathFilterSet("/apps");
+        firstFilterSet.addExclude(new DefaultPathFilter("/apps/test/excluded"));
+        filter.add(firstFilterSet);
+        filter.add(new PathFilterSet("/apps/test"));
+
+        validator = new AdvancedFilterValidator(
+                factory,
+                ValidationMessageSeverity.WARN,
+                AdvancedFilterValidatorFactory.DEFAULT_SEVERITY_FOR_UNCOVERED_ANCESTOR_NODES,
+                ValidationMessageSeverity.ERROR,
+                ValidationMessageSeverity.ERROR,
+                false,
+                dependenciesMetaInfo,
+                filter,
+                validRoots);
+
+        ValidationExecutorTest.assertViolation(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test/excluded"), false, false),
+                new ValidationMessage(
+                        ValidationMessageSeverity.WARN,
+                        String.format(AdvancedFilterValidator.MESSAGE_NODE_NOT_CONTAINED, "/apps/test/excluded")));
+        MatcherAssert.assertThat(
+                validator.validateJcrPath(getStandardNodeContext("/apps/test/included"), false, false),
+                AnyValidationViolationMessageMatcher.noValidationViolationMessageInCollection());
     }
 
     @Test

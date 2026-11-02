@@ -18,7 +18,6 @@
  */
 package org.apache.jackrabbit.vault.fs.io;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -55,6 +54,8 @@ import java.util.zip.CheckedOutputStream;
 import java.util.zip.Checksum;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.xml.secure.SecureSAXParserFactory;
+import org.apache.commons.xml.secure.SecureTransformerFactory;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.NormalizingSaxFilter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
@@ -147,16 +148,11 @@ public class DocViewFormat {
                     FormattingXmlStreamWriter writer = FormattingXmlStreamWriter.create(out, format)) {
                 // cannot use XMlStreamReader due to comment handling:
                 // https://stackoverflow.com/questions/15792007/why-does-xmlstreamreader-staxsource-strip-comments-from-xml
-                TransformerFactory tf = TransformerFactory.newInstance();
-                tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-                tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+                TransformerFactory tf = SecureTransformerFactory.newInstance();
                 SAXSource saxSource = new SAXSource(new InputSource(in));
-                SAXParserFactory sf = SAXParserFactory.newInstance();
-                sf.setNamespaceAware(true);
+                SAXParserFactory sf = SecureSAXParserFactory.newNSInstance();
                 sf.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
                 SAXParser parser = sf.newSAXParser();
-                parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-                parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
                 saxSource.setXMLReader(new NormalizingSaxFilter(parser.getXMLReader()));
                 Transformer t = tf.newTransformer();
                 StAXResult result = new StAXResult(writer);

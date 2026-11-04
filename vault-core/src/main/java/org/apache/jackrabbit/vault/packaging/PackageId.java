@@ -425,7 +425,7 @@ public class PackageId implements Comparable<PackageId> {
 
     /**
      * Checks if this package id is valid in respect to JCR names.
-     * @return {@code true} if the names are valid
+     * @return {@code true} if the names are valid ({@linkplain #isValid(String, String, String)}
      */
     public boolean isValid() {
         return PackageId.isValid(group, name, version == null ? null : version.toString());
@@ -454,6 +454,9 @@ public class PackageId implements Comparable<PackageId> {
 
             // Additional conditions & delegation for version
             if (version != null && !version.isEmpty()) {
+                // defense in depth: constructing a version string
+                // from '.' or '..' with Version.create() will already
+                // map it to "".
                 if (version.equals(".")
                         || version.equals("..")
                         || version.contains("/")

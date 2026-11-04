@@ -18,6 +18,8 @@
  */
 package org.apache.jackrabbit.vault.packaging;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -255,5 +257,14 @@ public class PackageIdTest {
         assertFalse(PackageId.isValid("group", "name\u007Fevil", "1.0"));
         assertFalse(PackageId.isValid("evil\u0000group", "name", "1.0"));
         assertFalse(PackageId.isValid("group", "name", "1.0\u0000evil"));
+    }
+
+    @Test
+    public void testDotOnlyVersios() {
+        // confirm that dot-only versions are valid and map to an empty version
+        for (String version : List.of(".", "..", "...", "")) {
+            PackageId pid = new PackageId("a", "b", version);
+            assertTrue("PackageId with version '" + version + "' should be valid", pid.isValid());
+        }
     }
 }

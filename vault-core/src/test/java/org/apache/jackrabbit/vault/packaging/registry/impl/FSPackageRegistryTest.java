@@ -18,8 +18,12 @@
  */
 package org.apache.jackrabbit.vault.packaging.registry.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,8 +31,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
@@ -53,6 +61,9 @@ public class FSPackageRegistryTest {
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     private static final PackageId TEST_PACKAGE_ID = new PackageId("test", "test-package-with-etc", "1.0");
+
+    // empty workspace filter
+    private static final String FILTER_XML = "<workspaceFilter version=\"1.0\"/>\n";
 
     private void copyResourceStreamToFile(Path targetFile, String name) throws IOException {
         try (InputStream in = getClass().getResourceAsStream(name)) {
@@ -141,5 +152,98 @@ public class FSPackageRegistryTest {
         Config config = converter.convert(map).to(Config.class);
         registry.activate(context, config);
         return registry;
+    }
+
+    private File createPackageZip(String group) throws IOException {
+        File file = tmpFolder.newFile("traversal.zip");
+        try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file))) {
+            out.putNextEntry(new ZipEntry("jcr_root/"));
+            out.closeEntry();
+            out.putNextEntry(new ZipEntry("META-INF/vault/filter.xml"));
+            out.write(FILTER_XML.getBytes(StandardCharsets.UTF_8));
+            out.closeEntry();
+            Properties props = new Properties();
+            props.setProperty("group", group);
+            props.setProperty("name", "evil");
+            props.setProperty("version", "1.0");
+            ByteArrayOutputStream propsXml = new ByteArrayOutputStream();
+            props.storeToXML(propsXml, null, "UTF-8");
+            out.putNextEntry(new ZipEntry("META-INF/vault/properties.xml"));
+            out.write(propsXml.toByteArray());
+            out.closeEntry();
+        }
+        return file;
+    }
+
+    @Test
+    public void testCacheRefusesTraversingIdForGroup() throws IOException {
+        FSInstallStateCache cache =
+                new FSInstallStateCache(tmpFolder.newFolder().toPath());
+
+        List<String> evilGroups = List.of("foo\\bar/qux", "\\", ".", "..", "foo/./bar", "foo/../bar");
+
+        for (String evilGroup : evilGroups) {
+            try {
+                cache.getPackageFile(new PackageId(evilGroup, "evil", "1.0"));
+                fail("Resolving a package id with traversing group segments should be refused for group: " + evilGroup);
+            } catch (IllegalArgumentException expected) {
+                // ok
+            }
+        }
+    }
+
+    @Test
+    public void testCacheRefusesTraversingIdForName() throws IOException {
+        FSInstallStateCache cache =
+                new FSInstallStateCache(tmpFolder.newFolder().toPath());
+
+        List<String> evilNames = List.of("foo\\bar", "foo/bar", ".", "..");
+
+        for (String evilName : evilNames) {
+            try {
+                cache.getPackageFile(new PackageId("group", evilName, "1.0"));
+                fail("Resolving a package id with traversing name segments should be refused for name: " + evilName);
+            } catch (IllegalArgumentException expected) {
+                // ok
+            }
+        }
+    }
+
+    @Test
+    public void testCacheRefusesTraversingIdForVersion() throws IOException {
+        FSInstallStateCache cache =
+                new FSInstallStateCache(tmpFolder.newFolder().toPath());
+
+        List<String> evilVersions = List.of("foo\\bar", "foo/bar"); // , ".", ".."); ???
+
+        for (String evilVersion : evilVersions) {
+            try {
+                cache.getPackageFile(new PackageId("group", "name", evilVersion));
+                fail("Resolving a package id with traversing version should be refused for version: " + evilVersion);
+            } catch (IllegalArgumentException expected) {
+                // ok
+            }
+        }
+    }
+
+    @Test
+    public void testCacheResolvesValidIdInsideHome() throws IOException {
+        Path home = tmpFolder.newFolder().toPath();
+        FSInstallStateCache cache = new FSInstallStateCache(home);
+        Path packageFile = cache.getPackageFile(new PackageId("group", "name", "1.0"));
+        assertTrue(packageFile.startsWith(home.normalize()));
+    }
+
+    @Test
+    public void testRegisterFileWithTraversingIdIsRejected() throws IOException, PackageExistsException {
+        File home = tmpFolder.newFolder();
+        FSPackageRegistry registry = new FSPackageRegistry(home);
+        File pkg = createPackageZip("../../../../outside");
+        try {
+            registry.register(pkg, false);
+            fail("registering a package whose properties.xml declares a traversing group should be refused");
+        } catch (IllegalArgumentException expected) {
+            // ok, same behavior as upload(InputStream, boolean)
+        }
     }
 }

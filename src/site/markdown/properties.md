@@ -58,9 +58,9 @@ Example:
 
 | Property | Description | Required | Default
 | -------- | ------- | ------ | ----- 
-| name    | The name of the package. Determines the entry node under which this package would be uploaded to a repository. | yes | n/a
-| group | The group of the package, determines the ancestor node under which the package would be uploaded to a repository.  | yes | n/a
-| version | The version of the package | yes | n/a
+| name  | The name of the package. Determines the entry node under which this package would be uploaded to a repository. It must not contain "/", "\\" or any (ISO) control character, and must not be "." or "..". | yes | n/a
+| group | The group of the package. Determines the ancestor node under which the package would be uploaded to a repository. Group segments must not contain "\\" or any (ISO) control characters, and must not be "." nor "..".  | yes | n/a
+| version | The version of the package. It must not contain "/", "\\" or any (ISO) control characters.| yes | n/a
 | description | A description of the package | no | empty
 | lastModified | A date string in the format `±YYYY-MM-DDThh:mm:ss.SSSTZD` specifying when the package has been last modified (see also [ISO8601][api.ISO8601]) | no | empty
 | lastModifiedBy | A user name indicating who last modified this package | no | empty

@@ -564,6 +564,14 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
             throw new PackageExistsException("Package already exists: " + oldPackageId).setId(oldPackageId);
         }
         try (ZipVaultPackage pack = new ZipVaultPackage(file, false, true)) {
+            // validate the id the same way as upload(InputStream, boolean) does
+            PackageId pid = pack.getId();
+            if (pid == null) {
+                throw new IllegalArgumentException("Unable to register package. No package ID set.");
+            }
+            if (!pid.isValid()) {
+                throw new IllegalArgumentException("Unable to register package. Illegal package ID: '" + pid + "'.");
+            }
             FSInstallState state = getInstallState(pack.getId());
             if (state != null) {
                 if (replace) {

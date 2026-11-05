@@ -1,30 +1,35 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.jackrabbit.vault.packaging;
 
-import org.apache.jackrabbit.util.XMLChar;
-import org.apache.jackrabbit.vault.util.Text;
+import org.apache.jackrabbit.spi.commons.conversion.IllegalNameException;
+import org.apache.jackrabbit.spi.commons.conversion.NameParser;
+import org.apache.jackrabbit.util.Text;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * {@code PackageId} provides the basic metrics for identifying a package.
- * A package id consists of a group id, a name and a version.
- * the group is a relative path, eg: "company/project/subgroup", the name and the version
+ * A package id consists of a group, a name and an optional version.
+ * The group is a relative path, eg: "company/project/subgroup", the name and the version
  * can be of any format.
+ * <p>
+ * The string representation is {@code <group>:<name>[:<version>]}.
  */
 public class PackageId implements Comparable<PackageId> {
 
@@ -43,7 +48,7 @@ public class PackageId implements Comparable<PackageId> {
     public static final String ETC_PACKAGES_PREFIX = "/etc/packages/";
 
     public static final PackageId[] EMPTY = new PackageId[0];
-    
+
     private final String group;
 
     private final String name;
@@ -90,8 +95,8 @@ public class PackageId implements Comparable<PackageId> {
         }
         // check if name contains a version
         String[] segs = Text.explode(name, '-');
-        int i=segs.length-1;
-        while (i>0) {
+        int i = segs.length - 1;
+        while (i > 0) {
             try {
                 // accept numbers < 1000 (hotfix case)
                 if (Integer.parseInt(segs[i]) >= 1000) {
@@ -109,12 +114,12 @@ public class PackageId implements Comparable<PackageId> {
             }
             i--;
         }
-        if (i == segs.length-1) {
+        if (i == segs.length - 1) {
             this.name = name;
             version = Version.EMPTY;
         } else {
             StringBuilder str = new StringBuilder();
-            for (int j = 0; j<= i; j++) {
+            for (int j = 0; j <= i; j++) {
                 if (j > 0) {
                     str.append('-');
                 }
@@ -122,8 +127,8 @@ public class PackageId implements Comparable<PackageId> {
             }
             this.name = str.toString();
             str.setLength(0);
-            for (int j = i+1; j<segs.length; j++) {
-                if (j > i+1) {
+            for (int j = i + 1; j < segs.length; j++) {
+                if (j > i + 1) {
                     str.append('-');
                 }
                 str.append(segs[j]);
@@ -163,7 +168,7 @@ public class PackageId implements Comparable<PackageId> {
                 path = path.substring(0, idx);
             }
         }
-        if (version != null && path.endsWith('-'+version.toString())) {
+        if (version != null && path.endsWith('-' + version.toString())) {
             path = path.substring(0, path.length() - version.toString().length() - 1);
         }
         idx = path.lastIndexOf('/');
@@ -223,7 +228,7 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns a package id from a id string. if the given id is null or an
+     * Returns a package id from an id string in the format {@code <group>:<name>[:<version>]}. If the given id is null or an
      * empty string, {@code null} is returned.
      * @param str the string
      * @return the package id
@@ -243,29 +248,30 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns an array of package id from strings
+     * Returns an array of package id from strings.
      * @param str the strings
      * @return the array of package ids
+     * @see #fromString(String)
      */
-    public static PackageId[] fromString(String ... str) {
+    public static PackageId[] fromString(String... str) {
         PackageId[] ret = new PackageId[str.length];
-        for (int i=0; i<str.length; i++) {
+        for (int i = 0; i < str.length; i++) {
             ret[i] = PackageId.fromString(str[i]);
         }
         return ret;
     }
 
     /**
-     * Creates a comma separated list of id strings.
+     * Creates a comma separated list of id strings in the format {@code <group>:<name>[:<version>]}.
      * @param packs the ids
      * @return the string
      */
-    public static String toString(PackageId ... packs) {
+    public static String toString(PackageId... packs) {
         String delim = "";
         StringBuilder b = new StringBuilder();
-        for (PackageId pack: packs) {
+        for (PackageId pack : packs) {
             b.append(delim).append(pack);
-            delim=",";
+            delim = ",";
         }
         return b.toString();
     }
@@ -306,8 +312,8 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns the group id of this package
-     * @return the group id;
+     * Returns the group of this package
+     * @return the group.
      * @since 2.2
      */
     public String getGroup() {
@@ -315,10 +321,10 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns the name of this package which is the last segment of the path.
+     * Returns the name of this package (usually this is the last segment of the path).
      * @return the name of this package.
      */
-    public String getName() {
+    public @NotNull String getName() {
         return name;
     }
 
@@ -327,7 +333,7 @@ public class PackageId implements Comparable<PackageId> {
      * @return the version of this package
      * @since 2.0
      */
-    public String getVersionString() {
+    public @NotNull String getVersionString() {
         return version.toString();
     }
 
@@ -347,15 +353,15 @@ public class PackageId implements Comparable<PackageId> {
     }
 
     /**
-     * Returns the version of this package or {@code null} if n/a.
+     * Returns the version of this package or {@code Version.EMPTY} if not set.
      * @return the version of this package
      */
-    public Version getVersion() {
+    public @NotNull Version getVersion() {
         return version;
     }
 
     /**
-     * Returns a string representation of this id
+     * Returns a string representation of this id in the format {@code <group>:<name>[:<version>]}.
      */
     @Override
     public String toString() {
@@ -364,9 +370,7 @@ public class PackageId implements Comparable<PackageId> {
 
     @Override
     public boolean equals(Object o) {
-        return this == o ||
-                o instanceof PackageId && str.equals(o.toString());
-
+        return this == o || o instanceof PackageId && str.equals(o.toString());
     }
 
     @Override
@@ -376,7 +380,7 @@ public class PackageId implements Comparable<PackageId> {
 
     /**
      * {@inheritDoc}
-     *  
+     *
      * Compares this id with the given one.
      */
     public int compareTo(PackageId o) {
@@ -436,159 +440,60 @@ public class PackageId implements Comparable<PackageId> {
      */
     public static boolean isValid(String group, String name, String version) {
         try {
-            assertValidJcrName(name);
-            if (version != null && !version.isEmpty()) {
-                assertValidJcrName(version);
+            // Additional conditions & delegation for name
+            if (name == null
+                    || name.isEmpty()
+                    || name.equals(".")
+                    || name.equals("..")
+                    || name.contains("/")
+                    || name.contains("\\")
+                    || containsISOControls(name)) {
+                return false;
             }
-            for (String groupSegment: Text.explode(group, '/')) {
-                assertValidJcrName(groupSegment);
+            NameParser.checkFormat(name);
+
+            // Additional conditions & delegation for version
+            if (version != null && !version.isEmpty()) {
+                if (version.equals(".")
+                        || version.equals("..")
+                        || version.contains("/")
+                        || version.contains("\\")
+                        || containsISOControls(version)) {
+                    return false;
+                }
+                NameParser.checkFormat(version);
+            }
+
+            // Additional conditions & delegation for group segments
+            if (group != null && !group.isEmpty()) {
+                for (String segment : Text.explode(group, '/')) {
+                    if (segment.isEmpty()
+                            || segment.equals(".")
+                            || segment.equals("..")
+                            || segment.contains("\\")
+                            || containsISOControls(segment)) {
+                        return false;
+                    }
+                    NameParser.checkFormat(segment);
+                }
             }
             return true;
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalNameException e) {
             return false;
         }
     }
 
-    // the code below is copied from org.apache.jackrabbit.spi.commons.conversion.NameParser
-
-    // constants for parser
-    private static final int STATE_PREFIX_START = 0;
-    private static final int STATE_PREFIX = 1;
-    private static final int STATE_NAME_START = 2;
-    private static final int STATE_NAME = 3;
-    private static final int STATE_URI_START = 4;
-    private static final int STATE_URI = 5;
-
-    /**
-     * Parses the {@code jcrName} (either qualified or expanded) and validates it.
-     * @throws java.lang.IllegalArgumentException if the name is not valid
-     */
-    private static void assertValidJcrName(String jcrName) throws IllegalArgumentException {
-        // trivial check
-        int len = jcrName == null ? 0 : jcrName.length();
-        if (len == 0) {
-            throw new IllegalArgumentException("empty name");
-        }
-        if (".".equals(jcrName) || "..".equals(jcrName)) {
-            throw new IllegalArgumentException(jcrName);
+    private static boolean containsISOControls(String str) {
+        if (str == null) {
+            return false;
         }
 
-        // parse the name
-        String prefix;
-        int nameStart = 0;
-        int state = STATE_PREFIX_START;
-        boolean trailingSpaces = false;
-
-        for (int i = 0; i < len; i++) {
-            char c = jcrName.charAt(i);
-            if (c == ':') {
-                if (state == STATE_PREFIX_START) {
-                    throw new IllegalArgumentException("Prefix must not be empty");
-                } else if (state == STATE_PREFIX) {
-                    if (trailingSpaces) {
-                        throw new IllegalArgumentException("Trailing spaces not allowed");
-                    }
-                    prefix = jcrName.substring(0, i);
-                    if (!XMLChar.isValidNCName(prefix)) {
-                        throw new IllegalArgumentException("Invalid name prefix: "+ prefix);
-                    }
-                    state = STATE_NAME_START;
-                } else if (state == STATE_URI) {
-                    // ignore -> validation of uri later on.
-                } else {
-                    throw new IllegalArgumentException("'" + c + "' not allowed in name");
-                }
-                trailingSpaces = false;
-            } else if (c == ' ') {
-                if (state == STATE_PREFIX_START || state == STATE_NAME_START) {
-                    throw new IllegalArgumentException("'" + c + "' not valid name start");
-                }
-                trailingSpaces = true;
-            } else if (Character.isWhitespace(c) || c == '[' || c == ']' || c == '*' || c == '|') {
-                throw new IllegalArgumentException("'" + c + "' not allowed in name");
-            } else if (c == '/') {
-                if (state == STATE_URI_START) {
-                    state = STATE_URI;
-                } else if (state != STATE_URI) {
-                    throw new IllegalArgumentException("'" + c + "' not allowed in name");
-                }
-                trailingSpaces = false;
-            } else if (c == '{') {
-                if (state == STATE_PREFIX_START) {
-                    state = STATE_URI_START;
-                } else if (state == STATE_URI_START || state == STATE_URI) {
-                    // second '{' in the uri-part -> no valid expanded jcr-name.
-                    // therefore reset the nameStart and change state.
-                    state = STATE_NAME;
-                    nameStart = 0;
-                } else if (state == STATE_NAME_START) {
-                    state = STATE_NAME;
-                    nameStart = i;
-                }
-                trailingSpaces = false;
-            } else if (c == '}') {
-                if (state == STATE_URI_START || state == STATE_URI) {
-                    String tmp = jcrName.substring(1, i);
-                    if (tmp.length() == 0 || tmp.indexOf(':') != -1) {
-                        // The leading "{...}" part is empty or contains
-                        // a colon, so we treat it as a valid namespace URI.
-                        // More detailed validity checks (is it well formed,
-                        // registered, etc.) are not needed here.
-                        state = STATE_NAME_START;
-                    } else if ("internal".equals(tmp)) {
-                        // As a special Jackrabbit backwards compatibility
-                        // feature, support {internal} as a valid URI prefix
-                        state = STATE_NAME_START;
-                    } else if (tmp.indexOf('/') == -1) {
-                        // The leading "{...}" contains neither a colon nor
-                        // a slash, so we can interpret it as a a part of a
-                        // normal local name.
-                        state = STATE_NAME;
-                        nameStart = 0;
-                    } else {
-                        throw new IllegalArgumentException(
-                                "The URI prefix of the name " + jcrName
-                                        + " is neither a valid URI nor a valid part"
-                                        + " of a local name.");
-                    }
-                } else if (state == STATE_PREFIX_START) {
-                    state = STATE_PREFIX; // prefix start -> validation later on will fail.
-                } else if (state == STATE_NAME_START) {
-                    state = STATE_NAME;
-                    nameStart = i;
-                }
-                trailingSpaces = false;
-            } else if (c == '\\' || Character.isISOControl(c)) {
-                // '\' is a path separator on Windows, and control characters have no
-                // legitimate use in a name — both would let an id escape the FS
-                // registry's home directory or spoof logs/names once used as a path
-                // segment (see PackageId's isValid() callers in FSPackageRegistry).
-                throw new IllegalArgumentException("'" + c + "' not allowed in name '" + jcrName
-                        + "'; remove the backslash" + " or control character from the group, name, or version");
-            } else {
-                if (state == STATE_PREFIX_START) {
-                    state = STATE_PREFIX; // prefix start
-                } else if (state == STATE_NAME_START) {
-                    state = STATE_NAME;
-                    nameStart = i;
-                } else if (state == STATE_URI_START) {
-                    state = STATE_URI;
-                }
-                trailingSpaces = false;
+        for (int i = 0; i < str.length(); i++) {
+            if (Character.isISOControl(str.charAt(i))) {
+                return true;
             }
         }
 
-        // take care of qualified jcrNames starting with '{' that are not having
-        // a terminating '}' -> make sure there are no illegal characters present.
-        if (state == STATE_URI && (jcrName.indexOf(':') > -1 || jcrName.indexOf('/') > -1)) {
-            throw new IllegalArgumentException("Local name may not contain ':' nor '/'");
-        }
-
-        if (nameStart == len || state == STATE_NAME_START) {
-            throw new IllegalArgumentException("Local name must not be empty");
-        }
-        if (trailingSpaces) {
-            throw new IllegalArgumentException("Trailing spaces not allowed");
-        }
+        return false;
     }
 }

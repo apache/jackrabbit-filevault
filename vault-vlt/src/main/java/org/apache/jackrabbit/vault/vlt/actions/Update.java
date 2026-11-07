@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.vlt.FileAction;
+import org.apache.jackrabbit.vault.vlt.FileSystemNameValidator;
 import org.apache.jackrabbit.vault.vlt.VltDirectory;
 import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.VltFile;
@@ -54,6 +55,13 @@ public class Update extends BaseAction {
             if (remoteFile == null) {
                 return;
             } else {
+                if (FileSystemNameValidator.isVltControlName(remoteFile.getName())) {
+                    // defense in depth: VltDirectory.applyWithRemote() already filters this out
+                    throw dir.getContext()
+                            .error(
+                                    remoteFile.getName(),
+                                    "reserved for the local vlt control state; refusing to check it out.");
+                }
                 file = new VltFile(dir, remoteFile.getName(), null);
             }
         }

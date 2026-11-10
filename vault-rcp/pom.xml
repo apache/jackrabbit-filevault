@@ -38,6 +38,7 @@
   <properties>
     <!-- http://maven.apache.org/ref/3.6.3/maven-model-builder/index.html#Inheritance_Assembly -->
     <project.directory>vault-rcp</project.directory>
+    <jackson.version>2.6.0</jackson.version>
   </properties>
 
   <dependencyManagement>
@@ -90,12 +91,17 @@
       <artifactId>slf4j-api</artifactId>
       <scope>provided</scope>
     </dependency>
-
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.6.0</version>
       <!-- to support PROPAGATE_TRANSIENT_MARKER -->
+      <version>${jackson.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -106,12 +112,6 @@
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.service.cm</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.utils</artifactId>
-      <version>1.11.8</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

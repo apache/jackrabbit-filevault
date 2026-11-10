@@ -20,8 +20,12 @@ package org.apache.jackrabbit.vault.rcp.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
-import org.apache.felix.utils.json.JSONParser;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -33,11 +37,20 @@ import static org.junit.Assert.assertTrue;
 
 public class TypedMapWrapperTest {
 
+    private static final JsonFactory JSON_FACTORY = new JsonFactory();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(JSON_FACTORY);
+    private static final TypeReference<Map<String, Object>> MAP_TYPE_REFERENCE =
+            new TypeReference<Map<String, Object>>() {};
+
     @Test
     public void testParsedJson() throws IOException {
         try (InputStream is = this.getClass().getResourceAsStream("/edit_task.json")) {
             assertNotNull(is);
-            TypedMapWrapper map = new TypedMapWrapper(new JSONParser(is).getParsed());
+            Map<String, Object> parsed;
+            try (JsonParser parser = JSON_FACTORY.createParser(is)) {
+                parsed = OBJECT_MAPPER.readValue(parser, MAP_TYPE_REFERENCE);
+            }
+            TypedMapWrapper map = new TypedMapWrapper(parsed);
             assertTrue(map.getBoolean("onlyNewer"));
             assertEquals("copy-geometrixx", map.getString("id"));
             MatcherAssert.assertThat(

@@ -24,10 +24,17 @@ is installed (like `subPackageHandling`). In addition to that there is the `MANI
 
 <!-- MACRO{toc|fromDepth=2} -->
 
+Package ID
+------------
+Each package is identified through its [ID][api.PackageId].
+All package registries (both JCR and FileSystem based) use Package IDs as the primary key, therefore it is important to prevent ID clashes.
+The ID is a composition of the package's `name`, `group` and `version` property contained in the `properties.xml`.
+Each part imposes certain character restrictions outlined below.
+
 properties.xml
 -----------------
-The `properties.xml` follows the format of a Java properties file in XML format as defined by [java.util.Properties](https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html). The individual keys are defined within [PackageProperties][api.PackageProperties].
-
+The `properties.xml` follows the format of a Java properties file in XML format as defined by [java.util.Properties](https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html). 
+The individual keys are defined within [PackageProperties][api.PackageProperties].
 
 Example:
 
@@ -82,9 +89,9 @@ Example:
 | packageType | Possible values: `application`, `content`, `container` or `mixed`. Further details at [Package Types](packagetypes.html). | no | ?
 | installhook.\<name\>.class | The FQN of the class which acts as an [install hook](installhooks.html). The `<name>` can be an arbitrary string (but must not contain a dot). | no | n/a
 | packageFormatVersion | The version of this package as integer value. Versions newer than 2 are not yet supported during installation. | no | 2
-| allowIndexDefinitions | If set to `true` indicates that the package contains an [Oak Index Definition](https://jackrabbit.apache.org/oak/docs/query/indexing.html#index-defnitions). Otherwise the package is not supposed to contain an index definition. This may be important to know prior to installation as installing/updating an index definition might have a severe performance impact especially on large repositories| no | false
-| groupId | The Maven groupId of the underlying Maven module from which this package was built. Only set if built via the [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) | no | n/a
-| artifactId | The Maven artifactId of the underlying Maven module from which this package was built. Only set if built via the [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html) | no | n/a
+| allowIndexDefinitions | If set to `true` indicates that the package contains an [Oak Index Definition](https://jackrabbit.apache.org/oak/docs/query/indexing.html#index-defnitions). Otherwise the package is not supposed to contain an index definition. This may be important to know prior to installation as installing/updating an index definition might have a severe performance impact especially on large repositories. | no | false
+| groupId | The Maven groupId of the underlying Maven module from which this package was built. Only set if built via the [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html). | no | n/a
+| artifactId | The Maven artifactId of the underlying Maven module from which this package was built. Only set if built via the [FileVault Package Maven Plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html). | no | n/a
 | vault.feature.stashPrincipalPolicies | If set to `true` will always restore existing principal policies after installing a package with `AccessControlHandling` being set to anything but `CLEAR` or `OVERWRITE`. Only evaluated since 3.8.10 ([JCRVLT-683](https://issues.apache.org/jira/browse/JCRVLT-683)). | no | The system property `vault.feature.stashPrincipalPolicies` is used as default. This is described with its default value at [Configuration](config.html).
 
 All values of enum types (`acHandling`, `packageType`) are always in lowercase letters.

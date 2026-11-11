@@ -83,6 +83,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-secure-xml</artifactId>
+      <!-- embedded, therefore not transitively relevant -->
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <!-- see JCRVLT-680 -->
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
@@ -330,6 +337,7 @@
           <excludes>
             <!-- excluded embedded 3rd party libraries -->
             <exclude>org/apache/jackrabbit/jcr2spi/**/*.class</exclude>
+            <exclude>org/apache/commons/xml/secure/**/*.class</exclude>
           </excludes>
         </configuration>
       </plugin>

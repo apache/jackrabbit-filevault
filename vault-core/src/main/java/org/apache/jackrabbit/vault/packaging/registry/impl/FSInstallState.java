@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
 import org.apache.jackrabbit.vault.fs.api.FilterSet.Entry;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
@@ -48,7 +49,6 @@ import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling.Option;
-import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.jetbrains.annotations.NotNull;
@@ -189,10 +189,9 @@ public class FSInstallState {
     @Nullable
     public static FSInstallState fromStream(InputStream in, String systemId) throws IOException {
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = SecureDocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setEntityResolver(new RejectingEntityResolver());
             Document document = builder.parse(in, systemId);
             Element doc = document.getDocumentElement();
             if (!TAG_REGISTRY_METADATA.equals(doc.getNodeName())) {

@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
 import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.Dumpable;
@@ -57,7 +58,6 @@ import org.apache.jackrabbit.vault.fs.api.ProgressTrackerListener;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.fs.spi.ProgressTracker;
-import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.jetbrains.annotations.Nullable;
@@ -382,12 +382,9 @@ public class DefaultWorkspaceFilter implements Dumpable, WorkspaceFilter {
     public void load(final InputStream in) throws IOException, ConfigurationException {
         byte[] tmpSource = source = IOUtils.toByteArray(in);
         try (InputStream inCopy = getSource()) {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = SecureDocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
-            // factory.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            // disable DTD loading (bug #36897)
-            builder.setEntityResolver(new RejectingEntityResolver());
             Document document = builder.parse(inCopy);
             Element doc = document.getDocumentElement();
             load(doc);

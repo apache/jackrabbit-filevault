@@ -30,7 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
+import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
 import org.apache.jackrabbit.vault.util.xml.serialize.FormattingXmlStreamWriter;
 import org.apache.jackrabbit.vault.util.xml.serialize.OutputFormat;
 import org.osgi.annotation.versioning.ProviderType;
@@ -104,10 +104,8 @@ public abstract class AbstractConfig {
      */
     public boolean load(InputStream in) throws IOException, ConfigurationException {
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = SecureDocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            // disable DTD loading (bug #36897)
-            builder.setEntityResolver(new RejectingEntityResolver());
             Document document = builder.parse(in);
             Element doc = document.getDocumentElement();
             load(doc);

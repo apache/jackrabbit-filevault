@@ -35,10 +35,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
 import org.apache.jackrabbit.vault.fs.api.Aggregator;
 import org.apache.jackrabbit.vault.fs.api.ArtifactHandler;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
-import org.apache.jackrabbit.vault.util.RejectingEntityResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -149,10 +149,8 @@ public abstract class AbstractVaultFsConfig implements VaultFsConfig {
 
     private static Document parse(InputStream xml) throws ConfigurationException, IOException {
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = SecureDocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            // disable DTD loading (bug #36897)
-            builder.setEntityResolver(new RejectingEntityResolver());
             return builder.parse(xml);
         } catch (ParserConfigurationException e) {
             throw new ConfigurationException("Unable to create configuration XML parser", e);

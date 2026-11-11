@@ -32,7 +32,6 @@ import java.util.Set;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
-import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +46,8 @@ public class AdminPermissionChecker {
     private static final String SYSTEM_USER = "system";
     private static final String ADMINISTRATORS_GROUP = "administrators";
 
-    public static final ComparableVersion VERSION_OAK_140 = new ComparableVersion("1.40");
+    public static final int VERSION_OAK_140_MAJOR = 1;
+    public static final int VERSION_OAK_140_MINOR = 40;
 
     private AdminPermissionChecker() {
         // static methods only
@@ -130,7 +130,7 @@ public class AdminPermissionChecker {
     /**
      * Checks if the repository is Oak 1.40 or newer. Compare with <a href="https://issues.apache.org/jira/browse/OAK-9415">OAK-9415</a>.
      * @param session
-     * @return {@code true} if Oak repository >= 1.40.0 is used, otherwise {@code false}
+     * @return {@code true} if Oak repository >= 1.40 is used, otherwise {@code false}
      */
     static boolean isOakVersionExposingBoundPrincipals(@NotNull Repository repository) {
         // first check repository
@@ -141,7 +141,34 @@ public class AdminPermissionChecker {
         if (version == null) {
             return false;
         }
-        // parse version according to Maven standards
-        return new ComparableVersion(version).compareTo(VERSION_OAK_140) >= 0;
+        // Compare only major/minor and ignore micro/qualifier (e.g. 1.40.2, 1.40-SNAPSHOT).
+        int[] majorMinor = parseMajorMinor(version);
+        if (majorMinor == null) {
+            return false;
+        }
+        return majorMinor[0] > VERSION_OAK_140_MAJOR
+                || (majorMinor[0] == VERSION_OAK_140_MAJOR && majorMinor[1] >= VERSION_OAK_140_MINOR);
+    }
+
+    static int[] parseMajorMinor(@NotNull String version) {
+        int dotIndex = version.indexOf('.');
+        if (dotIndex <= 0) {
+            return null;
+        }
+        String majorPart = version.substring(0, dotIndex);
+        String remainder = version.substring(dotIndex + 1);
+        int minorEnd = 0;
+        while (minorEnd < remainder.length() && Character.isDigit(remainder.charAt(minorEnd))) {
+            minorEnd++;
+        }
+        if (minorEnd == 0) {
+            return null;
+        }
+        String minorPart = remainder.substring(0, minorEnd);
+        try {
+            return new int[] {Integer.parseInt(majorPart), Integer.parseInt(minorPart)};
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }

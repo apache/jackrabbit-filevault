@@ -122,6 +122,35 @@ public class RcpTaskManagerImplTest {
     }
 
     @Test
+    public void testEditTaskRetargetingSourceDropsStoredCredentials()
+            throws IOException, ConfigurationException, URISyntaxException {
+        RcpTaskImpl taskOld = (RcpTaskImpl) taskManager.addTask(
+                new RepositoryAddress("http://localhost:4502"),
+                ConnectionOptions.builder().build(),
+                new SimpleCredentials("testUser", "pw".toCharArray()),
+                "/target/path",
+                "5",
+                Arrays.asList("exclude1"),
+                false);
+        Assert.assertNotNull(taskOld.getSourceCredentials());
+        // editing without changing the source keeps the stored credentials
+        RcpTaskImpl taskNew =
+                (RcpTaskImpl) taskManager.editTask(taskOld.getId(), null, null, null, "/other/path", null, null, null);
+        Assert.assertNotNull(taskNew.getSourceCredentials());
+        // repointing the source at another host must drop the stored credentials
+        taskNew = (RcpTaskImpl) taskManager.editTask(
+                taskOld.getId(),
+                new RepositoryAddress("http://elsewhere.example.com:8080"),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        Assert.assertNull(taskNew.getSourceCredentials());
+    }
+
+    @Test
     public void testSerializeDeserialize()
             throws IOException, ConfigurationException, URISyntaxException, RepositoryException {
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();

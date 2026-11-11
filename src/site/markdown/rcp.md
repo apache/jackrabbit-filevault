@@ -25,10 +25,10 @@ Jackrabbit Vault offers a simple method to copy nodes between repositories with 
 
 Prerequisites
 ---------
-RCP relies on the [JCR WebDAV protocol](https://jackrabbit.apache.org/jcr/JCR_Webdav_Protocol.doc) provided by the client modules [jackrabbit-jcr2spi](https://jackrabbit.apache.org/jcr/components/jackrabbit-jcr-to-spi.html) and [jackrabbit-spi2dav](https://jackrabbit.apache.org/jcr/components/jackrabbit-spi-to-dav.html) to connect to remote repositories.
+RCP relies on the [JCR WebDAV protocol (DAVEx)](https://jackrabbit.apache.org/jcr/JCR_Webdav_Protocol.doc) provided by the client modules [jackrabbit-jcr2spi](https://jackrabbit.apache.org/jcr/components/jackrabbit-jcr-to-spi.html) and [jackrabbit-spi2dav](https://jackrabbit.apache.org/jcr/components/jackrabbit-spi-to-dav.html) to connect to remote repositories.
 The remote repository must provide DAVEx access which is not blocked through intermediate proxies or firewalls.
 
-Usually the JRC WebDAV endpoint is provided either directly by the [Jackrabbit JCR Server](https://jackrabbit.apache.org/jcr/components/jackrabbit-jcr-server.html) or in OSGi containers through the [Sling JCR DavEx bundle](https://sling.apache.org/documentation/development/repository-based-development.html#davex-support).
+Usually the JCR WebDAV endpoint (DAVEx) is provided either directly by the [Jackrabbit JCR Server](https://jackrabbit.apache.org/jcr/components/jackrabbit-jcr-server.html) or in OSGi containers through the [Sling JCR DavEx bundle](https://sling.apache.org/documentation/development/repository-based-development.html#davex-support).
 
 
 CLI
@@ -84,7 +84,7 @@ Vault RCP Server Bundle
 The Vault RCP server bundle provides a very simple vault remote copy task management that can be controlled via a json/http interface. This special vault rcp version can only be used to **import** content from remote repositories.
 
 ### Usage
-The vault rcp server maintains a list of _remote copy tasks_ that can be controlled via the http interface at `/system/jackrabbit/filevault/rcp`. The request and responses are JSON formatted.
+The Vault RCP server maintains a list of _remote copy tasks_ that can be controlled via the HTTP interface at `/system/jackrabbit/filevault/rcp`. The request and responses are JSON formatted. In order to use it one needs administrative permissions or membership in an allowed administrative identity/group. Additional allowed users can be configured via property `allowedAuthIdsOrPrincipalNames` in OSGi PID `org.apache.jackrabbit.vault.rcp.impl.RcpServlet`.
 
 #### Get Info (GET)
 Exposes information about the RCP ReST endpoint. Is triggered with selector `info` and extension `json`: `/system/jackrabbit/filevault/rcp.info.json`

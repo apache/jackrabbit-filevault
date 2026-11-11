@@ -62,11 +62,10 @@
       <type>pom</type>
       <scope>provided</scope>
     </dependency>
-    <!-- depend on older version to be still compatible with older distributions -->
     <dependency>
       <groupId>org.apache.jackrabbit.vault</groupId>
       <artifactId>org.apache.jackrabbit.vault</artifactId>
-      <version>3.1.38</version>
+      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

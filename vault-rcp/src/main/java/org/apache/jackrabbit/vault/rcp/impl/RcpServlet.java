@@ -19,6 +19,7 @@
 package org.apache.jackrabbit.vault.rcp.impl;
 
 import javax.jcr.Credentials;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.servlet.Servlet;
@@ -38,6 +39,7 @@ import org.apache.jackrabbit.spi2dav.ConnectionOptions;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.packaging.impl.AdminPermissionChecker;
 import org.apache.jackrabbit.vault.rcp.RcpTask;
 import org.apache.jackrabbit.vault.rcp.RcpTaskManager;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -49,6 +51,9 @@ import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +62,21 @@ import org.slf4j.LoggerFactory;
 @Component(
         service = Servlet.class,
         property = {"service.vendor=The Apache Software Foundation", "sling.servlet.paths=" + RcpServlet.SERVLET_PATH})
+@Designate(ocd = RcpServlet.Config.class)
 public class RcpServlet extends SlingAllMethodsServlet {
+
+    @ObjectClassDefinition(
+            name = "Apache Jackrabbit FileVault RCP Servlet",
+            description = "HTTP interface for managing RCP (remote copy) tasks")
+    public static @interface Config {
+        @AttributeDefinition(
+                name = "Additional Admin Authorizable IDs or Principal Names",
+                description =
+                        "Authorizable ids (users or groups) or principal names which are authorized to manage RCP tasks"
+                                + " in addition to the built-in 'admin'/'system' users and the 'administrators' group. As tasks may carry"
+                                + " stored source credentials and trigger outbound connections, this should be limited to administrative identities.")
+        String[] allowedAuthIdsOrPrincipalNames() default {};
+    }
 
     protected static final String SERVLET_PATH = "/system/jackrabbit/filevault/rcp";
     private static final long serialVersionUID = -4571680968447024900L;
@@ -99,14 +118,46 @@ public class RcpServlet extends SlingAllMethodsServlet {
 
     private Bundle bundle;
 
+    private volatile String[] allowedAuthIdsOrPrincipalNames = new String[0];
+
     @Activate
-    protected void activate(BundleContext context) {
+    protected void activate(BundleContext context, Config config) {
         bundle = context.getBundle();
+        allowedAuthIdsOrPrincipalNames = config.allowedAuthIdsOrPrincipalNames() != null
+                ? config.allowedAuthIdsOrPrincipalNames()
+                : new String[0];
+    }
+
+    /**
+     * Checks whether the session bound to the given request is authorized to manage RCP tasks.
+     * This servlet is bound to a path ({@code sling.servlet.paths}), so it is <em>not</em> subject
+     * to JCR resource ACLs and must enforce authorization itself: tasks may carry stored source
+     * credentials (which an edit+start could ship to an arbitrary host) and starting a task
+     * triggers outbound connections from the server.
+     * @throws ServletException
+     */
+    private boolean isAuthorized(SlingHttpServletRequest request) throws ServletException {
+        Session session = request.getResourceResolver().adaptTo(Session.class);
+        if (session == null) {
+            return false;
+        }
+        try {
+            return AdminPermissionChecker.hasAdministrativePermissions(session, allowedAuthIdsOrPrincipalNames);
+        } catch (RepositoryException e) {
+            throw new ServletException("Unable to evaluate permissions of requesting session", e);
+        }
     }
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
+
+        if (!isAuthorized(request)) {
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Insufficient permissions to manage RCP tasks (administrative permissions required)");
+            return;
+        }
 
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
@@ -156,6 +207,12 @@ public class RcpServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
+        if (!isAuthorized(request)) {
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Insufficient permissions to manage RCP tasks (administrative permissions required)");
+            return;
+        }
         TypedMapWrapper data;
         try {
             data = new TypedMapWrapper(new JSONParser(request.getInputStream()).getParsed());

@@ -21,7 +21,8 @@
                   @jackrabbit-jcr2spi-*.jar,\
                   @jackrabbit-spi2dav-*.jar,\
                   @vault-davex-*.jar,\
-                  @oak-jackrabbit-api-*.jar,
+                  @oak-jackrabbit-api-*.jar,\
+                  @org.apache.jackrabbit.vault-*.jar!/org/apache/jackrabbit/vault/packaging/impl/AdminPermissionChecker*.class
 -conditionalpackage: org.apache.felix.utils.json
 # make sure to only export the relevant packages (https://github.com/bndtools/bnd/issues/4219)
 -exportcontents: org.apache.jackrabbit.vault.rcp

@@ -24,8 +24,10 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -164,7 +166,26 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         result = new ResultImpl(Result.State.NEW);
     }
 
-    // additional constructor for editing existing tasks, all arguments are optional except the first one
+    /**
+     * Constructs a new {@code RcpTaskImpl} by copying an existing task and selectively
+     * overriding its parameters. If any optional parameter is {@code null}, the corresponding
+     * value from {@code oldTask} is retained.
+     *
+     * <p><strong>Credential Security Handling:</strong> If {@code srcCreds} is not explicitly provided,
+     * the constructor checks whether the source location has changed. If the source URI points to a
+     * different host/location, stored credentials from the old task are automatically dropped for security
+     * reasons (to prevent privileged credentials from traveling to an untrusted host) and a log entry is
+     * recorded. Otherwise, the existing credentials are preserved.
+     *
+     * @param oldTask           the existing task to clone from; must not be null
+     * @param src               the new source repository address, or {@code null} to retain the old one
+     * @param connectionOptions the new connection options, or {@code null} to retain the old ones
+     * @param srcCreds          the new source credentials, or {@code null} to retain or conditionally drop them
+     * @param dst               the new destination path, or {@code null} to retain the old one
+     * @param excludes          the new list of exclusion patterns, or {@code null} to retain the old ones
+     * @param srcFilter         the new workspace filter, or {@code null} to retain the old one
+     * @param recursive         the new recursive execution flag, or {@code null} to retain the old one
+     */
     public RcpTaskImpl(
             @NotNull RcpTaskImpl oldTask,
             @Nullable RepositoryAddress src,
@@ -177,7 +198,23 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         this.src = src != null ? src : oldTask.src;
         this.connectionOptions = connectionOptions != null ? connectionOptions : oldTask.connectionOptions;
         this.dst = dst != null ? dst : oldTask.dst;
-        this.srcCreds = srcCreds != null ? srcCreds : oldTask.srcCreds;
+        if (srcCreds != null) {
+            this.srcCreds = srcCreds;
+        } else if (src == null
+                || oldTask.src == null
+                || isSameOrigin(src.getSpecificURI(), oldTask.src.getSpecificURI())) {
+            this.srcCreds = oldTask.srcCreds;
+        } else {
+            // the source has been repointed at another location: do not let the stored credentials
+            // (potentially entered by another, more privileged user) travel to the new host but
+            // require them to be entered again (via srcCreds or the set-credentials command)
+            log.info(
+                    "Source location of task {} changed from {} to {}, dropping stored source credentials",
+                    oldTask.id,
+                    getOrigin(oldTask.src.getSpecificURI()),
+                    getOrigin(src.getSpecificURI()));
+            this.srcCreds = null;
+        }
         this.id = oldTask.id;
         this.recursive = recursive != null ? recursive : oldTask.recursive;
         this.excludes = excludes != null ? excludes : oldTask.excludes;
@@ -186,6 +223,44 @@ public class RcpTaskImpl implements Runnable, RcpTask {
         this.classLoader = oldTask.classLoader;
         this.rcp = oldTask.rcp;
         this.result = oldTask.result;
+    }
+
+    /** Checks whether the two URIs share the same origin (scheme, host and port). */
+    static boolean isSameOrigin(URI uri, URI otherUri) {
+        return equalsIgnoreCase(uri.getScheme(), otherUri.getScheme())
+                && equalsIgnoreCase(uri.getHost(), otherUri.getHost())
+                && getNormalizedPort(uri) == getNormalizedPort(otherUri);
+    }
+
+    /** Returns the normalized origin (scheme, host and port) for the given URI. */
+    static String getOrigin(URI uri) {
+        Objects.requireNonNull(uri, "uri");
+        String scheme = uri.getScheme();
+        String host = uri.getHost();
+        int port = getNormalizedPort(uri);
+        return scheme + "://" + host + (port >= 0 ? ":" + port : "");
+    }
+
+    private static boolean equalsIgnoreCase(String value, String otherValue) {
+        return value == null ? otherValue == null : value.equalsIgnoreCase(otherValue);
+    }
+
+    private static int getNormalizedPort(URI uri) {
+        int port = uri.getPort();
+        if (port != -1) {
+            return port;
+        }
+        String scheme = uri.getScheme();
+        if (scheme == null) {
+            return -1;
+        }
+        if ("http".equalsIgnoreCase(scheme)) {
+            return 80;
+        }
+        if ("https".equalsIgnoreCase(scheme)) {
+            return 443;
+        }
+        return -1;
     }
 
     private static WorkspaceFilter createFilterForExcludes(List<String> excludes) throws ConfigurationException {

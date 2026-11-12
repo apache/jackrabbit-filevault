@@ -449,6 +449,12 @@ public class VltDirectory {
     public void applyWithRemote(Action action, VltFile file, VaultFile remoteFile,
                                 boolean nonRecursive)
             throws VltException {
+        if (remoteFile != null && FileSystemNameValidator.isVltControlName(remoteFile.getName())) {
+            ctx.printMessage(
+                    "Skipping remote node reserved for the local vlt control state: '" + remoteFile.getName() + "'");
+            return;
+        }
+
         // if remote file is missing, do depth first
         if (remoteFile == null && file != null && file.canDescend() && !nonRecursive) {
             VltDirectory dir = file.descend();

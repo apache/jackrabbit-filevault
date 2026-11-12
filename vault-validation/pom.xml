@@ -285,7 +285,7 @@
             <phase>verify</phase>
             <configuration>
               <basedir>${project.basedir}</basedir>
-              <excludesFile>${project.basedir}/.ratignore</excludesFile>
+              <inputExcludeFile>${project.basedir}/.ratignore</inputExcludeFile>
             </configuration>
           </execution>
         </executions>

@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>37</version>
+    <version>40</version>
     <relativePath />
   </parent>
 
@@ -482,7 +482,9 @@ Bundle-Category: jackrabbit
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
           <configuration>
-            <excludes>
+            <!-- workaround for https://issues.apache.org/jira/browse/RAT-585, only relevant when executed during mvn site generation -->
+            <outputFile>target/rat.txt</outputFile>
+            <inputExcludes>
               <excludes>.asf.yaml</excludes>
               <excludes>.ratignore</excludes>
               <exclude>release.properties</exclude>
@@ -496,7 +498,7 @@ Bundle-Category: jackrabbit
               <exclude>.no-defender.sh</exclude>
               <exclude>.repository/**</exclude>
               <exclude>local-snapshots-dir/**</exclude>
-            </excludes>
+            </inputExcludes>
           </configuration>
         </plugin>
         <!-- ====================================================================== -->

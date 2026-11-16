@@ -99,6 +99,22 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- ====================================================================== -->
+            <!-- R A T   P L U G I N                                                    -->
+            <!-- ====================================================================== -->
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>0.18</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

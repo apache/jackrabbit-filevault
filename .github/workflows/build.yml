@@ -71,7 +71,7 @@ jobs:
         run: |
           if [ "${{github.ref}}" = "refs/heads/master" ] && [ "${{github.event_name}}" = "push" ] && [ "${{github.repository_owner}}" = "apache" ] && [ "${{ matrix.isMainBuildEnv }}" = "true" ]; then
             echo 'Running on main branch of the canonical repo'
-            echo "MVN_ADDITIONAL_OPTS=-DdeployAtEnd=true -Pdependency-check -DnvdApiKeyEnvironmentVariable=NVD_API_KEY" >> $GITHUB_ENV
+            echo "MVN_ADDITIONAL_OPTS=-DdeployAtEnd=true -Drat.consoleOutput=true -Pdependency-check -DnvdApiKeyEnvironmentVariable=NVD_API_KEY" >> $GITHUB_ENV
             echo "MVN_GOAL=deploy" >> $GITHUB_ENV
           else
             echo 'Running outside main branch/canonical repo'

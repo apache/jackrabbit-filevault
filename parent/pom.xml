@@ -205,7 +205,7 @@
                             <exclude>derby.log</exclude>
                             <exclude>**/*.zip/**</exclude>
                             <exclude>.repository/**</exclude>
-		        </excludes>
+                        </excludes>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->

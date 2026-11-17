@@ -80,3 +80,4 @@ Credits
 
 See http://jackrabbit.apache.org/jackrabbit-team.html for the list of 
 Jackrabbit committers and main contributors.
+

@@ -19,6 +19,8 @@ package org.apache.jackrabbit.vault.packaging;
 
 import junit.framework.TestCase;
 
+import java.util.Arrays;
+
 /**
  * {@code PackageIdTest}...
  */
@@ -208,10 +210,9 @@ public class PackageIdTest extends TestCase {
         assertFalse(PackageId.isValid("group", "name", "1.0\u0000evil"));
     }
 
-    @Test
     public void testDotOnlyVersios() {
         // confirm that dot-only versions are valid and map to an empty version
-        for (String version : List.of(".", "..", "...", "")) {
+        for (String version : Arrays.asList(".", "..", "...", "")) {
             PackageId pid = new PackageId("a", "b", version);
             assertTrue("PackageId with version '" + version + "' should be valid", pid.isValid());
         }

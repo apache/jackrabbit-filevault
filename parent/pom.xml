@@ -204,7 +204,8 @@
                             <exclude>.gitignore</exclude>
                             <exclude>derby.log</exclude>
                             <exclude>**/*.zip/**</exclude>
-                        </excludes>
+			    <exclude>.repository/**</exclude>
+		        </excludes>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->

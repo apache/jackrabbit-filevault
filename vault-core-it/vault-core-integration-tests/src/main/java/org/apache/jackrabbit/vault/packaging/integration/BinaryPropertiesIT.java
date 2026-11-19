@@ -33,6 +33,7 @@ import javax.jcr.version.VersionException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,9 +47,15 @@ import org.apache.jackrabbit.api.ReferenceBinary;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.jackrabbit.commons.JcrUtils;
+import org.apache.jackrabbit.commons.cnd.CndImporter;
+import org.apache.jackrabbit.commons.cnd.ParseException;
+import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultMetaInf;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.packaging.ExportOptions;
@@ -225,11 +232,14 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
     }
 
     private VaultPackage assemblePackage(String rootNodePath) throws IOException, RepositoryException {
-        ExportOptions opts = new ExportOptions();
-        DefaultMetaInf inf = new DefaultMetaInf();
         DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
         filter.add(new PathFilterSet(rootNodePath));
+        return assemblePackage(filter);
+    }
 
+    private VaultPackage assemblePackage(WorkspaceFilter filter) throws IOException, RepositoryException {
+        ExportOptions opts = new ExportOptions();
+        DefaultMetaInf inf = new DefaultMetaInf();
         inf.setFilter(filter);
         Properties props = new Properties();
         props.setProperty(VaultPackage.NAME_GROUP, "jackrabbit/test");
@@ -239,6 +249,26 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
         opts.setMetaInf(inf);
         File tmpFile = tmpFolder.newFile("vaulttest.zip");
         return packMgr.assemble(admin, opts, tmpFile);
+    }
+
+    private Node createFolderHierarchy() throws RepositoryException, IOException, ParseException {
+        if (!admin.getWorkspace().getNodeTypeManager().hasNodeType("sling:Folder")) {
+            CndImporter.registerNodeTypes(
+                    new StringReader("<sling='http://sling.apache.org/jcr/sling/1.0'>\n"
+                            + "[sling:Folder] > nt:folder\n"
+                            + "- * (undefined)\n"
+                            + "- * (undefined) multiple\n"
+                            + "+ * (nt:base) = sling:Folder version\n"),
+                    admin);
+        }
+        Node parent = admin.getRootNode().addNode("testroot", "sling:Folder").addNode("parent", "sling:Folder");
+        Node selected = parent.addNode("selected", "sling:Folder");
+        selected.setProperty("value", "exported");
+        Node content = selected.addNode("jcr:content", "nt:unstructured");
+        content.setProperty("value", "exported");
+        selected.addNode("independent", "sling:Folder").setProperty("value", "source");
+        admin.save();
+        return selected;
     }
 
     private void getArchiveContents(List<String> list, String path, Archive.Entry entry) {
@@ -252,6 +282,50 @@ public class BinaryPropertiesIT extends IntegrationTestBase {
     private void checkExistingMember(Archive archive, String member, List<String> existing) throws IOException {
         String message = "Member '" + member + "' missing (present are: " + existing + ")";
         assertNotNull(message, archive.getEntry(member));
+    }
+
+    @Test
+    public void exportPreservesFolderAggregateBoundaries() throws RepositoryException, IOException, ParseException {
+        Node selected = createFolderHierarchy();
+        try (VaultPackage pkg = assemblePackage(selected.getPath())) {
+            assertNotNull(pkg.getArchive().getEntry("jcr_root/testroot/.content.xml"));
+            assertNotNull(pkg.getArchive().getEntry("jcr_root/testroot/parent/.content.xml"));
+            assertNotNull(pkg.getArchive().getEntry("jcr_root/testroot/parent/selected/.content.xml"));
+        }
+    }
+
+    @Test
+    public void filteredExportPreservesExcludedDescendants()
+            throws RepositoryException, IOException, ParseException, PackageException, ConfigurationException {
+        Node selected = createFolderHierarchy();
+        String path = selected.getPath();
+        PathFilterSet filterSet = new PathFilterSet(path);
+        filterSet.addInclude(new DefaultPathFilter(path));
+        filterSet.addInclude(new DefaultPathFilter(path + "/jcr:content(/.*)?"));
+        DefaultWorkspaceFilter filter = new DefaultWorkspaceFilter();
+        filter.add(filterSet);
+
+        try (VaultPackage pkg = assemblePackage(filter)) {
+            selected.setProperty("value", "destination");
+            selected.getNode("jcr:content").setProperty("value", "destination");
+            selected.getNode("jcr:content").addNode("removed", "nt:unstructured");
+            selected.getNode("independent").setProperty("value", "destination");
+            selected.addNode("destination-only", "sling:Folder").setProperty("value", "destination");
+            admin.save();
+
+            ImportOptions options = getDefaultOptions();
+            options.setImportMode(ImportMode.REPLACE);
+            TrackingListener listener = new TrackingListener(options.getListener());
+            options.setListener(listener);
+            pkg.extract(admin, options);
+
+            assertProperty(path + "/independent/value", "destination");
+            assertProperty(path + "/destination-only/value", "destination");
+            assertProperty(path + "/value", "exported");
+            assertProperty(path + "/jcr:content/value", "exported");
+            assertNodeMissing(path + "/jcr:content/removed");
+            assertEquals("U", listener.getActions().get(path));
+        }
     }
 
     @Test

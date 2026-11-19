@@ -27,6 +27,7 @@ import org.apache.jackrabbit.vault.fs.filter.IsNodeFilter;
 import org.apache.jackrabbit.vault.fs.filter.NameItemFilter;
 import org.apache.jackrabbit.vault.fs.filter.NodeTypeItemFilter;
 import org.apache.jackrabbit.vault.fs.impl.aggregator.GenericAggregator;
+import org.apache.jackrabbit.vault.fs.impl.aggregator.UnsupportedAggregator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -93,6 +94,10 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
         Aggregator aggregator = Registry.getInstance().createAggregator(type);
         if (aggregator == null) {
             fail("Aggregator of type " + type + " is not registered.", elem);
+        }
+        if (aggregator instanceof UnsupportedAggregator) {
+            log.warn("Aggregate type '{}' is no longer supported, this config cannot be used for export.", type);
+            ((UnsupportedAggregator) aggregator).setType(type);
         }
         if (aggregator instanceof GenericAggregator) {
             GenericAggregator ga = (GenericAggregator) aggregator;
@@ -172,6 +177,10 @@ class VaultFsConfig11 extends AbstractVaultFsConfig {
         String type = elem.getAttribute("type");
         if (type == null || type.equals("")) {
             type = "generic";
+        }
+        if (Registry.NODETYPE.equals(type)) {
+            log.warn("Handler type '{}' is no longer supported and ignored.", type);
+            return;
         }
         ArtifactHandler handler = Registry.getInstance().createHandler(type);
         if (handler == null) {

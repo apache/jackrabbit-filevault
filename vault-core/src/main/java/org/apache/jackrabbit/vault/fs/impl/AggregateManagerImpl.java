@@ -52,6 +52,7 @@ import org.apache.jackrabbit.vault.fs.config.AbstractVaultFsConfig;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.aggregator.RootAggregator;
+import org.apache.jackrabbit.vault.fs.impl.aggregator.UnsupportedAggregator;
 import org.apache.jackrabbit.vault.fs.spi.CNDReader;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeInstaller;
 import org.apache.jackrabbit.vault.fs.spi.ServiceProviderFactory;
@@ -153,6 +154,7 @@ public class AggregateManagerImpl implements AggregateManager {
         if (wspFilter == null) {
             wspFilter = getDefaultWorkspaceFilter();
         }
+        checkAggregators(config);
         Node rootNode = session.getNode(mountpoint.getPath());
         return new AggregateManagerImpl(config, wspFilter, mountpoint, rootNode, false);
     }
@@ -183,6 +185,7 @@ public class AggregateManagerImpl implements AggregateManager {
         if (wspFilter == null) {
             wspFilter = getDefaultWorkspaceFilter();
         }
+        checkAggregators(config);
         Node rootNode;
         String wspName = mountpoint.getWorkspace();
         try {
@@ -197,6 +200,15 @@ public class AggregateManagerImpl implements AggregateManager {
             }
         }
         return new AggregateManagerImpl(config, wspFilter, mountpoint, rootNode, true);
+    }
+
+    private static void checkAggregators(VaultFsConfig config) throws RepositoryException {
+        for (Aggregator aggregator : config.getAggregators()) {
+            if (aggregator instanceof UnsupportedAggregator) {
+                throw new RepositoryException("Aggregate type '" + ((UnsupportedAggregator) aggregator).getType()
+                        + "' is no longer supported. Remove it from the vault configuration.");
+            }
+        }
     }
 
     /**

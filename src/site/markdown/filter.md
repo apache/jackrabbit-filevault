@@ -146,8 +146,6 @@ Usage for Import/Installation
 When importing (i.e. installing) content packages into a repository  the workspace filter defines which nodes are deserialized and overwritten in the repository.
 Nodes/Properties being covered by some filter rules but not contained in the to be imported content are **removed** from the repository.
 
-Nodes serialized in descendant directories are part of the content package even when an ancestor's `.content.xml` omits their placeholder elements. Importing that ancestor document preserves those nodes so their own serialization and filter rules can be applied.
-
 The exact rules are outlined below
 
 Item covered by filter rule | Item contained in the Content Package | Item contained in the Repository (prior to Import/Installation) | State of Item in Repository after Import/Installation

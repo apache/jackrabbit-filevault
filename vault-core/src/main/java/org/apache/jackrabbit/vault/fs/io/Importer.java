@@ -1085,20 +1085,7 @@ public class Importer {
             }
         } else if (info.artifacts.getDirectory() != null) {
             String prefix = info.parent == null ? info.name : info.name + "/";
-            for (TxInfo child : info.children().values()) {
-                // add the directory artifacts as hint to this one.
-                if (child.artifacts == null) {
-                    // in this case it's some deleted intermediate directory???
-                    String path = prefix + child.name;
-                    info.artifacts.add(new HintArtifact(path));
-
-                } else {
-                    for (Artifact a : child.artifacts.values()) {
-                        String path = prefix + a.getRelativePath();
-                        info.artifacts.add(new HintArtifact(path));
-                    }
-                }
-            }
+            addChildArtifactHints(info, prefix, info.artifacts);
             Node node = info.getParentNode(session);
             if (node == null) {
                 imp = new ImportInfoImpl();
@@ -1266,6 +1253,22 @@ public class Importer {
             }
         }
         memberships.clear();
+    }
+
+    private static void addChildArtifactHints(TxInfo info, String prefix, ArtifactSetImpl artifacts) {
+        for (TxInfo child : info.children().values()) {
+            if (child.artifacts == null) {
+                artifacts.add(new HintArtifact(prefix + child.name));
+            } else {
+                for (Artifact artifact : child.artifacts.values()) {
+                    artifacts.add(new HintArtifact(prefix + artifact.getRelativePath()));
+                }
+            }
+            // Ancestor DocView XML can contain nodes below the immediate child transactions.
+            if (artifacts.getPrimaryData() != null) {
+                addChildArtifactHints(child, prefix + child.name + "/", artifacts);
+            }
+        }
     }
 
     private static class TxInfo {

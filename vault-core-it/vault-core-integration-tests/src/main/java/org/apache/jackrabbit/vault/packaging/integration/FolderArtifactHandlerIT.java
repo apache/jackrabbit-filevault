@@ -36,6 +36,32 @@ import static org.junit.Assert.assertEquals;
 
 public class FolderArtifactHandlerIT extends IntegrationTestBase {
 
+    @Test
+    public void testSeparatelySerializedDescendantWithoutPlaceholder()
+            throws RepositoryException, IOException, PackageException {
+        Node ancestor = admin.getRootNode()
+                .addNode("testroot", "nt:unstructured")
+                .addNode("a", "nt:unstructured")
+                .addNode("b", "nt:unstructured");
+        Node content = ancestor.addNode("content", "nt:unstructured");
+        content.addMixin("mix:referenceable");
+        content.setProperty("value", "old");
+        content.addNode("excluded", "nt:unstructured").addNode("sentinel", "nt:unstructured");
+        content.addNode("obsolete", "nt:unstructured");
+        ancestor.addNode("removed", "nt:unstructured");
+        String contentId = content.getIdentifier();
+        admin.save();
+
+        try (VaultPackage vltPackage =
+                extractVaultPackageStrict("/test-packages/separate-descendant-without-placeholder.zip")) {
+            assertEquals(contentId, admin.getNode("/testroot/a/b/content").getIdentifier());
+            assertNodeExists("/testroot/a/b/content/excluded/sentinel");
+            assertProperty("/testroot/a/b/content/value", "new");
+            assertNodeMissing("/testroot/a/b/content/obsolete");
+            assertNodeMissing("/testroot/a/b/removed");
+        }
+    }
+
     /* JCRVLT-415 */
     @Test
     public void testModifyingContainedNodeNonNtFolderPrimaryType()

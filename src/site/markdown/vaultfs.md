@@ -124,6 +124,8 @@ are mapped to:
 
 the example above just excluded some direct child nodes of the aggregate root from the aggregation (with the exception of the `image.jpg` node). but this could be more complicated.
 
+An aggregate's `.content.xml` may inline several levels of descendant nodes while a deeper descendant is serialized as its own aggregate in a nested directory, without a corresponding element in the ancestor document. On import, such nested aggregates are part of the package and are not removed while the ancestor document is imported.
+
 overlapping example:
 
 ```

@@ -197,15 +197,16 @@
                     <artifactId>apache-rat-plugin</artifactId>
                     <version>0.16.1</version>
                     <configuration>
-                        <excludes>
-                            <exclude>release.properties</exclude>
-                            <exclude>.git/**</exclude>
-                            <exclude>.idea/**</exclude>
-                            <exclude>.gitignore</exclude>
-                            <exclude>derby.log</exclude>
-                            <exclude>**/*.zip/**</exclude>
-                            <exclude>.repository/**</exclude>
-                        </excludes>
+                        <inputExcludes>
+                            <inputExclude>release.properties</inputExclude>
+                            <inputExclude>.git/**</inputExclude>
+                            <inputExclude>.idea/**</inputExclude>
+                            <inputExclude>.gitignore</inputExclude>
+                            <inputExclude>derby.log</inputExclude>
+                            <inputExclude>**/*.zip/**</inputExclude>
+                            <inputExclude>.repository/**</inputExclude>
+                            <inputExclude>/local-snapshots-dir/**</inputExclude>
+                        </inputExcludes>
                     </configuration>
                 </plugin>
                 <!-- ====================================================================== -->

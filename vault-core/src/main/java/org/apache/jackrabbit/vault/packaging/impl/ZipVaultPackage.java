@@ -230,17 +230,16 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
         if (!isValid()) {
             throw new IllegalStateException("Package not valid.");
         }
+        if (!opts.isDryRun() || securityConfig.isRejectPackagesWithHooks()) {
+            // Check archive declarations before any hook code or custom processor is loaded.
+            checkAllowanceToInstallPackage(session, hasHookEntries(archive), securityConfig);
+        }
         // try to find any hooks
         InstallHookProcessor hooks = opts instanceof InstallHookProcessorFactory
                 ? ((InstallHookProcessorFactory) opts).createInstallHookProcessor()
                 : new InstallHookProcessorImpl();
         try {
             if (!opts.isDryRun()) {
-                // consult the allowance gate on hook *presence* determined by pure archive
-                // listing before any hook class is spooled, loaded or instantiated: the gate
-                // must decide whether this session may install a hooked package at all before
-                // package-supplied code (static initializers, constructors) runs in this JVM
-                checkAllowanceToInstallPackage(session, hasHookEntries(archive), securityConfig);
                 hooks.registerHooks(archive, opts.getHookClassLoader());
             }
             // re-check against the actually registered hooks: a custom
@@ -331,6 +330,10 @@ public class ZipVaultPackage extends PackagePropertiesImpl implements VaultPacka
     private void checkAllowanceToInstallPackage(
             @NotNull Session session, boolean hasHooks, @NotNull AbstractPackageRegistry.SecurityConfig securityConfig)
             throws PackageException, RepositoryException {
+        if (hasHooks && securityConfig.isRejectPackagesWithHooks()) {
+            throw new PackageException("Installation of package " + getId()
+                    + " rejected because it contains install hooks and rejectPackagesWithHooks is enabled.");
+        }
         if (requiresRoot()) {
             if (!AdminPermissionChecker.hasAdministrativePermissions(
                     session, securityConfig.getAuthIdsForRootInstallation())) {

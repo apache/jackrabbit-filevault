@@ -50,10 +50,16 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
     public static final class SecurityConfig {
         private final String[] authIdsForHookExecution;
         private final String[] authIdsForRootInstallation;
+        private final boolean rejectPackagesWithHooks;
 
         public SecurityConfig(String[] authIdsForHooks, String[] authIdsForRoots) {
+            this(authIdsForHooks, authIdsForRoots, false);
+        }
+
+        public SecurityConfig(String[] authIdsForHooks, String[] authIdsForRoots, boolean rejectPackagesWithHooks) {
             this.authIdsForHookExecution = authIdsForHooks;
             this.authIdsForRootInstallation = authIdsForRoots;
+            this.rejectPackagesWithHooks = rejectPackagesWithHooks;
         }
 
         public String[] getAuthIdsForHookExecution() {
@@ -62,6 +68,10 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
 
         public String[] getAuthIdsForRootInstallation() {
             return authIdsForRootInstallation;
+        }
+
+        public boolean isRejectPackagesWithHooks() {
+            return rejectPackagesWithHooks;
         }
     }
     /**

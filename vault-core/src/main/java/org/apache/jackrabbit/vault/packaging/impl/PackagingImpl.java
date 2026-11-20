@@ -103,6 +103,12 @@ public class PackagingImpl implements Packaging {
         String[] authIdsForHookExecution();
 
         @AttributeDefinition(
+                name = "Reject Packages with Install Hooks",
+                description =
+                        "Reject installation of packages containing embedded or external install hooks, for all users including administrators. Also applies to dry runs")
+        boolean rejectPackagesWithHooks() default false;
+
+        @AttributeDefinition(
                 name = "Allowed Users for Package Installation",
                 description =
                         "The authorizable ids or principal names which are allowed to install packages with the 'requireRoot' flag (in addition to 'admin', 'administrators' and 'system'")
@@ -146,8 +152,10 @@ public class PackagingImpl implements Packaging {
         JcrPackageManagerImpl mgr = new JcrPackageManagerImpl(
                 session,
                 config.packageRoots(),
-                config.authIdsForHookExecution(),
-                config.authIdsForRootInstallation(),
+                new AbstractPackageRegistry.SecurityConfig(
+                        config.authIdsForHookExecution(),
+                        config.authIdsForRootInstallation(),
+                        config.rejectPackagesWithHooks()),
                 config.isStrict(),
                 config.overwritePrimaryTypesOfFolders(),
                 config.defaultIdConflictPolicy());
@@ -208,7 +216,9 @@ public class PackagingImpl implements Packaging {
         JcrPackageRegistry registry = new JcrPackageRegistry(
                 session,
                 new AbstractPackageRegistry.SecurityConfig(
-                        config.authIdsForHookExecution(), config.authIdsForRootInstallation()),
+                        config.authIdsForHookExecution(),
+                        config.authIdsForRootInstallation(),
+                        config.rejectPackagesWithHooks()),
                 config.isStrict(),
                 config.overwritePrimaryTypesOfFolders(),
                 config.defaultIdConflictPolicy(),

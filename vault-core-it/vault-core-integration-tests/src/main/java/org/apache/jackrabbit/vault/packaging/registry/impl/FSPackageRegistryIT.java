@@ -66,6 +66,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -705,6 +706,40 @@ public class FSPackageRegistryIT extends IntegrationTestBase {
         assertNotNull(installState);
         // check metadata
         assertEquals(FSPackageStatus.EXTRACTED, installState.getStatus());
+    }
+
+    @Test
+    public void testRejectHooksViaOsgiConfigurationAndReenableInstallation() throws Exception {
+        BundleContext context = Mockito.mock(BundleContext.class);
+        Mockito.when(context.getProperty(FSPackageRegistry.REPOSITORY_HOME)).thenReturn(DIR_REGISTRY_HOME.toString());
+        Map<String, Object> map = new HashMap<>();
+        map.put("homePath", registryHome.getAbsolutePath());
+        map.put("authIdsForHookExecution", new String[0]);
+        map.put("authIdsForRootInstallation", new String[0]);
+        map.put("rejectPackagesWithHooks", true);
+        Converter converter = Converters.standardConverter();
+        registry.activate(context, converter.convert(map).to(Config.class));
+
+        PackageId id = registry.register(getFile("/test-packages/external_hook.zip"), false);
+        try (RegisteredPackage pack = registry.open(id)) {
+            PackageException exception = assertThrows(
+                    PackageException.class, () -> registry.installPackage(admin, pack, getDefaultOptions(), true));
+            assertTrue(exception.getMessage().contains("rejectPackagesWithHooks is enabled"));
+            assertFalse(admin.nodeExists("/testroot"));
+            assertEquals(
+                    FSPackageStatus.REGISTERED, registry.getInstallState(id).getStatus());
+        }
+
+        map.put("rejectPackagesWithHooks", false);
+        registry.activate(context, converter.convert(map).to(Config.class));
+        admin.getRootNode().addNode("testroot", "nt:unstructured");
+        admin.save();
+        try (RegisteredPackage pack = registry.open(id)) {
+            registry.installPackage(admin, pack, getDefaultOptions(), true);
+            assertProperty("/testroot/TestHook1", "END");
+            assertProperty("/testroot/TestHook2", "END");
+            assertEquals(FSPackageStatus.EXTRACTED, registry.getInstallState(id).getStatus());
+        }
     }
 
     private void getFreshRegistryWithDefaultConstructor(String packageName, String packageMetadataName)

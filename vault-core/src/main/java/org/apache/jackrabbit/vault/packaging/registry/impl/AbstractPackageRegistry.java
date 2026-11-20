@@ -191,6 +191,9 @@ public abstract class AbstractPackageRegistry implements PackageRegistry, Intern
      * @since 2.2
      */
     public String getRelativeInstallationPath(PackageId id) {
+        if (!id.isValid()) {
+            throw new IllegalArgumentException("Invalid package id: '" + id + "'");
+        }
         StringBuilder b = new StringBuilder("/");
         if (id.getGroup().length() > 0) {
             b.append(id.getGroup());

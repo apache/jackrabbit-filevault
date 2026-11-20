@@ -85,7 +85,7 @@ import org.slf4j.LoggerFactory;
 @Designate(ocd = FSPackageRegistry.Config.class)
 public class FSPackageRegistry extends AbstractPackageRegistry {
 
-    private static final String REPOSITORY_HOME = "repository.home";
+    protected static final String REPOSITORY_HOME = "repository.home";
 
     /**
      * default logger
@@ -144,7 +144,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Activate
-    private void activate(BundleContext context, Config config) throws IOException {
+    protected void activate(BundleContext context, Config config) throws IOException {
         String repoHome = context.getProperty(REPOSITORY_HOME);
         if (repoHome == null) {
             this.homeDir = context.getDataFile(config.homePath());
@@ -197,7 +197,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Nullable
-    private File getPackageFile(@Nonnull PackageId id) {
+    protected File getPackageFile(@Nonnull PackageId id) {
         try {
             FSInstallState state = getInstallState(id);
             if (FSPackageStatus.NOTREGISTERED == state.getStatus()) {

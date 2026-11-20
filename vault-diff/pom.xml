@@ -110,9 +110,9 @@
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
                 <configuration>
-                    <excludes>
-                        <exclude>src/test/resources/**</exclude>
-                    </excludes>
+                    <inputExcludes>
+                        <inputExclude>src/test/resources/**</inputExclude>
+                    </inputExcludes>
                 </configuration>
             </plugin>
         </plugins>

@@ -99,7 +99,6 @@
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
-                <version>0.12</version>
                 <executions>
                     <execution>
                         <phase>verify</phase>
@@ -108,7 +107,7 @@
                         </goals>
                         <configuration>
                             <basedir>${project.basedir}</basedir>
-                            <excludesFile>${project.basedir}/.ratignore</excludesFile>
+                            <inputExcludeFile>${project.basedir}/.ratignore</inputExcludeFile>
                         </configuration>
                     </execution>
                 </executions>

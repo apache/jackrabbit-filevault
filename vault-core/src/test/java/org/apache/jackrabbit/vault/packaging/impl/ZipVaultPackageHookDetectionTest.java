@@ -18,6 +18,8 @@
  */
 package org.apache.jackrabbit.vault.packaging.impl;
 
+import javax.jcr.Session;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,13 +29,23 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
+import org.apache.jackrabbit.vault.packaging.InstallHookProcessor;
+import org.apache.jackrabbit.vault.packaging.InstallHookProcessorFactory;
+import org.apache.jackrabbit.vault.packaging.PackageException;
+import org.apache.jackrabbit.vault.packaging.registry.impl.AbstractPackageRegistry.SecurityConfig;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests that install hook presence is detected by pure archive listing, without
@@ -104,5 +116,118 @@ public class ZipVaultPackageHookDetectionTest {
     @Test
     public void testNoHooksDetectedForPlainPackage() throws IOException {
         assertFalse(detect(createPackage(false, false)));
+    }
+
+    @Test
+    public void testRejectsEmbeddedHooksBeforeLoadingAsAdmin() throws Exception {
+        assertRejectedBeforeLoading(createPackage(true, false), "admin", false);
+    }
+
+    @Test
+    public void testRejectsExternalHooksBeforeLoadingForAllowedUser() throws Exception {
+        assertRejectedBeforeLoading(createPackage(false, true), "allowed-user", false);
+    }
+
+    @Test
+    public void testRejectsEmbeddedHooksDuringDryRun() throws Exception {
+        assertRejectedBeforeLoading(createPackage(true, false), "admin", true);
+    }
+
+    @Test
+    public void testRejectsExternalHooksDuringDryRun() throws Exception {
+        assertRejectedBeforeLoading(createPackage(false, true), "allowed-user", true);
+    }
+
+    private void assertRejectedBeforeLoading(File file, String userId, boolean dryRun) throws IOException {
+        Session session = mock(Session.class);
+        when(session.getUserID()).thenReturn(userId);
+        ClassLoader classLoader = mock(ClassLoader.class);
+        ImportOptions options = new ImportOptions();
+        options.setDryRun(dryRun);
+        options.setHookClassLoader(classLoader);
+        try (ZipVaultPackage pack = new ZipVaultPackage(file, false)) {
+            PackageException exception = assertThrows(
+                    PackageException.class,
+                    () -> pack.extract(
+                            session,
+                            options,
+                            new SecurityConfig(new String[] {userId}, null, true),
+                            false,
+                            true,
+                            null));
+            assertTrue(exception.getMessage().contains("test:test-package:1.0"));
+            assertTrue(exception.getMessage().contains("rejectPackagesWithHooks is enabled"));
+        }
+        verifyNoInteractions(session, classLoader);
+    }
+
+    @Test
+    public void testPlainPackageRemainsAllowed() throws Exception {
+        try (ZipVaultPackage pack = new ZipVaultPackage(createPackage(false, false), false)) {
+            InstallContextImpl context = pack.prepareExtract(
+                    mock(Session.class), new ImportOptions(), new SecurityConfig(null, null, true), false, true, null);
+            try (InstallHookProcessor hooks = context.getHooks()) {
+                assertFalse(hooks.hasHooks());
+            }
+        }
+    }
+
+    @Test
+    public void testDryRunWithHooksRemainsAllowedWhenRejectionDisabled() throws Exception {
+        ImportOptions options = new ImportOptions();
+        options.setDryRun(true);
+        try (ZipVaultPackage pack = new ZipVaultPackage(createPackage(true, true), false)) {
+            InstallContextImpl context = pack.prepareExtract(
+                    mock(Session.class), options, new SecurityConfig(null, null), false, true, null);
+            try (InstallHookProcessor hooks = context.getHooks()) {
+                assertFalse(hooks.hasHooks());
+            }
+        }
+    }
+
+    @Test
+    public void testDryRunWithoutHooksRemainsAllowedWhenRejectionEnabled() throws Exception {
+        ImportOptions options = new ImportOptions();
+        options.setDryRun(true);
+        try (ZipVaultPackage pack = new ZipVaultPackage(createPackage(false, false), false)) {
+            InstallContextImpl context = pack.prepareExtract(
+                    mock(Session.class), options, new SecurityConfig(null, null, true), false, true, null);
+            try (InstallHookProcessor hooks = context.getHooks()) {
+                assertFalse(hooks.hasHooks());
+            }
+        }
+    }
+
+    @Test
+    public void testRejectsHooksRegisteredByCustomProcessor() throws Exception {
+        InstallHookProcessor processor = mock(InstallHookProcessor.class);
+        when(processor.hasHooks()).thenReturn(true);
+        try (ZipVaultPackage pack = new ZipVaultPackage(createPackage(false, false), false)) {
+            PackageException exception = assertThrows(
+                    PackageException.class,
+                    () -> pack.extract(
+                            mock(Session.class),
+                            new CustomHookOptions(processor),
+                            new SecurityConfig(null, null, true),
+                            false,
+                            true,
+                            null));
+            assertTrue(exception.getMessage().contains("rejectPackagesWithHooks is enabled"));
+            verify(processor).registerHooks(pack.getArchive(), null);
+            verify(processor).close();
+        }
+    }
+
+    private static class CustomHookOptions extends ImportOptions implements InstallHookProcessorFactory {
+        private final InstallHookProcessor processor;
+
+        private CustomHookOptions(InstallHookProcessor processor) {
+            this.processor = processor;
+        }
+
+        @Override
+        public InstallHookProcessor createInstallHookProcessor() {
+            return processor;
+        }
     }
 }

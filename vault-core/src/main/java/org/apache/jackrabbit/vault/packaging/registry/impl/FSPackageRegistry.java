@@ -180,7 +180,9 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         log.info("Jackrabbit Filevault FS Package Registry initialized with home location {}", homeDir.getPath());
         this.scope = InstallationScope.valueOf(config.scope());
         this.securityConfig = new AbstractPackageRegistry.SecurityConfig(
-                config.authIdsForHookExecution(), config.authIdsForRootInstallation());
+                config.authIdsForHookExecution(),
+                config.authIdsForRootInstallation(),
+                config.rejectPackagesWithHooks());
         this.stateCache = new FSInstallStateCache(homeDir.toPath());
     }
 
@@ -208,6 +210,12 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
                 description =
                         "The authorizable ids which are allowed to execute hooks (in addition to 'admin', 'administrators' and 'system'")
         String[] authIdsForHookExecution();
+
+        @AttributeDefinition(
+                name = "Reject Packages with Install Hooks",
+                description =
+                        "Reject installation of packages containing embedded or external install hooks, for all users including administrators. Also applies to dry runs")
+        boolean rejectPackagesWithHooks() default false;
 
         @AttributeDefinition(
                 description =

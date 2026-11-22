@@ -25,8 +25,10 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -141,8 +143,11 @@ public class ZipStreamArchive extends AbstractArchive {
         // scan the zip and copy data to temporary file
         try (ZipInputStream zin = new ZipInputStream(in)) {
             ZipEntry entry;
+            Set<String> seenEntryNames = new HashSet<>();
             while ((entry = zin.getNextEntry()) != null) {
                 String name = entry.getName();
+                // see AbstractArchive.checkNotDuplicateEntry() javadoc for rationale (GH-17)
+                checkNotDuplicateEntry(seenEntryNames, name, entry.isDirectory(), "zip stream");
                 String[] names = Text.explode(name, '/');
                 EntryImpl je = root;
                 if (names.length > 0) {

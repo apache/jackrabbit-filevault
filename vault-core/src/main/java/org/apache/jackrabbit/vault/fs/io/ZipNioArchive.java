@@ -27,11 +27,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.ProviderNotFoundException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
@@ -103,6 +107,7 @@ public class ZipNioArchive extends AbstractArchive {
             log.debug("Archive already open");
             return;
         }
+        assertNoDuplicateEntries();
         try {
             zipFileSystem = FileSystems.newFileSystem(path, (ClassLoader) null);
         } catch (ProviderNotFoundException e) {
@@ -113,6 +118,24 @@ public class ZipNioArchive extends AbstractArchive {
         }
         watcher = CloseWatcher.register(
                 this, new Closer(deleteAtClose ? this.path : null, zipFileSystem), SHOULD_CREATE_STACK_TRACE);
+    }
+
+    /**
+     * Scans the raw zip file for duplicate (non-directory) entry names. The zip file system
+     * provider silently collapses entries that share a name and offers no way to enumerate the
+     * ones it discarded, so a duplicate must be detected here, before the file system is opened
+     * (see {@link ZipArchive#open(boolean)} for why this matters, GH-17).
+     *
+     * @throws IOException if the zip file contains a duplicate entry name, or cannot be read
+     */
+    private void assertNoDuplicateEntries() throws IOException {
+        Set<String> seenEntryNames = new HashSet<>();
+        try (ZipInputStream zin = new ZipInputStream(Files.newInputStream(path))) {
+            ZipEntry entry;
+            while ((entry = zin.getNextEntry()) != null) {
+                checkNotDuplicateEntry(seenEntryNames, entry.getName(), entry.isDirectory(), path.toString());
+            }
+        }
     }
 
     @Override

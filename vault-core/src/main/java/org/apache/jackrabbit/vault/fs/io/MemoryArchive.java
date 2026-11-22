@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -78,8 +80,13 @@ public class MemoryArchive extends AbstractArchive implements InputStreamPump.Pu
         ZipInputStream zin = new ZipInputStream(new BufferedInputStream(in));
         ZipEntry entry;
         boolean hasRoot = false;
+        Set<String> seenEntryNames = new HashSet<>();
         while ((entry = zin.getNextEntry()) != null) {
             String name = entry.getName();
+            // see AbstractArchive.checkNotDuplicateEntry() javadoc for rationale (GH-17);
+            // checked unconditionally, even in metaOnly mode, since META-INF/vault/* itself
+            // can be the duplicated entry
+            checkNotDuplicateEntry(seenEntryNames, name, entry.isDirectory(), "zip stream");
             boolean isMeta = name.startsWith(Constants.META_DIR + "/");
             if (!hasRoot && name.startsWith(Constants.ROOT_DIR + "/")) {
                 hasRoot = true;

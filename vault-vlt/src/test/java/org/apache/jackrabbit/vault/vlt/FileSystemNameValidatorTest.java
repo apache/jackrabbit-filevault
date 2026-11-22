@@ -18,6 +18,11 @@
  */
 package org.apache.jackrabbit.vault.vlt;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
+import org.apache.jackrabbit.vault.util.PlatformNameFormat;
+import org.apache.jackrabbit.vault.vlt.meta.xml.XmlEntries;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -44,5 +49,68 @@ public class FileSystemNameValidatorTest {
         Assert.assertTrue(FileSystemNameValidator.isVltControlName(".vlt."));
         Assert.assertTrue(FileSystemNameValidator.isVltControlName(".vlt "));
         Assert.assertTrue(FileSystemNameValidator.isVltControlName(".VLT.. "));
+    }
+
+    @Test
+    public void testSafeFileNameAcceptsPlainSingleSegmentNames() {
+        Assert.assertTrue(FileSystemNameValidator.isSafeFileName("foo.png"));
+        Assert.assertTrue(FileSystemNameValidator.isSafeFileName(".content.xml"));
+        Assert.assertTrue(FileSystemNameValidator.isSafeFileName("foo.mine"));
+    }
+
+    @Test
+    public void testEscapedBackslashNamesLoadFromWorkingCopyMetadata() throws Exception {
+        String[] repositoryNames = {
+            "test1\\something",
+            "test1%5csomething",
+            "\\leading",
+            "trailing\\",
+            "two\\back\\slashes",
+            "cq:test1\\something"
+        };
+        for (String repositoryName : repositoryNames) {
+            String platformName = PlatformNameFormat.getPlatformName(repositoryName);
+            Assert.assertTrue(platformName, FileSystemNameValidator.isSafeFileName(platformName));
+            String xml = "<entries path=\"/content\"><entry name=\"" + platformName
+                    + "\" rp=\"\" ap=\"/content/" + repositoryName + "\">"
+                    + "<base/><mine name=\"" + platformName + ".mine\"/>"
+                    + "<theirs name=\"" + platformName + ".theirs\"/></entry></entries>";
+            XmlEntries entries = XmlEntries.load(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+            Assert.assertTrue(platformName, entries.hasEntry(platformName));
+            Assert.assertEquals(repositoryName, PlatformNameFormat.getRepositoryName(platformName));
+        }
+    }
+
+    @Test
+    public void testSafeFileNameRejectsNullAndEmpty() {
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName(null));
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName(""));
+    }
+
+    @Test
+    public void testSafeFileNameRejectsDotAndDotDotSegments() {
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName("."));
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName(".."));
+    }
+
+    @Test
+    public void testSafeFileNameRejectsTraversalAndSeparators() {
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName("../../etc/passwd"));
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName("sub/evil"));
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName("sub\\evil"));
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName("..\\..\\evil"));
+    }
+
+    @Test
+    public void testSafeFileNameRejectsDriveLetterAndAlternateDataStream() {
+        // NTFS alternate data stream / drive-letter addressing via ':'.
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName("c:evil"));
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName("foo.txt:stream"));
+    }
+
+    @Test
+    public void testSafeFileNameRejectsVltControlName() {
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName(".vlt"));
+        Assert.assertFalse(FileSystemNameValidator.isSafeFileName(".VLT"));
     }
 }

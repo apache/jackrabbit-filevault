@@ -20,6 +20,7 @@ package org.apache.jackrabbit.vault.vlt.meta.xml.file;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.FileInputSource;
+import org.apache.jackrabbit.vault.vlt.FileSystemNameValidator;
 import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.meta.MetaDirectory;
 import org.apache.jackrabbit.vault.vlt.meta.MetaFile;
@@ -125,6 +127,7 @@ public class FileMetaDir implements MetaDirectory {
     }
 
     public MetaFile getTmpFile(String name, boolean create) throws IOException {
+        FileSystemNameValidator.assertSafeFileName(name);
         File file = new File(tmpDir, name);
         if (file.exists() || create) {
             return new FileMetaFile(this, file);
@@ -134,6 +137,7 @@ public class FileMetaDir implements MetaDirectory {
     }
 
     public MetaFile getBaseFile(String name, boolean create) throws IOException {
+        FileSystemNameValidator.assertSafeFileName(name);
         File file = new File(baseDir, name);
         if (file.exists() || create) {
             return new FileMetaFile(this, file);
@@ -155,7 +159,12 @@ public class FileMetaDir implements MetaDirectory {
     public void sync() throws IOException {
         if (entries != null) {
             if (entries.isDirty()) {
-                entries.save(FileUtils.openOutputStream(entriesFile));
+                // XmlEntries.save() only closes its internal XML writer, not the stream
+                // it wraps, so the stream must be closed here, or the open file handle
+                // leaks (and, on Windows, blocks deleting/renaming the directory).
+                try (OutputStream out = FileUtils.openOutputStream(entriesFile)) {
+                    entries.save(out);
+                }
             }
         }
     }

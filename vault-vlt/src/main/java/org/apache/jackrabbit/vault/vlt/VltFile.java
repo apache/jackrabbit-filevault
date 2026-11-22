@@ -95,6 +95,9 @@ public class VltFile implements DocumentSource {
     private VltEntry entry;
 
     public VltFile(VltDirectory parent, String name, VltEntry entry) throws VltException {
+        if (!FileSystemNameValidator.isSafeFileName(name)) {
+            throw new VltException("Illegal or unsafe file name: " + name);
+        }
         this.parent = parent;
         this.name = name;
         this.entry = entry;

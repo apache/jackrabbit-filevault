@@ -31,6 +31,7 @@ import java.util.TimeZone;
 import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.util.MD5;
+import org.apache.jackrabbit.vault.vlt.FileSystemNameValidator;
 import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.meta.MetaFile;
 import org.apache.jackrabbit.vault.vlt.meta.VltEntryInfo;
@@ -245,7 +246,11 @@ public class XmlEntryInfo implements VltEntryInfo {
         }
         XmlEntryInfo entry = new XmlEntryInfo(type);
         if (elem.hasAttribute(AN_NAME)) {
-            entry.setName(elem.getAttribute(AN_NAME));
+            String infoName = elem.getAttribute(AN_NAME);
+            if (!FileSystemNameValidator.isSafeFileName(infoName)) {
+                throw new VltException("entry info has an unsafe '" + AN_NAME + "' attribute: " + infoName);
+            }
+            entry.setName(infoName);
         }
         if (elem.hasAttribute(AN_DATE)) {
             entry.setDate(ISO8601.parse(elem.getAttribute(AN_DATE)).getTime().getTime());

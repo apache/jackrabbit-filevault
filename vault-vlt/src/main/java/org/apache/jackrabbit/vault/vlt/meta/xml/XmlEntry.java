@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.util.MimeTypes;
+import org.apache.jackrabbit.vault.vlt.FileSystemNameValidator;
 import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.meta.MetaFile;
 import org.apache.jackrabbit.vault.vlt.meta.VltEntry;
@@ -285,6 +286,9 @@ public class XmlEntry implements VltEntry {
         String name = elem.getAttribute(AN_NAME);
         if (name == null) {
             throw new VltException("entry has no '" + AN_NAME + "' attribute");
+        }
+        if (!FileSystemNameValidator.isSafeFileName(name)) {
+            throw new VltException("entry has an unsafe '" + AN_NAME + "' attribute: " + name);
         }
         String path = elem.hasAttribute(AN_PATH) ? elem.getAttribute(AN_PATH) : null;
         String ap = elem.hasAttribute(AN_AGGREGATE_PATH) ? elem.getAttribute(AN_AGGREGATE_PATH) : null;

@@ -36,6 +36,12 @@ public class PlatformNameFormatTest {
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
             {"test.jpg", "test.jpg"},
+            {"test1\\something", "test1%5csomething"},
+            {"test1%5csomething", "test1%255csomething"},
+            {"\\leading", "%5cleading"},
+            {"trailing\\", "trailing%5c"},
+            {"two\\back\\slashes", "two%5cback%5cslashes"},
+            {"cq:test1\\something", "_cq_test1%5csomething"},
             {"foo.dir", "foo%2edir"},
             {"foo.binary", "foo%2ebinary"},
             {".content.xml", "%2econtent.xml"},

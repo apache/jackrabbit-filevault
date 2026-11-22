@@ -18,6 +18,8 @@
  */
 package org.apache.jackrabbit.vault.vlt;
 
+import java.io.IOException;
+
 /**
  * Validates remote and metadata names before the vlt CLI uses them as local file names.
  */
@@ -49,5 +51,45 @@ public class FileSystemNameValidator {
         }
         normalized = normalized.substring(0, end);
         return VltDirectory.META_DIR_NAME.equalsIgnoreCase(normalized);
+    }
+
+    /**
+     * Checks whether {@code name} is safe to bind to a single local file system path segment
+     * via {@code new File(dir, name)}, i.e. it addresses exactly one entry inside {@code dir}
+     * and cannot be used to escape it or to collide with the working copy's own control state.
+     * <p>
+     * A name is safe if it is non-empty, contains no path separator ({@code '/'} or
+     * {@code '\\'}) or drive-letter/stream separator ({@code ':'}), is not the special
+     * segment {@code "."} or {@code ".."}, and is not {@link #isVltControlName(String) the
+     * vlt control name}.
+     *
+     * @param name a file name read from untrusted metadata (e.g. working-copy control files).
+     * @return {@code true} if {@code name} is a single safe path segment.
+     */
+    public static boolean isSafeFileName(String name) {
+        if (name == null || name.isEmpty()) {
+            return false;
+        }
+        if (".".equals(name) || "..".equals(name)) {
+            return false;
+        }
+        if (name.indexOf('/') >= 0 || name.indexOf('\\') >= 0 || name.indexOf(':') >= 0) {
+            return false;
+        }
+        return !isVltControlName(name);
+    }
+
+    /**
+     * Rejects {@code name} if it is not {@link #isSafeFileName(String) a single safe path
+     * segment}, so that callers binding a meta file name to {@code new File(dir, name)} fail
+     * closed instead of silently escaping {@code dir}.
+     *
+     * @param name a file name read from untrusted metadata (e.g. working-copy control files).
+     * @throws IOException if {@code name} is not a single safe path segment.
+     */
+    public static void assertSafeFileName(String name) throws IOException {
+        if (!isSafeFileName(name)) {
+            throw new IOException("Illegal or unsafe meta file name: " + name);
+        }
     }
 }

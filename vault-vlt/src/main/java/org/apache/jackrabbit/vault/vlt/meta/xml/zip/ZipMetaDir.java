@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.jackrabbit.vault.util.Constants;
+import org.apache.jackrabbit.vault.vlt.FileSystemNameValidator;
 import org.apache.jackrabbit.vault.vlt.VltException;
 import org.apache.jackrabbit.vault.vlt.meta.MetaDirectory;
 import org.apache.jackrabbit.vault.vlt.meta.MetaFile;
@@ -136,10 +137,12 @@ public class ZipMetaDir implements MetaDirectory {
     }
 
     public MetaFile getTmpFile(String name, boolean create) throws IOException {
+        FileSystemNameValidator.assertSafeFileName(name);
         return getFile(TMP_DIR_NAME + "/" + name, create);
     }
 
     public MetaFile getBaseFile(String name, boolean create) throws IOException {
+        FileSystemNameValidator.assertSafeFileName(name);
         return getFile(BASE_DIR_NAME + "/" + name, create);
     }
 

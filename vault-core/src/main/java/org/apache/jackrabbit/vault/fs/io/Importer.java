@@ -816,7 +816,7 @@ public class Importer {
                 }
                 String repoName = PlatformNameFormat.getRepositoryName(fileName);
                 String repoPath = parentInfo.path + "/" + repoName;
-                if (repoName.endsWith(".dir")) {
+                if (fileName.endsWith(".dir")) {
                     // fix repo path
                     repoName = repoName.substring(0, repoName.length() - 4);
                     repoPath = parentInfo.path + "/" + repoName;
@@ -835,8 +835,8 @@ public class Importer {
                     // in this case, create a new info
                     info.artifacts.add(new InputSourceArtifact(
                             parent,
-                            Constants.DOT_CONTENT_XML,
                             "",
+                            Constants.DOT_CONTENT_XML,
                             ArtifactType.PRIMARY,
                             archive.getInputSource(contentXml),
                             SerializationType.XML_DOCVIEW));
@@ -869,16 +869,16 @@ public class Importer {
 
                 String repoBase = repoName;
                 String ext = "";
-                int idx = repoName.lastIndexOf('.');
+                int idx = fileName.lastIndexOf('.');
                 if (idx > 0) {
-                    repoBase = repoName.substring(0, idx);
-                    ext = repoName.substring(idx);
+                    repoBase = PlatformNameFormat.getRepositoryName(fileName.substring(0, idx));
+                    ext = fileName.substring(idx);
                 }
 
                 SerializationType serType = SerializationType.GENERIC;
                 ArtifactType type = ArtifactType.PRIMARY;
                 VaultInputSource is = archive.getInputSource(file);
-                if (".xml".equals(ext)) {
+                if (".xml".equals(ext) && !Constants.DOT_CONTENT_XML.equals(repoName)) {
                     // this can either be an generic exported docview or a 'user-xml' that is imported as file
                     // btw: this only works for input sources that can refetch their input stream
                     if (DocViewParser.isDocView(is)) {

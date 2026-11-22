@@ -123,7 +123,7 @@ public class TreeSync {
             e = new Entry(parentNode, file);
             e.jcrType = Type.MISSING;
         } else {
-            e = new Entry(parentNode, file.getParentFile(), node);
+            e = new Entry(parentNode, file, node);
             e.jcrType = getJcrType(node);
         }
         e.fsType = getFsType(file);
@@ -209,7 +209,7 @@ public class TreeSync {
         NodeIterator iter = node.getNodes();
         while (iter.hasNext()) {
             Node child = iter.nextNode();
-            Entry e = new Entry(node, dir, child);
+            Entry e = new Entry(node, new File(dir, PlatformNameFormat.getPlatformName(child.getName())), child);
             e.jcrType = getJcrType(child);
             e.fStat = getFilterStatus(e.getJcrPath());
             jcrEntries.put(e.jcrName, e);
@@ -219,7 +219,22 @@ public class TreeSync {
             for (File file : dir.listFiles(fileFilter)) {
                 Entry e = fsEntries.get(file.getName());
                 if (e == null) {
-                    e = new Entry(node, file);
+                    Entry existing = jcrEntries.get(PlatformNameFormat.getRepositoryName(file.getName()));
+                    if (existing == null) {
+                        e = new Entry(node, file);
+                    } else {
+                        if (existing.file.exists()) {
+                            log.warn(
+                                    "Skipping duplicate {} for {}. Use {} and remove the duplicate filename.",
+                                    file,
+                                    existing.getJcrPath(),
+                                    existing.file);
+                            continue;
+                        }
+                        // Retain the repository node when a checkout still uses its legacy filename.
+                        e = new Entry(node, file, existing.node);
+                        e.jcrType = existing.jcrType;
+                    }
                 }
                 e.fsType = getFsType(file);
                 e.fStat = getFilterStatus(e.getJcrPath());
@@ -470,11 +485,11 @@ public class TreeSync {
             this.jcrName = PlatformNameFormat.getRepositoryName(file.getName());
         }
 
-        private Entry(Node parentNode, File parentDir, Node node) throws RepositoryException {
+        private Entry(Node parentNode, File file, Node node) throws RepositoryException {
             this.parentNode = parentNode;
             this.node = node;
             this.jcrName = node.getName();
-            this.file = new File(parentDir, PlatformNameFormat.getPlatformName(jcrName));
+            this.file = file;
         }
 
         @Override

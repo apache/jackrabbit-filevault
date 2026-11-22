@@ -58,7 +58,7 @@ public class PlatformNameFormat {
 
     /**
      * Returns the platform name for a given repository name. Unsupported
-     * characters are URL escaped (i.e. %xx).
+     * characters and reserved serialization names are URL escaped (i.e. %xx).
      *
      * Note: Forward slashes '/' are not escaped since they never occur in a
      * jcr name. so this method can also be used to encode paths.
@@ -111,10 +111,21 @@ public class PlatformNameFormat {
             }
         }
         if (useUnderscore && numUnderscore > 1) {
-            return buf.toString();
+            return escapeReservedSuffix(buf.toString());
         } else {
-            return buf.substring(1);
+            return escapeReservedSuffix(buf.substring(1));
         }
+    }
+
+    private static String escapeReservedSuffix(String platformName) {
+        if (platformName.equals(Constants.DOT_CONTENT_XML)) {
+            return "%2e" + platformName.substring(1);
+        }
+        if (platformName.endsWith(".dir") || platformName.endsWith(".binary")) {
+            int dot = platformName.lastIndexOf('.');
+            return platformName.substring(0, dot) + "%2e" + platformName.substring(dot + 1);
+        }
+        return platformName;
     }
 
     /**

@@ -24,7 +24,22 @@ Install hooks are just Java classes which are called during package installation
 
 Install hooks must implement the interface [`org.apache.jackrabbit.vault.packaging.InstallHook`][api.InstallHook].
 
-Execution of install hooks is only allowed for certain users. Prior to FileVault 3.4.6 this was only possible for users `admin`, `system` or members of group `administrators`, in newer versions the allowed user ids are configurable via OSGi configuration with PID `org.apache.jackrabbit.vault.packaging.impl.PackagingImpl` ([JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427)). Installation of packages containing an install hook leads to a `PackageException`  for other non-allowed users.
+Restricting the use of install hooks
+------
+Packages with install hooks can be restricted by user or rejected entirely. These restrictions apply to both internal and external hooks. A rejected installation fails with a `PackageException`; hooks are not silently skipped.
+
+Configure the following properties on the service used for installation:
+
+* JCR package manager: PID `org.apache.jackrabbit.vault.packaging.impl.PackagingImpl`
+* File-system package registry: PID `org.apache.jackrabbit.vault.packaging.registry.impl.FSPackageRegistry`
+
+**Restrict by user (default):** Only `admin`, `system` and members of `administrators` may install packages containing hooks. Since FileVault 3.4.6, `authIdsForHookExecution` can allow additional authorizable IDs or principal names ([JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427)). An empty list does not revoke the built-in administrative permissions. Other users cannot install these packages, but may perform dry runs, which do not load package hooks.
+
+**Reject for all users:** Set the boolean property `rejectPackagesWithHooks` to `true` to reject packages containing hooks, including dry runs. This overrides the user-based permissions, including those of administrators. Rejection occurs before package hooks are loaded or package content is imported. The default is `false`.
+
+Packages without hooks are unaffected by these hook restrictions. Each package is checked when it is installed, including dependencies and subpackages; rejection does not roll back packages already installed as part of the same dependency or subpackage tree.
+
+Programmatic callers can enable the same policy with `new AbstractPackageRegistry.SecurityConfig(authIdsForHooks, authIdsForRoots, true)` and pass it to the package manager, registry or package extraction API that accepts a security configuration. The `VaultPackage.extract(Session, ImportOptions)` overload without a security configuration retains the default behavior.
 
 
 Internal Install Hooks

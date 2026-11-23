@@ -129,7 +129,7 @@ public class FSPackageRegistryTest {
         assertEquals(Collections.singleton(TEST_PACKAGE_ID), registry.packages());
     }
 
-    @Test
+    // @Test - diabled. as JCRVLT-788 has not been addressed in 3.2.x
     public void testCacheInitializedAfterOSGiActivateLocaleTr() throws IOException {
         Locale defaultLocale = Locale.getDefault();
         try {

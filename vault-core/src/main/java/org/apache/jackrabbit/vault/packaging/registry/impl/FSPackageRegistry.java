@@ -116,6 +116,14 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         return homeDir;
     }
 
+    private File checkHomeDir(File homeDir) throws IOException {
+        if (!homeDir.isDirectory()) {
+            throw new IOException("not a directory: " + homeDir);
+        } else {
+            return homeDir;
+        }
+    }
+
     /**
      * Creates a new FSPackageRegistry based on the given home directory.
      *
@@ -123,7 +131,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException If an I/O error occurs.
      */
     public FSPackageRegistry(@Nonnull File homeDir) throws IOException {
-        this.homeDir = homeDir;
+        this.homeDir = checkHomeDir(homeDir);
         loadPackageCache();
     }
 
@@ -147,14 +155,15 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     protected void activate(BundleContext context, Config config) throws IOException {
         String repoHome = context.getProperty(REPOSITORY_HOME);
         if (repoHome == null) {
-            this.homeDir = context.getDataFile(config.homePath());
+            this.homeDir = checkHomeDir(context.getDataFile(config.homePath()));
         } else {
-            this.homeDir = new File(config.homePath());
-            if (!this.homeDir.isAbsolute()) {
-                this.homeDir = new File(repoHome + "/" + config.homePath());
+            File candidate = new File(config.homePath());
+            if (!candidate.isAbsolute()) {
+                candidate = new File(repoHome, config.homePath());
             }
-            if (!homeDir.exists()) {
-                homeDir.mkdirs();
+            this.homeDir = checkHomeDir(candidate);
+            if (!this.homeDir.exists()) {
+                this.homeDir.mkdirs();
             }
         }
         loadPackageCache();

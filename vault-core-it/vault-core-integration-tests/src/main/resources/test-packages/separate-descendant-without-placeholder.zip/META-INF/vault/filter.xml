@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/testroot/a/b/content">
+        <exclude pattern="/testroot/a/b/content/excluded(/.*)?"/>
+    </filter>
+    <filter root="/testroot/a/b/removed"/>
+</workspaceFilter>

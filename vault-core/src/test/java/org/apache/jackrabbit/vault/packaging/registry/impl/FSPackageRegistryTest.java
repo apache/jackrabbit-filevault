@@ -53,6 +53,7 @@ import org.osgi.util.converter.Converters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -68,6 +69,7 @@ public class FSPackageRegistryTest {
 
     private void copyResourceStreamToFile(Path targetFile, String name) throws IOException {
         try (InputStream in = getClass().getResourceAsStream(name)) {
+            assertNotNull("resource " + name + " not present", in);
             Files.copy(in, targetFile, StandardCopyOption.REPLACE_EXISTING);
         }
     }

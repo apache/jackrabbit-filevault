@@ -24,8 +24,10 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -139,8 +141,10 @@ public class ZipStreamArchive extends AbstractArchive {
 
         try {
             ZipEntry entry;
+            Set<String> seenEntryNames = new HashSet<>();
             while ((entry = zin.getNextEntry()) != null) {
                 String name = entry.getName();
+                checkNotDuplicateEntry(seenEntryNames, name, entry.isDirectory(), "zip stream");
                 // check for meta inf
                 if (name.startsWith(Constants.META_DIR + "/")) {
                     try {
@@ -185,6 +189,10 @@ public class ZipStreamArchive extends AbstractArchive {
             if (inf.getNodeTypes().isEmpty()) {
                 log.debug("Zip stream does not contain nodetypes.");
             }
+        } catch (IOException e) {
+            close();
+            decompressed = null;
+            throw e;
         } finally {
             IOUtils.closeQuietly(zin);
         }

@@ -271,6 +271,21 @@ more examples:
 
 <sup>1</sup> this is a very rare case and justifies the ugly `%3a` escaping.
 
+Exports additionally escape repository names that overlap with serialization
+markers: `foo.dir` becomes `foo%2edir`, `foo.binary` becomes `foo%2ebinary`, and
+a node named exactly `.content.xml` becomes `%2econtent.xml`. Artifact extensions
+are appended after escaping, so a generated directory artifact for `foo.dir` is
+`foo%2edir.dir`. Imports recognize serialization markers before decoding names.
+Ordinary names, including `.xml` files and uppercase suffixes, keep their existing form.
+
+Existing packages retain their serialization-marker interpretation. New exports
+of nodes with these reserved names have different entry names, which may affect
+tools that compare package entries across versions. Existing sync checkouts keep
+using their local filenames when the repository node already exists. If both the
+legacy and escaped filenames are present, full synchronization uses the escaped
+filename and leaves the duplicate untouched; remove the duplicate to resolve the
+warning.
+
 Serialization
 -------------
 The serialization of the artifacts is defined by the =serializer= that is provided by the aggregator. Currently there are only 3 kind of serializations used: a direct data serialization for the contents of file or binary artifacts, a _CND_ serialized for `nt:nodeType` nodes and an enhanced _docview_ serialization for the rest. The _docview_ serialization that is used allows multi value properties (and might be enhanced by a better property type support).

@@ -46,6 +46,12 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.jackrabbit.vault</groupId>
+      <artifactId>vault-remote-repository</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.jackrabbit</groupId>
       <artifactId>jackrabbit-jcr-commons</artifactId>
       <scope>compile</scope>
@@ -70,7 +76,11 @@
       <artifactId>jackrabbit-spi2dav</artifactId>
       <scope>compile</scope>
     </dependency>
-
+    <dependency>
+      <groupId>biz.aQute.bnd</groupId>
+      <artifactId>biz.aQute.bnd.annotation</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <!-- add some dependencies of spi2davex -->
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
@@ -96,6 +106,11 @@
       <artifactId>slf4j-api</artifactId>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -115,5 +130,11 @@
         </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
 </project>

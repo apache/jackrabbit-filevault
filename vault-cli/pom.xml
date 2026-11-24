@@ -92,6 +92,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.jackrabbit.vault</groupId>
+      <artifactId>vault-remote-repository</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jackrabbit.vault</groupId>
       <artifactId>vault-sync</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>

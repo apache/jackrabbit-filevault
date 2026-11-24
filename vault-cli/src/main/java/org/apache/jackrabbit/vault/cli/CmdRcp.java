@@ -30,8 +30,9 @@ import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.filter.DefaultPathFilter;
+import org.apache.jackrabbit.vault.remoterepository.ConnectionOptions;
+import org.apache.jackrabbit.vault.remoterepository.RepositoryCopier;
 import org.apache.jackrabbit.vault.util.DefaultProgressListener;
-import org.apache.jackrabbit.vault.util.RepositoryCopier;
 
 /**
  * Implements the 'rcp' command.
@@ -68,7 +69,8 @@ public class CmdRcp extends AbstractVaultCommand {
         }
         srcFilter.add(excludes);
         rcp.setSourceFilter(srcFilter);
-        rcp.copy(src, dst, recursive);
+        // TODO: make connection options configurable
+        rcp.copy(src, ConnectionOptions.factory().build(), dst, ConnectionOptions.factory().build(), recursive);
     }
 
     /**

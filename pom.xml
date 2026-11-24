@@ -43,6 +43,7 @@
     <module>parent</module>
     <module>vault-core</module>
     <module>vault-core-it</module>
+    <module>vault-remote-repository</module>
     <module>vault-diff</module>
     <module>vault-rcp</module>
     <module>vault-davex</module>

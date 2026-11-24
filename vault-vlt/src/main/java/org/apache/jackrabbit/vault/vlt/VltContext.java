@@ -18,11 +18,6 @@
  */
 package org.apache.jackrabbit.vault.vlt;
 
-import javax.jcr.Credentials;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -32,7 +27,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.jackrabbit.spi2dav.ConnectionOptions;
+import javax.jcr.Credentials;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+
 import org.apache.jackrabbit.vault.fs.Mounter;
 import org.apache.jackrabbit.vault.fs.api.ImportMode;
 import org.apache.jackrabbit.vault.fs.api.PathFilter;
@@ -44,9 +43,10 @@ import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ExportRoot;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.remoterepository.ConnectionOptions;
+import org.apache.jackrabbit.vault.remoterepository.RepositoryProvider;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.PathUtil;
-import org.apache.jackrabbit.vault.util.RepositoryProvider;
 import org.apache.jackrabbit.vault.vlt.actions.Action;
 import org.apache.jackrabbit.vault.vlt.meta.Ignored;
 import org.apache.jackrabbit.vault.vlt.meta.MetaDirectory;
@@ -278,7 +278,7 @@ public class VltContext {
                     filter.setImportMode(ImportMode.REPLACE);
                 }
 
-                Repository rep = repProvider.getRepository(mountpoint);
+                Repository rep = repProvider.getRepository(mountpoint, ConnectionOptions.factory().build());
                 Credentials creds = credsProvider.getCredentials(mountpoint);
                 fs = Mounter.mount(config, filter, rep, creds, mountpoint, fsRoot);
                 // hack to store credentials

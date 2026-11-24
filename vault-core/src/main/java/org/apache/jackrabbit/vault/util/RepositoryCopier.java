@@ -51,7 +51,9 @@ import org.xml.sax.SAXException;
 
 /**
  * Repository Copier that copies content from a source to a destination repository.
+ * @deprecated Use {@link org.apache.jackrabbit.vault.remoterepository.RepositoryCopier} instead.
  */
+@Deprecated
 public class RepositoryCopier {
 
     /**

@@ -28,13 +28,18 @@ import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * {@code RepositoryProvider}...
+ * @deprecated Use {@link org.apache.jackrabbit.vault.remoterepository.spi.RepositoryFactory} instead.
  */
+@Deprecated(forRemoval = true, since = "4.4.0")
 @ProviderType
 public interface RepositoryFactory {
 
+    @Deprecated(forRemoval = true, since = "4.4.0")
     public Set<String> getSupportedSchemes();
 
+    @Deprecated(forRemoval = true, since = "4.4.0")
     public Repository createRepository(RepositoryAddress address) throws RepositoryException;
 
+    @Deprecated(forRemoval = true, since = "4.4.0")
     public Repository createRepository(RepositoryAddress address, ConnectionOptions options) throws RepositoryException;
 }

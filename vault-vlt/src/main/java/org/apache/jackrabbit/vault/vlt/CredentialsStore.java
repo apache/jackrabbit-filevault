@@ -21,7 +21,8 @@ package org.apache.jackrabbit.vault.vlt;
 import javax.jcr.Credentials;
 
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
-import org.apache.jackrabbit.vault.util.CredentialsProvider;
+import org.apache.jackrabbit.vault.remoterepository.CredentialsProvider;
+
 
 /**
  * {@code CredentialsProvider}...

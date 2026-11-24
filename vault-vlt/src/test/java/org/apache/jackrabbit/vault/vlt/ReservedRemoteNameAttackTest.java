@@ -18,7 +18,9 @@
  */
 package org.apache.jackrabbit.vault.vlt;
 
-import javax.jcr.Credentials;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -27,22 +29,20 @@ import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.jcr.Credentials;
+
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
 import org.apache.jackrabbit.vault.fs.api.Artifact;
 import org.apache.jackrabbit.vault.fs.api.DumpContext;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
-import org.apache.jackrabbit.vault.util.RepositoryProvider;
+import org.apache.jackrabbit.vault.remoterepository.RepositoryProvider;
 import org.apache.jackrabbit.vault.vlt.actions.Update;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A remote node named {@code .vlt} (or a case variant of it) must never be

@@ -30,15 +30,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * The repository address locates a jcr repository in with a URI representation.
- * It is composed out of a uri and accepts the following formats:
+ * The repository address locates a remote or local JCR repository.
+ * It is constructed from a {@link URI} and accepts one of the following formats:
  *
- * <ul>
- * <li> scheme://host:port/
- * <li> scheme://host:port/prefix
- * <li> scheme://host:port/prefix/workspace
- * <li> scheme://host:port/prefix/workspace/jcr_root/path
- * </ul>
+ * <ol>
+ * <li>{@code scheme://host:port/}</li>
+ * <li>{@code scheme://host:port/prefix}</li>
+ * <li>{@code scheme://host:port/prefix/workspace}</li>
+ * <li>{@code scheme://host:port/prefix/workspace/jcr_root/path}</li>
+ * <li>{@code workspace/jcr_root/path/to/node}</li>
+ * </ol>
+ *
+ * The last format is a relative repository address that is used when the repository object is locally available.
  */
 public class RepositoryAddress {
 

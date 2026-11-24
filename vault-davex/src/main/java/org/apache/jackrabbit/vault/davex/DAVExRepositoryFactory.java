@@ -18,49 +18,37 @@
  */
 package org.apache.jackrabbit.vault.davex;
 
-import javax.jcr.NamespaceException;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.jackrabbit.client.RepositoryFactoryImpl;
-import org.apache.jackrabbit.jcr2spi.Jcr2spiRepositoryFactory;
-import org.apache.jackrabbit.spi.Path;
-import org.apache.jackrabbit.spi.commons.conversion.PathResolver;
-import org.apache.jackrabbit.spi.commons.logging.WriterLogWriterProvider;
+import aQute.bnd.annotation.spi.ServiceProvider;
 import org.apache.jackrabbit.spi2dav.ConnectionOptions;
-import org.apache.jackrabbit.spi2davex.BatchReadConfig;
 import org.apache.jackrabbit.spi2davex.Spi2davexRepositoryServiceFactory;
 import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.RepositoryFactory;
 
 /**
- * {@code DAVExRepositoryFactory}...
+ * Implementation of the deprecated {@link org.apache.jackrabbit.vault.fs.api.RepositoryFactory} that uses the SPI2DAVEX implementation to create a repository instance for a given repository address.
+ * @deprecated Use {@link Spi2davexRepositoryServiceFactory} instead.
  */
+@Deprecated(forRemoval = true, since = "4.4.0")
+@ServiceProvider(RepositoryFactory.class)
 public class DAVExRepositoryFactory implements RepositoryFactory {
 
     /**
      * Name of the system property that controls the default depth for retrieving
      * nodes via spi2davex
      */
-    public static final String PARAM_JCR_REMOTING_DEPTH = "jcr.remoting.depth";
+    public static final String PARAM_JCR_REMOTING_DEPTH = Spi2DavExRepositoryFactory.PARAM_JCR_REMOTING_DEPTH;
 
     /**
      * Name of the system property that controls the spi log.
      */
-    public static final String PARAM_JCR_REMOTING_SPILOG = "jcr.remoting.spilog";
+    public static final String PARAM_JCR_REMOTING_SPILOG = Spi2DavExRepositoryFactory.PARAM_JCR_REMOTING_SPILOG;
 
     private static final Set<String> SCHEMES = new HashSet<String>();
 
@@ -78,84 +66,13 @@ public class DAVExRepositoryFactory implements RepositoryFactory {
         return createRepository(address, null);
     }
 
-    public Repository createRepository(RepositoryAddress address, ConnectionOptions connectionOptions)
+    @Override
+    public Repository createRepository(RepositoryAddress address, ConnectionOptions options)
             throws RepositoryException {
-        if (!SCHEMES.contains(address.getSpecificURI().getScheme())) {
-            return null;
-        }
-        try {
-            // get uri without credentials
-            URI uri = address.getSpecificURI();
-            if (uri.getUserInfo() != null) {
-                try {
-                    uri = new URI(
-                            uri.getScheme(),
-                            null,
-                            uri.getHost(),
-                            uri.getPort(),
-                            uri.getPath(),
-                            uri.getQuery(),
-                            uri.getFragment());
-                } catch (URISyntaxException e) {
-                    // ignore
-                }
-            }
-            Map<String, Object> parameters = new HashMap<String, Object>();
-            parameters.put(
-                    Jcr2spiRepositoryFactory.PARAM_REPOSITORY_SERVICE_FACTORY,
-                    Spi2davexRepositoryServiceFactory.class.getName());
-            parameters.put(
-                    Jcr2spiRepositoryFactory.PARAM_ITEM_CACHE_SIZE, Integer.getInteger(PARAM_JCR_REMOTING_DEPTH, 128));
-            parameters.put(Spi2davexRepositoryServiceFactory.PARAM_REPOSITORY_URI, uri.toString());
-            DefaultBatchReadConfig br = new DefaultBatchReadConfig();
-            br.setDefaultDepth(Integer.getInteger(PARAM_JCR_REMOTING_DEPTH, 4));
-            br.setDepth("/", 2);
-            br.setDepth("/jcr:system", 1);
-            parameters.put(Spi2davexRepositoryServiceFactory.PARAM_BATCHREAD_CONFIG, br);
-            String file = System.getProperty(PARAM_JCR_REMOTING_SPILOG);
-            if (file != null) {
-                WriterLogWriterProvider provider = new WriterLogWriterProvider(
-                        new OutputStreamWriter(FileUtils.openOutputStream(new File(file)), StandardCharsets.UTF_8));
-                parameters.put(Jcr2spiRepositoryFactory.PARAM_LOG_WRITER_PROVIDER, provider);
-            }
-
-            String workspace = address.getWorkspace();
-            if (workspace != null) {
-                parameters.put(Spi2davexRepositoryServiceFactory.PARAM_WORKSPACE_NAME_DEFAULT, workspace);
-            }
-            if (connectionOptions != null) {
-                parameters.putAll(connectionOptions.toServiceFactoryParameters());
-            }
-            System.out.printf(
-                    Locale.ENGLISH,
-                    "Connecting via JCR remoting to %s%n",
-                    address.getSpecificURI().toString());
-            return new RepositoryFactoryImpl().getRepository(parameters);
-        } catch (IOException e) {
-            throw new RepositoryException(e);
-        }
-    }
-}
-
-class DefaultBatchReadConfig implements BatchReadConfig {
-
-    public static final int DEPTH_INFINITE = -1;
-
-    private final Map<String, Integer> depthMap = new HashMap<String, Integer>();
-
-    private int defaultDepth = 0;
-
-    public int getDepth(Path path, PathResolver resolver) throws NamespaceException {
-        String jcrPath = resolver.getJCRPath(path);
-        Integer depth = depthMap.get(jcrPath);
-        return depth == null ? defaultDepth : depth;
-    }
-
-    public void setDepth(String path, int depth) {
-        depthMap.put(path, depth);
-    }
-
-    public void setDefaultDepth(int defaultDepth) {
-        this.defaultDepth = defaultDepth;
+        System.out.printf(
+                Locale.ENGLISH,
+                "Connecting via JCR remoting to %s%n",
+                address.getSpecificURI().toString());
+        return Spi2DavExRepositoryFactory.createRepository(address, options);
     }
 }

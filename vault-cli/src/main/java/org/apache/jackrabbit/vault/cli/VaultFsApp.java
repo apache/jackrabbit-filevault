@@ -18,18 +18,18 @@
  */
 package org.apache.jackrabbit.vault.cli;
 
-import javax.jcr.Credentials;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.jcr.Credentials;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
 
 import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.Option;
@@ -42,7 +42,6 @@ import org.apache.jackrabbit.vault.cli.extended.XDavEx;
 import org.apache.jackrabbit.vault.cli.extended.XJcrLog;
 import org.apache.jackrabbit.vault.fs.Mounter;
 import org.apache.jackrabbit.vault.fs.api.Aggregate;
-import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 import org.apache.jackrabbit.vault.fs.api.VaultFile;
 import org.apache.jackrabbit.vault.fs.api.VaultFileSystem;
 import org.apache.jackrabbit.vault.fs.api.VaultFsConfig;
@@ -51,7 +50,7 @@ import org.apache.jackrabbit.vault.fs.config.AbstractVaultFsConfig;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.config.ExportRoot;
 import org.apache.jackrabbit.vault.fs.config.MetaInf;
-import org.apache.jackrabbit.vault.util.RepositoryProvider;
+import org.apache.jackrabbit.vault.remoterepository.RepositoryProvider;
 import org.apache.jackrabbit.vault.util.console.AbstractApplication;
 import org.apache.jackrabbit.vault.util.console.Console;
 import org.apache.jackrabbit.vault.util.console.ExecutionContext;

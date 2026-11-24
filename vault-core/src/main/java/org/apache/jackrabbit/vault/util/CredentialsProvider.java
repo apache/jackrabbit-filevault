@@ -24,7 +24,9 @@ import org.apache.jackrabbit.vault.fs.api.RepositoryAddress;
 
 /**
  * {@code CredentialsProvider}...
+ * @deprecated Use {@link org.apache.jackrabbit.vault.remoterepository.CredentialsProvider} instead.
  */
+@Deprecated(forRemoval = true, since = "4.4.0")
 public interface CredentialsProvider {
 
     Credentials getCredentials(RepositoryAddress mountpoint);

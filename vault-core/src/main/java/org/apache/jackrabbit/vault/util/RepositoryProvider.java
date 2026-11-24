@@ -38,8 +38,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * {@code RepositoryProvider}...
- *
+ * @deprecated Use {@link org.apache.jackrabbit.vault.remoterepository.RepositoryProvider} instead.
  */
+@Deprecated(forRemoval = true, since = "4.4.0")
 public class RepositoryProvider {
 
     protected static Logger log = LoggerFactory.getLogger(RepositoryProvider.class);
@@ -91,6 +92,9 @@ public class RepositoryProvider {
 
     private Repository wrapLogger(Repository base, RepositoryAddress address) {
         try {
+
+            // from
+            // https://svn.apache.org/repos/asf/jackrabbit/sandbox/jcrlog/src/main/java/org/apache/jackrabbit/jcrlog/RepositoryLogger.java
             Class clazz = getClass().getClassLoader().loadClass("org.apache.jackrabbit.jcrlog.RepositoryLogger");
             // just map all properties
             Properties props = new Properties();

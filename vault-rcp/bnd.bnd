@@ -20,6 +20,7 @@
                   @jackrabbit-jcr-client-*.jar,\
                   @jackrabbit-jcr2spi-*.jar,\
                   @jackrabbit-spi2dav-*.jar,\
+                  @vault-remote-repository-*.jar,\
                   @vault-davex-*.jar,\
                   @oak-jackrabbit-api-*.jar,\
                   @org.apache.jackrabbit.vault-*.jar!/org/apache/jackrabbit/vault/packaging/impl/AdminPermissionChecker*.class

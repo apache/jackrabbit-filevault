@@ -18,30 +18,46 @@
  */
 package org.apache.jackrabbit.vault.packaging.integration;
 
+import javax.jcr.Binary;
 import javax.jcr.Node;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.jackrabbit.vault.packaging.Dependency;
+import org.apache.jackrabbit.vault.packaging.JcrPackage;
+import org.apache.jackrabbit.vault.packaging.JcrPackageDefinition;
 import org.apache.jackrabbit.vault.packaging.NoSuchPackageException;
 import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageExistsException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.apache.jackrabbit.vault.packaging.VaultPackageBinaryLocation;
+import org.apache.jackrabbit.vault.packaging.impl.ZipVaultPackage;
 import org.apache.jackrabbit.vault.packaging.registry.DependencyReport;
-import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
 import org.apache.jackrabbit.vault.packaging.registry.impl.JcrPackageRegistry;
-import org.apache.jackrabbit.vault.packaging.registry.impl.JcrRegisteredPackage;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -80,6 +96,218 @@ public class PackageRegistryIT extends IntegrationTestBase {
         try (RegisteredPackage pkg = registry.open(id)) {
             assertEquals("package id of registered is correct", TMP_PACKAGE_ID, pkg.getId());
             assertFalse("Package is not installed", pkg.isInstalled());
+        }
+    }
+
+    @Test
+    public void testUploadRegistersSubpackagesRecursively() throws Exception {
+        PackageId outerId = new PackageId("my_packages", "outer", "1.0");
+        PackageId middleId = new PackageId("my_packages", "middle", "1.0");
+        byte[] leaf;
+        try (InputStream input = getStream("/test-packages/tmp.zip")) {
+            leaf = input.readAllBytes();
+        }
+        byte[] middle = createContainerPackage(middleId, leaf);
+        byte[] outer = createContainerPackage(outerId, middle);
+
+        for (boolean replace : new boolean[] {false, true}) {
+            try (JcrPackage uploaded = registry.upload(new ByteArrayInputStream(outer), replace)) {
+                assertEquals(outerId, uploaded.getDefinition().getId());
+            }
+            assertRegisteredPackage(outerId, outer);
+            assertReferencedPackage(middleId, outerId, middle.length);
+            assertReferencedPackage(TMP_PACKAGE_ID, middleId, leaf.length);
+        }
+        assertNodeMissing("/tmp");
+    }
+
+    @Test
+    public void testUploadFilePreservesAndTraversesStoredSubpackages() throws Exception {
+        PackageId outerId = new PackageId("my_packages", "outer", "1.0");
+        PackageId middleId = new PackageId("my_packages", "middle", "1.0");
+        byte[] leaf;
+        try (InputStream input = getStream("/test-packages/tmp.zip")) {
+            leaf = input.readAllBytes();
+        }
+        byte[] existingMiddle = createContainerPackage(middleId, leaf);
+        String middleNodeId;
+        try (JcrPackage existing = registry.upload(new ByteArrayInputStream(existingMiddle), false)) {
+            middleNodeId = existing.getNode().getIdentifier();
+            existing.getDefinition().set(JcrPackageDefinition.PN_DESCRIPTION, "retained", true);
+        }
+        registry.remove(TMP_PACKAGE_ID);
+        byte[] outer = createContainerPackage(outerId, createContainerPackage(middleId, null));
+        File file = tempFolder.newFile();
+        Files.write(file.toPath(), outer);
+
+        for (boolean replace : new boolean[] {false, true}) {
+            try (ZipVaultPackage source = new ZipVaultPackage(file, false, true);
+                    JcrPackage uploaded = registry.upload(source, replace)) {
+                assertEquals(outerId, uploaded.getDefinition().getId());
+            }
+            assertRegisteredPackage(middleId, existingMiddle);
+            assertReferencedPackage(TMP_PACKAGE_ID, middleId, leaf.length);
+            try (JcrPackage existing = registry.openJcrPackage(middleId)) {
+                assertEquals(middleNodeId, existing.getNode().getIdentifier());
+                assertEquals("retained", existing.getDefinition().getDescription());
+            }
+            registry.remove(TMP_PACKAGE_ID);
+        }
+    }
+
+    @Test
+    public void testReferencedPackageCanBeInstalledDirectly() throws Exception {
+        PackageId outerId = new PackageId("my_packages", "outer", "1.0");
+        byte[] leaf;
+        try (InputStream input = getStream("/test-packages/tmp.zip")) {
+            leaf = input.readAllBytes();
+        }
+        registry.register(new ByteArrayInputStream(createContainerPackage(outerId, leaf)), false);
+        try (JcrPackage subPackage = registry.openJcrPackage(TMP_PACKAGE_ID)) {
+            subPackage.install(getDefaultOptions());
+            assertNull(subPackage.getData());
+            assertTrue(subPackage.isInstalled());
+            assertNodeExists("/tmp");
+            subPackage.uninstall(getDefaultOptions());
+            assertNodeMissing("/tmp");
+        }
+    }
+
+    @Test
+    public void testReferencedPackageCanBeRewrapped() throws Exception {
+        PackageId outerId = new PackageId("my_packages", "outer", "1.0");
+        byte[] leaf;
+        try (InputStream input = getStream("/test-packages/tmp.zip")) {
+            leaf = input.readAllBytes();
+        }
+        registry.register(new ByteArrayInputStream(createContainerPackage(outerId, leaf)), false);
+        try (JcrPackage subPackage = registry.openJcrPackage(TMP_PACKAGE_ID)) {
+            assertNull(subPackage.getData());
+            subPackage.getDefinition().set(JcrPackageDefinition.PN_DESCRIPTION, "rewrapped", true);
+            packMgr.rewrap(subPackage, null);
+        }
+        try (JcrPackage subPackage = registry.openJcrPackage(TMP_PACKAGE_ID)) {
+            assertNotNull(subPackage.getData());
+            assertEquals(VaultPackageBinaryLocation.LOCAL_BINARY, subPackage.getArchiveLocationType());
+            assertFalse(subPackage.getDefNode().hasProperty(JcrPackageDefinition.PN_CONTAINER));
+            assertEquals("rewrapped", subPackage.getPackage().getProperties().getDescription());
+        }
+    }
+
+    @Test
+    public void testDanglingContainerReferenceFailsButCanBeRemoved() throws Exception {
+        PackageId outerId = new PackageId("my_packages", "outer", "1.0");
+        byte[] leaf;
+        try (InputStream input = getStream("/test-packages/tmp.zip")) {
+            leaf = input.readAllBytes();
+        }
+        registry.register(new ByteArrayInputStream(createContainerPackage(outerId, leaf)), false);
+        registry.remove(outerId);
+        try (JcrPackage subPackage = registry.openJcrPackage(TMP_PACKAGE_ID)) {
+            assertThrows(RepositoryException.class, subPackage::getPackage);
+        }
+        registry.remove(TMP_PACKAGE_ID);
+        assertFalse(registry.contains(TMP_PACKAGE_ID));
+    }
+
+    @Test
+    public void testReplacingContainerCannotLoseReferencedEntries() throws Exception {
+        PackageId outerId = new PackageId("my_packages", "outer", "1.0");
+        byte[] leaf;
+        try (InputStream input = getStream("/test-packages/tmp.zip")) {
+            leaf = input.readAllBytes();
+        }
+        registry.register(new ByteArrayInputStream(createContainerPackage(outerId, leaf)), false);
+        byte[] replacement = createContainerPackage(outerId, null);
+        assertThrows(IOException.class, () -> registry.register(new ByteArrayInputStream(replacement), true));
+        assertReferencedPackage(TMP_PACKAGE_ID, outerId, leaf.length);
+    }
+
+    @Test
+    public void testCyclicContainerReferenceFails() throws Exception {
+        PackageId outerId = new PackageId("my_packages", "outer", "1.0");
+        byte[] leaf;
+        try (InputStream input = getStream("/test-packages/tmp.zip")) {
+            leaf = input.readAllBytes();
+        }
+        registry.register(new ByteArrayInputStream(createContainerPackage(outerId, leaf)), false);
+        try (JcrPackage subPackage = registry.openJcrPackage(TMP_PACKAGE_ID)) {
+            Node node = subPackage.getNode();
+            node.addMixin("mix:referenceable");
+            subPackage
+                    .getDefNode()
+                    .setProperty(
+                            JcrPackageDefinition.PN_CONTAINER,
+                            admin.getValueFactory().createValue(node, true));
+            admin.save();
+            IOException exception = assertThrows(IOException.class, subPackage::getPackage);
+            assertTrue(exception.getMessage().contains("Cyclic package container reference"));
+        }
+    }
+
+    private byte[] createContainerPackage(PackageId id, byte[] subPackage) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(output)) {
+            zip.putNextEntry(new ZipEntry("META-INF/vault/properties.xml"));
+            Properties properties = new Properties();
+            properties.setProperty(PackageProperties.NAME_GROUP, id.getGroup());
+            properties.setProperty(PackageProperties.NAME_NAME, id.getName());
+            properties.setProperty(PackageProperties.NAME_VERSION, id.getVersionString());
+            properties.storeToXML(zip, null);
+            zip.closeEntry();
+            zip.putNextEntry(new ZipEntry("META-INF/vault/filter.xml"));
+            zip.write(("<workspaceFilter version=\"1.0\"><filter root=\"/etc/packages\"/></workspaceFilter>")
+                    .getBytes(StandardCharsets.UTF_8));
+            zip.closeEntry();
+            zip.putNextEntry(new ZipEntry("jcr_root/"));
+            zip.closeEntry();
+            if (subPackage != null) {
+                zip.putNextEntry(new ZipEntry("jcr_root/etc/packages/group/nested.jar"));
+                zip.write(subPackage);
+                zip.closeEntry();
+            }
+        }
+        return output.toByteArray();
+    }
+
+    private void assertRegisteredPackage(PackageId id, byte[] expectedData) throws Exception {
+        try (JcrPackage registered = registry.openJcrPackage(id)) {
+            assertNotNull(registered);
+            assertEquals(id, registered.getDefinition().getId());
+            assertEquals(id, registered.getPackage().getId());
+            assertFalse(registered.isInstalled());
+            Binary binary = registered.getData().getBinary();
+            try (InputStream input = binary.getStream()) {
+                assertArrayEquals(expectedData, input.readAllBytes());
+            } finally {
+                binary.dispose();
+            }
+        }
+    }
+
+    private void assertReferencedPackage(PackageId id, PackageId containerId, long size) throws Exception {
+        try (JcrPackage registered = registry.openJcrPackage(id);
+                JcrPackage container = registry.openJcrPackage(containerId)) {
+            assertNotNull(registered);
+            assertNull(registered.getData());
+            assertEquals(VaultPackageBinaryLocation.CONTAINER_ENTRY, registered.getArchiveLocationType());
+            assertEquals(size, registered.getSize());
+            assertFalse(registered.isEmpty());
+            assertFalse(registered.isInstalled());
+            Node definition = registered.getDefNode();
+            assertEquals(
+                    PropertyType.WEAKREFERENCE,
+                    definition.getProperty(JcrPackageDefinition.PN_CONTAINER).getType());
+            assertTrue(definition
+                    .getProperty(JcrPackageDefinition.PN_CONTAINER)
+                    .getNode()
+                    .isSame(container.getNode()));
+            assertEquals(
+                    "/jcr_root/etc/packages/group/nested.jar",
+                    definition
+                            .getProperty(JcrPackageDefinition.PN_CONTAINER_ENTRY)
+                            .getString());
+            assertEquals(id, registered.getPackage().getId());
         }
     }
 
@@ -184,13 +412,13 @@ public class PackageRegistryIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testRemovePackageCallsClose() throws IOException, PackageException {
+    public void testRemovePackageCallsClose() throws IOException, PackageException, RepositoryException {
         PackageId id = registry.register(getStream("/test-packages/tmp.zip"), false);
         assertEquals("package id", TMP_PACKAGE_ID, id);
 
-        PackageRegistry testReg = Mockito.spy(registry);
-        JcrRegisteredPackage pack = Mockito.spy((JcrRegisteredPackage) registry.open(TMP_PACKAGE_ID));
-        Mockito.doReturn(pack).when(testReg).open(TMP_PACKAGE_ID);
+        JcrPackageRegistry testReg = Mockito.spy(registry);
+        JcrPackage pack = Mockito.spy(registry.openJcrPackage(TMP_PACKAGE_ID));
+        Mockito.doReturn(pack).when(testReg).openJcrPackage(TMP_PACKAGE_ID);
         testReg.remove(id);
 
         Mockito.verify(pack, Mockito.times(1)).close();

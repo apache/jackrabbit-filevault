@@ -418,6 +418,14 @@ public class JcrPackageDefinitionImpl implements JcrPackageDefinition {
         }
     }
 
+    void clearContainerReference() throws RepositoryException {
+        for (String property : new String[] {PN_CONTAINER, PN_CONTAINER_ENTRY, PN_SIZE}) {
+            if (defNode.hasProperty(property)) {
+                defNode.getProperty(property).remove();
+            }
+        }
+    }
+
     /**
      * {@inheritDoc}
      */

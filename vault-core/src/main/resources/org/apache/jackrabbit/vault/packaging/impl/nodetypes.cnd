@@ -55,6 +55,9 @@
   - lastUnpacked (Date)
   - lastUnpackedBy (String)
   - dependencies (String) multiple
+  - container (WeakReference)
+  - containerEntry (String)
+  - size (Long)
   - jcr:created (Date)
   - jcr:createdBy (String)
   - jcr:lastModified (Date)

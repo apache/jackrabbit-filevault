@@ -21,8 +21,10 @@ package org.apache.jackrabbit.vault.fs.io;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -35,6 +37,8 @@ import java.util.Properties;
 import java.util.TimeZone;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.jackrabbit.vault.fs.api.PathMapping;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
@@ -65,6 +69,8 @@ public class ArchiveTest {
     @ClassRule
     public static TemporaryFolder tempFolder = new TemporaryFolder();
 
+    private static File containerFile;
+
     @Parameters(name = "{2}")
     public static Iterable<? extends Object[]> data() throws URISyntaxException, IOException {
         Path zipPath = Paths.get(ArchiveTest.class
@@ -73,6 +79,16 @@ public class ArchiveTest {
         Supplier<Archive> zsaSupplier = () ->
                 new ZipStreamArchive(ArchiveTest.class.getResourceAsStream("/test-packages/atomic-counter-test.zip"));
         Supplier<Archive> zaSupplier = () -> new ZipArchive(zipPath.toFile());
+        Supplier<Archive> nestedSupplier = () -> {
+            ZipArchive container = new ZipArchive(containerFile);
+            return new NestedZipArchive(container, "nested.zip") {
+                @Override
+                public void close() {
+                    super.close();
+                    container.close();
+                }
+            };
+        };
         Supplier<Archive> znaSupplier = () -> new ZipNioArchive(zipPath);
         Supplier<Archive> faSupplier = () -> {
             try {
@@ -103,6 +119,7 @@ public class ArchiveTest {
         return Arrays.asList(new Object[][] {
             {zsaSupplier, true, "ZipStreamArchive"},
             {zaSupplier, true, "ZipArchive"},
+            {nestedSupplier, true, "NestedZipArchive"},
             {znaSupplier, true, "ZipNioArchive"},
             {memArchiveSupplier, false, "MemoryArchive"},
             {faSupplier, false, "FileArchive"},
@@ -119,8 +136,16 @@ public class ArchiveTest {
     private Archive archive;
 
     @BeforeClass
-    public static void setUpOnce() {
+    public static void setUpOnce() throws IOException {
         System.setProperty(AbstractArchive.PROPERTY_ENABLE_STACK_TRACES, "false");
+        containerFile = tempFolder.newFile();
+        try (OutputStream output = Files.newOutputStream(containerFile.toPath());
+                ZipOutputStream zip = new ZipOutputStream(output);
+                InputStream input = ArchiveTest.class.getResourceAsStream("/test-packages/atomic-counter-test.zip")) {
+            zip.putNextEntry(new ZipEntry("nested.zip"));
+            input.transferTo(zip);
+            zip.closeEntry();
+        }
     }
 
     public ArchiveTest(Supplier<Archive> archiveSupplier, boolean hasCloseWatcher, String name) {

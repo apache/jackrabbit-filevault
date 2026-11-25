@@ -372,6 +372,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
             // stay jcr 1.0 compatible
             //noinspection deprecation
             contentNode.setProperty(JcrConstants.JCR_DATA, in);
+            def.clearContainerReference();
             contentNode.setProperty(JcrConstants.JCR_LASTMODIFIED, now);
             contentNode.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
             packNode.getSession().save();
@@ -451,6 +452,7 @@ public class JcrPackageManagerImpl extends PackageManagerImpl implements JcrPack
                 // stay jcr 1.0 compatible
                 //noinspection deprecation
                 contentNode.setProperty(JcrConstants.JCR_DATA, in);
+                def.clearContainerReference();
                 contentNode.setProperty(JcrConstants.JCR_LASTMODIFIED, now);
                 contentNode.setProperty(JcrConstants.JCR_MIMETYPE, JcrPackage.MIME_TYPE);
                 packNode.getSession().save();

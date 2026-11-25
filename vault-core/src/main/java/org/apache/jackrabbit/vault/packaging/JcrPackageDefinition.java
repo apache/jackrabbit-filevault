@@ -128,6 +128,21 @@ public interface JcrPackageDefinition extends PackageProperties {
     String PN_SUB_PACKAGES = "subPackages";
 
     /**
+     * Property name of a weak reference to the immediate container package node for a package without its own binary (i.e. a sub package)
+     */
+    String PN_CONTAINER = "container";
+
+    /**
+     * Property name of the entry path of the container's archive within the immediate container archive.
+     */
+    String PN_CONTAINER_ENTRY = "containerEntry";
+
+    /**
+     * Property name of the size in bytes of the referenced package ZIP entry.
+     */
+    String PN_SIZE = "size";
+
+    /**
      * Property name of the last unwrapped date
      */
     String PN_LAST_UNWRAPPED = "lastUnwrapped";

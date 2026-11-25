@@ -86,7 +86,7 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
     boolean isSealed();
 
     /**
-     * Returns the vault package stored in the data of this package.
+     * Returns the vault package stored in this package's binary or referenced container entry.
      * Opens the package implicitly therefore {@link #close()} needs to be afterwards.
      * This is potentially a costly operation as this requires uncompressing the ZIP stream
      * (and potentially creating temporary files) therefore prefer using {@link #getDefinition()} whenever possible
@@ -257,8 +257,9 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
     void close();
 
     /**
-     * Returns the jcr:data property of the package
-     * @return the jcr:data property
+     * Returns the jcr:data property of the package.
+     * Packages backed by a container entry do not have their own binary.
+     * @return the jcr:data property or {@code null} if this package has no binary
      * @throws RepositoryException if an error occurrs
      */
     @Nullable
@@ -271,4 +272,15 @@ public interface JcrPackage extends Comparable<JcrPackage>, AutoCloseable {
      */
     @Nullable
     Node getDefNode() throws RepositoryException;
+
+    /**
+     * Returns where the ZIP binary of this package is located.
+     * @return {@link VaultPackageBinaryLocation#LOCAL_BINARY} if the package has its own binary (see {@link #getData()}),
+     *         {@link VaultPackageBinaryLocation#CONTAINER_ENTRY} if it is an entry in the ZIP of a different container package
+     *         or {@link VaultPackageBinaryLocation#UNAVAILABLE} if no binary is available (e.g. the package was installed through some other way).
+     * @throws RepositoryException if an error occurs
+     * @since 2.17
+     */
+    @NotNull
+    VaultPackageBinaryLocation getArchiveLocationType() throws RepositoryException;
 }

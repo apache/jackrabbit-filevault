@@ -56,6 +56,7 @@ import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ImportOptions;
 import org.apache.jackrabbit.vault.fs.io.MemoryArchive;
+import org.apache.jackrabbit.vault.fs.io.NestedZipArchive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
 import org.apache.jackrabbit.vault.fs.spi.NodeTypeSet;
 import org.apache.jackrabbit.vault.packaging.CyclicDependencyException;
@@ -71,6 +72,7 @@ import org.apache.jackrabbit.vault.packaging.PackageException;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.SubPackageHandling;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.VaultPackageBinaryLocation;
 import org.apache.jackrabbit.vault.packaging.Version;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.registry.RegisteredPackage;
@@ -289,61 +291,141 @@ public class JcrPackageImpl implements JcrPackage {
      */
     @NotNull
     protected VaultPackage getPackage(boolean forceFileArchive) throws RepositoryException, IOException {
+        return getPackage(forceFileArchive, new HashSet<>());
+    }
+
+    /**
+     * Creates a new package by creating the appropriate archive.
+     *
+     * This is basically a workaround to ensure that 'rewrap' has a zip file to work on.
+     * Ideally rewrap should not rely on the archive format.
+     *
+     * @param forceFileArchive if {@code true} a file archive is enforced
+     * @param containers the set of container package node identifiers to detect cyclic references
+     * @return the package
+     *
+     * @throws RepositoryException If a repository error occurs.
+     * @throws IOException if an i/o error occurs.
+     */
+    @NotNull
+    private VaultPackage getPackage(boolean forceFileArchive, @NotNull Set<String> containers)
+            throws RepositoryException, IOException {
         if (forceFileArchive && pack != null && !(pack.getArchive() instanceof ZipArchive)) {
             pack.close();
             pack = null;
         }
 
         if (pack == null) {
-            long size = -1;
-            try {
-                Property data = getData();
-                size = data == null ? -1 : data.getLength();
-            } catch (RepositoryException e) {
-                // ignore
+            Property data = getData();
+            if (data == null) {
+                pack = getPackageFromContainer(forceFileArchive, containers);
+                return pack;
             }
+            long size = data.getLength();
             if (!forceFileArchive && size >= 0 && size < MAX_MEMORY_ARCHIVE_SIZE) {
                 MemoryArchive archive = new MemoryArchive(false);
                 try (InputStream in = getData().getBinary().getStream()) {
                     archive.run(in);
                     // workaround for shallow packages that don't have a meta-inf anymore (JCRVLT-188)
-                    Properties props = archive.getMetaInf().getProperties();
-                    if (props == null || props.isEmpty()) {
-                        JcrPackageDefinition def = getDefinition();
-                        if (def != null) {
-                            ((DefaultMetaInf) archive.getMetaInf())
-                                    .setProperties(def.getMetaInf().getProperties());
-                        }
-                    }
+                    restoreShallowProperties(archive);
                     pack = new ZipVaultPackage(archive, true);
                 } catch (Exception e) {
                     archive.close();
                     throw new IOException("Error while reading stream", e);
                 }
             } else {
-                File tmpFile = File.createTempFile("vaultpack", ".zip");
-                try {
-                    // used as last resort, usually tmpFile is deleted via ZipVaultPackage.close() or the enclosed
-                    // CloseWatcher
-                    tmpFile.deleteOnExit();
-                    Binary bin = getData().getBinary();
-                    try (FileOutputStream out = FileUtils.openOutputStream(tmpFile);
-                            InputStream in = bin.getStream()) {
-                        IOUtils.copy(in, out);
-                    } finally {
-                        bin.dispose();
-                    }
-                    pack = new ZipVaultPackage(tmpFile, true);
-                } catch (IOException e) {
-                    tmpFile.delete();
-                    throw e;
-                } catch (RepositoryException e) {
-                    tmpFile.delete();
-                    throw e;
+                Binary bin = data.getBinary();
+                try (InputStream input = bin.getStream()) {
+                    pack = createFilePackage(input);
+                } finally {
+                    bin.dispose();
                 }
             }
         }
         return pack;
+    }
+
+    /**
+     * Creates a new package by creating the appropriate archive from the container package.
+     *
+     * @param forceFileArchive if {@code true} a file archive is enforced otherwise it will act on top of the underlying archive
+     * @param containers the set of container package node identifiers to detect cyclic references
+     * @return
+     * @throws RepositoryException when the current package is closed or does not have a container reference
+     * @throws IOException
+     */
+    private ZipVaultPackage getPackageFromContainer(boolean forceFileArchive, Set<String> containers)
+            throws RepositoryException, IOException {
+        if (node == null) {
+            throw new RepositoryException("Package is closed.");
+        }
+        if (!containers.add(node.getIdentifier())) {
+            throw new IOException("Cyclic package container reference at " + node.getPath());
+        }
+        Node definition = getDefNode();
+        if (definition == null
+                || !definition.hasProperty(JcrPackageDefinition.PN_CONTAINER)
+                || !definition.hasProperty(JcrPackageDefinition.PN_CONTAINER_ENTRY)) {
+            throw new RepositoryException("Package has no container reference: " + node.getPath());
+        }
+        Node containerNode =
+                definition.getProperty(JcrPackageDefinition.PN_CONTAINER).getNode();
+        String path =
+                definition.getProperty(JcrPackageDefinition.PN_CONTAINER_ENTRY).getString();
+        try (JcrPackageImpl containerPackage = new JcrPackageImpl(mgr, containerNode)) {
+            if (!containerPackage.isValid()) {
+                throw new RepositoryException("Invalid container package: " + containerNode.getPath());
+            }
+            Archive container = containerPackage.getPackage(false, containers).getArchive();
+            if (forceFileArchive) {
+                Archive.Entry entry = container.getEntry(path);
+                if (entry == null || entry.isDirectory()) {
+                    throw new IOException("Nested archive entry inside container package " + containerNode.getPath()
+                            + " is missing or is a directory: " + path);
+                }
+                try (InputStream input = container.openInputStream(entry)) {
+                    if (input == null) {
+                        throw new IOException(
+                                "Nested archive entry at " + path + " cannot be read from " + containerNode.getPath());
+                    }
+                    return createFilePackage(input);
+                }
+            }
+            NestedZipArchive nested = new NestedZipArchive(container, path);
+            try {
+                ZipVaultPackage referenced = new ZipVaultPackage(nested, true);
+                restoreShallowProperties(nested);
+                return referenced;
+            } catch (RepositoryException | IOException | RuntimeException e) {
+                nested.close();
+                throw e;
+            }
+        }
+    }
+
+    private void restoreShallowProperties(Archive archive) throws RepositoryException {
+        Properties props = archive.getMetaInf().getProperties();
+        if (props == null || props.isEmpty()) {
+            JcrPackageDefinition definition = getDefinition();
+            if (definition != null) {
+                ((DefaultMetaInf) archive.getMetaInf())
+                        .setProperties(definition.getMetaInf().getProperties());
+            }
+        }
+    }
+
+    private ZipVaultPackage createFilePackage(InputStream input) throws IOException {
+        File tmpFile = File.createTempFile("vaultpack", ".zip");
+        try {
+            tmpFile.deleteOnExit();
+            try (FileOutputStream output = FileUtils.openOutputStream(tmpFile)) {
+                IOUtils.copy(input, output);
+            }
+            return new ZipVaultPackage(tmpFile, true);
+        } catch (IOException | RuntimeException e) {
+            FileUtils.deleteQuietly(tmpFile);
+            throw e;
+        }
     }
 
     /**
@@ -451,6 +533,21 @@ public class JcrPackageImpl implements JcrPackage {
                             log.info("Dry run: would move sub-package in place: {} -> {}", path, expectedPath);
                         } else {
                             if (s.nodeExists(expectedPath)) {
+                                try (JcrPackageImpl existing = new JcrPackageImpl(mgr, s.getNode(expectedPath))) {
+                                    if (existing.isValid() && existing.getData() == null && p.getData() != null) {
+                                        // Installation materializes a registered reference at its canonical location.
+                                        Binary binary = p.getData().getBinary();
+                                        try {
+                                            Node content = existing.getContent();
+                                            content.setPrimaryType(JcrConstants.NT_RESOURCE);
+                                            content.setProperty(JcrConstants.JCR_DATA, binary);
+                                            ((JcrPackageDefinitionImpl) existing.getDefinition())
+                                                    .clearContainerReference();
+                                        } finally {
+                                            binary.dispose();
+                                        }
+                                    }
+                                }
                                 log.info(
                                         "(Removed duplicated sub-package in {}. Still present at {}",
                                         path,
@@ -1137,7 +1234,10 @@ public class JcrPackageImpl implements JcrPackage {
             }
             // override import mode
             opts.setImportMode(ImportMode.REPLACE);
-            snap.extract(opts);
+            // Restore package binaries without reinstalling subpackages from the snapshot.
+            ImportOptions snapshotOptions = opts.copy();
+            snapshotOptions.setNonRecursive(true);
+            snap.extract(snapshotOptions);
             snap.getNode().remove();
             s.save();
         }
@@ -1164,7 +1264,15 @@ public class JcrPackageImpl implements JcrPackage {
     public long getSize() {
         try {
             assertValid();
-            return getData().getLength();
+            Property data = getData();
+            if (data != null) {
+                return data.getLength();
+            }
+            Node definition = getDefNode();
+            if (definition == null) {
+                throw new RepositoryException("Package definition is missing.");
+            }
+            return definition.getProperty(JcrPackageDefinition.PN_SIZE).getLong();
         } catch (RepositoryException e) {
             log.error("Error during getSize()", e);
             return -1;
@@ -1198,7 +1306,9 @@ public class JcrPackageImpl implements JcrPackage {
     @Nullable
     public Property getData() throws RepositoryException {
         Node content = getContent();
-        return content == null ? null : content.getProperty(JcrConstants.JCR_DATA);
+        return content == null || !content.hasProperty(JcrConstants.JCR_DATA)
+                ? null
+                : content.getProperty(JcrConstants.JCR_DATA);
     }
 
     /**
@@ -1208,6 +1318,23 @@ public class JcrPackageImpl implements JcrPackage {
     public Node getDefNode() throws RepositoryException {
         Node content = getContent();
         return content != null && content.hasNode(NN_VLT_DEFINITION) ? content.getNode(NN_VLT_DEFINITION) : null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    public VaultPackageBinaryLocation getArchiveLocationType() throws RepositoryException {
+        if (getData() != null) {
+            return VaultPackageBinaryLocation.LOCAL_BINARY;
+        }
+        Node definition = getDefNode();
+        if (definition != null
+                && definition.hasProperty(JcrPackageDefinition.PN_CONTAINER)
+                && definition.hasProperty(JcrPackageDefinition.PN_CONTAINER_ENTRY)) {
+            return VaultPackageBinaryLocation.CONTAINER_ENTRY;
+        }
+        return VaultPackageBinaryLocation.UNAVAILABLE;
     }
 
     /**

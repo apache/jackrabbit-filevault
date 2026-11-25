@@ -648,9 +648,10 @@ public class SubPackagesIT extends IntegrationTestBase {
 
         // check for sub packages
         assertPackageNodeExists(PACKAGE_ID_SUB_TEST);
-        assertPackageNodeMissing(PACKAGE_ID_SUB_A);
-        assertPackageNodeMissing(PACKAGE_ID_SUB_B);
+        assertPackageNodeExists(PACKAGE_ID_SUB_A);
+        assertPackageNodeExists(PACKAGE_ID_SUB_B);
 
+        assertEquals("Only the directly extracted package is returned", 1, ids.length);
         assertEquals("Package Id", ids[0], PACKAGE_ID_SUB_TEST);
     }
 

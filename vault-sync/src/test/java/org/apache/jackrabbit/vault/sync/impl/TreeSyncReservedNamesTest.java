@@ -19,6 +19,7 @@
 package org.apache.jackrabbit.vault.sync.impl;
 
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.jcr.nodetype.NodeType;
@@ -26,14 +27,12 @@ import javax.jcr.nodetype.NodeType;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.jackrabbit.commons.JcrUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.core.TransientRepository;
 import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
 import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
@@ -183,8 +182,13 @@ public class TreeSyncReservedNamesTest {
     private void assertSynchronized(String name, File file) throws Exception {
         String expected = mode == SyncMode.JCR2FS ? REPOSITORY_DATA : LOCAL_DATA;
         Assert.assertEquals(expected, new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
-        try (InputStream data = JcrUtils.readFile(admin.getNode("/tmp/" + name))) {
-            Assert.assertEquals(expected, IOUtils.toString(data, StandardCharsets.UTF_8));
-        }
+        assertProperty("/tmp/" + name + "/jcr:content/jcr:data", expected);
+    }
+
+    private void assertProperty(String path, String value) throws RepositoryException {
+        Assert.assertEquals(
+                path + " should contain " + value,
+                value,
+                admin.getProperty(path).getString());
     }
 }

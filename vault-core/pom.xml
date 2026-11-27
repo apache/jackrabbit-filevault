@@ -101,7 +101,7 @@
                 <artifactId>apache-rat-plugin</artifactId>
                 <configuration>
                     <basedir>${project.basedir}</basedir>
-                    <inputExcludeFile>${project.basedir}/.ratignore</inputExcludeFile>
+                    <excludesFile>${project.basedir}/.ratignore</excludesFile>
                 </configuration>
             </plugin>
         </plugins>

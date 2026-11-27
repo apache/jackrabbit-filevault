@@ -203,8 +203,9 @@
                             <exclude>.idea/**</exclude>
                             <exclude>.gitignore</exclude>
                             <exclude>derby.log</exclude>
-                            <exclude>**/*.zip/**</exclude>
+                            <exclude>**/src/test/resources/**</exclude>
                             <exclude>.repository/**</exclude>
+                            <exclude>**/appassembler/*</exclude>
                             <exclude>local-snapshots-dir/**</exclude>
                         </excludes>
                     </configuration>

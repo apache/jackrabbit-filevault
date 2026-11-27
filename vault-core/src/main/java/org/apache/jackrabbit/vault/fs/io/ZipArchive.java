@@ -23,8 +23,11 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -101,34 +104,42 @@ public class ZipArchive extends AbstractArchive {
             return;
         }
         jar = new JarFile(file);
-        root = new EntryImpl("", true);
-        inf = new DefaultMetaInf();
+        try {
+            root = new EntryImpl("", true);
+            inf = new DefaultMetaInf();
 
-        Enumeration e = jar.entries();
-        while (e.hasMoreElements()) {
-            ZipEntry entry = (ZipEntry) e.nextElement();
-            String path = entry.getName();
-            // check for meta inf
-            if (path.startsWith(Constants.META_DIR + "/")) {
-                try {
-                    inf.load(jar.getInputStream(entry), file.getPath() + ":" + path);
-                } catch (ConfigurationException e1) {
-                    throw new IOException(e1);
-                }
-            }
-            String[] names = Text.explode(path, '/');
-            if (names.length > 0) {
-                EntryImpl je = root;
-                for (int i=0; i<names.length; i++) {
-                    if (i == names.length -1) {
-                        je = je.add(names[i], entry.isDirectory());
-                    } else {
-                        je = je.add(names[i], true);
+            Enumeration<JarEntry> e = jar.entries();
+            Set<String> seenEntryNames = new HashSet<>();
+            while (e.hasMoreElements()) {
+                ZipEntry entry = e.nextElement();
+                String path = entry.getName();
+                // see AbstractArchive.checkNotDuplicateEntry() javadoc for rationale (GH-17)
+                checkNotDuplicateEntry(seenEntryNames, path, entry.isDirectory(), file.getPath());
+                // check for meta inf
+                if (path.startsWith(Constants.META_DIR + "/")) {
+                    try (InputStream input = jar.getInputStream(entry)) {
+                        inf.load(input, file.getPath() + ":" + path);
+                    } catch (ConfigurationException e1) {
+                        throw new IOException(e1);
                     }
                 }
-                je.zipEntryName = entry.getName();
-                log.debug("scanning jar: {}", je.zipEntryName);
+                String[] names = Text.explode(path, '/');
+                if (names.length > 0) {
+                    EntryImpl je = root;
+                    for (int i = 0; i < names.length; i++) {
+                        if (i == names.length - 1) {
+                            je = je.add(names[i], entry.isDirectory());
+                        } else {
+                            je = je.add(names[i], true);
+                        }
+                    }
+                    je.zipEntryName = entry.getName();
+                    log.debug("scanning jar: {}", je.zipEntryName);
+                }
             }
+        } catch (IOException e) {
+            close();
+            throw e;
         }
         if (inf.getFilter() == null) {
             log.debug("Zip {} does not contain filter definition.", file.getPath());

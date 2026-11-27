@@ -77,10 +77,10 @@ public abstract class AbstractArtifact implements Artifact {
         this.extension = extension;
         if (parent == null) {
             this.repoRelPath = repoRelPath;
-            this.platRelPath = PlatformNameFormat.getPlatformPath(repoRelPath + extension);
+            this.platRelPath = PlatformNameFormat.getPlatformPath(repoRelPath) + extension;
         } else {
             this.repoRelPath = PathUtil.append(parent.getRelativePath(), repoRelPath);
-            this.platRelPath = PathUtil.append(parent.getPlatformPath(), PlatformNameFormat.getPlatformPath(repoRelPath + extension));
+            this.platRelPath = PathUtil.append(parent.getPlatformPath(), PlatformNameFormat.getPlatformPath(repoRelPath) + extension);
         }
         if (this.platRelPath.equals(this.repoRelPath)) {
             this.platRelPath = null;

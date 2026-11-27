@@ -125,10 +125,11 @@ public class TransactionImpl implements VaultFsTransaction {
 
         String repoPath = PlatformNameFormat.getRepositoryPath(path, true);
         String repoName = Text.getName(repoPath);
+        String platformName = Text.getName(path);
         String parentPath = Text.getRelativeParent(path, 1);
         String repoParentPath = Text.getRelativeParent(repoPath, 1);
 
-        if (repoName.equals(Constants.DOT_CONTENT_XML)) {
+        if (platformName.equals(Constants.DOT_CONTENT_XML)) {
             // special handling for .content.xml
             final Change change = new Change(Type.ADDED_X, repoParentPath, path, input);
             changes.add(change);
@@ -147,8 +148,8 @@ public class TransactionImpl implements VaultFsTransaction {
             Artifact parent = new DirectoryArtifact(Text.getName(repoParentPath), parentExt);
             InputSourceArtifact isa = new InputSourceArtifact(
                     parent,
-                    Constants.DOT_CONTENT_XML,
                     "",
+                    Constants.DOT_CONTENT_XML,
                     ArtifactType.PRIMARY, input,
                     SerializationType.XML_DOCVIEW);
             isa.setContentType("text/xml");
@@ -161,11 +162,11 @@ public class TransactionImpl implements VaultFsTransaction {
             SerializationType serType = SerializationType.GENERIC;
             ArtifactType aType = ArtifactType.FILE;
             String extension = "";
-            int idx = repoName.lastIndexOf('.');
+            int idx = platformName.lastIndexOf('.');
             if (idx > 0) {
-                String base = repoName.substring(0, idx);
-                String ext = repoName.substring(idx);
-                if (ext.equals(".xml")) {
+                String base = PlatformNameFormat.getRepositoryName(platformName.substring(0, idx));
+                String ext = platformName.substring(idx);
+                if (ext.equals(".xml") && !Constants.DOT_CONTENT_XML.equals(repoName)) {
                     // this can either be an generic exported docview or
                     // a 'user-xml' that is imported as file
                     // btw: this only works for input sources that can
@@ -551,10 +552,10 @@ public class TransactionImpl implements VaultFsTransaction {
                     return false;
                 }
                 String repoName = PlatformNameFormat.getRepositoryName(name);
-                int idx = repoName.lastIndexOf('.');
+                int idx = name.lastIndexOf('.');
                 if (idx > 0) {
-                    String base = repoName.substring(0, idx);
-                    String ext = repoName.substring(idx);
+                    String base = PlatformNameFormat.getRepositoryName(name.substring(0, idx));
+                    String ext = name.substring(idx);
                     if (ext.equals(".dir")) {
                         // assume no directories with .dir extension
                         repoName = base;

@@ -41,7 +41,7 @@ import org.junit.runners.Parameterized;
  * Tests duplicate-entry handling in {@link AbstractArchive} implementations.
  */
 @RunWith(Parameterized.class)
-public class DuplicateArchiveEntryTest {
+public class ArchiveTest {
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -64,7 +64,7 @@ public class DuplicateArchiveEntryTest {
      * Selects the archive implementation for this test instance.
      * @param archiveType a supported archive implementation
      */
-    public DuplicateArchiveEntryTest(String archiveType) {
+    public ArchiveTest(String archiveType) {
         this.archiveType = archiveType;
     }
 

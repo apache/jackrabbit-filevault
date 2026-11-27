@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -85,7 +84,7 @@ import org.slf4j.LoggerFactory;
 @Designate(ocd = FSPackageRegistry.Config.class)
 public class FSPackageRegistry extends AbstractPackageRegistry {
 
-    private static final String REPOSITORY_HOME = "repository.home";
+    protected static final String REPOSITORY_HOME = "repository.home";
 
     /**
      * default logger
@@ -116,6 +115,14 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
         return homeDir;
     }
 
+    private File checkHomeDir(File homeDir) throws IOException {
+        if (!homeDir.isDirectory()) {
+            throw new IOException("not a directory: " + homeDir);
+        } else {
+            return homeDir;
+        }
+    }
+
     /**
      * Creates a new FSPackageRegistry based on the given home directory.
      *
@@ -123,7 +130,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
      * @throws IOException If an I/O error occurs.
      */
     public FSPackageRegistry(@Nonnull File homeDir) throws IOException {
-        this.homeDir = homeDir;
+        this.homeDir = checkHomeDir(homeDir);
         loadPackageCache();
     }
 
@@ -144,17 +151,18 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Activate
-    private void activate(BundleContext context, Config config) throws IOException {
+    protected void activate(BundleContext context, Config config) throws IOException {
         String repoHome = context.getProperty(REPOSITORY_HOME);
         if (repoHome == null) {
-            this.homeDir = context.getDataFile(config.homePath());
+            this.homeDir = checkHomeDir(context.getDataFile(config.homePath()));
         } else {
-            this.homeDir = new File(config.homePath());
-            if (!this.homeDir.isAbsolute()) {
-                this.homeDir = new File(repoHome + "/" + config.homePath());
+            File candidate = new File(config.homePath());
+            if (!candidate.isAbsolute()) {
+                candidate = new File(repoHome, config.homePath());
             }
-            if (!homeDir.exists()) {
-                homeDir.mkdirs();
+            this.homeDir = checkHomeDir(candidate);
+            if (!this.homeDir.exists()) {
+                this.homeDir.mkdirs();
             }
         }
         loadPackageCache();
@@ -197,7 +205,7 @@ public class FSPackageRegistry extends AbstractPackageRegistry {
     }
 
     @Nullable
-    private File getPackageFile(@Nonnull PackageId id) {
+    protected File getPackageFile(@Nonnull PackageId id) {
         try {
             FSInstallState state = getInstallState(id);
             if (FSPackageStatus.NOTREGISTERED == state.getStatus()) {
